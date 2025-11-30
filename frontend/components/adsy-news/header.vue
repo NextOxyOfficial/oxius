@@ -329,10 +329,11 @@ watch(() => useRoute().path, () => {
 async function getLogo() {
   try {
     const { data } = await get("/news-logo/");
-    logo.value = data;
-    console.log('News Logo loaded:', data);
+    if (data) {
+      logo.value = data;
+    }
   } catch (error) {
-    console.warn('Failed to load News logo, using fallback:', error);
+    // Silently fallback to default logo
     logo.value = {};
   }
 }

@@ -199,17 +199,15 @@
 <script setup lang="ts">
 // Composables
 const { user } = useAuth()
+const { get, post } = useApi()
 const {
   chatRooms,
   unreadCount,
   isLoading,
-  fetchChatRooms,
-  fetchMessages,
-  sendMessage,
-  markChatAsRead,
-  isUserOnline,
-  formatMessageTime
-} = useAdsyConnect()
+  loadChatRooms,
+  loadMessages,
+  sendMessage: sendChatMessage,
+} = useAdsyChat()
 
 // State
 const showMiniChat = ref(false)
@@ -224,11 +222,26 @@ const recentChats = computed(() => {
   return chatRooms.value.slice(0, 5)
 })
 
+// Helper function - online status from API
+const isUserOnline = (userId: string) => false
+
+const formatMessageTime = (timestamp: string) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+  return date.toLocaleDateString()
+}
+
 // Methods
 const toggleMiniChat = () => {
   showMiniChat.value = !showMiniChat.value
   if (showMiniChat.value && recentChats.value.length === 0) {
-    fetchChatRooms()
+    loadChatRooms()
   }
   hasNewMessages.value = false
 }
@@ -242,10 +255,12 @@ const selectMiniChat = async (chat: any) => {
   miniMessages.value = []
   
   try {
-    const data = await fetchMessages(chat.id)
-    miniMessages.value = data?.results?.slice(-10) || []
-    await markChatAsRead(chat.id)
-    scrollMiniToBottom()
+    const { data, error } = await get(`/adsyconnect/messages/?chatroom=${chat.id}`)
+    if (data && !error) {
+      const messages = data?.results || data || []
+      miniMessages.value = Array.isArray(messages) ? messages.slice(-10) : []
+      scrollMiniToBottom()
+    }
   } catch (error) {
     console.error('Error loading mini chat:', error)
   }
@@ -255,10 +270,17 @@ const sendMiniMessage = async () => {
   if (!miniMessageText.value.trim() || !activeMiniChat.value) return
   
   try {
-    const message = await sendMessage(activeMiniChat.value.id, miniMessageText.value.trim())
-    miniMessages.value.push(message)
-    miniMessageText.value = ''
-    scrollMiniToBottom()
+    const { data, error } = await post('/adsyconnect/messages/', {
+      chatroom: activeMiniChat.value.id,
+      receiver: activeMiniChat.value.other_user?.id,
+      message_type: 'text',
+      content: miniMessageText.value.trim(),
+    })
+    if (data && !error) {
+      miniMessages.value.push(data)
+      miniMessageText.value = ''
+      scrollMiniToBottom()
+    }
   } catch (error) {
     console.error('Error sending mini message:', error)
   }
@@ -292,7 +314,7 @@ watch(unreadCount, (newCount, oldCount) => {
 // Load initial data
 onMounted(() => {
   if (user.value) {
-    fetchChatRooms()
+    loadChatRooms()
   }
 })
 </script>

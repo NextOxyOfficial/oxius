@@ -48,6 +48,6 @@
 </template>
 
 <script setup lang="ts">
-// Get unread count from AdsyConnect
-const { unreadCount } = useAdsyConnect()
+// Get unread count from AdsyChat
+const { unreadCount } = useAdsyChat()
 </script>

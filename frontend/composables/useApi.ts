@@ -57,75 +57,88 @@ export function useApi() {
     }
   });
 
-  const get = async (endpoint: string) => {
+  const get = async (endpoint: string, options?: { params?: Record<string, any> }) => {
     const headers = await getHeaders();
-    const { data, pending, error, refresh } = await useFetch<any>(
-      baseURL + endpoint,
-      {
+    try {
+      const data = await $fetch<any>(baseURL + endpoint, {
         headers,
-        method: "get",
+        method: "GET",
+        params: options?.params,
+      });
+      return {
+        data,
+        error: null,
+      };
+    } catch (error: any) {
+      // Silently handle 404 errors for optional endpoints
+      if (error?.response?.status !== 404 && error?.status !== 404) {
+        console.error('GET request error:', error);
       }
-    );
-
-    return {
-      data: data.value,
-      error: error.value,
-    };
+      return {
+        data: null,
+        error,
+      };
+    }
   };  const post = async (endpoint: string, postData: object | FormData) => {
     // For FormData, don't set Content-Type header - let browser set it with boundary
     const headers = postData instanceof FormData
       ? await getHeaders(false) // Don't include Content-Type for FormData
       : await getHeaders(true);  // Include Content-Type for JSON
 
-    const { data, error } = await useFetch(baseURL + endpoint, {
-      headers,
-      method: "post",
-      body: postData,
-    });
-    return {
-      data: data.value,
-      error: error.value,
-    };
+    try {
+      const data = await $fetch(baseURL + endpoint, {
+        headers,
+        method: "POST",
+        body: postData,
+      });
+      return {
+        data,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error('POST request error:', error);
+      return {
+        data: null,
+        error,
+      };
+    }
   };
   const put = async (endpoint: string, postData: object) => {
     const headers = await getHeaders(true); // Include Content-Type for JSON
-    const { data, pending, error, refresh } = await useFetch<any>(
-      baseURL + endpoint,
-      {
+    try {
+      const data = await $fetch<any>(baseURL + endpoint, {
         headers,
-        method: "put",
-        body: JSON.stringify(postData),
-      }
-    );
-    return {
-      data: data.value,
-      error: error.value,
-    };
+        method: "PUT",
+        body: postData,
+      });
+      return {
+        data,
+        error: null,
+      };
+    } catch (error: any) {
+      console.error('PUT request error:', error);
+      return {
+        data: null,
+        error,
+      };
+    }
   };
   const patch = async (endpoint: string, postData: object) => {
     // Use async header generation with content type for JSON data
     const headers = await getHeaders(true);
 
     try {
-      console.log("PATCH request to:", baseURL + endpoint);
-      console.log("Request body:", JSON.stringify(postData));
-
-      const { data, error } = await useFetch<any>(baseURL + endpoint, {
+      const data = await $fetch<any>(baseURL + endpoint, {
         headers,
-        method: "patch",
-        body: JSON.stringify(postData),
+        method: "PATCH",
+        body: postData,
       });
-
-      if (error.value) {
-        console.error("PATCH error response:", error.value);
-      }
-
       return {
-        data: data.value,
-        error: error.value,
+        data,
+        error: null,
       };
     } catch (err) {
-      console.error("PATCH request failed with exception:", err);
+      console.error("PATCH request failed:", err);
       return {
         data: null,
         error: err,
@@ -133,98 +146,29 @@ export function useApi() {
     }
   };  const del = async (endpoint: string) => {
     try {
-      console.log(`DELETE request to: ${baseURL + endpoint}`);
-
       // Get valid token with automatic refresh
       const headers = await getHeaders();
       
       // Check if we have authorization after refresh attempt
       const headersObj = headers as Record<string, string>;
       if (!headersObj.Authorization) {
-        console.error("DELETE request failed: No valid JWT token available after refresh attempt");
+        console.error("DELETE request failed: No valid JWT token available");
         throw new Error("Authentication token is missing or expired");
       }
 
-      // Log auth token format (first few chars only for security)
-      console.log("Authorization header present:", !!headersObj.Authorization);
-      if (headersObj.Authorization) {
-        const tokenPrefix = headersObj.Authorization.substring(0, 20);
-        console.log(`Authorization header starts with: ${tokenPrefix}...`);
-      }
+      // Make the request with $fetch
+      const data = await $fetch<any>(baseURL + endpoint, {
+        headers,
+        method: "DELETE",
+      });
 
-      // Add logging for the full URL
-      console.log(`Full DELETE URL: ${baseURL + endpoint}`);
-
-      // Make the request with proper error handling
-      const { data, pending, error, status } = await useFetch<any>(
-        baseURL + endpoint,
-        {
-          headers,
-          method: "delete",
-          retry: 1, // Add a single retry attempt
-          onRequest({ request, options }) {
-            // Request has been made
-            console.log(
-              "DELETE request sent with options:",
-              JSON.stringify(options.method)
-            );
-          },
-          onRequestError({ request, options, error }) {
-            // Handle request errors
-            console.error("DELETE request error:", error);
-          },
-          onResponse({ request, response, options }) {
-            // Process the response data
-            console.log("DELETE response received, status:", response.status);
-          },
-          onResponseError({ request, response, options }) {
-            // Handle the response errors
-            console.error(
-              "DELETE response error:",
-              response.status,
-              response.statusText
-            );
-          },
-        }
-      );
-
-      // Better error handling
-      if (error.value) {
-        console.error("DELETE error response:", error.value);
-        console.error("Error status:", status.value);
-
-        // Try to extract more details from the error
-        let errorDetails = "Unknown error";
-        if (typeof error.value === "object") {
-          errorDetails = JSON.stringify(error.value);
-        } else if (typeof error.value === "string") {
-          errorDetails = error.value;
-        }
-
-        console.error("Error details:", errorDetails);
-
-        // Return structured error for better handling
-        return {
-          data: null,
-          error: {
-            message: errorDetails,
-            statusCode: status.value,
-            originalError: error.value,
-          },
-          status: status.value,
-        };
-      }
-
-      console.log("DELETE success response:", data.value);
-
-      // Return successful response
       return {
-        data: data.value,
+        data,
         error: null,
-        status: status.value,
+        status: 200,
       };
     } catch (err: any) {
-      console.error("DELETE request failed with exception:", err);
+      console.error("DELETE request failed:", err);
       return {
         data: null,
         error: {

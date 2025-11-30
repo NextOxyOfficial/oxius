@@ -25,8 +25,15 @@ defineProps({
 const { get } = useApi();
 const logo = ref({});
 async function getLogo() {
-  const res = await get("/eshop-logo/");
-  logo.value = res.data;
+  try {
+    const res = await get("/eshop-logo/");
+    if (res.data) {
+      logo.value = res.data;
+    }
+  } catch (error) {
+    // Silently fallback to default logo
+    logo.value = {};
+  }
 }
 await getLogo();
 </script>

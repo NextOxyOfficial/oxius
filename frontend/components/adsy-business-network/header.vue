@@ -298,10 +298,11 @@ const isScrolled = ref(false);
 async function getLogo() {
   try {
     const { data } = await get("/bn-logo/");
-    logo.value = data;
-    console.log('BN Logo loaded:', data);
+    if (data) {
+      logo.value = data;
+    }
   } catch (error) {
-    console.warn('Failed to load BN logo, using fallback:', error);
+    // Silently fallback to default logo
     logo.value = {};
   }
 }

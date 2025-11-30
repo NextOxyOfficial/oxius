@@ -36,7 +36,8 @@ export function useAppDownload() {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-        }
+        },
+        ignoreResponseError: true, // Don't throw on 404
       });
       
       // Set the app details from the API response
@@ -61,13 +62,19 @@ export function useAppDownload() {
         
         return response.download_url;
       } else {
-        console.warn('No valid download URL returned from API');
-        error.value = 'No download URL available';
+        // Silently handle missing download URL - this is expected if endpoint doesn't exist
+        error.value = null;
         return '';
       }
-    } catch (err) {
-      console.error('Error fetching app download URL:', err);
-      error.value = 'Failed to get download link';
+    } catch (err: any) {
+      // Silently handle 404 errors - endpoint may not exist yet
+      if (err?.response?.status === 404 || err?.status === 404) {
+        // Don't log 404 errors as they're expected when endpoint doesn't exist
+        error.value = null;
+      } else {
+        console.error('Error fetching app download URL:', err);
+        error.value = 'Failed to get download link';
+      }
       return '';
     } finally {
       isLoading.value = false;

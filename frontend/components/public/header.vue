@@ -963,10 +963,11 @@ onMounted(() => {
 async function getLogo() {
   try {
     const res = await get("/logo/");
-    logo.value = res.data;
+    if (res.data) {
+      logo.value = res.data;
+    }
   } catch (error) {
-    // Fallback to default logo if API fails
-    console.warn('Logo API not available, using default logo');
+    // Silently fallback to default logo
     logo.value = {};
   }
 }

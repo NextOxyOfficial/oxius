@@ -2,125 +2,118 @@
   <PublicSection>
     <UContainer class="py-0 sm:py-8">
       
-      <!-- Compact AdsyConnect Header -->
-      <div class="relative overflow-hidden rounded-lg mb-4 bg-white shadow-sm">
-        <div class="px-4 py-3 sm:px-6 sm:py-4">
+      <!-- Simple Header -->
+      <div class="bg-white border-b border-gray-200 mb-6">
+        <div class="px-6 py-4">
           <div class="flex items-center justify-between">
-            <!-- Left: Icon and Title -->
             <div class="flex items-center space-x-3">
-              <!-- Chat Icon -->
-              <div class="flex-shrink-0">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-green-50 flex items-center justify-center">
-                  <img 
-                    src="/images/chat_icon.png" 
-                    alt="AdsyConnect"
-                    class="w-5 h-5 sm:w-6 sm:h-6"
-                    @error="handleImageError"
-                  />
-                </div>
-              </div>
-              
-              <!-- Title and Subtitle -->
-              <div class="flex flex-col">
-                <h1 class="text-gray-900 text-base sm:text-lg font-bold tracking-tight">
-                  AdsyConnect
-                </h1>
-                <div class="flex items-center mt-0.5">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></div>
-                  <p class="text-gray-600 text-xs sm:text-sm font-medium">
-                    Chats, Notifications & Support
-                  </p>
-                </div>
+              <img 
+                src="/images/chat_icon.png" 
+                alt="AdsyConnect"
+                class="w-8 h-8"
+                @error="handleImageError"
+              />
+              <div>
+                <h1 class="text-xl font-semibold text-gray-900">AdsyConnect</h1>
+                <p class="text-sm text-gray-500">Messages, Updates & Support</p>
               </div>
             </div>
-
-            <!-- Right: Unread Count Badge -->
-            <div v-if="adsyConnectCount > 0" class="flex-shrink-0">
-              <div class="px-3 py-1.5 bg-green-100 rounded-full">
-                <span class="text-green-700 text-sm font-bold">
-                  {{ adsyConnectCount }}
-                </span>
-              </div>
+            
+            <div class="flex items-center space-x-3">
+              <UButton
+                v-if="hasUnreadMessages"
+                color="blue"
+                variant="soft"
+                icon="i-heroicons-check-circle"
+                @click="markAllAsRead"
+                size="sm"
+              >
+                Mark All Read
+              </UButton>
+              
+              <UButton
+                color="gray"
+                variant="ghost"
+                icon="i-heroicons-arrow-path"
+                :loading="isLoading"
+                @click="refreshMessages"
+                size="sm"
+              />
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Tabbed Navigation -->
-      <div class="mb-2 border-b border-gray-200">
-        <div class="flex items-center justify-between px-4">
-          <nav class="flex space-x-8 overflow-x-auto">
+        <!-- Simple Tab Navigation -->
+        <div class="px-6">
+          <div class="flex space-x-8 border-b border-gray-200">
             <button
-              @click="setActiveTab('adsyconnect')"
+              @click="activeTab = 'adsyconnect'"
               :class="[
-                'py-2 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap',
+                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors',
                 activeTab === 'adsyconnect'
-                  ? 'border-green-500 text-green-600'
+                  ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               ]"
             >
-              <UIcon name="i-heroicons-chat-bubble-left-right" class="mr-2" />
-              AdsyConnect            <span
+              <img 
+                src="/images/chat_icon.png" 
+                alt="AdsyConnect"
+                class="w-4 h-4"
+              />
+              <span>AdsyConnect</span>
+              <span
                 v-if="adsyConnectCount > 0"
-                class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-200 text-green-800"
+                class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full"
               >
                 {{ adsyConnectCount }}
               </span>
             </button>
+
             <button
-              @click="setActiveTab('updates')"
+              @click="activeTab = 'updates'"
               :class="[
-                'py-2 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap',
+                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors',
                 activeTab === 'updates'
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               ]"
             >
-              <UIcon name="i-heroicons-bell" class="mr-2" />
-              Updates            <span
+              <UIcon name="i-heroicons-bell" class="w-4 h-4" />
+              <span>Updates</span>
+              <span
                 v-if="updatesCount > 0"
-                class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
+                class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full"
               >
                 {{ updatesCount }}
               </span>
             </button>
+
             <button
-              @click="setActiveTab('support')"
+              @click="activeTab = 'support'"
               :class="[
-                'py-2 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap',
+                'flex items-center space-x-2 py-3 border-b-2 text-sm font-medium transition-colors',
                 activeTab === 'support'
-                  ? 'border-primary-500 text-primary-600'
+                  ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               ]"
             >
-              <UIcon name="i-heroicons-lifebuoy" class="mr-2" />
-              Support Tickets            <span
+              <UIcon name="i-heroicons-lifebuoy" class="w-4 h-4" />
+              <span>Support</span>
+              <span
                 v-if="supportTicketsCount > 0"
-                class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800"
+                class="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full"
               >
                 {{ supportTicketsCount }}
               </span>
             </button>
-          </nav>
-          
-          <!-- Refresh button -->
-          <UButton
-            color="gray"
-            variant="ghost"
-            icon="i-heroicons-arrow-path"
-            :loading="isLoading"
-            @click="refreshMessages"
-            size="sm"
-            class="flex-shrink-0"
-          />
+          </div>
         </div>
       </div>      
-      <!-- Unified Content Area with Filtering -->
-      <div class="sm:px-4">
-        <!-- Unified Filtering Bar -->
-        <div>
-          <!-- Tab specific filters -->
-          <div v-if="activeTab === 'support'" class="flex flex-wrap gap-2 flex-1">
+      <!-- Content Area -->
+      <div class="px-6">
+        <!-- Filters -->
+        <div v-if="activeTab === 'support'" class="mb-4">
+          <div class="flex flex-wrap gap-2">
             <UButton
               variant="soft"
               :class="{ active: ticketStatusFilter === 'all' }"
@@ -155,7 +148,11 @@
               @click="setTicketStatusFilter('closed')"
               label="Closed"
             />
-          </div>          <div v-if="activeTab === 'updates'" class="flex flex-wrap gap-2 flex-1">
+          </div>
+        </div>
+        
+        <div v-if="activeTab === 'updates'" class="mb-4">
+          <div class="flex flex-wrap gap-2">
             <UButton
               variant="soft"
               :class="{ active: updatesFilter === 'all' }"
@@ -228,11 +225,11 @@
           </div>
         </div>
 
-        <!-- Unified Content List with Stripe Design -->
-        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">          
+        <!-- Content List -->
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">          
           <!-- Support Tickets Content -->
           <div v-if="activeTab === 'support'">
-            <div v-if="supportTickets && supportTickets.length">
+            <div v-if="allSupportTickets && allSupportTickets.length > 0">
               <TransitionGroup name="message-list" tag="div">
                 <div
                   v-for="(ticket, index) in filteredSupportTickets"
@@ -364,22 +361,22 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <!-- Chat List Sidebar -->
               <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                   <!-- Search Header -->
-                  <div class="p-3 border-b border-gray-200 bg-green-50">
+                  <div class="p-3 bg-gradient-to-r from-blue-50 to-indigo-50">
                     <div class="relative">
-                      <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500 w-4 h-4" />
                       <input
                         v-model="adsySearchQuery"
                         type="text"
                         placeholder="Search conversations..."
-                        class="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        class="w-full pl-10 pr-4 py-2 text-sm bg-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none border-0"
                       />
                     </div>
                   </div>
 
                   <!-- Chat List -->
-                  <div class="max-h-[500px] overflow-y-auto">
+                  <div class="max-h-[450px] overflow-y-auto">
                     <div v-if="adsyConnectLoading" class="p-4">
                       <div class="animate-pulse space-y-3">
                         <div v-for="i in 3" :key="i" class="flex items-center space-x-3">
@@ -394,36 +391,40 @@
 
                     <div v-else-if="adsyChatRooms.length === 0" class="p-8 text-center">
                       <div class="flex flex-col items-center justify-center space-y-4">
-                        <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center">
-                          <img 
-                            src="/images/chat_icon.png" 
-                            alt="Chat"
-                            class="w-8 h-8"
-                          />
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
+                          <UIcon name="i-heroicons-chat-bubble-left-right" class="w-10 h-10 text-blue-500" />
                         </div>
                         <div>
                           <h3 class="text-base font-semibold text-gray-900 mb-2">No conversations yet</h3>
-                          <p class="text-sm text-gray-600 mb-4">Start chatting with other users from their profiles or posts</p>
+                          <p class="text-sm text-gray-600 mb-4">Start chatting with professionals in your network</p>
                         </div>
-                        <div class="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 max-w-sm">
-                          <p class="font-medium mb-1">💡 How to start a conversation:</p>
-                          <ul class="text-left space-y-1">
-                            <li>• Visit user profiles in Business Network</li>
-                            <li>• Click "Message" on posts or profiles</li>
-                            <li>• Your conversations will appear here</li>
+                        <div class="text-xs text-gray-500 bg-blue-50 rounded-lg p-3 max-w-sm">
+                          <p class="font-medium mb-2 text-blue-700">💡 How to start a conversation:</p>
+                          <ul class="text-left space-y-1.5">
+                            <li class="flex items-start space-x-2">
+                              <span class="text-blue-500 mt-0.5">•</span>
+                              <span>Visit user profiles in Business Network</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                              <span class="text-blue-500 mt-0.5">•</span>
+                              <span>Click "Message" on posts or profiles</span>
+                            </li>
+                            <li class="flex items-start space-x-2">
+                              <span class="text-blue-500 mt-0.5">•</span>
+                              <span>Your conversations will appear here</span>
+                            </li>
                           </ul>
                         </div>
-                        
                       </div>
                     </div>
 
-                    <div v-else class="divide-y divide-gray-100">
+                    <div v-else>
                       <div
                         v-for="chat in filteredAdsyChatRooms"
                         :key="chat.id"
                         @click="selectAdsyChat(chat)"
-                        class="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                        :class="{ 'bg-green-50 border-r-2 border-green-500': activeAdsyChat?.id === chat.id }"
+                        class="p-3 hover:bg-blue-50/30 cursor-pointer transition-all duration-200"
+                        :class="{ 'bg-gradient-to-r from-blue-50 to-indigo-50 border-l-3 border-blue-500': activeAdsyChat?.id === chat.id }"
                       >
                         <div class="flex items-center space-x-3">
                           <!-- Avatar -->
@@ -443,13 +444,9 @@
                           <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between">
                               <div class="flex items-center gap-1.5 min-w-0">
-                                <NuxtLink 
-                                  :to="`/bn/profile/${chat.other_user?.id}`"
-                                  class="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors truncate"
-                                  @click.stop
-                                >
-                                  {{ chat.other_user?.first_name }} {{ chat.other_user?.last_name }}
-                                </NuxtLink>
+                                <span class="text-sm font-medium text-gray-900 truncate">
+                                  {{ chat.other_user?.first_name || 'Unknown User' }} {{ chat.other_user?.last_name || '' }}
+                                </span>
                                 <!-- Verified Badge (left) -->
                                 <UIcon v-if="chat.other_user?.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
                                 <!-- Pro Badge (right) -->
@@ -457,11 +454,11 @@
                                   PRO
                                 </span>
                               </div>
-                              <span v-if="chat.unread_count > 0" class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-green-600 rounded-full flex-shrink-0">
+                              <span v-if="chat.unread_count > 0" class="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-blue-500 rounded-full flex-shrink-0">
                                 {{ chat.unread_count }}
                               </span>
                             </div>
-                            <p class="text-xs text-gray-500 truncate mt-1">
+                            <p class="text-[11px] text-gray-400 truncate mt-0.5">
                               {{ chat.last_message?.content || 'No messages yet' }}
                             </p>
                           </div>
@@ -469,12 +466,27 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- New Chat Button at Bottom -->
+                  <div class="p-4 border-t border-gray-100">
+                    <button
+                      @click="showSearchUserModal = true"
+                      class="w-full flex items-center justify-center space-x-2 py-3 hover:bg-blue-50/50 rounded-lg transition-colors duration-200"
+                    >
+                      <img 
+                        src="/images/chat_icon.png" 
+                        alt="Chat"
+                        class="w-5 h-5"
+                      />
+                      <span class="text-sm font-semibold text-gray-700">New Chat</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <!-- Chat Window -->
               <div class="lg:col-span-2">
-                <div v-if="!activeAdsyChat" class="bg-white rounded-lg border border-gray-200 h-[500px] flex items-center justify-center">
+                <div v-if="!activeAdsyChat" class="bg-white rounded-lg shadow-sm h-[500px] flex items-center justify-center">
                   <div class="text-center">
                     <UIcon name="i-heroicons-chat-bubble-left-right" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
@@ -482,9 +494,9 @@
                   </div>
                 </div>
 
-                <div v-else class="bg-white rounded-lg border border-gray-200 h-[500px] flex flex-col">
+                <div v-else class="bg-white rounded-lg shadow-sm h-[500px] flex flex-col">
                   <!-- Chat Header -->
-                  <div class="p-4 border-b border-gray-200 bg-green-50">
+                  <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center space-x-3">
                         <img
@@ -495,11 +507,18 @@
                         <div>
                           <div class="flex items-center gap-1.5">
                             <NuxtLink 
-                              :to="`/bn/profile/${activeAdsyChat.other_user?.id}`"
+                              v-if="activeAdsyChat.other_user?.id"
+                              :to="`/business-network/profile/${activeAdsyChat.other_user.id}`"
                               class="text-sm font-semibold text-gray-900 hover:text-green-600 transition-colors cursor-pointer"
                             >
                               {{ activeAdsyChat.other_user?.first_name }} {{ activeAdsyChat.other_user?.last_name }}
                             </NuxtLink>
+                            <span 
+                              v-else
+                              class="text-sm font-semibold text-gray-900"
+                            >
+                              {{ activeAdsyChat.other_user?.first_name || 'Unknown' }} {{ activeAdsyChat.other_user?.last_name || 'User' }}
+                            </span>
                             <!-- Verified Badge (left) -->
                             <UIcon v-if="activeAdsyChat.other_user?.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500" />
                             <!-- Pro Badge (right) -->
@@ -507,32 +526,52 @@
                               PRO
                             </span>
                           </div>
-                          <p class="text-xs text-gray-500">
-                            {{ activeAdsyChat.other_user?.is_online ? 'Online' : 'Offline' }}
-                          </p>
+                          <div class="flex items-center gap-1.5">
+                            <span 
+                              class="w-2 h-2 rounded-full"
+                              :class="activeAdsyChat.other_user?.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                            ></span>
+                            <span class="text-[11px] text-gray-500">
+                              {{ activeAdsyChat.other_user?.is_online ? 'Online' : 'Offline' }}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <!-- Messages Area -->
-                  <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                  <div class="flex-1 overflow-y-auto p-3 bg-gray-50 messages-container">
                     <div v-if="adsyMessagesLoading" class="flex justify-center items-center h-full">
-                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
                     <div v-else-if="adsyMessages.length === 0" class="flex justify-center items-center h-full">
-                      <p class="text-gray-400 text-sm">No messages yet. Start the conversation!</p>
+                      <div class="text-center">
+                        <UIcon name="i-heroicons-chat-bubble-left-right" class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                        <p class="text-gray-400 text-sm">No messages yet. Start the conversation!</p>
+                      </div>
                     </div>
-                    <div v-else>
+                    <div v-else class="space-y-3 px-1">
                       <div
                         v-for="message in adsyMessages"
                         :key="message.id"
-                        class="flex"
+                        class="flex items-end gap-2"
                         :class="message.sender?.id === currentUserId ? 'justify-end' : 'justify-start'"
                       >
+                        <!-- Avatar for received messages -->
+                        <div v-if="message.sender?.id !== currentUserId" class="flex-shrink-0 mb-1">
+                          <img
+                            :src="activeAdsyChat.other_user?.avatar || '/images/placeholder.jpg'"
+                            :alt="activeAdsyChat.other_user?.username"
+                            class="w-7 h-7 rounded-full object-cover ring-2 ring-white shadow-sm"
+                          />
+                        </div>
+                        
                         <div
-                          class="max-w-xs lg:max-w-md rounded-lg overflow-hidden"
-                          :class="message.sender?.id === currentUserId ? 'bg-green-600 text-white' : 'bg-white text-gray-900 border border-gray-200'"
+                          class="max-w-[75%] rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md"
+                          :class="message.sender?.id === currentUserId 
+                            ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-sm' 
+                            : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'"
                         >
                           <!-- Media Content -->
                           <div v-if="message.message_type === 'image' && message.media_url" class="relative">
@@ -543,22 +582,20 @@
                               @click="openImageModal(message.media_url)"
                             />
                             <!-- Time and Status for Images -->
-                            <div v-if="message.time_display" class="px-4 py-2">
-                              <div class="flex items-center justify-end space-x-1">
-                                <span class="text-xs opacity-70">{{ message.time_display }}</span>
-                                <!-- Seen/Unseen Status for Sent Messages -->
-                                <div v-if="message.sender?.id === currentUserId" class="flex items-center">
-                                  <UIcon 
-                                    :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
-                                    class="w-3 h-3 ml-1"
-                                    :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
-                                  />
-                                </div>
+                            <div v-if="message.time_display" class="px-3 py-1.5">
+                              <div class="flex items-center justify-end gap-1">
+                                <span class="text-[10px] opacity-60">{{ message.time_display }}</span>
+                                <UIcon 
+                                  v-if="message.sender?.id === currentUserId"
+                                  :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
+                                  class="w-3 h-3"
+                                  :class="message.is_read ? 'text-blue-400' : 'opacity-50'"
+                                />
                               </div>
                             </div>
                           </div>
                           
-                          <div v-else-if="message.message_type === 'video' && message.media_url" class="relative">
+                          <div v-else-if="message.message_type === 'video' && message.media_url" class="relative overflow-hidden rounded-2xl">
                             <video
                               :src="message.media_url"
                               class="w-full h-auto max-h-64 object-cover"
@@ -568,67 +605,62 @@
                               Your browser does not support the video tag.
                             </video>
                             <!-- Time and Status for Videos -->
-                            <div v-if="message.time_display" class="px-4 py-2">
-                              <div class="flex items-center justify-end space-x-1">
-                                <span class="text-xs opacity-70">{{ message.time_display }}</span>
-                                <!-- Seen/Unseen Status for Sent Messages -->
-                                <div v-if="message.sender?.id === currentUserId" class="flex items-center">
-                                  <UIcon 
-                                    :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
-                                    class="w-3 h-3 ml-1"
-                                    :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
-                                  />
-                                </div>
+                            <div v-if="message.time_display" class="px-3 py-1.5">
+                              <div class="flex items-center justify-end gap-1">
+                                <span class="text-[10px] opacity-60">{{ message.time_display }}</span>
+                                <UIcon 
+                                  v-if="message.sender?.id === currentUserId"
+                                  :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
+                                  class="w-3 h-3"
+                                  :class="message.is_read ? 'text-blue-400' : 'opacity-50'"
+                                />
                               </div>
                             </div>
                           </div>
                           
-                          <div v-else-if="message.message_type === 'document' && message.media_url" class="px-4 py-3">
-                            <div class="flex items-center space-x-3">
-                              <div class="flex-shrink-0">
-                                <UIcon name="i-heroicons-document" class="w-8 h-8" :class="message.sender?.id === currentUserId ? 'text-white' : 'text-gray-600'" />
+                          <div v-else-if="message.message_type === 'document' && message.media_url" class="px-3 py-2.5">
+                            <div class="flex items-center gap-3">
+                              <div class="flex-shrink-0 p-2 rounded-lg" :class="message.sender?.id === currentUserId ? 'bg-white/20' : 'bg-gray-100'">
+                                <UIcon name="i-heroicons-document-text" class="w-6 h-6" :class="message.sender?.id === currentUserId ? 'text-white' : 'text-gray-600'" />
                               </div>
                               <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium truncate">{{ message.file_name || 'Document' }}</p>
-                                <p class="text-xs opacity-70">{{ formatFileSize(message.file_size) }}</p>
+                                <p class="text-[10px] opacity-60">{{ formatFileSize(message.file_size) }}</p>
                               </div>
                               <a
                                 :href="message.media_url"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="flex-shrink-0 p-1 rounded hover:bg-black hover:bg-opacity-10"
+                                class="flex-shrink-0 p-2 rounded-full transition-colors"
+                                :class="message.sender?.id === currentUserId ? 'hover:bg-white/20' : 'hover:bg-gray-100'"
                               >
-                                <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5" />
+                                <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
                               </a>
                             </div>
                             <!-- Time and Status for Documents -->
-                            <div v-if="message.time_display" class="mt-2 flex items-center justify-end space-x-1">
-                              <span class="text-xs opacity-70">{{ message.time_display }}</span>
-                              <!-- Seen/Unseen Status for Sent Messages -->
-                              <div v-if="message.sender?.id === currentUserId" class="flex items-center">
-                                <UIcon 
-                                  :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
-                                  class="w-3 h-3 ml-1"
-                                  :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
-                                />
-                              </div>
+                            <div v-if="message.time_display" class="mt-1.5 flex items-center justify-end gap-1">
+                              <span class="text-[10px] opacity-50">{{ message.time_display }}</span>
+                              <UIcon 
+                                v-if="message.sender?.id === currentUserId"
+                                :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
+                                class="w-3 h-3"
+                                :class="message.is_read ? 'text-white/80' : 'text-white/50'"
+                              />
                             </div>
                           </div>
                           
                           <!-- Text Content -->
-                          <div v-else class="px-4 py-2">
-                            <p class="text-sm">{{ message.content || message.display_content }}</p>
+                          <div v-else class="px-3.5 py-2">
+                            <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{{ message.content || message.display_content }}</p>
                             <!-- Time and Status for Text Messages -->
-                            <div v-if="message.time_display" class="mt-1 flex items-center justify-end space-x-1">
-                              <span class="text-xs opacity-70">{{ message.time_display }}</span>
-                              <!-- Seen/Unseen Status for Sent Messages -->
-                              <div v-if="message.sender?.id === currentUserId" class="flex items-center">
-                                <UIcon 
-                                  :name="message.is_read ? 'i-heroicons-check-check' : 'i-heroicons-check'"
-                                  class="w-3 h-3 ml-1"
-                                  :class="message.is_read ? 'text-blue-500' : 'text-gray-400'"
-                                />
-                              </div>
+                            <div class="mt-1 flex items-center justify-end gap-1">
+                              <span class="text-[10px] opacity-50">{{ message.time_display || formatMessageTime(message.created_at) }}</span>
+                              <UIcon 
+                                v-if="message.sender?.id === currentUserId"
+                                :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
+                                class="w-3 h-3"
+                                :class="message.is_read ? 'text-white/80' : 'text-white/50'"
+                              />
                             </div>
                           </div>
                         </div>
@@ -637,15 +669,12 @@
                   </div>
 
                   <!-- Message Input -->
-                  <div class="p-4 border-t border-gray-200 bg-white">
+                  <div class="p-3 bg-white border-t border-gray-100">
                     <!-- Upload Progress Indicator -->
-                    <div v-if="isUploadingAttachment" class="mb-3 px-4 py-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <div class="flex items-center space-x-3">
-                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                        <div class="flex-1">
-                          <p class="text-sm font-medium text-blue-900">Uploading attachment...</p>
-                          <p class="text-xs text-blue-600">Please wait while we process your file</p>
-                        </div>
+                    <div v-if="isUploadingAttachment" class="mb-3 px-3 py-2 bg-blue-50 rounded-lg border border-blue-100">
+                      <div class="flex items-center space-x-2">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        <p class="text-sm text-blue-700">Uploading...</p>
                       </div>
                     </div>
 
@@ -653,12 +682,13 @@
                       <!-- Attachment Button -->
                       <div class="relative">
                         <UButton
-                          color="blue"
-                          variant="soft"
+                          color="gray"
+                          variant="ghost"
                           icon="i-heroicons-paper-clip"
                           size="sm"
                           @click="showAttachmentOptions = !showAttachmentOptions"
                           :disabled="isUploadingAttachment"
+                          class="rounded-full"
                         />
                         
                         <!-- Attachment Options Dropdown -->
@@ -731,16 +761,17 @@
                         v-model="adsyNewMessage"
                         type="text"
                         placeholder="Type a message..."
-                        class="flex-1 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        class="flex-1 px-4 py-2 text-[13px] bg-gray-100 rounded-full focus:ring-2 focus:ring-blue-400 focus:outline-none border-0 focus:bg-white transition-all placeholder:text-gray-400"
                         @keypress.enter="sendAdsyMessage"
                         :disabled="isUploadingAttachment"
                       />
-                      <UButton
-                        color="green"
-                        icon="i-heroicons-paper-airplane"
+                      <button
                         :disabled="!adsyNewMessage.trim() || isUploadingAttachment"
                         @click="sendAdsyMessage"
-                      />
+                        class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white flex items-center justify-center hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                      >
+                        <UIcon name="i-heroicons-paper-airplane-solid" class="w-4 h-4 -rotate-45" />
+                      </button>
                     </div>
 
                     <!-- Hidden File Inputs -->
@@ -782,7 +813,7 @@
           
           <!-- Updates Content -->
           <div v-if="activeTab === 'updates'">
-            <div v-if="updates && updates.length">
+            <div v-if="allUpdates && allUpdates.length > 0">
               <TransitionGroup name="message-list" tag="div">
                 <div
                   v-for="(update, index) in filteredUpdates"
@@ -1540,6 +1571,201 @@
           </div>
         </div>
       </Teleport>
+
+      <!-- Search User Modal -->
+      <Teleport to="body">
+        <Transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="showSearchUserModal"
+            class="fixed inset-0 z-50 overflow-y-auto"
+            @click="closeSearchModal"
+          >
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="flex items-center justify-center min-h-screen p-4">
+              <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+              >
+                <div
+                  v-if="showSearchUserModal"
+                  class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+                  @click.stop
+                >
+                  <!-- Compact Header -->
+                  <div class="relative px-5 pt-5 pb-4 bg-gradient-to-br from-blue-500 to-indigo-600">
+                    <button
+                      @click="closeSearchModal"
+                      class="absolute top-3 right-3 p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                      <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-white" />
+                    </button>
+                    
+                    <div class="flex items-center space-x-3 mb-4">
+                      <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <img 
+                          src="/images/chat_icon.png" 
+                          alt="Chat"
+                          class="w-6 h-6 brightness-0 invert"
+                        />
+                      </div>
+                      <div>
+                        <h3 class="text-lg font-bold text-white">Start New Chat</h3>
+                        <p class="text-xs text-blue-100">Search and connect with users</p>
+                      </div>
+                    </div>
+                    
+                    <!-- Search Input -->
+                    <div class="relative">
+                      <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        ref="searchInput"
+                        v-model="userSearchQuery"
+                        type="text"
+                        placeholder="Search by name, username, or profession..."
+                        class="w-full pl-10 pr-10 py-2.5 text-sm bg-white rounded-xl focus:ring-2 focus:ring-white/50 focus:outline-none border-0 shadow-lg placeholder:text-gray-400"
+                        @input="searchUsers"
+                      />
+                      <div v-if="userSearchQuery" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <button
+                          @click="clearSearch"
+                          class="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                          <UIcon name="i-heroicons-x-mark" class="w-4 h-4 text-gray-400" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Search Results -->
+                  <div 
+                    ref="searchResultsContainer"
+                    class="max-h-[420px] overflow-y-auto"
+                    @scroll="handleSearchScroll"
+                  >
+                    <!-- Loading State -->
+                    <div v-if="searchingUsers" class="flex flex-col items-center justify-center py-16">
+                      <div class="relative">
+                        <div class="animate-spin rounded-full h-12 w-12 border-3 border-blue-200 border-t-blue-500"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <UIcon name="i-heroicons-magnifying-glass" class="w-5 h-5 text-blue-500" />
+                        </div>
+                      </div>
+                      <p class="text-sm text-gray-500 mt-4 font-medium">Searching users...</p>
+                    </div>
+
+                    <!-- Empty State - No Query -->
+                    <div v-else-if="!userSearchQuery || userSearchQuery.trim().length < 2" class="text-center py-16 px-6">
+                      <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <UIcon name="i-heroicons-user-group" class="w-10 h-10 text-blue-500" />
+                      </div>
+                      <h4 class="text-sm font-semibold text-gray-900 mb-1">Find Users to Chat</h4>
+                      <p class="text-xs text-gray-500">Type at least 2 characters to search</p>
+                    </div>
+
+                    <!-- Empty State - No Results -->
+                    <div v-else-if="searchedUsers.length === 0 && !searchingUsers" class="text-center py-16 px-6">
+                      <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <UIcon name="i-heroicons-magnifying-glass-minus" class="w-10 h-10 text-gray-400" />
+                      </div>
+                      <h4 class="text-sm font-semibold text-gray-900 mb-1">No Users Found</h4>
+                      <p class="text-xs text-gray-500">Try searching with different keywords</p>
+                    </div>
+
+                    <!-- Results List -->
+                    <div v-else class="divide-y divide-gray-100">
+                      <Transition
+                        enter-active-class="transition-all duration-300"
+                        enter-from-class="opacity-0 translate-y-2"
+                        enter-to-class="opacity-100 translate-y-0"
+                      >
+                        <div v-if="searchedUsers.length > 0" class="text-xs text-gray-500 px-5 py-2 bg-gray-50 font-medium">
+                          {{ searchedUsers.length }} {{ searchedUsers.length === 1 ? 'user' : 'users' }} found
+                        </div>
+                      </Transition>
+                      
+                      <TransitionGroup
+                        enter-active-class="transition-all duration-200"
+                        enter-from-class="opacity-0 translate-x-4"
+                        enter-to-class="opacity-100 translate-x-0"
+                        leave-active-class="transition-all duration-150"
+                        leave-from-class="opacity-100"
+                        leave-to-class="opacity-0"
+                      >
+                        <div
+                          v-for="(searchUser, index) in searchedUsers"
+                          :key="searchUser.id"
+                          @click="startChatWithUser(searchUser)"
+                          class="flex items-center space-x-3 px-5 py-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 cursor-pointer transition-all duration-200 group"
+                          :style="{ transitionDelay: `${index * 30}ms` }"
+                        >
+                          <div class="relative flex-shrink-0">
+                            <img
+                              v-if="searchUser.image || searchUser.avatar || searchUser.avatar_url || searchUser.profile_image"
+                              :src="searchUser.image || searchUser.avatar || searchUser.avatar_url || searchUser.profile_image"
+                              :alt="searchUser.username || 'User'"
+                              class="w-11 h-11 rounded-full object-cover bg-gray-200 ring-2 ring-white group-hover:ring-blue-200 transition-all"
+                            />
+                            <div
+                              v-else
+                              class="w-11 h-11 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-600 font-semibold ring-2 ring-white group-hover:ring-blue-200 transition-all"
+                            >
+                              {{ ((searchUser.first_name || searchUser.username || 'U').charAt(0)).toUpperCase() }}
+                            </div>
+                            <div v-if="searchUser.is_online" class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                          </div>
+                          
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                              <p class="text-sm font-semibold text-gray-900 truncate">
+                                {{ searchUser.first_name }} {{ searchUser.last_name }}
+                              </p>
+                              <UIcon v-if="searchUser.kyc" name="i-heroicons-check-badge-solid" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                              <span v-if="searchUser.is_pro" class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                                PRO
+                              </span>
+                            </div>
+                            <p v-if="searchUser.profession" class="text-xs text-blue-600 truncate font-medium">{{ searchUser.profession }}</p>
+                          </div>
+                          
+                          <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                              <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4 text-white" />
+                            </div>
+                          </div>
+                        </div>
+                      </TransitionGroup>
+                      
+                      <!-- Loading More Indicator -->
+                      <div v-if="searchLoadingMore" class="flex justify-center items-center py-4">
+                        <div class="flex items-center space-x-2">
+                          <div class="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
+                          <span class="text-xs text-gray-500 font-medium">Loading more...</span>
+                        </div>
+                      </div>
+                      
+                      <!-- No More Results Indicator -->
+                      <div v-else-if="!searchHasMore && searchedUsers.length > 0" class="text-center py-4">
+                        <p class="text-xs text-gray-400 font-medium">No more users to load</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
     </UContainer>
   </PublicSection>
 </template>
@@ -1548,6 +1774,7 @@
 const { t } = useI18n();
 const { user } = useAuth();
 const { get, post, put } = useApi();
+const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
 const { formatDate } = useUtils();
 const { 
   markTicketAsRead: markTicketAsReadGlobal, 
@@ -1604,32 +1831,47 @@ const supportTicketsCount = computed(() => {
 });
 
 const adsyConnectCount = computed(() => {
-  // Get unread count from AdsyConnect composable if available
-  try {
-    const { unreadCount } = useAdsyConnect();
-    return unreadCount.value || 0;
-  } catch {
-    return 0;
-  }
+  return adsyUnreadCount.value || 0;
 });
 
-// AdsyConnect state
+// AdsyConnect chat (API-based)
+const { 
+  chatRooms: adsyChatRooms,
+  activeChat: activeAdsyChat,
+  messages: adsyMessages,
+  newMessage: adsyNewMessage,
+  isLoading: adsyConnectLoading,
+  isLoadingMessages: adsyMessagesLoading,
+  unreadCount: adsyUnreadCount,
+  loadChatRooms,
+  sendMessage: sendAdsyMessage,
+  selectChat: selectAdsyChat,
+  stopPolling
+} = useAdsyChat();
+
+// Other AdsyConnect state
 const adsySearchQuery = ref('');
-const adsyChatRooms = ref([]);
-const activeAdsyChat = ref(null);
-const adsyMessages = ref([]);
-const adsyNewMessage = ref('');
-const adsyConnectLoading = ref(false);
-const adsyMessagesLoading = ref(false);
 const showAttachmentOptions = ref(false);
 const isUploadingAttachment = ref(false);
 const currentUserId = computed(() => user.value?.user?.id);
+
+// Search User Modal state
+const showSearchUserModal = ref(false);
+const userSearchQuery = ref('');
+const searchedUsers = ref([]);
+const searchingUsers = ref(false);
+const searchPage = ref(1);
+const searchHasMore = ref(true);
+const searchLoadingMore = ref(false);
+const searchResultsContainer = ref(null);
+let searchTimeout = null;
 
 // File input refs
 const imageInput = ref(null);
 const cameraInput = ref(null);
 const videoInput = ref(null);
 const documentInput = ref(null);
+const searchInput = ref(null);
 
 // Filtered AdsyConnect chat rooms
 const filteredAdsyChatRooms = computed(() => {
@@ -1807,103 +2049,20 @@ function setActiveTab(tab) {
   currentPage.value = 1;
 }
 
-// AdsyConnect functions
-async function loadAdsyChatRooms() {
-  adsyConnectLoading.value = true;
-  try {
-    const { user } = useAuth();
-    
-    if (!user.value) {
-      return;
-    }
-    
-    const api = useApi();
-    
-    if (!api || !api.get) {
-      throw new Error('API service not available');
-    }
-    
-    const response = await api.get('/adsyconnect/chatrooms/');
-    
-    if (response.error) {
-      throw new Error(response.error.message || 'API Error');
-    }
-    
-    const chatRooms = response.data?.results || response.data || [];
-    adsyChatRooms.value = chatRooms;
-    
-    // Auto-select the latest chat (first in the list) if no chat is currently selected
-    if (chatRooms.length > 0 && !activeAdsyChat.value) {
-      await selectAdsyChat(chatRooms[0]);
-    }
-    
-  } catch (error) {
-    console.error('Error loading chat rooms:', error);
-    toast.add({
-      title: 'Error',
-      description: `Failed to load chat rooms: ${error.message}`,
-      color: 'red',
-      timeout: 3000,
-    });
-  } finally {
-    adsyConnectLoading.value = false;
-  }
-}
-
-async function selectAdsyChat(chat) {
-  activeAdsyChat.value = chat;
-  await loadAdsyMessages(chat.id);
-}
-
-async function loadAdsyMessages(chatRoomId) {
-  adsyMessagesLoading.value = true;
-  try {
-    const api = useApi();
-    const response = await api.get(`/adsyconnect/messages/?chatroom=${chatRoomId}`);
-    adsyMessages.value = response.data.results || response.data || [];
-  } catch (error) {
-    console.error('Error loading messages:', error);
-    toast.add({
-      title: 'Error',
-      description: 'Failed to load messages',
-      color: 'red',
-      timeout: 3000,
-    });
-  } finally {
-    adsyMessagesLoading.value = false;
-  }
-}
-
-async function sendAdsyMessage() {
-  if (!adsyNewMessage.value.trim() || !activeAdsyChat.value) return;
+// Initialize chat
+onMounted(async () => {
+  await loadChatRooms();
   
-  try {
-    const api = useApi();
-    const response = await api.post('/adsyconnect/messages/', {
-      chatroom: activeAdsyChat.value.id,
-      receiver: activeAdsyChat.value.other_user.id,
-      message_type: 'text',
-      content: adsyNewMessage.value.trim(),
-    });
-    
-    adsyMessages.value.push(response.data);
-    adsyNewMessage.value = '';
-    
-    // Scroll to bottom
-    await nextTick();
-    const messagesContainer = document.querySelector('.overflow-y-auto.p-4.space-y-3');
-    if (messagesContainer) {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-  } catch (error) {
-    console.error('Error sending message:', error);
-    toast.add({
-      title: 'Error',
-      description: 'Failed to send message',
-      color: 'red',
-      timeout: 3000,
-    });
+  // Auto-select the latest chat if available
+  if (adsyChatRooms.value.length > 0 && !activeAdsyChat.value) {
+    await selectAdsyChatWithTab(adsyChatRooms.value[0]);
   }
+});
+
+// Enhanced selectAdsyChat to switch tab
+async function selectAdsyChatWithTab(chat) {
+  activeTab.value = 'adsyconnect';
+  await selectAdsyChat(chat);
 }
 
 function formatMessageTime(timestamp) {
@@ -2038,37 +2197,38 @@ async function sendMediaMessage(file, messageType) {
   isUploadingAttachment.value = true;
   
   try {
-    const api = useApi();
     const formData = new FormData();
     
     formData.append('chatroom', activeAdsyChat.value.id);
-    formData.append('receiver', activeAdsyChat.value.other_user.id);
+    formData.append('receiver', activeAdsyChat.value.other_user?.id);
     formData.append('message_type', messageType);
     formData.append('media_file', file);
     formData.append('file_name', file.name);
     
-    const response = await api.post('/adsyconnect/messages/', formData);
+    const { data: response, error: apiError } = await post('/adsyconnect/messages/', formData);
     
-    if (response.error) {
-      throw new Error(response.error.message || 'Upload failed');
+    if (apiError) {
+      throw new Error(apiError.message || 'Failed to send media');
     }
     
-    // Add message to chat
-    adsyMessages.value.push(response.data);
-    
-    // Scroll to bottom
-    await nextTick();
-    const messagesContainer = document.querySelector('.overflow-y-auto.p-4.space-y-3');
-    if (messagesContainer) {
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    if (response) {
+      // Add message to chat
+      adsyMessages.value.push(response);
+      
+      // Scroll to bottom
+      await nextTick();
+      const messagesContainer = document.querySelector('.messages-container');
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+      
+      toast.add({
+        title: 'Success',
+        description: `${messageType === 'image' ? 'Image' : messageType === 'video' ? 'Video' : 'File'} sent successfully`,
+        color: 'green',
+        timeout: 3000,
+      });
     }
-    
-    toast.add({
-      title: 'Success',
-      description: `${messageType === 'image' ? 'Image' : messageType === 'video' ? 'Video' : 'File'} sent successfully`,
-      color: 'green',
-      timeout: 3000,
-    });
     
   } catch (error) {
     console.error('Error sending media:', error);
@@ -2083,6 +2243,182 @@ async function sendMediaMessage(file, messageType) {
   }
 }
 
+
+// Search users function
+async function searchUsers(loadMore = false) {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  if (!userSearchQuery.value || userSearchQuery.value.trim().length < 2) {
+    searchedUsers.value = [];
+    searchPage.value = 1;
+    searchHasMore.value = true;
+    return;
+  }
+
+  searchTimeout = setTimeout(async () => {
+    if (loadMore) {
+      searchLoadingMore.value = true;
+    } else {
+      searchingUsers.value = true;
+      searchPage.value = 1;
+      searchedUsers.value = [];
+    }
+
+    try {
+      const queryString = new URLSearchParams({
+        q: userSearchQuery.value.trim(),
+        page: String(searchPage.value),
+        page_size: '20'
+      }).toString();
+      
+      const { data: response, error: apiError } = await get(`/bn/users/search/?${queryString}`);
+      
+      if (apiError) {
+        throw new Error(apiError.message || 'Search failed');
+      }
+      
+      if (response) {
+        const newUsers = response.results || [];
+        
+        if (loadMore) {
+          searchedUsers.value = [...searchedUsers.value, ...newUsers];
+        } else {
+          searchedUsers.value = newUsers;
+        }
+        
+        searchHasMore.value = !!response.next;
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+      if (!loadMore) {
+        searchedUsers.value = [];
+      }
+      toast.add({
+        title: 'Search Failed',
+        description: error.message || 'Failed to search users. Please try again.',
+        color: 'red',
+        timeout: 3000,
+      });
+    } finally {
+      searchingUsers.value = false;
+      searchLoadingMore.value = false;
+    }
+  }, 500);
+}
+
+// Load more search results
+function handleSearchScroll(event) {
+  const container = event.target;
+  const scrollPosition = container.scrollTop + container.clientHeight;
+  const scrollHeight = container.scrollHeight;
+  
+  // Load more when scrolled to bottom (with 50px threshold)
+  if (scrollPosition >= scrollHeight - 50 && searchHasMore.value && !searchLoadingMore.value && !searchingUsers.value) {
+    searchPage.value += 1;
+    searchUsers(true);
+  }
+}
+
+// Clear search
+function clearSearch() {
+  userSearchQuery.value = '';
+  searchedUsers.value = [];
+  searchPage.value = 1;
+  searchHasMore.value = true;
+}
+
+// Close search modal
+function closeSearchModal() {
+  showSearchUserModal.value = false;
+  clearSearch();
+}
+
+// Start chat with user
+async function startChatWithUser(searchUser) {
+  try {
+    // Check if user is authenticated
+    if (!user.value?.user?.id) {
+      toast.add({
+        title: 'Authentication Required',
+        description: 'Please log in to start a chat.',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+    
+    const existingChat = adsyChatRooms.value.find(
+      chat => chat.other_user?.id === searchUser.id
+    );
+    
+    if (existingChat) {
+      await selectAdsyChatWithTab(existingChat);
+      closeSearchModal();
+      toast.add({
+        title: 'Chat Opened',
+        description: `Opened existing chat with ${searchUser.first_name} ${searchUser.last_name}`,
+        color: 'blue',
+        timeout: 2000,
+      });
+      return;
+    }
+    
+    // Validate user ID format
+    if (!searchUser.id) {
+      throw new Error('Invalid user: missing ID');
+    }
+    
+    const { data: response, error: apiError } = await post('/adsyconnect/chatrooms/get_or_create/', {
+      user_id: String(searchUser.id) // Ensure it's a string
+    });
+    
+    if (apiError) {
+      throw new Error(apiError.message || 'Failed to create chat');
+    }
+    
+    if (response) {
+      // Reload chat rooms to get the new one
+      await loadChatRooms();
+      
+      // Find and select the new chat
+      const newChat = adsyChatRooms.value.find(
+        chat => chat.other_user?.id === searchUser.id
+      );
+      
+      if (newChat) {
+        await selectAdsyChatWithTab(newChat);
+      }
+      
+      closeSearchModal();
+      
+      toast.add({
+        title: 'Chat Started',
+        description: `Started new chat with ${searchUser.first_name} ${searchUser.last_name}`,
+        color: 'green',
+        timeout: 2000,
+      });
+    }
+  } catch (error) {
+    console.error('Error starting chat:', error);
+    
+    // Extract error message from response
+    let errorMessage = 'Failed to start chat. Please try again.';
+    if (error.response?.data?.error) {
+      errorMessage = error.response.data.error;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    toast.add({
+      title: 'Error',
+      description: errorMessage,
+      color: 'red',
+      timeout: 5000,
+    });
+  }
+}
 
 // Updates filter functions
 function setUpdatesFilter(filter) {
@@ -2403,14 +2739,18 @@ async function submitNewTicket() {
   isSubmittingTicket.value = true;
 
   try {
-    const response = await post("/tickets/", {
+    const { data: response, error: apiError } = await post("/tickets/", {
       title: newTicket.value.title,
       message: newTicket.value.message,
     });
 
+    if (apiError) {
+      throw new Error(apiError.message || 'Failed to create ticket');
+    }
+
     // Add the new ticket to the messages list
     const newTicketData = {
-      ...response.data,
+      ...response,
       is_ticket: true,
       replies: [],
     };
@@ -2457,9 +2797,13 @@ async function submitReply() {
   isSubmittingReply.value = true;
 
   try {
-    const response = await post(`/tickets/${activeTicket.value.id}/replies/`, {
+    const { data: response, error: apiError } = await post(`/tickets/${activeTicket.value.id}/replies/`, {
       message: ticketReply.value,
     });
+
+    if (apiError) {
+      throw new Error(apiError.message || 'Failed to submit reply');
+    }
 
     // Update the ticket with the new reply
     const updatedTicket = messages.value.find(
@@ -2469,7 +2813,7 @@ async function submitReply() {
       if (!updatedTicket.replies) {
         updatedTicket.replies = [];
       }
-      updatedTicket.replies.push(response.data);
+      updatedTicket.replies.push(response);
     }
 
     // Reset and close
@@ -2490,9 +2834,13 @@ async function submitReplyFromDetail() {
   isSubmittingReply.value = true;
 
   try {
-    const response = await post(`/tickets/${activeTicket.value.id}/replies/`, {
+    const { data: response, error: apiError } = await post(`/tickets/${activeTicket.value.id}/replies/`, {
       message: ticketReply.value,
     });
+
+    if (apiError) {
+      throw new Error(apiError.message || 'Failed to submit reply');
+    }
 
     // Update the ticket with the new reply
     const updatedTicket = messages.value.find(
@@ -2502,7 +2850,7 @@ async function submitReplyFromDetail() {
       if (!updatedTicket.replies) {
         updatedTicket.replies = [];
       }
-      updatedTicket.replies.push(response.data);
+      updatedTicket.replies.push(response);
 
       // Update the activeTicket to reflect changes
       activeTicket.value = { ...updatedTicket };
@@ -2531,9 +2879,13 @@ async function submitReplyFromDetail() {
 
 async function updateTicketStatus(ticketId, newStatus) {
   try {
-    const response = await post(`/tickets/${ticketId}/status/`, {
+    const { data: response, error: apiError } = await post(`/tickets/${ticketId}/status/`, {
       status: newStatus,
     });
+
+    if (apiError) {
+      throw new Error(apiError.message || 'Failed to update status');
+    }
 
     // Update the ticket status in the UI
     const updatedTicket = messages.value.find((msg) => msg.id === ticketId);
@@ -2568,9 +2920,13 @@ async function updateTicketStatus(ticketId, newStatus) {
 
 async function updateTicketStatusFromDetail(ticketId, newStatus) {
   try {
-    const response = await post(`/tickets/${ticketId}/status/`, {
+    const { data: response, error: apiError } = await post(`/tickets/${ticketId}/status/`, {
       status: newStatus,
     });
+
+    if (apiError) {
+      throw new Error(apiError.message || 'Failed to update status');
+    }
 
     // Update the ticket status in the UI
     const updatedTicket = messages.value.find((msg) => msg.id === ticketId);
@@ -2617,22 +2973,31 @@ async function getMessages(preserveState = false) {
     const oldSupportTickets = [...supportTickets.value];
 
     // Get admin notices (updates) with user filtering
-    const noticesRes = await get("/admin-notice/", {
-      params: {
-        user_specific: true
-      }
-    });
-    const adminNotices = noticesRes.data.map((notice) => ({
+    const { data: noticesRes, error: noticesError } = await get("/admin-notice/?user_specific=true");
+    console.log('Admin notices response:', noticesRes, 'Error:', noticesError);
+    if (noticesError) {
+      console.error('Error fetching notices:', noticesError);
+    }
+    const noticesData = noticesRes?.results || noticesRes || [];
+    console.log('Parsed notices data:', noticesData);
+    const adminNotices = Array.isArray(noticesData) ? noticesData.map((notice) => ({
       ...notice,
       is_ticket: false,
-    }));
+    })) : [];
+    console.log('Admin notices count:', adminNotices.length);
 
     // Get support tickets
-    const ticketsRes = await get("/tickets/");
-    const supportTicketsData = ticketsRes.data.map((ticket) => ({
+    const { data: ticketsRes, error: ticketsError } = await get("/tickets/");
+    console.log('Tickets response:', ticketsRes, 'Error:', ticketsError);
+    if (ticketsError) {
+      console.error('Error fetching tickets:', ticketsError);
+    }
+    const ticketsData = ticketsRes?.results || ticketsRes || [];
+    console.log('Parsed tickets data:', ticketsData);
+    const supportTicketsData = Array.isArray(ticketsData) ? ticketsData.map((ticket) => ({
       ...ticket,
       is_ticket: true,
-    }));    // Update separate arrays and store all data for pagination
+    })) : [];    // Update separate arrays and store all data for pagination
     allUpdates.value = adminNotices; // Store all updates
     allSupportTickets.value = supportTicketsData; // Store all support tickets
     
@@ -2854,7 +3219,7 @@ onMounted(async () => {
   
   // Load AdsyConnect chat rooms since it's the default tab
   if (activeTab.value === 'adsyconnect') {
-    await loadAdsyChatRooms();
+    await loadChatRooms();
   }
 
   // Auto-refresh disabled - users can manually refresh by pulling down
@@ -2866,7 +3231,7 @@ onMounted(async () => {
 // Watch for tab changes to load AdsyConnect data
 watch(activeTab, async (newTab) => {
   if (newTab === 'adsyconnect' && adsyChatRooms.value.length === 0) {
-    await loadAdsyChatRooms();
+    await loadChatRooms();
   }
 });
 
@@ -2875,6 +3240,8 @@ onBeforeUnmount(() => {
   if (autoRefreshInterval) {
     clearInterval(autoRefreshInterval);
   }
+  // Stop polling when leaving the page
+  stopPolling();
 });
 </script>
 

@@ -137,6 +137,7 @@ export default defineI18nConfig(() => ({
       current_plan: "Current Plan",
       free: "Free",
       upgrade_pro: "Upgrade to Pro",
+      upgrade_pro_text: "Get premium features",
       pro_member: "Pro Membership",
       packeges: "Packeges",
       all_product: "All Products",
