@@ -4,21 +4,24 @@ import { useToast } from '#ui/composables/useToast'
 /**
  * AdsyConnect Chat Composable
  * Uses API polling for real-time updates
+ * 
+ * IMPORTANT: State is defined OUTSIDE the function to be shared across all components
  */
+
+// Shared state - defined outside the function so it's shared across all usages
+const chatRooms = ref([])
+const activeChat = ref(null)
+const messages = ref([])
+const newMessage = ref('')
+const isLoading = ref(false)
+const isLoadingMessages = ref(false)
+
+// Polling interval
+let pollingInterval = null
+
 export const useAdsyChat = () => {
   const toast = useToast()
   const { get, post } = useApi()
-
-  // Chat state
-  const chatRooms = ref([])
-  const activeChat = ref(null)
-  const messages = ref([])
-  const newMessage = ref('')
-  const isLoading = ref(false)
-  const isLoadingMessages = ref(false)
-  
-  // Polling interval
-  let pollingInterval = null
 
   const updateChatRoomLastMessage = (message) => {
     const chatRoom = chatRooms.value.find(chat => chat.id === message.chatroom)
@@ -37,11 +40,14 @@ export const useAdsyChat = () => {
 
   // API functions
   const loadChatRooms = async () => {
+    console.log('loadChatRooms called')
     isLoading.value = true
     try {
       const { data, error } = await get('/adsyconnect/chatrooms/')
+      console.log('loadChatRooms response:', data, 'error:', error)
       if (data && !error) {
         chatRooms.value = data.results || data || []
+        console.log('chatRooms loaded:', chatRooms.value.length, 'rooms')
       }
     } catch (error) {
       console.error('Error loading chat rooms:', error)
@@ -135,13 +141,24 @@ export const useAdsyChat = () => {
   }
 
   const selectChat = async (chat) => {
+    console.log('useAdsyChat.selectChat called with:', chat)
+    
+    if (!chat || !chat.id) {
+      console.error('Invalid chat passed to selectChat:', chat)
+      return
+    }
+    
     activeChat.value = chat
+    console.log('activeChat set to:', activeChat.value)
+    
     await loadMessages(chat.id)
     // Ensure scroll to bottom after chat selection
     setTimeout(() => scrollToBottom(true), 300)
     
     // Start polling for new messages
     startPolling()
+    
+    console.log('selectChat completed, activeChat:', activeChat.value)
   }
   
   const startPolling = () => {

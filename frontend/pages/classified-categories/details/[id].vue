@@ -439,6 +439,34 @@
                 </a>
               </div>
             </div>
+            
+            <!-- Chat with Service Provider Link -->
+            <div
+              v-if="isAuthenticated && user?.user?.id !== service.user?.id"
+              class="mt-4 pt-4 border-t border-gray-100"
+            >
+              <button
+                class="w-full flex items-center justify-center text-blue-600 hover:text-blue-700 transition-all duration-200 text-base font-semibold cursor-pointer group py-2 px-4 hover:bg-blue-50 rounded-lg"
+                @click="
+                  handleButtonClick('chat_provider');
+                  startChatWithProvider();
+                "
+              >
+                <div
+                  v-if="loadingButtons.has('chat_provider')"
+                  class="dotted-spinner blue mr-3"
+                ></div>
+                <template v-else>
+                  <img 
+                    src="/images/chat_icon.png" 
+                    alt="Chat"
+                    class="w-5 h-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity"
+                  />
+                  Chat with Service Provider
+                </template>
+              </button>
+            </div>
+            
             <button
               class="w-full mt-4 text-sm border border-gray-200 rounded-md py-2 flex items-center justify-center hover:bg-gray-50 transition-colors duration-200 text-gray-800"
               @click="contactProvider"
@@ -663,6 +691,9 @@ import {
 // Import toast functionality for notifications
 const toast = useToast();
 
+// Import authentication composable
+const { user, isAuthenticated } = useAuth();
+
 const { baseURL } = useApi();
 const service = ref({});
 const router = useRoute();
@@ -678,6 +709,14 @@ const touchEndX = ref(0);
 const shareUrl = ref("");
 const reportReason = ref("");
 const reportDetails = ref("");
+
+// Loading state for buttons
+const loadingButtons = ref(new Set());
+
+// Handle button clicks with loading states
+const handleButtonClick = (buttonId) => {
+  loadingButtons.value.add(buttonId);
+};
 
 async function fetchServices() {
   const response = await $fetch(
@@ -982,6 +1021,51 @@ function pbs_click() {
   );
   return false;
 }
+
+// Chat with service provider functionality
+const startChatWithProvider = async () => {
+  try {
+    if (!isAuthenticated.value) {
+      toast.add({
+        title: 'Authentication Required',
+        description: 'Please log in to start a chat with the service provider.',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+
+    if (!service.value?.user?.id) {
+      toast.add({
+        title: 'Error',
+        description: 'Service provider information not available.',
+        color: 'red',
+        timeout: 3000,
+      });
+      return;
+    }
+
+    // Navigate to inbox with provider chat
+    await navigateTo(`/inbox?chat_with=${service.value.user.id}`);
+    
+    toast.add({
+      title: 'Chat Started',
+      description: `Opening chat with ${service.value.user.first_name} ${service.value.user.last_name}`,
+      color: 'green',
+      timeout: 2000,
+    });
+  } catch (error) {
+    console.error('Error starting chat:', error);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to start chat. Please try again.',
+      color: 'red',
+      timeout: 3000,
+    });
+  } finally {
+    loadingButtons.value.delete('chat_provider');
+  }
+};
 </script>
 
 <style scoped>

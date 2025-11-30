@@ -2180,8 +2180,41 @@ onMounted(async () => {
 
 // Enhanced selectAdsyChat to switch tab
 async function selectAdsyChatWithTab(chat) {
+  console.log('Selecting chat with tab:', chat);
+  
+  if (!chat || !chat.id) {
+    console.error('Invalid chat object:', chat);
+    return;
+  }
+  
+  // Ensure we're on the AdsyConnect tab
   activeTab.value = 'adsyconnect';
+  
+  // Wait for UI to update
+  await nextTick();
+  
+  // Check if this chat exists in our list, if not add it
+  const existsInList = adsyChatRooms.value.some(c => c.id === chat.id);
+  if (!existsInList) {
+    console.log('Chat not in list, adding it...');
+    adsyChatRooms.value.unshift(chat);
+  }
+  
+  // Select the chat
   await selectAdsyChat(chat);
+  
+  console.log('Chat selected, active chat:', activeAdsyChat.value);
+  
+  // Wait for UI to update again
+  await nextTick();
+  
+  // Ensure the chat interface is visible by scrolling to it if needed
+  setTimeout(() => {
+    const chatInterface = document.querySelector('.lg\\:col-span-2');
+    if (chatInterface) {
+      chatInterface.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 100);
 }
 
 function formatMessageTime(timestamp) {
@@ -2483,8 +2516,11 @@ async function startChatWithUser(searchUser) {
       return;
     }
     
+    // Convert to string for comparison (handles UUIDs)
+    const searchUserIdStr = String(searchUser.id);
+    
     const existingChat = adsyChatRooms.value.find(
-      chat => chat.other_user?.id === searchUser.id
+      chat => String(chat.other_user?.id) === searchUserIdStr
     );
     
     if (existingChat) {
@@ -2505,7 +2541,7 @@ async function startChatWithUser(searchUser) {
     }
     
     const { data: response, error: apiError } = await post('/adsyconnect/chatrooms/get_or_create/', {
-      user_id: String(searchUser.id) // Ensure it's a string
+      user_id: searchUserIdStr
     });
     
     if (apiError) {
@@ -2513,20 +2549,10 @@ async function startChatWithUser(searchUser) {
     }
     
     if (response) {
-      // Reload chat rooms to get the new one
-      await loadChatRooms();
-      
-      // Add a small delay to ensure the UI updates
-      await nextTick();
-      
-      // Find and select the new chat
-      const newChat = adsyChatRooms.value.find(
-        chat => chat.other_user?.id === searchUser.id
-      );
-      
-      if (newChat) {
-        await selectAdsyChatWithTab(newChat);
-        
+      // If response has chat data directly, use it
+      if (response.id) {
+        await selectAdsyChatWithTab(response);
+        closeSearchModal();
         toast.add({
           title: 'Chat Started',
           description: `Started new chat with ${searchUser.first_name} ${searchUser.last_name}`,
@@ -2534,19 +2560,41 @@ async function startChatWithUser(searchUser) {
           timeout: 2000,
         });
       } else {
-        // If chat not found immediately, try again after a short delay
-        setTimeout(async () => {
-          await loadChatRooms();
-          const retryChat = adsyChatRooms.value.find(
-            chat => chat.other_user?.id === searchUser.id
-          );
-          if (retryChat) {
-            await selectAdsyChatWithTab(retryChat);
-          }
-        }, 500);
+        // Fallback: Reload chat rooms to get the new one
+        await loadChatRooms();
+        
+        // Add a small delay to ensure the UI updates
+        await nextTick();
+        
+        // Find and select the new chat - use string comparison
+        const newChat = adsyChatRooms.value.find(
+          chat => String(chat.other_user?.id) === searchUserIdStr
+        );
+        
+        if (newChat) {
+          await selectAdsyChatWithTab(newChat);
+          
+          toast.add({
+            title: 'Chat Started',
+            description: `Started new chat with ${searchUser.first_name} ${searchUser.last_name}`,
+            color: 'green',
+            timeout: 2000,
+          });
+        } else {
+          // If chat not found immediately, try again after a short delay
+          setTimeout(async () => {
+            await loadChatRooms();
+            const retryChat = adsyChatRooms.value.find(
+              chat => String(chat.other_user?.id) === searchUserIdStr
+            );
+            if (retryChat) {
+              await selectAdsyChatWithTab(retryChat);
+            }
+          }, 500);
+        }
+        
+        closeSearchModal();
       }
-      
-      closeSearchModal();
     }
   } catch (error) {
     console.error('Error starting chat:', error);
@@ -2571,12 +2619,20 @@ async function startChatWithUser(searchUser) {
 // Handle chat with user from URL parameter
 async function handleChatWithUser(userId) {
   try {
-    // Check if chat already exists
+    console.log('Looking for existing chat with user ID:', userId);
+    console.log('Available chat rooms:', adsyChatRooms.value.length);
+    console.log('Chat rooms data:', adsyChatRooms.value.map(c => ({ id: c.id, other_user_id: c.other_user?.id })));
+    
+    // Convert userId to string for comparison (handles both UUID and integer IDs)
+    const userIdStr = String(userId);
+    
+    // Check if chat already exists - compare as strings to handle UUIDs
     const existingChat = adsyChatRooms.value.find(
-      chat => chat.other_user?.id === parseInt(userId)
+      chat => String(chat.other_user?.id) === userIdStr
     );
     
     if (existingChat) {
+      console.log('Found existing chat:', existingChat);
       // Select existing chat
       await selectAdsyChatWithTab(existingChat);
       toast.add({
@@ -2586,46 +2642,78 @@ async function handleChatWithUser(userId) {
         timeout: 2000,
       });
     } else {
-      // Create new chat
+      console.log('Creating new chat with user ID:', userId);
+      // Create new chat - pass user_id as string (required for UUID)
       const { data: response, error: apiError } = await post('/adsyconnect/chatrooms/get_or_create/', {
-        user_id: String(userId)
+        user_id: userIdStr
       });
 
+      console.log('Chat creation response:', response, 'Error:', apiError);
+
       if (apiError) {
-        throw new Error(apiError.message || 'Failed to create chat');
+        console.error('API Error details:', apiError);
+        throw new Error(apiError.message || apiError.error || 'Failed to create chat');
       }
 
       if (response) {
-        // Reload chat rooms to get the new one
-        await loadChatRooms();
+        console.log('Chat created successfully, response:', response);
         
-        // Add a small delay to ensure the UI updates
-        await nextTick();
-        
-        // Find and select the new chat
-        const newChat = adsyChatRooms.value.find(
-          chat => chat.other_user?.id === parseInt(userId)
-        );
-        
-        if (newChat) {
-          await selectAdsyChatWithTab(newChat);
+        // The response should contain the chat room data directly
+        // Try to select the chat from the response first
+        if (response.id) {
+          console.log('Selecting chat from response...');
+          await selectAdsyChatWithTab(response);
           toast.add({
             title: 'Chat Started',
-            description: `Started new chat with ${newChat.other_user?.first_name} ${newChat.other_user?.last_name}`,
+            description: `Started new chat with ${response.other_user?.first_name || 'User'} ${response.other_user?.last_name || ''}`,
             color: 'green',
             timeout: 2000,
           });
         } else {
-          // If chat not found immediately, try again after a short delay
-          setTimeout(async () => {
-            await loadChatRooms();
-            const retryChat = adsyChatRooms.value.find(
-              chat => chat.other_user?.id === parseInt(userId)
-            );
-            if (retryChat) {
-              await selectAdsyChatWithTab(retryChat);
-            }
-          }, 500);
+          // Fallback: Reload chat rooms and find the new one
+          console.log('Reloading chat rooms after creation...');
+          await loadChatRooms();
+          
+          // Add a small delay to ensure the UI updates
+          await nextTick();
+          
+          console.log('Looking for newly created chat...');
+          // Find and select the new chat - compare as strings
+          const newChat = adsyChatRooms.value.find(
+            chat => String(chat.other_user?.id) === userIdStr
+          );
+          
+          if (newChat) {
+            console.log('Found new chat:', newChat);
+            await selectAdsyChatWithTab(newChat);
+            toast.add({
+              title: 'Chat Started',
+              description: `Started new chat with ${newChat.other_user?.first_name} ${newChat.other_user?.last_name}`,
+              color: 'green',
+              timeout: 2000,
+            });
+          } else {
+            console.log('New chat not found immediately, retrying...');
+            // If chat not found immediately, try again after a short delay
+            setTimeout(async () => {
+              await loadChatRooms();
+              const retryChat = adsyChatRooms.value.find(
+                chat => String(chat.other_user?.id) === userIdStr
+              );
+              if (retryChat) {
+                console.log('Found chat on retry:', retryChat);
+                await selectAdsyChatWithTab(retryChat);
+              } else {
+                console.log('Chat still not found after retry');
+                toast.add({
+                  title: 'Chat Created',
+                  description: 'Chat room created. Please select it from the list.',
+                  color: 'blue',
+                  timeout: 3000,
+                });
+              }
+            }, 1000);
+          }
         }
       }
     }
@@ -2633,7 +2721,7 @@ async function handleChatWithUser(userId) {
     console.error('Error handling chat with user:', error);
     toast.add({
       title: 'Error',
-      description: 'Failed to start chat. Please try again.',
+      description: error.message || 'Failed to start chat. Please try again.',
       color: 'red',
       timeout: 3000,
     });
@@ -3460,16 +3548,32 @@ onMounted(async () => {
   // Handle chat_with query parameter
   const chatWithUserId = route.query.chat_with;
   if (chatWithUserId && user.value?.user?.id) {
-    // Switch to AdsyConnect tab
+    console.log('Chat with user ID:', chatWithUserId);
+    
+    // Switch to AdsyConnect tab first
     activeTab.value = 'adsyconnect';
+    
+    // Ensure we wait for the next tick for UI updates
+    await nextTick();
     
     // Load chat rooms if not already loaded
     if (adsyChatRooms.value.length === 0) {
+      console.log('Loading chat rooms...');
       await loadChatRooms();
     }
     
+    // Add a small delay to ensure everything is loaded
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Try to find existing chat or create new one
+    console.log('Handling chat with user...');
     await handleChatWithUser(chatWithUserId);
+    
+    // Clear the query parameter after a delay to prevent repeated processing
+    // but allow time for the chat to be properly selected
+    setTimeout(() => {
+      window.history.replaceState({}, '', '/inbox');
+    }, 2000);
   }
 
   // Auto-refresh disabled - users can manually refresh by pulling down

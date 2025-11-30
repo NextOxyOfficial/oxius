@@ -205,7 +205,7 @@
             </div>
 
             <div class="mt-4 grid grid-cols-2 gap-2">
-              <div class="flex items-center">
+              <div v-if="product?.category_details?.name" class="flex items-center">
                 <div
                   class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
                 >
@@ -219,7 +219,7 @@
                 </div>
               </div>
 
-              <div class="flex items-center">
+              <div v-if="product?.child_category_details?.name" class="flex items-center">
                 <div
                   class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
                 >
@@ -235,7 +235,7 @@
                 </div>
               </div>
 
-              <div class="flex items-center">
+              <div v-if="product?.condition" class="flex items-center">
                 <div
                   class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
                 >
@@ -258,11 +258,7 @@
                 <div>
                   <div class="text-sm font-medium text-gray-600">Location</div>
                   <div class="text-sm text-gray-800">
-                    {{
-                      product?.division && product?.district && product?.area
-                        ? `${product?.division}, ${product?.district}, ${product?.area}`
-                        : `All Over Bagnladesh`
-                    }}
+                    {{ locationDisplay }}
                   </div>
                 </div>
               </div>
@@ -384,22 +380,16 @@
 
               <div class="my-6 border-t border-gray-100"></div>
 
-              <div>
+              <!-- Item/Property Address - Only show if there's address info -->
+              <div v-if="hasAddressInfo">
                 <h3
                   class="text-base font-semibold mb-3 text-gray-800 flex items-center"
                 >
                   <MapPin class="h-4 w-4 mr-2 text-emerald-600" />
                   Item/Property Address
                 </h3>
-                <div
-                  v-if="product?.division && product?.district && product?.area"
-                  class="text-sm sm:px-6 text-gray-800"
-                >
-                  {{
-                    product?.division && product?.district && product?.area
-                      ? `${product?.detailed_address}`
-                      : `All Over Bagnladesh`
-                  }}
+                <div class="text-sm sm:px-6 text-gray-800">
+                  {{ formattedAddress }}
                 </div>
               </div>
             </div>
@@ -503,7 +493,7 @@
                       </div>
                     </div>
                   </div>
-                  <p class="text-sm text-gray-600">
+                  <p v-if="product.user_details?.date_joined" class="text-sm text-gray-600">
                     Member since
                     {{ formatDate(product.user_details.date_joined) }}
                   </p>
@@ -514,11 +504,11 @@
                 <div class="flex justify-between text-sm">
                   <span class="text-gray-600">Total Listings</span>
                   <span class="font-medium text-gray-800">{{
-                    product.user_details?.sale_post_count
+                    product.user_details?.sale_post_count || 0
                   }}</span>
                 </div>
 
-                <div class="flex justify-between items-center text-sm">
+                <div v-if="product?.user_details?.phone" class="flex justify-between items-center text-sm">
                   <span class="text-gray-600">Phone</span>
                   <div class="flex items-center">
                     <span class="font-medium mr-2 text-gray-800">
@@ -870,7 +860,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed, watch } from "vue";
 import SaleSearchBar from "~/components/sale/SaleSearchBar.vue";
 import {
   Calendar,
@@ -963,20 +953,74 @@ watch(
 
 // Format date
 const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  }).format(date);
+  if (!dateString) return 'N/A';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'N/A';
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
+  } catch (e) {
+    return 'N/A';
+  }
 };
 
 // Mask phone number
 const maskPhoneNumber = (phone) => {
+  if (!phone) return 'Not provided';
   return "XXXXXXX" + phone?.slice(-3);
 };
+
+// Computed property to check if address info exists
+const hasAddressInfo = computed(() => {
+  const p = product.value;
+  return (
+    (p?.detailed_address && p.detailed_address.trim() !== '') ||
+    (p?.division && p?.district) ||
+    (p?.area)
+  );
+});
+
+// Computed property for formatted address
+const formattedAddress = computed(() => {
+  const p = product.value;
+  
+  // If detailed_address exists and is not empty, use it
+  if (p?.detailed_address && p.detailed_address.trim() !== '') {
+    return p.detailed_address;
+  }
+  
+  // Build address from components
+  const parts = [];
+  if (p?.area) parts.push(p.area);
+  if (p?.district) parts.push(p.district);
+  if (p?.division) parts.push(p.division);
+  
+  if (parts.length > 0) {
+    return parts.join(', ');
+  }
+  
+  return 'Location not specified';
+});
+
+// Computed property for location display in the grid
+const locationDisplay = computed(() => {
+  const p = product.value;
+  
+  // Build location from division, district, area
+  const parts = [];
+  if (p?.division) parts.push(p.division);
+  if (p?.district) parts.push(p.district);
+  if (p?.area) parts.push(p.area);
+  
+  if (parts.length > 0) {
+    return parts.join(', ');
+  }
+  
+  return 'All Over Bangladesh';
+});
 
 // Image navigation
 const nextImage = () => {
