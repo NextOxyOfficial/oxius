@@ -1,37 +1,17 @@
 /**
  * Composable for handling static asset paths
- * Works in both development and production environments
+ * Uses /static/frontend/ prefix which works in both dev and production
+ * (Nuxt's nitro config serves public folder at /static/frontend/ as well)
  */
 export const useStaticAssets = () => {
-  const config = useRuntimeConfig();
-  
-  // Check if we're in production
-  const isProduction = computed(() => {
-    return config.public.baseURL?.includes('adsyclub.com');
-  });
-  
-  // Get the correct path for static assets
-  const getAssetPath = (path) => {
-    // Remove leading slash if present
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    
-    // In production, use /static/frontend/ prefix
-    // In development, use root path
-    if (isProduction.value) {
-      return `/static/frontend/${cleanPath}`;
-    }
-    return `/${cleanPath}`;
-  };
-  
-  // Common asset paths
-  const chatIconPath = computed(() => getAssetPath('images/chat_icon.png'));
-  const placeholderPath = computed(() => getAssetPath('images/placeholder.jpg'));
-  const faviconPath = computed(() => getAssetPath('favicon.png'));
-  const logoPath = computed(() => getAssetPath('images/logo.png'));
+  // Use /static/frontend/ prefix consistently - works in both environments
+  // because nitro.publicAssets is configured to serve public folder at this path
+  const chatIconPath = '/static/frontend/images/chat_icon.png';
+  const placeholderPath = '/static/frontend/images/placeholder.jpg';
+  const faviconPath = '/static/frontend/favicon.png';
+  const logoPath = '/static/frontend/images/logo.png';
   
   return {
-    isProduction,
-    getAssetPath,
     chatIconPath,
     placeholderPath,
     faviconPath,
