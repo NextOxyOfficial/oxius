@@ -8,7 +8,7 @@
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <img 
-                src="/static/frontend/images/chat_icon.png" 
+                src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
                 alt="AdsyConnect"
                 class="w-8 h-8"
                 @error="handleImageError"
@@ -56,7 +56,7 @@
               ]"
             >
               <img 
-                src="/static/frontend/images/chat_icon.png" 
+                src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
                 alt="AdsyConnect"
                 class="w-4 h-4"
               />
@@ -498,7 +498,7 @@
                       class="w-full flex items-center justify-center space-x-2 py-3 hover:bg-blue-50/50 rounded-lg transition-colors duration-200"
                     >
                       <img 
-                        src="/static/frontend/images/chat_icon.png" 
+                        src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
                         alt="Chat"
                         class="size-7"
                       />
@@ -1654,7 +1654,7 @@
                     <div class="flex items-center space-x-3 mb-4">
                       <div class="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
                         <img 
-                          src="/static/frontend/images/chat_icon.png" 
+                          src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
                           alt="Chat"
                           class="w-6 h-6 brightness-0 invert"
                         />

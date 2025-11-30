@@ -178,7 +178,7 @@
                     @click="openChat(order)"
                     class="relative flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
                   >
-                    <img src="/static/frontend/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
+                    <img src="https://adsyclub.com/static/frontend/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
                     <span>Chat</span>
                     <span
                       v-if="order.unreadMessages && order.unreadMessages > 0"
