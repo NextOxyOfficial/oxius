@@ -41,7 +41,7 @@
 
         <!-- Mobile View - 2x2 Grid -->
         <div class="sm:hidden px-4 py-3">
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-1">
             <button
               v-for="tab in tabs"
               :key="tab.id"
@@ -63,13 +63,12 @@
       </div>
 
       <!-- Tab Content -->
-      <div class="sm:p-6 p-1">
+      <div class="sm:px-6 p-2">
         <!-- All Gigs Tab -->
         <div v-if="activeTab === 'all-gigs'">
           <!-- Filters and Search Bar -->
           <div class="mb-6">
-            <!-- Desktop Layout -->
-            <div class="hidden sm:flex sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center justify-between gap-3">
               <!-- Search Bar -->
               <div class="flex-1 max-w-md">
                 <div class="relative">
@@ -78,38 +77,77 @@
                     v-model="searchQuery"
                     type="text"
                     placeholder="Search gigs..."
-                    class="w-full pl-10 pr-4 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+                    class="w-full h-[34px] pl-10 pr-4 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
                   />
                 </div>
               </div>
               
-              <!-- Filter Buttons -->
-              <div class="flex items-center space-x-3">
-                <select 
-                  v-model="selectedCategory"
-                  class="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                >
-                  <option value="">All Categories</option>
-                  <option value="design">Design & Creative</option>
-                  <option value="development">Programming & Tech</option>
-                  <option value="writing">Writing & Translation</option>
-                  <option value="marketing">Digital Marketing</option>
-                  <option value="business">Business & Consulting</option>
-                </select>
-                
-                <select 
-                  v-model="sortBy"
-                  class="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
-                </select>
+              <!-- Right Side Controls -->
+              <div class="flex items-center space-x-2">
+                <!-- Filter Button with Dropdown -->
+                <div class="relative">
+                  <button
+                    @click="showFilterDropdown = !showFilterDropdown"
+                    class="flex items-center space-x-2 px-3 h-[34px] text-sm border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                    :class="{ 'bg-purple-50 border-purple-300': hasActiveFilters }"
+                  >
+                    <FilterIcon class="h-4 w-4" />
+                    <span class="hidden sm:inline">Filter</span>
+                    <span v-if="activeFilterCount > 0" class="bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {{ activeFilterCount }}
+                    </span>
+                    <ChevronDown class="h-4 w-4" />
+                  </button>
+                  
+                  <!-- Filter Dropdown -->
+                  <div 
+                    v-if="showFilterDropdown"
+                    class="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-4"
+                  >
+                    <!-- Category Filter -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <select 
+                        v-model="selectedCategory"
+                        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                      >
+                        <option value="">All Categories</option>
+                        <option value="design">Design & Creative</option>
+                        <option value="development">Programming & Tech</option>
+                        <option value="writing">Writing & Translation</option>
+                        <option value="marketing">Digital Marketing</option>
+                        <option value="business">Business & Consulting</option>
+                      </select>
+                    </div>
+                    
+                    <!-- Sort By -->
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                      <select 
+                        v-model="sortBy"
+                        class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                      >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Highest Rated</option>
+                      </select>
+                    </div>
+                    
+                    <!-- Clear Filters Button -->
+                    <button
+                      v-if="hasActiveFilters"
+                      @click="clearFilters"
+                      class="w-full py-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                      Clear All Filters
+                    </button>
+                  </div>
+                </div>
                 
                 <!-- View Toggle -->
-                <div class="flex items-center space-x-1 border border-gray-200 rounded-md p-1">
+                <div class="flex items-center border border-gray-200 rounded-md p-1">
                   <button
                     @click="viewMode = 'grid'"
                     :class="[
@@ -131,69 +169,10 @@
                 </div>
               </div>
             </div>
-
-            <!-- Mobile Layout -->
-            <div class="sm:hidden space-y-3">
-              <!-- Filter Buttons First -->
-              <div class="flex items-center space-x-2">
-                <select 
-                  v-model="selectedCategory"
-                  class="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                >
-                  <option value="">All Categories</option>
-                  <option value="design">Design & Creative</option>
-                  <option value="development">Programming & Tech</option>
-                  <option value="writing">Writing & Translation</option>
-                  <option value="marketing">Digital Marketing</option>
-                  <option value="business">Business & Consulting</option>
-                </select>
-                
-                <select 
-                  v-model="sortBy"
-                  class="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
-                </select>
-                
-                <!-- View Toggle Mobile -->
-                <div class="flex items-center border border-gray-200 rounded-md p-1">
-                  <button
-                    @click="viewMode = 'grid'"
-                    :class="[
-                      'p-1 rounded transition-colors',
-                      viewMode === 'grid' ? 'bg-purple-100 text-purple-600' : 'text-gray-400'
-                    ]"
-                  >
-                    <LayoutGrid class="h-4 w-4" />
-                  </button>
-                  <button
-                    @click="viewMode = 'list'"
-                    :class="[
-                      'p-1 rounded transition-colors',
-                      viewMode === 'list' ? 'bg-purple-100 text-purple-600' : 'text-gray-400'
-                    ]"
-                  >
-                    <List class="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Search Bar Below -->
-              <div class="relative">
-                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  v-model="searchQuery"
-                  type="text"
-                  placeholder="Search gigs..."
-                  class="w-full pl-10 pr-4 py-1.5 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
-                />
-              </div>
-            </div>
           </div>
+          
+          <!-- Click outside to close dropdown -->
+          <div v-if="showFilterDropdown" class="fixed inset-0 z-40" @click="showFilterDropdown = false"></div>
 
           <!-- Loading Skeleton -->
           <div v-if="isLoading" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
@@ -405,7 +384,7 @@
 
         <!-- My Gigs Tab -->
         <div v-else-if="activeTab === 'my-gigs'">
-          <MyGigs :gigs="gigs" @switchTab="activeTab = $event" />
+          <MyGigs @switchTab="activeTab = $event" />
         </div>
 
         <!-- Order Received Tab -->
@@ -429,7 +408,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
-import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User, Package, LayoutGrid, List, Eye } from "lucide-vue-next";
+import { Star, Plus, Search, Heart, Briefcase, ShoppingCart, User, Package, LayoutGrid, List, Eye, Filter as FilterIcon, ChevronDown } from "lucide-vue-next";
 import MyOrders from "~/components/business-network/MyOrders.vue";
 import CreateGig from "~/components/business-network/CreateGig.vue";
 import MyGigs from "~/components/business-network/MyGigs.vue";
@@ -499,6 +478,7 @@ const searchQuery = ref("");
 const selectedCategory = ref("");
 const sortBy = ref("newest");
 const viewMode = ref("grid");
+const showFilterDropdown = ref(false);
 
 // Gigs data from API
 const gigs = ref([]);
@@ -591,6 +571,17 @@ watch(searchQuery, () => {
 // Computed properties - now just returns gigs since filtering is done on API
 const filteredGigs = computed(() => {
   return gigs.value;
+});
+
+const hasActiveFilters = computed(() => {
+  return selectedCategory.value || sortBy.value !== 'newest';
+});
+
+const activeFilterCount = computed(() => {
+  let count = 0;
+  if (selectedCategory.value) count++;
+  if (sortBy.value !== 'newest') count++;
+  return count;
 });
 
 // My gigs computed property - filter by current user
@@ -699,6 +690,7 @@ const clearFilters = () => {
   searchQuery.value = "";
   selectedCategory.value = "";
   sortBy.value = "newest";
+  showFilterDropdown.value = false;
   fetchGigs();
 };
 
@@ -833,5 +825,15 @@ body {
 
 .heart-animation:hover {
   transform: scale(1.1);
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>

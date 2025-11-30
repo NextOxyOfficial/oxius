@@ -112,15 +112,39 @@ class GigDeleteView(generics.DestroyAPIView):
 
 
 class MyGigsView(generics.ListAPIView):
-    """List current user's gigs"""
+    """List current user's gigs with filtering and search"""
     serializer_class = GigSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = GigPagination
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['title', 'description']
+    ordering_fields = ['created_at', 'price', 'views_count', 'orders_count']
+    ordering = ['-created_at']
     
     def get_queryset(self):
-        return Gig.objects.filter(
+        queryset = Gig.objects.filter(
             user=self.request.user
         ).exclude(status='deleted').select_related('user')
+        
+        # Filter by category
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+        
+        # Filter by status
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Filter by price range
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+        
+        return queryset
 
 
 @api_view(['POST'])

@@ -1,34 +1,171 @@
 <template>
   <div>
-    <!-- View Toggle and Stats Header -->
-    <div v-if="myGigs.length > 0" class="flex items-center justify-between mb-4">
-      <p class="text-sm text-gray-600">{{ myGigs.length }} gig{{ myGigs.length !== 1 ? 's' : '' }} found</p>
-      <div class="flex items-center space-x-2">
-        <button
-          @click="viewMode = 'grid'"
-          :class="[
-            'p-2 rounded-md transition-colors',
-            viewMode === 'grid' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-          ]"
-        >
-          <LayoutGrid class="h-4 w-4" />
-        </button>
-        <button
-          @click="viewMode = 'list'"
-          :class="[
-            'p-2 rounded-md transition-colors',
-            viewMode === 'list' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
-          ]"
-        >
-          <List class="h-4 w-4" />
-        </button>
+    <!-- Filters and Search Bar -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between gap-3">
+        <!-- Search Bar -->
+        <div class="flex-1 max-w-md">
+          <div class="relative">
+            <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search my gigs..."
+              class="w-full h-[34px] pl-10 pr-4 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+            />
+          </div>
+        </div>
+        
+        <!-- Right Side Controls -->
+        <div class="flex items-center space-x-2">
+          <!-- Filter Button with Dropdown -->
+          <div class="relative">
+            <button
+              @click="showFilterDropdown = !showFilterDropdown"
+              class="flex items-center space-x-2 px-3 h-[34px] text-sm border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+              :class="{ 'bg-purple-50 border-purple-300': hasActiveFilters }"
+            >
+              <Filter class="h-4 w-4" />
+              <span class="hidden sm:inline">Filter</span>
+              <span v-if="activeFilterCount > 0" class="bg-purple-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {{ activeFilterCount }}
+              </span>
+              <ChevronDown class="h-4 w-4" />
+            </button>
+            
+            <!-- Filter Dropdown -->
+            <div 
+              v-if="showFilterDropdown"
+              class="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50 p-4 space-y-4"
+            >
+              <!-- Category Filter -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select 
+                  v-model="selectedCategory"
+                  class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="">All Categories</option>
+                  <option value="design">Design & Creative</option>
+                  <option value="development">Programming & Tech</option>
+                  <option value="writing">Writing & Translation</option>
+                  <option value="marketing">Digital Marketing</option>
+                  <option value="business">Business & Consulting</option>
+                </select>
+              </div>
+              
+              <!-- Status Filter -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select 
+                  v-model="selectedStatus"
+                  class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                  <option value="draft">Draft</option>
+                  <option value="deleted">Deleted</option>
+                </select>
+              </div>
+              
+              <!-- Sort By -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                <select 
+                  v-model="sortBy"
+                  class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                >
+                  <option value="newest">Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="most-views">Most Views</option>
+                  <option value="most-orders">Most Orders</option>
+                </select>
+              </div>
+              
+              <!-- Clear Filters Button -->
+              <button
+                v-if="hasActiveFilters"
+                @click="clearFilters"
+                class="w-full py-2 text-sm text-purple-600 hover:text-purple-700 font-medium"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+          
+          <!-- View Toggle -->
+          <div class="flex items-center border border-gray-200 rounded-md p-1">
+            <button
+              @click="viewMode = 'grid'"
+              :class="[
+                'p-1.5 rounded transition-colors',
+                viewMode === 'grid' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600'
+              ]"
+            >
+              <LayoutGrid class="h-4 w-4" />
+            </button>
+            <button
+              @click="viewMode = 'list'"
+              :class="[
+                'p-1.5 rounded transition-colors',
+                viewMode === 'list' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:text-gray-600'
+              ]"
+            >
+              <List class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Click outside to close dropdown -->
+    <div v-if="showFilterDropdown" class="fixed inset-0 z-40" @click="showFilterDropdown = false"></div>
+
+    <!-- Loading Skeleton -->
+    <div v-if="isLoading" class="grid grid-cols-2 gap-2">
+      <div
+        v-for="n in 4"
+        :key="n"
+        class="bg-white border border-gray-100 rounded-lg overflow-hidden animate-pulse"
+      >
+        <div class="h-48 bg-gray-200"></div>
+        <div class="p-4">
+          <div class="flex items-center mb-3">
+            <div class="h-8 w-8 rounded-full bg-gray-200"></div>
+            <div class="ml-2 space-y-1">
+              <div class="h-3 w-20 bg-gray-200 rounded"></div>
+              <div class="h-2 w-16 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+          <div class="h-4 bg-gray-200 rounded mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+          <div class="flex justify-between">
+            <div class="h-3 w-16 bg-gray-200 rounded"></div>
+            <div class="h-5 w-12 bg-gray-200 rounded"></div>
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Results Header -->
+    <div v-if="!isLoading && filteredMyGigs.length > 0" class="flex items-center justify-between mb-4">
+      <p class="text-sm text-gray-600">{{ filteredMyGigs.length }} gig{{ filteredMyGigs.length !== 1 ? 's' : '' }} found</p>
+      <button
+        v-if="hasActiveFilters"
+        @click="clearFilters"
+        class="text-sm text-purple-600 hover:text-purple-700 font-medium"
+      >
+        Clear Filters
+      </button>
+    </div>
+
     <!-- Grid View -->
-    <div v-if="myGigs.length > 0 && viewMode === 'grid'" class="grid grid-cols-2 gap-2">
+    <div v-if="!isLoading && filteredMyGigs.length > 0 && viewMode === 'grid'" class="grid grid-cols-2 gap-2">
       <div
-        v-for="gig in myGigs"
+        v-for="gig in filteredMyGigs"
         :key="gig.id"
         class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-sm transition-all duration-200 cursor-pointer group"
         @click="openGigDetails(gig)"
@@ -104,9 +241,9 @@
     </div>
 
     <!-- List View -->
-    <div v-if="myGigs.length > 0 && viewMode === 'list'" class="space-y-3">
+    <div v-if="!isLoading && filteredMyGigs.length > 0 && viewMode === 'list'" class="space-y-3">
       <div
-        v-for="gig in myGigs"
+        v-for="gig in filteredMyGigs"
         :key="gig.id"
         class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-sm transition-all duration-200 cursor-pointer group"
         @click="openGigDetails(gig)"
@@ -180,7 +317,7 @@
     </div>
 
     <!-- Empty State for My Gigs -->
-    <div v-if="myGigs.length === 0" class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
+    <div v-if="!isLoading && myGigs.length === 0" class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
       <div class="text-center">
         <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Briefcase class="h-8 w-8 text-purple-600" />
@@ -200,37 +337,129 @@
 </template>
 
 <script setup>
-import { Star, Heart, Briefcase, Settings, LayoutGrid, List, Eye, ShoppingCart, Plus } from "lucide-vue-next";
-import { ref, computed } from "vue";
-
-// Props
-const props = defineProps({
-  gigs: {
-    type: Array,
-    required: true
-  }
-});
+import { Star, Heart, Briefcase, Settings, LayoutGrid, List, Eye, ShoppingCart, Plus, Search, Filter, ChevronDown } from "lucide-vue-next";
+import { ref, computed, watch, onMounted } from "vue";
 
 // Emits
 defineEmits(['switchTab']);
 
 // Composables
 const { user } = useAuth();
+const { get } = useApi();
 const toast = useToast();
 
 // State
 const viewMode = ref('grid');
+const searchQuery = ref('');
+const selectedCategory = ref('');
+const selectedStatus = ref('');
+const sortBy = ref('newest');
+const showFilterDropdown = ref(false);
+const isLoading = ref(true);
+const myGigs = ref([]);
 
-// Computed properties
-const myGigs = computed(() => {
-  if (!user.value?.user) return [];
-  
-  // Filter gigs created by current user
-  return props.gigs.filter(gig => 
-    gig.user?.id === user.value.user.id ||
-    gig.user?.name === user.value.user.username || 
-    gig.user?.name === `${user.value.user.first_name} ${user.value.user.last_name}`.trim()
-  );
+// Fetch my gigs from API
+async function fetchMyGigs() {
+  isLoading.value = true;
+  try {
+    const params = new URLSearchParams();
+    
+    // Add category filter
+    if (selectedCategory.value) {
+      params.append('category', selectedCategory.value);
+    }
+    
+    // Add status filter
+    if (selectedStatus.value) {
+      params.append('status', selectedStatus.value);
+    }
+    
+    // Add search
+    if (searchQuery.value) {
+      params.append('search', searchQuery.value);
+    }
+    
+    // Add ordering
+    const orderingMap = {
+      'newest': '-created_at',
+      'oldest': 'created_at',
+      'price-low': 'price',
+      'price-high': '-price',
+      'most-views': '-views_count',
+      'most-orders': '-orders_count'
+    };
+    params.append('ordering', orderingMap[sortBy.value] || '-created_at');
+    
+    const { data, error } = await get(`/workspace/gigs/my/?${params.toString()}`);
+    
+    if (error) {
+      console.error('Error fetching my gigs:', error);
+      myGigs.value = [];
+      return;
+    }
+    
+    const results = data?.results || data || [];
+    myGigs.value = results.map(gig => ({
+      id: gig.id,
+      title: gig.title,
+      description: gig.description,
+      price: parseFloat(gig.price),
+      category: gig.category,
+      status: gig.status || 'active',
+      image: gig.image_url || gig.image || '/images/placeholder-gig.png',
+      user: {
+        id: gig.user?.id,
+        name: gig.user?.name || 'Unknown User',
+        avatar: gig.user?.avatar || '/images/default-avatar.png',
+      },
+      rating: gig.rating || 0,
+      reviews: gig.reviews || 0,
+      views_count: gig.views_count || 0,
+      orders_count: gig.orders_count || 0,
+      created_at: gig.created_at,
+    }));
+  } catch (err) {
+    console.error('Error fetching my gigs:', err);
+    myGigs.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Watch for filter changes and refetch
+watch([selectedCategory, selectedStatus, sortBy], () => {
+  fetchMyGigs();
+});
+
+// Debounced search
+let searchTimeout = null;
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetchMyGigs();
+  }, 300);
+});
+
+// Fetch on mount
+onMounted(() => {
+  fetchMyGigs();
+});
+
+// Computed - just return the fetched gigs since filtering is done on backend
+const filteredMyGigs = computed(() => {
+  return myGigs.value;
+});
+
+const hasActiveFilters = computed(() => {
+  return searchQuery.value || selectedCategory.value || selectedStatus.value || sortBy.value !== 'newest';
+});
+
+const activeFilterCount = computed(() => {
+  let count = 0;
+  if (selectedCategory.value) count++;
+  if (selectedStatus.value) count++;
+  if (sortBy.value !== 'newest') count++;
+  return count;
 });
 
 // Methods
@@ -245,6 +474,15 @@ const openSettings = (gig) => {
     color: "blue",
   });
   // TODO: Open settings modal or navigate to edit page
+};
+
+const clearFilters = () => {
+  searchQuery.value = '';
+  selectedCategory.value = '';
+  selectedStatus.value = '';
+  sortBy.value = 'newest';
+  showFilterDropdown.value = false;
+  fetchMyGigs();
 };
 
 const getCategoryLabel = (category) => {
@@ -297,5 +535,14 @@ const getStatusLabel = (status) => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>

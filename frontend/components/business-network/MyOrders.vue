@@ -1,65 +1,73 @@
 <template>
-  <div class="space-y-6">
-    <!-- Filter Tabs - Professional Design -->
+  <div class="space-y-4 sm:space-y-6">
+    <!-- Filter Tabs - Responsive Horizontal Scroll -->
     <div class="border-b border-gray-200">
-      <!-- Mobile: 2 rows layout -->
-      <div class="grid grid-cols-2 gap-1 sm:hidden">
-        <button
-          v-for="filter in orderFilters"
-          :key="filter.value"
-          @click="activeFilter = filter.value"
-          :class="[
-            'relative px-3 py-3 text-sm font-medium transition-colors border-b-2 text-center',
-            activeFilter === filter.value
-              ? 'text-blue-600 border-blue-600 bg-blue-50'
-              : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
-          ]"
-        >
-          <div class="flex items-center justify-center space-x-1.5">
+      <div class="flex overflow-x-auto scrollbar-hide -mx-1 sm:mx-0">
+        <nav class="flex min-w-full sm:min-w-0">
+          <button
+            v-for="filter in orderFilters"
+            :key="filter.value"
+            @click="activeFilter = filter.value"
+            :class="[
+              'flex-shrink-0 px-3 sm:px-5 py-3 text-xs sm:text-sm font-medium transition-colors border-b-2 whitespace-nowrap flex items-center gap-1.5 sm:gap-2',
+              activeFilter === filter.value
+                ? 'text-purple-600 border-purple-600 bg-purple-50/50'
+                : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+            ]"
+          >
             <span>{{ filter.label }}</span>
-            <span v-if="getFilterCount(filter.value) > 0" class="inline-flex items-center justify-center min-w-[18px] h-4 px-1 bg-gray-500 text-white text-xs font-medium rounded-full">
+            <span 
+              v-if="getFilterCount(filter.value) > 0" 
+              :class="[
+                'inline-flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-4 sm:h-5 px-1 text-xs font-medium rounded-full',
+                activeFilter === filter.value
+                  ? 'bg-purple-100 text-purple-600'
+                  : 'bg-gray-100 text-gray-600'
+              ]"
+            >
               {{ getFilterCount(filter.value) }}
             </span>
-          </div>
-        </button>
+          </button>
+        </nav>
       </div>
-      
-      <!-- Desktop: single row layout -->
-      <div class="hidden sm:flex">
-        <button
-          v-for="filter in orderFilters"
-          :key="filter.value"
-          @click="activeFilter = filter.value"
-          :class="[
-            'relative px-6 py-4 text-sm font-medium transition-colors border-b-2 whitespace-nowrap',
-            activeFilter === filter.value
-              ? 'text-blue-600 border-blue-600 bg-blue-50/30'
-              : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
-          ]"
-        >
-          <div class="flex items-center space-x-2">
-            <span>{{ filter.label }}</span>
-            <span v-if="getFilterCount(filter.value) > 0" class="inline-flex items-center justify-center min-w-[24px] h-6 px-2 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
-              {{ getFilterCount(filter.value) }}
-            </span>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="isLoading" class="space-y-3 sm:space-y-4">
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-5 animate-pulse"
+      >
+        <div class="flex items-start space-x-3">
+          <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-gray-200"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div class="h-3 bg-gray-200 rounded w-1/4"></div>
           </div>
-        </button>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-100">
+          <div class="h-8 bg-gray-200 rounded"></div>
+          <div class="h-8 bg-gray-200 rounded"></div>
+          <div class="h-8 bg-gray-200 rounded"></div>
+        </div>
       </div>
     </div>
 
     <!-- Orders List -->
-    <div v-if="filteredOrders.length > 0" class="space-y-4">
+    <div v-else-if="filteredOrders.length > 0" class="space-y-3 sm:space-y-4">
       <div
         v-for="order in filteredOrders"
         :key="order.id"
-        class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-sm transition-shadow"
+        class="bg-white rounded-lg sm:rounded-xl border border-gray-200 overflow-hidden hover:shadow-sm transition-shadow"
       >
-        <div class="p-4 sm:p-6">
-          <!-- Order Header -->
-          <div class="flex items-start justify-between mb-4">
-            <div class="flex items-start space-x-4">
+        <div class="p-3 sm:p-5">
+          <!-- Order Header - Mobile Optimized -->
+          <div class="flex flex-col sm:flex-row sm:items-start gap-3 mb-3 sm:mb-4">
+            <div class="flex items-start space-x-3">
               <!-- Gig Image -->
-              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                 <img
                   :src="order.gig.image"
                   :alt="order.gig.title"
@@ -69,58 +77,57 @@
               
               <!-- Order Info -->
               <div class="flex-1 min-w-0">
-                <h3 class="text-base font-semibold text-gray-900 mb-1 line-clamp-2">
-                  {{ order.gig.title }}
-                </h3>
-                <div class="flex items-center justify-between mb-2">
-                  <p class="text-sm text-gray-600">
-                    from {{ order.buyer.name }}
-                  </p>
-                  <!-- Order Status Badge -->
-                  <div :class="getStatusClass(order.status)" class="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap">
+                <div class="flex items-start justify-between gap-2">
+                  <h3 class="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2">
+                    {{ order.gig.title }}
+                  </h3>
+                  <!-- Status Badge - Mobile inline -->
+                  <div :class="getStatusClass(order.status)" class="flex-shrink-0 px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium whitespace-nowrap">
                     {{ getStatusLabel(order.status) }}
                   </div>
                 </div>
-                <div class="flex items-center space-x-4 text-xs text-gray-500">
-                  <span>Order #{{ order.id }}</span>
-                  <span>•</span>
+                <p class="text-xs sm:text-sm text-gray-600 mt-1">
+                  from {{ order.buyer.name }}
+                </p>
+                <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500 mt-1">
+                  <span>Order #{{ String(order.id).slice(0, 8) }}</span>
+                  <span class="hidden sm:inline">•</span>
                   <span>{{ formatDate(order.createdAt) }}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Order Details Grid -->
-          <div class="grid grid-cols-3 gap-4 py-4 border-t border-gray-100">
-            <div>
-              <p class="text-xs text-gray-500 mb-1">Amount</p>
-              <p class="font-semibold text-gray-900">${{ order.amount }}</p>
+          <!-- Order Details Grid - Responsive -->
+          <div class="grid grid-cols-3 gap-2 sm:gap-4 py-3 border-t border-gray-100">
+            <div class="text-center sm:text-left">
+              <p class="text-xs text-gray-500 mb-0.5">Amount</p>
+              <p class="text-sm sm:text-base font-semibold text-gray-900">${{ order.amount }}</p>
             </div>
-            <div>
-              <p class="text-xs text-gray-500 mb-1">Delivery</p>
-              <p class="font-medium text-gray-700">{{ formatDeliveryDate(order.deliveryDate) }}</p>
+            <div class="text-center sm:text-left">
+              <p class="text-xs text-gray-500 mb-0.5">Delivery</p>
+              <p class="text-sm sm:text-base font-medium text-gray-700">{{ formatDeliveryDate(order.deliveryDate) }}</p>
             </div>
-            <div>
-              <p class="text-xs text-gray-500 mb-1">Revisions</p>
-              <p class="font-medium text-gray-700">{{ order.revisions || 'N/A' }}</p>
+            <div class="text-center sm:text-left">
+              <p class="text-xs text-gray-500 mb-0.5">Revisions</p>
+              <p class="text-sm sm:text-base font-medium text-gray-700">{{ order.revisions || 'N/A' }}</p>
             </div>
           </div>
 
-          <!-- Action Buttons -->
-          <div v-if="order.status !== 'cancelled'" class="flex flex-row gap-2 pt-4 border-t border-gray-100">
+          <!-- Action Buttons - Responsive -->
+          <div v-if="order.status !== 'cancelled'" class="flex flex-row gap-2 pt-3 border-t border-gray-100">
             <button
               @click="openChat(order)"
               :class="[
-                'relative px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium flex items-center justify-center gap-1',
+                'relative px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs font-medium flex items-center justify-center gap-1',
                 order.status === 'pending' || order.status === 'in_progress' ? 'flex-1' : 'flex-none'
               ]"
             >
-              <MessageCircle class="h-3 w-3" />
-              Chat
-              <!-- Notification Badge -->
+              <MessageCircle class="h-3.5 w-3.5" />
+              <span class="hidden xs:inline">Chat</span>
               <span
                 v-if="order.unreadMessages && order.unreadMessages > 0"
-                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center min-w-[16px]"
+                class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center"
               >
                 {{ order.unreadMessages > 9 ? '9+' : order.unreadMessages }}
               </span>
@@ -155,22 +162,25 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="text-center py-16">
-      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <ShoppingCart class="h-8 w-8 text-blue-600" />
+    <div v-else-if="!isLoading" class="flex flex-col items-center justify-center py-12 sm:py-16 bg-gray-50/50 rounded-lg sm:rounded-xl border border-dashed border-gray-200">
+      <div class="text-center px-4">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+          <ShoppingCart class="h-7 w-7 sm:h-8 sm:w-8 text-purple-600" />
+        </div>
+        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1 sm:mb-2">
+          No {{ getFilterLabel(activeFilter) }} Orders
+        </h3>
+        <p class="text-sm sm:text-base text-gray-600 mb-4 max-w-xs mx-auto">
+          You don't have any {{ getFilterLabel(activeFilter).toLowerCase() }} orders at the moment.
+        </p>
+        <button
+          @click="$emit('switchTab', 'all-gigs')"
+          class="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors text-sm sm:text-base font-medium"
+        >
+          <ShoppingCart class="h-4 w-4 mr-2" />
+          Browse Gigs
+        </button>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">
-        No {{ getFilterLabel(activeFilter) }} Orders
-      </h3>
-      <p class="text-gray-600 mb-4">
-        You don't have any {{ getFilterLabel(activeFilter).toLowerCase() }} orders at the moment.
-      </p>
-      <button
-        @click="$emit('switchTab', 'all-gigs')"
-        class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
-      >
-        Browse Gigs
-      </button>
     </div>
 
   </div>
@@ -356,3 +366,22 @@ const deliverOrder = (order) => {
   });
 };
 </script>
+
+<style scoped>
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

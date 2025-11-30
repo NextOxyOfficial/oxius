@@ -1,41 +1,36 @@
 <template>
-  <div class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-lg font-semibold text-gray-900">Gigs You've Ordered</h2>
-        <p class="text-sm text-gray-600 mt-1">Track and manage your purchased gigs</p>
-      </div>
-    </div>
-
-    <!-- Status Filter Tabs -->
-    <div class="border-b border-gray-100">
-      <nav class="flex space-x-8" aria-label="Tabs">
-        <button
-          v-for="status in statusTabs"
-          :key="status.id"
-          @click="activeStatus = status.id"
-          :class="[
-            'py-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center',
-            activeStatus === status.id
-              ? 'border-purple-500 text-purple-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          ]"
-        >
-          {{ status.name }}
-          <span
-            v-if="status.count > 0"
+  <div class="space-y-4 sm:space-y-6">
+    <!-- Status Filter Tabs - Responsive -->
+    <div class="border-b border-gray-200">
+      <!-- Mobile: Horizontal scroll -->
+      <div class="flex overflow-x-auto scrollbar-hide -mx-1 sm:mx-0">
+        <nav class="flex min-w-full sm:min-w-0" aria-label="Tabs">
+          <button
+            v-for="status in statusTabs"
+            :key="status.id"
+            @click="activeStatus = status.id"
             :class="[
-              'ml-2 inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-medium',
+              'flex-shrink-0 py-3 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors flex items-center whitespace-nowrap',
               activeStatus === status.id
-                ? 'bg-purple-100 text-purple-600'
-                : 'bg-gray-100 text-gray-500'
+                ? 'border-purple-500 text-purple-600 bg-purple-50/50'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             ]"
           >
-            {{ status.count }}
-          </span>
-        </button>
-      </nav>
+            {{ status.name }}
+            <span
+              v-if="status.count > 0"
+              :class="[
+                'ml-1.5 sm:ml-2 inline-flex items-center justify-center min-w-[18px] sm:min-w-[20px] h-4 sm:h-5 px-1 rounded-full text-xs font-medium',
+                activeStatus === status.id
+                  ? 'bg-purple-100 text-purple-600'
+                  : 'bg-gray-100 text-gray-500'
+              ]"
+            >
+              {{ status.count }}
+            </span>
+          </button>
+        </nav>
+      </div>
     </div>
 
     <!-- Orders List -->
@@ -59,18 +54,18 @@
       </div>
 
       <!-- Orders Grid -->
-      <div v-else-if="filteredOrders.length > 0" class="grid gap-4">
+      <div v-else-if="filteredOrders.length > 0" class="grid gap-3 sm:gap-4">
         <div
           v-for="order in filteredOrders"
           :key="order.id"
-          class="bg-white border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200"
+          class="bg-white border border-gray-200 rounded-lg sm:rounded-xl hover:shadow-md transition-all duration-200"
         >
-          <div class="p-6">
-            <!-- Order Header -->
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-start space-x-4">
+          <div class="p-4 sm:p-6">
+            <!-- Order Header - Mobile Optimized -->
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
+              <div class="flex items-start space-x-3 sm:space-x-4">
                 <!-- Gig Image -->
-                <div class="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                   <img
                     :src="order.gig.image"
                     :alt="order.gig.title"
@@ -79,32 +74,33 @@
                 </div>
                 
                 <!-- Order Info -->
-                <div class="flex-1">
-                  <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-sm sm:text-base font-semibold text-gray-900 mb-1 sm:mb-2 line-clamp-2">
                     {{ order.gig.title }}
                   </h3>
                   
-                  <div class="flex items-center space-x-2 mb-2">
+                  <div class="flex items-center space-x-2 mb-1 sm:mb-2">
                     <img
                       :src="order.seller.avatar"
                       :alt="order.seller.name"
-                      class="h-6 w-6 rounded-full object-cover"
+                      class="h-5 w-5 sm:h-6 sm:w-6 rounded-full object-cover"
                     />
-                    <span class="text-sm text-gray-600">by {{ order.seller.name }}</span>
+                    <span class="text-xs sm:text-sm text-gray-600 truncate">by {{ order.seller.name }}</span>
                   </div>
                   
-                  <div class="flex items-center space-x-4 text-sm text-gray-500">
+                  <div class="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-500">
                     <span>Order #{{ order.orderNumber }}</span>
+                    <span class="hidden sm:inline">•</span>
                     <span>{{ formatDate(order.orderDate) }}</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Status Badge -->
-              <div class="flex-shrink-0">
+              <!-- Status Badge - Mobile: Below header, Desktop: Right side -->
+              <div class="flex-shrink-0 self-start sm:self-auto">
                 <span
                   :class="[
-                    'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                    'inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium',
                     getStatusBadgeClass(order.status)
                   ]"
                 >
@@ -113,36 +109,36 @@
               </div>
             </div>
 
-            <!-- Order Details -->
-            <div class="border-t border-gray-100 pt-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-6 text-sm">
-                  <div>
-                    <span class="text-gray-500">Price:</span>
-                    <span class="font-semibold text-gray-900 ml-1">${{ order.amount }}</span>
+            <!-- Order Details - Responsive Grid -->
+            <div class="border-t border-gray-100 pt-3 sm:pt-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <!-- Order Stats -->
+                <div class="grid grid-cols-3 sm:flex sm:items-center gap-2 sm:gap-6 text-xs sm:text-sm">
+                  <div class="text-center sm:text-left">
+                    <span class="text-gray-500 block sm:inline">Price</span>
+                    <span class="font-semibold text-gray-900 sm:ml-1">${{ order.amount }}</span>
                   </div>
-                  <div v-if="order.deliveryDate">
-                    <span class="text-gray-500">Delivery:</span>
-                    <span class="font-semibold text-gray-900 ml-1">{{ formatDate(order.deliveryDate) }}</span>
+                  <div v-if="order.deliveryDate" class="text-center sm:text-left">
+                    <span class="text-gray-500 block sm:inline">Delivery</span>
+                    <span class="font-semibold text-gray-900 sm:ml-1">{{ formatDate(order.deliveryDate) }}</span>
                   </div>
-                  <div v-if="order.status === 'in_progress' && order.timeRemaining">
-                    <span class="text-gray-500">Time Remaining:</span>
-                    <span class="font-semibold text-orange-600 ml-1">{{ order.timeRemaining }}</span>
+                  <div v-if="order.status === 'in_progress' && order.timeRemaining" class="text-center sm:text-left">
+                    <span class="text-gray-500 block sm:inline">Time Left</span>
+                    <span class="font-semibold text-orange-600 sm:ml-1">{{ order.timeRemaining }}</span>
                   </div>
                 </div>
                 
-                <!-- Action Buttons -->
-                <div class="flex items-center space-x-2">
+                <!-- Action Buttons - Responsive -->
+                <div class="flex items-center justify-end gap-2">
                   <button
                     @click="openChat(order)"
-                    class="relative px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center space-x-2"
+                    class="relative flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
                   >
-                    <MessageCircle class="h-4 w-4" />
+                    <MessageCircle class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>Chat</span>
-                    <!-- Notification Badge -->
                     <span
                       v-if="order.unreadMessages && order.unreadMessages > 0"
-                      class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]"
+                      class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center"
                     >
                       {{ order.unreadMessages > 9 ? '9+' : order.unreadMessages }}
                     </span>
@@ -151,18 +147,18 @@
                   <button
                     v-if="order.status === 'delivered'"
                     @click="leaveReview(order)"
-                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center space-x-2"
+                    class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
                   >
-                    <Star class="h-4 w-4" />
+                    <Star class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>Review</span>
                   </button>
                   
                   <button
                     v-else-if="order.status === 'pending'"
                     @click="cancelOrder(order)"
-                    class="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                    class="flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-xs sm:text-sm font-medium"
                   >
-                    Cancel Order
+                    Cancel
                   </button>
                 </div>
               </div>
@@ -427,5 +423,14 @@ onMounted(() => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 </style>
