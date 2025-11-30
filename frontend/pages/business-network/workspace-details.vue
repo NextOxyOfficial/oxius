@@ -297,7 +297,7 @@
                       @click="handleContact"
                       class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center justify-center gap-2"
                     >
-                      <img src="/images/chat_icon.png" alt="AdsyConnect" class="w-5 h-5" />
+                      <img src="/static/frontend/images/chat_icon.png" alt="AdsyConnect" class="w-5 h-5" />
                       Contact Seller
                     </button>
                   </div>
@@ -768,6 +768,7 @@ import {
 // Page meta
 definePageMeta({
   layout: "adsy-business-network",
+  middleware: "auth",
   title: "Workspace Details - Business Network",
 });
 

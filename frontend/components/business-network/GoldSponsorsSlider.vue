@@ -41,15 +41,15 @@
         v-if="isLoading"
         class="flex py-3 gap-3 px-2 overflow-hidden justify-between"
       >
-        <!-- Mobile Skeletons (3) -->
+        <!-- Mobile Skeletons (4) -->
         <div
-          v-for="i in 3"
+          v-for="i in 4"
           :key="i"
           class="flex-shrink-0 animate-pulse md:hidden"
         >
-          <div class="flex flex-col items-center p-2">
+          <div class="flex flex-col items-center p-1.5">
             <div
-              class="size-20 rounded-full bg-amber-100 dark:bg-amber-900/30 mb-2 relative overflow-hidden"
+              class="size-16 rounded-full bg-amber-100 dark:bg-amber-900/30 mb-1.5 relative overflow-hidden"
             >
               <div class="absolute inset-0 golden-border opacity-30"></div>
               <!-- Skeleton badge -->
@@ -101,21 +101,21 @@
         v-else
         class="flex gap-1.5 justify-between md:justify-between overflow-hidden"
       >
-        <!-- Mobile View (3 sponsors) -->
+        <!-- Mobile View (4 sponsors) -->
         <div
-          v-for="(sponsor, index) in sponsors.slice(0, 3)"
+          v-for="(sponsor, index) in sponsors.slice(0, 4)"
           :key="'mobile-' + index"
           class="sponsor-item md:hidden"
           :data-sponsor-id="sponsor.id"
         >
           <div
-            class="block p-2 cursor-pointer"
+            class="block p-1.5 cursor-pointer"
             @click="openSponsorModal(sponsor)"
           >
             <div class="flex flex-col items-center">
               <!-- Profile image with gold border -->
               <div
-                class="relative mb-2 group-hover:scale-105 transition-transform duration-300"
+                class="relative mb-1.5 group-hover:scale-105 transition-transform duration-300"
               >
                 <div class="absolute inset-0 rounded-full golden-border"></div>
                 <img
@@ -123,7 +123,7 @@
                     sponsor.image || '/static/frontend/images/placeholder.jpg'
                   "
                   :alt="sponsor.name"
-                  class="size-20 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
+                  class="size-16 rounded-full object-cover border-2 border-white dark:border-slate-700 relative z-10"
                 />
                 <!-- Gold badge -->
                 <div
@@ -134,7 +134,7 @@
               </div>
               <!-- Name with hover underline -->
               <h4
-                class="text-base font-medium text-gray-800 dark:text-gray-200 text-center group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors relative"
+                class="text-sm font-medium text-gray-800 dark:text-gray-200 text-center group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors relative line-clamp-1 max-w-[70px]"
               >
                 {{ sponsor.name }}
                 <span

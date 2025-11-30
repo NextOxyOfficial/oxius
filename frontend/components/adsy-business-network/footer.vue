@@ -75,10 +75,10 @@
             <div class="icon-reflection"></div>
           </div>
           <span
-            v-if="unreadCount > 0"
+            v-if="totalUnreadCount > 0"
             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-pulse z-10"
           >
-            {{ unreadCount > 99 ? "99+" : unreadCount }}
+            {{ totalUnreadCount > 99 ? "99+" : totalUnreadCount }}
           </span>
         </div>
         <span class="font-medium tracking-wide">Notifications</span>
@@ -142,10 +142,11 @@
         <div class="relative">
           <div class="icon-wrapper">
             <div v-if="loadingButtons.has('adsyclub_logged')" class="dotted-spinner green mb-1"></div>
-            <BarChart2
+            <img
               v-else
+              src="/static/frontend/favicon.png"
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-600'"
+              alt="AdsyClub"
             />
             <div v-if="$route.path === '/'" class="icon-gradient-green"></div>
             <div class="icon-reflection"></div>
@@ -266,10 +267,11 @@
         <div class="relative">
           <div class="icon-wrapper">
             <div v-if="loadingButtons.has('adsyclub_guest')" class="dotted-spinner green mb-1"></div>
-            <BarChart2
+            <img
               v-else
+              src="/static/frontend/favicon.png"
               class="h-6 w-6 mb-1 transition-all duration-300 ease-out group-hover:scale-110 drop-shadow-sm"
-              :class="$route.path === '/' ? 'text-green-500' : 'text-gray-600'"
+              alt="AdsyClub"
             />
             <div v-if="$route.path === '/'" class="icon-gradient-green"></div>
             <div class="icon-reflection"></div>
@@ -298,7 +300,7 @@ const { isScrollingDown, isScrollingUp } = useScrollDirection();
 
 const { user } = useAuth();
 const eventBus = useEventBus();
-const { unreadCount, fetchUnreadCount } = useNotifications();
+const { totalUnreadCount, fetchUnreadCount } = useNotifications();
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());

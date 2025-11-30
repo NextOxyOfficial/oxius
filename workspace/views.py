@@ -652,6 +652,33 @@ def get_unread_message_counts(request):
     })
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_messages_as_read(request, order_id):
+    """Mark all messages in an order as read for the current user"""
+    user = request.user
+    
+    try:
+        order = GigOrder.objects.get(id=order_id)
+    except GigOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Check if user is part of this order
+    if order.buyer != user and order.seller != user:
+        return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Mark all messages from the other party as read
+    updated_count = OrderMessage.objects.filter(
+        order=order,
+        is_read=False
+    ).exclude(sender=user).update(is_read=True)
+    
+    return Response({
+        'message': 'Messages marked as read',
+        'count': updated_count
+    })
+
+
 # ============================================
 # Order Status Management API
 # ============================================

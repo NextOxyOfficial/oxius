@@ -178,7 +178,7 @@
                     @click="openChat(order)"
                     class="relative flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
                   >
-                    <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
+                    <img src="/static/frontend/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
                     <span>Chat</span>
                     <span
                       v-if="order.unreadMessages && order.unreadMessages > 0"
@@ -280,11 +280,12 @@
     :otherUser="selectedOrder?.seller"
     :currentUserId="user?.user?.id || user?.id"
     @close="selectedOrder = null"
+    @messages-read="handleMessagesRead"
   />
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Star, ShoppingCart, ChevronDown } from 'lucide-vue-next';
 
 // Emit events
@@ -298,6 +299,9 @@ const orderToCancel = ref(null);
 const showStatusDropdown = ref(false);
 const showChatSheet = ref(false);
 const selectedOrder = ref(null);
+
+// Polling interval for unread counts
+let unreadPollingInterval = null;
 
 // Status tabs configuration
 const statusTabs = ref([
@@ -314,6 +318,7 @@ const orders = ref([]);
 const { get, post } = useApi();
 const { user } = useAuth();
 const toast = useToast();
+const { clearWorkspaceOrderCount } = useNotifications();
 
 // Fetch orders from API
 async function fetchOrders() {
@@ -558,15 +563,48 @@ const confirmCancelOrder = async () => {
   }
 };
 
+// Handle messages read event from chat
+const handleMessagesRead = ({ orderId, count }) => {
+  const order = orders.value.find(o => o.id === orderId);
+  if (order) {
+    order.unreadMessages = Math.max(0, order.unreadMessages - count);
+    // Also update global notification count
+    clearWorkspaceOrderCount(orderId, count);
+  }
+};
+
+// Start polling for unread counts
+const startUnreadPolling = () => {
+  if (unreadPollingInterval) clearInterval(unreadPollingInterval);
+  
+  unreadPollingInterval = setInterval(() => {
+    if (!showChatSheet.value) {
+      fetchUnreadCounts();
+    }
+  }, 10000); // Poll every 10 seconds when chat is not open
+};
+
+// Stop polling
+const stopUnreadPolling = () => {
+  if (unreadPollingInterval) {
+    clearInterval(unreadPollingInterval);
+    unreadPollingInterval = null;
+  }
+};
+
 // Lifecycle
 onMounted(() => {
   fetchOrders();
+  startUnreadPolling();
+});
+
+onUnmounted(() => {
+  stopUnreadPolling();
 });
 
 // Watch for user changes
 watch(() => user.value, (newUser) => {
   if (newUser) {
-    console.log('GigOrdered: User changed, refetching orders');
     fetchOrders();
   }
 }, { immediate: false });

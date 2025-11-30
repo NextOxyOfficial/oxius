@@ -86,7 +86,7 @@
             <!-- Empty State -->
             <div v-else-if="messages.length === 0" class="flex flex-col justify-center items-center h-full text-center py-8">
               <img 
-                src="/images/chat_icon.png" 
+                src="/static/frontend/images/chat_icon.png" 
                 alt="Chat"
                 class="w-16 h-16 opacity-30 mb-4"
               />
@@ -399,7 +399,7 @@ const props = defineProps({
   currentUserId: { type: String, default: '' }
 });
 
-const emit = defineEmits(['update:isOpen', 'close']);
+const emit = defineEmits(['update:isOpen', 'close', 'messages-read', 'new-message']);
 
 // Router for navigation
 const router = useRouter();
@@ -635,7 +635,7 @@ const scrollToBottom = (smooth = false) => {
 };
 
 // Load messages
-const loadMessages = async () => {
+const loadMessages = async (markAsRead = true) => {
   if (!props.orderId) return;
   
   isLoadingMessages.value = true;
@@ -643,13 +643,38 @@ const loadMessages = async () => {
     const { data, error } = await get(`/workspace/orders/${props.orderId}/messages/`);
     
     if (data && !error) {
-      messages.value = data.results || data || [];
+      const newMessages = data.results || data || [];
+      
+      // Count unread messages before marking as read
+      const unreadCount = newMessages.filter(m => 
+        !m.is_read && 
+        String(m.sender?.id || m.sender) !== String(props.currentUserId)
+      ).length;
+      
+      messages.value = newMessages;
       scrollToBottom();
+      
+      // Mark messages as read and emit event
+      if (markAsRead && unreadCount > 0) {
+        await markMessagesAsRead();
+        emit('messages-read', { orderId: props.orderId, count: unreadCount });
+      }
     }
   } catch (err) {
     console.error('Error loading messages:', err);
   } finally {
     isLoadingMessages.value = false;
+  }
+};
+
+// Mark messages as read
+const markMessagesAsRead = async () => {
+  if (!props.orderId) return;
+  
+  try {
+    await post(`/workspace/orders/${props.orderId}/messages/mark-read/`);
+  } catch (err) {
+    // Silently handle - not critical
   }
 };
 
@@ -742,16 +767,30 @@ const startPolling = () => {
         const { data, error } = await get(`/workspace/orders/${props.orderId}/messages/`);
         if (data && !error) {
           const newMessages = data.results || data || [];
-          if (newMessages.length > messages.value.length) {
+          const currentCount = messages.value.filter(m => !String(m.id).startsWith('temp-')).length;
+          
+          if (newMessages.length > currentCount) {
+            // Check for new messages from other user
+            const newFromOther = newMessages.filter(m => 
+              !messages.value.find(existing => existing.id === m.id) &&
+              String(m.sender?.id || m.sender) !== String(props.currentUserId)
+            );
+            
             messages.value = newMessages;
-            scrollToBottom();
+            scrollToBottom(true);
+            
+            // Mark new messages as read since chat is open
+            if (newFromOther.length > 0) {
+              await markMessagesAsRead();
+              emit('messages-read', { orderId: props.orderId, count: newFromOther.length });
+            }
           }
         }
       } catch (err) {
         // Silently handle polling errors
       }
     }
-  }, 5000);
+  }, 3000); // Poll every 3 seconds for more responsive chat
 };
 
 // Stop polling

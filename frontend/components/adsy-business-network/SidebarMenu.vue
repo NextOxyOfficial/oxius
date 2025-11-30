@@ -155,7 +155,7 @@ const emit = defineEmits(['menu-click']);
 const route = useRoute();
 const router = useRouter();
 const { user } = useAuth();
-const { unreadCount } = useNotifications();
+const { totalUnreadCount } = useNotifications();
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());
@@ -203,7 +203,7 @@ const mainMenu = computed(() => [
     label: "Notifications",
     path: "/business-network/notifications",
     icon: Bell,
-    badge: unreadCount.value,
+    badge: totalUnreadCount.value,
     active: false,
   },
   {

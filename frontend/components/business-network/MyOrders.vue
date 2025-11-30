@@ -171,7 +171,7 @@
                 order.status === 'pending' || order.status === 'in_progress' ? 'flex-1 sm:flex-none' : 'flex-none'
               ]"
             >
-              <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
+              <img src="/static/frontend/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Chat</span>
               <span
                 v-if="order.unreadMessages && order.unreadMessages > 0"
@@ -244,6 +244,7 @@
     :otherUser="selectedOrder?.buyer"
     :currentUserId="currentUser?.user?.id || currentUser?.id"
     @close="selectedOrder = null"
+    @messages-read="handleMessagesRead"
   />
 
   <!-- Deliver Order Confirmation Modal -->
@@ -501,7 +502,10 @@
 
 <script setup>
 import { ShoppingCart } from 'lucide-vue-next';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+// Polling interval for unread counts
+let unreadPollingInterval = null;
 
 // Emit events to parent component
 const emit = defineEmits(['switchTab']);
@@ -510,6 +514,7 @@ const emit = defineEmits(['switchTab']);
 const toast = useToast();
 const { get, post } = useApi();
 const { user: currentUser } = useAuth();
+const { clearWorkspaceOrderCount } = useNotifications();
 
 // Reactive data
 const activeFilter = ref('all');
@@ -621,8 +626,42 @@ const getProgressFromStatus = (status) => {
   return progressMap[status] || 0;
 };
 
+// Handle messages read event from chat
+const handleMessagesRead = ({ orderId, count }) => {
+  const order = orders.value.find(o => o.id === orderId);
+  if (order) {
+    order.unreadMessages = Math.max(0, order.unreadMessages - count);
+    // Also update global notification count
+    clearWorkspaceOrderCount(orderId, count);
+  }
+};
+
+// Start polling for unread counts
+const startUnreadPolling = () => {
+  if (unreadPollingInterval) clearInterval(unreadPollingInterval);
+  
+  unreadPollingInterval = setInterval(() => {
+    if (!showChatSheet.value) {
+      fetchUnreadCounts();
+    }
+  }, 10000); // Poll every 10 seconds when chat is not open
+};
+
+// Stop polling
+const stopUnreadPolling = () => {
+  if (unreadPollingInterval) {
+    clearInterval(unreadPollingInterval);
+    unreadPollingInterval = null;
+  }
+};
+
 onMounted(() => {
   fetchOrders();
+  startUnreadPolling();
+});
+
+onUnmounted(() => {
+  stopUnreadPolling();
 });
 
 // Computed

@@ -602,7 +602,7 @@ const displayProduct = ref(null);
 const allProducts = ref([]); // Store all fetched products
 const isCreateWorkspaceModalOpen = ref(false);
 const newWorkspaceName = ref(""); // Store new workspace name
-const { unreadCount, fetchUnreadCount } = useNotifications();
+const { totalUnreadCount, fetchUnreadCount } = useNotifications();
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());

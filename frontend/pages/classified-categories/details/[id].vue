@@ -467,7 +467,7 @@
                 ></div>
                 <template v-else>
                   <img 
-                    src="/images/chat_icon.png" 
+                    src="/static/frontend/images/chat_icon.png" 
                     alt="Chat"
                     class="w-5 h-5 mr-3 opacity-90 group-hover:opacity-100 transition-opacity"
                   />

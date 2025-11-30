@@ -201,13 +201,21 @@ const notificationTypes = {
   REPLY: "reply",
   MENTION: "mention",
   SOLUTION: "solution",
-  GIFT_DIAMONDS: "gift_diamonds", // Added new notification type
+  GIFT_DIAMONDS: "gift_diamonds",
+  // Workspace notification types
+  ORDER_NEW: "order_new",
+  ORDER_MESSAGE: "order_message",
+  ORDER_STATUS: "order_status",
+  ORDER_DELIVERED: "order_delivered",
+  ORDER_COMPLETED: "order_completed",
 };
+
+// Workspace notifications state
+const workspaceNotifications = ref([]);
+const loadingWorkspace = ref(false);
 
 // Simplified - no filtering by tab type
 const filteredNotifications = computed(() => notifications.value);
-
-// Load notifications on mount
 onMounted(async () => {
   await fetchNotifications();
   // Automatically mark all notifications as read when visiting the page

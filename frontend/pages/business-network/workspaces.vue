@@ -518,6 +518,7 @@ import GigOrdered from "~/components/business-network/GigOrdered.vue";
 // Page meta
 definePageMeta({
   layout: "adsy-business-network",
+  middleware: "auth",
   title: "Workspaces - Business Network",
   meta: [
     {

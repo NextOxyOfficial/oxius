@@ -6,7 +6,7 @@ from .views import (
     MyOrdersView, MySellerOrdersView, create_order, update_order_status,
     complete_order_payment, cancel_order,
     gig_categories,
-    OrderMessageListView, create_order_message, get_unread_message_counts,
+    OrderMessageListView, create_order_message, get_unread_message_counts, mark_messages_as_read,
     get_gig_options, get_skills_by_category,
     get_workspace_banners
 )
@@ -45,6 +45,7 @@ urlpatterns = [
     # Order message endpoints (must be before the action pattern)
     path('orders/<uuid:order_id>/messages/', OrderMessageListView.as_view(), name='order-messages'),
     path('orders/<uuid:order_id>/messages/create/', create_order_message, name='create-order-message'),
+    path('orders/<uuid:order_id>/messages/mark-read/', mark_messages_as_read, name='mark-messages-read'),
     
     # Order action endpoints (must be last as it catches any string)
     path('orders/<uuid:order_id>/complete/', complete_order_payment, name='complete-order'),

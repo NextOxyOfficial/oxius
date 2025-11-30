@@ -2,27 +2,37 @@ export function useNotifications() {
   const { get, put } = useApi();
   const { user } = useAuth();
   const unreadCount = useState("notificationUnreadCount", () => 0);
+  const workspaceUnreadCount = useState("workspaceUnreadCount", () => 0);
+  const totalUnreadCount = computed(() => unreadCount.value + workspaceUnreadCount.value);
   const isLoading = ref(false);
 
-  // Function to fetch unread notification count
+  // Function to fetch unread notification count (both BN and workspace)
   async function fetchUnreadCount() {
     // Don't attempt to fetch if user isn't logged in
     if (!user.value?.user?.id) {
-      console.log("User not logged in, skipping notification count fetch");
       return;
     }
 
     try {
       isLoading.value = true;
-      const res = await get("/bn/notifications/unread-count/");
+      
+      // Fetch both BN notifications and workspace message counts in parallel
+      const [bnRes, workspaceRes] = await Promise.all([
+        get("/bn/notifications/unread-count/"),
+        get("/workspace/orders/unread-counts/").catch(() => ({ data: { total: 0 } }))
+      ]);
 
-      if (res.data && typeof res.data.count === "number") {
-        unreadCount.value = res.data.count;
+      if (bnRes.data && typeof bnRes.data.count === "number") {
+        unreadCount.value = bnRes.data.count;
+      }
+      
+      if (workspaceRes.data && typeof workspaceRes.data.total === "number") {
+        workspaceUnreadCount.value = workspaceRes.data.total;
       }
     } catch (error) {
       console.error("Error fetching unread notification count:", error);
-      // Reset count on error to ensure we don't show outdated data
       unreadCount.value = 0;
+      workspaceUnreadCount.value = 0;
     } finally {
       isLoading.value = false;
     }
@@ -47,11 +57,29 @@ export function useNotifications() {
     }
   }
 
+  // Decrement workspace count
+  function decrementWorkspaceCount() {
+    if (workspaceUnreadCount.value > 0) {
+      workspaceUnreadCount.value--;
+    }
+  }
+
+  // Reset workspace count for a specific order
+  function clearWorkspaceOrderCount(orderId, count = 0) {
+    if (count > 0) {
+      workspaceUnreadCount.value = Math.max(0, workspaceUnreadCount.value - count);
+    }
+  }
+
   return {
     unreadCount,
+    workspaceUnreadCount,
+    totalUnreadCount,
     isLoading,
     fetchUnreadCount,
     markAllAsRead,
     decrementCount,
+    decrementWorkspaceCount,
+    clearWorkspaceOrderCount,
   };
 }
