@@ -478,7 +478,7 @@
                         alt="Chat"
                         class="w-5 h-5"
                       />
-                      <span class="text-sm font-semibold text-gray-700">New Chat</span>
+                      <span class="font-semibold text-gray-700">New Chat</span>
                     </button>
                   </div>
                 </div>
@@ -574,13 +574,22 @@
                             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'"
                         >
                           <!-- Media Content -->
-                          <div v-if="message.message_type === 'image' && message.media_url" class="relative">
+                          <div v-if="message.message_type === 'image' && message.media_url" class="relative group overflow-hidden rounded-t-2xl">
                             <img
                               :src="message.media_url"
                               :alt="message.file_name || 'Image'"
-                              class="w-full h-auto max-h-64 object-cover cursor-pointer"
-                              @click="openImageModal(message.media_url)"
+                              class="w-full h-auto max-h-64 object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
+                              @click.stop="openImageModal(message.media_url)"
                             />
+                            <!-- Hover overlay with zoom icon -->
+                            <div 
+                              class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center cursor-pointer"
+                              @click.stop="openImageModal(message.media_url)"
+                            >
+                              <div class="opacity-0 flex group-hover:opacity-100 transition-opacity duration-300 p-2 bg-black/50 rounded-full">
+                                <UIcon name="i-heroicons-magnifying-glass-plus" class="w-5 h-5 text-white" />
+                              </div>
+                            </div>
                             <!-- Time and Status for Images -->
                             <div v-if="message.time_display" class="px-3 py-1.5">
                               <div class="flex items-center justify-end gap-1">
@@ -1766,6 +1775,74 @@
           </div>
         </Transition>
       </Teleport>
+
+      <!-- Chat Image Viewer Modal -->
+      <Teleport to="body">
+        <Transition
+          enter-active-class="transition-opacity duration-300"
+          enter-from-class="opacity-0"
+          enter-to-class="opacity-100"
+          leave-active-class="transition-opacity duration-200"
+          leave-from-class="opacity-100"
+          leave-to-class="opacity-0"
+        >
+          <div
+            v-if="showChatImageViewer"
+            class="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-center"
+            @click="closeChatImageViewer"
+          >
+            <!-- Header -->
+            <div class="absolute top-16 left-0 right-0 z-10 bg-gradient-to-b from-black/80 to-transparent p-4">
+              <div class="flex items-center justify-between max-w-5xl mx-auto">
+                <div class="text-white text-sm font-medium flex items-center gap-2">
+                  <UIcon name="i-heroicons-photo" class="w-5 h-5 text-blue-400" />
+                  <span>Image Preview</span>
+                </div>
+                <button
+                  @click.stop="closeChatImageViewer"
+                  class="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-200 hover:scale-110"
+                  title="Close (ESC)"
+                >
+                  <UIcon name="i-heroicons-x-mark" class="w-6 h-6 text-white" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Image Container -->
+            <div 
+              class="flex-1 flex items-center justify-center p-8 w-full mt-20"
+              @click.stop
+            >
+              <div class="relative max-w-4xl w-full">
+                <img
+                  :src="chatImageViewerUrl"
+                  alt="Chat image"
+                  class="max-h-[70vh] max-w-full mx-auto object-contain rounded-xl shadow-2xl"
+                  @click.stop
+                />
+                
+                <!-- Download Button - positioned at bottom left of image -->
+                <a
+                  :href="chatImageViewerUrl"
+                  :download="'chat-image-' + Date.now()"
+                  class="absolute bottom-4 left-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-200 hover:scale-110 shadow-lg group"
+                  @click.stop
+                  title="Download image"
+                >
+                  <UIcon name="i-heroicons-arrow-down-tray" class="w-5 h-5 text-white group-hover:text-blue-400 transition-colors" />
+                </a>
+              </div>
+            </div>
+
+            <!-- Footer hint -->
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+              <p class="text-center text-white/60 text-xs">
+                Click anywhere or press ESC to close
+              </p>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
     </UContainer>
   </PublicSection>
 </template>
@@ -1796,6 +1873,10 @@ const isTicketDetailModalOpen = ref(false);
 // Tab state
 const activeTab = ref('adsyconnect');
 const updatesFilter = ref('all');
+
+// Chat Image Viewer state
+const showChatImageViewer = ref(false);
+const chatImageViewerUrl = ref('');
 
 // Pagination state
 const currentPage = ref(1);
@@ -2087,9 +2168,24 @@ function formatFileSize(bytes) {
   return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
 }
 
+// Chat Image Viewer functions
 function openImageModal(imageUrl) {
-  // Simple image modal - open in new tab for now
-  window.open(imageUrl, '_blank');
+  chatImageViewerUrl.value = imageUrl;
+  showChatImageViewer.value = true;
+  // Add keyboard listener for ESC
+  document.addEventListener('keydown', handleImageViewerKeydown);
+}
+
+function closeChatImageViewer() {
+  showChatImageViewer.value = false;
+  chatImageViewerUrl.value = '';
+  document.removeEventListener('keydown', handleImageViewerKeydown);
+}
+
+function handleImageViewerKeydown(event) {
+  if (event.key === 'Escape') {
+    closeChatImageViewer();
+  }
 }
 
 function handleImageError(event) {
