@@ -86,7 +86,7 @@
             <!-- Empty State -->
             <div v-else-if="messages.length === 0" class="flex flex-col justify-center items-center h-full text-center py-8">
               <img 
-                src="/static/frontend/images/chat_icon.png" 
+                src="/images/chat_icon.png" 
                 alt="Chat"
                 class="w-16 h-16 opacity-30 mb-4"
               />

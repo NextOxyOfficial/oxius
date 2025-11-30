@@ -35,7 +35,7 @@
               <span>{{ searchQuery.substring(1) }}</span>
             </span>
           </div>
-          <div class="sm:px-4 pb-5 pt-0">
+          <div class=" pb-5 pt-0">
             <!-- Post Header -->
             <BusinessNetworkPostHeader
               :post="post?.post_details ? post.post_details : post"
@@ -101,7 +101,7 @@
               :to="`/business-network/posts/${
                 post?.post ? post.post : post.id
               }`"
-              class="block text-base font-medium mb-1.5 hover:text-blue-600 transition-colors px-2 text-gray-800 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
+              class="block text-base font-medium mb-1.5 hover:text-blue-600 transition-colors sm:px-4 px-2 text-gray-800 dark:text-white hover:underline decoration-blue-500/50 decoration-2 underline-offset-2"
             >
               {{ post?.post_details ? post.post_details.title : post.title }}
             </NuxtLink>

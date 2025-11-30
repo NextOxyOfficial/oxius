@@ -171,7 +171,7 @@
                 order.status === 'pending' || order.status === 'in_progress' ? 'flex-1 sm:flex-none' : 'flex-none'
               ]"
             >
-              <img src="/static/frontend/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
+              <img src="/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Chat</span>
               <span
                 v-if="order.unreadMessages && order.unreadMessages > 0"

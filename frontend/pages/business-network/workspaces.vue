@@ -518,7 +518,6 @@ import GigOrdered from "~/components/business-network/GigOrdered.vue";
 // Page meta
 definePageMeta({
   layout: "adsy-business-network",
-  middleware: "auth",
   title: "Workspaces - Business Network",
   meta: [
     {
@@ -540,39 +539,50 @@ const toast = useToast();
 // Tab State
 const activeTab = ref('all-gigs');
 
-// Tab Configuration
-const tabs = ref([
-  {
-    id: 'all-gigs',
-    name: 'All Gigs',
-    icon: Star,
-    count: null
-  },
-  {
-    id: 'my-gigs',
-    name: 'My Gigs',
-    icon: User,
-    count: null
-  },
-  {
-    id: 'my-orders',
-    name: 'Order Received',
-    icon: ShoppingCart,
-    count: 0
-  },
-  {
-    id: 'gig-ordered',
-    name: 'Gig Ordered',
-    icon: Package,
-    count: 0
-  },
-  {
-    id: 'create-gig',
-    name: 'Post A Gig',
-    icon: Plus,
-    count: null
+// Tab Configuration - Show all tabs for logged in users, only "All Gigs" for guests
+const tabs = computed(() => {
+  const baseTabs = [
+    {
+      id: 'all-gigs',
+      name: 'All Gigs',
+      icon: Star,
+      count: null
+    }
+  ];
+  
+  // Only show user-specific tabs if logged in
+  if (user.value?.user) {
+    return [
+      ...baseTabs,
+      {
+        id: 'my-gigs',
+        name: 'My Gigs',
+        icon: User,
+        count: null
+      },
+      {
+        id: 'my-orders',
+        name: 'Order Received',
+        icon: ShoppingCart,
+        count: 0
+      },
+      {
+        id: 'gig-ordered',
+        name: 'Gig Ordered',
+        icon: Package,
+        count: 0
+      },
+      {
+        id: 'create-gig',
+        name: 'Post A Gig',
+        icon: Plus,
+        count: null
+      }
+    ];
   }
-]);
+  
+  return baseTabs;
+});
 
 // State
 const isLoading = ref(true);

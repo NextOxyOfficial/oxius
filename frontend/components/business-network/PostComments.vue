@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-2.5 px-2 pt-1">
+  <div class="space-y-2.5 sm:px-4 px-2 pt-1">
     <!-- Top gift comment pinned section - Shows only the highest diamond gift -->
     <div v-if="highestGiftComment" class="mb-3">
       <div class="flex items-center gap-2 mb-1.5">

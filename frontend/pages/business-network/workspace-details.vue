@@ -297,7 +297,7 @@
                       @click="handleContact"
                       class="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-50 transition-colors inline-flex items-center justify-center gap-2"
                     >
-                      <img src="/static/frontend/images/chat_icon.png" alt="AdsyConnect" class="w-5 h-5" />
+                      <img src="/images/chat_icon.png" alt="AdsyConnect" class="w-5 h-5" />
                       Contact Seller
                     </button>
                   </div>
@@ -768,7 +768,6 @@ import {
 // Page meta
 definePageMeta({
   layout: "adsy-business-network",
-  middleware: "auth",
   title: "Workspace Details - Business Network",
 });
 
@@ -1119,12 +1118,14 @@ const formatReviewDate = (dateString) => {
 
 // Order flow methods
 const startOrder = () => {
-  if (!user.value) {
+  if (!user.value?.user) {
     toast.add({
       title: "Login Required",
       description: "Please login to place an order.",
       color: "orange",
     });
+    // Redirect to login with return URL
+    navigateTo(`/auth/login?redirect=${encodeURIComponent(route.fullPath)}`);
     return;
   }
 
@@ -1272,12 +1273,14 @@ const submitOrder = async () => {
 };
 
 const handleContact = () => {
-  if (!user.value) {
+  if (!user.value?.user) {
     toast.add({
       title: "Login Required",
       description: "Please login to contact the seller.",
       color: "orange",
     });
+    // Redirect to login with return URL
+    navigateTo(`/auth/login?redirect=${encodeURIComponent(route.fullPath)}`);
     return;
   }
 

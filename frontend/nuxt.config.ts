@@ -31,7 +31,7 @@ export default defineNuxtConfig({
     },
     define: {
       global: 'globalThis',
-    }
+    },
   },
 
   css: ["~/assets/css/main.css", "~/assets/css/toast.css"],
@@ -183,7 +183,7 @@ export default defineNuxtConfig({
         name: "customProvider",
         provider: "~/providers/image-provider.ts",
         options: {
-          baseURL: process.env.NODE_ENV === "production" ? "https://adsyclub.com" : "http://127.0.0.1:8000",
+          baseURL: "https://adsyclub.com",
         },
       },
     },
@@ -202,6 +202,12 @@ export default defineNuxtConfig({
         dir: "public",
         maxAge: 60 * 60 * 24 * 365, // Cache APK files for 1 year
       },
+      {
+        baseURL: "/static/frontend/",
+        dir: "public",
+        maxAge: 60 * 60 * 24 * 365,
+      },
     ],
   },
+
 });

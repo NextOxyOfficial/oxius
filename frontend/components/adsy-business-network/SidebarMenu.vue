@@ -229,6 +229,13 @@ const guestMenu = [
     isNew: true,
   },
   {
+    label: "Workspaces",
+    path: `/business-network/workspaces`,
+    icon: Star,
+    active: false,
+    isBeta: true,
+  },
+  {
     label: "Login",
     path: `/auth/login`,
     icon: User,
