@@ -147,10 +147,10 @@
             </div>
           </div>
           <div class="mt-2 flex items-center text-sm text-gray-600">
-            <span class="font-medium text-gray-600 mr-2"
+            <span v-if="numericServiceId" class="font-medium text-gray-600 mr-2"
               >Service ID: {{ numericServiceId }}</span
             >
-            <span class="flex items-center">
+            <span v-if="service?.created_at" class="flex items-center">
               <Calendar class="h-3 w-3 mr-1" />
               {{ formatDate(service?.created_at) }}
             </span>
@@ -189,7 +189,7 @@
 
             <!-- Second row: Category and Posted (2 columns) -->
             <div class="grid grid-cols-2 gap-2">
-              <div class="flex items-center">
+              <div v-if="service.category_details?.title" class="flex items-center">
                 <div
                   class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
                 >
@@ -203,7 +203,7 @@
                 </div>
               </div>
 
-              <div class="flex items-center">
+              <div v-if="service?.created_at" class="flex items-center">
                 <div
                   class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center mr-3"
                 >
@@ -250,23 +250,29 @@
               Service Details
             </h2>
             <div
+              v-if="service?.instructions"
               class="text-gray-600 sm:px-6 whitespace-pre-line text-sm leading-relaxed"
               v-html="service?.instructions"
             ></div>
-
-            <div class="my-6 border-t border-gray-100"></div>
-
-            <div v-if="service?.location">
-              <h3
-                class="text-base font-semibold mb-3 text-gray-800 flex items-center"
-              >
-                <MapPin class="h-4 w-4 mr-2 text-emerald-600" />
-                Service Location
-              </h3>
-              <div class="text-sm sm:px-6 text-gray-800">
-                {{ service?.location }}
-              </div>
+            <div v-else class="text-gray-500 sm:px-6 text-sm italic">
+              No service details provided
             </div>
+
+            <!-- Service Location - Only show if location exists -->
+            <template v-if="service?.location">
+              <div class="my-6 border-t border-gray-100"></div>
+              <div>
+                <h3
+                  class="text-base font-semibold mb-3 text-gray-800 flex items-center"
+                >
+                  <MapPin class="h-4 w-4 mr-2 text-emerald-600" />
+                  Service Location
+                </h3>
+                <div class="text-sm sm:px-6 text-gray-800">
+                  {{ service?.location }}
+                </div>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -335,8 +341,7 @@
               <div>
                 <div class="flex items-center justify-between">
                   <h3 class="font-semibold text-gray-800">
-                    {{ service.user?.first_name || "No Name" }}
-                    {{ service.user?.last_name }}
+                    {{ providerDisplayName }}
                   </h3>
                   <div class="flex items-center space-x-1 ml-2">
                     <UIcon
@@ -372,7 +377,7 @@
             ></div>
 
             <div class="mt-4 space-y-3 bg-gray-50 p-4 rounded-md">
-              <div class="flex justify-between items-center text-sm">
+              <div v-if="service.user?.phone" class="flex justify-between items-center text-sm">
                 <span class="text-gray-600">Phone</span>
                 <div class="flex items-center">
                   <span v-if="!showPhone" class="text-gray-800">{{
@@ -382,7 +387,6 @@
                     service.user?.phone
                   }}</span>
                   <button
-                    v-if="service.user?.phone"
                     @click="toggleShowPhone"
                     class="ml-2 text-emerald-600 hover:text-emerald-700"
                   >
@@ -403,6 +407,11 @@
                 >
                   {{ service.user?.email }}
                 </a>
+              </div>
+              
+              <!-- Show message if no contact info -->
+              <div v-if="!service.user?.phone && !service.user?.email" class="text-sm text-gray-500 text-center py-2">
+                No contact information available
               </div>
             </div>
 
@@ -746,6 +755,27 @@ const hasSocialLinks = computed(() => {
   );
 });
 
+// Computed property for provider display name
+const providerDisplayName = computed(() => {
+  const user = service.value?.user;
+  if (!user) return "Unknown Provider";
+  
+  const firstName = user.first_name?.trim() || "";
+  const lastName = user.last_name?.trim() || "";
+  
+  if (firstName && lastName) {
+    return `${firstName} ${lastName}`;
+  } else if (firstName) {
+    return firstName;
+  } else if (lastName) {
+    return lastName;
+  } else if (user.username) {
+    return user.username;
+  }
+  
+  return "Service Provider";
+});
+
 // Generate numeric service ID
 const numericServiceId = computed(() => {
   if (!service.value?.id) return "";
@@ -769,33 +799,43 @@ const numericServiceId = computed(() => {
 
 // Format date
 const formatDate = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
+  if (!dateString) return "N/A";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "N/A";
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
+  } catch (e) {
+    return "N/A";
+  }
 };
 
 // Format relative time
 const formatRelativeTime = (dateString) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now - date) / 1000);
+  if (!dateString) return "Recently";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Recently";
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
 
-  if (diffInSeconds < 60) return "Just now";
-  if (diffInSeconds < 3600)
-    return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-  if (diffInSeconds < 86400)
-    return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-  return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+  } catch (e) {
+    return "Recently";
+  }
 };
 
 // Mask phone number
 const maskPhoneNumber = (phone) => {
-  if (!phone) return "";
+  if (!phone) return "Not provided";
   return "XXXXXXX" + phone?.slice(-3);
 };
 
@@ -1050,7 +1090,7 @@ const startChatWithProvider = async () => {
     
     toast.add({
       title: 'Chat Started',
-      description: `Opening chat with ${service.value.user.first_name} ${service.value.user.last_name}`,
+      description: `Opening chat with ${providerDisplayName.value}`,
       color: 'green',
       timeout: 2000,
     });

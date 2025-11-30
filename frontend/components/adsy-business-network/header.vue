@@ -147,7 +147,33 @@
             <!-- User Action Buttons -->
             <div class="flex items-center gap-1.5 pr-1.5" v-if="user && user.user">              
               
-              
+              <!-- AdsyConnect Inbox Button -->
+              <NuxtLink to="/inbox/" class="relative cursor-pointer">
+                <div
+                  class="size-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm hover:bg-gray-100"
+                >
+                  <img 
+                    src="/images/chat_icon.png" 
+                    alt="Inbox"
+                    class="size-6"
+                  />
+
+                  <!-- Notification Badge with animation -->
+                  <transition
+                    enter-active-class="transition duration-300 ease-out"
+                    enter-from-class="transform scale-50 opacity-0"
+                    leave-active-class="transition duration-200 ease-in"
+                    leave-to-class="transform scale-50 opacity-0"
+                  >
+                    <div
+                      v-if="badgeCount > 0"
+                      class="absolute -top-1 -right-1 min-w-4 h-4 flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-semibold px-1 shadow-sm animate-pulse"
+                    >
+                      {{ badgeCount > 99 ? "99+" : badgeCount }}
+                    </div>
+                  </transition>
+                </div>
+              </NuxtLink>
               
               <!-- QR Code Button with Tailwind styling -->              
                <div @click="showQr = !showQr" class="relative cursor-pointer">
@@ -284,6 +310,7 @@ const { t } = useI18n();
 const { get } = useApi();
 const { user, logout } = useAuth();
 const { isScrollingDown, isScrollingUp } = useScrollDirection();
+const { totalUnreadCount, fetchUnreadCount } = useTickets();
 const logo = ref([]);
 const cart = useStoreCart();
 const showQr = ref(false);
@@ -294,6 +321,22 @@ const searchDropdownRef = ref(null);
 const router = useRouter();
 const badgeCount = ref(0);
 const isScrolled = ref(false);
+
+// Watch for changes in unread count
+watch(
+  () => totalUnreadCount.value,
+  (newCount) => {
+    badgeCount.value = newCount;
+  }
+);
+
+// Fetch unread count when component mounts
+onMounted(async () => {
+  if (user.value?.user) {
+    await fetchUnreadCount();
+    badgeCount.value = totalUnreadCount.value;
+  }
+});
 
 async function getLogo() {
   try {
