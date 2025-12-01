@@ -176,14 +176,14 @@
                 >
                   <img
                     v-if="service?.medias[0]?.image"
-                    :src="service?.medias[0]?.image"
+                    :src="getImageUrl(service?.medias[0]?.image)"
                     :alt="service.title"
                     :title="service.title"
                     class="size-8 object-contain"
                   />
                   <img
                     v-else
-                    :src="service?.category_details?.image"
+                    :src="getImageUrl(service?.category_details?.image)"
                     :alt="service.title"
                     :title="service.title"
                     class="size-6 object-contain"
@@ -740,8 +740,16 @@
 const { t } = useI18n();
 const { formatDate } = useUtils();
 const isOpen = ref(false);
-const { get, baseURL } = useApi();
+const { get, baseURL, staticURL } = useApi();
 const { user } = useAuth();
+
+// Helper function to get full image URL
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return staticURL + url;
+  return staticURL + '/' + url;
+};
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());

@@ -159,13 +159,13 @@
                   >
                     <NuxtImg
                       v-if="service.medias && service.medias[0]?.image"
-                      :src="service.medias[0].image"
+                      :src="getImageUrl(service.medias[0].image)"
                       class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
                       alt="Post image"
                     />
                     <img
                       v-else
-                      :src="service.category_details.image"
+                      :src="getImageUrl(service.category_details.image)"
                       class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
                       alt="Category image"
                     />
@@ -470,8 +470,16 @@ definePageMeta({
 });
 
 const isLoading = ref(false);
-const { get, put } = useApi();
+const { get, put, staticURL } = useApi();
 const { formatDate } = useUtils();
+
+// Helper function to get full image URL
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return staticURL + url;
+  return staticURL + '/' + url;
+};
 const isOpen = ref(false);
 const categoryTitle = ref("");
 const services = ref([]);

@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import 'api_service.dart';
+import 'business_network_service.dart';
 import '../screens/business_network/profile_screen.dart';
 import '../screens/business_network/post_detail_screen.dart';
 import '../screens/inbox_screen.dart';
@@ -279,24 +280,14 @@ class FCMService {
       final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         print('   → Navigating to post: $postId');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostDetailScreen(postId: int.tryParse(postId) ?? 0),
-          ),
-        );
+        _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
       }
     } else if (type == 'like_comment' || type == 'reply') {
       // Navigate to post detail using parent_id
       final postId = data['parent_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         print('   → Navigating to post: $postId');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostDetailScreen(postId: int.tryParse(postId) ?? 0),
-          ),
-        );
+        _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
       }
     } else if (type == 'solution') {
       // Navigate to MindForce
@@ -307,12 +298,7 @@ class FCMService {
       final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         print('   → Navigating to post: $postId');
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PostDetailScreen(postId: int.tryParse(postId) ?? 0),
-          ),
-        );
+        _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
       }
     }
     // ============================================
@@ -494,6 +480,49 @@ class FCMService {
       }
     } catch (e) {
       print('Error refreshing FCM token: $e');
+    }
+  }
+
+  /// Helper method to navigate to post detail by fetching the post first
+  static Future<void> _navigateToPostDetail(BuildContext context, int postId) async {
+    if (postId <= 0) {
+      print('   ⚠️ Invalid post ID: $postId');
+      return;
+    }
+    
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+      
+      // Fetch the post
+      final post = await BusinessNetworkService.getPost(postId);
+      
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+      
+      if (post != null && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostDetailScreen(post: post),
+          ),
+        );
+      } else {
+        print('   ⚠️ Post not found: $postId');
+      }
+    } catch (e) {
+      print('   ⚠️ Error fetching post: $e');
+      if (context.mounted) {
+        Navigator.pop(context); // Close loading dialog
+      }
     }
   }
 }

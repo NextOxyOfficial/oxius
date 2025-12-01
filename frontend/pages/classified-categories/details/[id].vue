@@ -63,8 +63,8 @@
             v-else
             :src="
               service?.medias?.length > 0
-                ? service.medias[currentImageIndex]?.image
-                : service?.category_details?.image
+                ? getImageUrl(service.medias[currentImageIndex]?.image)
+                : getImageUrl(service?.category_details?.image)
             "
             :alt="service.title"
             class="absolute inset-0 w-full h-full object-cover"
@@ -122,7 +122,7 @@
             </div>
             <img
               v-else
-              :src="media.image"
+              :src="getImageUrl(media.image)"
               :alt="`Thumbnail ${index + 1}`"
               class="absolute inset-0 w-full h-full object-cover"
             />
@@ -331,7 +331,7 @@
               >
                 <img
                   :src="
-                    service.user?.image ||
+                    getImageUrl(service.user?.image) ||
                     '/static/frontend/images/placeholder.jpg'
                   "
                   :alt="service.user?.first_name || 'Provider'"
@@ -704,9 +704,17 @@ const toast = useToast();
 const { user, isAuthenticated } = useAuth();
 const { chatIconPath } = useStaticAssets();
 
-const { baseURL } = useApi();
+const { baseURL, staticURL } = useApi();
 const service = ref({});
 const router = useRoute();
+
+// Helper function to get full image URL
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return staticURL + url;
+  return staticURL + '/' + url;
+};
 
 // State variables
 const currentImageIndex = ref(0);

@@ -4,6 +4,7 @@ import '../../screens/business_network/create_post_screen.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../screens/business_network/notifications_screen.dart';
 import '../../screens/business_network/mindforce_screen.dart';
+import '../../screens/workspace/workspace_screen.dart';
 
 class DrawerMenu extends StatelessWidget {
   final String? currentRoute;
@@ -182,17 +183,25 @@ class DrawerMenu extends StatelessWidget {
             },
           ),
           
-          // TODO: Workspaces - Hidden for next release
-          // _buildMenuItem(
-          //   context: context,
-          //   icon: Icons.star,
-          //   label: 'Workspaces',
-          //   route: '/business-network/workspaces',
-          //   isActive: currentRoute == '/business-network/workspaces',
-          //   color: const Color(0xFFF59E0B),
-          //   badge: 'BETA',
-          //   badgeColor: Colors.orange,
-          // ),
+          _buildMenuItem(
+            context: context,
+            icon: Icons.star,
+            label: 'Workspaces',
+            route: '/business-network/workspaces',
+            isActive: currentRoute == '/business-network/workspaces',
+            color: const Color(0xFF8B5CF6),
+            badge: 'NEW',
+            badgeColor: Colors.pink,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const WorkspaceScreen(),
+                ),
+              );
+            },
+          ),
           
           _buildMenuItem(
             context: context,

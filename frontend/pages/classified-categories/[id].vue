@@ -308,12 +308,12 @@
                   <div class="mt-2">
                     <NuxtImg
                       v-if="service.medias[0]?.image"
-                      :src="service.medias[0].image"
+                      :src="getImageUrl(service.medias[0].image)"
                       class="object-contain size-24 rounded-md"
                     />
                     <img
                       v-else
-                      :src="service.category_details.image"
+                      :src="getImageUrl(service.category_details.image)"
                       class="object-contain size-24 rounded-md"
                     />
                   </div>
@@ -544,12 +544,12 @@
                   <div class="mt-2">
                     <NuxtImg
                       v-if="service.medias[0]?.image"
-                      :src="service.medias[0].image"
+                      :src="getImageUrl(service.medias[0].image)"
                       class="object-contain size-24 rounded-md"
                     />
                     <img
                       v-else
-                      :src="service.category_details.image"
+                      :src="getImageUrl(service.category_details.image)"
                       class="object-contain size-24 rounded-md"
                     />
                   </div>
@@ -662,9 +662,17 @@ useHead({
     "AdsyClub – Social Business Network: Earn Money, Connect with Society & Find the Services You Need!",
 });
 const { t } = useI18n();
-const { get } = useApi();
+const { get, staticURL } = useApi();
 const { location, clearLocation } = useLocation(); // Use enhanced location composable
 const { formatDate } = useUtils();
+
+// Helper function to get full image URL
+const getImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/')) return staticURL + url;
+  return staticURL + '/' + url;
+};
 const isLoading = ref(false);
 const isNearByLoading = ref(false);
 const searchLocationOption = ref(false);

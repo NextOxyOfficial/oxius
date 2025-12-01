@@ -1831,7 +1831,7 @@
                 </div>
                 <button
                   @click.stop="closeChatImageViewer"
-                  class="p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-200 hover:scale-110"
+                  class="p-3 bg-white/20 flex hover:bg-white/30 rounded-full transition-all duration-200 hover:scale-110"
                   title="Close (ESC)"
                 >
                   <UIcon name="i-heroicons-x-mark" class="w-6 h-6 text-white" />
