@@ -15,9 +15,12 @@ const messages = ref([])
 const newMessage = ref('')
 const isLoading = ref(false)
 const isLoadingMessages = ref(false)
+const onlineUsers = ref(new Set()) // Track online user IDs
+const otherUserOnline = ref(false) // Is the other user in active chat online?
 
-// Polling interval
+// Polling intervals
 let pollingInterval = null
+let onlineStatusInterval = null
 
 export const useAdsyChat = () => {
   const toast = useToast()
@@ -151,6 +154,20 @@ export const useAdsyChat = () => {
     activeChat.value = chat
     console.log('activeChat set to:', activeChat.value)
     
+    // Clear unread count for this chat immediately in UI
+    const chatRoom = chatRooms.value.find(c => c.id === chat.id)
+    if (chatRoom && chatRoom.unread_count > 0) {
+      chatRoom.unread_count = 0
+      
+      // Mark messages as read on the server
+      try {
+        await post(`/adsyconnect/chatrooms/${chat.id}/mark_read/`, {})
+      } catch (error) {
+        // Silently handle - UI already updated
+        console.log('Mark read API call failed, but UI updated')
+      }
+    }
+    
     await loadMessages(chat.id)
     // Ensure scroll to bottom after chat selection
     setTimeout(() => scrollToBottom(true), 300)
@@ -164,6 +181,7 @@ export const useAdsyChat = () => {
   const startPolling = () => {
     if (pollingInterval) clearInterval(pollingInterval)
     
+    // Poll for new messages
     pollingInterval = setInterval(async () => {
       if (activeChat.value) {
         try {
@@ -182,6 +200,72 @@ export const useAdsyChat = () => {
         }
       }
     }, 5000) // Poll every 5 seconds
+    
+    // Start online status polling
+    startOnlineStatusPolling()
+  }
+  
+  const startOnlineStatusPolling = () => {
+    if (onlineStatusInterval) clearInterval(onlineStatusInterval)
+    
+    // Update own online status immediately
+    updateOnlineStatus(true)
+    
+    // Check other user's online status immediately
+    checkOtherUserOnlineStatus()
+    
+    // Poll for other user's online status every 10 seconds
+    onlineStatusInterval = setInterval(() => {
+      if (activeChat.value?.other_user?.id) {
+        checkOtherUserOnlineStatus()
+      }
+      // Keep updating own status to stay "online"
+      updateOnlineStatus(true)
+    }, 10000)
+  }
+  
+  const checkOtherUserOnlineStatus = async () => {
+    if (!activeChat.value?.other_user?.id) return
+    
+    try {
+      const otherUserId = activeChat.value.other_user.id
+      const { data, error } = await get(`/adsyconnect/online-status/?user_ids[]=${otherUserId}`)
+      
+      if (data && !error) {
+        const statusList = Array.isArray(data) ? data : (data.results || [])
+        const userStatus = statusList.find(s => s.user === otherUserId || s.user_id === otherUserId)
+        
+        if (userStatus) {
+          otherUserOnline.value = userStatus.is_online === true
+          
+          // Update the chat room's other_user online status
+          if (activeChat.value?.other_user) {
+            activeChat.value.other_user.is_online = otherUserOnline.value
+          }
+          
+          // Also update in chatRooms list
+          const chatRoom = chatRooms.value.find(c => c.id === activeChat.value?.id)
+          if (chatRoom?.other_user) {
+            chatRoom.other_user.is_online = otherUserOnline.value
+          }
+        } else {
+          otherUserOnline.value = false
+        }
+      }
+    } catch (error) {
+      // Silently handle - not critical
+      console.log('Error checking online status:', error)
+    }
+  }
+  
+  const updateOnlineStatus = async (isOnline = true) => {
+    try {
+      await post('/adsyconnect/online-status/update_status/', {
+        is_online: isOnline
+      })
+    } catch (error) {
+      // Silently handle - not critical
+    }
   }
   
   const stopPolling = () => {
@@ -189,6 +273,22 @@ export const useAdsyChat = () => {
       clearInterval(pollingInterval)
       pollingInterval = null
     }
+    if (onlineStatusInterval) {
+      clearInterval(onlineStatusInterval)
+      onlineStatusInterval = null
+    }
+    // Set user as offline when leaving chat
+    updateOnlineStatus(false)
+    otherUserOnline.value = false
+  }
+  
+  // Check if a specific user is online
+  const isUserOnline = (userId) => {
+    if (!userId) return false
+    if (activeChat.value?.other_user?.id === userId) {
+      return otherUserOnline.value
+    }
+    return onlineUsers.value.has(userId)
   }
 
   const markMessageAsRead = async (messageId) => {
@@ -233,6 +333,7 @@ export const useAdsyChat = () => {
     isLoading,
     isLoadingMessages,
     unreadCount,
+    otherUserOnline,
 
     // Methods
     loadChatRooms,
@@ -241,6 +342,8 @@ export const useAdsyChat = () => {
     selectChat,
     scrollToBottom,
     startPolling,
-    stopPolling
+    stopPolling,
+    isUserOnline,
+    updateOnlineStatus
   }
 }

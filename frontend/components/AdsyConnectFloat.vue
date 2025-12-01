@@ -76,7 +76,7 @@
             >
               <div class="relative">
                 <img
-                  :src="chat.other_user.profile_picture || '/default-avatar.png'"
+                  :src="chat.other_user.profile_picture || chat.other_user.image || '/static/frontend/images/placeholder.jpg'"
                   :alt="chat.other_user.username"
                   class="w-8 h-8 rounded-full object-cover"
                 />
@@ -125,7 +125,7 @@
                 <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
               </button>
               <img
-                :src="activeMiniChat.other_user.profile_picture || '/default-avatar.png'"
+                :src="activeMiniChat.other_user.profile_picture || activeMiniChat.other_user.image || '/static/frontend/images/placeholder.jpg'"
                 :alt="activeMiniChat.other_user.username"
                 class="w-6 h-6 rounded-full object-cover"
               />

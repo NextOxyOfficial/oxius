@@ -454,13 +454,13 @@
                           <!-- Avatar -->
                           <div class="relative">
                             <img
-                              :src="chat.other_user?.avatar || '/images/placeholder.jpg'"
+                              :src="chat.other_user?.avatar || chat.other_user?.image || '/static/frontend/images/placeholder.jpg'"
                               :alt="chat.other_user?.username"
                               class="w-10 h-10 rounded-full object-cover bg-gray-200"
                             />
                             <div
-                              v-if="chat.other_user?.is_online"
-                              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"
+                              v-if="isUserOnline(chat.other_user?.id)"
+                              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"
                             ></div>
                           </div>
 
@@ -531,7 +531,7 @@
                           <UIcon name="i-heroicons-arrow-left" class="w-5 h-5 text-gray-600" />
                         </button>
                         <img
-                          :src="activeAdsyChat.other_user?.avatar || '/images/placeholder.jpg'"
+                          :src="activeAdsyChat.other_user?.avatar || activeAdsyChat.other_user?.image || '/static/frontend/images/placeholder.jpg'"
                           :alt="activeAdsyChat.other_user?.username"
                           class="w-10 h-10 rounded-full object-cover bg-gray-200"
                         />
@@ -559,11 +559,11 @@
                           </div>
                           <div class="flex items-center gap-1.5">
                             <span 
-                              class="w-2 h-2 rounded-full"
-                              :class="activeAdsyChat.other_user?.is_online ? 'bg-green-500' : 'bg-gray-300'"
+                              class="w-2 h-2 rounded-full transition-colors duration-300"
+                              :class="otherUserOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-300'"
                             ></span>
                             <span class="text-[11px] text-gray-500">
-                              {{ activeAdsyChat.other_user?.is_online ? 'Online' : 'Offline' }}
+                              {{ otherUserOnline ? 'Online now' : 'Offline' }}
                             </span>
                           </div>
                         </div>
@@ -592,7 +592,7 @@
                         <!-- Avatar for received messages -->
                         <div v-if="message.sender?.id !== currentUserId" class="flex-shrink-0 mb-1">
                           <img
-                            :src="activeAdsyChat.other_user?.avatar || '/images/placeholder.jpg'"
+                            :src="activeAdsyChat.other_user?.avatar || activeAdsyChat.other_user?.image || '/static/frontend/images/placeholder.jpg'"
                             :alt="activeAdsyChat.other_user?.username"
                             class="w-7 h-7 rounded-full object-cover ring-2 ring-white shadow-sm"
                           />
@@ -1962,10 +1962,12 @@ const {
   isLoading: adsyConnectLoading,
   isLoadingMessages: adsyMessagesLoading,
   unreadCount: adsyUnreadCount,
+  otherUserOnline,
   loadChatRooms,
   sendMessage: sendAdsyMessage,
   selectChat: selectAdsyChat,
-  stopPolling
+  stopPolling,
+  isUserOnline
 } = useAdsyChat();
 
 // Other AdsyConnect state

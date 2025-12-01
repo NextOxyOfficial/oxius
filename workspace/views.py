@@ -6,6 +6,46 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.utils import timezone
 
+
+def send_workspace_notification(recipient_user, title, body, data=None):
+    """
+    Send push notification for workspace events
+    """
+    try:
+        from base.fcm_service import send_fcm_notification
+        from base.models import FCMToken
+        
+        # Get recipient's FCM tokens
+        tokens = FCMToken.objects.filter(user=recipient_user, is_active=True).values_list('token', flat=True)
+        
+        notification_data = {
+            'type': 'workspace',
+            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+            **(data or {})
+        }
+        
+        success_count = 0
+        for token in tokens:
+            if send_fcm_notification(
+                fcm_token=token,
+                title=title,
+                body=body,
+                data=notification_data
+            ):
+                success_count += 1
+        
+        if tokens:
+            print(f'📤 Workspace notification sent to {recipient_user.email} ({success_count}/{len(list(tokens))} devices)')
+        else:
+            print(f'⚠️ No FCM tokens found for user: {recipient_user.email}')
+            
+        return success_count > 0
+    except Exception as e:
+        print(f'❌ Error sending workspace notification: {e}')
+        import traceback
+        traceback.print_exc()
+        return False
+
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage,
     GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
@@ -233,6 +273,20 @@ def create_review(request, gig_id):
         comment=comment
     )
     
+    # Send push notification to gig owner
+    reviewer_name = request.user.first_name or request.user.email
+    stars = '⭐' * min(max(int(rating), 1), 5)
+    
+    send_workspace_notification(
+        recipient_user=gig.user,
+        title=f'{stars} New Review!',
+        body=f'{reviewer_name} left a {rating}-star review on "{gig.title[:30]}"',
+        data={
+            'gig_id': str(gig.id),
+            'notification_type': 'new_review'
+        }
+    )
+    
     serializer = GigReviewSerializer(review, context={'request': request})
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -350,6 +404,18 @@ def create_order(request, gig_id):
             'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+    # Send push notification to seller
+    send_workspace_notification(
+        recipient_user=gig.user,
+        title='🎉 New Order Received!',
+        body=f'{buyer.first_name or buyer.email} ordered your gig: {gig.title[:50]}',
+        data={
+            'order_id': str(order.id),
+            'gig_id': str(gig.id),
+            'notification_type': 'new_order'
+        }
+    )
+    
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({
         'order': serializer.data,
@@ -422,6 +488,18 @@ def complete_order_payment(request, order_id):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+    # Send push notification to seller about payment release
+    buyer_name = request.user.first_name or request.user.email
+    send_workspace_notification(
+        recipient_user=seller,
+        title='💰 Payment Received!',
+        body=f'{buyer_name} completed the order. ৳{order.price} has been added to your balance!',
+        data={
+            'order_id': str(order.id),
+            'notification_type': 'payment_released'
+        }
+    )
+    
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({
         'order': serializer.data,
@@ -489,6 +567,33 @@ def cancel_order(request, order_id):
             
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    # Send push notification to the other party
+    recipient = order.seller if request.user == order.buyer else order.buyer
+    canceller_name = request.user.first_name or request.user.email
+    
+    if request.user == order.buyer:
+        # Buyer cancelled - notify seller
+        send_workspace_notification(
+            recipient_user=recipient,
+            title='❌ Order Cancelled',
+            body=f'{canceller_name} cancelled the order for "{order.gig.title[:30]}"',
+            data={
+                'order_id': str(order.id),
+                'notification_type': 'order_cancelled'
+            }
+        )
+    else:
+        # Seller cancelled - notify buyer about refund
+        send_workspace_notification(
+            recipient_user=recipient,
+            title='💸 Order Cancelled & Refunded',
+            body=f'{canceller_name} cancelled your order. ৳{order.price} has been refunded to your balance.',
+            data={
+                'order_id': str(order.id),
+                'notification_type': 'order_refunded'
+            }
+        )
     
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({
@@ -569,6 +674,26 @@ def create_order_message(request, order_id):
         media=media,
         file_name=media.name if media else None,
         file_size=media.size if media else None
+    )
+    
+    # Send push notification to the other party
+    recipient = order.seller if request.user == order.buyer else order.buyer
+    sender_name = request.user.first_name or request.user.email
+    
+    # Determine message preview
+    if media:
+        preview = f'📎 Sent an attachment'
+    else:
+        preview = content[:50] + '...' if len(content) > 50 else content
+    
+    send_workspace_notification(
+        recipient_user=recipient,
+        title=f'💬 New message from {sender_name}',
+        body=preview,
+        data={
+            'order_id': str(order.id),
+            'notification_type': 'order_message'
+        }
     )
     
     serializer = OrderMessageSerializer(message, context={'request': request})
@@ -763,6 +888,36 @@ def update_order_status(request, order_id, action):
         sender=user,
         content=action_messages[action],
         message_type='text'
+    )
+    
+    # Send push notification to the other party
+    recipient = order.buyer if user == order.seller else order.seller
+    actor_name = user.first_name or user.email
+    
+    notification_titles = {
+        'accept': '✅ Order Accepted!',
+        'decline': '❌ Order Declined',
+        'deliver': '📦 Order Delivered!',
+        'complete': '🎉 Order Completed!',
+        'cancel': '❌ Order Cancelled'
+    }
+    
+    notification_bodies = {
+        'accept': f'{actor_name} accepted your order for "{order.gig.title[:30]}"',
+        'decline': f'{actor_name} declined your order for "{order.gig.title[:30]}"',
+        'deliver': f'{actor_name} has delivered your order "{order.gig.title[:30]}"',
+        'complete': f'{actor_name} marked the order as complete. Payment released!',
+        'cancel': f'{actor_name} cancelled the order for "{order.gig.title[:30]}"'
+    }
+    
+    send_workspace_notification(
+        recipient_user=recipient,
+        title=notification_titles.get(action, 'Order Update'),
+        body=notification_bodies.get(action, f'Order status updated to {action}'),
+        data={
+            'order_id': str(order.id),
+            'notification_type': f'order_{action}'
+        }
     )
     
     serializer = GigOrderSerializer(order, context={'request': request})
