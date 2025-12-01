@@ -159,12 +159,12 @@ export const useAdsyChat = () => {
     if (chatRoom && chatRoom.unread_count > 0) {
       chatRoom.unread_count = 0
       
-      // Mark messages as read on the server
+      // Mark messages as read on the server (endpoint is mark_as_read with underscore)
       try {
-        await post(`/adsyconnect/chatrooms/${chat.id}/mark_read/`, {})
+        await post(`/adsyconnect/chatrooms/${chat.id}/mark_as_read/`, {})
       } catch (error) {
         // Silently handle - UI already updated
-        console.log('Mark read API call failed, but UI updated')
+        console.log('Mark read API call failed, but UI updated:', error)
       }
     }
     
