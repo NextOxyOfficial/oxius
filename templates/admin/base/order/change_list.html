@@ -1,0 +1,196 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<style>
+    .orders-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 25px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .orders-header h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .orders-header p {
+        margin: 8px 0 0 0;
+        opacity: 0.85;
+        font-size: 14px;
+    }
+    
+    .orders-stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    @media (max-width: 1200px) {
+        .orders-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 700px) {
+        .orders-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .order-stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+        transition: transform 0.2s;
+    }
+    .order-stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .order-stat-card .icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+    .order-stat-card .value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+    }
+    .order-stat-card .label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+    
+    .quick-filter-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .quick-filter-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        background: #f9fafb;
+        transition: all 0.2s;
+    }
+    .quick-filter-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+    .quick-filter-btn.pending { border-left: 3px solid #f59e0b; }
+    .quick-filter-btn.processing { border-left: 3px solid #3b82f6; }
+    .quick-filter-btn.shipped { border-left: 3px solid #8b5cf6; }
+    .quick-filter-btn.delivered { border-left: 3px solid #10b981; }
+    .quick-filter-btn.cancelled { border-left: 3px solid #ef4444; }
+    
+    .revenue-banner {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        border-radius: 12px;
+        padding: 20px 25px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        color: white;
+    }
+    .revenue-banner .amount {
+        font-size: 28px;
+        font-weight: 700;
+    }
+    .revenue-banner .label {
+        font-size: 13px;
+        opacity: 0.9;
+    }
+</style>
+
+<div class="orders-header">
+    <div>
+        <h1>🛒 Order Management</h1>
+        <p>Track and manage all customer orders</p>
+    </div>
+</div>
+
+<div class="orders-stats">
+    <div class="order-stat-card">
+        <div class="icon">📦</div>
+        <div class="value" id="total-orders">-</div>
+        <div class="label">Total Orders</div>
+    </div>
+    <div class="order-stat-card">
+        <div class="icon">⏳</div>
+        <div class="value" id="pending-orders">-</div>
+        <div class="label">Pending</div>
+    </div>
+    <div class="order-stat-card">
+        <div class="icon">🔄</div>
+        <div class="value" id="processing-orders">-</div>
+        <div class="label">Processing</div>
+    </div>
+    <div class="order-stat-card">
+        <div class="icon">🚚</div>
+        <div class="value" id="shipped-orders">-</div>
+        <div class="label">Shipped</div>
+    </div>
+    <div class="order-stat-card">
+        <div class="icon">✅</div>
+        <div class="value" id="delivered-orders">-</div>
+        <div class="label">Delivered</div>
+    </div>
+</div>
+
+<div class="quick-filter-bar">
+    <span style="color: #6b7280; font-size: 13px; padding: 8px 0;">Quick Filters:</span>
+    <a href="?" class="quick-filter-btn">All Orders</a>
+    <a href="?order_status__exact=pending" class="quick-filter-btn pending">⏳ Pending</a>
+    <a href="?order_status__exact=processing" class="quick-filter-btn processing">🔄 Processing</a>
+    <a href="?order_status__exact=shipped" class="quick-filter-btn shipped">🚚 Shipped</a>
+    <a href="?order_status__exact=delivered" class="quick-filter-btn delivered">✅ Delivered</a>
+    <a href="?order_status__exact=cancelled" class="quick-filter-btn cancelled">❌ Cancelled</a>
+</div>
+
+{{ block.super }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('#result_list tbody tr');
+    let total = rows.length;
+    let pending = 0, processing = 0, shipped = 0, delivered = 0;
+    
+    rows.forEach(row => {
+        const statusCell = row.querySelector('td.field-status_badge');
+        if (statusCell) {
+            const text = statusCell.textContent.toUpperCase();
+            if (text.includes('PENDING')) pending++;
+            else if (text.includes('PROCESSING')) processing++;
+            else if (text.includes('SHIPPED')) shipped++;
+            else if (text.includes('DELIVERED') || text.includes('COMPLETED')) delivered++;
+        }
+    });
+    
+    document.getElementById('total-orders').textContent = total;
+    document.getElementById('pending-orders').textContent = pending;
+    document.getElementById('processing-orders').textContent = processing;
+    document.getElementById('shipped-orders').textContent = shipped;
+    document.getElementById('delivered-orders').textContent = delivered;
+});
+</script>
+{% endblock %}

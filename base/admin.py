@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.urls import reverse
@@ -7,6 +8,33 @@ from django.utils.html import format_html, mark_safe
 from .models import *
 # Import notification admin panel
 from .notification_admin import *
+
+
+# Custom Admin Site with Dashboard Stats
+class CustomAdminSite(AdminSite):
+    site_header = "Oxius Admin"
+    site_title = "Oxius Admin Portal"
+    index_title = "Dashboard"
+    
+    def index(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        
+        # Get stats for dashboard
+        try:
+            extra_context['users_count'] = User.objects.count()
+            extra_context['products_count'] = Product.objects.count()
+            extra_context['kyc_pending'] = NID.objects.filter(pending=True, completed=False).count()
+        except:
+            pass
+        
+        try:
+            from workspace.models import Gig, GigOrder
+            extra_context['gigs_count'] = Gig.objects.count()
+            extra_context['orders_count'] = GigOrder.objects.count()
+        except:
+            pass
+        
+        return super().index(request, extra_context=extra_context)
 
 
 # Proxy model for Store management
@@ -195,35 +223,102 @@ class StoreAdmin(admin.ModelAdmin):
 
 
 class CustomUserAdmin(UserAdmin):
+    """
+    Professional User Admin with enhanced UX for managing users.
+    """
     form = CustomUserChangeForm
     add_form = CustomUserCreationForm
+    
+    change_list_template = 'admin/base/user/change_list.html'
 
     list_display = (
-        "email",
-        "first_name",
-        "balance",
-        "diamond_balance",
-        "age",
-        "gender",
-        "pending_balance",
-        "address",
-        "phone",
-        "kyc",
-        "is_active",
-        "date_joined",
-        "is_pro",
-        "pro_validity",
-        "is_topcontributor",
-        "store_name",
-        "store_username",
-        "store_logo",
-        "store_banner",
-        "store_address",
-        "store_description",
-        "product_limit",
+        "user_profile",
+        "contact_info",
+        "verification_badges",
+        "balance_display",
+        "account_status",
+        "joined_date",
     )
-    list_filter = ("is_vendor", "is_active", "user_type", "kyc")
-    list_per_page = 20
+    list_filter = ("is_vendor", "is_active", "user_type", "kyc", "is_pro", "kyc_pending")
+    list_per_page = 25
+    
+    def user_profile(self, obj):
+        name = f"{obj.first_name} {obj.last_name}".strip() or obj.username
+        image_html = ""
+        if obj.image:
+            image_html = f'<img src="{obj.image.url}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px; border: 2px solid #e5e7eb;"/>'
+        else:
+            initials = (obj.first_name[:1] + obj.last_name[:1]).upper() if obj.first_name else obj.username[:2].upper()
+            image_html = f'<div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; margin-right: 12px;">{initials}</div>'
+        
+        return format_html(
+            '<div style="display: flex; align-items: center;">'
+            '{}'
+            '<div style="line-height: 1.4;">'
+            '<strong style="font-size: 14px; color: #111827;">{}</strong><br>'
+            '<span style="font-size: 11px; color: #6b7280;">@{}</span>'
+            '</div>'
+            '</div>',
+            mark_safe(image_html), name, obj.username
+        )
+    user_profile.short_description = 'User'
+    
+    def contact_info(self, obj):
+        email = obj.email or "—"
+        phone = obj.phone or "—"
+        return format_html(
+            '<div style="line-height: 1.5; font-size: 12px;">'
+            '<span style="color: #374151;">📧 {}</span><br>'
+            '<span style="color: #6b7280;">📱 {}</span>'
+            '</div>',
+            email[:25] + '...' if len(email) > 25 else email, phone
+        )
+    contact_info.short_description = 'Contact'
+    
+    def verification_badges(self, obj):
+        badges = []
+        if obj.kyc:
+            badges.append('<span style="background: #10b981; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 4px;">✓ KYC</span>')
+        elif obj.kyc_pending:
+            badges.append('<span style="background: #f59e0b; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 4px;">⏳ KYC</span>')
+        if obj.is_pro:
+            badges.append('<span style="background: #8b5cf6; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 4px;">⭐ PRO</span>')
+        if obj.is_vendor:
+            badges.append('<span style="background: #3b82f6; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 4px;">🏪 Vendor</span>')
+        if obj.is_topcontributor:
+            badges.append('<span style="background: #ec4899; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">🏆 Top</span>')
+        
+        if not badges:
+            return format_html('<span style="color: #9ca3af; font-size: 11px;">No badges</span>')
+        return format_html(''.join(badges))
+    verification_badges.short_description = 'Badges'
+    
+    def balance_display(self, obj):
+        return format_html(
+            '<div style="line-height: 1.5; font-size: 12px;">'
+            '<span style="color: #059669; font-weight: 600;">৳{}</span><br>'
+            '<span style="color: #6b7280;">💎 {}</span>'
+            '</div>',
+            obj.balance, obj.diamond_balance
+        )
+    balance_display.short_description = 'Balance'
+    
+    def account_status(self, obj):
+        if obj.is_active:
+            return format_html(
+                '<span style="background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;">● Active</span>'
+            )
+        return format_html(
+            '<span style="background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;">● Inactive</span>'
+        )
+    account_status.short_description = 'Status'
+    
+    def joined_date(self, obj):
+        return format_html(
+            '<span style="color: #6b7280; font-size: 12px;">{}</span>',
+            obj.date_joined.strftime('%b %d, %Y')
+        )
+    joined_date.short_description = 'Joined'
 
     def get_fieldsets(self, request, obj=None):
         if not obj:
@@ -843,18 +938,112 @@ admin.site.register(ProductMedia)
 
 
 class ProductAdmin(admin.ModelAdmin):
+    """
+    Professional Product Admin with enhanced UX for managing products.
+    """
+    change_list_template = 'admin/base/product/change_list.html'
+    
     list_display = (
-        "name",
-        "get_owner_store_name",
-        "sale_price",
-        "regular_price",
-        "created_at",
-        "updated_at",
+        "product_info",
+        "store_info",
+        "pricing_display",
+        "stock_status",
+        "product_status",
+        "created_date",
     )
+    list_filter = ("is_active", "is_featured", "is_free_delivery", "created_at")
+    
+    def product_info(self, obj):
+        image_html = '<div style="width: 50px; height: 50px; border-radius: 8px; background: #f3f4f6; display: inline-flex; align-items: center; justify-content: center; margin-right: 12px; color: #9ca3af;">📦</div>'
+        
+        # image is ManyToMany, get first image if exists
+        try:
+            first_image = obj.image.first()
+            if first_image and first_image.image:
+                image_html = f'<img src="{first_image.image.url}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid #e5e7eb;"/>'
+        except:
+            pass
+        
+        name = obj.name[:35] + '...' if len(obj.name) > 35 else obj.name
+        slug_display = str(obj.slug)[:30] if obj.slug else '—'
+        
+        return format_html(
+            '<div style="display: flex; align-items: center;">'
+            '{}'
+            '<div style="line-height: 1.4;">'
+            '<strong style="font-size: 13px; color: #111827;">{}</strong><br>'
+            '<span style="font-size: 11px; color: #6b7280;">{}</span>'
+            '</div>'
+            '</div>',
+            mark_safe(image_html), name, slug_display
+        )
+    product_info.short_description = 'Product'
+    
+    def store_info(self, obj):
+        if obj.owner:
+            store_name = obj.owner.store_name or obj.owner.username
+            return format_html(
+                '<div style="line-height: 1.4;">'
+                '<span style="font-size: 13px; color: #374151;">🏪 {}</span><br>'
+                '<span style="font-size: 11px; color: #6b7280;">{}</span>'
+                '</div>',
+                store_name[:20], obj.owner.email[:25] if obj.owner.email else '—'
+            )
+        return format_html('<span style="color: #9ca3af;">No owner</span>')
+    store_info.short_description = 'Store'
+    
+    def pricing_display(self, obj):
+        if obj.sale_price and obj.sale_price < obj.regular_price:
+            discount = int(((obj.regular_price - obj.sale_price) / obj.regular_price) * 100)
+            return format_html(
+                '<div style="line-height: 1.5;">'
+                '<span style="font-size: 14px; font-weight: 600; color: #059669;">৳{}</span><br>'
+                '<span style="font-size: 11px; color: #9ca3af; text-decoration: line-through;">৳{}</span> '
+                '<span style="background: #fef2f2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">-{}%</span>'
+                '</div>',
+                obj.sale_price, obj.regular_price, discount
+            )
+        return format_html(
+            '<span style="font-size: 14px; font-weight: 600; color: #374151;">৳{}</span>',
+            obj.regular_price
+        )
+    pricing_display.short_description = 'Price'
+    
+    def stock_status(self, obj):
+        qty = obj.quantity if obj.quantity else 0
+        if qty > 10:
+            return format_html(
+                '<span style="background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;">{} in stock</span>',
+                qty
+            )
+        elif qty > 0:
+            return format_html(
+                '<span style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;">{} left</span>',
+                qty
+            )
+        return format_html(
+            '<span style="background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;">Out of stock</span>'
+        )
+    stock_status.short_description = 'Stock'
+    
+    def product_status(self, obj):
+        badges = []
+        if obj.is_active:
+            badges.append('<span style="background: #10b981; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 4px;">Active</span>')
+        else:
+            badges.append('<span style="background: #ef4444; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; margin-right: 4px;">Inactive</span>')
+        if obj.is_featured:
+            badges.append('<span style="background: #f59e0b; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;">⭐ Featured</span>')
+        return format_html(''.join(badges))
+    product_status.short_description = 'Status'
+    
+    def created_date(self, obj):
+        return format_html(
+            '<span style="color: #6b7280; font-size: 12px;">{}</span>',
+            obj.created_at.strftime('%b %d, %Y')
+        )
+    created_date.short_description = 'Created'
 
-    def get_owner_store_name(self, obj):
-        return obj.owner.store_name if obj.owner else None
-    get_owner_store_name.short_description = 'Store Name'
     filter_horizontal = (
         "batches",
         "divisions",
@@ -873,7 +1062,7 @@ class ProductAdmin(admin.ModelAdmin):
         "short_description",
         "keywords",
     )
-    list_per_page = 10
+    list_per_page = 20
     ordering = ("-created_at",)
 
     fieldsets = (
@@ -995,17 +1184,118 @@ class OrderItemInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
+    """
+    Professional Order Admin with enhanced UX for managing orders.
+    """
+    change_list_template = 'admin/base/order/change_list.html'
+    
     list_display = (
-        "order_number",
-        "created_at",
-        "updated_at",
-        "product_owners_shops",
-        "user",
-        "order_status",
-        "total",
-        "payment_method",
+        "order_info",
+        "customer_info",
+        "shops_display",
+        "order_total",
+        "status_badge",
+        "payment_badge",
+        "order_date",
     )
+    list_filter = ("order_status", "payment_method", "created_at")
+    search_fields = ("order_number", "user__email", "user__first_name", "user__last_name", "user__phone")
     readonly_fields = ("order_number", "created_at", "updated_at")
+    list_per_page = 25
+    ordering = ["-created_at"]
+
+    def order_info(self, obj):
+        return format_html(
+            '<div style="line-height: 1.4;">'
+            '<strong style="font-size: 14px; color: #111827; font-family: monospace;">#{}</strong><br>'
+            '<span style="font-size: 11px; color: #6b7280;">{} items</span>'
+            '</div>',
+            obj.order_number, obj.items.count()
+        )
+    order_info.short_description = 'Order'
+    
+    def customer_info(self, obj):
+        if obj.user:
+            name = f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.username
+            return format_html(
+                '<div style="line-height: 1.4;">'
+                '<strong style="font-size: 13px; color: #374151;">{}</strong><br>'
+                '<span style="font-size: 11px; color: #6b7280;">{}</span>'
+                '</div>',
+                name, obj.user.phone or obj.user.email or '—'
+            )
+        return format_html('<span style="color: #9ca3af;">No customer</span>')
+    customer_info.short_description = 'Customer'
+    
+    def shops_display(self, obj):
+        owners_shops = []
+        for item in obj.items.all():
+            if item.product and item.product.owner and item.product.owner.store_name:
+                owners_shops.append(item.product.owner.store_name)
+        unique_shops = list(set(owners_shops))[:2]  # Show max 2 shops
+        
+        if not unique_shops:
+            return format_html('<span style="color: #9ca3af;">—</span>')
+        
+        shops_html = ''.join([
+            f'<span style="background: #f3f4f6; padding: 3px 8px; border-radius: 4px; font-size: 11px; margin-right: 4px;">{shop[:15]}</span>'
+            for shop in unique_shops
+        ])
+        if len(list(set(owners_shops))) > 2:
+            shops_html += f'<span style="color: #6b7280; font-size: 11px;">+{len(list(set(owners_shops))) - 2} more</span>'
+        return format_html(shops_html)
+    shops_display.short_description = 'Shops'
+    
+    def order_total(self, obj):
+        return format_html(
+            '<span style="font-size: 14px; font-weight: 600; color: #059669;">৳{}</span>',
+            obj.total
+        )
+    order_total.short_description = 'Total'
+    
+    def status_badge(self, obj):
+        status_colors = {
+            'pending': ('#f59e0b', '⏳'),
+            'processing': ('#3b82f6', '🔄'),
+            'shipped': ('#8b5cf6', '🚚'),
+            'delivered': ('#10b981', '✅'),
+            'completed': ('#059669', '✓'),
+            'cancelled': ('#ef4444', '✗'),
+            'refunded': ('#6b7280', '↩'),
+        }
+        status = obj.order_status.lower() if obj.order_status else 'pending'
+        color, icon = status_colors.get(status, ('#6b7280', '•'))
+        
+        return format_html(
+            '<span style="background: {}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;">{} {}</span>',
+            color, icon, obj.order_status.upper() if obj.order_status else 'PENDING'
+        )
+    status_badge.short_description = 'Status'
+    
+    def payment_badge(self, obj):
+        method = obj.payment_method or 'Unknown'
+        method_colors = {
+            'cod': '#f59e0b',
+            'cash': '#f59e0b',
+            'bkash': '#e2136e',
+            'nagad': '#f6921e',
+            'rocket': '#8c3494',
+            'card': '#3b82f6',
+            'online': '#10b981',
+        }
+        color = method_colors.get(method.lower(), '#6b7280')
+        return format_html(
+            '<span style="background: {}15; color: {}; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;">{}</span>',
+            color, color, method.upper()
+        )
+    payment_badge.short_description = 'Payment'
+    
+    def order_date(self, obj):
+        return format_html(
+            '<span style="color: #6b7280; font-size: 12px;">{}</span>',
+            obj.created_at.strftime('%b %d, %Y %H:%M')
+        )
+    order_date.short_description = 'Date'
 
     fieldsets = (
         (
@@ -1026,21 +1316,6 @@ class OrderAdmin(admin.ModelAdmin):
         ),
     )
     inlines = [OrderItemInline]
-
-    @admin.display(description="Product Owners / Shops")
-    def product_owners_shops(self, obj):
-        owners_shops = []
-        for item in obj.items.all():
-            print(f"Processing item: {item}")
-            if item.product and item.product.owner:
-                owners_shops.append(f"{item.product.owner.store_name}")
-        # Remove duplicates
-        unique_shops = list(set(owners_shops))
-        return ", ".join(unique_shops)
-
-    @admin.display(ordering="-created_at")
-    def created_at(self, obj):
-        return obj.created_at
 
 
 admin.site.register(Order, OrderAdmin)
@@ -1145,3 +1420,52 @@ class SearchHistoryAdmin(admin.ModelAdmin):
 
 
 admin.site.register(SearchHistory, SearchHistoryAdmin)
+
+
+# Configure admin site
+admin.site.site_header = "Oxius Admin"
+admin.site.site_title = "Oxius Admin Portal"
+admin.site.index_title = "Dashboard"
+
+# Override the default admin index view to include stats
+original_index = admin.site.index
+
+def custom_index(request, extra_context=None):
+    extra_context = extra_context or {}
+    
+    # Get stats for dashboard
+    try:
+        extra_context['users_count'] = User.objects.count()
+        extra_context['products_count'] = Product.objects.count()
+        extra_context['kyc_pending'] = NID.objects.filter(pending=True, completed=False).count()
+    except:
+        pass
+    
+    try:
+        from workspace.models import Gig, GigOrder, GigFeeSettings
+        from django.db.models import Sum
+        from decimal import Decimal
+        
+        extra_context['gigs_count'] = Gig.objects.count()
+        extra_context['orders_count'] = GigOrder.objects.count()
+        
+        # Platform earnings calculation
+        completed_orders = GigOrder.objects.filter(status='completed')
+        total_completed_value = completed_orders.aggregate(total=Sum('price'))['total'] or Decimal('0')
+        
+        fee_settings = GigFeeSettings.get_settings()
+        if fee_settings.fees_enabled:
+            total_fee_percent = float(fee_settings.buyer_fee_percent) + float(fee_settings.seller_fee_percent)
+            platform_earnings = round(float(total_completed_value) * total_fee_percent / 100, 2)
+        else:
+            platform_earnings = 0
+        
+        extra_context['platform_earnings'] = platform_earnings
+        extra_context['completed_orders'] = completed_orders.count()
+        extra_context['total_order_value'] = total_completed_value
+    except:
+        pass
+    
+    return original_index(request, extra_context=extra_context)
+
+admin.site.index = custom_index

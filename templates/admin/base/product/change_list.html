@@ -1,0 +1,203 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<style>
+    .products-header {
+        background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 25px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .products-header h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .products-header p {
+        margin: 8px 0 0 0;
+        opacity: 0.85;
+        font-size: 14px;
+    }
+    
+    .products-stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    @media (max-width: 1200px) {
+        .products-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 700px) {
+        .products-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .product-stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+    }
+    .product-stat-card .icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+    .product-stat-card .value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+    }
+    .product-stat-card .label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+    
+    .quick-filter-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .quick-filter-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        background: #f9fafb;
+        transition: all 0.2s;
+    }
+    .quick-filter-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+    .quick-filter-btn.active {
+        background: #059669;
+        color: white;
+        border-color: #059669;
+    }
+    
+    .inventory-alert {
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 10px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+        color: #92400e;
+    }
+    .inventory-alert .icon {
+        font-size: 20px;
+    }
+</style>
+
+<div class="products-header">
+    <div>
+        <h1>📦 Product Management</h1>
+        <p>Manage all products, inventory, and pricing</p>
+    </div>
+</div>
+
+<div class="products-stats">
+    <div class="product-stat-card">
+        <div class="icon">📦</div>
+        <div class="value" id="total-products">-</div>
+        <div class="label">Total Products</div>
+    </div>
+    <div class="product-stat-card">
+        <div class="icon">✅</div>
+        <div class="value" id="active-products">-</div>
+        <div class="label">Active</div>
+    </div>
+    <div class="product-stat-card">
+        <div class="icon">⭐</div>
+        <div class="value" id="featured-products">-</div>
+        <div class="label">Featured</div>
+    </div>
+    <div class="product-stat-card">
+        <div class="icon">📉</div>
+        <div class="value" id="low-stock">-</div>
+        <div class="label">Low Stock</div>
+    </div>
+    <div class="product-stat-card">
+        <div class="icon">🚫</div>
+        <div class="value" id="out-of-stock">-</div>
+        <div class="label">Out of Stock</div>
+    </div>
+</div>
+
+<div class="quick-filter-bar">
+    <span style="color: #6b7280; font-size: 13px; padding: 8px 0;">Quick Filters:</span>
+    <a href="?" class="quick-filter-btn">All Products</a>
+    <a href="?is_active__exact=1" class="quick-filter-btn">✅ Active</a>
+    <a href="?is_active__exact=0" class="quick-filter-btn">🔴 Inactive</a>
+    <a href="?is_featured__exact=1" class="quick-filter-btn">⭐ Featured</a>
+    <a href="?is_free_delivery__exact=1" class="quick-filter-btn">🚚 Free Delivery</a>
+</div>
+
+<div class="inventory-alert" id="inventory-alert" style="display: none;">
+    <span class="icon">⚠️</span>
+    <span id="alert-text">Some products are running low on stock!</span>
+</div>
+
+{{ block.super }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('#result_list tbody tr');
+    let total = rows.length;
+    let active = 0, featured = 0, lowStock = 0, outOfStock = 0;
+    
+    rows.forEach(row => {
+        const statusCell = row.querySelector('td.field-product_status');
+        const stockCell = row.querySelector('td.field-stock_status');
+        
+        if (statusCell) {
+            const text = statusCell.innerHTML;
+            if (text.includes('>Active<')) active++;
+            if (text.includes('Featured')) featured++;
+        }
+        if (stockCell) {
+            const text = stockCell.textContent;
+            if (text.includes('Out of stock')) outOfStock++;
+            else if (text.includes('left')) lowStock++;
+        }
+    });
+    
+    document.getElementById('total-products').textContent = total;
+    document.getElementById('active-products').textContent = active;
+    document.getElementById('featured-products').textContent = featured;
+    document.getElementById('low-stock').textContent = lowStock;
+    document.getElementById('out-of-stock').textContent = outOfStock;
+    
+    // Show alert if there are low stock or out of stock items
+    if (lowStock > 0 || outOfStock > 0) {
+        document.getElementById('inventory-alert').style.display = 'flex';
+        document.getElementById('alert-text').textContent = 
+            `${outOfStock} products out of stock, ${lowStock} products running low!`;
+    }
+});
+</script>
+{% endblock %}

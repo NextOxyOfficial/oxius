@@ -1,0 +1,175 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<style>
+    .users-header {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 25px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .users-header h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .users-header p {
+        margin: 8px 0 0 0;
+        opacity: 0.85;
+        font-size: 14px;
+    }
+    
+    .users-stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    @media (max-width: 1200px) {
+        .users-stats { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 700px) {
+        .users-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .user-stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        border: 1px solid #e5e7eb;
+        text-align: center;
+    }
+    .user-stat-card .icon {
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+    .user-stat-card .value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+    }
+    .user-stat-card .label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+    
+    .quick-filter-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .quick-filter-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        background: #f9fafb;
+        transition: all 0.2s;
+    }
+    .quick-filter-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+    .quick-filter-btn.active {
+        background: #0ea5e9;
+        color: white;
+        border-color: #0ea5e9;
+    }
+</style>
+
+<div class="users-header">
+    <div>
+        <h1>👥 User Management</h1>
+        <p>Manage all registered users, vendors, and their accounts</p>
+    </div>
+</div>
+
+<div class="users-stats">
+    <div class="user-stat-card">
+        <div class="icon">👥</div>
+        <div class="value" id="total-users">-</div>
+        <div class="label">Total Users</div>
+    </div>
+    <div class="user-stat-card">
+        <div class="icon">✅</div>
+        <div class="value" id="verified-users">-</div>
+        <div class="label">KYC Verified</div>
+    </div>
+    <div class="user-stat-card">
+        <div class="icon">⭐</div>
+        <div class="value" id="pro-users">-</div>
+        <div class="label">Pro Members</div>
+    </div>
+    <div class="user-stat-card">
+        <div class="icon">🏪</div>
+        <div class="value" id="vendor-users">-</div>
+        <div class="label">Vendors</div>
+    </div>
+    <div class="user-stat-card">
+        <div class="icon">🟢</div>
+        <div class="value" id="active-users">-</div>
+        <div class="label">Active</div>
+    </div>
+</div>
+
+<div class="quick-filter-bar">
+    <span style="color: #6b7280; font-size: 13px; padding: 8px 0;">Quick Filters:</span>
+    <a href="?" class="quick-filter-btn">All Users</a>
+    <a href="?kyc__exact=1" class="quick-filter-btn">✓ KYC Verified</a>
+    <a href="?kyc_pending__exact=1" class="quick-filter-btn">⏳ KYC Pending</a>
+    <a href="?is_pro__exact=1" class="quick-filter-btn">⭐ Pro</a>
+    <a href="?is_vendor__exact=1" class="quick-filter-btn">🏪 Vendors</a>
+    <a href="?is_active__exact=0" class="quick-filter-btn">🔴 Inactive</a>
+</div>
+
+{{ block.super }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('#result_list tbody tr');
+    let total = rows.length;
+    let verified = 0, pro = 0, vendor = 0, active = 0;
+    
+    rows.forEach(row => {
+        const badgesCell = row.querySelector('td.field-verification_badges');
+        const statusCell = row.querySelector('td.field-account_status');
+        
+        if (badgesCell) {
+            const text = badgesCell.innerHTML;
+            if (text.includes('✓ KYC')) verified++;
+            if (text.includes('PRO')) pro++;
+            if (text.includes('Vendor')) vendor++;
+        }
+        if (statusCell && statusCell.textContent.includes('Active')) {
+            active++;
+        }
+    });
+    
+    document.getElementById('total-users').textContent = total;
+    document.getElementById('verified-users').textContent = verified;
+    document.getElementById('pro-users').textContent = pro;
+    document.getElementById('vendor-users').textContent = vendor;
+    document.getElementById('active-users').textContent = active;
+});
+</script>
+{% endblock %}
