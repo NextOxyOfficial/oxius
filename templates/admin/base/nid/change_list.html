@@ -1,0 +1,215 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<style>
+    .kyc-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 25px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .kyc-header h1 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .kyc-header p {
+        margin: 8px 0 0 0;
+        opacity: 0.85;
+        font-size: 14px;
+    }
+    
+    .kyc-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    @media (max-width: 1000px) {
+        .kyc-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+        .kyc-stats { grid-template-columns: 1fr; }
+    }
+    
+    .kyc-stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .kyc-stat-card .icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    .kyc-stat-card.pending .icon { background: #fef3c7; }
+    .kyc-stat-card.approved .icon { background: #d1fae5; }
+    .kyc-stat-card.rejected .icon { background: #fee2e2; }
+    .kyc-stat-card.total .icon { background: #e0e7ff; }
+    
+    .kyc-stat-card .info .value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #111827;
+    }
+    .kyc-stat-card .info .label {
+        font-size: 13px;
+        color: #6b7280;
+    }
+    
+    .quick-filter-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .quick-filter-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+        background: #f9fafb;
+        transition: all 0.2s;
+    }
+    .quick-filter-btn:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+    .quick-filter-btn.active {
+        background: #7c3aed;
+        color: white;
+        border-color: #7c3aed;
+    }
+    .quick-filter-btn.pending { border-left: 3px solid #f59e0b; }
+    .quick-filter-btn.approved { border-left: 3px solid #10b981; }
+    .quick-filter-btn.rejected { border-left: 3px solid #ef4444; }
+    
+    .help-box {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .help-box .icon {
+        font-size: 20px;
+    }
+    .help-box .text {
+        font-size: 13px;
+        color: #1e40af;
+        line-height: 1.5;
+    }
+    .help-box .text strong {
+        display: block;
+        margin-bottom: 4px;
+    }
+</style>
+
+<div class="kyc-header">
+    <div>
+        <h1>🪪 KYC Verification Center</h1>
+        <p>Review and manage user identity verification requests</p>
+    </div>
+</div>
+
+<div class="kyc-stats">
+    <div class="kyc-stat-card pending">
+        <div class="icon">⏳</div>
+        <div class="info">
+            <div class="value" id="pending-count">-</div>
+            <div class="label">Pending Review</div>
+        </div>
+    </div>
+    <div class="kyc-stat-card approved">
+        <div class="icon">✅</div>
+        <div class="info">
+            <div class="value" id="approved-count">-</div>
+            <div class="label">Approved</div>
+        </div>
+    </div>
+    <div class="kyc-stat-card rejected">
+        <div class="icon">❌</div>
+        <div class="info">
+            <div class="value" id="rejected-count">-</div>
+            <div class="label">Rejected</div>
+        </div>
+    </div>
+    <div class="kyc-stat-card total">
+        <div class="icon">📋</div>
+        <div class="info">
+            <div class="value" id="total-count">-</div>
+            <div class="label">Total Submissions</div>
+        </div>
+    </div>
+</div>
+
+<div class="quick-filter-bar">
+    <span style="color: #6b7280; font-size: 13px; padding: 8px 0;">Quick Filters:</span>
+    <a href="?" class="quick-filter-btn {% if not request.GET.pending and not request.GET.approved and not request.GET.rejected %}active{% endif %}">All</a>
+    <a href="?pending__exact=1&approved__exact=0&rejected__exact=0" class="quick-filter-btn pending">⏳ Pending</a>
+    <a href="?approved__exact=1" class="quick-filter-btn approved">✅ Approved</a>
+    <a href="?rejected__exact=1" class="quick-filter-btn rejected">❌ Rejected</a>
+</div>
+
+<div class="help-box">
+    <div class="icon">💡</div>
+    <div class="text">
+        <strong>How to verify:</strong>
+        Click on a submission to review documents. Check NID front/back images match the selfie. 
+        Verify the NID number is readable. Then approve or reject the submission.
+    </div>
+</div>
+
+{{ block.super }}
+
+<script>
+// Count stats from the table
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('#result_list tbody tr');
+    let pending = 0, approved = 0, rejected = 0;
+    
+    rows.forEach(row => {
+        const statusCell = row.querySelector('td.field-status_badge');
+        if (statusCell) {
+            const text = statusCell.textContent;
+            if (text.includes('PENDING')) pending++;
+            else if (text.includes('APPROVED')) approved++;
+            else if (text.includes('REJECTED')) rejected++;
+        }
+    });
+    
+    document.getElementById('pending-count').textContent = pending || '0';
+    document.getElementById('approved-count').textContent = approved || '0';
+    document.getElementById('rejected-count').textContent = rejected || '0';
+    document.getElementById('total-count').textContent = rows.length || '0';
+});
+</script>
+{% endblock %}

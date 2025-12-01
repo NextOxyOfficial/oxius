@@ -2,10 +2,13 @@ from django.contrib import admin
 from django.utils.html import format_html, mark_safe
 from django.urls import reverse
 from django.utils import timezone
+from django.db.models import Sum, Count, Avg, Q, F
+from django.db.models.functions import TruncDate, TruncMonth
+from decimal import Decimal
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage, GigOrderTransaction,
     GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
-    WorkspaceBanner, GigFeeSettings, OrderDispute
+    WorkspaceBanner, GigFeeSettings, OrderDispute, WorkspaceReport
 )
 
 
@@ -1075,3 +1078,184 @@ class OrderDisputeAdmin(admin.ModelAdmin):
                     )
         
         super().save_model(request, obj, form, change)
+
+
+# ============================================
+# Workspace Earnings Report Admin
+# ============================================
+
+@admin.register(WorkspaceReport)
+class WorkspaceReportAdmin(admin.ModelAdmin):
+    """
+    Admin for viewing workspace earnings and platform fee reports.
+    This is a read-only view for analytics purposes.
+    """
+    
+    change_list_template = 'admin/workspace/workspacereport/change_list.html'
+    date_hierarchy = 'created_at'
+    list_filter = ('status', 'created_at')
+    
+    list_display = (
+        'order_id_display', 'gig_title', 'order_amount', 
+        'buyer_fee_display', 'seller_fee_display', 'platform_earnings',
+        'status_badge', 'created_at'
+    )
+    
+    def has_add_permission(self, request):
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        return False
+    
+    def order_id_display(self, obj):
+        return format_html(
+            '<a href="{}" style="font-family: monospace;">#{}</a>',
+            reverse('admin:workspace_gigorder_change', args=[obj.id]),
+            str(obj.id)[:8].upper()
+        )
+    order_id_display.short_description = 'Order ID'
+    
+    def gig_title(self, obj):
+        return obj.gig.title[:30] + '...' if len(obj.gig.title) > 30 else obj.gig.title
+    gig_title.short_description = 'Gig'
+    
+    def order_amount(self, obj):
+        return format_html(
+            '<span style="font-weight: bold;">৳{}</span>',
+            obj.price
+        )
+    order_amount.short_description = 'Order Amount'
+    
+    def buyer_fee_display(self, obj):
+        """Calculate buyer fee based on current settings"""
+        settings = GigFeeSettings.get_settings()
+        if not settings.fees_enabled:
+            return format_html('<span style="color: #999;">৳0</span>')
+        fee = round(float(obj.price) * float(settings.buyer_fee_percent) / 100, 2)
+        return format_html(
+            '<span style="color: #1565c0;">৳{}</span>',
+            fee
+        )
+    buyer_fee_display.short_description = 'Buyer Fee'
+    
+    def seller_fee_display(self, obj):
+        """Calculate seller fee based on current settings"""
+        settings = GigFeeSettings.get_settings()
+        if not settings.fees_enabled:
+            return format_html('<span style="color: #999;">৳0</span>')
+        fee = round(float(obj.price) * float(settings.seller_fee_percent) / 100, 2)
+        return format_html(
+            '<span style="color: #e65100;">৳{}</span>',
+            fee
+        )
+    seller_fee_display.short_description = 'Seller Fee'
+    
+    def platform_earnings(self, obj):
+        """Calculate total platform earnings from this order"""
+        settings = GigFeeSettings.get_settings()
+        if not settings.fees_enabled:
+            return format_html('<span style="color: #999;">৳0</span>')
+        buyer_fee = round(float(obj.price) * float(settings.buyer_fee_percent) / 100, 2)
+        seller_fee = round(float(obj.price) * float(settings.seller_fee_percent) / 100, 2)
+        total = buyer_fee + seller_fee
+        return format_html(
+            '<span style="color: #2e7d32; font-weight: bold;">৳{}</span>',
+            total
+        )
+    platform_earnings.short_description = 'Platform Earns'
+    
+    def status_badge(self, obj):
+        colors = {
+            'pending': '#ff9800',
+            'in_progress': '#2196f3',
+            'delivered': '#9c27b0',
+            'completed': '#4caf50',
+            'cancelled': '#f44336',
+            'revision': '#ff5722',
+            'disputed': '#e91e63',
+        }
+        color = colors.get(obj.status, '#9e9e9e')
+        return format_html(
+            '<span style="background: {}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">{}</span>',
+            color, obj.get_status_display().upper()
+        )
+    status_badge.short_description = 'Status'
+    
+    def changelist_view(self, request, extra_context=None):
+        """Add summary statistics to the change list view"""
+        extra_context = extra_context or {}
+        
+        # Get fee settings
+        settings = GigFeeSettings.get_settings()
+        
+        # Calculate statistics
+        all_orders = GigOrder.objects.all()
+        completed_orders = all_orders.filter(status='completed')
+        
+        # Total orders
+        total_orders = all_orders.count()
+        completed_count = completed_orders.count()
+        pending_count = all_orders.filter(status='pending').count()
+        in_progress_count = all_orders.filter(status='in_progress').count()
+        
+        # Revenue calculations
+        total_order_value = all_orders.aggregate(total=Sum('price'))['total'] or Decimal('0')
+        completed_order_value = completed_orders.aggregate(total=Sum('price'))['total'] or Decimal('0')
+        
+        # Platform earnings (only from completed orders)
+        if settings.fees_enabled:
+            buyer_fee_percent = float(settings.buyer_fee_percent)
+            seller_fee_percent = float(settings.seller_fee_percent)
+            total_fee_percent = buyer_fee_percent + seller_fee_percent
+            
+            platform_earnings_completed = round(float(completed_order_value) * total_fee_percent / 100, 2)
+            platform_earnings_potential = round(float(total_order_value) * total_fee_percent / 100, 2)
+        else:
+            platform_earnings_completed = 0
+            platform_earnings_potential = 0
+        
+        # Today's stats
+        today = timezone.now().date()
+        today_orders = all_orders.filter(created_at__date=today)
+        today_count = today_orders.count()
+        today_value = today_orders.aggregate(total=Sum('price'))['total'] or Decimal('0')
+        
+        # This month's stats
+        this_month_orders = all_orders.filter(
+            created_at__year=today.year,
+            created_at__month=today.month
+        )
+        this_month_count = this_month_orders.count()
+        this_month_value = this_month_orders.aggregate(total=Sum('price'))['total'] or Decimal('0')
+        this_month_completed = this_month_orders.filter(status='completed')
+        this_month_completed_value = this_month_completed.aggregate(total=Sum('price'))['total'] or Decimal('0')
+        
+        if settings.fees_enabled:
+            this_month_earnings = round(float(this_month_completed_value) * total_fee_percent / 100, 2)
+        else:
+            this_month_earnings = 0
+        
+        extra_context.update({
+            'title': '📊 Workspace Earnings Report',
+            'fee_settings': settings,
+            'stats': {
+                'total_orders': total_orders,
+                'completed_count': completed_count,
+                'pending_count': pending_count,
+                'in_progress_count': in_progress_count,
+                'total_order_value': total_order_value,
+                'completed_order_value': completed_order_value,
+                'platform_earnings_completed': platform_earnings_completed,
+                'platform_earnings_potential': platform_earnings_potential,
+                'today_count': today_count,
+                'today_value': today_value,
+                'this_month_count': this_month_count,
+                'this_month_value': this_month_value,
+                'this_month_earnings': this_month_earnings,
+            }
+        })
+        
+        return super().changelist_view(request, extra_context=extra_context)

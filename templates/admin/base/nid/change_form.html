@@ -1,0 +1,345 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<style>
+    .kyc-review-header {
+        background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+        border-radius: 16px;
+        padding: 25px 30px;
+        margin-bottom: 25px;
+        color: white;
+    }
+    .kyc-review-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 24px;
+        font-weight: 600;
+    }
+    .kyc-review-header p {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 14px;
+    }
+    
+    .document-review-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+    @media (max-width: 900px) {
+        .document-review-grid { grid-template-columns: 1fr; }
+    }
+    
+    .document-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    .document-card-header {
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        font-weight: 600;
+        font-size: 14px;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .document-card-body {
+        padding: 16px;
+        text-align: center;
+    }
+    .document-card-body img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .document-card-body img:hover {
+        transform: scale(1.02);
+    }
+    .document-card-body .no-doc {
+        padding: 40px;
+        color: #9ca3af;
+        font-size: 14px;
+    }
+    .document-card-body a {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 8px 16px;
+        background: #7c3aed;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 13px;
+    }
+    .document-card-body a:hover {
+        background: #6d28d9;
+    }
+    
+    .user-info-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .user-info-card h3 {
+        margin: 0 0 15px 0;
+        font-size: 16px;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .user-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    .user-info-item {
+        background: #f9fafb;
+        padding: 12px 15px;
+        border-radius: 8px;
+    }
+    .user-info-item .label {
+        font-size: 11px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .user-info-item .value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    .action-btn {
+        flex: 1;
+        padding: 15px 20px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+    .action-btn.approve {
+        background: #10b981;
+        color: white;
+    }
+    .action-btn.approve:hover {
+        background: #059669;
+    }
+    .action-btn.reject {
+        background: #ef4444;
+        color: white;
+    }
+    .action-btn.reject:hover {
+        background: #dc2626;
+    }
+    
+    .verification-checklist {
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+    .verification-checklist h4 {
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        color: #92400e;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .checklist-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .checklist-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: #78350f;
+        background: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+    
+    /* Image modal */
+    .image-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.9);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .image-modal.active {
+        display: flex;
+    }
+    .image-modal img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+    }
+    .image-modal .close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 40px;
+        color: white;
+        cursor: pointer;
+    }
+</style>
+
+<div class="kyc-review-header">
+    <h1>🔍 KYC Document Review</h1>
+    <p>Carefully review all submitted documents before making a decision</p>
+</div>
+
+{% if original %}
+<div class="user-info-card">
+    <h3>👤 User Information</h3>
+    <div class="user-info-grid">
+        <div class="user-info-item">
+            <div class="label">Full Name</div>
+            <div class="value">{{ original.user.first_name }} {{ original.user.last_name }}</div>
+        </div>
+        <div class="user-info-item">
+            <div class="label">Email</div>
+            <div class="value">{{ original.user.email|default:"—" }}</div>
+        </div>
+        <div class="user-info-item">
+            <div class="label">Phone</div>
+            <div class="value">{{ original.user.phone|default:"—" }}</div>
+        </div>
+        <div class="user-info-item">
+            <div class="label">NID Number</div>
+            <div class="value">{{ original.user.nid_number|default:"Not provided" }}</div>
+        </div>
+        <div class="user-info-item">
+            <div class="label">Address</div>
+            <div class="value">{{ original.user.address|default:"—" }}</div>
+        </div>
+        <div class="user-info-item">
+            <div class="label">Current Status</div>
+            <div class="value">
+                {% if original.approved %}
+                    <span style="color: #10b981;">✓ Approved</span>
+                {% elif original.rejected %}
+                    <span style="color: #ef4444;">✗ Rejected</span>
+                {% elif original.pending %}
+                    <span style="color: #f59e0b;">⏳ Pending</span>
+                {% else %}
+                    <span style="color: #6b7280;">Unknown</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="verification-checklist">
+    <h4>📋 Verification Checklist</h4>
+    <div class="checklist-items">
+        <label class="checklist-item"><input type="checkbox"> NID front is clear & readable</label>
+        <label class="checklist-item"><input type="checkbox"> NID back is clear & readable</label>
+        <label class="checklist-item"><input type="checkbox"> Selfie matches NID photo</label>
+        <label class="checklist-item"><input type="checkbox"> NID number is valid</label>
+        <label class="checklist-item"><input type="checkbox"> Name matches user profile</label>
+    </div>
+</div>
+
+<div class="document-review-grid">
+    <div class="document-card">
+        <div class="document-card-header">📄 NID Front</div>
+        <div class="document-card-body">
+            {% if original.front %}
+                <img src="{{ original.front.url }}" alt="NID Front" onclick="openModal(this.src)">
+                <br><a href="{{ original.front.url }}" target="_blank">Open Full Size ↗</a>
+            {% else %}
+                <div class="no-doc">No document uploaded</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="document-card">
+        <div class="document-card-header">📄 NID Back</div>
+        <div class="document-card-body">
+            {% if original.back %}
+                <img src="{{ original.back.url }}" alt="NID Back" onclick="openModal(this.src)">
+                <br><a href="{{ original.back.url }}" target="_blank">Open Full Size ↗</a>
+            {% else %}
+                <div class="no-doc">No document uploaded</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="document-card">
+        <div class="document-card-header">🤳 Selfie</div>
+        <div class="document-card-body">
+            {% if original.selfie %}
+                <img src="{{ original.selfie.url }}" alt="Selfie" onclick="openModal(this.src)">
+                <br><a href="{{ original.selfie.url }}" target="_blank">Open Full Size ↗</a>
+            {% else %}
+                <div class="no-doc">No selfie uploaded</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="document-card">
+        <div class="document-card-header">📎 Other Document</div>
+        <div class="document-card-body">
+            {% if original.other_document %}
+                <img src="{{ original.other_document.url }}" alt="Other Document" onclick="openModal(this.src)">
+                <br><a href="{{ original.other_document.url }}" target="_blank">Open Full Size ↗</a>
+            {% else %}
+                <div class="no-doc">No additional document</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Image Modal -->
+<div class="image-modal" id="imageModal" onclick="closeModal()">
+    <span class="close">&times;</span>
+    <img id="modalImage" src="" alt="Full size">
+</div>
+
+<script>
+function openModal(src) {
+    document.getElementById('modalImage').src = src;
+    document.getElementById('imageModal').classList.add('active');
+}
+function closeModal() {
+    document.getElementById('imageModal').classList.remove('active');
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+</script>
+
+{{ block.super }}
+{% endblock %}

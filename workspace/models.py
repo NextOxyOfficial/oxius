@@ -391,6 +391,14 @@ class WorkspaceBanner(models.Model):
         return True
 
 
+class WorkspaceReport(GigOrder):
+    """Proxy model for workspace earnings reporting in admin"""
+    class Meta:
+        proxy = True
+        verbose_name = "📊 Earnings Report"
+        verbose_name_plural = "📊 Earnings Reports"
+
+
 class GigFeeSettings(models.Model):
     """
     Simplified fee settings for workspace orders.

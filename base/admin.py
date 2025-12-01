@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.urls import reverse
-from django.utils.html import format_html
+from django.utils.html import format_html, mark_safe
 
 from .models import *
 # Import notification admin panel
@@ -692,61 +692,126 @@ admin.site.register(ClassifiedCategoryPostMedia)
 
 
 class NidAdmin(admin.ModelAdmin):
+    """
+    Professional NID/KYC verification admin with easy document review and approval.
+    """
     list_display = (
-        "user",
-        "approved",
-        "rejected",
-        "completed",
-        "front_image",
-        "back_image",
-        "selfie_image",
-        "other_document_image",
+        "user_info",
+        "status_badge",
+        "documents_preview",
+        "nid_number_display",
+        "submitted_date",
+        "quick_actions",
     )
-    list_filter = ("approved", "rejected", "completed")
-    list_editable = ("approved", "rejected")
-
-    def front_image(self, obj):
-        if obj.front:  # Assuming `front` is the field name for the front image
+    list_filter = ("approved", "rejected", "pending", "completed")
+    search_fields = ("user__first_name", "user__last_name", "user__email", "user__phone", "user__nid_number")
+    list_per_page = 20
+    ordering = ["-id"]
+    
+    change_list_template = 'admin/base/nid/change_list.html'
+    change_form_template = 'admin/base/nid/change_form.html'
+    
+    fieldsets = (
+        ('👤 User Information', {
+            'fields': ('user',)
+        }),
+        ('📄 Documents', {
+            'fields': ('front', 'back', 'selfie', 'other_document'),
+        }),
+        ('✅ Verification Status', {
+            'fields': (('approved', 'rejected'), 'pending', 'completed'),
+        }),
+    )
+    
+    def user_info(self, obj):
+        if not obj.user:
+            return format_html('<span style="color: #999;">No User</span>')
+        
+        name = f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.username
+        email = obj.user.email or ""
+        phone = obj.user.phone or ""
+        
+        return format_html(
+            '<div style="line-height: 1.5;">'
+            '<strong style="font-size: 14px;">{}</strong><br>'
+            '<span style="color: #666; font-size: 12px;">{}</span><br>'
+            '<span style="color: #888; font-size: 11px;">{}</span>'
+            '</div>',
+            name, email, phone
+        )
+    user_info.short_description = 'User'
+    
+    def status_badge(self, obj):
+        if obj.approved:
             return format_html(
-                '<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>',
-                obj.front.url,
-                obj.front.url,
+                '<span style="background: #10b981; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">✓ APPROVED</span>'
             )
-        return "No Image"
-
-    def back_image(self, obj):
-        if obj.back:  # Assuming `back` is the field name for the back image
+        elif obj.rejected:
             return format_html(
-                '<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>',
-                obj.back.url,
-                obj.back.url,
+                '<span style="background: #ef4444; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">✗ REJECTED</span>'
             )
-        return "No Image"
-
-    def selfie_image(self, obj):
-        if obj.selfie:  # Assuming `selfie` is the field name for the selfie image
+        elif obj.pending:
             return format_html(
-                '<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>',
-                obj.selfie.url,
-                obj.selfie.url,
+                '<span style="background: #f59e0b; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">⏳ PENDING</span>'
             )
-        return "No Image"
-
-    def other_document_image(self, obj):
-        if (
-            obj.other_document
-        ):  # Assuming `other_document` is the field name for the other document image
+        else:
             return format_html(
-                '<a href="{}" target="_blank"><img src="{}" style="height: 50px;" /></a>',
-                obj.other_document.url,
-                obj.other_document.url,
+                '<span style="background: #6b7280; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">— UNKNOWN</span>'
             )
-        return "No Image"
-
-    front_image.short_description = "Front Image"
-    back_image.short_description = "Back Image"
-    selfie_image.short_description = "Selfie"
-    other_document_image.short_description = "Other Document"
+    status_badge.short_description = 'Status'
+    
+    def documents_preview(self, obj):
+        docs = []
+        
+        if obj.front:
+            docs.append(f'<a href="{obj.front.url}" target="_blank" title="NID Front" style="margin-right: 5px;"><img src="{obj.front.url}" style="height: 45px; width: 70px; object-fit: cover; border-radius: 4px; border: 2px solid #e5e7eb;"/></a>')
+        if obj.back:
+            docs.append(f'<a href="{obj.back.url}" target="_blank" title="NID Back" style="margin-right: 5px;"><img src="{obj.back.url}" style="height: 45px; width: 70px; object-fit: cover; border-radius: 4px; border: 2px solid #e5e7eb;"/></a>')
+        if obj.selfie:
+            docs.append(f'<a href="{obj.selfie.url}" target="_blank" title="Selfie" style="margin-right: 5px;"><img src="{obj.selfie.url}" style="height: 45px; width: 45px; object-fit: cover; border-radius: 50%; border: 2px solid #e5e7eb;"/></a>')
+        if obj.other_document:
+            docs.append(f'<a href="{obj.other_document.url}" target="_blank" title="Other Document" style="margin-right: 5px;"><img src="{obj.other_document.url}" style="height: 45px; width: 70px; object-fit: cover; border-radius: 4px; border: 2px solid #e5e7eb;"/></a>')
+        
+        if not docs:
+            return format_html('<span style="color: #999;">No documents</span>')
+        
+        return format_html('<div style="display: flex; align-items: center;">{}</div>', mark_safe(''.join(docs)))
+    documents_preview.short_description = 'Documents'
+    
+    def nid_number_display(self, obj):
+        if obj.user and obj.user.nid_number:
+            return format_html(
+                '<code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{}</code>',
+                obj.user.nid_number
+            )
+        return format_html('<span style="color: #999;">—</span>')
+    nid_number_display.short_description = 'NID Number'
+    
+    def submitted_date(self, obj):
+        # NID model doesn't have created_at, so we'll show the ID as reference
+        return format_html(
+            '<span style="color: #666; font-size: 12px;">ID: {}</span>',
+            obj.id
+        )
+    submitted_date.short_description = 'Reference'
+    
+    def quick_actions(self, obj):
+        if obj.completed:
+            return format_html('<span style="color: #999;">Completed</span>')
+        
+        return format_html(
+            '<a href="{}" class="button" style="background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 11px; margin-right: 5px;">Review</a>',
+            f'/admin/base/nid/{obj.id}/change/'
+        )
+    quick_actions.short_description = 'Actions'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
+    
+    class Media:
+        css = {
+            'all': []
+        }
 
 
 admin.site.register(NID, NidAdmin)
