@@ -75,20 +75,32 @@
       v-if="!loading && !loadingMore && !hasMore && allPosts.length > 0"
       class="flex flex-col items-center justify-center py-8 text-center"
     >
+      <!-- Decorative line -->
+      <div class="w-16 h-0.5 bg-gradient-to-r from-gray-200 via-gray-400 to-gray-200 rounded-full mb-6"></div>
+      
       <div
-        class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
+        class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/30"
       >
-        <Check class="h-8 w-8 text-blue-600" />
+        <Check class="h-7 w-7 text-white" />
       </div>
-      <h3 class="text-lg font-medium text-gray-800 mb-1">
+      <h3 class="text-base font-semibold text-gray-800 mb-1">
         You're all caught up!
       </h3>
-      <p class="text-gray-600 mb-8 max-w-md">
-        You've seen all posts in the business network feed.
+      <p class="text-sm text-gray-500 mb-6 max-w-md">
+        You've seen all {{ allPosts.length }} posts in your feed
       </p>
       <button
+        @click="loadRecentPosts"
+        class="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 text-gray-600 rounded-full hover:bg-gray-50 transition-colors mb-2"
+      >
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span>Refresh for new posts</span>
+      </button>
+      <button
         @click="scrollToTop"
-        class="flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
+        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
       >
         <ChevronUp class="h-4 w-4" />
         <span>Back to top</span>
@@ -245,12 +257,23 @@ const { user } = useAuth();
 const eventBus = useEventBus();
 const loadedPostIds = ref(new Set()); // Track loaded post IDs to prevent duplicates
 
-// Batch size and pagination
-const POSTS_PER_BATCH = 5;
+// Feed configuration - optimized for social connectivity algorithm
+// Backend priority: 1) Own recent posts, 2) Following, 3) Followers, 4) Others
+const INITIAL_BATCH_SIZE = 10; // Load more posts initially for better first impression
+const LOAD_MORE_BATCH_SIZE = 7; // Optimized batch size for pagination (matches backend MediumDevicePagination)
+const SCROLL_THRESHOLD = 600; // Pixels before end to trigger load more
+
+// Pagination state
 const page = ref(1);
 const hasMore = ref(true);
 const lastCreatedAt = ref(null); // For pagination cursor
 const newestCreatedAt = ref(null); // For refresh/newer posts
+const totalPostCount = ref(0); // Track total available posts
+
+// Error handling state
+const errorType = ref(null); // 'network', 'auth', 'server', 'timeout'
+const errorMessage = ref(null);
+const isRefreshing = ref(false);
 
 // Listen for loading events from footer and sidebar
 eventBus.on("start-loading-posts", () => {
@@ -258,98 +281,142 @@ eventBus.on("start-loading-posts", () => {
   loading.value = true;
 });
 
-// Get initial posts or more posts based on pagination
-async function getPosts(isLoadingMore = false, page = 1) {
+/**
+ * Get posts from the business network feed
+ * 
+ * The backend implements a sophisticated priority-based feed algorithm:
+ * - Priority 1: User's own recent posts (last 24 hours)
+ * - Priority 2: Posts from users the current user follows
+ * - Priority 3: Posts from the current user's followers  
+ * - Priority 4: Other posts (chronological)
+ * 
+ * Additional backend features:
+ * - Hidden posts are excluded
+ * - Relationship data is cached for 5 minutes
+ * - Device-level optimization available
+ */
+async function getPosts(isLoadingMore = false, pageNum = 1) {
   try {
+    // Set loading state
     if (isLoadingMore) {
       loadingMore.value = true;
     } else {
       loading.value = true;
+      errorType.value = null;
+      errorMessage.value = null;
     }
 
-    // Build query parameters based on action type
-    let params = {
-      page_size: isLoadingMore ? 1 : POSTS_PER_BATCH, // Load 1 post at a time when scrolling
+    // Build optimized query parameters
+    const params = {
+      page_size: isLoadingMore ? LOAD_MORE_BATCH_SIZE : INITIAL_BATCH_SIZE,
     };
 
+    // Add cursor-based pagination for older posts
     if (isLoadingMore && lastCreatedAt.value) {
-      // Get older posts (for pagination)
       params.older_than = lastCreatedAt.value;
     }
 
-    const [response] = await Promise.all([
-      get(`/bn/posts/?page=${page}`, { params }),
-      // Add a minimum delay for UX, shorter for subsequent loads
-      new Promise((resolve) => setTimeout(resolve, isLoadingMore ? 300 : 800)),
-    ]);
+    console.log(`📱 Feed Request: page=${pageNum}, size=${params.page_size}, loadMore=${isLoadingMore}`);
 
-    if (response.data && response.data.results) {
-      const newPosts = response.data.results;
+    // Make API request with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-      // Process posts to ensure they have necessary UI properties
-      const processedPosts = newPosts.map((post) => ({
-        ...post,
-        showFullDescription: false,
-        showDropdown: false,
-        commentText: "",
-        isCommentLoading: false,
-        isLikeLoading: false,
-      }));
-
-      // Filter out duplicate posts based on their IDs
-      const uniquePosts = processedPosts.filter((post) => {
-        if (loadedPostIds.value.has(post.id)) {
-          return false;
-        }
-        loadedPostIds.value.add(post.id);
-        return true;
+    try {
+      const response = await get(`/bn/posts/?page=${pageNum}`, { 
+        params,
+        signal: controller.signal 
       });
+      clearTimeout(timeoutId);
 
-      // On initial load or load more, append to the end
-      allPosts.value = isLoadingMore
-        ? [...allPosts.value, ...uniquePosts]
-        : uniquePosts;
-
-      // Update pagination cursor if we got any unique posts
-      if (uniquePosts.length > 0) {
-        const lastPost = uniquePosts[uniquePosts.length - 1];
-        lastCreatedAt.value = lastPost.created_at;
-
-        // Set initial newest timestamp if first load
-        if (!newestCreatedAt.value && uniquePosts.length > 0) {
-          newestCreatedAt.value = uniquePosts[0].created_at;
+      if (response.data && response.data.results) {
+        const newPosts = response.data.results;
+        
+        // Track total count from API
+        if (response.data.count) {
+          totalPostCount.value = response.data.count;
         }
-      }
 
-      if (processedPosts.length > 0 && uniquePosts.length === 0) {
-        hasMore.value = false;
+        // Process posts with UI properties
+        const processedPosts = newPosts.map((post) => ({
+          ...post,
+          showFullDescription: false,
+          showDropdown: false,
+          commentText: "",
+          isCommentLoading: false,
+          isLikeLoading: false,
+        }));
+
+        // Filter duplicates using Set for O(1) lookup
+        const uniquePosts = processedPosts.filter((post) => {
+          if (loadedPostIds.value.has(post.id)) {
+            return false;
+          }
+          loadedPostIds.value.add(post.id);
+          return true;
+        });
+
+        // Update posts array
+        allPosts.value = isLoadingMore
+          ? [...allPosts.value, ...uniquePosts]
+          : uniquePosts;
+
+        // Update pagination cursors
+        if (uniquePosts.length > 0) {
+          const lastPost = uniquePosts[uniquePosts.length - 1];
+          lastCreatedAt.value = lastPost.created_at;
+
+          if (!newestCreatedAt.value) {
+            newestCreatedAt.value = uniquePosts[0].created_at;
+          }
+        }
+
+        // Determine if more posts available
+        hasMore.value = response.data.next !== null && uniquePosts.length > 0;
+
+        // Log feed statistics
+        console.log(`✅ Loaded ${uniquePosts.length} posts (Total: ${allPosts.value.length}/${totalPostCount.value})`);
+
+        // Update displayed posts
+        updateDisplayedPosts();
       } else {
-        // If we got some unique posts, assume there might be more
-        hasMore.value = processedPosts.length > 0;
-
-        // If we got no posts at all, we've definitely reached the end
-        if (processedPosts.length === 0) {
-          hasMore.value = false;
+        if (!isLoadingMore) {
+          allPosts.value = [];
+          displayedPosts.value = [];
         }
+        hasMore.value = false;
       }
-
-      // Update displayed posts
-      updateDisplayedPosts();
-    } else {
-      if (!isLoadingMore) {
-        // Only clear on initial load failure
-        allPosts.value = [];
-        displayedPosts.value = [];
-      }
-      hasMore.value = false;
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      throw fetchError;
     }
   } catch (error) {
-    console.error("Failed to load posts:", error);
+    console.error("❌ Failed to load posts:", error);
+    
+    // Determine error type for better UX
+    if (error.name === 'AbortError') {
+      errorType.value = 'timeout';
+      errorMessage.value = 'Connection timed out. Please check your internet.';
+    } else if (error.response?.status === 401) {
+      errorType.value = 'auth';
+      errorMessage.value = 'Please log in to view personalized feed.';
+    } else if (error.response?.status >= 500) {
+      errorType.value = 'server';
+      errorMessage.value = 'Server error. Please try again later.';
+    } else if (!navigator.onLine) {
+      errorType.value = 'network';
+      errorMessage.value = 'No internet connection. Please check your network.';
+    } else {
+      errorType.value = 'unknown';
+      errorMessage.value = 'Failed to load posts. Please try again.';
+    }
+
+    // Show toast notification
     useToast().add({
-      title: "Error",
-      description: "Failed to load posts",
-      color: "red",
-      timeout: 3000,
+      title: errorType.value === 'auth' ? 'Login Required' : 'Error',
+      description: errorMessage.value,
+      color: errorType.value === 'auth' ? 'blue' : 'red',
+      timeout: 4000,
     });
 
     if (!isLoadingMore) {
@@ -360,6 +427,7 @@ async function getPosts(isLoadingMore = false, page = 1) {
   } finally {
     loading.value = false;
     loadingMore.value = false;
+    isRefreshing.value = false;
   }
 }
 
@@ -424,20 +492,28 @@ function loadMorePosts() {
   getPosts(true, page.value);
 }
 
-// Setup scroll detection for infinite scroll
+// Setup scroll detection for infinite scroll with optimized threshold
 function setupInfiniteScroll() {
+  let ticking = false; // Throttle scroll events for performance
+  
   const handleScroll = () => {
-    if (
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - 500
-    ) {
-      if (!loadingMore.value && hasMore.value) {
-        loadMorePosts();
-      }
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const threshold = document.body.offsetHeight - SCROLL_THRESHOLD;
+        
+        if (scrollPosition >= threshold) {
+          if (!loadingMore.value && !loading.value && hasMore.value) {
+            loadMorePosts();
+          }
+        }
+        ticking = false;
+      });
+      ticking = true;
     }
   };
 
-  window.addEventListener("scroll", handleScroll);
+  window.addEventListener("scroll", handleScroll, { passive: true });
 
   // Remove event listener on component unmount
   onUnmounted(() => {
@@ -513,78 +589,81 @@ const handleNewPost = async (newPost) => {
   }
 };
 
-// Function to specifically load recent posts (newest 10)
-function loadRecentPosts() {
+// Function to specifically load recent posts with optimized settings
+async function loadRecentPosts() {
+  // Prevent duplicate refresh calls
+  if (isRefreshing.value) return;
+  isRefreshing.value = true;
+  
   // Reset state
   loading.value = true;
   page.value = 1;
   hasMore.value = true;
   lastCreatedAt.value = null;
-  loadedPostIds.value.clear(); // Reset tracked post IDs
-  allPosts.value = []; // Clear existing posts
-  displayedPosts.value = []; // Clear displayed posts
+  errorType.value = null;
+  errorMessage.value = null;
+  loadedPostIds.value.clear();
+  allPosts.value = [];
+  displayedPosts.value = [];
 
-  // Set a small delay for better UX (showing skeleton)
-  setTimeout(() => {
-    // Use specific params for recent posts
+  console.log('🔄 Loading recent posts...');
+
+  try {
     const params = {
-      page_size: 10, // Get 10 most recent posts
-      sort: "recent", // Sort parameter for recent posts
+      page_size: INITIAL_BATCH_SIZE,
     };
 
-    // Call API with specific parameters for recent posts
-    get("/bn/posts/", { params })
-      .then((response) => {
-        if (response.data && response.data.results) {
-          const newPosts = response.data.results;
+    const response = await get("/bn/posts/", { params });
+    
+    if (response.data && response.data.results) {
+      const newPosts = response.data.results;
+      
+      // Track total count
+      if (response.data.count) {
+        totalPostCount.value = response.data.count;
+      }
 
-          // Process posts
-          const processedPosts = newPosts.map((post) => ({
-            ...post,
-            showFullDescription: false,
-            showDropdown: false,
-            commentText: "",
-            isCommentLoading: false,
-            isLikeLoading: false,
-          }));
+      // Process posts
+      const processedPosts = newPosts.map((post) => ({
+        ...post,
+        showFullDescription: false,
+        showDropdown: false,
+        commentText: "",
+        isCommentLoading: false,
+        isLikeLoading: false,
+      }));
 
-          // Track post IDs to prevent duplicates
-          processedPosts.forEach((post) => {
-            loadedPostIds.value.add(post.id);
-          });
-
-          // Set posts
-          allPosts.value = processedPosts;
-
-          // Update cursor for pagination
-          if (processedPosts.length > 0) {
-            const lastPost = processedPosts[processedPosts.length - 1];
-            lastCreatedAt.value = lastPost.created_at;
-
-            // Set newest timestamp for potential refresh
-            newestCreatedAt.value = processedPosts[0].created_at;
-          }
-
-          // Check if we have more posts to load
-          hasMore.value = processedPosts.length === 10;
-
-          // Update displayed posts
-          updateDisplayedPosts();
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to load recent posts:", error);
-        useToast().add({
-          title: "Error",
-          description: "Failed to load recent posts",
-          color: "red",
-          timeout: 3000,
-        });
-      })
-      .finally(() => {
-        loading.value = false;
+      // Track post IDs
+      processedPosts.forEach((post) => {
+        loadedPostIds.value.add(post.id);
       });
-  }, 500); // Slightly longer delay to ensure skeleton shows
+
+      allPosts.value = processedPosts;
+
+      // Update cursors
+      if (processedPosts.length > 0) {
+        lastCreatedAt.value = processedPosts[processedPosts.length - 1].created_at;
+        newestCreatedAt.value = processedPosts[0].created_at;
+      }
+
+      hasMore.value = response.data.next !== null;
+      
+      console.log(`✅ Loaded ${processedPosts.length} recent posts`);
+      
+      updateDisplayedPosts();
+    }
+  } catch (error) {
+    console.error("❌ Failed to load recent posts:", error);
+    useToast().add({
+      title: "Error",
+      description: "Failed to load recent posts",
+      color: "red",
+      timeout: 3000,
+    });
+  } finally {
+    loading.value = false;
+    isRefreshing.value = false;
+  }
 }
 
 // Search functionality
