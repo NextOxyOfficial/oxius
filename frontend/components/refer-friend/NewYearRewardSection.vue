@@ -68,11 +68,35 @@
               </div>
             </div>
           </div>
-          <div class="text-right">
-            <div class="text-2xl font-bold" :class="remainingTasks === 0 ? 'text-emerald-600' : 'text-gray-400'">
-              ৳{{ conditions.reward_info?.reward_amount || program.program?.referee_reward || 50 }}
+          <div class="text-right flex items-center gap-3">
+            <div>
+              <div class="text-2xl font-bold" :class="remainingTasks === 0 ? 'text-emerald-600' : 'text-gray-400'">
+                ৳{{ conditions.reward_info?.reward_amount || program.program?.referee_reward || 5 }}
+              </div>
+              <div class="text-xs text-gray-500">Reward</div>
             </div>
-            <div class="text-xs text-gray-500">Reward</div>
+            <!-- Claim Button - shows when all tasks completed and not yet claimed -->
+            <UButton 
+              v-if="remainingTasks === 0 && conditions.reward_info?.claim_status !== 'claimed'"
+              color="primary" 
+              size="md"
+              :loading="claiming"
+              @click="$emit('claim-reward')"
+              class="animate-pulse"
+            >
+              <UIcon name="i-heroicons-gift" class="mr-1" />
+              Claim
+            </UButton>
+            <!-- Claimed Badge -->
+            <UBadge 
+              v-else-if="conditions.reward_info?.claim_status === 'claimed'"
+              color="green" 
+              variant="solid"
+              size="lg"
+            >
+              <UIcon name="i-heroicons-check-circle" class="mr-1" />
+              Claimed
+            </UBadge>
           </div>
         </div>
       </div>
@@ -163,7 +187,7 @@
           </div>
           <p class="text-sm text-emerald-600 mt-1">৳{{ conditions.reward_info?.reward_amount || program.program?.referee_reward }} has been added to your balance</p>
         </div>
-        <div v-else-if="conditions.conditions?.all_met" class="space-y-3">
+        <div v-else-if="conditions.conditions?.all_met || completedCount === 3" class="space-y-3">
           <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-700 text-sm">
             🎉 Congratulations! All conditions met. Claim your reward now!
           </div>
@@ -184,6 +208,23 @@
             <span class="font-semibold text-emerald-600">৳{{ conditions.reward_info?.reward_amount || program.program?.referee_reward }}</span> reward
           </p>
         </div>
+      </div>
+      
+      <!-- Fallback claim button when not a referee but all tasks completed -->
+      <div v-else-if="completedCount === 3 && conditions.reward_info?.claim_status !== 'claimed'" class="text-center space-y-3">
+        <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-700 text-sm">
+          🎉 Congratulations! All conditions met. Claim your reward now!
+        </div>
+        <UButton 
+          color="primary" 
+          size="xl" 
+          class="px-10 py-3"
+          :loading="claiming"
+          @click="$emit('claim-reward')"
+        >
+          <UIcon name="i-heroicons-gift" class="mr-2 text-xl" />
+          Claim ৳{{ program.program?.referee_reward || 5 }} Reward
+        </UButton>
       </div>
     </div>
 
