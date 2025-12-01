@@ -5,6 +5,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import 'api_service.dart';
+import '../screens/business_network/profile_screen.dart';
+import '../screens/business_network/post_detail_screen.dart';
+import '../screens/inbox_screen.dart';
+import '../screens/workspace/order_detail_screen.dart';
 
 // Top-level function for background messages
 @pragma('vm:entry-point')
@@ -201,18 +205,73 @@ class FCMService {
     }
 
     final type = data['type']?.toString();
-    print('🔔 Navigating based on notification type: $type');
+    final notificationType = data['notification_type']?.toString();
+    print('🔔 Navigating based on notification type: $type, notification_type: $notificationType');
     print('   Data: $data');
 
-    // Business Network Notifications
-    if (type == 'follow') {
+    // ============================================
+    // WORKSPACE NOTIFICATIONS
+    // ============================================
+    if (type == 'workspace') {
+      final orderId = data['order_id']?.toString();
+      final gigId = data['gig_id']?.toString();
+      
+      // Handle different workspace notification types
+      if (notificationType == 'new_order' || 
+          notificationType == 'order_accept' ||
+          notificationType == 'order_decline' ||
+          notificationType == 'order_deliver' ||
+          notificationType == 'order_complete' ||
+          notificationType == 'order_cancel' ||
+          notificationType == 'order_message' ||
+          notificationType == 'payment_released' ||
+          notificationType == 'order_cancelled' ||
+          notificationType == 'order_refunded') {
+        if (orderId != null) {
+          print('   → Navigating to workspace order: $orderId');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderDetailScreen(orderId: orderId),
+            ),
+          );
+        } else {
+          print('   ⚠️ Order ID is null, navigating to inbox updates tab');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const InboxScreen(initialTab: 1),
+            ),
+          );
+        }
+      } else if (notificationType == 'new_review') {
+        // Navigate to gig detail or my gigs
+        print('   → Navigating to my gigs for review notification');
+        Navigator.pushNamed(context, '/my-gigs');
+      } else {
+        // Default workspace - go to inbox updates tab
+        print('   → Default workspace notification, navigating to inbox updates');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const InboxScreen(initialTab: 1),
+          ),
+        );
+      }
+    }
+    // ============================================
+    // BUSINESS NETWORK NOTIFICATIONS
+    // ============================================
+    else if (type == 'follow') {
       // Navigate to user profile
       final userId = data['actor_id']?.toString() ?? data['user_id']?.toString();
       if (userId != null) {
         print('   → Navigating to profile: $userId');
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          '/business-network/profile/$userId',
+          MaterialPageRoute(
+            builder: (context) => ProfileScreen(userId: userId),
+          ),
         );
       }
     } else if (type == 'like_post' || type == 'comment' || type == 'mention') {
@@ -220,9 +279,11 @@ class FCMService {
       final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         print('   → Navigating to post: $postId');
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          '/business-network/post/$postId',
+          MaterialPageRoute(
+            builder: (context) => PostDetailScreen(postId: int.tryParse(postId) ?? 0),
+          ),
         );
       }
     } else if (type == 'like_comment' || type == 'reply') {
@@ -230,130 +291,155 @@ class FCMService {
       final postId = data['parent_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         print('   → Navigating to post: $postId');
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          '/business-network/post/$postId',
+          MaterialPageRoute(
+            builder: (context) => PostDetailScreen(postId: int.tryParse(postId) ?? 0),
+          ),
         );
       }
     } else if (type == 'solution') {
-      // Navigate to MindForce post
-      final postId = data['target_id']?.toString() ?? data['problem_id']?.toString();
-      if (postId != null) {
-        print('   → Navigating to MindForce problem: $postId');
-        Navigator.pushNamed(
-          context,
-          '/business-network/mindforce/$postId',
-        );
-      }
+      // Navigate to MindForce
+      print('   → Navigating to MindForce');
+      Navigator.pushNamed(context, '/mindforce');
     } else if (type == 'gift_diamonds') {
       // Navigate to post detail
       final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         print('   → Navigating to post: $postId');
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          '/business-network/post/$postId',
+          MaterialPageRoute(
+            builder: (context) => PostDetailScreen(postId: int.tryParse(postId) ?? 0),
+          ),
         );
       }
     }
-    // AdsyConnect Messages
+    // ============================================
+    // ADSYCONNECT MESSAGES
+    // ============================================
     else if (type == 'message' || type == 'chat_message') {
-      // Navigate to chat screen
+      // Navigate to inbox AdsyConnect tab
       final chatId = data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
-      final senderId = data['sender_id']?.toString() ?? data['user_id']?.toString();
-      final senderName = data['sender_name']?.toString() ?? data['user_name']?.toString();
-      
-      if (chatId != null) {
-        print('   → Navigating to chat: $chatId');
-        Navigator.pushNamed(
-          context,
-          '/chat',
-          arguments: {
-            'chatId': chatId,
-            'userId': senderId,
-            'userName': senderName,
-          },
-        );
-      } else {
-        print('   ⚠️ Chat ID is null, navigating to messages list');
-        Navigator.pushNamed(context, '/messages');
-      }
+      print('   → Navigating to AdsyConnect chat: $chatId');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => InboxScreen(
+            initialTab: 0, // AdsyConnect tab is index 0
+            initialChatId: chatId,
+          ),
+        ),
+      );
     }
-    // Support Tickets
+    // ============================================
+    // SUPPORT TICKETS
+    // ============================================
     else if (type == 'support_ticket' || type == 'ticket' || type == 'ticket_reply' || type == 'ticket_status_update') {
       final ticketId = data['ticket_id']?.toString();
-      
-      if (ticketId != null) {
-        print('   → Navigating to support ticket: $ticketId');
-        Navigator.pushNamed(
-          context,
-          '/inbox',
-        ).then((_) {
-          // Navigate to support tab and open ticket detail
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (context.mounted) {
-              Navigator.pushNamed(
-                context,
-                '/support-ticket-detail',
-                arguments: {'ticketId': ticketId},
-              );
-            }
-          });
-        });
-      } else {
-        print('   ⚠️ Ticket ID is null, navigating to inbox support tab');
-        Navigator.pushNamed(context, '/inbox');
-      }
+      print('   → Navigating to support ticket: $ticketId');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => InboxScreen(
+            initialTab: 2, // Support tab is index 2
+            initialTicketId: ticketId,
+          ),
+        ),
+      );
     }
-    // Orders - Navigate to inbox updates tab
-    else if (type == 'order' || type == 'order_received' || type == 'order_status' || type == 'order_placed') {
-      print('   → Navigating to inbox updates tab for order: $type');
-      Navigator.pushNamed(context, '/inbox');
-    }
-    // Wallet/Transactions - Navigate to inbox updates tab
+    // ============================================
+    // WALLET/TRANSACTIONS
+    // ============================================
     else if (type == 'wallet' || type == 'withdraw_successful' || type == 'mobile_recharge_successful' || 
              type == 'deposit' || type == 'deposit_successful' || type == 'transfer_sent' || 
              type == 'transfer_received') {
-      print('   → Navigating to inbox updates tab for: $type');
-      Navigator.pushNamed(context, '/inbox');
+      print('   → Navigating to wallet for: $type');
+      Navigator.pushNamed(context, '/deposit-withdraw');
     }
-    // Pro Subscription Updates
+    // ============================================
+    // ORDERS (Legacy)
+    // ============================================
+    else if (type == 'order' || type == 'order_received' || type == 'order_status' || type == 'order_placed') {
+      final orderId = data['order_id']?.toString();
+      if (orderId != null) {
+        print('   → Navigating to order: $orderId');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderDetailScreen(orderId: orderId),
+          ),
+        );
+      } else {
+        print('   → Navigating to inbox updates tab');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const InboxScreen(initialTab: 1),
+          ),
+        );
+      }
+    }
+    // ============================================
+    // PRO SUBSCRIPTION
+    // ============================================
     else if (type == 'pro_subscribed' || type == 'pro_expiring' || type == 'pro_expired') {
-      print('   → Navigating to inbox updates tab for Pro: $type');
-      Navigator.pushNamed(context, '/inbox');
+      print('   → Navigating to upgrade to pro for: $type');
+      Navigator.pushNamed(context, '/upgrade-to-pro');
     }
-    // Gig Updates
+    // ============================================
+    // GIG UPDATES
+    // ============================================
     else if (type == 'gig_posted' || type == 'gig_approved' || type == 'gig_rejected') {
-      print('   → Navigating to inbox updates tab for gig: $type');
-      Navigator.pushNamed(context, '/inbox');
+      print('   → Navigating to my gigs for: $type');
+      Navigator.pushNamed(context, '/my-gigs');
     }
-    // Classified Posts
+    // ============================================
+    // CLASSIFIED POSTS
+    // ============================================
     else if (type == 'classified_post' || type == 'classified') {
       final postId = data['post_id']?.toString() ?? data['classified_id']?.toString();
       if (postId != null) {
         print('   → Navigating to classified post: $postId');
         Navigator.pushNamed(
           context,
-          '/classified-post/$postId',
+          '/classified-post-details',
+          arguments: {'postId': postId},
         );
       }
     }
-    // General/Admin Notices - Navigate to inbox updates tab
+    // ============================================
+    // GENERAL/ADMIN NOTICES
+    // ============================================
     else if (type == 'general' || type == 'admin_notice' || type == 'system' || type == 'announcement') {
       print('   → General notification, navigating to inbox updates tab');
-      Navigator.pushNamed(context, '/inbox');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const InboxScreen(initialTab: 0),
+        ),
+      );
     }
-    // Admin/System Updates
+    // ============================================
+    // ACCOUNT UPDATES
+    // ============================================
     else if (type == 'kyc_approved' || type == 'kyc_rejected' || type == 'account_warning' || 
              type == 'account_suspended' || type == 'account_activated') {
       print('   → Account notification, navigating to inbox updates tab');
-      Navigator.pushNamed(context, '/inbox');
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const InboxScreen(initialTab: 0),
+        ),
+      );
     }
-    // Default
+    // ============================================
+    // DEFAULT
+    // ============================================
     else {
       print('   ⚠️ Unknown notification type: $type');
-      // Default to business network
-      Navigator.pushNamed(context, '/business-network');
+      // Default to inbox
+      Navigator.pushNamed(context, '/inbox');
     }
   }
 

@@ -14,7 +14,16 @@ import 'support/create_ticket_screen.dart';
 import 'support/ticket_detail_screen.dart';
 
 class InboxScreen extends StatefulWidget {
-  const InboxScreen({super.key});
+  final int initialTab;
+  final String? initialChatId;
+  final String? initialTicketId;
+  
+  const InboxScreen({
+    super.key,
+    this.initialTab = 0, // 0 = AdsyConnect, 1 = Updates, 2 = Support
+    this.initialChatId,
+    this.initialTicketId,
+  });
 
   @override
   State<InboxScreen> createState() => _InboxScreenState();
@@ -51,7 +60,11 @@ class _InboxScreenState extends State<InboxScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3, 
+      vsync: this,
+      initialIndex: widget.initialTab.clamp(0, 2),
+    );
     _tabController.addListener(() {
       setState(() {
         if (_tabController.index == 0) {
@@ -63,13 +76,49 @@ class _InboxScreenState extends State<InboxScreen>
         }
       });
     });
-    _activeTab = 'chat'; // Default to chat tab
+    
+    // Set initial active tab based on initialIndex
+    if (widget.initialTab == 0) {
+      _activeTab = 'chat';
+    } else if (widget.initialTab == 1) {
+      _activeTab = 'updates';
+    } else {
+      _activeTab = 'support';
+    }
     
     // Add scroll listeners for pagination
     _updatesScrollController.addListener(_onUpdatesScroll);
     _ticketsScrollController.addListener(_onTicketsScroll);
     
     _loadInboxData();
+    
+    // Handle deep linking to specific chat or ticket
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _handleDeepLink();
+    });
+  }
+  
+  void _handleDeepLink() {
+    // If we have an initial chat ID, navigate to that chat
+    if (widget.initialChatId != null && widget.initialChatId!.isNotEmpty) {
+      print('📱 Deep linking to chat: ${widget.initialChatId}');
+      // The AdsyConnectScreen will handle opening the specific chat
+      // We just need to make sure we're on the chat tab
+    }
+    
+    // If we have an initial ticket ID, navigate to that ticket
+    if (widget.initialTicketId != null && widget.initialTicketId!.isNotEmpty) {
+      print('📱 Deep linking to ticket: ${widget.initialTicketId}');
+      // Navigate to ticket detail
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TicketDetailScreen(
+            ticketId: widget.initialTicketId!,
+          ),
+        ),
+      );
+    }
   }
   
   void _onUpdatesScroll() {
