@@ -13,7 +13,7 @@ from django.contrib.auth.hashers import check_password
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
