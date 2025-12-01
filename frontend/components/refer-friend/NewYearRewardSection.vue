@@ -39,8 +39,23 @@
       </div>
     </div>
 
-    <!-- Reward Status Card (for users who were referred) -->
-    <div v-if="conditions" class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+    <!-- Info for users who were NOT referred (they can only earn as referrer) -->
+    <div v-if="conditions && !conditions.reward_info?.is_referee" class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+      <div class="flex items-start gap-3">
+        <UIcon name="i-heroicons-information-circle" class="text-blue-500 text-xl flex-shrink-0 mt-0.5" />
+        <div>
+          <p class="text-sm text-blue-800 dark:text-blue-200 font-medium">
+            You can earn ৳{{ program.program?.referrer_reward || 10 }} for each friend you refer!
+          </p>
+          <p class="text-xs text-blue-600 dark:text-blue-300 mt-1">
+            Share your referral link below. When your friends sign up and complete the tasks, you'll earn rewards.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reward Status Card (ONLY for users who were referred by someone) -->
+    <div v-if="conditions && conditions.reward_info?.is_referee" class="mt-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
           <span class="text-2xl">🎁</span>
@@ -122,26 +137,7 @@
           </div>
         </div>
 
-        <!-- Condition 2: MicroGig Task -->
-        <div class="flex items-center gap-4 p-4 rounded-xl border transition-all" :class="conditions.conditions?.has_completed_microgig ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200' : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600'">
-          <div class="w-12 h-12 rounded-full flex items-center justify-center transition-all" :class="conditions.conditions?.has_completed_microgig ? 'bg-emerald-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'">
-            <UIcon :name="conditions.conditions?.has_completed_microgig ? 'i-heroicons-check' : 'i-heroicons-briefcase'" class="text-xl" />
-          </div>
-          <div class="flex-1">
-            <div class="font-semibold text-gray-800 dark:text-white">Complete a MicroGig Task</div>
-            <div class="text-sm text-gray-500">Complete at least 1 task from MicroGigs to earn</div>
-          </div>
-          <div class="text-right">
-            <UBadge :color="conditions.conditions?.has_completed_microgig ? 'green' : 'yellow'" variant="soft" size="md">
-              {{ conditions.conditions?.has_completed_microgig ? '✓ Completed' : 'Pending' }}
-            </UBadge>
-            <NuxtLink v-if="!conditions.conditions?.has_completed_microgig" to="/micro-gigs" class="block mt-1 text-xs text-emerald-600 hover:underline">
-              Browse MicroGigs →
-            </NuxtLink>
-          </div>
-        </div>
-
-        <!-- Condition 3: KYC Verification -->
+        <!-- Condition 2: KYC Verification -->
         <div class="flex items-center gap-4 p-4 rounded-xl border transition-all" :class="conditions.conditions?.has_kyc_verified ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200' : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600'">
           <div class="w-12 h-12 rounded-full flex items-center justify-center transition-all" :class="conditions.conditions?.has_kyc_verified ? 'bg-emerald-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'">
             <UIcon :name="conditions.conditions?.has_kyc_verified ? 'i-heroicons-check' : 'i-heroicons-identification'" class="text-xl" />
@@ -156,6 +152,25 @@
             </UBadge>
             <NuxtLink v-if="!conditions.conditions?.has_kyc_verified" to="/upload-center" class="block mt-1 text-xs text-emerald-600 hover:underline">
               Verify KYC →
+            </NuxtLink>
+          </div>
+        </div>
+
+        <!-- Condition 3: MicroGig Task -->
+        <div class="flex items-center gap-4 p-4 rounded-xl border transition-all" :class="conditions.conditions?.has_completed_microgig ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200' : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600'">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center transition-all" :class="conditions.conditions?.has_completed_microgig ? 'bg-emerald-500 text-white' : 'bg-gray-200 dark:bg-gray-600 text-gray-500'">
+            <UIcon :name="conditions.conditions?.has_completed_microgig ? 'i-heroicons-check' : 'i-heroicons-briefcase'" class="text-xl" />
+          </div>
+          <div class="flex-1">
+            <div class="font-semibold text-gray-800 dark:text-white">Complete a MicroGig Task</div>
+            <div class="text-sm text-gray-500">Complete at least 1 task from MicroGigs to earn</div>
+          </div>
+          <div class="text-right">
+            <UBadge :color="conditions.conditions?.has_completed_microgig ? 'green' : 'yellow'" variant="soft" size="md">
+              {{ conditions.conditions?.has_completed_microgig ? '✓ Completed' : 'Pending' }}
+            </UBadge>
+            <NuxtLink v-if="!conditions.conditions?.has_completed_microgig" to="/micro-gigs" class="block mt-1 text-xs text-emerald-600 hover:underline">
+              Browse MicroGigs →
             </NuxtLink>
           </div>
         </div>
@@ -272,16 +287,16 @@
                 <span class="text-xs" :class="claim.conditions?.has_posted_bn ? 'text-emerald-600' : 'text-gray-400'">Post</span>
               </div>
               <div class="flex-1 flex items-center gap-1">
-                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs" :class="claim.conditions?.has_completed_microgig ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'">
-                  <UIcon :name="claim.conditions?.has_completed_microgig ? 'i-heroicons-check' : 'i-heroicons-briefcase'" class="w-3 h-3" />
-                </div>
-                <span class="text-xs" :class="claim.conditions?.has_completed_microgig ? 'text-emerald-600' : 'text-gray-400'">Task</span>
-              </div>
-              <div class="flex-1 flex items-center gap-1">
                 <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs" :class="claim.conditions?.has_kyc_verified ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'">
                   <UIcon :name="claim.conditions?.has_kyc_verified ? 'i-heroicons-check' : 'i-heroicons-identification'" class="w-3 h-3" />
                 </div>
                 <span class="text-xs" :class="claim.conditions?.has_kyc_verified ? 'text-emerald-600' : 'text-gray-400'">KYC</span>
+              </div>
+              <div class="flex-1 flex items-center gap-1">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs" :class="claim.conditions?.has_completed_microgig ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-500'">
+                  <UIcon :name="claim.conditions?.has_completed_microgig ? 'i-heroicons-check' : 'i-heroicons-briefcase'" class="w-3 h-3" />
+                </div>
+                <span class="text-xs" :class="claim.conditions?.has_completed_microgig ? 'text-emerald-600' : 'text-gray-400'">Task</span>
               </div>
               <div class="text-xs font-medium" :class="claim.all_met ? 'text-emerald-600' : 'text-amber-600'">
                 {{ getClaimTasksRemaining(claim) === 0 ? '✓ All done!' : `${getClaimTasksRemaining(claim)} left` }}

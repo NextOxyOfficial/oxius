@@ -677,6 +677,18 @@
             </div>
 
             <div class="flex items-center gap-2">
+              <!-- Claim All Button for Referred Users tab -->
+              <UButton
+                v-if="activeTab === 1 && eligibleClaimsCount > 0"
+                @click="emit('claim-all-rewards')"
+                color="emerald"
+                size="sm"
+                :loading="claimingReward"
+              >
+                <UIcon name="i-heroicons-gift" class="mr-1" />
+                Claim All ({{ eligibleClaimsCount }})
+              </UButton>
+              
               <UButton
                 :loading="
                   activeTab === 0 ? isLoadingCommissions : isLoadingUsers
@@ -889,6 +901,11 @@
                       >
                         Status
                       </th>
+                      <th
+                        class="px-6 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-600 uppercase tracking-wider"
+                      >
+                        Reward
+                      </th>
                     </tr>
                   </thead>
                   <tbody
@@ -943,10 +960,43 @@
                           {{ user.is_active ? "Active" : "Inactive" }}
                         </UBadge>
                       </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-right">
+                        <!-- Check if there's a claim for this user -->
+                        <template v-if="getUserClaim(user.id)">
+                          <UButton
+                            v-if="getUserClaim(user.id).status === 'eligible'"
+                            color="emerald"
+                            size="xs"
+                            @click="emit('claim-reward', getUserClaim(user.id).id)"
+                            :loading="claimingReward"
+                          >
+                            <UIcon name="i-heroicons-gift" class="mr-1" />
+                            Claim ৳{{ getUserClaim(user.id).reward_amount }}
+                          </UButton>
+                          <UBadge
+                            v-else-if="getUserClaim(user.id).status === 'claimed'"
+                            color="green"
+                            variant="solid"
+                            size="sm"
+                          >
+                            <UIcon name="i-heroicons-check" class="mr-1" />
+                            Claimed
+                          </UBadge>
+                          <UBadge
+                            v-else
+                            color="yellow"
+                            variant="soft"
+                            size="sm"
+                          >
+                            Pending
+                          </UBadge>
+                        </template>
+                        <span v-else class="text-xs text-gray-400">-</span>
+                      </td>
                     </tr>
                     <tr v-if="referredUsers.length === 0">
                       <td
-                        colspan="3"
+                        colspan="4"
                         class="px-6 py-8 text-center text-gray-600 dark:text-gray-600"
                       >
                         <div class="py-6">
@@ -1130,7 +1180,25 @@ const emit = defineEmits([
   "get-service-type-color",
   "get-commission-rate",
   "claim-reward",
+  "claim-all-rewards",
 ]);
+
+// Get claim for a specific referred user
+function getUserClaim(userId) {
+  if (!props.rewardClaims?.claims) return null;
+  return props.rewardClaims.claims.find(
+    claim => claim.claim_type === 'referrer' && 
+             (claim.referred_user?.id === userId || String(claim.referred_user?.id) === String(userId))
+  );
+}
+
+// Count of eligible claims that can be claimed
+const eligibleClaimsCount = computed(() => {
+  if (!props.rewardClaims?.claims) return 0;
+  return props.rewardClaims.claims.filter(
+    claim => claim.claim_type === 'referrer' && claim.status === 'eligible'
+  ).length;
+});
 
 // Computed property for the referral URL
 const referralUrl = computed(() => {

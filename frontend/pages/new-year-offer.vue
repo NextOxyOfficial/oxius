@@ -118,50 +118,104 @@
       </div>
     </div>
 
-    <!-- Conditions Section -->
+    <!-- Conditions Section - Progress Bar Style -->
     <div class="py-16 bg-gradient-to-br from-emerald-50 to-teal-50">
       <div class="container mx-auto px-4">
-        <div class="max-w-3xl mx-auto">
-          <div class="text-center mb-10">
+        <div class="max-w-4xl mx-auto">
+          <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Simple Conditions to Earn</h2>
             <p class="text-gray-600">Your referred friend needs to complete these 3 easy tasks:</p>
           </div>
 
-          <div class="space-y-4">
-            <!-- Condition 1 -->
-            <div class="bg-white rounded-xl p-6 shadow-md flex items-center gap-4">
-              <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                <UIcon name="i-heroicons-document-text" class="text-2xl text-emerald-600" />
+          <!-- Progress Steps -->
+          <div class="bg-white rounded-2xl shadow-lg p-8">
+            <!-- Progress Bar -->
+            <div class="relative mb-8">
+              <!-- Background Line -->
+              <div class="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full"></div>
+              <!-- Progress Line (animated) -->
+              <div class="absolute top-6 left-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500 rounded-full transition-all duration-1000" style="width: 100%"></div>
+              
+              <!-- Step Indicators -->
+              <div class="relative flex justify-between">
+                <!-- Step 1 -->
+                <div class="flex flex-col items-center">
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200 z-10">
+                    <UIcon name="i-heroicons-document-text" class="text-xl text-white" />
+                  </div>
+                  <div class="mt-4 text-center">
+                    <div class="font-semibold text-gray-800 text-sm">Post on BN</div>
+                    <div class="text-xs text-gray-500 mt-1 max-w-[100px]">Create 1 post</div>
+                  </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex flex-col items-center">
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-200 z-10">
+                    <UIcon name="i-heroicons-identification" class="text-xl text-white" />
+                  </div>
+                  <div class="mt-4 text-center">
+                    <div class="font-semibold text-gray-800 text-sm">Verify KYC</div>
+                    <div class="text-xs text-gray-500 mt-1 max-w-[100px]">Upload NID</div>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex flex-col items-center">
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-200 z-10">
+                    <UIcon name="i-heroicons-briefcase" class="text-xl text-white" />
+                  </div>
+                  <div class="mt-4 text-center">
+                    <div class="font-semibold text-gray-800 text-sm">MicroGig Task</div>
+                    <div class="text-xs text-gray-500 mt-1 max-w-[100px]">Complete 1 task</div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 class="font-semibold text-gray-800">Post on Business Network</h3>
-                <p class="text-sm text-gray-500">Create at least 1 post on the Business Network</p>
-              </div>
-              <UBadge color="emerald" variant="soft" class="ml-auto">Easy</UBadge>
             </div>
 
-            <!-- Condition 2 -->
-            <div class="bg-white rounded-xl p-6 shadow-md flex items-center gap-4">
-              <div class="w-14 h-14 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                <UIcon name="i-heroicons-briefcase" class="text-2xl text-teal-600" />
+            <!-- Detailed Steps List -->
+            <div class="mt-8 space-y-3">
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <span class="text-white font-bold text-sm">1</span>
+                </div>
+                <div class="flex-1">
+                  <span class="font-medium text-gray-800">Post on Business Network</span>
+                  <span class="text-gray-500 text-sm ml-2">— Share with the community</span>
+                </div>
+                <UBadge color="emerald" variant="soft" size="xs">Easy</UBadge>
               </div>
-              <div>
-                <h3 class="font-semibold text-gray-800">Complete a MicroGig Task</h3>
-                <p class="text-sm text-gray-500">Complete at least 1 task from MicroGigs</p>
+
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-teal-50 border border-teal-100">
+                <div class="w-8 h-8 rounded-full bg-teal-500 flex items-center justify-center flex-shrink-0">
+                  <span class="text-white font-bold text-sm">2</span>
+                </div>
+                <div class="flex-1">
+                  <span class="font-medium text-gray-800">Verify KYC (NID Upload)</span>
+                  <span class="text-gray-500 text-sm ml-2">— For security & trust</span>
+                </div>
+                <UBadge color="teal" variant="soft" size="xs">Required</UBadge>
               </div>
-              <UBadge color="teal" variant="soft" class="ml-auto">Easy</UBadge>
+
+              <div class="flex items-center gap-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
+                <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                  <span class="text-white font-bold text-sm">3</span>
+                </div>
+                <div class="flex-1">
+                  <span class="font-medium text-gray-800">Complete a MicroGig Task</span>
+                  <span class="text-gray-500 text-sm ml-2">— Earn while learning</span>
+                </div>
+                <UBadge color="blue" variant="soft" size="xs">Easy</UBadge>
+              </div>
             </div>
 
-            <!-- Condition 3 -->
-            <div class="bg-white rounded-xl p-6 shadow-md flex items-center gap-4">
-              <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <UIcon name="i-heroicons-identification" class="text-2xl text-blue-600" />
+            <!-- Reward Summary -->
+            <div class="mt-8 p-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl text-white text-center">
+              <div class="flex items-center justify-center gap-2 mb-1">
+                <UIcon name="i-heroicons-gift" class="text-xl" />
+                <span class="font-semibold">Complete all 3 tasks = Unlock Reward!</span>
               </div>
-              <div>
-                <h3 class="font-semibold text-gray-800">Verify KYC (NID Upload)</h3>
-                <p class="text-sm text-gray-500">Upload NID and get verified for security</p>
-              </div>
-              <UBadge color="blue" variant="soft" class="ml-auto">Required</UBadge>
+              <p class="text-sm text-white/80">Both you and your friend earn rewards when tasks are completed</p>
             </div>
           </div>
         </div>

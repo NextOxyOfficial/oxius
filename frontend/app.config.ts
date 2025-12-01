@@ -1,5 +1,7 @@
 export default defineAppConfig({
   ui: {
+    primary: 'emerald',
+    gray: 'slate',
     container: {
       base: "mx-auto",
       padding: "px-1 sm:px-6 lg:px-8",

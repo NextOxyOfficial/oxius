@@ -42,6 +42,7 @@
       @get-service-type-color="getServiceTypeColor"
       @get-commission-rate="getCommissionRate"
       @claim-reward="claimReward"
+      @claim-all-rewards="claimAllRewards"
     />
     
     <!-- Public User Component with New Year Offer -->
@@ -197,15 +198,35 @@ async function claimReward(claimId = null) {
     targetClaim = rewardClaims.value?.claims?.find(c => c.id === claimId);
   } else {
     // Otherwise find any eligible claim (for referee claims)
-    targetClaim = rewardClaims.value?.claims?.find(c => c.status === 'eligible');
+    targetClaim = rewardClaims.value?.claims?.find(c => c.status === 'eligible' && c.claim_type === 'referee');
   }
   
   if (!targetClaim) {
-    toast.add({ 
-      title: "Not Eligible", 
-      description: "Complete all conditions to claim your reward",
-      color: "yellow"
-    });
+    // Refresh claims first - the claim might have been created by check_conditions
+    await getRewardClaims();
+    
+    if (claimId) {
+      targetClaim = rewardClaims.value?.claims?.find(c => c.id === claimId);
+    } else {
+      targetClaim = rewardClaims.value?.claims?.find(c => c.status === 'eligible' && c.claim_type === 'referee');
+    }
+  }
+  
+  if (!targetClaim) {
+    // Check if user is even a referee
+    if (!rewardConditions.value?.reward_info?.is_referee) {
+      toast.add({ 
+        title: "Not Eligible", 
+        description: "This reward is only for users who were referred by someone",
+        color: "yellow"
+      });
+    } else {
+      toast.add({ 
+        title: "Not Eligible", 
+        description: "Complete all conditions to claim your reward",
+        color: "yellow"
+      });
+    }
     return;
   }
   
@@ -233,6 +254,67 @@ async function claimReward(claimId = null) {
     toast.add({ 
       title: "Error", 
       description: "Failed to claim reward. Please try again.",
+      color: "red"
+    });
+  } finally {
+    claimingReward.value = false;
+  }
+}
+
+async function claimAllRewards() {
+  // Get all eligible claims
+  const eligibleClaims = rewardClaims.value?.claims?.filter(
+    claim => claim.claim_type === 'referrer' && claim.status === 'eligible'
+  ) || [];
+  
+  if (eligibleClaims.length === 0) {
+    toast.add({ 
+      title: "No Rewards", 
+      description: "No eligible rewards to claim",
+      color: "yellow"
+    });
+    return;
+  }
+  
+  claimingReward.value = true;
+  let successCount = 0;
+  let totalAmount = 0;
+  
+  try {
+    // Claim each eligible reward
+    for (const claim of eligibleClaims) {
+      try {
+        const res = await post(`/referral-rewards/claim/${claim.id}/`, {});
+        if (res?.data?.success) {
+          successCount++;
+          totalAmount += parseFloat(claim.reward_amount);
+        }
+      } catch (err) {
+        console.error(`Error claiming reward ${claim.id}:`, err);
+      }
+    }
+    
+    if (successCount > 0) {
+      toast.add({ 
+        title: "🎉 Rewards Claimed!", 
+        description: `Successfully claimed ${successCount} reward${successCount > 1 ? 's' : ''} totaling ৳${totalAmount}!`,
+        color: "green"
+      });
+      // Refresh data
+      await getRewardClaims();
+      await getRewardConditions();
+    } else {
+      toast.add({ 
+        title: "Error", 
+        description: "Failed to claim rewards. Please try again.",
+        color: "red"
+      });
+    }
+  } catch (error) {
+    console.error("Error claiming all rewards:", error);
+    toast.add({ 
+      title: "Error", 
+      description: "Failed to claim rewards. Please try again.",
       color: "red"
     });
   } finally {
@@ -579,8 +661,9 @@ onMounted(() => {
   if (user?.value?.user) {
     getReferredUsers();
     getCommissionHistory();
-    getRewardConditions();
-    getRewardClaims();
+    // Fetch conditions first (this creates the claim if user is a referee)
+    // Then fetch claims after conditions are checked
+    getRewardConditions().then(() => getRewardClaims());
   }
 
   // Update indicator on window resize (client-side only)
