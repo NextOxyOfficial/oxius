@@ -306,14 +306,11 @@
               >
                 <div class="flex flex-row gap-2">
                   <div class="mt-2">
-                    <NuxtImg
-                      v-if="service.medias[0]?.image"
-                      :src="getImageUrl(service.medias[0].image)"
-                      class="object-contain size-24 rounded-md"
-                    />
                     <img
-                      v-else
-                      :src="getImageUrl(service.category_details.image)"
+                      :src="service.medias?.[0]?.image 
+                        ? getImageUrl(service.medias[0].image) 
+                        : getImageUrl(service.category_details?.image)"
+                      :alt="service.title"
                       class="object-contain size-24 rounded-md"
                     />
                   </div>
@@ -499,14 +496,11 @@
               >
                 <div class="flex flex-row gap-2 items-start">
                   <div class="mt-2">
-                    <NuxtImg
-                      v-if="service.medias[0]?.image"
-                      :src="getImageUrl(service.medias[0].image)"
-                      class="object-contain size-24 rounded-md"
-                    />
                     <img
-                      v-else
-                      :src="getImageUrl(service.category_details.image)"
+                      :src="service.medias?.[0]?.image 
+                        ? getImageUrl(service.medias[0].image) 
+                        : getImageUrl(service.category_details?.image)"
+                      :alt="service.title"
                       class="object-contain size-24 rounded-md"
                     />
                   </div>

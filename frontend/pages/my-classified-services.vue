@@ -157,17 +157,12 @@
                   <div
                     class="w-full h-48 md:h-24 rounded-lg overflow-hidden bg-slate-100 shadow-sm"
                   >
-                    <NuxtImg
-                      v-if="service.medias && service.medias[0]?.image"
-                      :src="getImageUrl(service.medias[0].image)"
-                      class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
-                      alt="Post image"
-                    />
                     <img
-                      v-else
-                      :src="getImageUrl(service.category_details.image)"
+                      :src="service.medias?.[0]?.image 
+                        ? getImageUrl(service.medias[0].image) 
+                        : getImageUrl(service.category_details?.image)"
+                      :alt="service.title || 'Post image'"
                       class="w-full h-full object-contain transition-transform duration-500 hover:scale-110"
-                      alt="Category image"
                     />
                   </div>
                 </div>
