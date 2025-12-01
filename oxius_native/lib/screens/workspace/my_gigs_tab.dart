@@ -123,16 +123,16 @@ class _MyGigsTabState extends State<MyGigsTab> {
         children: [
           // Filter Bar
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             color: Colors.white,
             child: Row(
               children: [
                 _buildFilterButton('All', 'all'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 _buildFilterButton('Active', 'active'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 _buildFilterButton('Paused', 'paused'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 _buildFilterButton('Pending', 'pending'),
               ],
             ),
@@ -145,7 +145,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
                 : _filteredGigs.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                         itemCount: _filteredGigs.length,
                         itemBuilder: (context, index) {
                           return _buildGigCard(_filteredGigs[index]);
@@ -162,17 +162,17 @@ class _MyGigsTabState extends State<MyGigsTab> {
     return GestureDetector(
       onTap: () => setState(() => _selectedFilter = filter),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey[100],
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.grey[700],
             fontWeight: FontWeight.w500,
-            fontSize: 13,
+            fontSize: 11,
           ),
         ),
       ),
@@ -186,246 +186,206 @@ class _MyGigsTabState extends State<MyGigsTab> {
     final rating = (gig['rating'] ?? 0).toDouble();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image with status badge overlay
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: CachedNetworkImage(
-                    imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[200],
-                      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image, color: Colors.grey, size: 40),
-                    ),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            // Thumbnail
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(
+                width: 50,
+                height: 50,
+                child: CachedNetworkImage(
+                  imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(color: Colors.grey[200]),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image, color: Colors.grey, size: 20),
                   ),
                 ),
               ),
-              // Status badge
-              Positioned(
-                top: 8,
-                left: 8,
-                child: _buildStatusBadge(status),
-              ),
-              // Menu button
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: PopupMenuButton(
-                    icon: const Icon(Icons.more_vert, size: 20, color: Colors.black87),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: 18),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
+            ),
+            const SizedBox(width: 10),
+            
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title row with status
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          gig['title'] ?? '',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (status == 'active')
-                        const PopupMenuItem(
-                          value: 'pause',
-                          child: Row(
-                            children: [
-                              Icon(Icons.pause, size: 18),
-                              SizedBox(width: 8),
-                              Text('Pause'),
-                            ],
-                          ),
-                        ),
-                      if (status == 'paused')
-                        const PopupMenuItem(
-                          value: 'activate',
-                          child: Row(
-                            children: [
-                              Icon(Icons.play_arrow, size: 18, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text('Activate', style: TextStyle(color: Colors.green)),
-                            ],
-                          ),
-                        ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 18, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Delete', style: TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
+                      const SizedBox(width: 6),
+                      _buildStatusBadge(status),
                     ],
-                    onSelected: (value) async {
-                      if (value == 'delete') {
-                        _deleteGig(gig['id'].toString());
-                      } else if (value == 'pause') {
-                        await _toggleGigStatus(gig['id'].toString(), 'paused');
-                      } else if (value == 'activate') {
-                        await _toggleGigStatus(gig['id'].toString(), 'active');
-                      }
-                    },
                   ),
-                ),
-              ),
-            ],
-          ),
-          
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title
-                Text(
-                  gig['title'] ?? '',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 12),
-                
-                // Stats Row
-                Row(
-                  children: [
-                    // Price
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
+                  const SizedBox(height: 4),
+                  
+                  // Stats row
+                  Row(
+                    children: [
+                      Text(
                         '৳$price',
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF8B5CF6),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Orders
-                    Icon(Icons.shopping_bag_outlined, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$ordersCount orders',
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                    ),
-                    const Spacer(),
-                    // Rating
-                    const Icon(Icons.star, size: 16, color: Colors.amber),
-                    const SizedBox(width: 4),
-                    Text(
-                      rating.toStringAsFixed(1),
-                      style: TextStyle(
-                        fontSize: 13, 
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w500,
+                      const SizedBox(width: 10),
+                      Icon(Icons.shopping_bag_outlined, size: 12, color: Colors.grey[500]),
+                      const SizedBox(width: 2),
+                      Text(
+                        '$ordersCount',
+                        style: TextStyle(fontSize: 10, color: Colors.grey[500]),
                       ),
+                      const SizedBox(width: 10),
+                      const Icon(Icons.star, size: 12, color: Colors.amber),
+                      const SizedBox(width: 2),
+                      Text(
+                        rating.toStringAsFixed(1),
+                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // Menu button
+            PopupMenuButton(
+              icon: Icon(Icons.more_vert, size: 18, color: Colors.grey[600]),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  height: 36,
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 16),
+                      SizedBox(width: 8),
+                      Text('Edit', style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                ),
+                if (status == 'active')
+                  const PopupMenuItem(
+                    value: 'pause',
+                    height: 36,
+                    child: Row(
+                      children: [
+                        Icon(Icons.pause, size: 16),
+                        SizedBox(width: 8),
+                        Text('Pause', style: TextStyle(fontSize: 13)),
+                      ],
                     ),
-                  ],
+                  ),
+                if (status == 'paused')
+                  const PopupMenuItem(
+                    value: 'activate',
+                    height: 36,
+                    child: Row(
+                      children: [
+                        Icon(Icons.play_arrow, size: 16, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text('Activate', style: TextStyle(color: Colors.green, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                const PopupMenuItem(
+                  value: 'delete',
+                  height: 36,
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, size: 16, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: Colors.red, fontSize: 13)),
+                    ],
+                  ),
                 ),
               ],
+              onSelected: (value) async {
+                if (value == 'delete') {
+                  _deleteGig(gig['id'].toString());
+                } else if (value == 'pause') {
+                  await _toggleGigStatus(gig['id'].toString(), 'paused');
+                } else if (value == 'activate') {
+                  await _toggleGigStatus(gig['id'].toString(), 'active');
+                }
+              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildStatusBadge(String status) {
     Color bgColor;
-    Color textColor;
     String label;
-    IconData icon;
 
     switch (status) {
       case 'active':
         bgColor = Colors.green;
-        textColor = Colors.white;
         label = 'Active';
-        icon = Icons.check_circle;
         break;
       case 'paused':
         bgColor = Colors.grey[700]!;
-        textColor = Colors.white;
         label = 'Paused';
-        icon = Icons.pause;
         break;
       case 'pending':
         bgColor = Colors.orange;
-        textColor = Colors.white;
         label = 'Pending';
-        icon = Icons.schedule;
         break;
       case 'rejected':
         bgColor = Colors.red;
-        textColor = Colors.white;
         label = 'Rejected';
-        icon = Icons.cancel;
         break;
       default:
         bgColor = Colors.grey;
-        textColor = Colors.white;
         label = status.toUpperCase();
-        icon = Icons.info;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: bgColor.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(20),
+        color: bgColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: textColor),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: TextStyle(
+          color: bgColor,
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

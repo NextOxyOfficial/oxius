@@ -131,43 +131,50 @@ class _AllGigsTabState extends State<AllGigsTab> {
         children: [
           // Search and Filter Bar
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             color: Colors.white,
             child: Column(
               children: [
                 // Search Bar
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search gigs...',
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                              _loadGigs(refresh: true);
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                  onSubmitted: (value) {
-                    setState(() => _searchQuery = value);
-                    _loadGigs(refresh: true);
-                  },
-                ),
-                const SizedBox(height: 10),
-                // Category Filter
                 SizedBox(
                   height: 36,
+                  child: TextField(
+                    controller: _searchController,
+                    style: const TextStyle(fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: 'Search gigs...',
+                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 18),
+                      prefixIconConstraints: const BoxConstraints(minWidth: 36),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? GestureDetector(
+                              onTap: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                                _loadGigs(refresh: true);
+                              },
+                              child: Icon(Icons.clear, size: 16, color: Colors.grey[400]),
+                            )
+                          : null,
+                      suffixIconConstraints: const BoxConstraints(minWidth: 32),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                    ),
+                    onSubmitted: (value) {
+                      setState(() => _searchQuery = value);
+                      _loadGigs(refresh: true);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 6),
+                // Category Filter
+                SizedBox(
+                  height: 28,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
@@ -191,12 +198,12 @@ class _AllGigsTabState extends State<AllGigsTab> {
                     ? _buildEmptyState()
                     : GridView.builder(
                         controller: _scrollController,
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 4,
-                          mainAxisSpacing: 4,
+                          childAspectRatio: 0.82,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 10,
                         ),
                         itemCount: _gigs.length + (_isLoadingMore ? 2 : 0),
                         itemBuilder: (context, index) {
@@ -220,23 +227,26 @@ class _AllGigsTabState extends State<AllGigsTab> {
   Widget _buildFilterChip(String label, String? categoryId) {
     final isSelected = _selectedCategory == categoryId;
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (selected) {
-          setState(() => _selectedCategory = selected ? categoryId : null);
+      padding: const EdgeInsets.only(right: 6),
+      child: GestureDetector(
+        onTap: () {
+          setState(() => _selectedCategory = isSelected ? null : categoryId);
           _loadGigs(refresh: true);
         },
-        backgroundColor: Colors.grey[100],
-        selectedColor: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-        labelStyle: TextStyle(
-          color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey[700],
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-        checkmarkColor: const Color(0xFF8B5CF6),
-        side: BorderSide(
-          color: isSelected ? const Color(0xFF8B5CF6) : Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF8B5CF6) : Colors.grey[100],
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey[700],
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
+          ),
         ),
       ),
     );
@@ -259,12 +269,12 @@ class _AllGigsTabState extends State<AllGigsTab> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
@@ -273,19 +283,16 @@ class _AllGigsTabState extends State<AllGigsTab> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
               child: AspectRatio(
                 aspectRatio: 16 / 10,
                 child: CachedNetworkImage(
                   imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[200],
-                    child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  ),
+                  placeholder: (context, url) => Container(color: Colors.grey[200]),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[200],
-                    child: const Icon(Icons.image, color: Colors.grey),
+                    child: const Icon(Icons.image, color: Colors.grey, size: 20),
                   ),
                 ),
               ),
@@ -294,7 +301,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
             // Content
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -302,18 +309,18 @@ class _AllGigsTabState extends State<AllGigsTab> {
                     Row(
                       children: [
                         CircleAvatar(
-                          radius: 12,
+                          radius: 10,
                           backgroundImage: user?['avatar'] != null
                               ? CachedNetworkImageProvider(_getImageUrl(user!['avatar']))
                               : null,
                           child: user?['avatar'] == null
                               ? Text(
                                   (user?['name'] ?? 'U')[0].toUpperCase(),
-                                  style: const TextStyle(fontSize: 10),
+                                  style: const TextStyle(fontSize: 8),
                                 )
                               : null,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         Flexible(
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -322,7 +329,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                                 child: Text(
                                   user?['name'] ?? 'Unknown',
                                   style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 10,
                                     color: Colors.grey[600],
                                   ),
                                   maxLines: 1,
@@ -331,22 +338,22 @@ class _AllGigsTabState extends State<AllGigsTab> {
                               ),
                               if (user?['kyc'] == true)
                                 const Padding(
-                                  padding: EdgeInsets.only(left: 4),
-                                  child: Icon(Icons.verified, size: 14, color: Colors.blue),
+                                  padding: EdgeInsets.only(left: 3),
+                                  child: Icon(Icons.verified, size: 12, color: Colors.blue),
                                 ),
                             ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     
                     // Title
                     Expanded(
                       child: Text(
                         gig['title'] ?? '',
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -361,12 +368,12 @@ class _AllGigsTabState extends State<AllGigsTab> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.star, size: 14, color: Colors.amber),
+                            const Icon(Icons.star, size: 12, color: Colors.amber),
                             const SizedBox(width: 2),
                             Text(
                               rating.toStringAsFixed(1),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 color: Colors.grey[700],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -376,7 +383,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                         Text(
                           '৳$price',
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF8B5CF6),
                           ),

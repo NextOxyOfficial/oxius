@@ -102,19 +102,21 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        toolbarHeight: 48,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Gig Details',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 16),
         ),
         actions: [
           IconButton(
             icon: Icon(
               _gig?['is_favorited'] == true ? Icons.favorite : Icons.favorite_border,
               color: _gig?['is_favorited'] == true ? Colors.red : Colors.grey,
+              size: 20,
             ),
             onPressed: () async {
               await _workspaceService.toggleFavorite(widget.gigId);
@@ -122,7 +124,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.share, color: Colors.grey),
+            icon: const Icon(Icons.share, color: Colors.grey, size: 20),
             onPressed: () {},
           ),
         ],
@@ -148,7 +150,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         children: [
           // Image Gallery
           SizedBox(
-            height: 250,
+            height: 200,
             child: Stack(
               children: [
                 PageView.builder(
@@ -164,13 +166,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     return CachedNetworkImage(
                       imageUrl: _getImageUrl(imageUrl?.toString()),
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
+                      placeholder: (context, url) => Container(color: Colors.grey[200]),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[200],
-                        child: const Icon(Icons.image, size: 50, color: Colors.grey),
+                        child: const Icon(Icons.image, size: 40, color: Colors.grey),
                       ),
                     );
                   },
@@ -178,16 +177,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 // Image Indicators
                 if (images.length > 1)
                   Positioned(
-                    bottom: 12,
+                    bottom: 8,
                     left: 0,
                     right: 0,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(images.length, (index) {
                         return Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: 6,
+                          height: 6,
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _currentImageIndex == index

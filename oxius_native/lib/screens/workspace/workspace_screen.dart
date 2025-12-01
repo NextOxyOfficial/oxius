@@ -116,11 +116,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                 ],
               ),
               // Banner in expandedHeight
-              expandedHeight: _banners.isNotEmpty ? 180 : 0,
+              expandedHeight: _banners.isNotEmpty ? 190 : 0,
               flexibleSpace: _banners.isNotEmpty
                   ? FlexibleSpaceBar(
                       background: Padding(
-                        padding: const EdgeInsets.only(top: 80),
+                        padding: const EdgeInsets.only(top: 60),
                         child: _buildBannerSlider(),
                       ),
                     )
@@ -224,8 +224,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
 
   Widget _buildBannerSlider() {
     return Container(
-      height: 90,
-      margin: const EdgeInsets.symmetric(horizontal: 12),
+      height: 125,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Stack(
         children: [
           ClipRRect(
