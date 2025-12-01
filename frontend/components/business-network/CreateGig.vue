@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto px-1 sm:px-6 lg:px-8 max-w-4xl">
+  <div class="mx-auto px-1 mb-20 sm:px-6 lg:px-8 max-w-4xl">
     <!-- Header Section -->
     <div class="px-2 mb-6">
       <h1 class="text-2xl font-bold text-gray-900 flex items-center mb-2">

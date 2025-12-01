@@ -149,16 +149,19 @@
           <!-- Order Details Grid - Responsive -->
           <div class="grid grid-cols-3 gap-2 sm:gap-4 py-3 border-t border-gray-100">
             <div class="text-center sm:text-left">
-              <p class="text-xs text-gray-500 mb-0.5">Amount</p>
+              <p class="text-xs text-gray-500 mb-0.5">Order Amount</p>
               <p class="text-sm sm:text-base font-semibold text-gray-900 inline-flex items-center justify-center sm:justify-start"><UIcon name="i-mdi:currency-bdt" />{{ order.amount }}</p>
+            </div>
+            <div class="text-center sm:text-left">
+              <p class="text-xs text-gray-500 mb-0.5">Your Earnings</p>
+              <p class="text-sm sm:text-base font-semibold text-green-600 inline-flex items-center justify-center sm:justify-start">
+                <UIcon name="i-mdi:currency-bdt" />{{ getSellerEarnings(order.amount) }}
+              </p>
+              <p class="text-[10px] text-gray-400">After {{ sellerCommissionRate }}% fee</p>
             </div>
             <div class="text-center sm:text-left">
               <p class="text-xs text-gray-500 mb-0.5">Delivery</p>
               <p class="text-sm sm:text-base font-medium text-gray-700">{{ formatDeliveryDate(order.deliveryDate) }}</p>
-            </div>
-            <div class="text-center sm:text-left">
-              <p class="text-xs text-gray-500 mb-0.5">Revisions</p>
-              <p class="text-sm sm:text-base font-medium text-gray-700">{{ order.revisions || 'N/A' }}</p>
             </div>
           </div>
 
@@ -200,12 +203,12 @@
             </button>
             
             <button
-              v-if="order.status === 'in_progress'"
+              v-if="order.status === 'in_progress' || order.status === 'revision'"
               @click="deliverOrder(order)"
               class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
             >
               <UIcon name="i-heroicons-truck" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>Deliver</span>
+              <span>{{ order.status === 'revision' ? 'Re-deliver' : 'Deliver' }}</span>
             </button>
           </div>
         </div>
@@ -508,7 +511,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 let unreadPollingInterval = null;
 
 // Emit events to parent component
-const emit = defineEmits(['switchTab']);
+const emit = defineEmits(['switchTab', 'pendingCountUpdate']);
 
 // Composables
 const toast = useToast();
@@ -516,6 +519,13 @@ const { get, post } = useApi();
 const { user: currentUser } = useAuth();
 const { clearWorkspaceOrderCount } = useNotifications();
 const { chatIconPath } = useStaticAssets();
+const { calculateSellerFees, sellerCommissionRate } = useGigFees();
+
+// Helper function to get seller earnings after platform fee
+const getSellerEarnings = (orderAmount) => {
+  const fees = calculateSellerFees(parseFloat(orderAmount));
+  return fees.netEarnings.toFixed(2);
+};
 
 // Reactive data
 const activeFilter = ref('all');
@@ -547,6 +557,7 @@ const orderFilters = [
   { label: 'All Orders', value: 'all' },
   { label: 'Pending', value: 'pending' },
   { label: 'In Progress', value: 'in_progress' },
+  { label: 'Revision', value: 'revision' },
   { label: 'Completed', value: 'completed' },
   { label: 'Cancelled', value: 'cancelled' }
 ];
@@ -585,6 +596,10 @@ async function fetchOrders() {
         is_pro: order.buyer?.is_pro || false
       }
     }));
+    
+    // Emit pending orders count to parent
+    const pendingCount = orders.value.filter(o => o.status === 'pending').length;
+    emit('pendingCountUpdate', pendingCount);
     
     // Fetch unread message counts
     await fetchUnreadCounts();
@@ -686,7 +701,8 @@ const getStatusClass = (status) => {
   const classes = {
     pending: 'bg-yellow-100 text-yellow-800',
     in_progress: 'bg-blue-100 text-blue-800',
-    delivered: 'bg-green-100 text-green-800',
+    delivered: 'bg-purple-100 text-purple-800',
+    revision: 'bg-orange-100 text-orange-800',
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800'
   };
@@ -698,6 +714,7 @@ const getStatusLabel = (status) => {
     pending: 'Pending',
     in_progress: 'In Progress',
     delivered: 'Delivered',
+    revision: 'Revision Requested',
     completed: 'Completed',
     cancelled: 'Cancelled'
   };
@@ -779,6 +796,10 @@ const confirmAcceptOrder = async () => {
     } else {
       orderToAction.value.status = 'in_progress';
     }
+    
+    // Update pending count
+    const pendingCount = orders.value.filter(o => o.status === 'pending').length;
+    emit('pendingCountUpdate', pendingCount);
     
     toast.add({
       title: 'Order Accepted! 🎉',
@@ -879,6 +900,10 @@ const confirmDeclineOrder = async () => {
     } else {
       orderToAction.value.status = 'cancelled';
     }
+    
+    // Update pending count
+    const pendingCount = orders.value.filter(o => o.status === 'pending').length;
+    emit('pendingCountUpdate', pendingCount);
     
     toast.add({
       title: 'Order Declined',

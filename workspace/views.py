@@ -49,7 +49,7 @@ def send_workspace_notification(recipient_user, title, body, data=None):
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage,
     GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
-    WorkspaceBanner
+    WorkspaceBanner, GigFeeSettings
 )
 from .serializers import (
     GigSerializer, GigCreateSerializer, GigReviewSerializer,
@@ -265,9 +265,22 @@ def create_review(request, gig_id):
     
     rating = request.data.get('rating', 5)
     comment = request.data.get('comment', '')
+    order_id = request.data.get('order_id')
+    
+    # Get the order if provided
+    order = None
+    if order_id:
+        try:
+            order = GigOrder.objects.get(id=order_id, buyer=request.user, gig=gig)
+            # Verify order is completed
+            if order.status != 'completed':
+                return Response({'error': 'You can only review completed orders'}, status=status.HTTP_400_BAD_REQUEST)
+        except GigOrder.DoesNotExist:
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
     
     review = GigReview.objects.create(
         gig=gig,
+        order=order,
         user=request.user,
         rating=min(max(int(rating), 1), 5),  # Ensure rating is 1-5
         comment=comment
@@ -834,13 +847,18 @@ def update_order_status(request, order_id, action):
         },
         'deliver': {
             'allowed_by': 'seller',
-            'from_status': ['in_progress'],
+            'from_status': ['in_progress', 'revision'],
             'to_status': 'delivered'
         },
         'complete': {
             'allowed_by': 'buyer',
             'from_status': ['delivered'],
             'to_status': 'completed'
+        },
+        'reopen': {
+            'allowed_by': 'buyer',
+            'from_status': ['delivered'],
+            'to_status': 'revision'
         },
         'cancel': {
             'allowed_by': 'buyer',
@@ -876,6 +894,7 @@ def update_order_status(request, order_id, action):
         'decline': f'Order declined by seller. Reason: {note}' if note else 'Order declined by seller.',
         'deliver': f'Order marked as delivered.',
         'complete': f'Order completed by buyer.',
+        'reopen': f'Revision requested by buyer. Reason: {note}' if note else 'Revision requested by buyer.',
         'cancel': f'Order cancelled by buyer.'
     }
     
@@ -899,6 +918,7 @@ def update_order_status(request, order_id, action):
         'decline': '❌ Order Declined',
         'deliver': '📦 Order Delivered!',
         'complete': '🎉 Order Completed!',
+        'reopen': '🔄 Revision Requested',
         'cancel': '❌ Order Cancelled'
     }
     
@@ -907,6 +927,7 @@ def update_order_status(request, order_id, action):
         'decline': f'{actor_name} declined your order for "{order.gig.title[:30]}"',
         'deliver': f'{actor_name} has delivered your order "{order.gig.title[:30]}"',
         'complete': f'{actor_name} marked the order as complete. Payment released!',
+        'reopen': f'{actor_name} requested a revision for "{order.gig.title[:30]}"',
         'cancel': f'{actor_name} cancelled the order for "{order.gig.title[:30]}"'
     }
     
@@ -943,3 +964,64 @@ def get_workspace_banners(request):
     
     serializer = WorkspaceBannerSerializer(banners, many=True, context={'request': request})
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_gig_fee_settings(request):
+    """
+    Get current gig fee settings for frontend fee calculations.
+    Returns buyer and seller fee configuration.
+    """
+    settings = GigFeeSettings.get_settings()
+    
+    return Response({
+        # Buyer fees
+        'buyer_service_fee_percent': float(settings.buyer_service_fee_percent),
+        'buyer_service_fee_min': float(settings.buyer_service_fee_min),
+        'buyer_service_fee_max': float(settings.buyer_service_fee_max),
+        'buyer_processing_fee': float(settings.buyer_processing_fee),
+        'buyer_fee_waived': settings.buyer_fee_waived,
+        
+        # Seller fees
+        'seller_commission_percent': float(settings.seller_commission_percent),
+        'seller_commission_min': float(settings.seller_commission_min),
+        'seller_commission_max': float(settings.seller_commission_max),
+        'seller_withdrawal_fee': float(settings.seller_withdrawal_fee),
+        'seller_fee_discount_percent': float(settings.seller_fee_discount_percent),
+    })
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def calculate_order_fees(request):
+    """
+    Calculate fees for a specific order amount.
+    Returns breakdown for both buyer and seller.
+    
+    Request body:
+    {
+        "amount": 1000
+    }
+    """
+    amount = request.data.get('amount', 0)
+    
+    try:
+        amount = float(amount)
+        if amount <= 0:
+            return Response(
+                {'error': 'Amount must be greater than 0'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    except (ValueError, TypeError):
+        return Response(
+            {'error': 'Invalid amount'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    settings = GigFeeSettings.get_settings()
+    
+    return Response({
+        'buyer': settings.calculate_buyer_fees(amount),
+        'seller': settings.calculate_seller_fees(amount),
+    })

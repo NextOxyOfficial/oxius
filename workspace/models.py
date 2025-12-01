@@ -146,6 +146,7 @@ class GigReview(models.Model):
     """Model for gig reviews"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     gig = models.ForeignKey(Gig, on_delete=models.CASCADE, related_name='reviews')
+    order = models.ForeignKey('GigOrder', on_delete=models.SET_NULL, null=True, blank=True, related_name='review')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workspace_gig_reviews')
     rating = models.PositiveIntegerField(default=5)  # 1-5 stars
     comment = models.TextField(blank=True, null=True)
@@ -328,3 +329,143 @@ class WorkspaceBanner(models.Model):
         if self.ends_at and now > self.ends_at:
             return False
         return True
+
+
+class GigFeeSettings(models.Model):
+    """
+    Singleton model for managing gig order fees from Django Admin.
+    Only one instance should exist - use get_settings() class method.
+    """
+    
+    # Buyer fees (charged when placing order)
+    buyer_service_fee_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        help_text="Percentage fee charged to buyer on order amount (e.g., 5 for 5%)"
+    )
+    buyer_service_fee_min = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Minimum service fee in BDT"
+    )
+    buyer_service_fee_max = models.DecimalField(
+        max_digits=10, decimal_places=2, default=500,
+        help_text="Maximum service fee cap in BDT"
+    )
+    buyer_processing_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Fixed processing fee in BDT"
+    )
+    buyer_fee_waived = models.BooleanField(
+        default=True,
+        help_text="If checked, buyer service fees are waived (promotional period)"
+    )
+    
+    # Seller fees (deducted from earnings on completion)
+    seller_commission_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=10,
+        help_text="Platform commission percentage deducted from seller earnings (e.g., 10 for 10%)"
+    )
+    seller_commission_min = models.DecimalField(
+        max_digits=10, decimal_places=2, default=5,
+        help_text="Minimum commission in BDT"
+    )
+    seller_commission_max = models.DecimalField(
+        max_digits=10, decimal_places=2, default=5000,
+        help_text="Maximum commission cap in BDT"
+    )
+    seller_withdrawal_fee = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Fee for withdrawing earnings in BDT"
+    )
+    seller_fee_discount_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=0,
+        help_text="Promotional discount on seller commission (e.g., 20 for 20% off)"
+    )
+    
+    # Metadata
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='fee_settings_updates'
+    )
+    
+    class Meta:
+        verbose_name = "Gig Fee Settings"
+        verbose_name_plural = "Gig Fee Settings"
+    
+    def __str__(self):
+        return f"Gig Fee Settings (Buyer: {self.buyer_service_fee_percent}%, Seller: {self.seller_commission_percent}%)"
+    
+    def save(self, *args, **kwargs):
+        """Ensure only one instance exists"""
+        self.pk = 1
+        super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        """Prevent deletion"""
+        pass
+    
+    @classmethod
+    def get_settings(cls):
+        """Get or create the singleton settings instance"""
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+    
+    def calculate_buyer_fees(self, order_amount):
+        """Calculate buyer fees for an order"""
+        order_amount = float(order_amount)
+        
+        if self.buyer_fee_waived:
+            return {
+                'order_amount': order_amount,
+                'service_fee': 0,
+                'processing_fee': 0,
+                'total_fee': 0,
+                'total_to_pay': order_amount,
+                'is_fee_waived': True,
+            }
+        
+        # Calculate service fee
+        service_fee = (order_amount * float(self.buyer_service_fee_percent)) / 100
+        service_fee = max(service_fee, float(self.buyer_service_fee_min))
+        service_fee = min(service_fee, float(self.buyer_service_fee_max))
+        service_fee = round(service_fee, 2)
+        
+        processing_fee = float(self.buyer_processing_fee)
+        total_fee = service_fee + processing_fee
+        total_to_pay = order_amount + total_fee
+        
+        return {
+            'order_amount': order_amount,
+            'service_fee': service_fee,
+            'processing_fee': processing_fee,
+            'total_fee': total_fee,
+            'total_to_pay': total_to_pay,
+            'is_fee_waived': False,
+        }
+    
+    def calculate_seller_fees(self, order_amount):
+        """Calculate seller fees/earnings for an order"""
+        order_amount = float(order_amount)
+        
+        # Calculate platform commission
+        commission = (order_amount * float(self.seller_commission_percent)) / 100
+        commission = max(commission, float(self.seller_commission_min))
+        commission = min(commission, float(self.seller_commission_max))
+        
+        # Apply promotional discount if any
+        discount_applied = 0
+        if self.seller_fee_discount_percent > 0:
+            discount_applied = (commission * float(self.seller_fee_discount_percent)) / 100
+            commission = commission - discount_applied
+        
+        commission = round(commission, 2)
+        discount_applied = round(discount_applied, 2)
+        net_earnings = order_amount - commission
+        
+        return {
+            'order_amount': order_amount,
+            'platform_commission': commission,
+            'commission_percent': float(self.seller_commission_percent),
+            'net_earnings': net_earnings,
+            'discount_applied': discount_applied,
+        }

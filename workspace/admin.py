@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage, GigOrderTransaction,
     GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
-    WorkspaceBanner
+    WorkspaceBanner, GigFeeSettings
 )
 
 
@@ -510,3 +510,99 @@ class WorkspaceBannerAdmin(admin.ModelAdmin):
             return f"{start} → {end}"
         return 'Always'
     schedule_info.short_description = 'Schedule'
+
+
+# ============================================
+# Gig Fee Settings Admin (Singleton)
+# ============================================
+
+@admin.register(GigFeeSettings)
+class GigFeeSettingsAdmin(admin.ModelAdmin):
+    """Admin for managing gig order fees - singleton model"""
+    
+    list_display = (
+        'buyer_fees_display', 'seller_fees_display', 
+        'buyer_fee_status', 'seller_discount_status', 'updated_at'
+    )
+    
+    fieldsets = (
+        ('Buyer Fees (Order Placement)', {
+            'description': 'Fees charged to buyers when placing an order',
+            'fields': (
+                'buyer_fee_waived',
+                ('buyer_service_fee_percent', 'buyer_processing_fee'),
+                ('buyer_service_fee_min', 'buyer_service_fee_max'),
+            )
+        }),
+        ('Seller Fees (Order Completion)', {
+            'description': 'Platform commission deducted from seller earnings',
+            'fields': (
+                'seller_commission_percent',
+                ('seller_commission_min', 'seller_commission_max'),
+                'seller_fee_discount_percent',
+                'seller_withdrawal_fee',
+            )
+        }),
+        ('Metadata', {
+            'classes': ('collapse',),
+            'fields': ('updated_at', 'updated_by'),
+        }),
+    )
+    
+    readonly_fields = ('updated_at',)
+    
+    def has_add_permission(self, request):
+        """Only allow one instance"""
+        return not GigFeeSettings.objects.exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion"""
+        return False
+    
+    def buyer_fees_display(self, obj):
+        if obj.buyer_fee_waived:
+            return format_html(
+                '<span style="color: #4caf50; font-weight: bold;">FREE (Waived)</span>'
+            )
+        return format_html(
+            '<span style="font-weight: bold;">{}%</span> + ৳{} processing',
+            obj.buyer_service_fee_percent, obj.buyer_processing_fee
+        )
+    buyer_fees_display.short_description = 'Buyer Fees'
+    
+    def seller_fees_display(self, obj):
+        return format_html(
+            '<span style="font-weight: bold; color: #f44336;">{}%</span> commission',
+            obj.seller_commission_percent
+        )
+    seller_fees_display.short_description = 'Seller Commission'
+    
+    def buyer_fee_status(self, obj):
+        if obj.buyer_fee_waived:
+            return format_html(
+                '<span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">WAIVED</span>'
+            )
+        return format_html(
+            '<span style="background: #2196f3; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">ACTIVE</span>'
+        )
+    buyer_fee_status.short_description = 'Buyer Fee Status'
+    
+    def seller_discount_status(self, obj):
+        if obj.seller_fee_discount_percent > 0:
+            return format_html(
+                '<span style="background: #ff9800; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">{}% OFF</span>',
+                obj.seller_fee_discount_percent
+            )
+        return format_html(
+            '<span style="background: #9e9e9e; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">No Discount</span>'
+        )
+    seller_discount_status.short_description = 'Seller Discount'
+    
+    def save_model(self, request, obj, form, change):
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+    
+    def changelist_view(self, request, extra_context=None):
+        """Redirect to the single instance edit page"""
+        obj = GigFeeSettings.get_settings()
+        return self.changeform_view(request, str(obj.pk), extra_context=extra_context)

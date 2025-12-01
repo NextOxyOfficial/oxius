@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
+  <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-2 flex-1 min-h-screen">
     <!-- Header Section -->
     <div class="mb-2">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 px-2 py-4">
@@ -63,7 +63,7 @@
       </div>
 
       <!-- Tab Content - Gig Details -->
-      <div class="sm:px-6 pt-4 px-1">
+      <div class="sm:px-6 pt-4 px-1 mb-20">
         <!-- Loading State -->
         <div v-if="isLoading" class="animate-pulse py-6">
           <!-- Breadcrumb skeleton -->
@@ -432,18 +432,41 @@
                         <div class="flex justify-between">
                           <span class="text-gray-600">Order Amount</span>
                           <span class="font-medium flex items-center">
-                            <UIcon name="i-mdi:currency-bdt" />{{ gig.price }}
+                            <UIcon name="i-mdi:currency-bdt" />{{ buyerFees?.orderAmount?.toFixed(2) || gig.price }}
                           </span>
                         </div>
                         <div class="flex justify-between">
                           <span class="text-gray-600">Service Fee</span>
-                          <span class="font-medium text-green-600">Free</span>
+                          <span :class="['font-medium', buyerFees?.isFeeWaived ? 'text-green-600' : 'text-gray-900']">
+                            <template v-if="buyerFees?.isFeeWaived">
+                              Free
+                            </template>
+                            <template v-else>
+                              <span class="flex items-center">
+                                <UIcon name="i-mdi:currency-bdt" />{{ buyerFees?.serviceFee?.toFixed(2) || '0.00' }}
+                              </span>
+                            </template>
+                          </span>
+                        </div>
+                        <div v-if="buyerFees?.processingFee > 0" class="flex justify-between">
+                          <span class="text-gray-600">Processing Fee</span>
+                          <span class="font-medium flex items-center">
+                            <UIcon name="i-mdi:currency-bdt" />{{ buyerFees?.processingFee?.toFixed(2) }}
+                          </span>
                         </div>
                         <div class="border-t pt-2 flex justify-between">
                           <span class="font-medium text-gray-900">Total to Pay</span>
                           <span class="font-bold text-lg flex items-center">
-                            <UIcon name="i-mdi:currency-bdt" />{{ gig.price }}
+                            <UIcon name="i-mdi:currency-bdt" />{{ buyerFees?.totalToPay?.toFixed(2) || gig.price }}
                           </span>
+                        </div>
+                      </div>
+                      
+                      <!-- Seller Earnings Info (for transparency) -->
+                      <div class="bg-purple-50 rounded-lg p-3 text-xs text-purple-700">
+                        <div class="flex items-center gap-2">
+                          <UIcon name="i-heroicons-information-circle" class="w-4 h-4 text-purple-500" />
+                          <span>Seller will receive <strong>৳{{ sellerFees?.netEarnings?.toFixed(2) || gig.price }}</strong> after {{ sellerFees?.commissionPercent || 10 }}% platform fee</span>
                         </div>
                       </div>
 
@@ -498,7 +521,7 @@
                           ]"
                         >
                           <span v-if="isPlacingOrder" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                          <span>Pay ৳{{ gig.price }}</span>
+                          <span>Pay ৳{{ buyerFees?.totalToPay?.toFixed(2) || gig.price }}</span>
                         </button>
                       </div>
                     </div>
@@ -685,16 +708,35 @@
                 >
                   <div class="flex items-start space-x-3">
                     <!-- Reviewer Avatar -->
+                    <NuxtLink 
+                      v-if="review.user.id"
+                      :to="`/business-network/profile/${review.user.id}`"
+                      class="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                      <img 
+                        :src="review.user.avatar || '/images/default-avatar.png'" 
+                        :alt="review.user.name"
+                        class="w-10 h-10 rounded-full object-cover ring-2 ring-transparent hover:ring-primary-300 transition-all"
+                      />
+                    </NuxtLink>
                     <img 
+                      v-else
                       :src="review.user.avatar || '/images/default-avatar.png'" 
                       :alt="review.user.name"
-                      class="w-10 h-10 rounded-full object-cover"
+                      class="w-10 h-10 rounded-full object-cover flex-shrink-0"
                     />
                     <div class="flex-1">
                       <!-- Reviewer Info -->
                       <div class="flex items-center justify-between mb-1">
                         <div class="flex items-center gap-2">
-                          <span class="font-medium text-gray-900">{{ review.user.name }}</span>
+                          <NuxtLink 
+                            v-if="review.user.id"
+                            :to="`/business-network/profile/${review.user.id}`"
+                            class="font-medium text-gray-900 hover:text-primary-600 hover:underline transition-colors cursor-pointer"
+                          >
+                            {{ review.user.name }}
+                          </NuxtLink>
+                          <span v-else class="font-medium text-gray-900">{{ review.user.name }}</span>
                           <!-- Verified Badge -->
                           <UIcon v-if="review.user.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500" />
                           <!-- Pro Badge -->
@@ -794,6 +836,7 @@ const toast = useToast();
 const { user } = useAuth();
 const { get } = useApi();
 const { chatIconPath } = useStaticAssets();
+const { calculateBuyerFees, calculateSellerFees, getBuyerFeeText, isBuyerFeeWaived } = useGigFees();
 
 // State
 const isLoading = ref(true);
@@ -874,20 +917,37 @@ const userBalance = computed(() => {
   return parseFloat(balance).toFixed(2);
 });
 
+// Dynamic fee calculations for buyer
+const buyerFees = computed(() => {
+  if (!gig.value) return null;
+  return calculateBuyerFees(parseFloat(gig.value.price || 0));
+});
+
+// Dynamic fee calculations for seller (what they'll earn)
+const sellerFees = computed(() => {
+  if (!gig.value) return null;
+  return calculateSellerFees(parseFloat(gig.value.price || 0));
+});
+
+// Total amount buyer needs to pay (including fees)
+const totalToPay = computed(() => {
+  return buyerFees.value?.totalToPay || parseFloat(gig.value?.price || 0);
+});
+
 const hasSufficientBalance = computed(() => {
   if (!gig.value) return false;
-  return parseFloat(userBalance.value) >= parseFloat(gig.value.price || 0);
+  return parseFloat(userBalance.value) >= totalToPay.value;
 });
 
 const balanceShortfall = computed(() => {
   if (!gig.value) return 0;
-  const diff = parseFloat(gig.value.price || 0) - parseFloat(userBalance.value);
+  const diff = totalToPay.value - parseFloat(userBalance.value);
   return diff > 0 ? diff.toFixed(2) : 0;
 });
 
 const balanceAfterPayment = computed(() => {
   if (!gig.value) return 0;
-  const after = parseFloat(userBalance.value) - parseFloat(gig.value.price || 0);
+  const after = parseFloat(userBalance.value) - totalToPay.value;
   return after.toFixed(2);
 });
 

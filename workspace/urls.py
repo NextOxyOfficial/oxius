@@ -8,12 +8,17 @@ from .views import (
     gig_categories,
     OrderMessageListView, create_order_message, get_unread_message_counts, mark_messages_as_read,
     get_gig_options, get_skills_by_category,
-    get_workspace_banners
+    get_workspace_banners,
+    get_gig_fee_settings, calculate_order_fees
 )
 
 urlpatterns = [
     # Workspace banners
     path('banners/', get_workspace_banners, name='workspace-banners'),
+    
+    # Fee settings endpoints
+    path('fee-settings/', get_gig_fee_settings, name='gig-fee-settings'),
+    path('calculate-fees/', calculate_order_fees, name='calculate-order-fees'),
     
     # Gig options endpoints (for Post a Gig form)
     path('gig-options/', get_gig_options, name='gig-options'),

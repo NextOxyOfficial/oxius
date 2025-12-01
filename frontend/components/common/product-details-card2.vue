@@ -481,7 +481,19 @@
                 "{{ review.comment }}"
               </p>
               <div class="flex items-center">
+                <NuxtLink 
+                  v-if="review.user?.id"
+                  :to="`/business-network/profile/${review.user.id}`"
+                  class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mr-3 text-primary-700 dark:text-primary-300 font-medium cursor-pointer hover:ring-2 hover:ring-primary-300 transition-all"
+                >
+                  {{
+                    review.user?.display_name?.charAt(0) ||
+                    review.reviewer_name?.charAt(0) ||
+                    "U"
+                  }}
+                </NuxtLink>
                 <div
+                  v-else
                   class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mr-3 text-primary-700 dark:text-primary-300 font-medium"
                 >
                   {{
@@ -491,7 +503,18 @@
                   }}
                 </div>
                 <div>
-                  <div class="font-medium text-gray-800 dark:text-white">
+                  <NuxtLink 
+                    v-if="review.user?.id"
+                    :to="`/business-network/profile/${review.user.id}`"
+                    class="font-medium text-gray-800 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors cursor-pointer"
+                  >
+                    {{
+                      review.user?.display_name ||
+                      review.reviewer_name ||
+                      "Anonymous"
+                    }}
+                  </NuxtLink>
+                  <div v-else class="font-medium text-gray-800 dark:text-white">
                     {{
                       review.user?.display_name ||
                       review.reviewer_name ||

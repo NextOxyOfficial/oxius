@@ -261,18 +261,23 @@ class GigOrderSerializer(serializers.ModelSerializer):
     buyer = GigUserSerializer(read_only=True)
     seller = GigUserSerializer(read_only=True)
     status_display = serializers.SerializerMethodField()
+    has_reviewed = serializers.SerializerMethodField()
     
     class Meta:
         model = GigOrder
         fields = (
             'id', 'gig', 'buyer', 'seller', 'price', 'requirements',
             'status', 'status_display', 'delivery_date', 'completed_at',
-            'created_at', 'updated_at'
+            'created_at', 'updated_at', 'has_reviewed'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
     
     def get_status_display(self, obj):
         return obj.get_status_display()
+    
+    def get_has_reviewed(self, obj):
+        """Check if buyer has already reviewed this order"""
+        return obj.review.exists()
 
 
 class GigFavoriteSerializer(serializers.ModelSerializer):

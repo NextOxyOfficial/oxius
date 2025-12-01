@@ -159,8 +159,9 @@
                 <!-- Order Stats -->
                 <div class="grid grid-cols-3 sm:flex sm:items-center gap-2 sm:gap-6 text-xs sm:text-sm">
                   <div class="text-center sm:text-left">
-                    <span class="text-gray-500 block sm:inline">Price</span>
-                    <span class="font-semibold text-gray-900 sm:ml-1 inline-flex items-center"><UIcon name="i-mdi:currency-bdt" />{{ order.amount }}</span>
+                    <span class="text-gray-500 block sm:inline">Total Paid</span>
+                    <span class="font-semibold text-gray-900 sm:ml-1 inline-flex items-center"><UIcon name="i-mdi:currency-bdt" />{{ getBuyerTotal(order.amount) }}</span>
+                    <span v-if="isBuyerFeeWaived" class="text-[10px] text-green-600 block sm:inline sm:ml-1">(No fees)</span>
                   </div>
                   <div v-if="order.deliveryDate" class="text-center sm:text-left">
                     <span class="text-gray-500 block sm:inline">Delivery</span>
@@ -188,15 +189,44 @@
                     </span>
                   </button>
                   
+                  <!-- Delivered status: Show Reopen and Complete buttons -->
+                  <template v-if="order.status === 'delivered'">
+                    <button
+                      @click="reopenOrder(order)"
+                      class="flex-1 sm:flex-none px-3 sm:px-4 py-2 border border-orange-200 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
+                    >
+                      <UIcon name="i-heroicons-arrow-path" class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span>Reopen</span>
+                    </button>
+                    <button
+                      @click="completeOrder(order)"
+                      class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
+                    >
+                      <UIcon name="i-heroicons-check" class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span>Complete</span>
+                    </button>
+                  </template>
+                  
+                  <!-- Completed status: Show Review button only if not reviewed -->
                   <button
-                    v-if="order.status === 'delivered'"
-                    @click="leaveReview(order)"
+                    v-else-if="order.status === 'completed' && !order.hasReviewed"
+                    @click="openReviewModal(order)"
                     class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
                   >
                     <Star class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>Review</span>
                   </button>
                   
+                  <!-- Completed and reviewed: Show "Reviewed" badge -->
+                  <span
+                    v-else-if="order.status === 'completed' && order.hasReviewed"
+                    class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
+                  >
+                    <Star class="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-current text-yellow-400" />
+                    <span>Reviewed</span>
+                  </span>
+                  
+                  <!-- Pending status: Show Cancel button -->
                   <button
                     v-else-if="order.status === 'pending'"
                     @click="cancelOrder(order)"
@@ -270,6 +300,176 @@
         </div>
       </div>
     </div>
+
+    <!-- Reopen Order Modal -->
+    <div
+      v-if="showReopenModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click.self="!isProcessing && (showReopenModal = false)"
+    >
+      <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Request Revision</h3>
+        <p class="text-gray-600 mb-4">
+          Not satisfied with the delivery? Request a revision from the seller.
+        </p>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Reason for revision (optional)</label>
+          <textarea
+            v-model="reopenNote"
+            placeholder="Describe what needs to be changed..."
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+          ></textarea>
+        </div>
+        <div class="flex space-x-3">
+          <button
+            @click="showReopenModal = false"
+            :disabled="isProcessing"
+            class="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmReopenOrder"
+            :disabled="isProcessing"
+            class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <span v-if="isProcessing" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>{{ isProcessing ? 'Requesting...' : 'Request Revision' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div
+      v-if="showReviewModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click.self="!isProcessing && (showReviewModal = false)"
+    >
+      <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Leave a Review</h3>
+        <p class="text-gray-600 mb-4">
+          How was your experience with "{{ orderToReview?.gig?.title }}"?
+        </p>
+        
+        <!-- Star Rating -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+          <div class="flex gap-1">
+            <button
+              v-for="star in 5"
+              :key="star"
+              @click="reviewRating = star"
+              class="p-1 transition-transform hover:scale-110"
+            >
+              <Star 
+                class="h-8 w-8 transition-colors"
+                :class="star <= reviewRating ? 'text-yellow-400 fill-current' : 'text-gray-300'"
+              />
+            </button>
+          </div>
+        </div>
+        
+        <!-- Review Comment -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
+          <textarea
+            v-model="reviewComment"
+            placeholder="Share your experience with this gig..."
+            rows="4"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+          ></textarea>
+        </div>
+        
+        <div class="flex space-x-3">
+          <button
+            @click="showReviewModal = false"
+            :disabled="isProcessing"
+            class="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            @click="submitReview"
+            :disabled="isProcessing || reviewRating === 0"
+            class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <span v-if="isProcessing" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>{{ isProcessing ? 'Submitting...' : 'Submit Review' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complete Order Confirmation Modal -->
+    <div
+      v-if="showCompleteModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click.self="!isProcessing && (showCompleteModal = false)"
+    >
+      <div class="bg-white rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+        <!-- Success Icon -->
+        <div class="flex justify-center mb-4">
+          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <UIcon name="i-heroicons-check-circle" class="w-10 h-10 text-green-600" />
+          </div>
+        </div>
+        
+        <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Complete This Order?</h3>
+        <p class="text-gray-600 text-center mb-4">
+          By completing this order, you confirm that you're satisfied with the delivery.
+        </p>
+        
+        <!-- Order Summary -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-4 space-y-2">
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">Gig</span>
+            <span class="font-medium text-gray-900 text-right max-w-[200px] truncate">{{ orderToComplete?.gig?.title }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">Seller</span>
+            <span class="font-medium text-gray-900">{{ orderToComplete?.seller?.name }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-500">Amount</span>
+            <span class="font-medium text-green-600 flex items-center">
+              <UIcon name="i-mdi:currency-bdt" class="w-4 h-4" />{{ orderToComplete?.amount }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Important Notice -->
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+          <div class="flex gap-2">
+            <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div class="text-sm text-amber-800">
+              <p class="font-medium">This action is final</p>
+              <p class="text-amber-700 mt-0.5">Payment will be released to the seller and cannot be reversed.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex space-x-3">
+          <button
+            @click="showCompleteModal = false"
+            :disabled="isProcessing"
+            class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            @click="confirmCompleteOrder"
+            :disabled="isProcessing"
+            class="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
+          >
+            <span v-if="isProcessing" class="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            <UIcon v-else name="i-heroicons-check" class="w-4 h-4" />
+            <span>{{ isProcessing ? 'Completing...' : 'Complete Order' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Chat Bottom Sheet -->
@@ -300,6 +500,24 @@ const showStatusDropdown = ref(false);
 const showChatSheet = ref(false);
 const selectedOrder = ref(null);
 
+// Reopen modal state
+const showReopenModal = ref(false);
+const orderToReopen = ref(null);
+const reopenNote = ref('');
+
+// Review modal state
+const showReviewModal = ref(false);
+const orderToReview = ref(null);
+const reviewRating = ref(5);
+const reviewComment = ref('');
+
+// Complete order modal state
+const showCompleteModal = ref(false);
+const orderToComplete = ref(null);
+
+// Processing state for modals
+const isProcessing = ref(false);
+
 // Polling interval for unread counts
 let unreadPollingInterval = null;
 
@@ -309,6 +527,7 @@ const statusTabs = ref([
   { id: 'pending', name: 'Pending', count: 0 },
   { id: 'in_progress', name: 'In Progress', count: 0 },
   { id: 'delivered', name: 'Delivered', count: 0 },
+  { id: 'revision', name: 'Revision', count: 0 },
   { id: 'completed', name: 'Completed', count: 0 },
   { id: 'cancelled', name: 'Cancelled', count: 0 }
 ]);
@@ -320,6 +539,13 @@ const { user } = useAuth();
 const toast = useToast();
 const { clearWorkspaceOrderCount } = useNotifications();
 const { chatIconPath } = useStaticAssets();
+const { calculateBuyerFees, isBuyerFeeWaived } = useGigFees();
+
+// Helper function to get buyer total (including any fees)
+const getBuyerTotal = (orderAmount) => {
+  const fees = calculateBuyerFees(parseFloat(orderAmount));
+  return fees.totalToPay.toFixed(2);
+};
 
 // Fetch orders from API
 async function fetchOrders() {
@@ -348,6 +574,7 @@ async function fetchOrders() {
       amount: parseFloat(order.price),
       timeRemaining: calculateTimeRemaining(order.delivery_date),
       unreadMessages: 0,
+      hasReviewed: order.has_reviewed || false,
       gig: {
         id: order.gig?.id,
         title: order.gig?.title || 'Unknown Gig',
@@ -451,6 +678,7 @@ const getStatusBadgeClass = (status) => {
     pending: 'bg-yellow-100 text-yellow-800',
     in_progress: 'bg-blue-100 text-blue-800',
     delivered: 'bg-purple-100 text-purple-800',
+    revision: 'bg-orange-100 text-orange-800',
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800'
   };
@@ -462,6 +690,7 @@ const getStatusLabel = (status) => {
     pending: 'Pending',
     in_progress: 'In Progress',
     delivered: 'Delivered',
+    revision: 'Revision Requested',
     completed: 'Completed',
     cancelled: 'Cancelled'
   };
@@ -474,6 +703,7 @@ const getEmptyStateTitle = () => {
     pending: 'No pending orders',
     in_progress: 'No orders in progress',
     delivered: 'No delivered orders',
+    revision: 'No orders in revision',
     completed: 'No completed orders',
     cancelled: 'No cancelled orders'
   };
@@ -484,6 +714,7 @@ const getEmptyStateDescription = () => {
   const descriptions = {
     all: 'Start browsing gigs and place your first order',
     pending: 'All orders are either accepted or in progress',
+    revision: 'No orders are currently awaiting revision',
     in_progress: 'No orders are currently being worked on',
     delivered: 'No orders have been delivered yet',
     completed: 'No orders have been completed and reviewed',
@@ -498,13 +729,157 @@ const openChat = (order) => {
   showChatSheet.value = true;
 };
 
-const leaveReview = (order) => {
-  // TODO: Implement review functionality
-};
-
 const cancelOrder = (order) => {
   orderToCancel.value = order;
   showCancelModal.value = true;
+};
+
+// Reopen order (request revision)
+const reopenOrder = (order) => {
+  orderToReopen.value = order;
+  reopenNote.value = '';
+  showReopenModal.value = true;
+};
+
+const confirmReopenOrder = async () => {
+  if (!orderToReopen.value || isProcessing.value) return;
+  
+  isProcessing.value = true;
+  
+  try {
+    const { data, error } = await post(`/workspace/orders/${orderToReopen.value.id}/reopen/`, {
+      note: reopenNote.value
+    });
+    
+    if (error) {
+      toast.add({
+        title: 'Request Failed',
+        description: error.message || error.error || 'Failed to request revision',
+        color: 'red',
+      });
+      return;
+    }
+    
+    // Update order status locally
+    orderToReopen.value.status = 'revision';
+    updateStatusCounts();
+    
+    toast.add({
+      title: 'Revision Requested',
+      description: 'The seller has been notified about your revision request.',
+      color: 'green',
+    });
+  } catch (err) {
+    toast.add({
+      title: 'Error',
+      description: 'An unexpected error occurred',
+      color: 'red',
+    });
+  } finally {
+    isProcessing.value = false;
+    showReopenModal.value = false;
+    orderToReopen.value = null;
+    reopenNote.value = '';
+  }
+};
+
+// Open complete order confirmation modal
+const completeOrder = (order) => {
+  orderToComplete.value = order;
+  showCompleteModal.value = true;
+};
+
+// Confirm complete order
+const confirmCompleteOrder = async () => {
+  if (!orderToComplete.value || isProcessing.value) return;
+  
+  isProcessing.value = true;
+  
+  try {
+    const { data, error } = await post(`/workspace/orders/${orderToComplete.value.id}/complete/`);
+    
+    if (error) {
+      toast.add({
+        title: 'Complete Failed',
+        description: error.message || error.error || 'Failed to complete order',
+        color: 'red',
+      });
+      return;
+    }
+    
+    // Update order status locally
+    orderToComplete.value.status = 'completed';
+    updateStatusCounts();
+    
+    toast.add({
+      title: 'Order Completed!',
+      description: 'Payment has been released to the seller. You can now leave a review.',
+      color: 'green',
+    });
+  } catch (err) {
+    toast.add({
+      title: 'Error',
+      description: 'An unexpected error occurred',
+      color: 'red',
+    });
+  } finally {
+    isProcessing.value = false;
+    showCompleteModal.value = false;
+    orderToComplete.value = null;
+  }
+};
+
+// Open review modal
+const openReviewModal = (order) => {
+  orderToReview.value = order;
+  reviewRating.value = 5;
+  reviewComment.value = '';
+  showReviewModal.value = true;
+};
+
+// Submit review
+const submitReview = async () => {
+  if (!orderToReview.value || isProcessing.value || reviewRating.value === 0) return;
+  
+  isProcessing.value = true;
+  
+  try {
+    const { data, error } = await post(`/workspace/gigs/${orderToReview.value.gig.id}/reviews/create/`, {
+      rating: reviewRating.value,
+      comment: reviewComment.value,
+      order_id: orderToReview.value.id
+    });
+    
+    if (error) {
+      toast.add({
+        title: 'Review Failed',
+        description: error.message || error.error || 'Failed to submit review',
+        color: 'red',
+      });
+      return;
+    }
+    
+    // Update order to mark as reviewed
+    orderToReview.value.hasReviewed = true;
+    
+    toast.add({
+      title: 'Review Submitted!',
+      description: 'Thank you for your feedback.',
+      color: 'green',
+    });
+  } catch (err) {
+    toast.add({
+      title: 'Error',
+      description: 'An unexpected error occurred',
+      color: 'red',
+    });
+  } finally {
+    isProcessing.value = false;
+    showReviewModal.value = false;
+    orderToReview.value = null;
+    reviewRating.value = 5;
+    reviewComment.value = '';
+  }
 };
 
 const isCancelling = ref(false);

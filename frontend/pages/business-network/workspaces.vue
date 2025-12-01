@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-3 flex-1 min-h-screen">
+  <div class="mx-auto sm:px-6 lg:px-8 max-w-7xl pt-2 flex-1 min-h-screen">
     <!-- Header Section with Banner -->
     <div class="mb-6">
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -83,6 +83,13 @@
           >
             <component :is="tab.icon" class="h-4 w-4 mr-2" />
             {{ tab.name }}
+            <!-- Notification Badge -->
+            <span
+              v-if="tab.count && tab.count > 0"
+              class="ml-2 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold rounded-full bg-red-500 text-white"
+            >
+              {{ tab.count > 99 ? '99+' : tab.count }}
+            </span>
           </button>
         </nav>
 
@@ -94,7 +101,7 @@
               :key="tab.id"
               @click="activeTab = tab.id"
               :class="[
-                'py-3 px-2 rounded-lg border-2 font-medium text-xs transition-colors',
+                'py-3 px-2 rounded-lg border-2 font-medium text-xs transition-colors relative',
                 activeTab === tab.id
                   ? 'border-purple-500 text-purple-600 bg-purple-50'
                   : 'border-gray-200 text-gray-600 hover:text-gray-800 hover:border-gray-300'
@@ -104,13 +111,20 @@
                 <component :is="tab.icon" class="h-4 w-4" />
                 <span class="leading-tight">{{ tab.name }}</span>
               </div>
+              <!-- Mobile Notification Badge -->
+              <span
+                v-if="tab.count && tab.count > 0"
+                class="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-red-500 text-white"
+              >
+                {{ tab.count > 99 ? '99+' : tab.count }}
+              </span>
             </button>
           </div>
         </div>
       </div>
 
       <!-- Tab Content -->
-      <div class="sm:px-6 pt-4 px-1">
+      <div class="sm:px-6 pt-4 px-1 mb-20">
         <!-- All Gigs Tab -->
         <div v-if="activeTab === 'all-gigs'">
           <!-- Filters and Search Bar -->
@@ -222,7 +236,7 @@
           <div v-if="showFilterDropdown" class="fixed inset-0 z-40" @click="showFilterDropdown = false"></div>
 
           <!-- Loading Skeleton -->
-          <div v-if="isLoading" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+          <div v-if="isLoading" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1">
             <div
               v-for="n in 8"
               :key="n"
@@ -248,7 +262,7 @@
           </div>
 
           <!-- Gigs Grid View -->
-          <div v-if="!isLoading && viewMode === 'grid'" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-2">
+          <div v-if="!isLoading && viewMode === 'grid'" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-1">
             <div
               v-for="gig in filteredGigs"
               :key="gig.id"
@@ -490,7 +504,7 @@
 
         <!-- Order Received Tab -->
         <div v-else-if="activeTab === 'my-orders'">
-          <MyOrders @switchTab="activeTab = $event" />
+          <MyOrders @switchTab="activeTab = $event" @pendingCountUpdate="pendingOrdersCount = $event" />
         </div>
 
         <!-- Gig Ordered Tab -->
@@ -535,9 +549,10 @@ definePageMeta({
 const { user } = useAuth();
 const { get, post } = useApi();
 const toast = useToast();
+const route = useRoute();
 
-// Tab State
-const activeTab = ref('all-gigs');
+// Tab State - Initialize from query param if present
+const activeTab = ref(route.query.tab || 'all-gigs');
 
 // Tab Configuration - Show all tabs for logged in users, only "All Gigs" for guests
 const tabs = computed(() => {
@@ -564,7 +579,7 @@ const tabs = computed(() => {
         id: 'my-orders',
         name: 'Order Received',
         icon: ShoppingCart,
-        count: 0
+        count: pendingOrdersCount.value
       },
       {
         id: 'gig-ordered',
@@ -583,6 +598,9 @@ const tabs = computed(() => {
   
   return baseTabs;
 });
+
+// Pending orders count for seller
+const pendingOrdersCount = ref(0);
 
 // State
 const isLoading = ref(true);
@@ -982,11 +1000,47 @@ const loadSavedStatus = () => {
   }
 };
 
+// Fetch pending orders count for seller
+const fetchPendingOrdersCount = async () => {
+  if (!user.value?.user) return;
+  
+  try {
+    const { data, error } = await get('/workspace/orders/seller/');
+    if (!error && data) {
+      const results = data?.results || data || [];
+      // Count only pending orders
+      pendingOrdersCount.value = results.filter(order => order.status === 'pending').length;
+    }
+  } catch (err) {
+    console.error('Error fetching pending orders count:', err);
+  }
+};
+
 // Fetch gigs and banners on mount
 onMounted(() => {
   fetchGigs();
   fetchBanners();
   loadSavedStatus();
+  fetchPendingOrdersCount();
+  
+  // Set tab from query param if present
+  if (route.query.tab) {
+    activeTab.value = route.query.tab;
+  }
+});
+
+// Watch for route query changes (when navigating with query params)
+watch(() => route.query.tab, (newTab) => {
+  if (newTab && newTab !== activeTab.value) {
+    activeTab.value = newTab;
+  }
+});
+
+// Watch for user login to fetch pending orders
+watch(() => user.value?.user, (newUser) => {
+  if (newUser) {
+    fetchPendingOrdersCount();
+  }
 });
 
 // Cleanup on unmount
