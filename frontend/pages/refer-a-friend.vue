@@ -91,7 +91,7 @@ const platformStats = ref({
 });
 const isLoadingPlatformStats = ref(false);
 
-// New Year Reward Program state
+// 2026 New Year Reward Program state
 const rewardProgram = ref(null);
 const rewardConditions = ref(null);
 const rewardClaims = ref(null);
@@ -140,7 +140,7 @@ async function getPlatformStats() {
   }
 }
 
-// New Year Reward Program functions
+// 2026 New Year Reward Program functions
 async function getRewardProgram() {
   try {
     const res = await get("/referral-rewards/program/");

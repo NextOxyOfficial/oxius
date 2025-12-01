@@ -91,7 +91,7 @@
         </div>
       </div>
 
-      <!-- New Year Reward Section -->
+      <!-- 2026 New Year Reward Section -->
       <NewYearRewardSection
         :program="rewardProgram"
         :conditions="rewardConditions"
