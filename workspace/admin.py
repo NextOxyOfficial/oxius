@@ -5,7 +5,7 @@ from django.utils import timezone
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage, GigOrderTransaction,
     GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
-    WorkspaceBanner, GigFeeSettings
+    WorkspaceBanner, GigFeeSettings, OrderDispute
 )
 
 
@@ -721,3 +721,333 @@ class GigFeeSettingsAdmin(admin.ModelAdmin):
         """Redirect to the single instance edit page"""
         obj = GigFeeSettings.get_settings()
         return self.changeform_view(request, str(obj.pk), extra_context=extra_context)
+
+
+# ============================================
+# Order Dispute Admin
+# ============================================
+
+@admin.register(OrderDispute)
+class OrderDisputeAdmin(admin.ModelAdmin):
+    """Admin for managing order disputes"""
+    
+    list_display = (
+        'dispute_id', 'order_link', 'raised_by_info', 'reason_display',
+        'status_badge', 'amount_display', 'created_at'
+    )
+    list_filter = ('status', 'reason', 'created_at')
+    search_fields = ('id', 'order__id', 'raised_by__email', 'raised_by__first_name', 'description')
+    readonly_fields = ('id', 'order', 'raised_by', 'reason', 'description', 'evidence', 'created_at', 'updated_at', 'dispute_details')
+    ordering = ('-created_at',)
+    actions = ['mark_under_review', 'resolve_for_buyer', 'resolve_for_seller']
+    
+    fieldsets = (
+        ('📋 Dispute Details', {
+            'fields': ('dispute_details',),
+            'classes': ('wide',),
+        }),
+        ('⚖️ Resolution', {
+            'fields': ('status', 'resolution_notes', 'refund_amount'),
+            'description': 'Update the status and provide resolution details.'
+        }),
+        ('🔒 Admin Notes (Internal)', {
+            'fields': ('admin_notes',),
+            'classes': ('collapse',),
+            'description': 'Internal notes - not visible to users.'
+        }),
+    )
+    
+    def dispute_id(self, obj):
+        return format_html(
+            '<code style="background: #e8e8e8; padding: 4px 8px; border-radius: 4px; font-family: monospace;">DSP-{}</code>',
+            str(obj.id)[:8].upper()
+        )
+    dispute_id.short_description = 'Dispute ID'
+    
+    def order_link(self, obj):
+        url = reverse('admin:workspace_gigorder_change', args=[obj.order.id])
+        return format_html(
+            '<a href="{}" style="color: #1976d2; text-decoration: none;">ORD-{}</a>',
+            url, str(obj.order.id)[:8].upper()
+        )
+    order_link.short_description = 'Order'
+    
+    def raised_by_info(self, obj):
+        role = 'Buyer' if obj.raised_by == obj.order.buyer else 'Seller'
+        return format_html(
+            '<div style="line-height: 1.4;"><strong>{}</strong><br><small style="color: #666;">{} ({})</small></div>',
+            f"{obj.raised_by.first_name} {obj.raised_by.last_name}",
+            obj.raised_by.email,
+            role
+        )
+    raised_by_info.short_description = 'Raised By'
+    
+    def reason_display(self, obj):
+        return obj.get_reason_display()
+    reason_display.short_description = 'Reason'
+    
+    def status_badge(self, obj):
+        colors = {
+            'open': '#f44336',
+            'under_review': '#ff9800',
+            'resolved_buyer': '#4caf50',
+            'resolved_seller': '#4caf50',
+            'resolved_partial': '#2196f3',
+            'closed': '#9e9e9e',
+        }
+        color = colors.get(obj.status, '#9e9e9e')
+        return format_html(
+            '<span style="background: {}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px; white-space: nowrap;">{}</span>',
+            color, obj.get_status_display()
+        )
+    status_badge.short_description = 'Status'
+    
+    def amount_display(self, obj):
+        return format_html(
+            '<span style="font-weight: bold; color: #2e7d32;">৳{}</span>',
+            obj.order.price
+        )
+    amount_display.short_description = 'Order Amount'
+    
+    def dispute_details(self, obj):
+        """Rich display of dispute information"""
+        role = 'Buyer' if obj.raised_by == obj.order.buyer else 'Seller'
+        other_party = obj.order.seller if obj.raised_by == obj.order.buyer else obj.order.buyer
+        other_role = 'Seller' if role == 'Buyer' else 'Buyer'
+        
+        evidence_html = ''
+        if obj.evidence:
+            evidence_html = '<div style="margin-top: 10px;"><strong>Evidence:</strong><ul>'
+            for item in obj.evidence:
+                evidence_html += f'<li><a href="{item}" target="_blank">{item}</a></li>'
+            evidence_html += '</ul></div>'
+        
+        return format_html(
+            '''
+            <div style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 5px;">🎫 Order</div>
+                        <div style="font-weight: bold;">ORD-{order_id}</div>
+                        <div style="font-size: 13px; color: #666; margin-top: 5px;">{gig_title}</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #2e7d32; margin-top: 5px;">৳{price}</div>
+                    </div>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 5px;">⚠️ Raised By ({role})</div>
+                        <div style="font-weight: bold;">{raised_by_name}</div>
+                        <div style="font-size: 13px; color: #666;">{raised_by_email}</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 5px;">👤 Buyer</div>
+                        <div style="font-weight: bold;">{buyer_name}</div>
+                        <div style="font-size: 13px; color: #666;">{buyer_email}</div>
+                    </div>
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 5px;">🏪 Seller</div>
+                        <div style="font-weight: bold;">{seller_name}</div>
+                        <div style="font-size: 13px; color: #666;">{seller_email}</div>
+                    </div>
+                </div>
+                <div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="font-size: 11px; color: #666; text-transform: uppercase; margin-bottom: 5px;">📝 Reason: {reason}</div>
+                    <div style="color: #333; white-space: pre-wrap;">{description}</div>
+                    {evidence}
+                </div>
+            </div>
+            ''',
+            order_id=str(obj.order.id)[:8].upper(),
+            gig_title=obj.order.gig.title[:50],
+            price=obj.order.price,
+            role=role,
+            raised_by_name=f"{obj.raised_by.first_name} {obj.raised_by.last_name}",
+            raised_by_email=obj.raised_by.email,
+            buyer_name=f"{obj.order.buyer.first_name} {obj.order.buyer.last_name}",
+            buyer_email=obj.order.buyer.email,
+            seller_name=f"{obj.order.seller.first_name} {obj.order.seller.last_name}",
+            seller_email=obj.order.seller.email,
+            reason=obj.get_reason_display(),
+            description=obj.description,
+            evidence=mark_safe(evidence_html)
+        )
+    dispute_details.short_description = ''
+    
+    @admin.action(description='📋 Mark as Under Review')
+    def mark_under_review(self, request, queryset):
+        updated = queryset.filter(status='open').update(status='under_review')
+        self.message_user(request, f'{updated} dispute(s) marked as under review.')
+    
+    @admin.action(description='✅ Resolve for Buyer (Full Refund)')
+    def resolve_for_buyer(self, request, queryset):
+        from .views import send_workspace_notification
+        
+        for dispute in queryset.filter(status__in=['open', 'under_review']):
+            # Refund buyer
+            order = dispute.order
+            order.buyer.balance += order.price
+            order.buyer.save(update_fields=['balance'])
+            
+            # Update order and dispute status
+            order.status = 'cancelled'
+            order.save(update_fields=['status'])
+            
+            dispute.status = 'resolved_buyer'
+            dispute.resolved_by = request.user
+            dispute.resolved_at = timezone.now()
+            dispute.resolution_notes = dispute.resolution_notes or 'Dispute resolved in favor of buyer. Full refund issued.'
+            dispute.save()
+            
+            # Notify both parties
+            send_workspace_notification(
+                recipient_user=order.buyer,
+                title='✅ Dispute Resolved',
+                body=f'Your dispute for order #{str(order.id)[:8].upper()} has been resolved. ৳{order.price} refunded.',
+                data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+            )
+            send_workspace_notification(
+                recipient_user=order.seller,
+                title='⚖️ Dispute Resolved',
+                body=f'The dispute for order #{str(order.id)[:8].upper()} has been resolved in favor of the buyer.',
+                data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+            )
+        
+        self.message_user(request, f'{queryset.count()} dispute(s) resolved for buyer.')
+    
+    @admin.action(description='✅ Resolve for Seller (Release Payment)')
+    def resolve_for_seller(self, request, queryset):
+        from .views import send_workspace_notification
+        
+        for dispute in queryset.filter(status__in=['open', 'under_review']):
+            order = dispute.order
+            
+            # Release payment to seller
+            order.seller.balance += order.price
+            order.seller.save(update_fields=['balance'])
+            
+            # Update order and dispute status
+            order.status = 'completed'
+            order.completed_at = timezone.now()
+            order.save(update_fields=['status', 'completed_at'])
+            
+            dispute.status = 'resolved_seller'
+            dispute.resolved_by = request.user
+            dispute.resolved_at = timezone.now()
+            dispute.resolution_notes = dispute.resolution_notes or 'Dispute resolved in favor of seller. Payment released.'
+            dispute.save()
+            
+            # Notify both parties
+            send_workspace_notification(
+                recipient_user=order.seller,
+                title='✅ Dispute Resolved',
+                body=f'Your dispute for order #{str(order.id)[:8].upper()} has been resolved. ৳{order.price} released to your balance.',
+                data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+            )
+            send_workspace_notification(
+                recipient_user=order.buyer,
+                title='⚖️ Dispute Resolved',
+                body=f'The dispute for order #{str(order.id)[:8].upper()} has been resolved in favor of the seller.',
+                data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+            )
+        
+        self.message_user(request, f'{queryset.count()} dispute(s) resolved for seller.')
+    
+    def save_model(self, request, obj, form, change):
+        from .views import send_workspace_notification
+        
+        if change and 'status' in form.changed_data:
+            old_status = form.initial.get('status')
+            order = obj.order
+            
+            # Only process if status changed to a resolution status
+            if old_status in ['open', 'under_review']:
+                
+                # Handle resolve for seller
+                if obj.status == 'resolved_seller':
+                    # Release payment to seller
+                    order.seller.balance += order.price
+                    order.seller.save(update_fields=['balance'])
+                    
+                    # Update order status
+                    order.status = 'completed'
+                    order.completed_at = timezone.now()
+                    order.save(update_fields=['status', 'completed_at'])
+                    
+                    obj.resolved_by = request.user
+                    obj.resolved_at = timezone.now()
+                    
+                    # Notify both parties
+                    send_workspace_notification(
+                        recipient_user=order.seller,
+                        title='✅ Dispute Resolved',
+                        body=f'Your dispute for order #{str(order.id)[:8].upper()} has been resolved. ৳{order.price} released to your balance.',
+                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                    )
+                    send_workspace_notification(
+                        recipient_user=order.buyer,
+                        title='⚖️ Dispute Resolved',
+                        body=f'The dispute for order #{str(order.id)[:8].upper()} has been resolved in favor of the seller.',
+                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                    )
+                
+                # Handle resolve for buyer
+                elif obj.status == 'resolved_buyer':
+                    # Refund buyer
+                    order.buyer.balance += order.price
+                    order.buyer.save(update_fields=['balance'])
+                    
+                    # Update order status
+                    order.status = 'cancelled'
+                    order.save(update_fields=['status'])
+                    
+                    obj.resolved_by = request.user
+                    obj.resolved_at = timezone.now()
+                    
+                    # Notify both parties
+                    send_workspace_notification(
+                        recipient_user=order.buyer,
+                        title='✅ Dispute Resolved',
+                        body=f'Your dispute for order #{str(order.id)[:8].upper()} has been resolved. ৳{order.price} refunded.',
+                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                    )
+                    send_workspace_notification(
+                        recipient_user=order.seller,
+                        title='⚖️ Dispute Resolved',
+                        body=f'The dispute for order #{str(order.id)[:8].upper()} has been resolved in favor of the buyer.',
+                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                    )
+                
+                # Handle partial refund
+                elif obj.status == 'resolved_partial' and obj.refund_amount:
+                    # Refund partial amount to buyer
+                    order.buyer.balance += obj.refund_amount
+                    order.buyer.save(update_fields=['balance'])
+                    
+                    # Release remaining to seller
+                    remaining = order.price - obj.refund_amount
+                    if remaining > 0:
+                        order.seller.balance += remaining
+                        order.seller.save(update_fields=['balance'])
+                    
+                    order.status = 'completed'
+                    order.completed_at = timezone.now()
+                    order.save(update_fields=['status', 'completed_at'])
+                    
+                    obj.resolved_by = request.user
+                    obj.resolved_at = timezone.now()
+                    
+                    # Notify both parties
+                    send_workspace_notification(
+                        recipient_user=order.buyer,
+                        title='⚖️ Dispute Resolved - Partial Refund',
+                        body=f'৳{obj.refund_amount} refunded for order #{str(order.id)[:8].upper()}.',
+                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                    )
+                    send_workspace_notification(
+                        recipient_user=order.seller,
+                        title='⚖️ Dispute Resolved - Partial Refund',
+                        body=f'৳{remaining} released for order #{str(order.id)[:8].upper()}.',
+                        data={'order_id': str(order.id), 'notification_type': 'dispute_resolved'}
+                    )
+        
+        super().save_model(request, obj, form, change)

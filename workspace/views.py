@@ -49,7 +49,7 @@ def send_workspace_notification(recipient_user, title, body, data=None):
 from .models import (
     Gig, GigReview, GigFavorite, GigOrder, OrderMessage,
     GigCategory, GigSkill, GigDeliveryTime, GigRevisionOption,
-    WorkspaceBanner, GigFeeSettings
+    WorkspaceBanner, GigFeeSettings, OrderDispute
 )
 from .serializers import (
     GigSerializer, GigCreateSerializer, GigReviewSerializer,
@@ -1034,4 +1034,146 @@ def calculate_order_fees(request):
     return Response({
         'buyer': settings.calculate_buyer_fees(amount),
         'seller': settings.calculate_seller_fees(amount),
+    })
+
+
+# ============================================
+# Order Dispute API
+# ============================================
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_dispute(request, order_id):
+    """
+    Create a dispute for an order.
+    Both buyer and seller can raise disputes.
+    
+    Request body:
+    {
+        "reason": "unresponsive_seller",
+        "description": "Detailed description of the issue"
+    }
+    """
+    try:
+        order = GigOrder.objects.get(id=order_id)
+    except GigOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    user = request.user
+    
+    # Check if user is buyer or seller
+    if user != order.buyer and user != order.seller:
+        return Response({'error': 'You are not authorized to dispute this order'}, status=status.HTTP_403_FORBIDDEN)
+    
+    # Check if order can be disputed (not already completed, cancelled, or disputed)
+    if order.status in ['completed', 'cancelled']:
+        return Response({'error': 'Cannot dispute a completed or cancelled order'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Check if there's already an open dispute
+    existing_dispute = OrderDispute.objects.filter(order=order, status__in=['open', 'under_review']).first()
+    if existing_dispute:
+        return Response({
+            'error': 'There is already an open dispute for this order',
+            'dispute_id': str(existing_dispute.id)
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    reason = request.data.get('reason')
+    description = request.data.get('description', '')
+    
+    # Validate reason
+    valid_reasons = [choice[0] for choice in OrderDispute.REASON_CHOICES]
+    if not reason or reason not in valid_reasons:
+        return Response({
+            'error': 'Invalid reason',
+            'valid_reasons': valid_reasons
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not description or len(description.strip()) < 20:
+        return Response({'error': 'Please provide a detailed description (at least 20 characters)'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Create the dispute
+    dispute = OrderDispute.objects.create(
+        order=order,
+        raised_by=user,
+        reason=reason,
+        description=description.strip()
+    )
+    
+    # Update order status to disputed
+    order.status = 'disputed'
+    order.save(update_fields=['status'])
+    
+    # Create system message in order chat
+    OrderMessage.objects.create(
+        order=order,
+        sender=None,
+        content=f'⚠️ A dispute has been raised for this order. Reason: {dispute.get_reason_display()}. Our team will review and resolve this shortly.',
+        message_type='text'
+    )
+    
+    # Notify the other party
+    other_party = order.seller if user == order.buyer else order.buyer
+    raiser_name = user.first_name or user.email
+    
+    send_workspace_notification(
+        recipient_user=other_party,
+        title='⚠️ Dispute Raised',
+        body=f'{raiser_name} has raised a dispute for order #{str(order.id)[:8].upper()}',
+        data={
+            'order_id': str(order.id),
+            'dispute_id': str(dispute.id),
+            'notification_type': 'dispute_raised'
+        }
+    )
+    
+    return Response({
+        'message': 'Dispute raised successfully. Our team will review and contact you shortly.',
+        'dispute': {
+            'id': str(dispute.id),
+            'reason': dispute.reason,
+            'reason_display': dispute.get_reason_display(),
+            'status': dispute.status,
+            'created_at': dispute.created_at.isoformat()
+        }
+    }, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_order_dispute(request, order_id):
+    """Get dispute details for an order"""
+    try:
+        order = GigOrder.objects.get(id=order_id)
+    except GigOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    user = request.user
+    
+    # Check if user is buyer or seller
+    if user != order.buyer and user != order.seller:
+        return Response({'error': 'You are not authorized to view this dispute'}, status=status.HTTP_403_FORBIDDEN)
+    
+    dispute = OrderDispute.objects.filter(order=order).order_by('-created_at').first()
+    
+    if not dispute:
+        return Response({'dispute': None})
+    
+    return Response({
+        'dispute': {
+            'id': str(dispute.id),
+            'reason': dispute.reason,
+            'reason_display': dispute.get_reason_display(),
+            'description': dispute.description,
+            'status': dispute.status,
+            'status_display': dispute.get_status_display(),
+            'resolution_notes': dispute.resolution_notes if dispute.is_resolved else None,
+            'raised_by': {
+                'id': str(dispute.raised_by.id),
+                'name': f"{dispute.raised_by.first_name} {dispute.raised_by.last_name}",
+                'is_buyer': dispute.raised_by == order.buyer
+            },
+            'created_at': dispute.created_at.isoformat(),
+            'resolved_at': dispute.resolved_at.isoformat() if dispute.resolved_at else None,
+            'is_resolved': dispute.is_resolved
+        }
     })

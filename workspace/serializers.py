@@ -262,13 +262,15 @@ class GigOrderSerializer(serializers.ModelSerializer):
     seller = GigUserSerializer(read_only=True)
     status_display = serializers.SerializerMethodField()
     has_reviewed = serializers.SerializerMethodField()
+    has_dispute = serializers.SerializerMethodField()
+    dispute_info = serializers.SerializerMethodField()
     
     class Meta:
         model = GigOrder
         fields = (
             'id', 'gig', 'buyer', 'seller', 'price', 'requirements',
             'status', 'status_display', 'delivery_date', 'completed_at',
-            'created_at', 'updated_at', 'has_reviewed'
+            'created_at', 'updated_at', 'has_reviewed', 'has_dispute', 'dispute_info'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')
     
@@ -278,6 +280,23 @@ class GigOrderSerializer(serializers.ModelSerializer):
     def get_has_reviewed(self, obj):
         """Check if buyer has already reviewed this order"""
         return obj.review.exists()
+    
+    def get_has_dispute(self, obj):
+        """Check if order has an active dispute"""
+        return obj.disputes.filter(status__in=['open', 'under_review']).exists()
+    
+    def get_dispute_info(self, obj):
+        """Get dispute resolution info if exists"""
+        dispute = obj.disputes.order_by('-created_at').first()
+        if not dispute:
+            return None
+        return {
+            'status': dispute.status,
+            'is_resolved': dispute.is_resolved,
+            'resolved_for_buyer': dispute.status == 'resolved_buyer',
+            'resolved_for_seller': dispute.status == 'resolved_seller',
+            'resolved_partial': dispute.status == 'resolved_partial',
+        }
 
 
 class GigFavoriteSerializer(serializers.ModelSerializer):

@@ -9,7 +9,8 @@ from .views import (
     OrderMessageListView, create_order_message, get_unread_message_counts, mark_messages_as_read,
     get_gig_options, get_skills_by_category,
     get_workspace_banners,
-    get_gig_fee_settings, calculate_order_fees
+    get_gig_fee_settings, calculate_order_fees,
+    create_dispute, get_order_dispute
 )
 
 urlpatterns = [
@@ -51,6 +52,10 @@ urlpatterns = [
     path('orders/<uuid:order_id>/messages/', OrderMessageListView.as_view(), name='order-messages'),
     path('orders/<uuid:order_id>/messages/create/', create_order_message, name='create-order-message'),
     path('orders/<uuid:order_id>/messages/mark-read/', mark_messages_as_read, name='mark-messages-read'),
+    
+    # Dispute endpoints
+    path('orders/<uuid:order_id>/dispute/', create_dispute, name='create-dispute'),
+    path('orders/<uuid:order_id>/dispute/details/', get_order_dispute, name='get-dispute'),
     
     # Order action endpoints (must be last as it catches any string)
     path('orders/<uuid:order_id>/complete/', complete_order_payment, name='complete-order'),

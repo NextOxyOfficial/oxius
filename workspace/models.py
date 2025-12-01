@@ -192,6 +192,7 @@ class GigOrder(models.Model):
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
         ('revision', 'Revision Requested'),
+        ('disputed', 'Disputed'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -213,6 +214,60 @@ class GigOrder(models.Model):
     
     def __str__(self):
         return f"Order #{str(self.id)[:8]} - {self.gig.title}"
+
+
+class OrderDispute(models.Model):
+    """Model for order disputes"""
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('under_review', 'Under Review'),
+        ('resolved_buyer', 'Resolved - Buyer Wins'),
+        ('resolved_seller', 'Resolved - Seller Wins'),
+        ('resolved_partial', 'Resolved - Partial Refund'),
+        ('closed', 'Closed'),
+    ]
+    
+    REASON_CHOICES = [
+        ('unresponsive_seller', 'Seller is unresponsive'),
+        ('unresponsive_buyer', 'Buyer is unresponsive'),
+        ('work_not_delivered', 'Work not delivered'),
+        ('work_not_as_described', 'Work not as described'),
+        ('quality_issues', 'Quality issues'),
+        ('late_delivery', 'Late delivery'),
+        ('payment_issue', 'Payment issue'),
+        ('communication_issue', 'Communication breakdown'),
+        ('other', 'Other'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(GigOrder, on_delete=models.CASCADE, related_name='disputes')
+    raised_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='disputes_raised')
+    reason = models.CharField(max_length=50, choices=REASON_CHOICES)
+    description = models.TextField(help_text="Detailed description of the issue")
+    evidence = models.JSONField(default=list, blank=True, help_text="List of evidence URLs/attachments")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    
+    # Admin resolution fields
+    admin_notes = models.TextField(blank=True, null=True, help_text="Internal notes for admin")
+    resolution_notes = models.TextField(blank=True, null=True, help_text="Resolution explanation visible to both parties")
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Amount to refund if partial refund")
+    resolved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='disputes_resolved')
+    resolved_at = models.DateTimeField(blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Order Dispute"
+        verbose_name_plural = "Order Disputes"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Dispute #{str(self.id)[:8]} - Order #{str(self.order.id)[:8]}"
+    
+    @property
+    def is_resolved(self):
+        return self.status in ['resolved_buyer', 'resolved_seller', 'resolved_partial', 'closed']
 
 
 class GigOrderTransaction(models.Model):

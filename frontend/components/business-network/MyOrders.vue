@@ -167,7 +167,9 @@
 
           <!-- Action Buttons - Responsive -->
           <div v-if="order.status !== 'cancelled'" class="flex flex-row gap-2 pt-3 border-t border-gray-100">
+            <!-- Chat button - disabled after dispute resolution -->
             <button
+              v-if="!order.disputeInfo?.is_resolved"
               @click="openChat(order)"
               :class="[
                 'relative px-3 sm:px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2',
@@ -183,6 +185,15 @@
                 {{ order.unreadMessages > 9 ? '9+' : order.unreadMessages }}
               </span>
             </button>
+            <!-- Disabled chat button for resolved disputes -->
+            <span
+              v-else
+              class="px-3 sm:px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2 cursor-not-allowed"
+              title="Chat disabled - dispute resolved"
+            >
+              <img src="https://adsyclub.com/static/frontend/images/chat_icon.png" alt="Chat" class="h-4 w-4 sm:h-5 sm:w-5 opacity-50" />
+              <span>Chat</span>
+            </span>
             
             <button
               v-if="order.status === 'pending'"
@@ -209,6 +220,53 @@
             >
               <UIcon name="i-heroicons-truck" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>{{ order.status === 'revision' ? 'Re-deliver' : 'Deliver' }}</span>
+            </button>
+            
+            <!-- Disputed status badge (active dispute) -->
+            <span
+              v-if="order.status === 'disputed' && !order.disputeInfo?.is_resolved"
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
+            >
+              <UIcon name="i-heroicons-exclamation-triangle" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Under Dispute</span>
+            </span>
+            
+            <!-- Dispute Won (seller won) -->
+            <span
+              v-else-if="order.disputeInfo?.resolved_for_seller"
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-green-100 text-green-700 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
+            >
+              <UIcon name="i-heroicons-trophy" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Dispute Won</span>
+            </span>
+            
+            <!-- Dispute Lost (buyer won) -->
+            <span
+              v-else-if="order.disputeInfo?.resolved_for_buyer"
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
+            >
+              <UIcon name="i-heroicons-x-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Dispute Lost</span>
+            </span>
+            
+            <!-- Dispute Partially Resolved -->
+            <span
+              v-else-if="order.disputeInfo?.resolved_partial"
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5 sm:gap-2"
+            >
+              <UIcon name="i-heroicons-scale" class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>Partial Resolution</span>
+            </span>
+            
+            <!-- Dispute button for delivered orders only (seller can dispute after delivery) -->
+            <button
+              v-if="order.status === 'delivered'"
+              @click="openDisputeModal(order)"
+              class="px-3 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1.5"
+              title="Raise a dispute"
+            >
+              <UIcon name="i-heroicons-flag" class="w-3.5 h-3.5" />
+              <span class="hidden sm:inline">Dispute</span>
             </button>
           </div>
         </div>
@@ -501,6 +559,96 @@
       </div>
     </Transition>
   </Teleport>
+  
+  <!-- Dispute Modal -->
+  <Teleport to="body">
+    <Transition name="modal">
+      <div
+        v-if="showDisputeModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/50" @click="!isProcessing && (showDisputeModal = false)"></div>
+        <div class="relative bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <!-- Header -->
+          <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900">Raise a Dispute</h3>
+                <p class="text-sm text-gray-500">Order: {{ orderToDispute?.id?.slice(0, 8).toUpperCase() }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Content -->
+          <div class="px-6 py-4 space-y-4">
+            <!-- Reason Selection -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Dispute *</label>
+              <select
+                v-model="disputeReason"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+              >
+                <option value="">Select a reason...</option>
+                <option value="unresponsive_buyer">Buyer is unresponsive</option>
+                <option value="payment_issue">Payment issue</option>
+                <option value="communication_issue">Communication breakdown</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Describe the Issue *</label>
+              <textarea
+                v-model="disputeDescription"
+                rows="4"
+                class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm resize-none"
+                placeholder="Please provide details about the issue (minimum 20 characters)..."
+              ></textarea>
+              <p class="text-xs text-gray-500 mt-1">{{ disputeDescription.length }}/20 minimum characters</p>
+            </div>
+            
+            <!-- Warning Notice -->
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <div class="flex gap-2">
+                <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div class="text-xs text-amber-800">
+                  <p class="font-medium">Before raising a dispute:</p>
+                  <ul class="list-disc list-inside mt-1 space-y-0.5">
+                    <li>Try to resolve the issue with the buyer first</li>
+                    <li>Disputes are reviewed by our team within 24-48 hours</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="px-6 py-4 bg-gray-50 flex gap-3">
+            <button
+              @click="showDisputeModal = false"
+              :disabled="isProcessing"
+              class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              @click="submitDispute"
+              :disabled="isProcessing || !disputeReason || disputeDescription.length < 20"
+              class="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <UIcon v-if="isProcessing" name="i-heroicons-arrow-path" class="w-4 h-4 animate-spin" />
+              <UIcon v-else name="i-heroicons-flag" class="w-4 h-4" />
+              <span>{{ isProcessing ? 'Submitting...' : 'Submit Dispute' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -546,6 +694,12 @@ const declineReason = ref('');
 const declineNote = ref('');
 const acceptNote = ref('');
 
+// Dispute modal state
+const showDisputeModal = ref(false);
+const orderToDispute = ref(null);
+const disputeReason = ref('');
+const disputeDescription = ref('');
+
 // Select filter and close dropdown
 const selectFilter = (value) => {
   activeFilter.value = value;
@@ -558,6 +712,7 @@ const orderFilters = [
   { label: 'Pending', value: 'pending' },
   { label: 'In Progress', value: 'in_progress' },
   { label: 'Revision', value: 'revision' },
+  { label: 'Disputed', value: 'disputed' },
   { label: 'Completed', value: 'completed' },
   { label: 'Cancelled', value: 'cancelled' }
 ];
@@ -583,6 +738,7 @@ async function fetchOrders() {
       unreadMessages: 0,
       createdAt: new Date(order.created_at),
       deliveryDate: order.delivery_date ? new Date(order.delivery_date) : new Date(),
+      disputeInfo: order.dispute_info || null,
       gig: {
         id: order.gig?.id,
         title: order.gig?.title || 'Unknown Gig',
@@ -703,8 +859,9 @@ const getStatusClass = (status) => {
     in_progress: 'bg-blue-100 text-blue-800',
     delivered: 'bg-purple-100 text-purple-800',
     revision: 'bg-orange-100 text-orange-800',
+    disputed: 'bg-red-100 text-red-800',
     completed: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800'
+    cancelled: 'bg-gray-100 text-gray-800'
   };
   return classes[status] || 'bg-gray-100 text-gray-800';
 };
@@ -715,6 +872,7 @@ const getStatusLabel = (status) => {
     in_progress: 'In Progress',
     delivered: 'Delivered',
     revision: 'Revision Requested',
+    disputed: 'Under Dispute',
     completed: 'Completed',
     cancelled: 'Cancelled'
   };
@@ -923,6 +1081,63 @@ const confirmDeclineOrder = async () => {
     });
   } finally {
     isProcessing.value = false;
+  }
+};
+
+// Open dispute modal
+const openDisputeModal = (order) => {
+  orderToDispute.value = order;
+  disputeReason.value = '';
+  disputeDescription.value = '';
+  showDisputeModal.value = true;
+};
+
+// Submit dispute
+const submitDispute = async () => {
+  if (!orderToDispute.value || isProcessing.value) return;
+  if (!disputeReason.value || disputeDescription.value.length < 20) return;
+  
+  isProcessing.value = true;
+  
+  try {
+    const { data, error } = await post(`/workspace/orders/${orderToDispute.value.id}/dispute/`, {
+      reason: disputeReason.value,
+      description: disputeDescription.value
+    });
+    
+    if (error) {
+      toast.add({
+        title: 'Dispute Failed',
+        description: error.message || error.error || 'Failed to submit dispute',
+        color: 'red',
+      });
+      return;
+    }
+    
+    // Update order status locally
+    const orderIndex = orders.value.findIndex(o => o.id === orderToDispute.value.id);
+    if (orderIndex !== -1) {
+      orders.value[orderIndex].status = 'disputed';
+    }
+    
+    toast.add({
+      title: 'Dispute Submitted',
+      description: 'Our team will review your dispute and contact you within 24-48 hours.',
+      color: 'green',
+      timeout: 6000,
+    });
+  } catch (err) {
+    toast.add({
+      title: 'Error',
+      description: 'An unexpected error occurred',
+      color: 'red',
+    });
+  } finally {
+    isProcessing.value = false;
+    showDisputeModal.value = false;
+    orderToDispute.value = null;
+    disputeReason.value = '';
+    disputeDescription.value = '';
   }
 };
 </script>
