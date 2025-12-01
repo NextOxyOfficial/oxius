@@ -65,13 +65,12 @@ export function useAuth() {
               store.put({ id: 'user_session', ...persistData });
             };
           } catch (error) {
-            console.warn('IndexedDB storage failed:', error);
+            // IndexedDB storage failed - silent fallback
           }
         }
 
-        console.log('Auth data persisted successfully across multiple storage methods');
       } catch (error) {
-        console.error('Failed to persist auth data:', error);
+        // Failed to persist auth data - silent fallback
       }
     }
   };
@@ -104,7 +103,6 @@ export function useAuth() {
             jwt.value = parsed.token;
             refreshToken.value = parsed.refreshToken;
             user.value = parsed.user;
-            console.log('Auth data restored from localStorage');
             return true;
           }
         }        // Fallback to individual storage items
@@ -118,7 +116,6 @@ export function useAuth() {
           if (userData) {
             user.value = JSON.parse(userData);
           }
-          console.log('Auth data restored from individual localStorage items');
           return true;
         }
 
@@ -139,7 +136,6 @@ export function useAuth() {
                     jwt.value = result.token;
                     refreshToken.value = result.refreshToken;
                     user.value = result.user;
-                    console.log('Auth data restored from IndexedDB');
                     resolve(true);
                   } else {
                     resolve(false);
@@ -154,7 +150,7 @@ export function useAuth() {
           });
         }
       } catch (error) {
-        console.warn('Failed to restore auth data:', error);
+        // Failed to restore auth data - silent fallback
       }
     }
     return false;
@@ -162,7 +158,6 @@ export function useAuth() {
   // Enhanced Token refresh function with mobile-specific improvements
   const refreshTokens = async () => {
     if (!refreshToken.value) {
-      console.log("No refresh token available");
       // Try to restore from storage before giving up
       const restored = await restoreAuthFromStorage();
       if (!restored || !refreshToken.value) {
@@ -171,7 +166,6 @@ export function useAuth() {
     }
 
     try {
-      console.log("Attempting to refresh tokens...");
       const { data, error } = await useFetch<any>(
         baseURL + "/token/refresh/",
         {
@@ -184,7 +178,6 @@ export function useAuth() {
       );
 
       if (error.value) {
-        console.log("Token refresh failed:", error.value);
         
         // If refresh fails, clear all auth data and redirect to login
         await clearAuthData();
@@ -199,7 +192,6 @@ export function useAuth() {
       }
 
       if (data.value && data.value.access) {
-        console.log("Tokens refreshed successfully");
         // Update tokens
         jwt.value = data.value.access;
         if (data.value.refresh) {
@@ -212,7 +204,6 @@ export function useAuth() {
         return true;
       }
     } catch (err) {
-      console.error("Token refresh error:", err);
       await clearAuthData();
       return false;
     }
@@ -254,11 +245,10 @@ export function useAuth() {
             }
           };
         } catch (error) {
-          console.warn('Failed to clear IndexedDB:', error);
+          // Failed to clear IndexedDB - silent fallback
         }
       }
       
-      console.log('All auth data cleared from all storage methods');
     }
   };
 
@@ -281,7 +271,6 @@ export function useAuth() {
 
     // If token validation fails, try to refresh
     if (error.value) {
-      console.log("JWT validation failed, attempting token refresh");
       const refreshSuccess = await refreshTokens();
       
       if (refreshSuccess) {

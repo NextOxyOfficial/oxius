@@ -1635,22 +1635,11 @@ async function loadMoreSimilarProducts() {
 
 // Fetch store products from the same seller
 async function fetchStoreProducts(page = 1, append = false) {
-  console.log("fetchStoreProducts called with:", {
-    page,
-    append,
-    store_username: currentProduct?.owner_details?.store_username,
-    owner_id: currentProduct?.owner_details?.id,
-    currentProduct: currentProduct?.name,
-  });
-
   // Check if we have store_username for the dedicated store endpoint
   if (
     !currentProduct?.owner_details?.store_username &&
     !currentProduct?.owner_details?.id
   ) {
-    console.warn(
-      "No store_username or owner_id found, cannot fetch store products"
-    );
     return;
   }
 
@@ -1674,36 +1663,20 @@ async function fetchStoreProducts(page = 1, append = false) {
       const storeUsername = currentProduct.owner_details.store_username;
       let queryParams = `page=${page}&page_size=${pageSize}`;
       const apiUrl = `/store/${storeUsername}/products/?${queryParams}`;
-      console.log("Fetching from store endpoint:", apiUrl);
       response = await get(apiUrl);
     } else {
       // Fallback: Use owner filtering in AllProductsListView
       const ownerId = currentProduct.owner_details.id;
       let queryParams = `page=${page}&page_size=${pageSize}&owner=${ownerId}`;
       const apiUrl = `/all-products/?${queryParams}`;
-      console.log(
-        "Fetching from all-products endpoint with owner filter:",
-        apiUrl
-      );
       response = await get(apiUrl);
     }
-
-    console.log("Store products API raw response:", response);
 
     if (response && response.data && response.data.results) {
       // Filter out current product
       const storeProductsList = response.data.results.filter(
         (product) => product.id !== currentProduct.id
       );
-
-      console.log(`Store products API response:`, {
-        page,
-        pageSize,
-        totalFromAPI: response.data.count,
-        receivedCount: response.data.results.length,
-        filteredCount: storeProductsList.length,
-        currentlyLoaded: storeProducts.value.length,
-      });
 
       if (page === 1) {
         storeProducts.value = storeProductsList;
@@ -1715,14 +1688,7 @@ async function fetchStoreProducts(page = 1, append = false) {
       // Check if we have more products - use pagination info from API
       hasMoreStoreProducts.value =
         response.data.next !== null && storeProductsList.length > 0;
-
-      console.log(`Store products pagination status:`, {
-        hasMoreStoreProducts: hasMoreStoreProducts.value,
-        currentLoadedCount: storeProducts.value.length,
-        hasNext: response.data.next !== null,
-      });
     } else {
-      console.warn("No store products found in API response:", response);
       if (page === 1) {
         storeProducts.value = [];
         totalStoreProducts.value = 0;
@@ -1730,13 +1696,6 @@ async function fetchStoreProducts(page = 1, append = false) {
       hasMoreStoreProducts.value = false;
     }
   } catch (error) {
-    console.error("Error fetching store products:", error);
-    console.error("Error details:", {
-      message: error.message,
-      status: error.status,
-      statusText: error.statusText,
-      response: error.response,
-    });
     if (page === 1) {
       storeProducts.value = [];
       totalStoreProducts.value = 0;
@@ -1745,29 +1704,13 @@ async function fetchStoreProducts(page = 1, append = false) {
   } finally {
     isLoadingStoreProducts.value = false;
     isLoadingMoreStoreProducts.value = false;
-
-    console.log("fetchStoreProducts completed:", {
-      storeProductsLength: storeProducts.value.length,
-      totalStoreProducts: totalStoreProducts.value,
-      isLoadingStoreProducts: isLoadingStoreProducts.value,
-      hasMoreStoreProducts: hasMoreStoreProducts.value,
-    });
   }
 }
 
 // Load more store products
 async function loadMoreStoreProducts() {
-  if (!hasMoreStoreProducts.value || isLoadingMoreStoreProducts.value) {
-    console.log("Cannot load more store products:", {
-      hasMore: hasMoreStoreProducts.value,
-      isLoading: isLoadingMoreStoreProducts.value,
-    });
-    return;
-  }
+  if (!hasMoreStoreProducts.value || isLoadingMoreStoreProducts.value) return;
 
-  console.log(
-    `Loading page ${storeProductsPage.value + 1} of store products...`
-  );
   storeProductsPage.value++;
   await fetchStoreProducts(storeProductsPage.value, true);
 }
@@ -1837,7 +1780,6 @@ function handleStoreProductsScroll(e) {
       hasMoreStoreProducts.value &&
       !isLoadingMoreStoreProducts.value
     ) {
-      console.log("Loading more store products..."); // Debug log
       loadMoreStoreProducts();
     }
   }, 150); // Throttle to 150ms

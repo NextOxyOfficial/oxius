@@ -1636,13 +1636,6 @@ watch(
     if (isFromSuccessfulPost) {
       displayCommentText.value = "";
       safelyClearMentions("legitimate post success or explicit clear");
-    } else {
-      console.log(
-        "🛡️ Ignoring watcher trigger - not a legitimate clearing scenario"
-      );
-      console.log("  - Was substantial:", wasSubstantialContent);
-      console.log("  - Is now empty:", isNowEmpty);
-      console.log("  - Has mentions:", hasMentionsToFlear);
     }
   }
 );

@@ -130,7 +130,6 @@ export const fetchVideoLessonsForSubject = async (
 
   // Return cached data if available
   if (cache.has(cacheKey)) {
-    console.log(`Using cached videos for subject ${subjectId}`);
     return cache.get(cacheKey);
   }
   try {
@@ -152,7 +151,6 @@ export const fetchVideoLessonsForSubject = async (
 
       // Cache the results for 1 hour (videos may be updated more frequently)
       cache.set(cacheKey, data, 1 * 60 * 60 * 1000);
-      console.log(`Cached ${data.length} videos for subject ${subjectId}`);
     }
 
     return data;
@@ -181,7 +179,6 @@ export const incrementVideoViews = async (videoId, baseURL = null) => {
           // If we find the video in this subject's cache, invalidate the cache
           const videoExists = videos.some((video) => video.id === videoId);
           if (videoExists) {
-            console.log(`Invalidating cache for ${key} after view increment`);
             cache.delete(key);
           }
         }
@@ -213,7 +210,6 @@ export const fetchVideoById = async (videoId, baseURL = null) => {
   });
 
   if (cachedVideo) {
-    console.log(`Found video ${videoId} in cache`);
     return cachedVideo;
   }
 
@@ -238,19 +234,16 @@ export const fetchVideoById = async (videoId, baseURL = null) => {
 export const clearCache = (type = "all", id = null) => {
   if (type === "all") {
     cache.clear();
-    console.log("All cache cleared");
     return;
   }
 
   switch (type) {
     case "batches":
       cache.delete("batches");
-      console.log("Batches cache cleared");
       break;
     case "divisions":
       if (id) {
         cache.delete(`divisions_for_batch_${id}`);
-        console.log(`Divisions cache cleared for batch ${id}`);
       } else {
         // Clear all division caches
         Object.keys(cache.data).forEach((key) => {
@@ -258,13 +251,11 @@ export const clearCache = (type = "all", id = null) => {
             cache.delete(key);
           }
         });
-        console.log("All divisions cache cleared");
       }
       break;
     case "subjects":
       if (id) {
         cache.delete(`subjects_for_division_${id}`);
-        console.log(`Subjects cache cleared for division ${id}`);
       } else {
         // Clear all subject caches
         Object.keys(cache.data).forEach((key) => {
@@ -272,13 +263,11 @@ export const clearCache = (type = "all", id = null) => {
             cache.delete(key);
           }
         });
-        console.log("All subjects cache cleared");
       }
       break;
     case "videos":
       if (id) {
         cache.delete(`videos_for_subject_${id}`);
-        console.log(`Videos cache cleared for subject ${id}`);
       } else {
         // Clear all video caches
         Object.keys(cache.data).forEach((key) => {
@@ -286,7 +275,6 @@ export const clearCache = (type = "all", id = null) => {
             cache.delete(key);
           }
         });
-        console.log("All videos cache cleared");
       }
       break;
     default:
@@ -309,13 +297,10 @@ export const fetchBatchProducts = async (baseURL, batchCode, options = {}) => {
   
   // Return cached data if available
   if (cache.has(cacheKey)) {
-    console.log(`Returning cached batch products for ${batchCode}`);
     return cache.get(cacheKey);
   }
 
   try {
-    console.log(`Fetching products for batch: ${batchCode} with limit: ${limit}`);
-    
     const data = await $fetch(`${baseURL}/api/elearning/batches/${batchCode}/products/`, {
       method: 'GET',
       params: {
@@ -325,8 +310,6 @@ export const fetchBatchProducts = async (baseURL, batchCode, options = {}) => {
 
     // Cache the data for 30 minutes (shorter cache for products since they might change more frequently)
     cache.set(cacheKey, data, 30 * 60 * 1000);
-    console.log(`Batch products for ${batchCode} cached successfully`);
-    
     return data;
   } catch (error) {
     console.error(`Error fetching products for batch ${batchCode}:`, error);
@@ -349,13 +332,10 @@ export const fetchDivisionProducts = async (baseURL, divisionCode, options = {})
   
   // Return cached data if available
   if (cache.has(cacheKey)) {
-    console.log(`Returning cached division products for ${divisionCode}`);
     return cache.get(cacheKey);
   }
 
   try {
-    console.log(`Fetching products for division: ${divisionCode} with limit: ${limit}`);
-    
     const data = await $fetch(`${baseURL}/api/elearning/divisions/${divisionCode}/products/`, {
       method: 'GET',
       params: {
@@ -365,8 +345,6 @@ export const fetchDivisionProducts = async (baseURL, divisionCode, options = {})
 
     // Cache the data for 30 minutes (shorter cache for products since they might change more frequently)
     cache.set(cacheKey, data, 30 * 60 * 1000);
-    console.log(`Division products for ${divisionCode} cached successfully`);
-    
     return data;
   } catch (error) {
     console.error(`Error fetching products for division ${divisionCode}:`, error);

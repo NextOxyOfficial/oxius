@@ -101,8 +101,6 @@ export const useMentions = () => {
       const router = useRouter();
       const { get } = useApi();
       
-      console.log('Searching for mentioned user:', mentionedName);
-      
       // First, try to search for the user by name to get their ID
       try {
         const { data } = await get(`/bn/user-search/?q=${encodeURIComponent(mentionedName)}`);
@@ -124,14 +122,12 @@ export const useMentions = () => {
         
         if (exactMatch && exactMatch.id) {
           // Navigate directly to the user's profile
-          console.log('Found exact match, navigating to profile:', exactMatch);
           await router.push(`/business-network/profile/${exactMatch.id}`);
           return;
         }
         
         // If no exact match but we have results, navigate to search results
         if (users.length > 0) {
-          console.log('No exact match, showing search results');
           await router.push({
             path: `/business-network/search-results/${encodeURIComponent(mentionedName)}`,
             query: { type: 'people' }
@@ -143,7 +139,6 @@ export const useMentions = () => {
       }
       
       // Fallback: navigate to search results
-      console.log('Fallback: navigating to search results');
       await router.push({
         path: `/business-network/search-results/${encodeURIComponent(mentionedName)}`,
         query: { type: 'people' }
@@ -226,7 +221,6 @@ export const useMentions = () => {
             
           const username = mentionElement.getAttribute('data-username');
           if (username) {
-            console.log('Mention clicked:', username);
             navigateToUserProfile(username);
           }
         }

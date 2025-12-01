@@ -1085,15 +1085,15 @@ function handleVideoStart(success, errorMessage) {
 }
 
 function handleVideoPause() {
-  console.log("Video paused");
+  // Video paused event
 }
 
 function handleVideoResume() {
-  console.log("Video resumed");
+  // Video resumed event
 }
 
 function handleVideoStop() {
-  console.log("Video stopped");
+  // Video stopped event
 }
 
 // Access control event handlers
@@ -1331,7 +1331,6 @@ function closeDescriptionModal() {
 // Cleanup on component unmount
 onUnmounted(async () => {
   // Component cleanup
-  console.log("VideoLessons component unmounted");
 });
 
 // Helper function to extract YouTube video ID from URL

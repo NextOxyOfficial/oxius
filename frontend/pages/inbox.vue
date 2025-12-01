@@ -2211,12 +2211,7 @@ function goBackToChatList() {
 
 // Enhanced selectAdsyChat to switch tab
 async function selectAdsyChatWithTab(chat) {
-  console.log('Selecting chat with tab:', chat);
-  
-  if (!chat || !chat.id) {
-    console.error('Invalid chat object:', chat);
-    return;
-  }
+  if (!chat || !chat.id) return;
   
   // Ensure we're on the AdsyConnect tab
   activeTab.value = 'adsyconnect';
@@ -2227,7 +2222,6 @@ async function selectAdsyChatWithTab(chat) {
   // Check if this chat exists in our list, if not add it
   const existsInList = adsyChatRooms.value.some(c => c.id === chat.id);
   if (!existsInList) {
-    console.log('Chat not in list, adding it...');
     adsyChatRooms.value.unshift(chat);
   }
   
@@ -2236,8 +2230,6 @@ async function selectAdsyChatWithTab(chat) {
   
   // Enable mobile chat view
   isMobileChatView.value = true;
-  
-  console.log('Chat selected, active chat:', activeAdsyChat.value);
   
   // Wait for UI to update again
   await nextTick();
@@ -2676,10 +2668,6 @@ async function startChatWithUser(searchUser) {
 // Handle chat with user from URL parameter
 async function handleChatWithUser(userId) {
   try {
-    console.log('Looking for existing chat with user ID:', userId);
-    console.log('Available chat rooms:', adsyChatRooms.value.length);
-    console.log('Chat rooms data:', adsyChatRooms.value.map(c => ({ id: c.id, other_user_id: c.other_user?.id })));
-    
     // Convert userId to string for comparison (handles both UUID and integer IDs)
     const userIdStr = String(userId);
     
@@ -2689,7 +2677,6 @@ async function handleChatWithUser(userId) {
     );
     
     if (existingChat) {
-      console.log('Found existing chat:', existingChat);
       // Select existing chat
       await selectAdsyChatWithTab(existingChat);
       toast.add({
@@ -2699,26 +2686,18 @@ async function handleChatWithUser(userId) {
         timeout: 2000,
       });
     } else {
-      console.log('Creating new chat with user ID:', userId);
       // Create new chat - pass user_id as string (required for UUID)
       const { data: response, error: apiError } = await post('/adsyconnect/chatrooms/get_or_create/', {
         user_id: userIdStr
       });
 
-      console.log('Chat creation response:', response, 'Error:', apiError);
-
       if (apiError) {
-        console.error('API Error details:', apiError);
         throw new Error(apiError.message || apiError.error || 'Failed to create chat');
       }
 
       if (response) {
-        console.log('Chat created successfully, response:', response);
-        
         // The response should contain the chat room data directly
-        // Try to select the chat from the response first
         if (response.id) {
-          console.log('Selecting chat from response...');
           await selectAdsyChatWithTab(response);
           toast.add({
             title: 'Chat Started',
@@ -2728,20 +2707,14 @@ async function handleChatWithUser(userId) {
           });
         } else {
           // Fallback: Reload chat rooms and find the new one
-          console.log('Reloading chat rooms after creation...');
           await loadChatRooms();
-          
-          // Add a small delay to ensure the UI updates
           await nextTick();
           
-          console.log('Looking for newly created chat...');
-          // Find and select the new chat - compare as strings
           const newChat = adsyChatRooms.value.find(
             chat => String(chat.other_user?.id) === userIdStr
           );
           
           if (newChat) {
-            console.log('Found new chat:', newChat);
             await selectAdsyChatWithTab(newChat);
             toast.add({
               title: 'Chat Started',
@@ -2750,7 +2723,6 @@ async function handleChatWithUser(userId) {
               timeout: 2000,
             });
           } else {
-            console.log('New chat not found immediately, retrying...');
             // If chat not found immediately, try again after a short delay
             setTimeout(async () => {
               await loadChatRooms();
@@ -2758,10 +2730,8 @@ async function handleChatWithUser(userId) {
                 chat => String(chat.other_user?.id) === userIdStr
               );
               if (retryChat) {
-                console.log('Found chat on retry:', retryChat);
                 await selectAdsyChatWithTab(retryChat);
               } else {
-                console.log('Chat still not found after retry');
                 toast.add({
                   title: 'Chat Created',
                   description: 'Chat room created. Please select it from the list.',
@@ -2775,7 +2745,6 @@ async function handleChatWithUser(userId) {
       }
     }
   } catch (error) {
-    console.error('Error handling chat with user:', error);
     toast.add({
       title: 'Error',
       description: error.message || 'Failed to start chat. Please try again.',
@@ -3338,27 +3307,16 @@ async function getMessages(preserveState = false) {
     const oldSupportTickets = [...supportTickets.value];
 
     // Get admin notices (updates) with user filtering
-    const { data: noticesRes, error: noticesError } = await get("/admin-notice/?user_specific=true");
-    console.log('Admin notices response:', noticesRes, 'Error:', noticesError);
-    if (noticesError) {
-      console.error('Error fetching notices:', noticesError);
-    }
+    const { data: noticesRes } = await get("/admin-notice/?user_specific=true");
     const noticesData = noticesRes?.results || noticesRes || [];
-    console.log('Parsed notices data:', noticesData);
     const adminNotices = Array.isArray(noticesData) ? noticesData.map((notice) => ({
       ...notice,
       is_ticket: false,
     })) : [];
-    console.log('Admin notices count:', adminNotices.length);
 
     // Get support tickets
-    const { data: ticketsRes, error: ticketsError } = await get("/tickets/");
-    console.log('Tickets response:', ticketsRes, 'Error:', ticketsError);
-    if (ticketsError) {
-      console.error('Error fetching tickets:', ticketsError);
-    }
+    const { data: ticketsRes } = await get("/tickets/");
     const ticketsData = ticketsRes?.results || ticketsRes || [];
-    console.log('Parsed tickets data:', ticketsData);
     const supportTicketsData = Array.isArray(ticketsData) ? ticketsData.map((ticket) => ({
       ...ticket,
       is_ticket: true,
@@ -3605,17 +3563,12 @@ onMounted(async () => {
   // Handle chat_with query parameter
   const chatWithUserId = route.query.chat_with;
   if (chatWithUserId && user.value?.user?.id) {
-    console.log('Chat with user ID:', chatWithUserId);
-    
     // Switch to AdsyConnect tab first
     activeTab.value = 'adsyconnect';
-    
-    // Ensure we wait for the next tick for UI updates
     await nextTick();
     
     // Load chat rooms if not already loaded
     if (adsyChatRooms.value.length === 0) {
-      console.log('Loading chat rooms...');
       await loadChatRooms();
     }
     
@@ -3623,7 +3576,6 @@ onMounted(async () => {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     // Try to find existing chat or create new one
-    console.log('Handling chat with user...');
     await handleChatWithUser(chatWithUserId);
     
     // Clear the query parameter after a delay to prevent repeated processing

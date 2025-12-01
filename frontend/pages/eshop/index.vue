@@ -709,17 +709,8 @@ async function fetchDiverseProducts() {
       .sort(() => Math.random() - 0.5)
       .slice(0, targetCount);
 
-    console.log("Diverse products fetched:", {
-      categoriesUsed: maxCategoriesToFetch,
-      targetCount: targetCount,
-      totalProductsFetched: diverseProducts.length,
-      finalProductsCount: finalProducts.length,
-      itemsPerPageSetting: itemsPerPage.value,
-    });
-
     return finalProducts;
   } catch (error) {
-    console.error("Error fetching diverse products:", error);
     // Fallback to regular fetch that guarantees the right count
     try {
       const res = await get(
@@ -727,7 +718,6 @@ async function fetchDiverseProducts() {
       );
       return res.data?.results || [];
     } catch (fallbackError) {
-      console.error("Fallback fetch also failed:", fallbackError);
       return [];
     }
   }
@@ -780,13 +770,10 @@ async function fetchProducts() {
       queryParams += `&max_price=${maxPrice.value}`;
     }
 
-    console.log("Fetching products with URL:", `/all-products/?${queryParams}`);
-
     const res = await get(`/all-products/?${queryParams}`);
 
     // More robust response validation
     if (!res || !res.data) {
-      console.warn("Invalid API response structure, using empty results");
       // Set default values instead of throwing error
       products.value = { results: [], count: 0 };
       totalProducts.value = 0;
@@ -841,17 +828,7 @@ async function fetchProducts() {
     // Update hasMoreProducts status - simplified logic
     hasMoreProducts.value = allProducts.value.length < totalProducts.value;
 
-    console.log("Fetch Products Debug:", {
-      currentPage: currentPage.value,
-      totalProducts: totalProducts.value,
-      currentProductsCount: allProducts.value.length,
-      hasMoreProducts: hasMoreProducts.value,
-      resultsLength: productsToDisplay.length,
-      apiTotalCount: res.data.count,
-      itemsPerPageSetting: itemsPerPage.value,
-    });
   } catch (error) {
-    console.error("Error fetching products:", error);
 
     // Only show user-friendly errors, not technical details
     toast.add({
@@ -882,13 +859,7 @@ async function fetchProducts() {
 
 // Load more products function
 async function loadMoreProducts() {
-  if (isLoadingMore.value || !hasMoreProducts.value) {
-    console.log("Load more blocked:", {
-      isLoadingMore: isLoadingMore.value,
-      hasMoreProducts: hasMoreProducts.value,
-    });
-    return;
-  }
+  if (isLoadingMore.value || !hasMoreProducts.value) return;
 
   try {
     isLoadingMore.value = true;
@@ -922,35 +893,13 @@ async function loadMoreProducts() {
       queryParams += `&max_price=${maxPrice.value}`;
     }
 
-    console.log(
-      "Loading more products with URL:",
-      `/all-products/?${queryParams}`
-    );
-
     const res = await get(`/all-products/?${queryParams}`);
 
     // More robust response validation
-    if (!res) {
-      console.warn("No response received from API");
-      return; // Exit silently, don't show error to user
-    }
-
-    if (!res.data) {
-      console.warn("No data property in API response");
-      return; // Exit silently, don't show error to user
-    }
+    if (!res || !res.data) return;
 
     const newProducts = res.data.results || [];
     const responseCount = res.data.count || 0;
-
-    console.log("Load More Products Debug:", {
-      nextPage: nextPage,
-      newProductsLength: newProducts.length,
-      allProductsCountBefore: allProducts.value.length,
-      totalProducts: responseCount,
-      hasMoreProductsBefore: hasMoreProducts.value,
-      expectedItemsPerPage: itemsPerPage.value,
-    });
 
     // Update total products count if available
     if (responseCount > 0) {
@@ -968,19 +917,12 @@ async function loadMoreProducts() {
       allProducts.value = [...allProducts.value, ...uniqueNewProducts];
       currentPage.value = nextPage; // Only update page if we successfully got new products
 
-      console.log("Added products:", {
-        newProductsCount: newProducts.length,
-        uniqueNewProductsCount: uniqueNewProducts.length,
-        totalProductsAfter: allProducts.value.length,
-        itemsPerPageSetting: itemsPerPage.value,
-      });
     }
 
     // Check if there are more products to load
     // More robust check with edge case handling
     if (newProducts.length === 0) {
       hasMoreProducts.value = false;
-      console.log("No more products available - reached end of list");
     } else {
       // We have more products if our current total is less than API total
       hasMoreProducts.value = allProducts.value.length < totalProducts.value;
@@ -988,22 +930,9 @@ async function loadMoreProducts() {
       // Additional safety check: if we got fewer products than requested, we might be at the end
       if (newProducts.length < itemsPerPage.value) {
         hasMoreProducts.value = false;
-        console.log(
-          "Received fewer products than requested - likely at end of list"
-        );
       }
     }
-
-    console.log("Load More Products Result:", {
-      newProductsLength: newProducts.length,
-      totalProductsAfter: allProducts.value.length,
-      totalAvailable: totalProducts.value,
-      hasMoreProducts: hasMoreProducts.value,
-      currentPage: currentPage.value,
-      shouldHaveMore: allProducts.value.length < totalProducts.value,
-    });
   } catch (error) {
-    console.error("Error loading more products:", error);
 
     // Only show user-friendly errors for network/server issues
     // Don't show technical validation errors
@@ -1043,16 +972,6 @@ function initInfiniteScroll() {
 
   observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      console.log("Intersection Observer triggered:", {
-        isIntersecting: entry.isIntersecting,
-        isLoadingMore: isLoadingMore.value,
-        hasMoreProducts: hasMoreProducts.value,
-        allProductsLength: allProducts.value.length,
-        totalProducts: totalProducts.value,
-        isLoading: isLoading.value,
-        itemsPerPage: itemsPerPage.value,
-      });
-
       if (
         entry.isIntersecting &&
         !isLoadingMore.value &&
@@ -1060,16 +979,7 @@ function initInfiniteScroll() {
         hasMoreProducts.value &&
         allProducts.value.length > 0
       ) {
-        console.log("🚀 Triggering loadMoreProducts...");
         loadMoreProducts();
-      } else {
-        console.log("❌ Infinite scroll conditions not met:", {
-          isIntersecting: entry.isIntersecting,
-          isLoadingMore: isLoadingMore.value,
-          isLoading: isLoading.value,
-          hasMoreProducts: hasMoreProducts.value,
-          allProductsLength: allProducts.value.length,
-        });
       }
     });
   }, options);
@@ -1079,12 +989,6 @@ function initInfiniteScroll() {
     setTimeout(() => {
       if (loadMoreTrigger.value) {
         observer.observe(loadMoreTrigger.value);
-        console.log(
-          "✅ Infinite scroll observer attached to element:",
-          loadMoreTrigger.value
-        );
-      } else {
-        console.warn("⚠️ Load more trigger element not found");
       }
     }, 100);
   });
@@ -1155,98 +1059,6 @@ watch(
 watch(searchQuery, (newValue) => {
   syncSearchToHeader();
 });
-
-// Debug function to help test infinite scroll
-function debugInfiniteScroll() {
-  console.log("=== 🔍 Infinite Scroll Debug Info ===");
-  console.log("Current Page:", currentPage.value);
-  console.log("Items Per Page:", itemsPerPage.value);
-  console.log("Total Products:", totalProducts.value);
-  console.log("All Products Length:", allProducts.value.length);
-  console.log("Has More Products:", hasMoreProducts.value);
-  console.log("Is Loading More:", isLoadingMore.value);
-  console.log("Is Loading:", isLoading.value);
-  console.log("Load More Trigger Element:", loadMoreTrigger.value);
-  console.log("Observer:", observer);
-  console.log("Selected Category:", selectedCategory.value);
-  console.log("Search Query:", searchQuery.value);
-  console.log("Min Price:", minPrice.value);
-  console.log("Max Price:", maxPrice.value);
-  console.log(
-    "Should load more?",
-    allProducts.value.length < totalProducts.value
-  );
-  console.log("Expected products per page:", itemsPerPage.value);
-  console.log("===================================");
-}
-
-// Force load more for debugging
-function forceLoadMore() {
-  console.log("🔧 Forcing load more products...");
-  if (isLoadingMore.value) {
-    console.log("⏳ Already loading more products, please wait...");
-    return;
-  }
-  if (!hasMoreProducts.value) {
-    console.log("🛑 No more products available to load");
-    console.log(
-      "Current products:",
-      allProducts.value.length,
-      "Total available:",
-      totalProducts.value
-    );
-    return;
-  }
-  console.log("✅ Conditions met, calling loadMoreProducts...");
-  loadMoreProducts();
-}
-
-// Test API directly
-async function testAPIDirectly() {
-  console.log("🧪 Testing API directly...");
-  const nextPage = currentPage.value + 1;
-  const testUrl = `/all-products/?page=${nextPage}&page_size=${itemsPerPage.value}&ordering=-created_at`;
-  console.log("Test URL:", testUrl);
-
-  try {
-    const res = await get(testUrl);
-    console.log("✅ API Response:", {
-      resultsLength: res.data?.results?.length || 0,
-      totalCount: res.data?.count || 0,
-      hasResults: !!res.data?.results,
-      results: res.data?.results || [],
-    });
-  } catch (error) {
-    console.error("❌ API Error:", error);
-  }
-}
-
-// Reset pagination for debugging
-function resetPagination() {
-  console.log("🔄 Resetting pagination...");
-  currentPage.value = 1;
-  allProducts.value = [];
-  hasMoreProducts.value = true;
-  fetchProducts();
-}
-
-// Expose debug functions to window for manual testing
-if (process.client) {
-  window.debugInfiniteScroll = debugInfiniteScroll;
-  window.forceLoadMore = forceLoadMore;
-  window.testAPIDirectly = testAPIDirectly;
-  window.resetPagination = resetPagination;
-  window.manualLoadMore = () => {
-    if (!isLoadingMore.value && hasMoreProducts.value) {
-      loadMoreProducts();
-    } else {
-      console.log("Cannot load more:", {
-        isLoadingMore: isLoadingMore.value,
-        hasMoreProducts: hasMoreProducts.value,
-      });
-    }
-  };
-}
 
 // Initialize data
 await Promise.all([fetchCategories(), fetchProducts()]);

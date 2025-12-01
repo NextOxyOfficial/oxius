@@ -43,17 +43,13 @@ export const useAdsyChat = () => {
 
   // API functions
   const loadChatRooms = async () => {
-    console.log('loadChatRooms called')
     isLoading.value = true
     try {
       const { data, error } = await get('/adsyconnect/chatrooms/')
-      console.log('loadChatRooms response:', data, 'error:', error)
       if (data && !error) {
         chatRooms.value = data.results || data || []
-        console.log('chatRooms loaded:', chatRooms.value.length, 'rooms')
       }
     } catch (error) {
-      console.error('Error loading chat rooms:', error)
       toast.add({
         title: 'Error',
         description: 'Failed to load chat rooms',
@@ -78,7 +74,6 @@ export const useAdsyChat = () => {
         setTimeout(() => scrollToBottom(true), 200)
       }
     } catch (error) {
-      console.error('Error loading messages:', error)
       toast.add({
         title: 'Error',
         description: 'Failed to load messages',
@@ -131,7 +126,6 @@ export const useAdsyChat = () => {
         throw new Error('Failed to send message')
       }
     } catch (error) {
-      console.error('Error sending message:', error)
       // Remove failed message
       messages.value = messages.value.filter(m => m.temp_id !== tempId)
       toast.add({
@@ -144,15 +138,9 @@ export const useAdsyChat = () => {
   }
 
   const selectChat = async (chat) => {
-    console.log('useAdsyChat.selectChat called with:', chat)
-    
-    if (!chat || !chat.id) {
-      console.error('Invalid chat passed to selectChat:', chat)
-      return
-    }
+    if (!chat || !chat.id) return
     
     activeChat.value = chat
-    console.log('activeChat set to:', activeChat.value)
     
     // Clear unread count for this chat immediately in UI
     const chatRoom = chatRooms.value.find(c => c.id === chat.id)
@@ -164,7 +152,6 @@ export const useAdsyChat = () => {
         await post(`/adsyconnect/chatrooms/${chat.id}/mark_as_read/`, {})
       } catch (error) {
         // Silently handle - UI already updated
-        console.log('Mark read API call failed, but UI updated:', error)
       }
     }
     
@@ -174,8 +161,6 @@ export const useAdsyChat = () => {
     
     // Start polling for new messages
     startPolling()
-    
-    console.log('selectChat completed, activeChat:', activeChat.value)
   }
   
   const startPolling = () => {
@@ -254,7 +239,6 @@ export const useAdsyChat = () => {
       }
     } catch (error) {
       // Silently handle - not critical
-      console.log('Error checking online status:', error)
     }
   }
   

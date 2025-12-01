@@ -954,24 +954,13 @@ const submitForm = async () => {
       apiError.value = null;
 
       try {
-        console.log("Submitting sale post data...", formData);
-        console.log("API endpoint:", "/sale/posts/");
-        console.log(
-          "Request payload size:",
-          JSON.stringify(formData).length,
-          "bytes"
-        );
-
-        // Send to server
         const response = await post("/sale/posts/", formData);
 
         if (response.error) {
-          console.error("API Error:", response.error);
           throw response.error;
         }
 
-        console.log("Sale post created successfully:", response.data);
-        apiError.value = null; // Clear any previous errors on success
+        apiError.value = null;
 
         // Handle both detailed and simplified success responses
         if (response.data && (response.data.id || response.data.message)) {
@@ -980,21 +969,13 @@ const submitForm = async () => {
 
         return response.data;
       } catch (err) {
-        console.error("Error creating sale post:", err);
-        // Provide more detailed error information
         if (err.response) {
-          console.error("Response status:", err.response.status);
-          console.error("Response data:", err.response.data);
-
           // Check if it's actually a success with 400 status (our known issue)
           if (
             err.response.status === 400 &&
             err.response.data &&
             (err.response.data.id || err.response.data.message)
           ) {
-            console.log(
-              "Detected success response with 400 status - treating as success"
-            );
             apiError.value = null;
             return err.response.data;
           }
@@ -1002,7 +983,6 @@ const submitForm = async () => {
           apiError.value =
             err.response.data || "Server error: " + err.response.status;
         } else if (err.request) {
-          console.error("No response received");
           apiError.value =
             "No response from server. Please check your connection.";
         } else {

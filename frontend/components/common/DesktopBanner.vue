@@ -275,8 +275,7 @@ function handleSliderHover(isHover) {
 
 // Track banner clicks for analytics
 function trackBannerClick(banner) {
-  // You can add analytics tracking here
-  console.log(`Desktop banner clicked: ${banner.title || 'Untitled'}`);
+  // TODO: Add analytics tracking here
 }
 
 // Keyboard navigation

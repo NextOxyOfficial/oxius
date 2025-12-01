@@ -557,16 +557,12 @@ async function fetchOrders() {
   try {
     const { data, error } = await get('/workspace/orders/seller/');
     
-    console.log('MyOrders (seller) API response:', { data, error });
-    
     if (error) {
-      console.error('Error fetching orders:', error);
       orders.value = [];
       return;
     }
     
     const results = data?.results || data || [];
-    console.log('MyOrders parsed results:', results);
     orders.value = results.map(order => ({
       id: order.id,
       status: order.status,

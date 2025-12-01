@@ -325,10 +325,7 @@ const { chatIconPath } = useStaticAssets();
 async function fetchOrders() {
   isLoading.value = true;
   
-  console.log('GigOrdered: Current user:', user.value?.email);
-  
   if (!user.value) {
-    console.log('GigOrdered: No user logged in, skipping fetch');
     isLoading.value = false;
     return;
   }
@@ -336,18 +333,12 @@ async function fetchOrders() {
   try {
     const { data, error } = await get('/workspace/orders/');
     
-    console.log('GigOrdered API response:', { data, error });
-    
     if (error) {
-      console.error('Error fetching orders:', error);
-      console.error('Error status:', error?.response?.status || error?.status);
-      console.error('Error message:', error?.message || error?.data?.detail);
       orders.value = [];
       return;
     }
     
     const results = data?.results || data || [];
-    console.log('GigOrdered parsed results count:', results.length);
     orders.value = results.map(order => ({
       id: order.id,
       orderNumber: `ORD-${String(order.id).slice(0, 8).toUpperCase()}`,
@@ -508,8 +499,7 @@ const openChat = (order) => {
 };
 
 const leaveReview = (order) => {
-  console.log('Leaving review for order:', order.orderNumber);
-  // Here you would implement the review functionality
+  // TODO: Implement review functionality
 };
 
 const cancelOrder = (order) => {
@@ -547,11 +537,7 @@ const confirmCancelOrder = async () => {
       description: `৳${data.refund?.amount || orderToCancel.value.amount} has been refunded to your balance.`,
       color: 'green',
     });
-    
-    console.log('Order cancelled:', orderToCancel.value.orderNumber, 'Refund:', data.refund);
-    
   } catch (err) {
-    console.error('Cancel error:', err);
     toast.add({
       title: 'Error',
       description: 'An unexpected error occurred',

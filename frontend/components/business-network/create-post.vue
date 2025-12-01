@@ -1332,9 +1332,7 @@ async function searchHashtags() {
 const onHashtagInputFocus = () => {
   showSuggestions.value = true;
   // Show popular tags initially if no search input
-  if (!categoryInput.value.trim() && popularHashtags.value.length === 0) {
-    console.log("ok");
-  } else {
+  if (categoryInput.value.trim() || popularHashtags.value.length > 0) {
     searchHashtags();
   }
 };

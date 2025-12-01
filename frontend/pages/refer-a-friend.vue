@@ -145,17 +145,12 @@ async function getPlatformStats() {
 async function getRewardProgram() {
   try {
     const res = await get("/referral-rewards/program/");
-    console.log("[Reward Program] API Response:", res); // Debug log
     if (res?.data) {
       rewardProgram.value = res.data;
-      console.log("[Reward Program] Active:", res.data.active); // Debug log
-    } else if (res?.error) {
-      console.error("[Reward Program] Error:", res.error);
-      // Set default inactive state on error
+    } else {
       rewardProgram.value = { active: false };
     }
   } catch (error) {
-    console.error("[Reward Program] Exception:", error);
     rewardProgram.value = { active: false };
   }
 }

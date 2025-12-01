@@ -270,8 +270,7 @@ function handleTouchEnd() {
 
 // Track banner clicks for analytics
 function trackBannerClick(banner) {
-  // You can add analytics tracking here
-  console.log(`Mobile banner clicked: ${banner.title || 'Untitled'}`);
+  // TODO: Add analytics tracking here
 }
 
 // Lifecycle hooks

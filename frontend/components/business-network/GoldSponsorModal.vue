@@ -959,12 +959,6 @@ const submitFormDirectFetch = async () => {
       formData.append("logo", form.value.logo);
     }
 
-    for (let pair of formData.entries()) {
-      console.log(
-        pair[0] + ": " + (pair[0] === "logo" ? "File object" : pair[1])
-      );
-    }
-
     // Try with post method from useApi first
     try {
       const apiResponse = await post("/bn/gold-sponsors/apply/", formData);
@@ -1214,16 +1208,6 @@ const submitForm = async () => {
 
     const method = isEditMode.value ? "PUT" : "POST";
 
-    for (let pair of formData.entries()) {
-      console.log(
-        pair[0] +
-          ": " +
-          (pair[0].includes("image") || pair[0] === "logo"
-            ? "File object"
-            : pair[1])
-      );
-    }
-
     let responseData;
 
     try {
@@ -1263,14 +1247,7 @@ const submitForm = async () => {
         responseData = await response.json();
 
         // Additional validation to ensure the response is actually successful
-        if (
-          responseData &&
-          responseData.message &&
-          responseData.message.includes("success")
-        ) {
-          console.log("Detected success message in response");
-        } else if (responseData && responseData.error) {
-          console.error("Error in response despite OK status:", responseData);
+        if (responseData && responseData.error) {
           throw new Error(responseData.error);
         }
       } catch (parseError) {

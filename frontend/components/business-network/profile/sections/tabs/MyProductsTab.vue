@@ -183,7 +183,6 @@ const handleScroll = () => {
     const shouldLoadMore = scrollTop + windowHeight >= documentHeight - threshold;
     
     if (shouldLoadMore && props.hasMoreProducts && !props.loadingMoreProducts && !props.isLoadingProducts) {
-      console.log('Loading more products...'); // Debug log
       emit('load-more-products');
     }
   }, 100); // Throttle to 100ms

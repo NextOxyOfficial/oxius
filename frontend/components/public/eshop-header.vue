@@ -668,8 +668,6 @@ async function performMobileSearch(loadMore = false) {
     // Add name search for product name matching
     queryParams += `&name=${searchTerm}`;
 
-    console.log(`Mobile search with URL: /all-products/?${queryParams}`);
-
     const { data } = await get(`/all-products/?${queryParams}`);
 
     const newResults = data?.results || data || [];
@@ -682,16 +680,7 @@ async function performMobileSearch(loadMore = false) {
 
     // Check if there are more results based on returned data length
     hasMoreResults.value = newResults.length === 20;
-
-    console.log("Mobile search results:", {
-      searchQuery: mobileSearchQuery.value,
-      resultsFound: newResults.length,
-      totalResults: searchResults.value.length,
-      hasMore: hasMoreResults.value,
-      currentPage: currentPage.value,
-    });
   } catch (error) {
-    console.error("Mobile search error:", error);
     if (!loadMore) {
       searchResults.value = [];
     }
