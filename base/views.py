@@ -4405,39 +4405,44 @@ def create_gig_rejected_notification(user, gig_id, gig_title, reference_id=None)
 
 def index(request, **args):
     """
-    Handle frontend routing - redirect to Nuxt.js frontend in development
-    or serve built frontend files in production
+    Handle frontend routing - serve built Nuxt.js frontend files
     """
+    import os
+    
     # Check if this is an API request
     if request.path.startswith("/api/"):
         return JsonResponse({"error": "Invalid API endpoint"}, status=404)
 
-    # In development, try to redirect to Nuxt.js dev server
+    # Try to serve the built Nuxt.js index.html
+    frontend_index = os.path.join(settings.BASE_DIR, "frontend", "dist", "index.html")
+    
+    if os.path.exists(frontend_index):
+        # Serve the built frontend
+        with open(frontend_index, 'r', encoding='utf-8') as f:
+            return HttpResponse(f.read(), content_type='text/html')
+    
+    # Fallback for development - show dev page only in DEBUG mode
     if settings.DEBUG:
-        frontend_url = "http://localhost:3000"
-
-        # For now, render the fallback template instead of redirecting
-        # to avoid redirect loops if frontend is not running
         try:
             return render(request, "index.html")
         except:
-            # If template rendering fails, return JSON response
-            return JsonResponse(
-                {
-                    "message": "AdsyClub API Backend",
-                    "frontend_url": frontend_url,
-                    "requested_path": request.path,
-                    "note": "Frontend should be running on port 3000",
-                }
-            )
-
-    # In production, you would serve the built Nuxt.js files
-    return JsonResponse(
-        {
-            "message": "AdsyClub API Backend",
-            "frontend_url": "http://localhost:3000",
-            "requested_path": request.path,
-        }
+            pass
+    
+    # Production fallback - redirect to frontend or show error
+    return HttpResponse(
+        """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>AdsyClub</title>
+            <meta http-equiv="refresh" content="0;url=/">
+        </head>
+        <body>
+            <p>Loading...</p>
+        </body>
+        </html>
+        """,
+        content_type='text/html'
     )
 
 
