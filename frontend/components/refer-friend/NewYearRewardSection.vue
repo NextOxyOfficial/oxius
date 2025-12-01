@@ -16,10 +16,14 @@
         </div>
         
         <h2 class="text-2xl md:text-3xl font-bold mb-2">
-          Refer & Earn ৳{{ program.program?.referrer_reward || 100 }}!
+          Refer Friends & Earn Rewards!
         </h2>
         <p class="text-white/90 text-sm md:text-base mb-4 max-w-lg mx-auto">
           {{ program.program?.description || 'Invite friends and both of you earn rewards when they complete simple tasks!' }}
+        </p>
+        <p class="text-white/80 text-sm mb-2">
+          You earn <span class="font-bold text-yellow-300">৳{{ program.program?.referrer_reward || 100 }}</span> • 
+          Friend earns <span class="font-bold text-yellow-300">৳{{ program.program?.referee_reward || 50 }}</span>
         </p>
         
         <div class="flex flex-wrap justify-center gap-4 mb-6">

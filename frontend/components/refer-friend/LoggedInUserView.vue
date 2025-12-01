@@ -3,7 +3,7 @@
     <!-- Subtle background effect -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none -z-10">
       <div
-        class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary-200/20 blur-3xl"
+        class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-emerald-200/20 blur-3xl"
       ></div>
       <div
         class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-blue-200/20 blur-3xl"
@@ -18,7 +18,7 @@
         >
           {{ $t("refer_friend") }}
         </h1>
-        <div class="h-1 w-24 bg-primary-500 mx-auto rounded-full mb-3"></div>
+        <div class="h-1 w-24 bg-emerald-500 mx-auto rounded-full mb-3"></div>
         <p class="text-xl text-gray-600 dark:text-gray-400">
           {{ $t("refer") }}
         </p>
@@ -41,7 +41,7 @@
             />
             <UButton
               size="xs"
-              color="primary"
+              color="emerald"
               icon="i-iconamoon-copy-light"
               variant="solid"
               class="py-1 px-1.5 ml-2"
@@ -80,7 +80,7 @@
             <UIcon name="i-mdi:whatsapp" class="text-xl text-green-500" />
           </UButton>
           <UButton
-            color="primary"
+            color="emerald"
             variant="soft"
             class="h-10 px-4 flex items-center justify-center rounded-full transition-all duration-300"
             @click="showShareModal()"
@@ -155,7 +155,7 @@
                           :disabled="!props.user?.user?.referral_code"
                         />
                         <UButton
-                          color="primary"
+                          color="emerald"
                           icon="i-iconamoon-copy-light"
                           @click="copyReferralLink"
                           :disabled="!props.user?.user?.referral_code"
@@ -283,7 +283,7 @@
                         Close
                       </UButton>
                       <UButton
-                        color="primary"
+                        color="emerald"
                         @click="$emit('share-custom-message')"
                       >
                         Share with Message
@@ -304,11 +304,11 @@
           class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 users-card"
         >
           <div
-            class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
+            class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/40"
           >
             <UIcon
               name="i-heroicons-users"
-              class="text-xl text-primary-600 dark:text-primary-400"
+              class="text-xl text-emerald-600 dark:text-emerald-400"
             />
           </div>
           <div class="flex-1">
@@ -332,7 +332,7 @@
           class="stat-card bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm flex items-center gap-4 border border-gray-100 dark:border-gray-700 transform transition-all duration-300 hover:shadow-sm hover:transform hover:-translate-y-1 earnings-card"
         >
           <div
-            class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-primary-100 dark:bg-primary-900/40"
+            class="stat-icon-wrapper h-14 w-14 rounded-full flex items-center justify-center bg-emerald-100 dark:bg-emerald-900/40"
           >
             <UIcon
               name="i-heroicons-banknotes"
@@ -470,40 +470,40 @@
         class="mt-8 mb-8"
       >
         <div
-          class="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-primary-200 dark:border-primary-800"
+          class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-6 border border-emerald-200 dark:border-emerald-800"
         >
           <div class="flex items-start">
             <div class="flex-shrink-0">
               <UIcon
                 name="i-heroicons-light-bulb"
-                class="text-primary-600 dark:text-primary-400 text-2xl"
+                class="text-emerald-600 dark:text-emerald-400 text-2xl"
               />
             </div>
             <div class="ml-4 flex-1">
               <h4
-                class="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-2"
+                class="text-lg font-semibold text-emerald-800 dark:text-emerald-200 mb-2"
               >
                 Get Started with Referrals!
               </h4>
-              <p class="text-primary-700 dark:text-primary-300 mb-4">
+              <p class="text-emerald-700 dark:text-emerald-300 mb-4">
                 You haven't made any referrals yet. Start earning commissions by
                 sharing your referral link with friends and family.
               </p>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div
-                  class="flex items-center text-primary-600 dark:text-primary-400"
+                  class="flex items-center text-emerald-600 dark:text-emerald-400"
                 >
                   <UIcon name="i-heroicons-currency-dollar" class="mr-2" />
                   <span>Earn up to 20% commission</span>
                 </div>
                 <div
-                  class="flex items-center text-primary-600 dark:text-primary-400"
+                  class="flex items-center text-emerald-600 dark:text-emerald-400"
                 >
                   <UIcon name="i-heroicons-users" class="mr-2" />
                   <span>Help friends save money</span>
                 </div>
                 <div
-                  class="flex items-center text-primary-600 dark:text-primary-400"
+                  class="flex items-center text-emerald-600 dark:text-emerald-400"
                 >
                   <UIcon name="i-heroicons-clock" class="mr-2" />
                   <span>Quick 24hr payouts</span>
@@ -643,7 +643,7 @@
                 class="tab-button relative py-4 px-6 font-medium text-sm transition-all duration-300"
                 :class="
                   activeTab === index
-                    ? 'text-primary-600 dark:text-primary-400 border-b-2 border-green-500'
+                    ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-500'
                     : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-400 border-b-2 border-white'
                 "
                 @click="setActiveTab(index)"
@@ -695,7 +695,7 @@
               <UButton
                 v-if="activeTab === 0 && filteredEarnings.length > 0"
                 @click="exportCommissions"
-                color="primary"
+                color="emerald"
                 variant="ghost"
                 size="sm"
                 icon="i-heroicons-arrow-down-tray"
@@ -844,11 +844,11 @@
                           <p>No earnings history to display yet.</p>
                           <UButton
                             class="mt-3"
-                            color="primary"
+                            color="emerald"
                             size="sm"
                             @click="showShareModal()"
                           >
-                            Invite Friends
+                            Share Your Link
                           </UButton>
                         </div>
                       </td>
@@ -904,7 +904,7 @@
                         <div class="flex items-center">
                           <div
                             v-if="!user.image"
-                            class="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium user-avatar"
+                            class="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-700 dark:text-emerald-300 font-medium user-avatar"
                           >
                             {{
                               (user.first_name || user.name || "User").charAt(0)
@@ -961,11 +961,11 @@
                           <p>You haven't referred any users yet.</p>
                           <UButton
                             class="mt-3"
-                            color="primary"
+                            color="emerald"
                             size="sm"
                             @click="showShareModal()"
                           >
-                            Invite Friends
+                            Share Your Link
                           </UButton>
                         </div>
                       </td>

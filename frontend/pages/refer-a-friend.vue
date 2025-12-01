@@ -78,7 +78,7 @@ const isLoadingUsers = ref(false);
 const commissionError = ref(null);
 const usersError = ref(null);
 const showShareModal = ref(false);
-const customMessage = ref("Join me on AdSyClub and start earning! Use my referral link to get started: ");
+const customMessage = ref("Join me on AdsyClub and start earning! Use my referral link to get started: ");
 const platformStats = ref({
   active_referrers: 500,
   top_earner_amount: 10000,
@@ -112,7 +112,7 @@ const commissionData = ref({
 watch(showShareModal, (newValue) => {
   if (newValue === true && user.value?.user?.referral_code) {
     const referralUrl = `https://adsyclub.com/auth/register/?ref=${user.value.user.referral_code}`;
-    customMessage.value = `Join me on AdSyClub and start earning! Use my referral link to get started: ${referralUrl}`;
+    customMessage.value = `Join me on AdsyClub and start earning! Use my referral link to get started: ${referralUrl}`;
   }
 });
 

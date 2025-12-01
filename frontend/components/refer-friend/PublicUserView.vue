@@ -3,7 +3,7 @@
     <!-- Animated Background -->
     <div class="absolute inset-0 -z-10 overflow-hidden">
       <div
-        class="absolute top-0 -left-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary-100/30 to-primary-300/20 blur-3xl animate-float-slow"
+        class="absolute top-0 -left-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-emerald-100/30 to-emerald-300/20 blur-3xl animate-float-slow"
       ></div>
       <div
         class="absolute bottom-0 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-blue-100/30 to-green-200/20 blur-3xl animate-float-reverse"
@@ -30,16 +30,20 @@
             </div>
             
             <h2 class="text-2xl md:text-3xl font-bold mb-2">
-              Sign Up & Earn ৳{{ rewardProgram.program?.referee_reward || 50 }}!
+              Sign Up & Earn Rewards!
             </h2>
             <p class="text-white/90 text-sm md:text-base mb-4 max-w-lg mx-auto">
               Join now with a referral link and complete simple tasks to earn your reward!
             </p>
             
             <div class="flex flex-wrap justify-center gap-4 mb-4">
-              <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 text-center">
+              <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 text-center min-w-[120px]">
                 <div class="text-xl font-bold">৳{{ rewardProgram.program?.referee_reward || 50 }}</div>
-                <div class="text-xs text-white/80">Your Reward</div>
+                <div class="text-xs text-white/80">You Earn</div>
+              </div>
+              <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 text-center min-w-[120px]">
+                <div class="text-xl font-bold">৳{{ rewardProgram.program?.referrer_reward || 100 }}</div>
+                <div class="text-xs text-white/80">Referrer Earns</div>
               </div>
             </div>
             
@@ -62,7 +66,7 @@
       <!-- Hero Section -->
       <div class="max-w-4xl mx-auto text-center mb-20">
         <div
-          class="inline-block mb-4 px-6 py-2 rounded-full bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 font-medium text-sm"
+          class="inline-block mb-4 px-6 py-2 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 font-medium text-sm"
         >
           Invite Friends & Earn Together
         </div>
@@ -70,7 +74,7 @@
           class="text-2xl md:text-2xl lg:text-6xl font-semibold mb-6 text-gray-800 dark:text-white tracking-tight animate-fade-in"
         >
           Earn
-          <span class="text-primary-600 dark:text-primary-400"
+          <span class="text-emerald-600 dark:text-emerald-400"
             >Up to 20%</span
           >
           Commission
@@ -83,7 +87,7 @@
         <div class="flex flex-wrap justify-center gap-4">
           <UButton
             size="xl"
-            color="primary"
+            color="emerald"
             to="/auth/register"
             class="cta-button"
           >
@@ -116,7 +120,7 @@
             How It Works
           </h2>
           <div
-            class="h-1 w-20 bg-primary-500 mx-auto mb-6 rounded-full animate-expand"
+            class="h-1 w-20 bg-emerald-500 mx-auto mb-6 rounded-full animate-expand"
           ></div>
           <p
             class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
@@ -132,10 +136,10 @@
             class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
           >
             <div
-              class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
+              class="w-16 h-16 mx-auto mb-6 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center"
             >
               <span
-                class="text-xl font-semibold text-primary-600 dark:text-primary-400"
+                class="text-xl font-semibold text-emerald-600 dark:text-emerald-400"
                 >1</span
               >
             </div>
@@ -155,10 +159,10 @@
             class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
           >
             <div
-              class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
+              class="w-16 h-16 mx-auto mb-6 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center"
             >
               <span
-                class="text-xl font-semibold text-primary-600 dark:text-primary-400"
+                class="text-xl font-semibold text-emerald-600 dark:text-emerald-400"
                 >2</span
               >
             </div>
@@ -178,10 +182,10 @@
             class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-100 dark:border-gray-700 text-center step-card"
           >
             <div
-              class="w-16 h-16 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center"
+              class="w-16 h-16 mx-auto mb-6 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center"
             >
               <span
-                class="text-xl font-semibold text-primary-600 dark:text-primary-400"
+                class="text-xl font-semibold text-emerald-600 dark:text-emerald-400"
                 >3</span
               >
             </div>
@@ -204,9 +208,9 @@
             class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
           >
             <div
-              class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+              class="text-2xl md:text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mb-2"
             >
-              5-20%
+              {{ platformStats.commission_rates?.gig_completion || '5%' }}-{{ platformStats.commission_rates?.pro_subscription || '20%' }}
             </div>
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Commission Rate
@@ -217,12 +221,12 @@
             class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
           >
             <div
-              class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+              class="text-2xl md:text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mb-2"
             >
               <span v-if="isLoadingPlatformStats">
                 <USkeleton class="h-8 w-16 mx-auto" />
               </span>
-              <span v-else>{{ platformStats.active_referrers }}+</span>
+              <span v-else>{{ platformStats.active_referrers || 0 }}+</span>
             </div>
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Active Referrers
@@ -233,12 +237,12 @@
             class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
           >
             <div
-              class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+              class="text-2xl md:text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mb-2"
             >
               <span v-if="isLoadingPlatformStats">
                 <USkeleton class="h-8 w-20 mx-auto" />
               </span>
-              <span v-else>৳ {{ platformStats.top_earner_amount ? platformStats.top_earner_amount.toLocaleString() : '0' }}</span>
+              <span v-else>৳ {{ platformStats.top_earner_amount ? Math.round(platformStats.top_earner_amount).toLocaleString() : '0' }}</span>
             </div>
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Top Earner
@@ -249,12 +253,12 @@
             class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-center stat-box"
           >
             <div
-              class="text-2xl md:text-2xl font-semibold text-primary-600 dark:text-primary-400 mb-2"
+              class="text-2xl md:text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mb-2"
             >
               <span v-if="isLoadingPlatformStats">
                 <USkeleton class="h-8 w-12 mx-auto" />
               </span>
-              <span v-else>{{ platformStats.quick_payout_time }}</span>
+              <span v-else>{{ platformStats.quick_payout_time || '24hr' }}</span>
             </div>
             <p class="text-sm md:text-base text-gray-600 dark:text-gray-600">
               Quick Payouts
@@ -266,7 +270,7 @@
       <!-- CTA Section -->
       <div class="max-w-4xl mx-auto text-center">
         <div
-          class="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-8 md:p-12 shadow-sm cta-section"
+          class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-8 md:p-12 shadow-sm cta-section"
         >
           <h2 class="text-xl md:text-2xl font-semibold text-white mb-4">
             Ready to Start Earning?

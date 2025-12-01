@@ -28,13 +28,16 @@
           <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-6">
             Refer Friends & 
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
-              Earn ৳{{ program?.program?.referrer_reward || 50 }}
+              Earn Rewards!
             </span>
-            Each!
           </h1>
 
-          <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p class="text-xl text-gray-600 mb-4 max-w-2xl mx-auto">
             Celebrate the New Year with us! Invite your friends to join AdsyClub and both of you earn rewards when they complete simple tasks.
+          </p>
+          <p class="text-lg text-gray-500 mb-8">
+            You earn <span class="font-bold text-emerald-600">৳{{ program?.program?.referrer_reward || 100 }}</span> • 
+            Friend earns <span class="font-bold text-teal-600">৳{{ program?.program?.referee_reward || 50 }}</span>
           </p>
 
           <!-- Reward Cards -->
@@ -42,7 +45,7 @@
             <div class="bg-white rounded-2xl p-6 shadow-xl border-2 border-emerald-200 min-w-[200px]">
               <div class="text-4xl mb-2">👤</div>
               <div class="text-sm text-gray-500 mb-1">You Earn</div>
-              <div class="text-3xl font-bold text-emerald-600">৳{{ program?.program?.referrer_reward || 50 }}</div>
+              <div class="text-3xl font-bold text-emerald-600">৳{{ program?.program?.referrer_reward || 100 }}</div>
             </div>
             <div class="bg-white rounded-2xl p-6 shadow-xl border-2 border-teal-200 min-w-[200px]">
               <div class="text-4xl mb-2">👥</div>

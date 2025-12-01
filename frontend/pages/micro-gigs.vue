@@ -1,372 +1,406 @@
 <template>
-  <PublicSection id="micro-gigs">
-    <UContainer>
-      <h2 class="text-xl md:text-2xl mb-6 md:mb-6 text-center">
-        {{ $t("micro_gigs") }} ({{ $t("quick_earn") }})
-      </h2>
-      <AccountBalance v-if="user" :user="user" :isUser="true" />
-      <NuxtLink
-        to="/mobile-recharge"
-        class="mb-6 bg-gray-100 shadow-sm border border-gray-500 block py-2 px-4 max-w-fit mx-auto rounded-xl"
-      >
-        <div class="flex gap-2">
-          <h2 class="text-base text-gray-800 sm:text-xl text-center">
-            Mobile Recharge
-          </h2>
-          <div class="flex justify-center gap-2">
+  <div id="micro-gigs" class="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50/30">
+    <UContainer class="py-6 md:py-10">
+      <!-- Header Section -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 mb-4">
+          <UIcon name="i-heroicons-bolt" class="w-4 h-4" />
+          <span class="text-sm font-medium">{{ $t("quick_earn") }}</span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          {{ $t("micro_gigs") }}
+        </h1>
+        <p class="text-gray-600 max-w-xl mx-auto">
+          Complete simple tasks and earn money instantly. Choose from various categories below.
+        </p>
+      </div>
+
+      <!-- Account Balance Card -->
+      <AccountBalance v-if="user" :user="user" :isUser="true" class="mb-6" />
+
+      <!-- Quick Actions Bar -->
+      <div class="flex flex-wrap items-center justify-center gap-3 mb-8">
+        <NuxtLink
+          to="/mobile-recharge"
+          class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 transition-all hover:shadow-md"
+        >
+          <UIcon name="i-heroicons-device-phone-mobile" class="w-5 h-5 text-emerald-600" />
+          <span class="font-medium text-gray-700">Mobile Recharge</span>
+          <div class="flex -space-x-1">
             <NuxtImg
-              v-for="operator in operators"
+              v-for="operator in operators.slice(0, 4)"
               :key="operator.id"
               :src="operator.icon"
               :title="operator.title"
-              class="size-6"
+              class="w-5 h-5 rounded-full border border-white"
             />
           </div>
-        </div>
-      </NuxtLink>
-      <UCard
-        :ui="{
-          body: { padding: 'p-0' },
-          header: { padding: 'p-0' },
-          rounded: 'rounded-md overflow-hidden',
-          ring: 'max-sm:ring-0',
-          shadow: '',
-        }"
-      >
-        <div class="flex flex-col md:flex-row w-full">
-          <div
-            class="w-full md:w-60 bg-slate-50/70 border-dashed border max-sm:rounded-lg max-sm:overflow-hidden"
-          >
-            <ul class="py-2 text-center">
-              <li>
-                <p
-                  class="px-2 font-semibold pb-2 text-left cursor-pointer"
-                  @click.prevent="selectAllCategories"
-                >
-                  {{ $t("all_category") }}
-                </p>
-                <UDivider label="" class="mb-2 px-4" />
-              </li>
+        </NuxtLink>
+        <NuxtLink
+          to="/post-gig"
+          class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2.5 transition-all hover:shadow-md"
+        >
+          <UIcon name="i-heroicons-plus" class="w-5 h-5" />
+          <span class="font-medium">Post a Gig</span>
+        </NuxtLink>
+      </div>
 
-              <li v-for="category in categoryArray" :key="category?.id">
-                <UButton
-                  :ui="{
-                    rounded: '',
-                  }"
-                  size="md"
-                  variant="ghost"
-                  color="white"
-                  class="w-full text-base px-4 py-0 font-normal text-blue-950 capitalize"
-                  @click.prevent="selectCategory(category)"
-                  >{{ category.category }} ({{ category.active }})
-                </UButton>
-              </li>
-            </ul>
-          </div>
-          <div
-            class="space-y-[0.5px] flex-1 max-sm:border max-sm:pt-2 max-sm:mt-4 max-sm:rounded-md min-h-40"
-          >
-            <div class="flex justify-between">
-              <p class="px-2 font-semibold pb-3.5">
-                {{ $t("available_gigs") }}
-              </p>
-              <USelectMenu
-                color="white"
-                size="sm"
-                class="w-40"
-                :options="microGigsFilter"
-                v-model="microGigsStatus"
-                @change="getMicroGigsByAvailability($event)"
-                placeholder="Filter"
-                value-attribute="value"
-                option-attribute="title"
-              />
+      <!-- Main Content -->
+      <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Sidebar - Categories -->
+        <div class="w-full lg:w-64 flex-shrink-0">
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-20">
+            <div class="p-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
+              <h3 class="font-semibold flex items-center gap-2">
+                <UIcon name="i-heroicons-squares-2x2" class="w-5 h-5" />
+                Categories
+              </h3>
             </div>
-            <UCard
+            <div class="p-2 max-h-[400px] overflow-y-auto">
+              <!-- All Categories -->
+              <button
+                @click.prevent="selectAllCategories"
+                class="w-full flex items-center justify-between p-3 rounded-xl transition-all"
+                :class="!selectedCategory ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-gray-50 text-gray-700'"
+              >
+                <span class="font-medium">{{ $t("all_category") }}</span>
+                <UBadge color="emerald" variant="soft" size="xs">{{ totalGigs }}</UBadge>
+              </button>
+              
+              <!-- Category List -->
+              <button
+                v-for="category in categoryArray"
+                :key="category?.id"
+                @click.prevent="selectCategory(category)"
+                class="w-full flex items-center justify-between p-3 rounded-xl transition-all"
+                :class="selectedCategory?.id === category.id ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-gray-50 text-gray-700'"
+              >
+                <span class="capitalize truncate">{{ category.category }}</span>
+                <UBadge :color="selectedCategory?.id === category.id ? 'emerald' : 'gray'" variant="soft" size="xs">
+                  {{ category.active }}
+                </UBadge>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content - Gigs List -->
+        <div class="flex-1">
+          <!-- Filter Bar -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <h2 class="font-semibold text-gray-900 flex items-center gap-2">
+                  <UIcon name="i-heroicons-briefcase" class="w-5 h-5 text-emerald-600" />
+                  {{ $t("available_gigs") }}
+                </h2>
+                <UBadge color="emerald" variant="soft">{{ totalGigs }} gigs</UBadge>
+              </div>
+              <div class="flex items-center gap-3">
+                <USelectMenu
+                  v-model="microGigsStatus"
+                  :options="microGigsFilter"
+                  @change="getMicroGigsByAvailability($event)"
+                  placeholder="Filter"
+                  value-attribute="value"
+                  option-attribute="title"
+                  size="sm"
+                  class="w-36"
+                  :ui="{ rounded: 'rounded-lg' }"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Gigs Grid -->
+          <div class="space-y-3">
+            <div
               v-for="(gig, i) in paginatedGigs"
               :key="i"
-              :ui="{
-                rounded: '',
-                body: {
-                  padding: 'p-0 sm:p-0 flex-1 w-full',
-                },
-                header: {
-                  padding: 'p-0',
-                },
-                footer: {
-                  padding: 'p-0',
-                },
-                ring: 'max-sm:ring-1',
-              }"
-              class="flex flex-col px-3 py-2.5 sm:flex-row sm:items-center w-full bg-slate-50/70"
+              v-if="gig.user"
+              class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-emerald-200 transition-all duration-200 overflow-hidden"
             >
-              <div
-                class="flex flex-col sm:flex-row sm:justify-between"
-                v-if="gig.user"
-              >
-                <div class="flex gap-4">
-                  <div>
-                    <NuxtImg
-                      v-if="!errorIndex.includes(i)"
-                      :src="gig.category_details?.image"
-                      class="w-12 rounded-full object-contain"
-                    />
-                    <img
-                      v-else
-                      src="/static/frontend/images/no-image.jpg"
-                      alt="No Image"
-                      class="w-12 rounded-full"
-                    />
+              <div class="p-4">
+                <div class="flex items-start gap-4">
+                  <!-- Category Icon -->
+                  <div class="flex-shrink-0">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center overflow-hidden">
+                      <NuxtImg
+                        v-if="!errorIndex.includes(i) && gig.category_details?.image"
+                        :src="gig.category_details?.image"
+                        class="w-10 h-10 object-contain"
+                        @error="handleImageError(i)"
+                      />
+                      <UIcon v-else name="i-heroicons-briefcase" class="w-6 h-6 text-emerald-600" />
+                    </div>
                   </div>
-                  <div class="flex-1">
-                    <h3
-                      class="text-[15px] leading-tight font-semibold mb-1.5 capitalize"
-                    >
-                      {{ gig.title }}
-                    </h3>
-                    <div class="flex gap-0.5 gap-x-4 md:gap-4 flex-wrap">
-                      <div class="flex gap-1 items-center">
-                        <UIcon name="i-heroicons-bell-solid" />
-                        <p class="text-sm">
-                          <span class="">{{ gig.filled_quantity }}</span> /
-                          <span class="text-green-600">{{
-                            gig.required_quantity
-                          }}</span>
-                        </p>
+
+                  <!-- Gig Details -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-4">
+                      <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">
+                          {{ gig.title }}
+                        </h3>
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+                          <!-- Progress -->
+                          <div class="flex items-center gap-1.5">
+                            <UIcon name="i-heroicons-users" class="w-4 h-4" />
+                            <span>
+                              <span class="font-medium text-gray-700">{{ gig.filled_quantity }}</span>
+                              <span class="text-gray-400">/</span>
+                              <span class="text-emerald-600">{{ gig.required_quantity }}</span>
+                            </span>
+                          </div>
+                          <!-- Date -->
+                          <div class="flex items-center gap-1.5">
+                            <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                            <span>{{ formatDate(gig.created_at) }}</span>
+                          </div>
+                          <!-- Posted By -->
+                          <div class="flex items-center gap-1.5">
+                            <UIcon name="i-heroicons-user" class="w-4 h-4" />
+                            <span>{{ gig.user.name?.slice(0, 8) }}***</span>
+                          </div>
+                        </div>
                       </div>
-                      <p class="text-sm">
-                        {{ formatDate(gig.created_at) }}
-                      </p>
-                      <p
-                        class="font-semibold text-base text-green-900 inline-flex items-center max-sm:ml-auto sm:hidden"
-                      >
-                        <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
-                          gig.price
-                        }}
-                      </p>
-                      <div class="flex gap-1 items-center text-sm">
-                        Posted By:
-                        <p class="text-sm">
-                          <span class="text-green-600"
-                            >{{ gig.user.name.slice(0, 6) }}***</span
-                          >
-                        </p>
+
+                      <!-- Price & Action (Desktop) -->
+                      <div class="hidden sm:flex items-center gap-4">
+                        <div class="text-right">
+                          <div class="text-xs text-gray-500 mb-0.5">Earn</div>
+                          <div class="text-xl font-bold text-emerald-600 flex items-center">
+                            <span class="text-sm">৳</span>{{ gig.price }}
+                          </div>
+                        </div>
+                        <UButton
+                          v-if="user?.user && user?.user?.id !== gig.user.id"
+                          :to="`/order/${gig.slug}/`"
+                          color="primary"
+                          size="md"
+                          class="px-6"
+                        >
+                          <UIcon name="i-heroicons-currency-dollar" class="w-4 h-4 mr-1" />
+                          Earn Now
+                        </UButton>
+                        <UButton
+                          v-else-if="user?.user?.id === gig.user.id"
+                          disabled
+                          color="gray"
+                          variant="soft"
+                          size="md"
+                        >
+                          Your Gig
+                        </UButton>
+                        <UButton
+                          v-else
+                          to="/auth/login"
+                          color="primary"
+                          variant="outline"
+                          size="md"
+                          class="px-6"
+                        >
+                          Login to Earn
+                        </UButton>
+                      </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mt-3">
+                      <div class="flex items-center justify-between text-xs mb-1">
+                        <span class="text-gray-500">Progress</span>
+                        <span class="font-medium" :class="getProgressColor(gig)">
+                          {{ Math.round((gig.filled_quantity / gig.required_quantity) * 100) }}%
+                        </span>
+                      </div>
+                      <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          class="h-full rounded-full transition-all duration-300"
+                          :class="getProgressBarColor(gig)"
+                          :style="{ width: `${Math.min((gig.filled_quantity / gig.required_quantity) * 100, 100)}%` }"
+                        ></div>
+                      </div>
+                    </div>
+
+                    <!-- Mobile Price & Action -->
+                    <div class="flex items-center justify-between mt-3 sm:hidden">
+                      <div class="text-lg font-bold text-emerald-600 flex items-center">
+                        <span class="text-sm">৳</span>{{ gig.price }}
                       </div>
                       <UButton
                         v-if="user?.user && user?.user?.id !== gig.user.id"
-                        :disabled="user?.user?.id === gig.user.id"
-                        size="sm"
-                        class="ml-auto sm:hidden w-[70px] justify-center"
-                        color="primary"
-                        variant="outline"
                         :to="`/order/${gig.slug}/`"
+                        color="primary"
+                        size="sm"
                       >
-                        Earn
+                        Earn Now
                       </UButton>
                       <UButton
-                        v-if="user?.user?.id === gig.user.id"
-                        :disabled="user?.user?.id === gig.user.id"
+                        v-else-if="user?.user?.id === gig.user.id"
+                        disabled
+                        color="gray"
+                        variant="soft"
                         size="sm"
-                        class="ml-auto sm:hidden w-[70px] justify-center"
-                        color="primary"
-                        variant="outline"
                       >
-                        Ineligible
+                        Your Gig
                       </UButton>
                       <UButton
-                        v-if="!user?.user"
-                        size="sm"
-                        class="ml-auto sm:hidden w-[70px] justify-center"
+                        v-else
+                        to="/auth/login"
                         color="primary"
                         variant="outline"
-                        :to="`/auth/login/`"
+                        size="sm"
                       >
-                        Earn
+                        Login
                       </UButton>
                     </div>
                   </div>
                 </div>
-                <div
-                  class="hidden sm:flex gap-16 items-center justify-end md:justify-between max-sm:mt-2"
-                >
-                  <p
-                    class="font-semibold text-base text-green-900 sm:inline-flex items-center hidden"
-                  >
-                    <UIcon name="i-mdi:currency-bdt" class="text-base" />{{
-                      gig.price
-                    }}
-                  </p>
-
-                  <UButton
-                    v-if="user?.user && user?.user?.id !== gig.user.id"
-                    :disabled="user?.user?.id === gig.user.id"
-                    size="sm"
-                    color="primary"
-                    variant="outline"
-                    class="w-[70px] justify-center"
-                    :to="`/order/${gig.slug}/`"
-                  >
-                    Earn
-                  </UButton>
-                  <UButton
-                    v-if="user?.user?.id === gig.user.id"
-                    :disabled="user?.user?.id === gig.user.id"
-                    size="sm"
-                    color="primary"
-                    variant="outline"
-                    class="w-[70px] justify-center"
-                  >
-                    Ineligible
-                  </UButton>
-                  <UButton
-                    v-if="!user?.user"
-                    size="sm"
-                    color="primary"
-                    variant="outline"
-                    :to="`/auth/login/`"
-                    class="w-[70px] justify-center"
-                  >
-                    Earn
-                  </UButton>
-                </div>
               </div>
-            </UCard>
-            <!-- Professional Pagination Section -->
-            <div v-if="microGigs?.length > 0" class="mt-6 mb-4 px-4">
-              <!-- Results Info -->
-              <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-                <p class="text-sm text-gray-600">
-                  Showing <span class="font-medium text-gray-900">{{ startIndex + 1 }}</span> to 
-                  <span class="font-medium text-gray-900">{{ endIndex }}</span> of 
-                  <span class="font-medium text-gray-900">{{ totalGigs }}</span> gigs
-                </p>
-                
-                <!-- Items per page selector -->
-                <div class="flex items-center gap-2">
-                  <span class="text-sm text-gray-600">Show:</span>
-                  <USelectMenu
-                    v-model="selectedItemsPerPage"
-                    :options="itemsPerPageOptions"
-                    size="sm"
-                    class="w-20"
-                    @change="handleItemsPerPageChange"
-                  />
-                </div>
+            </div>
+          </div>
+
+          <!-- Professional Pagination Section -->
+          <div v-if="microGigs?.length > 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mt-4">
+            <!-- Results Info -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+              <p class="text-sm text-gray-600">
+                Showing <span class="font-medium text-gray-900">{{ startIndex + 1 }}</span> to 
+                <span class="font-medium text-gray-900">{{ endIndex }}</span> of 
+                <span class="font-medium text-gray-900">{{ totalGigs }}</span> gigs
+              </p>
+              
+              <!-- Items per page selector -->
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-600">Show:</span>
+                <USelectMenu
+                  v-model="selectedItemsPerPage"
+                  :options="itemsPerPageOptions"
+                  size="sm"
+                  class="w-20"
+                  @change="handleItemsPerPageChange"
+                />
               </div>
+            </div>
 
-              <!-- Pagination Controls -->
-              <nav class="flex items-center justify-center gap-1" aria-label="Pagination">
-                <!-- First Page -->
-                <UButton
-                  :disabled="currentPage === 1"
-                  @click="goToPage(1)"
-                  size="sm"
-                  color="gray"
-                  variant="ghost"
-                  :ui="{ rounded: 'rounded-lg' }"
-                  class="hidden sm:flex"
-                >
-                  <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-4 h-4" />
-                </UButton>
+            <!-- Pagination Controls -->
+            <nav class="flex items-center justify-center gap-1" aria-label="Pagination">
+              <!-- First Page -->
+              <UButton
+                :disabled="currentPage === 1"
+                @click="goToPage(1)"
+                size="sm"
+                color="gray"
+                variant="ghost"
+                :ui="{ rounded: 'rounded-lg' }"
+                class="hidden sm:flex"
+              >
+                <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-4 h-4" />
+              </UButton>
 
-                <!-- Previous -->
-                <UButton
-                  :disabled="currentPage === 1"
-                  @click="goToPage(currentPage - 1)"
-                  size="sm"
-                  color="gray"
-                  variant="ghost"
-                  :ui="{ rounded: 'rounded-lg' }"
-                >
-                  <UIcon name="i-heroicons-chevron-left-20-solid" class="w-4 h-4" />
-                  <span class="hidden sm:inline ml-1">Previous</span>
-                </UButton>
+              <!-- Previous -->
+              <UButton
+                :disabled="currentPage === 1"
+                @click="goToPage(currentPage - 1)"
+                size="sm"
+                color="gray"
+                variant="ghost"
+                :ui="{ rounded: 'rounded-lg' }"
+              >
+                <UIcon name="i-heroicons-chevron-left-20-solid" class="w-4 h-4" />
+                <span class="hidden sm:inline ml-1">Previous</span>
+              </UButton>
 
-                <!-- Page Numbers -->
-                <div class="flex items-center gap-1">
-                  <!-- First page if not visible -->
-                  <template v-if="getVisiblePages()[0] > 1">
-                    <UButton
-                      @click="goToPage(1)"
-                      size="sm"
-                      color="gray"
-                      variant="ghost"
-                      :ui="{ rounded: 'rounded-lg' }"
-                      class="w-9 justify-center"
-                    >
-                      1
-                    </UButton>
-                    <span v-if="getVisiblePages()[0] > 2" class="px-1 text-gray-400">...</span>
-                  </template>
-
-                  <!-- Visible page numbers -->
+              <!-- Page Numbers -->
+              <div class="flex items-center gap-1">
+                <!-- First page if not visible -->
+                <template v-if="getVisiblePages()[0] > 1">
                   <UButton
-                    v-for="page in getVisiblePages()"
-                    :key="page"
-                    @click="goToPage(page)"
+                    @click="goToPage(1)"
                     size="sm"
-                    :color="page === currentPage ? 'primary' : 'gray'"
-                    :variant="page === currentPage ? 'solid' : 'ghost'"
+                    color="gray"
+                    variant="ghost"
                     :ui="{ rounded: 'rounded-lg' }"
                     class="w-9 justify-center"
                   >
-                    {{ page }}
+                    1
                   </UButton>
+                  <span v-if="getVisiblePages()[0] > 2" class="px-1 text-gray-400">...</span>
+                </template>
 
-                  <!-- Last page if not visible -->
-                  <template v-if="getVisiblePages()[getVisiblePages().length - 1] < totalPages">
-                    <span v-if="getVisiblePages()[getVisiblePages().length - 1] < totalPages - 1" class="px-1 text-gray-400">...</span>
-                    <UButton
-                      @click="goToPage(totalPages)"
-                      size="sm"
-                      color="gray"
-                      variant="ghost"
-                      :ui="{ rounded: 'rounded-lg' }"
-                      class="w-9 justify-center"
-                    >
-                      {{ totalPages }}
-                    </UButton>
-                  </template>
-                </div>
-
-                <!-- Next -->
+                <!-- Visible page numbers -->
                 <UButton
-                  :disabled="currentPage === totalPages || totalPages === 0"
-                  @click="goToPage(currentPage + 1)"
+                  v-for="page in getVisiblePages()"
+                  :key="page"
+                  @click="goToPage(page)"
                   size="sm"
-                  color="gray"
-                  variant="ghost"
+                  :color="page === currentPage ? 'primary' : 'gray'"
+                  :variant="page === currentPage ? 'solid' : 'ghost'"
                   :ui="{ rounded: 'rounded-lg' }"
+                  class="w-9 justify-center"
                 >
-                  <span class="hidden sm:inline mr-1">Next</span>
-                  <UIcon name="i-heroicons-chevron-right-20-solid" class="w-4 h-4" />
+                  {{ page }}
                 </UButton>
 
-                <!-- Last Page -->
-                <UButton
-                  :disabled="currentPage === totalPages || totalPages === 0"
-                  @click="goToPage(totalPages)"
-                  size="sm"
-                  color="gray"
-                  variant="ghost"
-                  :ui="{ rounded: 'rounded-lg' }"
-                  class="hidden sm:flex"
-                >
-                  <UIcon name="i-heroicons-chevron-double-right-20-solid" class="w-4 h-4" />
-                </UButton>
-              </nav>
-            </div>
+                <!-- Last page if not visible -->
+                <template v-if="getVisiblePages()[getVisiblePages().length - 1] < totalPages">
+                  <span v-if="getVisiblePages()[getVisiblePages().length - 1] < totalPages - 1" class="px-1 text-gray-400">...</span>
+                  <UButton
+                    @click="goToPage(totalPages)"
+                    size="sm"
+                    color="gray"
+                    variant="ghost"
+                    :ui="{ rounded: 'rounded-lg' }"
+                    class="w-9 justify-center"
+                  >
+                    {{ totalPages }}
+                  </UButton>
+                </template>
+              </div>
 
-            <!-- Empty State -->
-            <div v-else-if="!microGigs?.length" class="py-12 text-center">
-              <UIcon name="i-heroicons-inbox" class="w-12 h-12 mx-auto text-gray-300 mb-4" />
-              <p class="text-gray-500">No gigs found</p>
+              <!-- Next -->
+              <UButton
+                :disabled="currentPage === totalPages || totalPages === 0"
+                @click="goToPage(currentPage + 1)"
+                size="sm"
+                color="gray"
+                variant="ghost"
+                :ui="{ rounded: 'rounded-lg' }"
+              >
+                <span class="hidden sm:inline mr-1">Next</span>
+                <UIcon name="i-heroicons-chevron-right-20-solid" class="w-4 h-4" />
+              </UButton>
+
+              <!-- Last Page -->
+              <UButton
+                :disabled="currentPage === totalPages || totalPages === 0"
+                @click="goToPage(totalPages)"
+                size="sm"
+                color="gray"
+                variant="ghost"
+                :ui="{ rounded: 'rounded-lg' }"
+                class="hidden sm:flex"
+              >
+                <UIcon name="i-heroicons-chevron-double-right-20-solid" class="w-4 h-4" />
+              </UButton>
+            </nav>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="!microGigs?.length" class="bg-white rounded-2xl shadow-sm border border-gray-100 py-16 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+              <UIcon name="i-heroicons-briefcase" class="w-10 h-10 text-gray-300" />
             </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Gigs Available</h3>
+            <p class="text-gray-500 mb-6 max-w-sm mx-auto">There are no gigs available in this category right now. Check back later or try another category.</p>
+            <UButton color="primary" @click="selectAllCategories">
+              View All Categories
+            </UButton>
           </div>
         </div>
-      </UCard>
+      </div>
     </UContainer>
-  </PublicSection>
+  </div>
 </template>
 
 <script setup>
@@ -475,8 +509,23 @@ const microGigsStatus = ref(microGigsFilter[1]);
 const errorIndex = ref([]);
 function handleImageError(index) {
   if (!errorIndex.value.includes(index)) {
-    errorIndex.value.push(index); // Add index to errorIndex
+    errorIndex.value.push(index);
   }
+}
+
+// Progress bar color helpers
+function getProgressColor(gig) {
+  const progress = (gig.filled_quantity / gig.required_quantity) * 100;
+  if (progress >= 100) return 'text-emerald-600';
+  if (progress >= 70) return 'text-amber-600';
+  return 'text-blue-600';
+}
+
+function getProgressBarColor(gig) {
+  const progress = (gig.filled_quantity / gig.required_quantity) * 100;
+  if (progress >= 100) return 'bg-emerald-500';
+  if (progress >= 70) return 'bg-amber-500';
+  return 'bg-blue-500';
 }
 
 async function getMicroGigsCategories() {
