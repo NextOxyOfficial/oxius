@@ -728,6 +728,30 @@
                 </svg>
               </span>
 
+              <!-- Referral Reward icon -->
+              <span
+                v-else-if="
+                  row.transaction_type?.toLowerCase() === 'referral_reward'
+                "
+                class="flex-shrink-0 h-5 w-5 text-emerald-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 12v10H4V12" />
+                  <path d="M2 7h20v5H2z" />
+                  <path d="M12 22V7" />
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                </svg>
+              </span>
+
               <!-- Default icon for other types -->
               <span v-else class="flex-shrink-0 h-5 w-5 text-gray-600">
                 <svg
@@ -851,6 +875,16 @@
             >
               System
             </div>
+
+            <!-- For referral rewards -->
+            <div
+              class="text-sm text-gray-600"
+              v-else-if="
+                row.transaction_type?.toLowerCase() === 'referral_reward'
+              "
+            >
+              🎁 New Year Reward
+            </div>
           </template>
           <template #method-data="{ row }">
             <div class="text-sm text-gray-600 capitalize">
@@ -880,6 +914,7 @@
                   'diamond_bonus',
                   'diamond_refund',
                   'referral_commission',
+                  'referral_reward',
                 ].includes(row.transaction_type?.toLowerCase()),
                 'text-red-600': [
                   'withdraw',
@@ -3237,6 +3272,7 @@ function getTransactionTypeName(transactionType) {
     pro_subscription: "Pro Subscription",
     order_payment: "Product Purchase",
     referral_commission: "Referral Commission",
+    referral_reward: "Referral Reward",
   };
 
   return (

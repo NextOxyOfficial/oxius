@@ -97,7 +97,7 @@
         :conditions="rewardConditions"
         :claims="rewardClaims"
         :claiming="claimingReward"
-        @claim-reward="emit('claim-reward')"
+        @claim-reward="(claimId) => emit('claim-reward', claimId)"
       />
 
       <!-- Share Modal -->

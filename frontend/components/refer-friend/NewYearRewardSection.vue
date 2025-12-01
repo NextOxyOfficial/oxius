@@ -246,6 +246,19 @@
                 {{ getClaimTasksRemaining(claim) === 0 ? '✓ All done!' : `${getClaimTasksRemaining(claim)} left` }}
               </div>
             </div>
+            
+            <!-- Claim Button for eligible referrer rewards -->
+            <div v-if="claim.all_met && claim.status === 'eligible'" class="mt-3 text-center">
+              <UButton 
+                color="primary" 
+                size="sm"
+                :loading="claiming"
+                @click="$emit('claim-reward', claim.id)"
+              >
+                <UIcon name="i-heroicons-gift" class="mr-1" />
+                Claim ৳{{ claim.reward_amount }}
+              </UButton>
+            </div>
           </div>
         </div>
       </div>

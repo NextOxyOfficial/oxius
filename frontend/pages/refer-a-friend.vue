@@ -189,12 +189,18 @@ async function getRewardClaims() {
   }
 }
 
-async function claimReward() {
-  if (!rewardClaims.value?.claims?.length) return;
+async function claimReward(claimId = null) {
+  let targetClaim = null;
   
-  // Find eligible claim
-  const eligibleClaim = rewardClaims.value.claims.find(c => c.status === 'eligible');
-  if (!eligibleClaim) {
+  // If a specific claim ID is provided, use that
+  if (claimId) {
+    targetClaim = rewardClaims.value?.claims?.find(c => c.id === claimId);
+  } else {
+    // Otherwise find any eligible claim (for referee claims)
+    targetClaim = rewardClaims.value?.claims?.find(c => c.status === 'eligible');
+  }
+  
+  if (!targetClaim) {
     toast.add({ 
       title: "Not Eligible", 
       description: "Complete all conditions to claim your reward",
@@ -205,11 +211,11 @@ async function claimReward() {
   
   claimingReward.value = true;
   try {
-    const res = await post(`/referral-rewards/claim/${eligibleClaim.id}/`, {});
+    const res = await post(`/referral-rewards/claim/${targetClaim.id}/`, {});
     if (res?.data?.success) {
       toast.add({ 
         title: "🎉 Reward Claimed!", 
-        description: `৳${eligibleClaim.reward_amount} has been added to your balance!`,
+        description: `৳${targetClaim.reward_amount} has been added to your balance!`,
         color: "green"
       });
       // Refresh data
