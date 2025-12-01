@@ -393,53 +393,48 @@ class WorkspaceBanner(models.Model):
 
 class GigFeeSettings(models.Model):
     """
-    Singleton model for managing gig order fees from Django Admin.
-    Only one instance should exist - use get_settings() class method.
+    Simplified fee settings for workspace orders.
+    
+    How it works:
+    - Buyer Fee: Charged when placing an order (added to order total)
+    - Seller Fee: Deducted from seller earnings when order is completed
+    
+    Example with 2.5% each on a ৳1000 order:
+    - Buyer pays: ৳1000 + ৳25 (2.5% fee) = ৳1025
+    - Seller receives: ৳1000 - ৳25 (2.5% fee) = ৳975
+    - Platform earns: ৳25 + ৳25 = ৳50 total
     """
     
-    # Buyer fees (charged when placing order)
-    buyer_service_fee_percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0,
-        help_text="Percentage fee charged to buyer on order amount (e.g., 5 for 5%)"
+    # Simple percentage fees
+    buyer_fee_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=2.5,
+        verbose_name="Buyer Fee %",
+        help_text="Fee charged to buyer when placing order (e.g., 2.5 means 2.5%)"
     )
-    buyer_service_fee_min = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0,
-        help_text="Minimum service fee in BDT"
-    )
-    buyer_service_fee_max = models.DecimalField(
-        max_digits=10, decimal_places=2, default=500,
-        help_text="Maximum service fee cap in BDT"
-    )
-    buyer_processing_fee = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0,
-        help_text="Fixed processing fee in BDT"
-    )
-    buyer_fee_waived = models.BooleanField(
-        default=True,
-        help_text="If checked, buyer service fees are waived (promotional period)"
+    seller_fee_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=2.5,
+        verbose_name="Seller Fee %",
+        help_text="Fee deducted from seller when order completes (e.g., 2.5 means 2.5%)"
     )
     
-    # Seller fees (deducted from earnings on completion)
-    seller_commission_percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=10,
-        help_text="Platform commission percentage deducted from seller earnings (e.g., 10 for 10%)"
+    # Optional: Enable/disable fees
+    fees_enabled = models.BooleanField(
+        default=True,
+        verbose_name="Fees Enabled",
+        help_text="Uncheck to disable all fees (promotional period)"
     )
-    seller_commission_min = models.DecimalField(
-        max_digits=10, decimal_places=2, default=5,
-        help_text="Minimum commission in BDT"
-    )
-    seller_commission_max = models.DecimalField(
-        max_digits=10, decimal_places=2, default=5000,
-        help_text="Maximum commission cap in BDT"
-    )
-    seller_withdrawal_fee = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0,
-        help_text="Fee for withdrawing earnings in BDT"
-    )
-    seller_fee_discount_percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=0,
-        help_text="Promotional discount on seller commission (e.g., 20 for 20% off)"
-    )
+    
+    # Keep old fields for backward compatibility (hidden in admin)
+    buyer_service_fee_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    buyer_service_fee_min = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    buyer_service_fee_max = models.DecimalField(max_digits=10, decimal_places=2, default=500)
+    buyer_processing_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    buyer_fee_waived = models.BooleanField(default=False)
+    seller_commission_percent = models.DecimalField(max_digits=5, decimal_places=2, default=10)
+    seller_commission_min = models.DecimalField(max_digits=10, decimal_places=2, default=5)
+    seller_commission_max = models.DecimalField(max_digits=10, decimal_places=2, default=5000)
+    seller_withdrawal_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    seller_fee_discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     
     # Metadata
     updated_at = models.DateTimeField(auto_now=True)
@@ -449,15 +444,19 @@ class GigFeeSettings(models.Model):
     )
     
     class Meta:
-        verbose_name = "Gig Fee Settings"
-        verbose_name_plural = "Gig Fee Settings"
+        verbose_name = "Platform Fee Settings"
+        verbose_name_plural = "Platform Fee Settings"
     
     def __str__(self):
-        return f"Gig Fee Settings (Buyer: {self.buyer_service_fee_percent}%, Seller: {self.seller_commission_percent}%)"
+        return f"Platform Fees (Buyer: {self.buyer_fee_percent}%, Seller: {self.seller_fee_percent}%)"
     
     def save(self, *args, **kwargs):
-        """Ensure only one instance exists"""
+        """Ensure only one instance exists and sync old fields"""
         self.pk = 1
+        # Sync new fields to old fields for backward compatibility
+        self.buyer_service_fee_percent = self.buyer_fee_percent
+        self.seller_commission_percent = self.seller_fee_percent
+        self.buyer_fee_waived = not self.fees_enabled
         super().save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):
@@ -470,11 +469,19 @@ class GigFeeSettings(models.Model):
         obj, created = cls.objects.get_or_create(pk=1)
         return obj
     
+    @property
+    def total_platform_fee_percent(self):
+        """Total fee percentage collected by platform"""
+        return float(self.buyer_fee_percent) + float(self.seller_fee_percent)
+    
     def calculate_buyer_fees(self, order_amount):
-        """Calculate buyer fees for an order"""
+        """
+        Calculate buyer fees for an order.
+        Buyer pays: order_amount + (order_amount * buyer_fee_percent / 100)
+        """
         order_amount = float(order_amount)
         
-        if self.buyer_fee_waived:
+        if not self.fees_enabled:
             return {
                 'order_amount': order_amount,
                 'service_fee': 0,
@@ -484,48 +491,41 @@ class GigFeeSettings(models.Model):
                 'is_fee_waived': True,
             }
         
-        # Calculate service fee
-        service_fee = (order_amount * float(self.buyer_service_fee_percent)) / 100
-        service_fee = max(service_fee, float(self.buyer_service_fee_min))
-        service_fee = min(service_fee, float(self.buyer_service_fee_max))
-        service_fee = round(service_fee, 2)
-        
-        processing_fee = float(self.buyer_processing_fee)
-        total_fee = service_fee + processing_fee
-        total_to_pay = order_amount + total_fee
+        # Simple percentage calculation
+        service_fee = round((order_amount * float(self.buyer_fee_percent)) / 100, 2)
         
         return {
             'order_amount': order_amount,
             'service_fee': service_fee,
-            'processing_fee': processing_fee,
-            'total_fee': total_fee,
-            'total_to_pay': total_to_pay,
+            'processing_fee': 0,
+            'total_fee': service_fee,
+            'total_to_pay': order_amount + service_fee,
             'is_fee_waived': False,
         }
     
     def calculate_seller_fees(self, order_amount):
-        """Calculate seller fees/earnings for an order"""
+        """
+        Calculate seller fees/earnings for an order.
+        Seller receives: order_amount - (order_amount * seller_fee_percent / 100)
+        """
         order_amount = float(order_amount)
         
-        # Calculate platform commission
-        commission = (order_amount * float(self.seller_commission_percent)) / 100
-        commission = max(commission, float(self.seller_commission_min))
-        commission = min(commission, float(self.seller_commission_max))
+        if not self.fees_enabled:
+            return {
+                'order_amount': order_amount,
+                'platform_commission': 0,
+                'commission_percent': 0,
+                'net_earnings': order_amount,
+                'discount_applied': 0,
+            }
         
-        # Apply promotional discount if any
-        discount_applied = 0
-        if self.seller_fee_discount_percent > 0:
-            discount_applied = (commission * float(self.seller_fee_discount_percent)) / 100
-            commission = commission - discount_applied
-        
-        commission = round(commission, 2)
-        discount_applied = round(discount_applied, 2)
-        net_earnings = order_amount - commission
+        # Simple percentage calculation
+        commission = round((order_amount * float(self.seller_fee_percent)) / 100, 2)
         
         return {
             'order_amount': order_amount,
             'platform_commission': commission,
-            'commission_percent': float(self.seller_commission_percent),
-            'net_earnings': net_earnings,
-            'discount_applied': discount_applied,
+            'commission_percent': float(self.seller_fee_percent),
+            'net_earnings': order_amount - commission,
+            'discount_applied': 0,
         }

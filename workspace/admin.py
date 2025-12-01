@@ -633,38 +633,33 @@ class WorkspaceBannerAdmin(admin.ModelAdmin):
 
 @admin.register(GigFeeSettings)
 class GigFeeSettingsAdmin(admin.ModelAdmin):
-    """Admin for managing gig order fees - singleton model"""
+    """
+    Simplified admin for platform fees.
+    
+    Just two simple percentage fields:
+    - Buyer Fee: Added to order total when placing order
+    - Seller Fee: Deducted from seller earnings when order completes
+    """
     
     list_display = (
-        'buyer_fees_display', 'seller_fees_display', 
-        'buyer_fee_status', 'seller_discount_status', 'updated_at'
+        'fee_summary', 'fees_status', 'total_platform_fee', 'example_calculation', 'updated_at'
     )
     
     fieldsets = (
-        ('Buyer Fees (Order Placement)', {
-            'description': 'Fees charged to buyers when placing an order',
+        ('💰 Platform Fees', {
             'fields': (
-                'buyer_fee_waived',
-                ('buyer_service_fee_percent', 'buyer_processing_fee'),
-                ('buyer_service_fee_min', 'buyer_service_fee_max'),
+                'fees_enabled',
+                ('buyer_fee_percent', 'seller_fee_percent'),
             )
         }),
-        ('Seller Fees (Order Completion)', {
-            'description': 'Platform commission deducted from seller earnings',
-            'fields': (
-                'seller_commission_percent',
-                ('seller_commission_min', 'seller_commission_max'),
-                'seller_fee_discount_percent',
-                'seller_withdrawal_fee',
-            )
-        }),
-        ('Metadata', {
+        ('📊 Last Updated', {
             'classes': ('collapse',),
             'fields': ('updated_at', 'updated_by'),
         }),
     )
     
     readonly_fields = ('updated_at',)
+    change_form_template = 'admin/workspace/gigfeesettings/change_form.html'
     
     def has_add_permission(self, request):
         """Only allow one instance"""
@@ -674,44 +669,65 @@ class GigFeeSettingsAdmin(admin.ModelAdmin):
         """Prevent deletion"""
         return False
     
-    def buyer_fees_display(self, obj):
-        if obj.buyer_fee_waived:
+    def fee_summary(self, obj):
+        """Display both fees in a clean format"""
+        if not obj.fees_enabled:
             return format_html(
-                '<span style="color: #4caf50; font-weight: bold;">FREE (Waived)</span>'
+                '<span style="color: #4caf50; font-weight: bold; font-size: 14px;">🎉 All Fees Disabled</span>'
             )
         return format_html(
-            '<span style="font-weight: bold;">{}%</span> + ৳{} processing',
-            obj.buyer_service_fee_percent, obj.buyer_processing_fee
+            '<div style="line-height: 1.6;">'
+            '<span style="background: #e3f2fd; color: #1565c0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">Buyer: {}%</span>'
+            ' &nbsp; '
+            '<span style="background: #fff3e0; color: #e65100; padding: 4px 10px; border-radius: 4px; font-weight: bold;">Seller: {}%</span>'
+            '</div>',
+            obj.buyer_fee_percent, obj.seller_fee_percent
         )
-    buyer_fees_display.short_description = 'Buyer Fees'
+    fee_summary.short_description = 'Fee Rates'
     
-    def seller_fees_display(self, obj):
-        return format_html(
-            '<span style="font-weight: bold; color: #f44336;">{}%</span> commission',
-            obj.seller_commission_percent
-        )
-    seller_fees_display.short_description = 'Seller Commission'
-    
-    def buyer_fee_status(self, obj):
-        if obj.buyer_fee_waived:
+    def fees_status(self, obj):
+        """Show if fees are enabled or disabled"""
+        if obj.fees_enabled:
             return format_html(
-                '<span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">WAIVED</span>'
+                '<span style="background: #4caf50; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold;">✓ ACTIVE</span>'
             )
         return format_html(
-            '<span style="background: #2196f3; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">ACTIVE</span>'
+            '<span style="background: #ff9800; color: white; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold;">⏸ PAUSED</span>'
         )
-    buyer_fee_status.short_description = 'Buyer Fee Status'
+    fees_status.short_description = 'Status'
     
-    def seller_discount_status(self, obj):
-        if obj.seller_fee_discount_percent > 0:
-            return format_html(
-                '<span style="background: #ff9800; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">{}% OFF</span>',
-                obj.seller_fee_discount_percent
-            )
+    def total_platform_fee(self, obj):
+        """Show total platform earnings percentage"""
+        if not obj.fees_enabled:
+            return format_html('<span style="color: #999;">0%</span>')
+        total = float(obj.buyer_fee_percent) + float(obj.seller_fee_percent)
         return format_html(
-            '<span style="background: #9e9e9e; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">No Discount</span>'
+            '<span style="font-weight: bold; color: #7b1fa2; font-size: 14px;">{}%</span>',
+            total
         )
-    seller_discount_status.short_description = 'Seller Discount'
+    total_platform_fee.short_description = 'Total Platform Fee'
+    
+    def example_calculation(self, obj):
+        """Show example calculation for ৳1000 order"""
+        if not obj.fees_enabled:
+            return format_html(
+                '<span style="color: #666;">Buyer pays ৳1000 → Seller gets ৳1000</span>'
+            )
+        buyer_fee = float(obj.buyer_fee_percent) * 10  # 1000 * percent / 100
+        seller_fee = float(obj.seller_fee_percent) * 10
+        buyer_total = 1000 + buyer_fee
+        seller_gets = 1000 - seller_fee
+        platform_earns = buyer_fee + seller_fee
+        return format_html(
+            '<div style="font-size: 12px; line-height: 1.5; color: #555;">'
+            'On ৳1000 order:<br>'
+            '• Buyer pays: <strong>৳{:.0f}</strong><br>'
+            '• Seller gets: <strong>৳{:.0f}</strong><br>'
+            '• Platform: <strong style="color: #4caf50;">৳{:.0f}</strong>'
+            '</div>',
+            buyer_total, seller_gets, platform_earns
+        )
+    example_calculation.short_description = 'Example (৳1000 order)'
     
     def save_model(self, request, obj, form, change):
         obj.updated_by = request.user
@@ -721,6 +737,14 @@ class GigFeeSettingsAdmin(admin.ModelAdmin):
         """Redirect to the single instance edit page"""
         obj = GigFeeSettings.get_settings()
         return self.changeform_view(request, str(obj.pk), extra_context=extra_context)
+    
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        """Add extra context for the change form"""
+        extra_context = extra_context or {}
+        extra_context['title'] = '💰 Platform Fee Settings'
+        extra_context['show_save_and_add_another'] = False
+        extra_context['show_save_and_continue'] = True
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
 
 # ============================================

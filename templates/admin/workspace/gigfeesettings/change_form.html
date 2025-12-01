@@ -1,0 +1,117 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block content %}
+<style>
+    .fee-info-box {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #a5d6a7;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .fee-info-box h3 {
+        margin: 0 0 15px 0;
+        color: #2e7d32;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .fee-info-box .fee-row {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 10px;
+    }
+    .fee-info-box .fee-item {
+        flex: 1;
+        background: white;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border-left: 4px solid #4caf50;
+    }
+    .fee-info-box .fee-item.buyer {
+        border-left-color: #2196f3;
+    }
+    .fee-info-box .fee-item.seller {
+        border-left-color: #ff9800;
+    }
+    .fee-info-box .fee-item strong {
+        display: block;
+        color: #333;
+        margin-bottom: 4px;
+    }
+    .fee-info-box .fee-item span {
+        color: #666;
+        font-size: 13px;
+    }
+    .fee-example {
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    .fee-example h4 {
+        margin: 0 0 10px 0;
+        color: #555;
+        font-size: 14px;
+    }
+    .fee-example .example-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .fee-example .example-item {
+        text-align: center;
+        padding: 10px;
+        background: #f5f5f5;
+        border-radius: 6px;
+    }
+    .fee-example .example-item .label {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 4px;
+    }
+    .fee-example .example-item .value {
+        font-size: 18px;
+        font-weight: bold;
+    }
+    .fee-example .example-item.buyer .value { color: #1565c0; }
+    .fee-example .example-item.seller .value { color: #e65100; }
+    .fee-example .example-item.platform .value { color: #2e7d32; }
+</style>
+
+<div class="fee-info-box">
+    <h3>💡 How Platform Fees Work</h3>
+    <div class="fee-row">
+        <div class="fee-item buyer">
+            <strong>Buyer Fee</strong>
+            <span>Added to order total when buyer places an order</span>
+        </div>
+        <div class="fee-item seller">
+            <strong>Seller Fee</strong>
+            <span>Deducted from seller earnings when order is completed</span>
+        </div>
+    </div>
+    <div class="fee-example">
+        <h4>📊 Example with 2.5% each on ৳1000 order:</h4>
+        <div class="example-grid">
+            <div class="example-item buyer">
+                <div class="label">Buyer Pays</div>
+                <div class="value">৳1,025</div>
+            </div>
+            <div class="example-item seller">
+                <div class="label">Seller Gets</div>
+                <div class="value">৳975</div>
+            </div>
+            <div class="example-item platform">
+                <div class="label">Platform Earns</div>
+                <div class="value">৳50</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}

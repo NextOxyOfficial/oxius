@@ -981,19 +981,23 @@ def get_workspace_banners(request):
 def get_gig_fee_settings(request):
     """
     Get current gig fee settings for frontend fee calculations.
-    Returns buyer and seller fee configuration.
+    Returns simplified buyer and seller fee configuration.
     """
     settings = GigFeeSettings.get_settings()
     
     return Response({
-        # Buyer fees
+        # Simplified fee structure
+        'buyer_fee_percent': float(settings.buyer_fee_percent),
+        'seller_fee_percent': float(settings.seller_fee_percent),
+        'fees_enabled': settings.fees_enabled,
+        'total_platform_fee_percent': settings.total_platform_fee_percent,
+        
+        # Legacy fields for backward compatibility (synced from new fields)
         'buyer_service_fee_percent': float(settings.buyer_service_fee_percent),
         'buyer_service_fee_min': float(settings.buyer_service_fee_min),
         'buyer_service_fee_max': float(settings.buyer_service_fee_max),
         'buyer_processing_fee': float(settings.buyer_processing_fee),
         'buyer_fee_waived': settings.buyer_fee_waived,
-        
-        # Seller fees
         'seller_commission_percent': float(settings.seller_commission_percent),
         'seller_commission_min': float(settings.seller_commission_min),
         'seller_commission_max': float(settings.seller_commission_max),

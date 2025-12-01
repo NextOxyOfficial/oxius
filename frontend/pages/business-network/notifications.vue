@@ -96,24 +96,43 @@
               <div class="flex-1 min-w-0">
                 <!-- Notification content -->
                 <div>
-                  <p
-                    class="text-sm text-gray-800"
-                    :class="{ 'font-semibold': !notification.read }"
-                  >
-                    <span
-                      class="font-medium"
+                  <!-- Workspace notification display -->
+                  <template v-if="notification.source === 'workspace'">
+                    <p
+                      class="text-sm text-gray-800"
                       :class="{ 'font-semibold': !notification.read }"
-                      >{{ notification.actor?.name }}</span
                     >
-                    <span> {{ getNotificationText(notification) }}</span>
-                  </p>
-                  <p
-                    v-if="notification.content"
-                    class="mt-1 text-sm text-gray-600 line-clamp-1"
-                    :class="{ 'text-gray-800': !notification.read }"
-                  >
-                    {{ notification.content }}
-                  </p>
+                      {{ notification.title }}
+                    </p>
+                    <p
+                      v-if="notification.body"
+                      class="mt-1 text-sm text-gray-600 line-clamp-2"
+                      :class="{ 'text-gray-700': !notification.read }"
+                    >
+                      {{ notification.body }}
+                    </p>
+                  </template>
+                  <!-- Social notification display -->
+                  <template v-else>
+                    <p
+                      class="text-sm text-gray-800"
+                      :class="{ 'font-semibold': !notification.read }"
+                    >
+                      <span
+                        class="font-medium"
+                        :class="{ 'font-semibold': !notification.read }"
+                        >{{ notification.actor?.name }}</span
+                      >
+                      <span> {{ getNotificationText(notification) }}</span>
+                    </p>
+                    <p
+                      v-if="notification.content"
+                      class="mt-1 text-sm text-gray-600 line-clamp-1"
+                      :class="{ 'text-gray-800': !notification.read }"
+                    >
+                      {{ notification.content }}
+                    </p>
+                  </template>
                 </div>
 
                 <!-- Notification metadata -->
@@ -203,21 +222,43 @@ const notificationTypes = {
   SOLUTION: "solution",
   GIFT_DIAMONDS: "gift_diamonds",
   // Workspace notification types
-  ORDER_NEW: "order_new",
-  ORDER_MESSAGE: "order_message",
-  ORDER_STATUS: "order_status",
+  NEW_ORDER: "new_order",
+  ORDER_ACCEPTED: "order_accepted",
+  ORDER_DECLINED: "order_declined",
   ORDER_DELIVERED: "order_delivered",
   ORDER_COMPLETED: "order_completed",
+  ORDER_CANCELLED: "order_cancelled",
+  ORDER_REOPENED: "order_reopened",
+  GIG_SUBMITTED: "gig_submitted",
+  GIG_APPROVED: "gig_approved",
+  GIG_REJECTED: "gig_rejected",
+  DISPUTE_RAISED: "dispute_raised",
+  DISPUTE_RESOLVED: "dispute_resolved",
 };
 
 // Workspace notifications state
 const workspaceNotifications = ref([]);
-const loadingWorkspace = ref(false);
 
-// Simplified - no filtering by tab type
-const filteredNotifications = computed(() => notifications.value);
+// Combine all notifications sorted by date
+const filteredNotifications = computed(() => {
+  const allNotifications = [
+    ...notifications.value.map(n => ({ ...n, source: 'social' })),
+    ...workspaceNotifications.value.map(n => ({ ...n, source: 'workspace' }))
+  ];
+  
+  // Sort by created_at descending
+  return allNotifications.sort((a, b) => {
+    const dateA = new Date(a.created_at);
+    const dateB = new Date(b.created_at);
+    return dateB - dateA;
+  });
+});
+
 onMounted(async () => {
-  await fetchNotifications();
+  await Promise.all([
+    fetchNotifications(),
+    fetchWorkspaceNotifications()
+  ]);
   // Automatically mark all notifications as read when visiting the page
   if (unreadCount.value > 0) {
     await markAllAsRead();
@@ -307,6 +348,36 @@ async function markAllAsRead() {
   }
 }
 
+// Fetch workspace notifications
+async function fetchWorkspaceNotifications() {
+  try {
+    const res = await get('/notifications/');
+    
+    if (res.data) {
+      const results = res.data.results || res.data || [];
+      // Transform workspace notifications to match the format
+      workspaceNotifications.value = results.map(n => ({
+        id: `ws-${n.id}`,
+        type: n.notification_type || 'workspace',
+        actor: {
+          id: n.actor_id,
+          name: n.title?.replace(/^[^\s]+\s/, '') || 'Workspace',
+          image: null
+        },
+        content: n.body,
+        title: n.title,
+        body: n.body,
+        read: n.is_read,
+        created_at: n.created_at,
+        data: n.data || {},
+        source: 'workspace'
+      }));
+    }
+  } catch (error) {
+    console.error("Error fetching workspace notifications:", error);
+  }
+}
+
 // Get notification type class for styling
 function getNotificationTypeClass(type) {
   switch (type) {
@@ -323,6 +394,30 @@ function getNotificationTypeClass(type) {
     case notificationTypes.SOLUTION:
       return "bg-amber-500";
     case notificationTypes.GIFT_DIAMONDS:
+      return "bg-teal-500";
+    // Workspace notification types
+    case notificationTypes.NEW_ORDER:
+      return "bg-green-500";
+    case notificationTypes.ORDER_ACCEPTED:
+      return "bg-blue-500";
+    case notificationTypes.ORDER_DECLINED:
+    case notificationTypes.ORDER_CANCELLED:
+      return "bg-red-500";
+    case notificationTypes.ORDER_DELIVERED:
+      return "bg-purple-500";
+    case notificationTypes.ORDER_COMPLETED:
+      return "bg-green-600";
+    case notificationTypes.ORDER_REOPENED:
+      return "bg-orange-500";
+    case notificationTypes.GIG_SUBMITTED:
+      return "bg-blue-400";
+    case notificationTypes.GIG_APPROVED:
+      return "bg-green-500";
+    case notificationTypes.GIG_REJECTED:
+      return "bg-red-500";
+    case notificationTypes.DISPUTE_RAISED:
+      return "bg-red-600";
+    case notificationTypes.DISPUTE_RESOLVED:
       return "bg-teal-500";
     default:
       return "bg-gray-500";
@@ -346,6 +441,20 @@ function getNotificationIcon(type) {
       return Star;
     case notificationTypes.GIFT_DIAMONDS:
       return BadgeCheck;
+    // Workspace types - all use Bell for now
+    case notificationTypes.NEW_ORDER:
+    case notificationTypes.ORDER_ACCEPTED:
+    case notificationTypes.ORDER_DECLINED:
+    case notificationTypes.ORDER_DELIVERED:
+    case notificationTypes.ORDER_COMPLETED:
+    case notificationTypes.ORDER_CANCELLED:
+    case notificationTypes.ORDER_REOPENED:
+    case notificationTypes.GIG_SUBMITTED:
+    case notificationTypes.GIG_APPROVED:
+    case notificationTypes.GIG_REJECTED:
+    case notificationTypes.DISPUTE_RAISED:
+    case notificationTypes.DISPUTE_RESOLVED:
+      return Bell;
     default:
       return Bell;
   }
@@ -353,6 +462,11 @@ function getNotificationIcon(type) {
 
 // Get notification text based on type
 function getNotificationText(notification) {
+  // For workspace notifications, use the body directly
+  if (notification.source === 'workspace') {
+    return '';  // Title and body are shown separately
+  }
+  
   switch (notification.type) {
     case notificationTypes.FOLLOW:
       return " started following you";
@@ -377,9 +491,25 @@ function getNotificationText(notification) {
 
 // Open notification
 function openNotification(notification) {
-  // Mark as read when clicked
-  if (!notification.read) {
+  // Mark as read when clicked (only for social notifications)
+  if (!notification.read && notification.source !== 'workspace') {
     markAsRead(notification.id);
+  }
+  
+  // Handle workspace notifications
+  if (notification.source === 'workspace') {
+    // Navigate to workspaces page with appropriate tab
+    const data = notification.data || {};
+    if (data.order_id) {
+      // Navigate to workspaces with order tab
+      navigateTo('/business-network/workspaces?tab=order-received');
+    } else if (data.gig_id) {
+      // Navigate to workspaces with gigs tab
+      navigateTo('/business-network/workspaces?tab=my-gigs');
+    } else {
+      navigateTo('/business-network/workspaces');
+    }
+    return;
   }
 
   // Navigate to the appropriate page based on notification type

@@ -1,26 +1,33 @@
 /**
  * Gig Order Fee Calculator Composable
  * 
- * Calculates fees for both buyers (order fee) and sellers (completion fee)
- * Fetches fee configuration from Django Admin via API
+ * Simple fee structure:
+ * - Buyer Fee: Added to order total when placing order
+ * - Seller Fee: Deducted from seller earnings when order completes
+ * 
+ * Example with 2.5% each on ৳1000 order:
+ * - Buyer pays: ৳1000 + ৳25 (2.5% fee) = ৳1025
+ * - Seller receives: ৳1000 - ৳25 (2.5% fee) = ৳975
+ * - Platform earns: ৳25 + ৳25 = ৳50 total
  */
 
 interface FeeConfig {
-  // Buyer fees (charged when placing order)
-  buyerServiceFeePercent: number;      // Percentage fee on order amount
-  buyerServiceFeeMin: number;          // Minimum service fee
-  buyerServiceFeeMax: number;          // Maximum service fee cap
-  buyerProcessingFee: number;          // Fixed processing fee
+  // Simple percentage fees
+  buyerFeePercent: number;             // Buyer fee percentage
+  sellerFeePercent: number;            // Seller fee percentage
+  feesEnabled: boolean;                // Master toggle for fees
   
-  // Seller fees (deducted from earnings on completion)
-  sellerCommissionPercent: number;     // Platform commission percentage
-  sellerCommissionMin: number;         // Minimum commission
-  sellerCommissionMax: number;         // Maximum commission cap
-  sellerWithdrawalFee: number;         // Fee for withdrawing earnings
-  
-  // Promotional settings
-  buyerFeeWaived: boolean;             // Waive buyer service fee (promotional)
-  sellerFeeDiscountPercent: number;    // Discount on seller commission (promotional)
+  // Legacy fields (for backward compatibility)
+  buyerServiceFeePercent: number;
+  buyerServiceFeeMin: number;
+  buyerServiceFeeMax: number;
+  buyerProcessingFee: number;
+  sellerCommissionPercent: number;
+  sellerCommissionMin: number;
+  sellerCommissionMax: number;
+  sellerWithdrawalFee: number;
+  buyerFeeWaived: boolean;
+  sellerFeeDiscountPercent: number;
 }
 
 interface BuyerFeeBreakdown {
@@ -55,21 +62,22 @@ export function useGigFees() {
   
   // Default fee configuration (fallback if API fails)
   const defaultConfig: FeeConfig = {
-    // Buyer fees
-    buyerServiceFeePercent: 0,         // 0% service fee (currently free)
+    // Simple percentage fees (new)
+    buyerFeePercent: 2.5,              // 2.5% buyer fee
+    sellerFeePercent: 2.5,             // 2.5% seller fee
+    feesEnabled: true,                 // Fees are enabled by default
+    
+    // Legacy fields (for backward compatibility)
+    buyerServiceFeePercent: 2.5,
     buyerServiceFeeMin: 0,
-    buyerServiceFeeMax: 500,           // Max ৳500 service fee
-    buyerProcessingFee: 0,             // No processing fee
-    
-    // Seller fees
-    sellerCommissionPercent: 10,       // 10% platform commission
-    sellerCommissionMin: 5,            // Minimum ৳5 commission
-    sellerCommissionMax: 5000,         // Max ৳5000 commission
-    sellerWithdrawalFee: 0,            // No withdrawal fee
-    
-    // Promotional settings
-    buyerFeeWaived: true,              // Currently waiving buyer fees
-    sellerFeeDiscountPercent: 0,       // No discount on seller commission
+    buyerServiceFeeMax: 500,
+    buyerProcessingFee: 0,
+    sellerCommissionPercent: 2.5,
+    sellerCommissionMin: 0,
+    sellerCommissionMax: 5000,
+    sellerWithdrawalFee: 0,
+    buyerFeeWaived: false,
+    sellerFeeDiscountPercent: 0,
   };
 
   const feeConfig = ref<FeeConfig>(defaultConfig);
@@ -94,13 +102,19 @@ export function useGigFees() {
       
       if (data && !error) {
         const config: FeeConfig = {
+          // New simplified fields
+          buyerFeePercent: data.buyer_fee_percent ?? 2.5,
+          sellerFeePercent: data.seller_fee_percent ?? 2.5,
+          feesEnabled: data.fees_enabled ?? true,
+          
+          // Legacy fields
           buyerServiceFeePercent: data.buyer_service_fee_percent || 0,
           buyerServiceFeeMin: data.buyer_service_fee_min || 0,
           buyerServiceFeeMax: data.buyer_service_fee_max || 500,
           buyerProcessingFee: data.buyer_processing_fee || 0,
-          buyerFeeWaived: data.buyer_fee_waived ?? true,
+          buyerFeeWaived: data.buyer_fee_waived ?? false,
           sellerCommissionPercent: data.seller_commission_percent || 10,
-          sellerCommissionMin: data.seller_commission_min || 5,
+          sellerCommissionMin: data.seller_commission_min || 0,
           sellerCommissionMax: data.seller_commission_max || 5000,
           sellerWithdrawalFee: data.seller_withdrawal_fee || 0,
           sellerFeeDiscountPercent: data.seller_fee_discount_percent || 0,
@@ -126,14 +140,15 @@ export function useGigFees() {
 
   /**
    * Calculate buyer fees for placing an order
+   * Simple: order_amount * buyer_fee_percent / 100
    * @param orderAmount - The gig price
    * @returns BuyerFeeBreakdown
    */
   const calculateBuyerFees = (orderAmount: number): BuyerFeeBreakdown => {
     const config = feeConfig.value;
     
-    // Check if fees are waived (promotional period)
-    if (config.buyerFeeWaived) {
+    // Check if fees are disabled
+    if (!config.feesEnabled) {
       return {
         orderAmount,
         serviceFee: 0,
@@ -144,25 +159,15 @@ export function useGigFees() {
       };
     }
 
-    // Calculate service fee
-    let serviceFee = (orderAmount * config.buyerServiceFeePercent) / 100;
-    
-    // Apply min/max caps
-    serviceFee = Math.max(serviceFee, config.buyerServiceFeeMin);
-    serviceFee = Math.min(serviceFee, config.buyerServiceFeeMax);
-    
-    // Round to 2 decimal places
-    serviceFee = Math.round(serviceFee * 100) / 100;
-    
-    const processingFee = config.buyerProcessingFee;
-    const totalFee = serviceFee + processingFee;
-    const totalToPay = orderAmount + totalFee;
+    // Simple percentage calculation
+    const serviceFee = Math.round((orderAmount * config.buyerFeePercent) * 100) / 10000;
+    const totalToPay = orderAmount + serviceFee;
 
     return {
       orderAmount,
       serviceFee,
-      processingFee,
-      totalFee,
+      processingFee: 0,
+      totalFee: serviceFee,
       totalToPay,
       isFeeWaived: false,
     };
@@ -170,38 +175,34 @@ export function useGigFees() {
 
   /**
    * Calculate seller fees/earnings on order completion
+   * Simple: order_amount - (order_amount * seller_fee_percent / 100)
    * @param orderAmount - The gig price
    * @returns SellerFeeBreakdown
    */
   const calculateSellerFees = (orderAmount: number): SellerFeeBreakdown => {
     const config = feeConfig.value;
     
-    // Calculate platform commission
-    let commission = (orderAmount * config.sellerCommissionPercent) / 100;
-    
-    // Apply min/max caps
-    commission = Math.max(commission, config.sellerCommissionMin);
-    commission = Math.min(commission, config.sellerCommissionMax);
-    
-    // Apply promotional discount if any
-    let discountApplied = 0;
-    if (config.sellerFeeDiscountPercent > 0) {
-      discountApplied = (commission * config.sellerFeeDiscountPercent) / 100;
-      commission = commission - discountApplied;
+    // Check if fees are disabled
+    if (!config.feesEnabled) {
+      return {
+        orderAmount,
+        platformCommission: 0,
+        commissionPercent: 0,
+        netEarnings: orderAmount,
+        discountApplied: 0,
+      };
     }
-    
-    // Round to 2 decimal places
-    commission = Math.round(commission * 100) / 100;
-    discountApplied = Math.round(discountApplied * 100) / 100;
-    
+
+    // Simple percentage calculation
+    const commission = Math.round((orderAmount * config.sellerFeePercent) * 100) / 10000;
     const netEarnings = orderAmount - commission;
 
     return {
       orderAmount,
       platformCommission: commission,
-      commissionPercent: config.sellerCommissionPercent,
+      commissionPercent: config.sellerFeePercent,
       netEarnings,
-      discountApplied,
+      discountApplied: 0,
     };
   };
 
@@ -261,14 +262,26 @@ export function useGigFees() {
   };
 
   /**
-   * Check if buyer fees are currently waived
+   * Check if fees are currently enabled
    */
-  const isBuyerFeeWaived = computed(() => feeConfig.value.buyerFeeWaived);
+  const feesEnabled = computed(() => feeConfig.value.feesEnabled);
 
   /**
-   * Get current seller commission percentage
+   * Get current buyer fee percentage
    */
-  const sellerCommissionRate = computed(() => feeConfig.value.sellerCommissionPercent);
+  const buyerFeeRate = computed(() => feeConfig.value.buyerFeePercent);
+
+  /**
+   * Get current seller fee percentage
+   */
+  const sellerFeeRate = computed(() => feeConfig.value.sellerFeePercent);
+
+  /**
+   * Get total platform fee percentage (buyer + seller)
+   */
+  const totalPlatformFeeRate = computed(() => 
+    feeConfig.value.buyerFeePercent + feeConfig.value.sellerFeePercent
+  );
 
   return {
     // Fee calculation functions
@@ -291,7 +304,9 @@ export function useGigFees() {
     isLoaded,
     
     // Computed properties
-    isBuyerFeeWaived,
-    sellerCommissionRate,
+    feesEnabled,
+    buyerFeeRate,
+    sellerFeeRate,
+    totalPlatformFeeRate,
   };
 }
