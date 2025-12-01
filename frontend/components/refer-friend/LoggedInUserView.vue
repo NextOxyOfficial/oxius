@@ -90,6 +90,16 @@
           </UButton>
         </div>
       </div>
+
+      <!-- New Year Reward Section -->
+      <NewYearRewardSection
+        :program="rewardProgram"
+        :conditions="rewardConditions"
+        :claims="rewardClaims"
+        :claiming="claimingReward"
+        @claim-reward="emit('claim-reward')"
+      />
+
       <!-- Share Modal -->
       <Teleport to="body">
         <div
@@ -999,6 +1009,7 @@
 
 <script setup>
 import { computed } from "vue";
+import NewYearRewardSection from "./NewYearRewardSection.vue";
 
 const props = defineProps({
   user: {
@@ -1085,6 +1096,22 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  rewardProgram: {
+    type: Object,
+    default: null,
+  },
+  rewardConditions: {
+    type: Object,
+    default: null,
+  },
+  rewardClaims: {
+    type: Object,
+    default: null,
+  },
+  claimingReward: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits([
@@ -1102,6 +1129,7 @@ const emit = defineEmits([
   "format-date",
   "get-service-type-color",
   "get-commission-rate",
+  "claim-reward",
 ]);
 
 // Computed property for the referral URL

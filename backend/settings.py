@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "reviews",  # Reviews system
     "adsyconnect",  # AdsyConnect chat system
     "workspace",  # Workspace gigs system
+    "referral_rewards",  # New Year referral reward program
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",

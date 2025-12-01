@@ -23,6 +23,10 @@
       :best-performing-service="bestPerformingService"
       :this-month-earnings="thisMonthEarnings"
       :growth-rate="growthRate"
+      :reward-program="rewardProgram"
+      :reward-conditions="rewardConditions"
+      :reward-claims="rewardClaims"
+      :claiming-reward="claimingReward"
       @update:show-share-modal="showShareModal = $event"
       @update:custom-message="customMessage = $event"
       @update:filter-period="filterPeriod = $event"
@@ -37,14 +41,17 @@
       @format-date="formatDate"
       @get-service-type-color="getServiceTypeColor"
       @get-commission-rate="getCommissionRate"
+      @claim-reward="claimReward"
     />
     
-    <!-- Public User Component -->
+    <!-- Public User Component with New Year Offer -->
     <PublicUserView
       v-else
       :platform-stats="platformStats"
       :is-loading-platform-stats="isLoadingPlatformStats"
-      @get-platform-stats="getPlatformStats"    />
+      :reward-program="rewardProgram"
+      @get-platform-stats="getPlatformStats"
+    />
   </div>
 </template>
 
@@ -57,7 +64,7 @@ definePageMeta({
 });
 
 const { user } = useAuth();
-const { get } = useApi();
+const { get, post } = useApi();
 const toast = useToast();
 
 const filterPeriod = ref("All Time");
@@ -83,6 +90,13 @@ const platformStats = ref({
   }
 });
 const isLoadingPlatformStats = ref(false);
+
+// New Year Reward Program state
+const rewardProgram = ref(null);
+const rewardConditions = ref(null);
+const rewardClaims = ref(null);
+const claimingReward = ref(false);
+
 const commissionData = ref({
   total_commissions: 0,
   total_earned: 0,
@@ -121,9 +135,87 @@ async function getPlatformStats() {
     }
   } catch (error) {
     console.error("Error fetching platform stats:", error);
-    // Keep default values if API fails
   } finally {
     isLoadingPlatformStats.value = false;
+  }
+}
+
+// New Year Reward Program functions
+async function getRewardProgram() {
+  try {
+    const res = await get("/referral-rewards/program/");
+    if (res?.data) {
+      rewardProgram.value = res.data;
+    }
+  } catch (error) {
+    console.error("Error fetching reward program:", error);
+  }
+}
+
+async function getRewardConditions() {
+  try {
+    const res = await get("/referral-rewards/check-conditions/");
+    if (res?.data) {
+      rewardConditions.value = res.data;
+    }
+  } catch (error) {
+    console.error("Error fetching reward conditions:", error);
+  }
+}
+
+async function getRewardClaims() {
+  try {
+    const res = await get("/referral-rewards/my-claims/");
+    if (res?.data) {
+      rewardClaims.value = res.data;
+    }
+  } catch (error) {
+    console.error("Error fetching reward claims:", error);
+  }
+}
+
+async function claimReward() {
+  if (!rewardClaims.value?.claims?.length) return;
+  
+  // Find eligible claim
+  const eligibleClaim = rewardClaims.value.claims.find(c => c.status === 'eligible');
+  if (!eligibleClaim) {
+    toast.add({ 
+      title: "Not Eligible", 
+      description: "Complete all conditions to claim your reward",
+      color: "yellow"
+    });
+    return;
+  }
+  
+  claimingReward.value = true;
+  try {
+    const res = await post(`/referral-rewards/claim/${eligibleClaim.id}/`, {});
+    if (res?.data?.success) {
+      toast.add({ 
+        title: "🎉 Reward Claimed!", 
+        description: `৳${eligibleClaim.reward_amount} has been added to your balance!`,
+        color: "green"
+      });
+      // Refresh data
+      await getRewardClaims();
+      await getRewardConditions();
+    } else {
+      toast.add({ 
+        title: "Error", 
+        description: res?.data?.message || "Failed to claim reward",
+        color: "red"
+      });
+    }
+  } catch (error) {
+    console.error("Error claiming reward:", error);
+    toast.add({ 
+      title: "Error", 
+      description: "Failed to claim reward. Please try again.",
+      color: "red"
+    });
+  } finally {
+    claimingReward.value = false;
   }
 }
 
@@ -454,14 +546,18 @@ onMounted(() => {
   nextTick(() => {
     updateIndicator();
   });
-  // Fetch initial data
+  
+  // Always fetch reward program (public data)
+  getRewardProgram();
+  getPlatformStats();
+  
+  // Fetch user-specific data
   if (user?.value?.user) {
     getReferredUsers();
     getCommissionHistory();
+    getRewardConditions();
+    getRewardClaims();
   }
-  
-  // Always fetch platform stats (public data)
-  getPlatformStats();
 
   // Update indicator on window resize
   window.addEventListener("resize", updateIndicator);

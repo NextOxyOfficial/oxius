@@ -675,38 +675,42 @@
                   </p>
                 </div>
 
-                <!-- Load More Button for Micro Gigs -->
+                <!-- Pagination Info & View All -->
                 <div
-                  v-if="
-                    displayedMicroGigs.length > 0 &&
-                    displayedMicroGigs.length < microGigs.length &&
-                    !showAllMicroGigs
-                  "
-                  class="text-center py-4"
+                  v-if="displayedMicroGigs.length > 0"
+                  class="flex flex-col sm:flex-row items-center justify-between gap-3 py-4 px-2 border-t border-gray-100"
                 >
-                  <button
-                    @click="loadMoreMicroGigs"
-                    class="group relative inline-flex items-center justify-center gap-2 px-6 py-3 font-medium text-sm text-emerald-600 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 hover:border-emerald-300 rounded-lg transition-all duration-200"
-                  >
-                    <UIcon name="i-heroicons-plus" class="w-4 h-4" />
-                    <span>Load More Gigs</span>
-                  </button>
-                </div>
-
-                <!-- Show All Button -->
-                <div
-                  v-if="
-                    microGigs.length > INITIAL_LIMITS.microGigs &&
-                    !showAllMicroGigs
-                  "
-                  class="text-center py-2"
-                >
-                  <button
-                    @click="showAllMicroGigs = true"
-                    class="text-sm text-emerald-600 hover:text-emerald-700 font-medium underline"
-                  >
-                    View All {{ microGigs.length }} Gigs
-                  </button>
+                  <!-- Results count -->
+                  <p class="text-sm text-gray-500">
+                    Showing <span class="font-medium text-gray-700">{{ displayedMicroGigs.length }}</span> 
+                    of <span class="font-medium text-gray-700">{{ microGigs.length }}</span> gigs
+                  </p>
+                  
+                  <!-- Action buttons -->
+                  <div class="flex items-center gap-3">
+                    <!-- Load More (only if there are more to load) -->
+                    <UButton
+                      v-if="displayedMicroGigs.length < microGigs.length && !showAllMicroGigs"
+                      @click="loadMoreMicroGigs"
+                      size="sm"
+                      color="emerald"
+                      variant="soft"
+                    >
+                      <UIcon name="i-heroicons-plus" class="w-4 h-4 mr-1" />
+                      Load More
+                    </UButton>
+                    
+                    <!-- View All / Go to MicroGigs page -->
+                    <UButton
+                      to="/micro-gigs"
+                      size="sm"
+                      color="emerald"
+                      variant="outline"
+                    >
+                      View All Gigs
+                      <UIcon name="i-heroicons-arrow-right" class="w-4 h-4 ml-1" />
+                    </UButton>
+                  </div>
                 </div>
               </div>
             </div>

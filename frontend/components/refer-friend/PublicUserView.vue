@@ -14,6 +14,51 @@
     </div>
 
     <div class="container mx-auto px-4 py-16 md:py-24">
+      <!-- New Year Special Banner -->
+      <div v-if="rewardProgram?.active" class="max-w-4xl mx-auto mb-12">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 p-6 md:p-8 text-white shadow-xl">
+          <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div class="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          <div class="absolute top-4 left-4 text-4xl">🎉</div>
+          <div class="absolute top-4 right-4 text-4xl">🎊</div>
+          
+          <div class="relative z-10 text-center">
+            <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4">
+              <span class="text-yellow-300 text-lg">✨</span>
+              <span class="text-sm font-semibold">{{ rewardProgram.program?.name || 'New Year 2025 Special' }}</span>
+              <span class="text-yellow-300 text-lg">✨</span>
+            </div>
+            
+            <h2 class="text-2xl md:text-3xl font-bold mb-2">
+              Sign Up & Earn ৳{{ rewardProgram.program?.referee_reward || 50 }}!
+            </h2>
+            <p class="text-white/90 text-sm md:text-base mb-4 max-w-lg mx-auto">
+              Join now with a referral link and complete simple tasks to earn your reward!
+            </p>
+            
+            <div class="flex flex-wrap justify-center gap-4 mb-4">
+              <div class="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 text-center">
+                <div class="text-xl font-bold">৳{{ rewardProgram.program?.referee_reward || 50 }}</div>
+                <div class="text-xs text-white/80">Your Reward</div>
+              </div>
+            </div>
+            
+            <div class="text-sm text-white/80 mb-4">
+              <span class="font-medium">Simple conditions:</span> 1 Post • 1 Task • KYC Verified
+            </div>
+            
+            <UButton
+              size="lg"
+              color="white"
+              to="/auth/register"
+              class="px-8"
+            >
+              🚀 Join Now & Earn
+            </UButton>
+          </div>
+        </div>
+      </div>
+
       <!-- Hero Section -->
       <div class="max-w-4xl mx-auto text-center mb-20">
         <div
@@ -249,7 +294,7 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   platformStats: {
     type: Object,
     required: true
@@ -257,6 +302,10 @@ defineProps({
   isLoadingPlatformStats: {
     type: Boolean,
     default: false
+  },
+  rewardProgram: {
+    type: Object,
+    default: null
   }
 })
 

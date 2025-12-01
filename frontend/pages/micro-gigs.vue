@@ -231,53 +231,136 @@
                 </div>
               </div>
             </UCard>
-            <!-- Simple Pagination Section -->
-            <div v-if="microGigs?.length" class="mt-6 mb-4">
-              <div class="flex items-center justify-center gap-2 text-sm mt-3">
-                <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <!-- Professional Pagination Section -->
+            <div v-if="microGigs?.length > 0" class="mt-6 mb-4 px-4">
+              <!-- Results Info -->
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
+                <p class="text-sm text-gray-600">
+                  Showing <span class="font-medium text-gray-900">{{ startIndex + 1 }}</span> to 
+                  <span class="font-medium text-gray-900">{{ endIndex }}</span> of 
+                  <span class="font-medium text-gray-900">{{ totalGigs }}</span> gigs
+                </p>
+                
+                <!-- Items per page selector -->
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-600">Show:</span>
+                  <USelectMenu
+                    v-model="selectedItemsPerPage"
+                    :options="itemsPerPageOptions"
+                    size="sm"
+                    class="w-20"
+                    @change="handleItemsPerPageChange"
+                  />
+                </div>
+              </div>
 
-                <!-- Previous button -->
-                <button
+              <!-- Pagination Controls -->
+              <nav class="flex items-center justify-center gap-1" aria-label="Pagination">
+                <!-- First Page -->
+                <UButton
+                  :disabled="currentPage === 1"
+                  @click="goToPage(1)"
+                  size="sm"
+                  color="gray"
+                  variant="ghost"
+                  :ui="{ rounded: 'rounded-lg' }"
+                  class="hidden sm:flex"
+                >
+                  <UIcon name="i-heroicons-chevron-double-left-20-solid" class="w-4 h-4" />
+                </UButton>
+
+                <!-- Previous -->
+                <UButton
                   :disabled="currentPage === 1"
                   @click="goToPage(currentPage - 1)"
-                  class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  size="sm"
+                  color="gray"
+                  variant="ghost"
+                  :ui="{ rounded: 'rounded-lg' }"
                 >
-                  Previous
-                </button>
+                  <UIcon name="i-heroicons-chevron-left-20-solid" class="w-4 h-4" />
+                  <span class="hidden sm:inline ml-1">Previous</span>
+                </UButton>
 
-                <!-- Page numbers -->
-                <button
-                  v-for="page in getVisiblePages()"
-                  :key="page"
-                  @click="goToPage(page)"
-                  class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
-                  :class="
-                    page === currentPage
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : ''
-                  "
-                >
-                  {{ page }}
-                </button>
+                <!-- Page Numbers -->
+                <div class="flex items-center gap-1">
+                  <!-- First page if not visible -->
+                  <template v-if="getVisiblePages()[0] > 1">
+                    <UButton
+                      @click="goToPage(1)"
+                      size="sm"
+                      color="gray"
+                      variant="ghost"
+                      :ui="{ rounded: 'rounded-lg' }"
+                      class="w-9 justify-center"
+                    >
+                      1
+                    </UButton>
+                    <span v-if="getVisiblePages()[0] > 2" class="px-1 text-gray-400">...</span>
+                  </template>
 
-                <!-- Next button -->
-                <button
-                  :disabled="currentPage === totalPages"
+                  <!-- Visible page numbers -->
+                  <UButton
+                    v-for="page in getVisiblePages()"
+                    :key="page"
+                    @click="goToPage(page)"
+                    size="sm"
+                    :color="page === currentPage ? 'primary' : 'gray'"
+                    :variant="page === currentPage ? 'solid' : 'ghost'"
+                    :ui="{ rounded: 'rounded-lg' }"
+                    class="w-9 justify-center"
+                  >
+                    {{ page }}
+                  </UButton>
+
+                  <!-- Last page if not visible -->
+                  <template v-if="getVisiblePages()[getVisiblePages().length - 1] < totalPages">
+                    <span v-if="getVisiblePages()[getVisiblePages().length - 1] < totalPages - 1" class="px-1 text-gray-400">...</span>
+                    <UButton
+                      @click="goToPage(totalPages)"
+                      size="sm"
+                      color="gray"
+                      variant="ghost"
+                      :ui="{ rounded: 'rounded-lg' }"
+                      class="w-9 justify-center"
+                    >
+                      {{ totalPages }}
+                    </UButton>
+                  </template>
+                </div>
+
+                <!-- Next -->
+                <UButton
+                  :disabled="currentPage === totalPages || totalPages === 0"
                   @click="goToPage(currentPage + 1)"
-                  class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  size="sm"
+                  color="gray"
+                  variant="ghost"
+                  :ui="{ rounded: 'rounded-lg' }"
                 >
-                  Next
-                </button>
-              </div>
+                  <span class="hidden sm:inline mr-1">Next</span>
+                  <UIcon name="i-heroicons-chevron-right-20-solid" class="w-4 h-4" />
+                </UButton>
+
+                <!-- Last Page -->
+                <UButton
+                  :disabled="currentPage === totalPages || totalPages === 0"
+                  @click="goToPage(totalPages)"
+                  size="sm"
+                  color="gray"
+                  variant="ghost"
+                  :ui="{ rounded: 'rounded-lg' }"
+                  class="hidden sm:flex"
+                >
+                  <UIcon name="i-heroicons-chevron-double-right-20-solid" class="w-4 h-4" />
+                </UButton>
+              </nav>
             </div>
 
-            <!-- Results Info -->
-            <div
-              class="text-center text-sm text-gray-600 mt-2"
-              v-if="microGigs?.length"
-            >
-              Showing {{ startIndex + 1 }}-{{ endIndex }} of
-              {{ totalGigs }} gigs
+            <!-- Empty State -->
+            <div v-else-if="!microGigs?.length" class="py-12 text-center">
+              <UIcon name="i-heroicons-inbox" class="w-12 h-12 mx-auto text-gray-300 mb-4" />
+              <p class="text-gray-500">No gigs found</p>
             </div>
           </div>
         </div>
@@ -302,14 +385,16 @@ const isLoading = ref(false);
 
 // Pagination variables
 const currentPage = ref(1);
-const itemsPerPage = 10;
+const itemsPerPage = ref(10);
+const selectedItemsPerPage = ref(10);
+const itemsPerPageOptions = [10, 20, 30, 50];
 
 // Computed properties for pagination
-const totalGigs = computed(() => microGigs.value.length);
-const totalPages = computed(() => Math.ceil(totalGigs.value / itemsPerPage));
-const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage);
+const totalGigs = computed(() => microGigs.value?.length || 0);
+const totalPages = computed(() => Math.ceil(totalGigs.value / itemsPerPage.value) || 1);
+const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage.value);
 const endIndex = computed(() =>
-  Math.min(startIndex.value + itemsPerPage, totalGigs.value)
+  Math.min(startIndex.value + itemsPerPage.value, totalGigs.value)
 );
 
 const paginatedGigs = computed(() => {
@@ -324,17 +409,45 @@ function goToPage(page) {
   document.getElementById("micro-gigs")?.scrollIntoView({ behavior: "smooth" });
 }
 
-// Helper function to get visible page numbers
+// Helper function to get visible page numbers (show 5 pages max)
 function getVisiblePages() {
   const pages = [];
-  const start = Math.max(1, currentPage.value - 2);
-  const end = Math.min(totalPages.value, currentPage.value + 2);
-
-  for (let i = start; i <= end; i++) {
-    pages.push(i);
+  const total = totalPages.value;
+  const current = currentPage.value;
+  
+  if (total <= 5) {
+    // Show all pages if 5 or less
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Smart pagination with ellipsis support
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, current + 2);
+    
+    // Adjust if at the beginning
+    if (current <= 3) {
+      start = 1;
+      end = 5;
+    }
+    // Adjust if at the end
+    if (current >= total - 2) {
+      start = total - 4;
+      end = total;
+    }
+    
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
   }
-
+  
   return pages;
+}
+
+// Handle items per page change
+function handleItemsPerPageChange(value) {
+  itemsPerPage.value = value;
+  currentPage.value = 1; // Reset to first page
 }
 
 function resetPagination() {
@@ -440,19 +553,6 @@ const selectAllCategories = async () => {
   }
 };
 
-const loadMore = async (url) => {
-  const getRecentNext = async (url) => {
-    const res = await $fetch(`${url}`);
-    services.value.next = res.next;
-    services.value.results = [...services.value.results, ...res.results];
-    // recents.value.next = data?.value?.next;
-  };
-  url = url.split("/api/");
-  url = baseURL + "/" + url[1];
-  // getRecentsNext(url);
-  // url = url.replace("http://", "https://");
-  getRecentNext(url);
-};
 
 async function handleSearch() {
   if (!title.value?.trim()) {

@@ -49,6 +49,8 @@ urlpatterns = urlpatterns + [
     path("api/adsyconnect/", include("adsyconnect.urls")),
     # Workspace gigs system URLs
     path("api/workspace/", include("workspace.urls")),
+    # Referral rewards system URLs
+    path("api/referral-rewards/", include("referral_rewards.urls")),
     # for frontend
     path("", index, name="index"),
     path("<str:param>", index, name="index2"),
