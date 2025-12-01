@@ -22,7 +22,11 @@ class UserBasicSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'image') and obj.image:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.image.url)
+                url = request.build_absolute_uri(obj.image.url)
+                # Ensure HTTPS in production
+                if url.startswith('http://') and not request.get_host().startswith('127.0.0.1') and not request.get_host().startswith('localhost'):
+                    url = url.replace('http://', 'https://', 1)
+                return url
             return obj.image.url
         return None
     
@@ -57,14 +61,22 @@ class MessageSerializer(serializers.ModelSerializer):
         if obj.media_file:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.media_file.url)
+                url = request.build_absolute_uri(obj.media_file.url)
+                # Ensure HTTPS in production
+                if url.startswith('http://') and not request.get_host().startswith('127.0.0.1') and not request.get_host().startswith('localhost'):
+                    url = url.replace('http://', 'https://', 1)
+                return url
         return None
     
     def get_thumbnail_url(self, obj):
         if obj.media_thumbnail:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(obj.media_thumbnail.url)
+                url = request.build_absolute_uri(obj.media_thumbnail.url)
+                # Ensure HTTPS in production
+                if url.startswith('http://') and not request.get_host().startswith('127.0.0.1') and not request.get_host().startswith('localhost'):
+                    url = url.replace('http://', 'https://', 1)
+                return url
         return None
     
     def get_display_content(self, obj):

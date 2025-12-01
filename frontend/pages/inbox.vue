@@ -691,7 +691,7 @@
                           
                           <!-- Text Content -->
                           <div v-else class="px-3.5 py-2">
-                            <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words">{{ message.content || message.display_content }}</p>
+                            <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words" v-html="linkifyText(message.content || message.display_content)"></p>
                             <!-- Time and Status for Text Messages -->
                             <div class="mt-1 flex items-center justify-end gap-1">
                               <span class="text-[10px] opacity-50">{{ message.time_display || formatMessageTime(message.created_at) }}</span>
@@ -2271,6 +2271,37 @@ function formatFileSize(bytes) {
   if (bytes === 0) return '0 Bytes';
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Convert URLs in text to clickable links
+function linkifyText(text) {
+  if (!text) return '';
+  
+  // Escape HTML to prevent XSS
+  const escapeHtml = (str) => {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+  
+  // First escape the text
+  const escapedText = escapeHtml(text);
+  
+  // URL regex pattern - matches http, https, and www URLs
+  const urlPattern = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+  
+  // Replace URLs with clickable links
+  return escapedText.replace(urlPattern, (url) => {
+    let href = url;
+    // Add https:// if URL starts with www.
+    if (url.toLowerCase().startsWith('www.')) {
+      href = 'https://' + url;
+    }
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="underline hover:opacity-80 transition-opacity">${url}</a>`;
+  });
 }
 
 // Chat Image Viewer functions
