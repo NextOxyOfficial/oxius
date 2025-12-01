@@ -386,7 +386,6 @@ async function getArticles(page = 1, append = false) {
         }
 
         // Check if there are more pages
-        console.log("Response Data:", res.data, !!res.data.next);
         hasMoreArticles.value = !!res.data.next;
         // Update allArticlesLoaded state
         allArticlesLoaded.value = !hasMoreArticles.value;

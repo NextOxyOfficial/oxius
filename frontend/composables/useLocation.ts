@@ -25,7 +25,6 @@ export function useLocation() {
         
         // Validate location structure
         if (location && (location.allOverBangladesh || location.country)) {
-          console.log('Location retrieved from cookie:', location);
           return location;
         }
       } catch (error) {
@@ -38,7 +37,6 @@ export function useLocation() {
         if (storedLocation) {
           const location = JSON.parse(storedLocation);
           if (location && (location.allOverBangladesh || location.country)) {
-            console.log('Location retrieved from localStorage:', location);
             // Also update the cookie since we found it in localStorage
             setLocation(location);
             return location;
@@ -67,10 +65,7 @@ export function useLocation() {
           localStorage.removeItem('adsyclub_location_timestamp');
         }
       }
-      
-      console.log('Location saved:', location);
     } catch (error) {
-      console.error('Failed to save location:', error);
     }
   };
 
@@ -85,9 +80,7 @@ export function useLocation() {
         localStorage.removeItem('adsyclub_location_timestamp');
       }
       
-      console.log('Location cleared from all storage');
     } catch (error) {
-      console.error('Failed to clear location:', error);
     }
   };
   // Check if location is expired (optional feature for future use)

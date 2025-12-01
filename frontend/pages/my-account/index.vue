@@ -377,12 +377,9 @@ async function handleForm() {
   if (typeof image === "string") {
     if (image.includes("data:image")) {
       rest.image = image;
-    } else {
-      console.log("Image type is string; omitting from request.");
     }
-  } else if (image === null) {
-    console.log("Image type is string; omitting from request.");
-  } else {
+    // Omit non-base64 string images from request
+  } else if (image !== null) {
     rest.image = image;
   }
 

@@ -655,12 +655,9 @@ async function fetchGigs() {
     };
     params.append('ordering', orderingMap[sortBy.value] || '-created_at');
     
-    console.log('Fetching gigs from API...');
     const { data, error } = await get(`/workspace/gigs/?${params.toString()}`);
-    console.log('API Response:', { data, error });
     
     if (error) {
-      console.error('Error fetching gigs:', error);
       toast.add({
         title: 'Error',
         description: 'Failed to load gigs. Please try again.',
@@ -671,7 +668,6 @@ async function fetchGigs() {
     
     // Transform API data to match frontend format
     const results = data?.results || data || [];
-    console.log('Gigs results:', results.length, 'gigs found');
     
     gigs.value = results.map((gig) => ({
       id: gig.id,
@@ -695,10 +691,7 @@ async function fetchGigs() {
       orders_count: gig.orders_count,
     }));
     
-    console.log('Gigs loaded:', gigs.value.length);
-    
   } catch (err) {
-    console.error('Error fetching gigs:', err);
   } finally {
     isLoading.value = false;
   }
@@ -813,13 +806,10 @@ const toggleFavorite = async (gigId) => {
 };
 
 const openGigDetails = (gig) => {
-  console.log('Opening gig details:', gig);
-  
   // Navigate to the workspace details page using query parameters
   try {
     navigateTo(`/business-network/workspace-details?id=${gig.id}`);
   } catch (error) {
-    console.error('Navigation error:', error);
     // Fallback navigation
     window.location.href = `/business-network/workspace-details?id=${gig.id}`;
   }

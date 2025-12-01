@@ -683,8 +683,6 @@ async function fetchUserProducts(loadMore = false) {
       page_size: '12'
     });
     
-    console.log(`Fetching products - Page: ${productsPage.value}, LoadMore: ${loadMore}`); // Debug log
-    
     if (isOwnProfile) {
       // If viewing own profile, use the my-products endpoint to get all products including private/draft ones
       res = await get(`/my-products/?${params.toString()}`, {}, {
@@ -711,13 +709,10 @@ async function fetchUserProducts(loadMore = false) {
       if ("results" in res.data) {
         newProducts = res.data.results;
         hasNext = !!res.data.next;
-        console.log(`API Response - Products: ${newProducts.length}, HasNext: ${hasNext}, Total: ${res.data.count || 'unknown'}`); // Debug log
       } else if (Array.isArray(res.data)) {
         newProducts = res.data;
-        hasNext = false; // Non-paginated response
-        console.log(`API Response - Products: ${newProducts.length}, Non-paginated`); // Debug log
+        hasNext = false;
       } else {
-        console.warn("Unexpected products data structure:", res.data);
         newProducts = [];
         hasNext = false;
       }
@@ -729,14 +724,12 @@ async function fetchUserProducts(loadMore = false) {
         if (newProducts.length > 0) {
           productsPage.value++;
         }
-        console.log(`Load More - Total products now: ${userProducts.value.length}, Next page: ${productsPage.value}`); // Debug log
       } else {
         // Replace all products and set page to 2 for next load more
         userProducts.value = newProducts;
         if (newProducts.length > 0) {
-          productsPage.value = 2; // Next page will be 2
+          productsPage.value = 2;
         }
-        console.log(`Initial Load - Products: ${userProducts.value.length}, Next page: ${productsPage.value}`); // Debug log
       }
       
       hasMoreProducts.value = hasNext;

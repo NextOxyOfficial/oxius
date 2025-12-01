@@ -2301,8 +2301,7 @@ const toggleAdStatus = (index) => {
 
 // Apply date filter
 const applyDateFilter = () => {
-  console.log("Applying date filter:", dateFilter.from, dateFilter.to);
-  // Implement your date filtering logic here
+  // TODO: Implement date filtering logic
 };
 
 // Handle ad submission

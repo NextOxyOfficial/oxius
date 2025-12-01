@@ -350,10 +350,8 @@ function handleImageError(index) {
 
 onMounted(async () => {
   try {
-    console.log('Component mounted, loading gig data...');
     await getGigData();
   } catch (error) {
-    console.error('Error loading gig data:', error);
     
     // In Capacitor, sometimes we need to retry the request
     if (process.client && typeof window !== 'undefined') {
@@ -361,12 +359,10 @@ onMounted(async () => {
                          (window.location.protocol === 'https:' && window.location.hostname === 'localhost');
       
       if (isCapacitor) {
-        console.log('Retrying request in Capacitor environment...');
         setTimeout(async () => {
           try {
             await getGigData();
           } catch (retryError) {
-            console.error('Retry failed:', retryError);
             // Show a more user-friendly error
             throw createError({
               statusCode: 404,
@@ -388,15 +384,9 @@ onMounted(async () => {
 async function getGigData() {
   try {
     const gigId = route.params.id;
-    console.log('Fetching gig with ID:', gigId);
-    console.log('Full route:', route.fullPath);
-    console.log('Route params:', route.params);
-    
     const res = await get(`/micro-gigs/${gigId}/`);
-    console.log('API Response:', res);
     
     if (res.error) {
-      console.error('API Error:', res.error);
       
       // Handle different types of errors
       if (res.error.status === 404) {
@@ -417,18 +407,12 @@ async function getGigData() {
     }
     
     if (!res.data) {
-      console.error('No data in response');
       throw new Error('No gig data received');
     }
     
     gig.value = res.data;
-    console.log('Gig data loaded successfully:', gig.value);
   } catch (error) {
-    console.error('Error fetching gig data:', error);
-    
-    if (!toast) {
-      console.error('Toast is not available');
-    } else {
+    if (toast) {
       toast.add({ 
         title: 'Error loading gig', 
         description: 'Please check your connection and try again',

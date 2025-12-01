@@ -316,8 +316,6 @@ async function getPosts(isLoadingMore = false, pageNum = 1) {
       params.older_than = lastCreatedAt.value;
     }
 
-    console.log(`📱 Feed Request: page=${pageNum}, size=${params.page_size}, loadMore=${isLoadingMore}`);
-
     // Make API request with timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
@@ -373,9 +371,6 @@ async function getPosts(isLoadingMore = false, pageNum = 1) {
 
         // Determine if more posts available
         hasMore.value = response.data.next !== null && uniquePosts.length > 0;
-
-        // Log feed statistics
-        console.log(`✅ Loaded ${uniquePosts.length} posts (Total: ${allPosts.value.length}/${totalPostCount.value})`);
 
         // Update displayed posts
         updateDisplayedPosts();
@@ -606,8 +601,6 @@ async function loadRecentPosts() {
   allPosts.value = [];
   displayedPosts.value = [];
 
-  console.log('🔄 Loading recent posts...');
-
   try {
     const params = {
       page_size: INITIAL_BATCH_SIZE,
@@ -647,9 +640,6 @@ async function loadRecentPosts() {
       }
 
       hasMore.value = response.data.next !== null;
-      
-      console.log(`✅ Loaded ${processedPosts.length} recent posts`);
-      
       updateDisplayedPosts();
     }
   } catch (error) {

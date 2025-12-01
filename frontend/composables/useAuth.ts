@@ -292,7 +292,6 @@ export function useAuth() {
     }
 
     if (error.value) {
-      console.log("JWT validation error after refresh attempt:", error.value);
       jwt.value = null;
       refreshToken.value = null;
       user.value = null;
@@ -356,8 +355,7 @@ export function useAuth() {
         };
       }
     } catch (err) {
-      console.log("Error during login:", err); // Log any exceptions
-      return false; // Return false on error
+      return false;
     }
   };  // Helper function to get current token (with auto-refresh if needed)
   const getValidToken = async () => {
@@ -379,7 +377,6 @@ export function useAuth() {
         
         // If token expires in less than 5 minutes, refresh it
         if (payload.exp && payload.exp - currentTime < 300) {
-          console.log("Token expires soon, refreshing...");
           const refreshSuccess = await refreshTokens();
           if (!refreshSuccess) {
             return null;

@@ -471,8 +471,6 @@ const submitMessage = async () => {
       );
       isSubmitting.value = false;
     } else {
-      console.log("Message submitted successfully:", data);
-
       // Generate ticket ID
       ticketId.value = generateTicketId();
 
