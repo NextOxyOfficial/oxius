@@ -1,5 +1,5 @@
 <template>
-  <div v-if="program?.active" class="mb-10">
+  <div v-if="program && program.active" class="mb-10">
     <!-- New Year Banner -->
     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 p-6 md:p-8 text-white shadow-xl">
       <!-- Decorative elements -->
@@ -130,7 +130,7 @@
             <UBadge :color="conditions.conditions?.has_kyc_verified ? 'green' : 'yellow'" variant="soft" size="md">
               {{ conditions.conditions?.has_kyc_verified ? '✓ Verified' : 'Pending' }}
             </UBadge>
-            <NuxtLink v-if="!conditions.conditions?.has_kyc_verified" to="/settings/kyc" class="block mt-1 text-xs text-emerald-600 hover:underline">
+            <NuxtLink v-if="!conditions.conditions?.has_kyc_verified" to="/upload-center" class="block mt-1 text-xs text-emerald-600 hover:underline">
               Verify KYC →
             </NuxtLink>
           </div>

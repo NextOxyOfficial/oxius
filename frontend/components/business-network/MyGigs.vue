@@ -412,7 +412,7 @@ defineEmits(['switchTab']);
 
 // Composables
 const { user } = useAuth();
-const { get, post } = useApi();
+const { get, patch, del } = useApi();
 const toast = useToast();
 
 // State
@@ -574,7 +574,8 @@ const toggleGigStatus = async () => {
   const newStatus = gig.status === 'active' ? 'paused' : 'active';
   
   try {
-    const { data, error } = await post(`/workspace/gigs/${gig.id}/update/`, { status: newStatus });
+    // Use PATCH method for partial update
+    const { data, error } = await patch(`/workspace/gigs/${gig.id}/update/`, { status: newStatus });
     
     if (!error) {
       // Update local state
@@ -591,12 +592,17 @@ const toggleGigStatus = async () => {
     } else {
       toast.add({
         title: 'Error',
-        description: 'Failed to update gig status',
+        description: error?.data?.detail || 'Failed to update gig status',
         color: 'red',
       });
     }
   } catch (err) {
     console.error('Error updating gig status:', err);
+    toast.add({
+      title: 'Error',
+      description: 'An unexpected error occurred',
+      color: 'red',
+    });
   }
   
   closeGigSettings();
@@ -613,7 +619,8 @@ const deleteGig = async () => {
   }
   
   try {
-    const { error } = await post(`/workspace/gigs/${gig.id}/delete/`);
+    // Use DELETE method for deletion
+    const { error } = await del(`/workspace/gigs/${gig.id}/delete/`);
     
     if (!error) {
       // Remove from local state
@@ -627,12 +634,17 @@ const deleteGig = async () => {
     } else {
       toast.add({
         title: 'Error',
-        description: 'Failed to delete gig',
+        description: error?.data?.detail || 'Failed to delete gig',
         color: 'red',
       });
     }
   } catch (err) {
     console.error('Error deleting gig:', err);
+    toast.add({
+      title: 'Error',
+      description: 'An unexpected error occurred',
+      color: 'red',
+    });
   }
   
   closeGigSettings();

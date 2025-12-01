@@ -144,19 +144,30 @@ async function getPlatformStats() {
 async function getRewardProgram() {
   try {
     const res = await get("/referral-rewards/program/");
+    console.log("[Reward Program] API Response:", res); // Debug log
     if (res?.data) {
       rewardProgram.value = res.data;
+      console.log("[Reward Program] Active:", res.data.active); // Debug log
+    } else if (res?.error) {
+      console.error("[Reward Program] Error:", res.error);
+      // Set default inactive state on error
+      rewardProgram.value = { active: false };
     }
   } catch (error) {
-    console.error("Error fetching reward program:", error);
+    console.error("[Reward Program] Exception:", error);
+    rewardProgram.value = { active: false };
   }
 }
 
 async function getRewardConditions() {
+  if (!user?.value?.user) return; // Only fetch for logged-in users
+  
   try {
     const res = await get("/referral-rewards/check-conditions/");
     if (res?.data) {
       rewardConditions.value = res.data;
+    } else if (res?.error) {
+      console.error("Error fetching reward conditions:", res.error);
     }
   } catch (error) {
     console.error("Error fetching reward conditions:", error);
@@ -164,10 +175,14 @@ async function getRewardConditions() {
 }
 
 async function getRewardClaims() {
+  if (!user?.value?.user) return; // Only fetch for logged-in users
+  
   try {
     const res = await get("/referral-rewards/my-claims/");
     if (res?.data) {
       rewardClaims.value = res.data;
+    } else if (res?.error) {
+      console.error("Error fetching reward claims:", res.error);
     }
   } catch (error) {
     console.error("Error fetching reward claims:", error);
@@ -505,6 +520,9 @@ function setActiveTab(index) {
 
 // Update the tab indicator position and width
 function updateIndicator() {
+  // Guard for SSR - only run on client
+  if (typeof document === 'undefined') return;
+  
   const activeButton = document.querySelector(".tab-button.text-primary-600");
   if (activeButton) {
     const navRect = document
@@ -559,12 +577,16 @@ onMounted(() => {
     getRewardClaims();
   }
 
-  // Update indicator on window resize
-  window.addEventListener("resize", updateIndicator);
+  // Update indicator on window resize (client-side only)
+  if (typeof window !== 'undefined') {
+    window.addEventListener("resize", updateIndicator);
+  }
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", updateIndicator);
+  if (typeof window !== 'undefined') {
+    window.removeEventListener("resize", updateIndicator);
+  }
 });
 </script>
 

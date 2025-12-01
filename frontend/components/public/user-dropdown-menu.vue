@@ -211,7 +211,7 @@
       <!-- 2026 New Year Reward Section -->
       <div class="px-2 pb-3">
         <NuxtLink
-          to="/refer-a-friend#how-it-works"
+          to="/new-year-offer"
           @click="closeMenu"
           class="block relative rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-800/40 group transition-all duration-300 hover:shadow-md hover:border-emerald-300 cursor-pointer"
         >

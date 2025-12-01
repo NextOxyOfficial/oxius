@@ -207,6 +207,50 @@
         </div>
       </div>
 
+      <!-- 2026 New Year Reward Section -->
+      <div class="px-2 pb-3">
+        <NuxtLink
+          to="/new-year-offer"
+          @click="closeMenu"
+          class="block relative rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-800/40 group transition-all duration-300 hover:shadow-md hover:border-emerald-300 cursor-pointer"
+        >
+          <!-- Animated gradient background -->
+          <div class="absolute inset-0 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 dark:from-emerald-900/20 dark:via-teal-900/20 dark:to-emerald-900/20 opacity-80"></div>
+          
+          <!-- Sparkle decorations -->
+          <div class="absolute top-1 right-2 text-lg opacity-70 group-hover:opacity-100 transition-opacity">✨</div>
+          <div class="absolute bottom-1 left-2 text-sm opacity-50 group-hover:opacity-80 transition-opacity">🎉</div>
+
+          <div class="relative p-3 flex items-center gap-3">
+            <!-- Gift Icon -->
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-sm transform transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <UIcon name="i-heroicons-gift" class="w-5 h-5 text-white" />
+            </div>
+
+            <!-- Text Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <h4 class="font-semibold text-emerald-800 dark:text-emerald-300 text-sm">
+                  2026 New Year Reward
+                </h4>
+                <span class="px-1.5 py-0.5 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[10px] font-bold rounded-full animate-pulse">
+                  NEW
+                </span>
+              </div>
+              <p class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
+                Refer friends & earn ৳10!
+              </p>
+            </div>
+
+            <!-- Arrow -->
+            <UIcon 
+              name="i-heroicons-arrow-right" 
+              class="w-4 h-4 text-emerald-500 transform transition-transform group-hover:translate-x-1" 
+            />
+          </div>
+        </NuxtLink>
+      </div>
+
       <!-- Main Navigation Links with enhanced styling -->
       <div class="px-4 pt-2 pb-3">
         <div class="grid grid-cols-2 gap-2">
