@@ -61,11 +61,126 @@ class GigRevisionOptionAdmin(admin.ModelAdmin):
 
 @admin.register(Gig)
 class GigAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'category', 'price', 'status', 'views_count', 'orders_count', 'created_at')
-    list_filter = ('category', 'status', 'is_featured', 'created_at')
+    list_display = ('title', 'user', 'category', 'price', 'status_badge', 'views_count', 'orders_count', 'created_at')
+    list_filter = ('status', 'category', 'is_featured', 'created_at')
     search_fields = ('title', 'description', 'user__first_name', 'user__last_name', 'user__email')
-    readonly_fields = ('id', 'views_count', 'orders_count', 'created_at', 'updated_at')
+    readonly_fields = ('id', 'views_count', 'orders_count', 'created_at', 'updated_at', 'reviewed_at', 'reviewed_by')
     ordering = ('-created_at',)
+    actions = ['approve_gigs', 'reject_gigs']
+    
+    fieldsets = (
+        ('Gig Information', {
+            'fields': ('title', 'description', 'user', 'category', 'price', 'image', 'gallery')
+        }),
+        ('Delivery Settings', {
+            'fields': ('delivery_time', 'revisions', 'skills', 'features')
+        }),
+        ('Status & Review', {
+            'fields': ('status', 'rejection_reason', 'reviewed_at', 'reviewed_by', 'is_featured')
+        }),
+        ('Statistics', {
+            'fields': ('views_count', 'orders_count', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def status_badge(self, obj):
+        colors = {
+            'pending': '#ff9800',
+            'active': '#4caf50',
+            'paused': '#9e9e9e',
+            'rejected': '#f44336',
+            'deleted': '#795548',
+        }
+        color = colors.get(obj.status, '#9e9e9e')
+        return format_html(
+            '<span style="background: {}; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">{}</span>',
+            color, obj.get_status_display()
+        )
+    status_badge.short_description = 'Status'
+    
+    @admin.action(description='✅ Approve selected gigs')
+    def approve_gigs(self, request, queryset):
+        from .views import send_workspace_notification
+        
+        updated = 0
+        for gig in queryset.filter(status='pending'):
+            gig.status = 'active'
+            gig.reviewed_at = timezone.now()
+            gig.reviewed_by = request.user
+            gig.rejection_reason = None
+            gig.save()
+            
+            # Send notification to gig owner
+            send_workspace_notification(
+                recipient_user=gig.user,
+                title='🎉 Gig Approved!',
+                body=f'Your gig "{gig.title[:30]}" has been approved and is now live!',
+                data={
+                    'gig_id': str(gig.id),
+                    'notification_type': 'gig_approved'
+                }
+            )
+            updated += 1
+        
+        self.message_user(request, f'{updated} gig(s) approved successfully.')
+    
+    @admin.action(description='❌ Reject selected gigs')
+    def reject_gigs(self, request, queryset):
+        from .views import send_workspace_notification
+        
+        updated = 0
+        for gig in queryset.filter(status='pending'):
+            gig.status = 'rejected'
+            gig.reviewed_at = timezone.now()
+            gig.reviewed_by = request.user
+            gig.rejection_reason = 'Does not meet our guidelines. Please review and resubmit.'
+            gig.save()
+            
+            # Send notification to gig owner
+            send_workspace_notification(
+                recipient_user=gig.user,
+                title='❌ Gig Not Approved',
+                body=f'Your gig "{gig.title[:30]}" was not approved. Please check the rejection reason.',
+                data={
+                    'gig_id': str(gig.id),
+                    'notification_type': 'gig_rejected'
+                }
+            )
+            updated += 1
+        
+        self.message_user(request, f'{updated} gig(s) rejected.')
+    
+    def save_model(self, request, obj, form, change):
+        # If admin is changing status from pending to active/rejected
+        if change and 'status' in form.changed_data:
+            from .views import send_workspace_notification
+            
+            if obj.status == 'active' and form.initial.get('status') == 'pending':
+                obj.reviewed_at = timezone.now()
+                obj.reviewed_by = request.user
+                send_workspace_notification(
+                    recipient_user=obj.user,
+                    title='🎉 Gig Approved!',
+                    body=f'Your gig "{obj.title[:30]}" has been approved and is now live!',
+                    data={
+                        'gig_id': str(obj.id),
+                        'notification_type': 'gig_approved'
+                    }
+                )
+            elif obj.status == 'rejected' and form.initial.get('status') == 'pending':
+                obj.reviewed_at = timezone.now()
+                obj.reviewed_by = request.user
+                send_workspace_notification(
+                    recipient_user=obj.user,
+                    title='❌ Gig Not Approved',
+                    body=f'Your gig "{obj.title[:30]}" was not approved. Please check the rejection reason.',
+                    data={
+                        'gig_id': str(obj.id),
+                        'notification_type': 'gig_rejected'
+                    }
+                )
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(GigReview)

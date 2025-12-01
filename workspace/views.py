@@ -118,24 +118,34 @@ class GigDetailView(generics.RetrieveAPIView):
 
 
 class GigCreateView(generics.CreateAPIView):
-    """Create a new gig"""
+    """Create a new gig - starts as pending for admin review"""
     serializer_class = GigCreateSerializer
     permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
-        print(f"GigCreateView: Received data: {request.data}")
-        print(f"GigCreateView: User: {request.user}")
-        
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
-            print(f"GigCreateView: Validation errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+        # Gig is created with status='pending' by default (set in model)
         gig = serializer.save()
         
-        # Return full gig data
+        # Send notification to user confirming submission
+        send_workspace_notification(
+            recipient_user=request.user,
+            title='📝 Gig Submitted for Review',
+            body=f'Your gig "{gig.title[:30]}" has been submitted and is pending admin approval.',
+            data={
+                'gig_id': str(gig.id),
+                'notification_type': 'gig_submitted'
+            }
+        )
+        
+        # Return full gig data with pending status message
         response_serializer = GigSerializer(gig, context={'request': request})
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        response_data = response_serializer.data
+        response_data['message'] = 'Your gig has been submitted for review. You will be notified once it is approved.'
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class GigUpdateView(generics.UpdateAPIView):

@@ -62,10 +62,10 @@
                   class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 >
                   <option value="">All Status</option>
+                  <option value="pending">Pending Review</option>
                   <option value="active">Active</option>
                   <option value="paused">Paused</option>
-                  <option value="draft">Draft</option>
-                  <option value="deleted">Deleted</option>
+                  <option value="rejected">Rejected</option>
                 </select>
               </div>
               
@@ -238,9 +238,19 @@
           </div>
           <!-- Status Badge -->
           <div class="absolute top-3 left-3">
-            <span :class="getStatusBadgeClass(gig.status || 'active')">
-              {{ getStatusLabel(gig.status || 'active') }}
+            <span :class="getStatusBadgeClass(gig.status || 'pending')">
+              {{ getStatusLabel(gig.status || 'pending') }}
             </span>
+          </div>
+          <!-- Rejection Reason Tooltip -->
+          <div 
+            v-if="gig.status === 'rejected' && gig.rejection_reason"
+            class="absolute top-3 right-3 group/tooltip"
+          >
+            <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 text-red-500 cursor-help" />
+            <div class="absolute right-0 top-6 w-48 p-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700 opacity-0 group-hover/tooltip:opacity-100 transition-opacity z-10 pointer-events-none">
+              {{ gig.rejection_reason }}
+            </div>
           </div>
           <!-- Settings Button -->
           <button
@@ -319,9 +329,16 @@
             />
             <!-- Status Badge -->
             <div class="absolute top-2 left-2">
-              <span :class="getStatusBadgeClass(gig.status || 'active')">
-                {{ getStatusLabel(gig.status || 'active') }}
+              <span :class="getStatusBadgeClass(gig.status || 'pending')">
+                {{ getStatusLabel(gig.status || 'pending') }}
               </span>
+            </div>
+            <!-- Rejection Indicator -->
+            <div 
+              v-if="gig.status === 'rejected'"
+              class="absolute top-2 right-2"
+            >
+              <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 text-red-500" />
             </div>
           </div>
           
@@ -477,7 +494,8 @@ async function fetchMyGigs() {
       description: gig.description,
       price: parseFloat(gig.price),
       category: gig.category,
-      status: gig.status || 'active',
+      status: gig.status || 'pending',
+      rejection_reason: gig.rejection_reason || null,
       image: gig.image_url || gig.image || '/images/placeholder-gig.png',
       user: {
         id: gig.user?.id,
@@ -571,6 +589,28 @@ const toggleGigStatus = async () => {
   if (!selectedGigForSettings.value) return;
   
   const gig = selectedGigForSettings.value;
+  
+  // Can only toggle between active and paused
+  if (gig.status === 'pending') {
+    toast.add({
+      title: 'Cannot Change Status',
+      description: 'This gig is pending admin review. You cannot change its status until it is approved.',
+      color: 'orange',
+    });
+    closeGigSettings();
+    return;
+  }
+  
+  if (gig.status === 'rejected') {
+    toast.add({
+      title: 'Gig Rejected',
+      description: 'This gig was rejected. Please edit and resubmit for review.',
+      color: 'red',
+    });
+    closeGigSettings();
+    return;
+  }
+  
   const newStatus = gig.status === 'active' ? 'paused' : 'active';
   
   try {
@@ -683,22 +723,24 @@ const getCategoryBadgeClass = (category) => {
 
 const getStatusBadgeClass = (status) => {
   const classes = {
+    'pending': 'bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium',
     'active': 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium',
     'paused': 'bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium',
-    'draft': 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium',
-    'deleted': 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium'
+    'rejected': 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium',
+    'deleted': 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium'
   };
-  return classes[status?.toLowerCase()] || 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
+  return classes[status?.toLowerCase()] || 'bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium';
 };
 
 const getStatusLabel = (status) => {
   const labels = {
+    'pending': 'Pending Review',
     'active': 'Active',
     'paused': 'Paused',
-    'draft': 'Draft',
+    'rejected': 'Rejected',
     'deleted': 'Deleted'
   };
-  return labels[status?.toLowerCase()] || 'Active';
+  return labels[status?.toLowerCase()] || 'Pending Review';
 };
 </script>
 

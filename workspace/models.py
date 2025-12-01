@@ -96,8 +96,10 @@ class Gig(models.Model):
     ]
     
     STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
         ('active', 'Active'),
         ('paused', 'Paused'),
+        ('rejected', 'Rejected'),
         ('deleted', 'Deleted'),
     ]
     
@@ -113,7 +115,10 @@ class Gig(models.Model):
     revisions = models.PositiveIntegerField(default=2, help_text="Number of revisions included")
     skills = models.JSONField(default=list, blank=True, help_text="List of skills/expertise tags")
     features = models.JSONField(default=list, blank=True, help_text="List of what buyers will get")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    rejection_reason = models.TextField(blank=True, null=True, help_text="Reason for rejection if status is rejected")
+    reviewed_at = models.DateTimeField(blank=True, null=True, help_text="When the gig was reviewed by admin")
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviewed_gigs')
     is_featured = models.BooleanField(default=False)
     views_count = models.PositiveIntegerField(default=0)
     orders_count = models.PositiveIntegerField(default=0)

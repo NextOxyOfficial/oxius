@@ -122,11 +122,11 @@ class GigSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'description', 'category', 'category_display',
             'price', 'image', 'image_url', 'gallery', 'delivery_time', 'revisions',
-            'skills', 'features', 'status', 'is_featured', 'views_count', 'orders_count',
+            'skills', 'features', 'status', 'rejection_reason', 'is_featured', 'views_count', 'orders_count',
             'user', 'rating', 'reviews', 'is_favorited',
             'created_at', 'updated_at'
         )
-        read_only_fields = ('id', 'views_count', 'orders_count', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'views_count', 'orders_count', 'created_at', 'updated_at', 'rejection_reason')
     
     def get_rating(self, obj):
         return obj.average_rating

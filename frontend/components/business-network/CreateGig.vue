@@ -639,9 +639,10 @@ const submitGig = async () => {
     resetForm();
 
     toast.add({
-      title: "Gig Created! 🎉",
-      description: `"${gigTitle}" has been created successfully`,
+      title: "Gig Submitted for Review! 📝",
+      description: `"${gigTitle}" is pending admin approval. You'll be notified once it's approved.`,
       color: "green",
+      timeout: 6000,
     });
     
     // Switch to My Gigs tab
