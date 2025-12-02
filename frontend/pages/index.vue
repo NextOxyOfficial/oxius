@@ -481,16 +481,11 @@
                           <div
                             class="size-14 bg-slate-100 dark:bg-slate-700 overflow-hidden shadow-sm flex items-center justify-center rounded-full gap-1"
                           >
-                            <NuxtImg
-                              v-if="!errorIndex.includes(i)"
-                              :src="gig.category_details?.image"
-                              class="w-10 h-10 object-contain"
-                            />
                             <img
-                              v-else
-                              src="/static/frontend/images/no-image.jpg"
-                              alt="No Image"
+                              :src="getImageUrl(gig.category_details?.image)"
+                              :alt="gig.title"
                               class="w-10 h-10 object-contain"
+                              @error="(e) => e.target.src = '/static/frontend/images/no-image.jpg'"
                             />
                           </div>
                         </div>
