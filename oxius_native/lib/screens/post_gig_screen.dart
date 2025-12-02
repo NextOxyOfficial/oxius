@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import '../services/gigs_service.dart';
-import '../services/user_state_service.dart';
+import '../services/auth_service.dart';
 
 class PostGigScreen extends StatefulWidget {
   const PostGigScreen({super.key});
@@ -14,7 +13,6 @@ class PostGigScreen extends StatefulWidget {
 
 class _PostGigScreenState extends State<PostGigScreen> {
   final GigsService _gigsService = GigsService();
-  final UserStateService _userService = UserStateService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   
@@ -29,17 +27,22 @@ class _PostGigScreenState extends State<PostGigScreen> {
   List<String> _selectedDevices = [];
   List<String> _selectedNetworks = [];
   List<String> _uploadedImages = [];
+  String _targetCountry = 'Bangladesh';
   
   bool _isLoading = false;
   bool _isLoadingData = true;
   bool _isUploading = false;
   String? _uploadError;
+  String? _showError;
   bool _checkSubmit = false;
 
   // Dynamic data from backend
   List<Map<String, dynamic>> _categories = [];
   List<Map<String, dynamic>> _devices = [];
   List<Map<String, dynamic>> _networks = [];
+  final List<Map<String, dynamic>> _countries = [
+    {'title': 'Bangladesh'},
+  ];
 
   @override
   void initState() {
@@ -95,9 +98,12 @@ class _PostGigScreenState extends State<PostGigScreen> {
     return balance + (balance * 0.1); // 10% service fee
   }
 
+  double get _userBalance {
+    return AuthService.currentUser?.balance ?? 0;
+  }
+
   bool get hasInsufficientBalance {
-    final userBalance = _userService.balance;
-    return userBalance < totalCost;
+    return _userBalance < totalCost;
   }
 
   Future<void> _handleImageUpload() async {
@@ -171,10 +177,13 @@ class _PostGigScreenState extends State<PostGigScreen> {
   }
 
   Future<void> _handleSubmit() async {
-    setState(() => _checkSubmit = true);
+    setState(() {
+      _checkSubmit = true;
+      _showError = null;
+    });
 
     // Check NID verification first
-    final currentUser = _userService.currentUser;
+    final currentUser = AuthService.currentUser;
     if (currentUser == null || !currentUser.isVerified) {
       _showNIDVerificationDialog();
       return;
@@ -195,7 +204,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
         !_isValidUrl(_actionLinkController.text.trim())) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a valid URL'),
+          content: Text('Invalid URL format. Please enter a valid URL (e.g., https://example.com)'),
           backgroundColor: Colors.red,
         ),
       );
@@ -215,37 +224,57 @@ class _PostGigScreenState extends State<PostGigScreen> {
         actionLink = null;
       }
 
-      // Prepare form data
+      final price = double.parse(_priceController.text);
+      final quantity = int.parse(_quantityController.text);
+      final balance = price * quantity;
+      final totalCostValue = balance + (balance * 0.1);
+
+      // Prepare form data matching Vue project
       final formData = {
         'category': _selectedCategory,
         'title': _titleController.text.trim(),
-        'price': double.parse(_priceController.text),
-        'required_quantity': int.parse(_quantityController.text),
+        'price': price,
+        'required_quantity': quantity,
         'instructions': _instructionsController.text.trim(),
         'medias': _uploadedImages,
-        'target_country': 'Bangladesh',
-        'target_device': _selectedDevices.join(','),
-        'target_network': _selectedNetworks.join(','),
+        'target_country': _targetCountry,
+        'target_device': _selectedDevices,
+        'target_network': _selectedNetworks,
         'action_link': actionLink,
         'active_gig': true,
-        'total_cost': totalCost,
-        'balance': double.parse(_priceController.text) * int.parse(_quantityController.text),
+        'total_cost': totalCostValue,
+        'balance': balance,
       };
 
-      // TODO: Replace with actual API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Call actual API
+      final result = await _gigsService.postMicroGig(formData);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gig posted successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context);
+        if (result['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('MicroGig Added Successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true); // Return true to indicate success
+        } else {
+          setState(() {
+            _showError = result['error'] ?? 'Failed to post gig';
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['error'] ?? 'Failed to post gig'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
+        setState(() {
+          _showError = e.toString();
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error posting gig: $e'),
@@ -653,27 +682,66 @@ Widget _buildForm(bool isMobile) {
               icon: Icons.location_on,
               child: Column(
                 children: [
-                  // Device Selection
-                  _buildMultiSelectChips(
-                    label: 'Target Devices',
-                    options: _devices,
-                    selectedValues: _selectedDevices,
-                    onChanged: (selected) => setState(() => _selectedDevices = selected),
+                  // Target Country and Device in a row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildDropdownField(
+                          label: 'Target Country',
+                          value: _targetCountry,
+                          items: _countries.map((c) => DropdownMenuItem<String>(
+                            value: c['title'],
+                            child: Text(c['title']),
+                          )).toList(),
+                          onChanged: (value) => setState(() => _targetCountry = value ?? 'Bangladesh'),
+                          isRequired: true,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildMultiSelectChips(
+                          label: 'Target Device',
+                          options: _devices,
+                          selectedValues: _selectedDevices,
+                          onChanged: (selected) => setState(() => _selectedDevices = selected),
+                          isRequired: true,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   // Network Selection
                   _buildMultiSelectChips(
-                    label: 'Target Networks',
+                    label: 'Target Network',
                     options: _networks,
                     selectedValues: _selectedNetworks,
                     onChanged: (selected) => setState(() => _selectedNetworks = selected),
+                    isRequired: true,
                   ),
-                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+
+            // Task URL Section
+            _buildSectionCard(
+              title: 'Task URL',
+              icon: Icons.link,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   _buildTextField(
-                    label: 'Action Link (Optional)',
+                    label: 'Task URL',
                     controller: _actionLinkController,
-                    hintText: 'https://example.com',
+                    hintText: 'https://example.com (optional)',
                     icon: Icons.link,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Optional: Provide a link to the website or page where the task should be completed',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
                   ),
                 ],
               ),
@@ -684,6 +752,49 @@ Widget _buildForm(bool isMobile) {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
+                  // Error message from API
+                  if (_showError != null)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEE2E2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFEF4444)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Color(0xFFEF4444)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _showError!,
+                                  style: const TextStyle(
+                                    color: Color(0xFFDC2626),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                GestureDetector(
+                                  onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                                  child: const Text(
+                                    'Click here to make a deposit',
+                                    style: TextStyle(
+                                      color: Color(0xFF059669),
+                                      fontWeight: FontWeight.w500,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Low balance warning (only show if balance is insufficient)
                   if (hasInsufficientBalance && totalCost > 0)
                     Container(
@@ -711,7 +822,7 @@ Widget _buildForm(bool isMobile) {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Your balance: ৳${_userService.balance.toStringAsFixed(2)} | Required: ৳${totalCost.toStringAsFixed(2)}',
+                                  'Your balance: ৳${_userBalance.toStringAsFixed(2)} | Required: ৳${totalCost.toStringAsFixed(2)}',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Color(0xFF92400E),
@@ -946,16 +1057,25 @@ Widget _buildForm(bool isMobile) {
     required List<Map<String, dynamic>> options,
     required List<String> selectedValues,
     required ValueChanged<List<String>> onChanged,
+    bool isRequired = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF1F2937),
+        RichText(
+          text: TextSpan(
+            text: label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF1F2937),
+            ),
+            children: isRequired ? [
+              const TextSpan(
+                text: ' *',
+                style: TextStyle(color: Colors.red),
+              ),
+            ] : null,
           ),
         ),
         const SizedBox(height: 8),

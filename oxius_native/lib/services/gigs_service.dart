@@ -302,6 +302,40 @@ class GigsService {
     }
   }
 
+  /// Post a new micro gig
+  Future<Map<String, dynamic>> postMicroGig(Map<String, dynamic> gigData) async {
+    try {
+      final url = '$baseUrl/post-micro-gigs/';
+      final headers = await ApiService.getHeaders();
+      
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: json.encode(gigData),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final dynamic data = json.decode(response.body);
+        return {'success': true, 'data': data};
+      } else {
+        final dynamic errorData = json.decode(response.body);
+        String errorMessage = 'Failed to post gig';
+        if (errorData is Map) {
+          if (errorData['errors'] != null) {
+            errorMessage = errorData['errors'].toString();
+          } else if (errorData['error'] != null) {
+            errorMessage = errorData['error'].toString();
+          } else if (errorData['detail'] != null) {
+            errorMessage = errorData['detail'].toString();
+          }
+        }
+        return {'success': false, 'error': errorMessage};
+      }
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
   /// Transform relative URL to absolute URL
   String _abs(String url) {
     if (url.startsWith('http://') || url.startsWith('https://')) {

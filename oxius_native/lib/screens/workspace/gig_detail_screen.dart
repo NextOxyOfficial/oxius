@@ -5,6 +5,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/adsyconnect_service.dart';
+import '../adsy_connect_chat_interface.dart';
 
 class GigDetailScreen extends StatefulWidget {
   final String gigId;
@@ -245,104 +247,90 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     }
   }
 
-  void _contactSeller() {
+  Future<void> _contactSeller() async {
     if (_gig == null) return;
     
-    // Show a dialog to contact seller
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => _buildContactSellerSheet(),
-    );
-  }
+    // Check authentication first
+    if (!AuthService.isAuthenticated) {
+      _showSnackBar('Please login to contact the seller', Colors.orange);
+      return;
+    }
 
-  Widget _buildContactSellerSheet() {
-    final messageController = TextEditingController();
-    
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: _gig!['user']?['avatar'] != null
-                    ? CachedNetworkImageProvider(_getImageUrl(_gig!['user']['avatar']))
-                    : null,
-                child: _gig!['user']?['avatar'] == null
-                    ? Text((_gig!['user']?['name'] ?? 'S')[0].toUpperCase())
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Contact ${_gig!['user']?['name'] ?? 'Seller'}',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      'About: ${_gig!['title']}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: messageController,
-            maxLines: 4,
-            decoration: InputDecoration(
-              hintText: 'Write your message to the seller...',
-              hintStyle: TextStyle(color: Colors.grey[400]),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              contentPadding: const EdgeInsets.all(12),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                if (messageController.text.trim().isEmpty) {
-                  _showSnackBar('Please enter a message', Colors.orange);
-                  return;
-                }
-                // TODO: Implement send message to seller
-                Navigator.pop(context);
-                _showSnackBar('Message sent to seller!', Colors.green);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8B5CF6),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('Send Message', style: TextStyle(color: Colors.white)),
-            ),
-          ),
-        ],
+    final sellerId = _gig!['user']?['id']?.toString();
+    if (sellerId == null) {
+      _showSnackBar('Seller information not available', Colors.red);
+      return;
+    }
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
       ),
     );
+
+    try {
+      // Get or create chat room with the seller
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(sellerId);
+
+      // Close loading indicator
+      if (mounted) Navigator.pop(context);
+
+      // Show chat interface in bottom sheet
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) => Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  // Handle bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Chat interface
+                  Expanded(
+                    child: AdsyConnectChatInterface(
+                      chatroomId: chatroom['id'].toString(),
+                      userId: sellerId,
+                      userName: _gig!['user']?['name'] ?? 'Seller',
+                      userAvatar: _gig!['user']?['avatar'] != null 
+                          ? _getImageUrl(_gig!['user']['avatar']) 
+                          : null,
+                      profession: 'Gig Seller',
+                      isOnline: false,
+                      isVerified: _gig!['user']?['kyc'] == true,
+                      isPro: _gig!['user']?['is_pro'] == true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading indicator
+      if (mounted) Navigator.pop(context);
+      _showSnackBar('Failed to open chat: $e', Colors.red);
+    }
   }
 
   Future<void> _handleShare() async {
@@ -1213,12 +1201,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 180,
+            height: 210,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: _relatedGigs.length,
               itemBuilder: (context, index) {
                 final gig = _relatedGigs[index];
+                final user = gig['user'] as Map<String, dynamic>?;
+                final rating = (gig['rating'] ?? 0).toDouble();
+                final reviewsCount = gig['reviews_count'] ?? 0;
+                
                 return GestureDetector(
                   onTap: () {
                     Navigator.pushReplacement(
@@ -1227,7 +1219,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     );
                   },
                   child: Container(
-                    width: 150,
+                    width: 160,
                     margin: EdgeInsets.only(right: index < _relatedGigs.length - 1 ? 10 : 0),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -1237,6 +1229,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Image
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                           child: CachedNetworkImage(
@@ -1248,28 +1241,74 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                             errorWidget: (c, u, e) => Container(color: Colors.grey[200], child: const Icon(Icons.image, size: 20)),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                gig['title'] ?? '',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(Icons.star, size: 12, color: Colors.amber),
-                                  const SizedBox(width: 2),
-                                  Text('${gig['rating'] ?? 0}', style: const TextStyle(fontSize: 10)),
-                                  const Spacer(),
-                                  Text('৳${gig['price']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6))),
-                                ],
-                              ),
-                            ],
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Owner info
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 10,
+                                      backgroundImage: user?['avatar'] != null
+                                          ? CachedNetworkImageProvider(_getImageUrl(user!['avatar']))
+                                          : null,
+                                      child: user?['avatar'] == null
+                                          ? Text((user?['name'] ?? 'U')[0].toUpperCase(), style: const TextStyle(fontSize: 8))
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        user?['name'] ?? 'Unknown',
+                                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (user?['kyc'] == true)
+                                      const Icon(Icons.verified, size: 10, color: Colors.blue),
+                                    if (user?['is_pro'] == true)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                        child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 6, fontWeight: FontWeight.bold)),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                // Title
+                                Text(
+                                  gig['title'] ?? '',
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const Spacer(),
+                                // Rating with review count and price
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star, size: 12, color: Colors.amber),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      '${rating.toStringAsFixed(1)} ($reviewsCount)',
+                                      style: TextStyle(fontSize: 9, color: Colors.grey[600]),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      '৳${gig['price']}',
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

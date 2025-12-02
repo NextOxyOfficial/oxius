@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/gigs_service.dart';
+import '../services/api_service.dart';
 import '../services/translation_service.dart';
 import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
@@ -271,6 +272,14 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     return pages;
   }
 
+  String _getImageUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    final baseUrl = ApiService.baseUrl.replaceAll('/api', '');
+    if (url.startsWith('/')) return '$baseUrl$url';
+    return '$baseUrl/$url';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
@@ -398,7 +407,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: Image.network(
-                      operator['icon'] ?? '',
+                      _getImageUrl(operator['icon']),
                       width: 24,
                       height: 24,
                       fit: BoxFit.contain,
@@ -669,7 +678,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     if (user == null) return const SizedBox.shrink();
     
     final categoryDetails = gig['category_details'];
-    final imageUrl = categoryDetails?['image'] ?? '';
+    final imageUrl = _getImageUrl(categoryDetails?['image']);
     final title = gig['title'] ?? '';
     final filledQty = gig['filled_quantity'] ?? 0;
     final requiredQty = gig['required_quantity'] ?? 0;
