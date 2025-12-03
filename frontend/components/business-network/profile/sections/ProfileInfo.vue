@@ -45,8 +45,8 @@
         </p>
       </div>
 
-      <!-- Action buttons (Desktop) -->
-      <div class="hidden sm:flex gap-2">                      <!-- QR Code Button with enhanced styling -->
+      <!-- QR Code Button (Desktop) -->
+      <div class="hidden sm:flex gap-2">
         <button
           @click="$emit('open-qr-modal')"
           class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 border border-gray-200 text-gray-800 hover:bg-gray-50 transition-all relative overflow-hidden group"
@@ -55,58 +55,6 @@
           <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></span>
           <UIcon name="i-cil-qr-code" class="w-4 h-4 relative z-10" />
           <span class="relative z-10">QR Code</span>
-        </button>
-
-        <!-- Chat Button (Desktop) -->
-        <button
-          v-if="user?.id !== currentUser?.user?.id && currentUser"
-          @click="$emit('open-chat')"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-gray-700 hover:bg-green-50 transition-all duration-200 group"
-        >
-          <div class="p-1 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-sm transition-transform duration-300 group-hover:scale-110">
-            <NuxtImg 
-              src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
-              alt="Chat"
-              class="w-4 h-4"
-            />
-          </div>
-          <span class="relative overflow-hidden">
-            Chat
-            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-green-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
-          </span>
-        </button>
-        
-        <button
-          v-if="user?.id !== currentUser?.user?.id && currentUser"
-          :class="[
-            'px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-300 relative overflow-hidden group/follow px-4 min-w-[90px] text-center',
-            isFollowing
-              ? 'border border-gray-200 hover:bg-gray-50 hover:shadow-sm text-gray-800'
-              : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white'
-          ]"
-          :disabled="followLoading"
-          @click="$emit('toggle-follow')"
-        >
-          <span class="relative z-10 flex items-center justify-center gap-1.5">
-            <div
-              v-if="followLoading"
-              class="h-3 w-3 border-2 border-t-transparent border-white rounded-full animate-spin"
-            ></div>
-
-            <template v-else-if="isFollowing">
-              <Check class="h-3 w-3 animate-scaleIn" />
-              Following
-            </template>
-
-            <template v-else>
-              <UserPlus class="h-3 w-3 animate-scaleIn" />
-              Follow
-            </template>
-          </span>
-          <span 
-            class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
-            v-if="!isFollowing"
-          ></span>
         </button>
       </div>
     </div>
@@ -154,6 +102,58 @@
           <span>Top Up</span>
         </button>
       </div>
+    </div>
+
+    <!-- Chat and Follow Buttons (Desktop) - Below Stats -->
+    <div 
+      v-if="user?.id !== currentUser?.user?.id && currentUser"
+      class="hidden sm:flex gap-3 mb-3"
+    >
+      <!-- Chat Button -->
+      <button
+        @click="$emit('open-chat')"
+        class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-gray-700 border border-gray-200 hover:bg-green-50 hover:border-green-200 transition-all duration-200 group"
+      >
+        <NuxtImg 
+          src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
+          alt="Chat"
+          class="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+        />
+        <span>Chat</span>
+      </button>
+
+      <!-- Follow/Unfollow Button -->
+      <button
+        :class="[
+          'px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all duration-300 relative overflow-hidden group/follow min-w-[120px] justify-center',
+          isFollowing
+            ? 'border border-gray-200 hover:bg-gray-50 hover:border-gray-300 text-gray-800'
+            : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 text-white hover:shadow-md'
+        ]"
+        :disabled="followLoading"
+        @click="$emit('toggle-follow')"
+      >
+        <span class="relative z-10 flex items-center justify-center gap-2">
+          <div
+            v-if="followLoading"
+            class="h-4 w-4 border-2 border-t-transparent border-current rounded-full animate-spin"
+          ></div>
+
+          <template v-else-if="isFollowing">
+            <Check class="h-4 w-4" />
+            Following
+          </template>
+
+          <template v-else>
+            <UserPlus class="h-4 w-4" />
+            Follow
+          </template>
+        </span>
+        <span 
+          class="absolute inset-0 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 opacity-0 group-hover/follow:opacity-100 transition-opacity duration-300"
+          v-if="!isFollowing"
+        ></span>
+      </button>
     </div>
 
     <!-- Bio -->
