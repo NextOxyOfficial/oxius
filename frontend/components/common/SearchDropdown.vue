@@ -31,95 +31,67 @@
         aria-label="Search dialog"
         @keydown.esc="showSearchDropdown = false"
       >
-        <!-- Enhanced Modern Search Header with Spelling Suggestion -->
+        <!-- Compact Search Header -->
         <div
-          class="p-3 bg-gradient-to-b from-gray-50 to-white dark:from-gray-800/90 dark:to-gray-800/70 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm"
+          class="p-2.5 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700"
         >
-          <div class="flex items-center justify-between mb-2 px-1">
-            <h4
-              class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400 font-medium flex items-center"
-            >
-              <SearchIcon
-                class="h-3 w-3 mr-1.5 text-blue-500 dark:text-blue-400"
-              />
-              Advanced Search
-            </h4>
-            <div
-              class="text-xs text-gray-400 dark:text-gray-600 flex items-center"
-            >
-              <kbd
-                class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-gray-600 dark:text-gray-400 font-mono text-xs"
-                >Enter</kbd
-              >
-              <span class="mx-1">to search</span>
-            </div>
-          </div>
-          <div class="relative group">
+          <div class="relative">
             <input
               type="text"
-              placeholder="Type to search people, posts, tags..."
+              placeholder="Search people, posts, tags..."
               v-model="searchQuery"
               @keydown.enter="handleEnterKey"
               @keydown.down="focusFirstResult"
               @keydown.up="focusViewAllButton"
-              class="w-full pl-10 pr-10 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:ring-blue-500/70 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-300 transition-all duration-300 shadow-sm search-input"
+              class="w-full pl-9 pr-8 py-2 rounded-lg text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/40 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-300 placeholder-gray-400 transition-all search-input"
               ref="searchInput"
               aria-label="Search query"
             />
             <div
-              class="absolute left-3 top-3 text-gray-400 dark:text-gray-600 transition-colors group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400"
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
             >
-              <SearchIcon class="h-[18px] w-[18px]" />
+              <SearchIcon class="h-4 w-4" />
             </div>
 
-            <div class="absolute right-3 top-3 flex items-center gap-2">
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
               <span v-if="isLoading" class="loading-spinner"></span>
               <button
                 v-if="searchQuery"
                 @click="clearSearch"
-                class="rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 p-1 transition-colors group"
+                class="p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 <XIcon
-                  class="h-4 w-4 text-gray-400 dark:text-gray-600 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                  class="h-4 w-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 />
               </button>
             </div>
           </div>
 
-          <!-- Enhanced Spelling suggestion banner with animation -->
+          <!-- Spelling suggestion - compact -->
           <div
             v-if="spellingSuggestion && searchQuery"
-            class="mt-2 px-1 animate-fadeIn"
+            class="mt-1.5"
           >
             <button
               @click="applySpellingSuggestion"
-              class="text-xs flex items-center text-left w-full rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 px-2.5 py-1.5 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+              class="text-[11px] flex items-center text-left w-full rounded bg-blue-50 dark:bg-blue-900/20 px-2 py-1 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
             >
-              <span class="mr-1.5">
-                <AnnotationIcon class="h-3.5 w-3.5" />
-              </span>
-              <span>
-                Did you mean:
-                <span class="font-medium underline">{{
-                  spellingSuggestion
-                }}</span
-                >?
-              </span>
+              Did you mean: <span class="font-medium underline ml-1">{{ spellingSuggestion }}</span>?
             </button>
           </div>
         </div>
 
-        <!-- Search Tabs for Content Types -->
+        <!-- Compact Search Tabs -->
         <div
           v-if="searchQuery && (posts.length > 0 || people.length > 0)"
-          class="flex border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+          class="flex border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50"
         >
           <button
-            class="flex-1 py-2 text-base font-medium transition-colors"
+            class="flex-1 py-1.5 text-[12px] font-medium transition-colors"
             :class="
               activeTab === 'all'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 bg-white dark:bg-gray-800'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             "
             @click="activeTab = 'all'"
           >
@@ -127,68 +99,57 @@
           </button>
 
           <button
-            class="flex-1 py-2 text-base font-medium transition-colors"
+            class="flex-1 py-1.5 text-[12px] font-medium transition-colors flex items-center justify-center gap-1"
             :class="
               activeTab === 'posts'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 bg-white dark:bg-gray-800'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             "
             @click="activeTab = 'posts'"
           >
             Posts
             <span
               v-if="posts.length"
-              class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full"
+              class="text-[10px] bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded-full min-w-[18px] text-center"
             >
               {{ posts.length }}
             </span>
           </button>
 
           <button
-            class="flex-1 py-2 text-base font-medium transition-colors"
+            class="flex-1 py-1.5 text-[12px] font-medium transition-colors flex items-center justify-center gap-1"
             :class="
               activeTab === 'people'
-                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
-                : 'text-gray-600 dark:text-gray-600 hover:text-gray-800 dark:hover:text-gray-300'
+                ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-500 bg-white dark:bg-gray-800'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             "
             @click="activeTab = 'people'"
           >
             People
             <span
               v-if="people.length"
-              class="ml-1 text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-full"
+              class="text-[10px] bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded-full min-w-[18px] text-center"
             >
               {{ people.length }}
             </span>
           </button>
         </div>
 
-        <!-- Enhanced Search Results with Improved Rendering and Keyword Highlighting -->
+        <!-- Compact Search Results -->
         <div
           v-if="searchQuery && filteredResults.length > 0"
-          class="max-h-[52vh] overflow-y-auto search-results-container"
+          class="max-h-[50vh] overflow-y-auto search-results-container"
         >
-          <div class="py-2 px-1">
-            <p class="text-xs text-gray-600 dark:text-gray-600 mb-1.5 px-3">
-              Results for "<span
-                class="font-medium text-blue-600 dark:text-blue-400"
-                >{{ searchQuery }}</span
-              >"
-              <span
-                v-if="usingFuzzySearch"
-                class="text-xs ml-1 text-gray-600 dark:text-gray-600"
-                >(including similar words)</span
-              >
-            </p>
+          <div class="py-1 px-1">
 
             <!-- Posts section -->
             <template v-if="showPosts">
               <div
                 v-if="filteredPosts.length > 0 && activeTab === 'all'"
-                class="px-3 pt-1 pb-2"
+                class="px-3 pt-2 pb-1"
               >
                 <h4
-                  class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-600 font-medium"
+                  class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-500 font-semibold"
                 >
                   Posts ({{ filteredPosts.length }})
                 </h4>
@@ -196,15 +157,15 @@
               <div
                 v-for="(result, index) in limitedFilteredPosts"
                 :key="'post-' + result.id"
-                class="p-3 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 cursor-pointer transition-all duration-200 rounded-lg mx-1 mb-1 group border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30"
+                class="px-2 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-all duration-150 rounded-md mx-1.5 mb-0.5 group"
                 @click="navigateToPost(result)"
               >
-                <!-- Post content with enhanced styling -->
-                <div class="flex items-start justify-between gap-3">
-                  <!-- Left side icon container -->
-                  <div class="flex-shrink-0 mt-1">
+                <!-- Compact Post content -->
+                <div class="flex items-start gap-2.5">
+                  <!-- Left side icon container - compact -->
+                  <div class="flex-shrink-0">
                     <div
-                      class="w-8 h-8 rounded-md bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border border-blue-200/50 dark:border-blue-800/30 flex items-center justify-center group-hover:from-blue-100 group-hover:to-blue-200/70 dark:group-hover:from-blue-800/30 dark:group-hover:to-blue-700/20 transition-colors"
+                      class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -224,83 +185,47 @@
                   </div>
 
                   <div class="flex-1 min-w-0">
-                    <!-- Highlighted title with keyword matches and improved styling -->
+                    <!-- Title -->
                     <p
-                      class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2"
+                      class="text-[13px] font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1"
                     >
                       <span
                         v-html="highlightMatches(result.title, searchQuery)"
                       ></span>
                     </p>
 
-                    <!-- Content preview with highlighted matches and improved styling -->
-                    <p
-                      v-if="result.post_text || result.content"
-                      class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2"
-                    >
+                    <!-- Tags row - compact inline -->
+                    <div class="flex items-center gap-1 mt-1 flex-wrap">
                       <span
-                        v-html="
-                          getContentPreview(
-                            result.post_text || result.content,
-                            searchQuery
-                          )
-                        "
-                      ></span>
-                    </p>
-                    <!-- Enhanced tag section with animation on hover -->
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                      <span
-                        v-for="tag in result.post_tags"
+                        v-for="tag in (result.post_tags || []).slice(0, 2)"
                         :key="tag.id"
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-200"
+                        class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
                         :class="
                           isTagMatched(tag.tag, searchQuery)
-                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/40'
-                            : 'bg-gray-100 dark:bg-gray-800/80 text-gray-600 dark:text-gray-400 border border-gray-200/60 dark:border-gray-700/50 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-700/50'
+                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                         "
                       >
-                        <span class="mr-0.5 opacity-60">#</span
-                        ><span
-                          v-html="highlightMatches(tag.tag, searchQuery)"
-                        ></span>
+                        #<span v-html="highlightMatches(tag.tag, searchQuery)"></span>
                       </span>
-                    </div>
-
-                    <!-- Post date if available -->
-                    <div
-                      v-if="result.created_at"
-                      class="flex items-center mt-1.5"
-                    >
+                      <!-- Date inline -->
                       <span
-                        class="text-xs text-gray-400 dark:text-gray-600 flex items-center"
+                        v-if="result.created_at"
+                        class="text-[10px] text-gray-400 dark:text-gray-500 flex items-center gap-0.5"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-3 w-3 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
+                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         {{ formatTimeAgo(result.created_at) }}
                       </span>
                     </div>
                   </div>
 
+                  <!-- Arrow -->
                   <div class="flex-shrink-0 self-center">
-                    <div
-                      class="h-7 w-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-all shadow-sm"
-                    >
-                      <ArrowRight
-                        class="h-3.5 w-3.5 text-gray-600 dark:text-gray-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-all transform group-hover:translate-x-0.5"
-                      />
-                    </div>
+                    <ArrowRight
+                      class="h-4 w-4 text-gray-300 dark:text-gray-600 group-hover:text-blue-500 transition-colors"
+                    />
                   </div>
                 </div>
               </div>
@@ -310,10 +235,10 @@
             <template v-if="showPeople">
               <div
                 v-if="filteredPeople.length > 0 && activeTab === 'all'"
-                class="px-3 pt-3 pb-2"
+                class="px-3 pt-2 pb-1"
               >
                 <h4
-                  class="text-xs uppercase tracking-wider text-gray-600 dark:text-gray-600 font-medium"
+                  class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-500 font-semibold"
                 >
                   People ({{ filteredPeople.length }})
                 </h4>
@@ -321,187 +246,70 @@
               <div
                 v-for="(person, index) in limitedFilteredPeople"
                 :key="'person-' + (person.id || index)"
-                class="p-3 hover:bg-blue-50/40 dark:hover:bg-blue-900/10 cursor-pointer transition-all duration-200 rounded-lg mx-1 mb-1 group border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30"
+                class="px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-all duration-150 rounded-md mx-1.5 mb-0.5 group"
                 @click="navigateToProfile(person)"
               >
-                <!-- Person card with avatar and details -->
-                <div class="flex items-center">
-                  <!-- Avatar with enhanced styling and fallback -->
+                <!-- Compact Person card -->
+                <div class="flex items-center gap-2.5">
+                  <!-- Avatar - compact size -->
                   <div class="flex-shrink-0 relative">
-                    <div
-                      class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 p-[2px] group-hover:from-blue-100 group-hover:to-blue-50 dark:group-hover:from-blue-900/30 dark:group-hover:to-blue-800/30 transition-all"
-                    >
+                    <div class="w-9 h-9 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
                       <img
-                        v-if="
-                          person.image ||
-                          person.avatar_url ||
-                          person.profile_image
-                        "
-                        :src="
-                          person.image ||
-                          person.avatar_url ||
-                          person.profile_image
-                        "
+                        v-if="person.image || person.avatar_url || person.profile_image"
+                        :src="person.image || person.avatar_url || person.profile_image"
                         :alt="person.name || 'User'"
-                        class="h-full w-full rounded-full object-contain border-2 border-white dark:border-gray-800"
+                        class="h-full w-full rounded-full object-cover"
                       />
                       <div
                         v-else
-                        class="h-full w-full rounded-full bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-semibold"
+                        class="h-full w-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-sm font-medium"
                       >
                         {{ (person.name?.charAt(0) || "U").toUpperCase() }}
                       </div>
                     </div>
-
-                    <!-- Status indicators - Online, Pro, Verified -->
-                    <div class="absolute -bottom-1 -right-1 flex space-x-0.5">
-                      <!-- Online status indicator (green dot) -->
-                      <div
-                        v-if="person.is_online"
-                        class="w-3 h-3 rounded-full bg-green-400 border-2 border-white dark:border-gray-800 animate-pulse"
-                      ></div>
-
-                      <!-- Pro badge if user is a pro member -->
-                      <div
-                        v-if="person.is_pro || person.pro_badge"
-                        class="w-4 h-4 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 border border-amber-200 dark:border-amber-900/40 flex items-center justify-center shadow-sm"
-                        title="Pro Member"
-                      >
-                        <span class="text-xs text-white font-bold">PRO</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- User info with more detailed display -->
-                  <div class="ml-3 flex-1 min-w-0">
-                    <div class="flex items-center gap-1">
-                      <p
-                        class="text-sm font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors inline-flex items-center"
-                      >
-                        <span
-                          v-html="
-                            highlightMatches(
-                              person.name || 'Unknown User',
-                              searchQuery
-                            )
-                          "
-                        ></span>
-                        <!-- Verification badge -->
-                        <span
-                          v-if="person.is_verified || person.verified_badge"
-                          class="inline-block ml-1"
-                          title="Verified Account"
-                        >
-                          <span
-                            class="flex items-center justify-center w-4 h-4 bg-blue-500 dark:bg-blue-600 rounded-full"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              class="w-2.5 h-2.5 text-white fill-current"
-                            >
-                              <path
-                                d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
-                              ></path>
-                            </svg>
-                          </span>
-                        </span>
-                      </p>
-                    </div>
+                    <!-- Online indicator -->
                     <div
-                      class="flex flex-wrap items-center text-xs text-gray-600 dark:text-gray-600"
-                    >
-                      <!-- Professional information with icon -->
-                      <span
-                        v-if="
-                          person.title ||
-                          person.profession ||
-                          person.position ||
-                          person.headline
-                        "
-                        class="flex items-center"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-3 w-3 mr-0.5 opacity-70"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="{2}"
-                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                          />
-                        </svg>
-                        <span
-                          class="truncate max-w-[120px]"
-                          v-html="
-                            highlightMatches(
-                              person.title ||
-                                person.profession ||
-                                person.position ||
-                                person.headline,
-                              searchQuery
-                            )
-                          "
-                        ></span>
-                      </span>
+                      v-if="person.is_online"
+                      class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white dark:border-gray-800"
+                    ></div>
+                  </div>
 
-                      <!-- Followers count -->
+                  <!-- User info - compact layout -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Name row with badges -->
+                    <div class="flex items-center gap-1">
                       <span
-                        v-if="person.followers !== undefined"
-                        class="flex items-center"
+                        class="text-[13px] font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate"
+                        v-html="highlightMatches(person.name || 'Unknown User', searchQuery)"
+                      ></span>
+                      <!-- Verified badge - same as PostHeader -->
+                      <div
+                        v-if="person.is_verified || person.verified_badge || person.kyc"
+                        class="text-blue-500 flex items-center flex-shrink-0"
+                        title="Verified"
                       >
-                        <span
-                          v-if="
-                            person.title ||
-                            person.profession ||
-                            person.position ||
-                            person.headline
-                          "
-                          class="mx-1.5 opacity-40"
-                          >•</span
-                        >
-                        <User class="h-3 w-3 mr-0.5 opacity-70" />
-                        <span>
-                          {{ person.followers }}
-                          <span class="opacity-80">{{
-                            person.followers === 1 ? "follower" : "followers"
-                          }}</span>
-                        </span>
+                        <UIcon name="i-mdi-check-decagram" class="w-3.5 h-3.5" />
+                      </div>
+                      <!-- Pro badge - same gradient as PostHeader -->
+                      <span
+                        v-if="person.is_pro || person.pro_badge"
+                        class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-gradient-to-r from-[#7f00ff] to-[#e100ff] text-white flex-shrink-0 leading-none shadow-sm"
+                      >
+                        PRO
                       </span>
-
-                      <!-- Location information if available -->
-                      <span v-if="person.location" class="flex items-center">
-                        <span class="mx-1.5 opacity-40">•</span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-3 w-3 mr-0.5 opacity-70"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                          />
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        <span>{{ person.location }}</span>
+                    </div>
+                    <!-- Meta info row -->
+                    <div class="flex items-center gap-1.5 mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+                      <span v-if="person.followers !== undefined" class="flex items-center gap-0.5">
+                        <User class="h-2.5 w-2.5" />
+                        {{ formatFollowers(person.followers) }} followers
                       </span>
+                      <span v-if="person.location && person.followers !== undefined" class="text-gray-300 dark:text-gray-600">•</span>
+                      <span v-if="person.location" class="truncate">{{ person.location }}</span>
                     </div>
                   </div>
 
-                  <!-- Action button with enhanced styling -->
+                  <!-- Follow button - compact -->
                   <div
                     class="flex-shrink-0"
                     v-if="person?.id !== user?.user?.id && user"
@@ -509,16 +317,17 @@
                     @click.stop
                   >
                     <button
-                      class="h-7 w-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-all shadow-sm hover:shadow"
+                      class="p-1.5 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                       @click="toggleFollow(person.id)"
+                      :title="followingStatus[person.id] ? 'Following' : 'Follow'"
                     >
                       <UserPlus
                         v-if="!followingStatus[person.id]"
-                        class="h-3.5 w-3.5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+                        class="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors"
                       />
                       <User
                         v-else
-                        class="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 transition-colors"
+                        class="h-4 w-4 text-blue-500"
                       />
                     </button>
                   </div>
@@ -528,23 +337,18 @@
           </div>
         </div>
         <div
-          class="flex justify-center p-3 border-t border-gray-100 dark:border-gray-800 bg-gradient-to-b from-gray-50/80 to-gray-50 dark:from-gray-800/50 dark:to-gray-800/80"
+          class="flex justify-center px-3 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50"
         >
           <button
             @click="viewAllResults"
-            class="view-all-button inline-flex items-center justify-center gap-1.5 py-2.5 px-4 text-sm font-medium text-white dark:text-gray-900 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-400 dark:to-blue-500 hover:from-blue-600 hover:to-blue-700 dark:hover:from-blue-500 dark:hover:to-blue-600 rounded-md transition-all duration-300 w-full shadow-sm hover:shadow relative overflow-hidden group"
+            class="view-all-button inline-flex items-center justify-center gap-1 py-2 px-4 text-[13px] font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 w-full group"
             tabindex="0"
             ref="viewAllButton"
           >
-            <span class="relative z-10 flex items-center">
-              View all results
-              <ArrowRight
-                class="h-3.5 w-3.5 ml-1.5 transform group-hover:translate-x-0.5 transition-transform"
-              />
-            </span>
-            <span
-              class="absolute inset-0 bg-white/10 dark:bg-black/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"
-            ></span>
+            View all results
+            <ArrowRight
+              class="h-3.5 w-3.5 transform group-hover:translate-x-0.5 transition-transform"
+            />
           </button>
         </div>
 
@@ -961,29 +765,36 @@ onMounted(() => {
 const toggleFollow = async (personId) => {
   if (followLoading.value) return;
   followLoading.value = true;
-  isFollowing.value = !isFollowing.value;
+  
+  const wasFollowing = followingStatus.value[personId];
 
-  if (!followingStatus.value[personId]) {
+  if (!wasFollowing) {
+    // Follow user
     try {
+      // Optimistic update
+      followingStatus.value[personId] = true;
+      
       const { data } = await post(`/bn/users/${personId}/follow/`);
-      if (data) {
-        // Update followers count accordingly
+      if (!data) {
+        // Revert on failure
+        followingStatus.value[personId] = false;
       }
     } catch (error) {
-      console.error("Error toggling follow:", error);
-      followingStatus.value[personId] = !followingStatus.value[personId]; // Revert state on error
+      console.error("Error following user:", error);
+      followingStatus.value[personId] = false; // Revert state on error
     } finally {
       followLoading.value = false;
     }
   } else {
+    // Unfollow user
     try {
-      const res = await del(`/bn/users/${personId}/unfollow/`);
-      if (res.data === undefined) {
-        // Update followers count accordingly
-      }
+      // Optimistic update
+      followingStatus.value[personId] = false;
+      
+      await del(`/bn/users/${personId}/unfollow/`);
     } catch (error) {
-      console.error("Error toggling follow:", error);
-      followingStatus.value[personId] = !followingStatus.value[personId]; // Revert state on error
+      console.error("Error unfollowing user:", error);
+      followingStatus.value[personId] = true; // Revert state on error
     } finally {
       followLoading.value = false;
     }
@@ -1248,6 +1059,18 @@ const handleClickOutside = (event) => {
   ) {
     showSearchDropdown.value = false;
   }
+};
+
+// Format followers count to compact format (e.g., 1.2K, 5M)
+const formatFollowers = (count) => {
+  if (count === undefined || count === null) return '0';
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (count >= 1000) {
+    return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  return count.toString();
 };
 
 // Format date to relative time ago

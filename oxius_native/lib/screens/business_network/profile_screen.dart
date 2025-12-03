@@ -935,162 +935,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ],
           ),
           
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           
-          // QR Code, Chat and Follow Button (for viewing other profiles)
-          if (!isOwnProfile)
-            AuthService.currentUser != null
-                ? // Logged in: Show all buttons in a row
-                Row(
-                    children: [
-                      // QR Code Button
-                      Expanded(
-                        flex: 2,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            if (_userData != null) {
-                              showDialog(
-                                context: context,
-                                builder: (context) => QrCodeModal(user: _userData!),
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.qr_code, size: 16),
-                          label: const Text(
-                            'QR Code',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            side: BorderSide(color: Colors.grey.shade300),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Chat Icon Button
-                      OutlinedButton(
-                        onPressed: () => _openChatWithUser(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          side: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        child: Image.asset(
-                          'assets/images/chat_icon.png',
-                          width: 18,
-                          height: 18,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.chat_bubble_outline, size: 18);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Follow Button
-                      Expanded(
-                        flex: 2,
-                        child: ElevatedButton(
-                    onPressed: _followLoading ? null : _toggleFollow,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _isFollowing
-                          ? Colors.grey.shade200
-                          : const Color(0xFF3B82F6),
-                      foregroundColor: _isFollowing
-                          ? Colors.black87
-                          : Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: _followLoading
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            _isFollowing ? 'Following' : 'Follow',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : // Not logged in: Show only QR Code button centered
-                Center(
-                    child: SizedBox(
-                      width: 200, // Fixed width for centered button
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          if (_userData != null) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => QrCodeModal(user: _userData!),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.qr_code, size: 16),
-                        label: const Text(
-                          'QR Code',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          side: BorderSide(color: Colors.grey.shade300),
-                        ),
-                      ),
-                    ),
-                  ),
-          
-          // QR Code Button (for own profile)
-          if (isOwnProfile)
-            OutlinedButton.icon(
-              onPressed: () {
-                if (_userData != null) {
-                  showDialog(
-                    context: context,
-                    builder: (context) => QrCodeModal(user: _userData!),
-                  );
-                }
-              },
-              icon: const Icon(Icons.qr_code, size: 16),
-              label: const Text(
-                'QR Code',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                side: BorderSide(color: Colors.grey.shade300),
-              ),
-            ),
+          // Action Buttons - Pill Style (matching Vue design)
+          _buildActionButtonsRow(isOwnProfile),
           
           // Diamond Balance (for own profile)
           if (isOwnProfile && _userData?['diamond_balance'] != null) ...[
@@ -1195,6 +1043,139 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Build action buttons row with pill-style design (matching Vue)
+  Widget _buildActionButtonsRow(bool isOwnProfile) {
+    final isLoggedIn = AuthService.currentUser != null;
+    
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(50),
+        color: Colors.white,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // QR Code Button
+          _buildPillButton(
+            icon: Icons.qr_code_2_rounded,
+            label: 'QR Code',
+            onTap: () {
+              if (_userData != null) {
+                showDialog(
+                  context: context,
+                  builder: (context) => QrCodeModal(user: _userData!),
+                );
+              }
+            },
+            showBorder: true,
+          ),
+          
+          // Chat Button (only for other profiles when logged in)
+          if (!isOwnProfile && isLoggedIn) ...[
+            _buildPillButton(
+              customIcon: Image.asset(
+                'assets/images/chat_icon.png',
+                width: 20,
+                height: 20,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.chat_bubble_outline_rounded, size: 20, color: Colors.teal.shade600);
+                },
+              ),
+              label: 'Chat',
+              labelFirst: true,
+              onTap: () => _openChatWithUser(),
+              showBorder: true,
+            ),
+          ],
+          
+          // Follow/Following Button (only for other profiles when logged in)
+          if (!isOwnProfile && isLoggedIn)
+            _buildPillButton(
+              icon: _isFollowing ? Icons.check_rounded : Icons.person_add_outlined,
+              label: _isFollowing ? 'Following' : 'Follow',
+              onTap: _followLoading ? null : _toggleFollow,
+              isLoading: _followLoading,
+              isActive: !_isFollowing,
+              showBorder: false,
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// Build individual pill button
+  Widget _buildPillButton({
+    IconData? icon,
+    Widget? customIcon,
+    String? label,
+    VoidCallback? onTap,
+    bool showBorder = false,
+    bool isLoading = false,
+    bool isActive = false,
+    bool labelFirst = false,
+  }) {
+    final labelWidget = label != null
+        ? Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          )
+        : null;
+
+    final iconWidget = isLoading
+        ? SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade600),
+            ),
+          )
+        : customIcon ?? (icon != null
+            ? Icon(
+                icon,
+                size: 20,
+                color: Colors.grey.shade700,
+              )
+            : null);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(50),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: label != null ? 16 : 14,
+          vertical: 12,
+        ),
+        decoration: BoxDecoration(
+          border: showBorder
+              ? Border(right: BorderSide(color: Colors.grey.shade200))
+              : null,
+          color: isActive ? const Color(0xFFF3F4F6) : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (labelFirst && labelWidget != null) ...[
+              labelWidget,
+              if (iconWidget != null) const SizedBox(width: 6),
+            ],
+            if (iconWidget != null) iconWidget,
+            if (!labelFirst && labelWidget != null) ...[
+              const SizedBox(width: 6),
+              labelWidget,
+            ],
+          ],
+        ),
       ),
     );
   }
