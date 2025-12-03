@@ -160,7 +160,10 @@ class _PostGigScreenState extends State<PostGigScreen> {
            _quantityController.text.trim().isNotEmpty &&
            _instructionsController.text.trim().isNotEmpty &&
            double.tryParse(_priceController.text) != null &&
-           int.tryParse(_quantityController.text) != null;
+           int.tryParse(_quantityController.text) != null &&
+           _targetCountry.isNotEmpty &&
+           _selectedDevices.isNotEmpty &&
+           _selectedNetworks.isNotEmpty;
   }
 
   bool _isValidUrl(String url) {
@@ -643,13 +646,30 @@ Widget _buildForm(bool isMobile) {
               ),
             ),
 
-            // Instructions Section
+            // Instructions & Details Section (matching Vue project order)
             _buildSectionCard(
-              title: 'Instructions',
+              title: 'Instructions & Details',
               icon: Icons.assignment,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Task URL first (matching Vue project)
+                  _buildTextField(
+                    label: 'Task URL',
+                    controller: _actionLinkController,
+                    hintText: 'https://example.com (optional)',
+                    icon: Icons.link,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Optional: Provide a link to the website or page where the task should be completed',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Instructions field
                   const Text(
                     'Provide detailed instructions for completing this gig',
                     style: TextStyle(
@@ -717,31 +737,6 @@ Widget _buildForm(bool isMobile) {
                     selectedValues: _selectedNetworks,
                     onChanged: (selected) => setState(() => _selectedNetworks = selected),
                     isRequired: true,
-                  ),
-                ],
-              ),
-            ),
-
-            // Task URL Section
-            _buildSectionCard(
-              title: 'Task URL',
-              icon: Icons.link,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTextField(
-                    label: 'Task URL',
-                    controller: _actionLinkController,
-                    hintText: 'https://example.com (optional)',
-                    icon: Icons.link,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Optional: Provide a link to the website or page where the task should be completed',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
                   ),
                 ],
               ),

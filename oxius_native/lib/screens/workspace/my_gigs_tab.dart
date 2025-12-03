@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
+import 'gig_detail_screen.dart';
 
 class MyGigsTab extends StatefulWidget {
   const MyGigsTab({super.key});
@@ -230,15 +231,21 @@ class _MyGigsTabState extends State<MyGigsTab> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          gig['title'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                        child: GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => GigDetailScreen(gigId: gig['id'].toString())),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          child: Text(
+                            gig['title'] ?? '',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF8B5CF6),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),

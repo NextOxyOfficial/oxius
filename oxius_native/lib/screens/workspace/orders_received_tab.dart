@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import 'order_chat_screen.dart';
+import 'gig_detail_screen.dart';
 
 class OrdersReceivedTab extends StatefulWidget {
   const OrdersReceivedTab({super.key});
@@ -412,14 +413,21 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        gig?['title'] ?? 'Unknown Gig',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => GigDetailScreen(gigId: gig?['id']?.toString() ?? '')),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        child: Text(
+                          gig?['title'] ?? 'Unknown Gig',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                            color: Color(0xFF8B5CF6),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       // Buyer Info
@@ -438,13 +446,28 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                                 : null,
                           ),
                           const SizedBox(width: 4),
-                          Expanded(
+                          Flexible(
                             child: Text(
                               'from ${buyer?['name'] ?? 'Unknown'}',
                               style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          if (buyer?['kyc'] == true)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 3),
+                              child: Icon(Icons.verified, size: 12, color: Colors.blue),
+                            ),
+                          if (buyer?['is_pro'] == true)
+                            Container(
+                              margin: const EdgeInsets.only(left: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 4),

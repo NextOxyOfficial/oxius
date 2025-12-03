@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/adsyconnect_service.dart';
 import '../adsy_connect_chat_interface.dart';
+import '../wallet/wallet_screen.dart';
 
 class GigDetailScreen extends StatefulWidget {
   final String gigId;
@@ -42,12 +43,19 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   int _reviewsPage = 1;
   int _totalReviewsCount = 0;
   bool _hasMoreReviews = false;
+  final GlobalKey _reviewsSectionKey = GlobalKey();
+  
+  // Fee settings from backend
+  double _buyerFeePercent = 2.5; // Default 2.5%
+  double _sellerFeePercent = 2.5; // Default 2.5%
+  bool _feesEnabled = true;
 
   @override
   void initState() {
     super.initState();
     _loadGigDetails();
     _loadUserBalance();
+    _loadFeeSettings();
   }
 
   @override
@@ -88,6 +96,40 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       _showSnackBar('Failed to refresh balance', Colors.red);
     } finally {
       if (mounted) setState(() => _isRefreshingBalance = false);
+    }
+  }
+
+  Future<void> _loadFeeSettings() async {
+    try {
+      final fees = await _workspaceService.getFeeSettings();
+      if (mounted && fees.isNotEmpty) {
+        setState(() {
+          _buyerFeePercent = double.tryParse(fees['buyer_fee_percent']?.toString() ?? '') ?? 2.5;
+          _sellerFeePercent = double.tryParse(fees['seller_fee_percent']?.toString() ?? '') ?? 2.5;
+          _feesEnabled = fees['fees_enabled'] ?? true;
+        });
+      }
+    } catch (e) {
+      // Use default fees
+    }
+  }
+
+  String _formatFeePercent(double percent) {
+    // Show whole number if no decimals, otherwise show one decimal
+    if (percent == percent.roundToDouble()) {
+      return percent.toStringAsFixed(0);
+    }
+    return percent.toStringAsFixed(1);
+  }
+
+  void _scrollToReviews() {
+    final context = _reviewsSectionKey.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -184,10 +226,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   double get _gigPrice => double.tryParse(_gig?['price']?.toString() ?? '0') ?? 0;
   
-  // Fee calculations (matching Vue)
-  double get _serviceFee => _gigPrice * 0.05; // 5% service fee
+  // Fee calculations (dynamic from backend)
+  double get _serviceFee => _feesEnabled ? _gigPrice * (_buyerFeePercent / 100) : 0;
   double get _totalToPay => _gigPrice + _serviceFee;
-  double get _sellerEarnings => _gigPrice * 0.90; // 10% platform fee
+  double get _sellerEarnings => _feesEnabled ? _gigPrice * (1 - (_sellerFeePercent / 100)) : _gigPrice;
   bool get _hasSufficientBalance => _userBalance >= _totalToPay;
   double get _balanceShortfall => _totalToPay - _userBalance;
   double get _balanceAfterPayment => _userBalance - _totalToPay;
@@ -730,10 +772,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                       const SizedBox(width: 4),
                       Text('${rating.toStringAsFixed(1)} ', style: TextStyle(color: Colors.grey[600], fontSize: 11)),
                       GestureDetector(
-                        onTap: () {
-                          // Scroll to reviews
-                        },
-                        child: Text('($reviewsCount reviews)', style: const TextStyle(color: Color(0xFF8B5CF6), fontSize: 11)),
+                        onTap: _scrollToReviews,
+                        child: Text('($reviewsCount reviews)', style: const TextStyle(color: Color(0xFF8B5CF6), fontSize: 11, decoration: TextDecoration.underline)),
                       ),
                     ],
                   ),
@@ -992,23 +1032,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           child: Column(
             children: [
               _buildSummaryRow('Order Amount', '৳${_gigPrice.toStringAsFixed(2)}'),
-              _buildSummaryRow('Service Fee (5%)', '৳${_serviceFee.toStringAsFixed(2)}'),
+              _buildSummaryRow('Service Fee (${_formatFeePercent(_buyerFeePercent)}%)', '৳${_serviceFee.toStringAsFixed(2)}'),
               const Divider(height: 16),
               _buildSummaryRow('Total to Pay', '৳${_totalToPay.toStringAsFixed(2)}', isBold: true),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        // Seller Earnings Info
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-          child: Row(
-            children: [
-              const Icon(Icons.info_outline, size: 14, color: Color(0xFF8B5CF6)),
-              const SizedBox(width: 6),
-              Text('Seller receives ৳${_sellerEarnings.toStringAsFixed(2)} after 10% fee', style: const TextStyle(fontSize: 11, color: Color(0xFF8B5CF6))),
             ],
           ),
         ),
@@ -1026,7 +1052,20 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   children: [
                     Icon(Icons.warning, size: 16, color: Colors.red[700]),
                     const SizedBox(width: 6),
-                    Text('Insufficient Balance', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red[800], fontSize: 12)),
+                    Expanded(
+                      child: Text('Insufficient Balance', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red[800], fontSize: 12)),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WalletScreen())),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF8B5CF6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('Add Funds', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -1260,7 +1299,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                           : null,
                                     ),
                                     const SizedBox(width: 4),
-                                    Expanded(
+                                    Flexible(
                                       child: Text(
                                         user?['name'] ?? 'Unknown',
                                         style: TextStyle(fontSize: 10, color: Colors.grey[600]),
@@ -1269,16 +1308,19 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                       ),
                                     ),
                                     if (user?['kyc'] == true)
-                                      const Icon(Icons.verified, size: 10, color: Colors.blue),
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 3),
+                                        child: Icon(Icons.verified, size: 12, color: Colors.blue),
+                                      ),
                                     if (user?['is_pro'] == true)
                                       Container(
-                                        margin: const EdgeInsets.only(left: 2),
-                                        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                                        margin: const EdgeInsets.only(left: 3),
+                                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
-                                          borderRadius: BorderRadius.circular(2),
+                                          borderRadius: BorderRadius.circular(3),
                                         ),
-                                        child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 6, fontWeight: FontWeight.bold)),
+                                        child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
                                       ),
                                   ],
                                 ),
@@ -1325,6 +1367,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   Widget _buildReviewsSection(int reviewsCount) {
     return Container(
+      key: _reviewsSectionKey,
       color: Colors.white,
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(top: 6),
