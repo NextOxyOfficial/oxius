@@ -719,6 +719,13 @@ const orderFilters = [
 
 // Fetch orders from API
 async function fetchOrders() {
+  // Don't fetch if user is not logged in
+  if (!currentUser.value?.user?.id || !currentUser.value?.token) {
+    isLoading.value = false;
+    orders.value = [];
+    return;
+  }
+  
   isLoading.value = true;
   try {
     const { data, error } = await get('/workspace/orders/seller/');
@@ -769,6 +776,11 @@ async function fetchOrders() {
 
 // Fetch unread message counts
 async function fetchUnreadCounts() {
+  // Don't fetch if user is not logged in
+  if (!currentUser.value?.user?.id || !currentUser.value?.token) {
+    return;
+  }
+  
   try {
     const { data, error } = await get('/workspace/orders/unread-counts/');
     if (data && !error && data.counts) {
@@ -778,7 +790,7 @@ async function fetchUnreadCounts() {
       });
     }
   } catch (err) {
-    console.error('Error fetching unread counts:', err);
+    // Silently handle - user may not be authenticated
   }
 }
 

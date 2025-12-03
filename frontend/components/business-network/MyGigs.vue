@@ -449,6 +449,13 @@ const settingsDropdownPosition = ref({ top: 0, left: 0 });
 
 // Fetch my gigs from API
 async function fetchMyGigs() {
+  // Don't fetch if user is not logged in
+  if (!user.value?.user?.id) {
+    isLoading.value = false;
+    myGigs.value = [];
+    return;
+  }
+  
   isLoading.value = true;
   try {
     const params = new URLSearchParams();
