@@ -77,22 +77,6 @@
       </div>
     </div>
 
-    <!-- Empty state -->
-    <div v-else class="text-center py-12">
-      <div class="mx-auto h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <ShoppingBag class="h-12 w-12 text-gray-400" />
-      </div>
-      <h3 class="text-lg font-medium text-gray-900 mb-2">{{ emptyStateTitle }}</h3>
-      <p class="text-gray-600 mb-6">{{ emptyStateMessage }}</p>
-      <button
-        v-if="showAddButton"
-        @click="createProduct"
-        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-      >
-        <Plus class="w-4 h-4 mr-2" />
-        Add Your First Product
-      </button>
-    </div>
   </div>
 </template>
 

@@ -520,20 +520,27 @@ const isEditProfileOpen = ref(false);
 const isEditPhotoOpen = ref(false);
 const isEditCoverOpen = ref(false);
 
-const tabs = computed(() =>
-  currentUser.value?.user?.id && currentUser.value?.user?.id === route.params.id
-    ? [
-        { label: "Posts", value: "posts" },
-        { label: "Saved", value: "saved" },
-        { label: "My Workspace", value: "workspace" },
-        { label: "My Products", value: "products" },
-      ]
-    : [
-        { label: "Posts", value: "posts" },
-        { label: "My Workspace", value: "workspace" },
-        { label: "My Products", value: "products" },
-      ]
-);
+const tabs = computed(() => {
+  const isOwnProfile = currentUser.value?.user?.id && currentUser.value?.user?.id === route.params.id;
+  const baseTabs = [{ label: "Posts", value: "posts" }];
+  
+  // Add Saved tab only for own profile
+  if (isOwnProfile) {
+    baseTabs.push({ label: "Saved", value: "saved" });
+  }
+  
+  // Add Workspace tab only if user has gigs
+  if (userGigs.value.length > 0) {
+    baseTabs.push({ label: "My Workspace", value: "workspace" });
+  }
+  
+  // Add Products tab only if user has products
+  if (userProducts.value.length > 0) {
+    baseTabs.push({ label: "My Products", value: "products" });
+  }
+  
+  return baseTabs;
+});
 
 // Open QR code modal
 const openQrCodeModal = () => {
@@ -649,55 +656,34 @@ async function fetchUserGigs() {
   try {
     isLoadingWorkspace.value = true;
     
-    // Create dummy user gigs for demonstration
-    // TODO: Replace with actual API call when backend is ready
-    setTimeout(() => {
-      const dummyUserGigs = [
-        {
-          id: 1,
-          title: "I will create a professional logo design for your business",
-          price: 50,
-          category: "design",
-          status: "active",
-          image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=400&h=300&fit=crop",
-          views: 234,
-          rating: 4.8,
-          reviews: 12
-        },
-        {
-          id: 2,
-          title: "I will develop a custom web application with modern tech stack",
-          price: 500,
-          category: "development", 
-          status: "active",
-          image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=300&fit=crop",
-          views: 156,
-          rating: 5.0,
-          reviews: 8
-        },
-        {
-          id: 3,
-          title: "I will write compelling marketing content for your campaigns",
-          price: 75,
-          category: "writing",
-          status: "paused",
-          image: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=300&fit=crop",
-          views: 89,
-          rating: 4.6,
-          reviews: 15
-        }
-      ];
-
-      // Only show gigs for the current user's profile
-      if (currentUser.value?.user?.id === route.params.id) {
-        userGigs.value = dummyUserGigs;
-      } else {
-        // For other users, show a subset or different gigs
-        userGigs.value = dummyUserGigs.slice(0, 2);
-      }
-      
+    const profileUserId = route.params.id;
+    
+    // Fetch gigs for this user from the API
+    const { data, error } = await get(`/workspace/gigs/?user=${profileUserId}`);
+    
+    if (error) {
+      console.error("Error fetching user gigs:", error);
+      userGigs.value = [];
       isLoadingWorkspace.value = false;
-    }, 1000);
+      return;
+    }
+    
+    const results = data?.results || data || [];
+    
+    // Transform API data to match frontend format
+    userGigs.value = results.map(gig => ({
+      id: gig.id,
+      title: gig.title,
+      price: parseFloat(gig.price),
+      category: gig.category,
+      status: gig.status || 'active',
+      image: gig.image_url || gig.image || '/images/placeholder-gig.png',
+      views: gig.views_count || 0,
+      rating: gig.rating || 0,
+      reviews: gig.reviews || 0
+    }));
+    
+    isLoadingWorkspace.value = false;
   } catch (error) {
     console.error("Error fetching user gigs:", error);
     userGigs.value = [];
@@ -804,12 +790,8 @@ const loadMoreProducts = async () => {
 };
 
 const editGig = (gig) => {
-  // TODO: Implement edit gig functionality
-  toast.add({
-    title: "Edit Gig",
-    description: `Editing: ${gig.title}`,
-    color: "blue",
-  });
+  // Navigate to workspace details page with edit mode
+  navigateTo(`/business-network/workspace-details?id=${gig.id}&edit=true`);
 };
 
 const toggleGigStatus = (gig) => {
@@ -825,21 +807,13 @@ const toggleGigStatus = (gig) => {
 };
 
 const createGig = () => {
-  // TODO: Navigate to create gig page or open modal
-  toast.add({
-    title: "Create Gig",
-    description: "Redirecting to gig creation...",
-    color: "blue",
-  });
+  // Navigate to workspaces page with create-gig tab
+  navigateTo('/business-network/workspaces?tab=create-gig');
 };
 
 const openGigDetails = (gig) => {
-  // TODO: Open gig details modal or navigate to gig page
-  toast.add({
-    title: "Gig Details",
-    description: `Viewing: ${gig.title}`,
-    color: "blue",
-  });
+  // Navigate to the workspace details page
+  navigateTo(`/business-network/workspace-details?id=${gig.id}`);
 };
 
 // Product-related functions

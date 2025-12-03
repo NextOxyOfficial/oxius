@@ -858,6 +858,12 @@ watch(isOpen, async (newValue) => {
   if (newValue && props.chatroomId) {
     await loadMessages()
     startPolling()
+    // Ensure scroll to bottom after DOM is fully rendered
+    await nextTick()
+    scrollToBottom()
+    // Additional scroll after a short delay to handle any async rendering
+    setTimeout(() => scrollToBottom(), 100)
+    setTimeout(() => scrollToBottom(), 300)
   } else {
     stopPolling()
     // Reset all menu/modal states when closing

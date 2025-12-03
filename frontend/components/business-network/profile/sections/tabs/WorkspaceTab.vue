@@ -1,132 +1,104 @@
 <template>
-  <div class="space-y-4">
+  <div class="space-y-3">
     <!-- Loading skeleton -->
-    <div v-if="isLoadingWorkspace" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div v-if="isLoadingWorkspace" class="space-y-3">
       <div
-        v-for="i in 6"
+        v-for="i in 4"
         :key="i"
-        class="bg-white border border-gray-100 rounded-lg overflow-hidden animate-pulse"
+        class="bg-white border border-gray-100 rounded-lg p-4 animate-pulse"
       >
-        <div class="h-48 bg-gray-200"></div>
-        <div class="p-4">
-          <div class="flex items-center mb-3">
-            <div class="h-8 w-8 rounded-full bg-gray-200"></div>
-            <div class="ml-2 h-4 w-24 bg-gray-200 rounded"></div>
-          </div>
-          <div class="h-5 w-full bg-gray-200 rounded mb-2"></div>
-          <div class="h-4 w-3/4 bg-gray-200 rounded mb-3"></div>
-          <div class="flex justify-between items-center">
-            <div class="h-4 w-20 bg-gray-200 rounded"></div>
-            <div class="h-6 w-16 bg-gray-200 rounded"></div>
+        <div class="flex gap-4">
+          <div class="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div class="flex gap-4 mt-2">
+              <div class="h-3 bg-gray-200 rounded w-16"></div>
+              <div class="h-3 bg-gray-200 rounded w-16"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- User's Gigs Grid -->
-    <div v-else-if="userGigs.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- User's Gigs List -->
+    <div v-else-if="userGigs.length > 0" class="space-y-3">
       <div
         v-for="gig in userGigs"
         :key="gig.id"
-        class="bg-white border border-gray-100 rounded-lg overflow-hidden hover:shadow-sm transition-all duration-200 cursor-pointer group"
+        class="bg-white border border-gray-100 rounded-lg p-4 hover:shadow-sm hover:border-gray-200 transition-all duration-200 cursor-pointer group"
         @click="openGigDetails(gig)"
       >
-        <!-- Gig Image -->
-        <div class="relative h-48 overflow-hidden">
-          <img
-            :src="gig.image"
-            :alt="gig.title"
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-          />
-          <div class="absolute top-3 right-3">
+        <div class="flex gap-4">
+          <!-- Gig Image -->
+          <div class="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+            <img
+              :src="gig.image"
+              :alt="gig.title"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            />
+            <div class="absolute top-1 left-1">
+              <span
+                class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium"
+                :class="getStatusBadgeClass(gig.status)"
+              >
+                {{ getStatusLabel(gig.status) }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Gig Content -->
+          <div class="flex-1 min-w-0">
+            <!-- Title -->
+            <h3 class="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors mb-1">
+              {{ gig.title }}
+            </h3>
+            
+            <!-- Category Badge -->
             <span
-              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mb-2"
               :class="getCategoryBadgeClass(gig.category)"
             >
               {{ getCategoryLabel(gig.category) }}
             </span>
-          </div>
-          <div class="absolute top-3 left-3">
-            <span
-              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-              :class="getStatusBadgeClass(gig.status)"
-            >
-              {{ getStatusLabel(gig.status) }}
-            </span>
-          </div>
-        </div>
-        
-        <!-- Gig Content -->
-        <div class="p-4">
-          <!-- Gig Stats -->
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center space-x-4 text-sm text-gray-600">
-              <div class="flex items-center">
-                <Eye class="h-4 w-4 mr-1" />
+            
+            <!-- Stats Row -->
+            <div class="flex items-center gap-4 text-xs text-gray-500">
+              <div class="flex items-center gap-1">
+                <Eye class="h-3.5 w-3.5" />
                 <span>{{ gig.views }}</span>
               </div>
-              <div class="flex items-center">
-                <Star class="h-4 w-4 mr-1 text-yellow-400 fill-current" />
+              <div class="flex items-center gap-1">
+                <Star class="h-3.5 w-3.5 text-yellow-400 fill-current" />
                 <span>{{ gig.rating }} ({{ gig.reviews }})</span>
+              </div>
+              <div class="font-semibold text-gray-900">
+                ${{ gig.price }}
               </div>
             </div>
           </div>
           
-          <!-- Gig Title -->
-          <h3 class="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
-            {{ gig.title }}
-          </h3>
-          
-          <!-- Price and Actions -->
-          <div class="flex justify-between items-center">
-            <div class="text-lg font-bold text-gray-900">
-              ${{ gig.price }}
-            </div>
-            <div class="flex items-center space-x-2">
-              <button
-                @click.stop="editGig(gig)"
-                class="p-1 rounded-md hover:bg-gray-100 transition-colors"
-                title="Edit gig"
-              >
-                <Edit class="h-4 w-4 text-gray-600" />
-              </button>
-              <button
-                @click.stop="toggleGigStatus(gig)"
-                class="p-1 rounded-md hover:bg-gray-100 transition-colors"
-                :title="gig.status === 'active' ? 'Pause gig' : 'Activate gig'"
-              >
-                <component 
-                  :is="gig.status === 'active' ? Pause : Play"
-                  class="h-4 w-4 text-gray-600"
-                />
-              </button>
-            </div>
+          <!-- Actions (only for own profile) -->
+          <div v-if="isOwnProfile" class="flex items-center gap-1 flex-shrink-0">
+            <button
+              @click.stop="editGig(gig)"
+              class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              title="Edit gig"
+            >
+              <Edit class="h-4 w-4 text-gray-500" />
+            </button>
+            <button
+              @click.stop="toggleGigStatus(gig)"
+              class="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              :title="gig.status === 'active' ? 'Pause gig' : 'Activate gig'"
+            >
+              <component 
+                :is="gig.status === 'active' ? Pause : Play"
+                class="h-4 w-4 text-gray-500"
+              />
+            </button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Empty state -->
-    <div
-      v-else
-      class="flex flex-col items-center justify-center py-16 bg-gray-50/50 rounded-lg border border-dashed border-gray-200"
-    >
-      <div class="text-center">
-        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Briefcase class="h-8 w-8 text-purple-600" />
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">No gigs created yet</h3>
-        <p class="text-gray-600 mb-4">
-          {{ isOwnProfile ? "Start creating your first gig to showcase your services" : "This user hasn't created any gigs yet" }}
-        </p>
-        <button
-          v-if="isOwnProfile"
-          @click="createNewGig"
-          class="inline-flex items-center px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors"
-        >
-          <Plus class="h-4 w-4 mr-2" />
-          Create Your First Gig
-        </button>
       </div>
     </div>
   </div>

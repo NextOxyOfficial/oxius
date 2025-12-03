@@ -591,76 +591,77 @@
             </div>
 
             <!-- Related Gigs Section -->
-            <div class="border-t pt-8 mb-8">
-              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">Similar gigs you may like</h3>
+            <div v-if="relatedGigs.length > 0" class="bg-white border-t pt-6 mb-8">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-900">Similar Gigs</h3>
                 <NuxtLink 
                   to="/business-network/workspaces"
-                  class="text-purple-600 hover:text-purple-700 text-sm font-medium transition-colors"
+                  class="text-purple-600 hover:text-purple-700 text-xs font-medium transition-colors"
                 >
                   View All
                 </NuxtLink>
               </div>
               
-              <!-- Mobile: 1 gig, Desktop: 2 gigs grid -->
-              <div 
-                ref="relatedGigsContainer"
-                class="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              >
-                <div 
-                  v-for="relatedGig in relatedGigs.slice(0, 2)" 
-                  :key="relatedGig.id"
-                  class="bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all hover:shadow-sm cursor-pointer"
-                  @click="navigateTo(`/business-network/workspace-details?id=${relatedGig.id}`)"
-                >
-                  <!-- Gig Image -->
-                  <div class="aspect-video rounded-t-lg overflow-hidden">
-                    <img
-                      :src="relatedGig.image"
-                      :alt="relatedGig.title"
-                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  
-                  <!-- Gig Content -->
-                  <div class="p-4">
-                    <h4 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-purple-600 transition-colors">
-                      {{ relatedGig.title }}
-                    </h4>
-                    
-                    <!-- Seller Info -->
-                    <div class="flex items-center mb-3">
+              <!-- Responsive Grid: 2 on mobile, 3 on desktop, centered -->
+              <div class="flex justify-center">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm sm:max-w-2xl">
+                  <!-- Mobile: show 2, Desktop: show 3 -->
+                  <div 
+                    v-for="(relatedGig, index) in relatedGigs.slice(0, 3)" 
+                    :key="relatedGig.id"
+                    :class="[
+                      'bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all hover:shadow-sm cursor-pointer overflow-hidden',
+                      index === 2 ? 'hidden sm:block' : ''
+                    ]"
+                    @click="navigateTo(`/business-network/workspace-details?id=${relatedGig.id}`)"
+                  >
+                    <!-- Gig Image -->
+                    <div class="h-20 overflow-hidden">
                       <img
-                        :src="relatedGig.user.avatar"
-                        :alt="relatedGig.user.name"
-                        class="h-6 w-6 rounded-full mr-2 cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
-                        @click.stop="navigateToProfile(relatedGig.user.id)"
+                        :src="relatedGig.image"
+                        :alt="relatedGig.title"
+                        class="w-full h-full object-cover"
                       />
-                      <div class="flex items-center gap-1 flex-1 min-w-0">
+                    </div>
+                    
+                    <!-- Gig Content -->
+                    <div class="p-2.5 flex flex-col" style="height: 120px;">
+                      <!-- Seller Info -->
+                      <div class="flex items-center gap-1.5 mb-1.5">
+                        <img
+                          :src="relatedGig.user.avatar"
+                          :alt="relatedGig.user.name"
+                          class="h-6 w-6 rounded-full flex-shrink-0"
+                          @click.stop="navigateToProfile(relatedGig.user.id)"
+                        />
                         <span 
-                          class="text-sm text-gray-600 cursor-pointer hover:text-purple-600 transition-colors truncate"
+                          class="text-xs text-gray-500 truncate flex-1"
                           @click.stop="navigateToProfile(relatedGig.user.id)"
                         >
                           {{ relatedGig.user.name }}
                         </span>
                         <!-- Verified Badge -->
-                        <UIcon v-if="relatedGig.user.kyc" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <UIcon v-if="relatedGig.user.kyc" name="i-heroicons-check-badge-solid" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
                         <!-- Pro Badge -->
-                        <span v-if="relatedGig.user.is_pro" class="flex-shrink-0 inline-flex items-center px-1 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+                        <span v-if="relatedGig.user.is_pro" class="flex-shrink-0 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-gradient-to-r from-amber-400 to-orange-500 text-white">
                           PRO
                         </span>
                       </div>
-                    </div>
-                    
-                    <!-- Rating and Price -->
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center">
-                        <Star class="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                        <span class="text-sm font-medium text-gray-900">{{ relatedGig.rating }}</span>
-                        <span class="text-sm text-gray-500 ml-1">({{ relatedGig.reviews }})</span>
-                      </div>
-                      <div class="text-lg font-bold text-gray-900 inline-flex items-center">
-                        <UIcon name="i-mdi:currency-bdt" class="text-lg" />{{ relatedGig.price }}
+                      
+                      <!-- Title -->
+                      <h4 class="text-sm font-semibold text-gray-900 line-clamp-2 mb-auto leading-snug">
+                        {{ relatedGig.title }}
+                      </h4>
+                      
+                      <!-- Rating and Price -->
+                      <div class="flex items-center justify-between mt-1.5">
+                        <div class="flex items-center">
+                          <Star class="h-3.5 w-3.5 text-yellow-400 fill-current" />
+                          <span class="text-[11px] text-gray-500 ml-1">{{ relatedGig.rating }} ({{ relatedGig.reviews }})</span>
+                        </div>
+                        <div class="text-sm font-bold text-purple-600 inline-flex items-center">
+                          <UIcon name="i-mdi:currency-bdt" class="text-sm" />{{ relatedGig.price }}
+                        </div>
                       </div>
                     </div>
                   </div>
