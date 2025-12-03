@@ -56,6 +56,17 @@
           <UIcon name="i-cil-qr-code" class="w-4 h-4 relative z-10" />
           <span class="relative z-10">QR Code</span>
         </button>
+
+        <!-- Chat Button (Desktop) -->
+        <button
+          v-if="user?.id !== currentUser?.user?.id && currentUser"
+          @click="$emit('open-chat')"
+          class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 transition-all shadow-sm hover:shadow"
+          title="Send Message"
+        >
+          <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4" />
+          <span>Chat</span>
+        </button>
         
         <button
           v-if="user?.id !== currentUser?.user?.id && currentUser"
@@ -186,6 +197,7 @@ const emit = defineEmits([
   'toggle-follow',
   'open-followers-modal',
   'show-diamond-modal',
-  'format-time-ago'
+  'format-time-ago',
+  'open-chat'
 ]);
 </script>

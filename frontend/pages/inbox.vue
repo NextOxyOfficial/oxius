@@ -572,7 +572,7 @@
                   </div>
 
                   <!-- Messages Area -->
-                  <div class="flex-1 overflow-y-auto p-3 bg-gray-50 messages-container">
+                  <div class="flex-1 overflow-y-auto p-3 bg-gray-50 messages-container" @click="activeAdsyMessageMenu = null">
                     <div v-if="adsyMessagesLoading" class="flex justify-center items-center h-full">
                       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
@@ -586,7 +586,7 @@
                       <div
                         v-for="message in adsyMessages"
                         :key="message.id"
-                        class="flex items-end gap-2"
+                        class="flex items-end gap-2 group/msg"
                         :class="message.sender?.id === currentUserId ? 'justify-end' : 'justify-start'"
                       >
                         <!-- Avatar for received messages -->
@@ -596,6 +596,42 @@
                             :alt="activeAdsyChat.other_user?.username"
                             class="w-7 h-7 rounded-full object-cover ring-2 ring-white shadow-sm"
                           />
+                        </div>
+
+                        <!-- Message Actions (for own messages) -->
+                        <div 
+                          v-if="message.sender?.id === currentUserId && !message.is_deleted" 
+                          class="flex-shrink-0 opacity-0 group-hover/msg:opacity-100 transition-opacity self-center"
+                        >
+                          <div class="relative">
+                            <button
+                              @click="toggleAdsyMessageMenu(message.id)"
+                              class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                              <UIcon name="i-heroicons-ellipsis-vertical" class="w-4 h-4" />
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div
+                              v-if="activeAdsyMessageMenu === message.id"
+                              class="absolute right-0 bottom-full mb-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                            >
+                              <button
+                                v-if="message.message_type === 'text'"
+                                @click="startEditAdsyMessage(message)"
+                                class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                              >
+                                <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
+                                Edit
+                              </button>
+                              <button
+                                @click="confirmDeleteAdsyMessage(message)"
+                                class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              >
+                                <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
                         </div>
                         
                         <div
@@ -694,6 +730,7 @@
                             <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words" v-html="linkifyText(message.content || message.display_content)"></p>
                             <!-- Time and Status for Text Messages -->
                             <div class="mt-1 flex items-center justify-end gap-1">
+                              <span v-if="message.is_edited" class="text-[10px] opacity-50 italic">edited</span>
                               <span class="text-[10px] opacity-50">{{ message.time_display || formatMessageTime(message.created_at) }}</span>
                               <UIcon 
                                 v-if="message.sender?.id === currentUserId"
@@ -1874,6 +1911,72 @@
           </div>
         </Transition>
       </Teleport>
+
+      <!-- Edit Message Modal -->
+      <Teleport to="body">
+        <Transition name="fade">
+          <div 
+            v-if="showAdsyEditModal" 
+            class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+            @click="showAdsyEditModal = false"
+          >
+            <div 
+              class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-4"
+              @click.stop
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Edit Message</h3>
+                <button @click="showAdsyEditModal = false" class="p-1 hover:bg-gray-100 rounded-full">
+                  <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+              <textarea
+                v-model="editAdsyMessageContent"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                placeholder="Edit your message..."
+              ></textarea>
+              <div class="flex justify-end gap-2 mt-4">
+                <UButton color="gray" variant="ghost" @click="showAdsyEditModal = false">Cancel</UButton>
+                <UButton 
+                  color="blue" 
+                  @click="saveEditAdsyMessage" 
+                  :loading="isEditingAdsyMessage"
+                  :disabled="!editAdsyMessageContent.trim()"
+                >
+                  Save
+                </UButton>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <!-- Delete Confirmation Modal -->
+      <Teleport to="body">
+        <Transition name="fade">
+          <div 
+            v-if="showAdsyDeleteModal" 
+            class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+            @click="showAdsyDeleteModal = false"
+          >
+            <div 
+              class="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 p-4 text-center"
+              @click.stop
+            >
+              <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <UIcon name="i-heroicons-trash" class="w-6 h-6 text-red-600" />
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">Delete Message?</h3>
+              <p class="text-sm text-gray-500 mb-4">This message will be deleted for everyone. This cannot be undone.</p>
+              <div class="flex justify-center gap-3">
+                <UButton color="gray" variant="ghost" @click="showAdsyDeleteModal = false">Cancel</UButton>
+                <UButton color="red" @click="deleteAdsyMessage" :loading="isDeletingAdsyMessage">Delete</UButton>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
     </UContainer>
   </PublicSection>
 </template>
@@ -1881,7 +1984,7 @@
 <script setup>
 const { t } = useI18n();
 const { user } = useAuth();
-const { get, post, put } = useApi();
+const { get, post, put, patch, del } = useApi();
 const route = useRoute();
 const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
 const { formatDate } = useUtils();
@@ -1975,6 +2078,16 @@ const adsySearchQuery = ref('');
 const showAttachmentOptions = ref(false);
 const isUploadingAttachment = ref(false);
 const currentUserId = computed(() => user.value?.user?.id);
+
+// Edit/Delete message state
+const activeAdsyMessageMenu = ref(null);
+const showAdsyEditModal = ref(false);
+const showAdsyDeleteModal = ref(false);
+const editingAdsyMessage = ref(null);
+const editAdsyMessageContent = ref('');
+const isEditingAdsyMessage = ref(false);
+const isDeletingAdsyMessage = ref(false);
+const adsyMessageToDelete = ref(null);
 
 // Mobile chat view state
 const isMobileChatView = ref(false);
@@ -2459,6 +2572,100 @@ async function sendMediaMessage(file, messageType) {
   }
 }
 
+// Edit/Delete message functions
+function toggleAdsyMessageMenu(messageId) {
+  activeAdsyMessageMenu.value = activeAdsyMessageMenu.value === messageId ? null : messageId;
+}
+
+function startEditAdsyMessage(message) {
+  editingAdsyMessage.value = message;
+  editAdsyMessageContent.value = message.content;
+  activeAdsyMessageMenu.value = null;
+  showAdsyEditModal.value = true;
+}
+
+async function saveEditAdsyMessage() {
+  if (!editingAdsyMessage.value || !editAdsyMessageContent.value.trim()) return;
+  
+  isEditingAdsyMessage.value = true;
+  try {
+    const { data, error } = await patch(`/adsyconnect/messages/${editingAdsyMessage.value.id}/edit/`, {
+      content: editAdsyMessageContent.value.trim()
+    });
+    
+    if (data && !error) {
+      // Update message in local state
+      const index = adsyMessages.value.findIndex(m => m.id === editingAdsyMessage.value.id);
+      if (index !== -1) {
+        adsyMessages.value[index] = { ...adsyMessages.value[index], ...data };
+      }
+      showAdsyEditModal.value = false;
+      editingAdsyMessage.value = null;
+      editAdsyMessageContent.value = '';
+      toast.add({
+        title: 'Message edited',
+        color: 'green',
+        timeout: 2000,
+      });
+    } else {
+      throw new Error('Failed to edit message');
+    }
+  } catch (error) {
+    console.error('Error editing message:', error);
+    toast.add({
+      title: 'Failed to edit message',
+      color: 'red',
+      timeout: 3000,
+    });
+  } finally {
+    isEditingAdsyMessage.value = false;
+  }
+}
+
+function confirmDeleteAdsyMessage(message) {
+  adsyMessageToDelete.value = message;
+  activeAdsyMessageMenu.value = null;
+  showAdsyDeleteModal.value = true;
+}
+
+async function deleteAdsyMessage() {
+  if (!adsyMessageToDelete.value) return;
+  
+  isDeletingAdsyMessage.value = true;
+  try {
+    const { data, error } = await del(`/adsyconnect/messages/${adsyMessageToDelete.value.id}/`);
+    
+    if (!error) {
+      // Update message in local state to show as deleted
+      const index = adsyMessages.value.findIndex(m => m.id === adsyMessageToDelete.value.id);
+      if (index !== -1) {
+        if (data) {
+          adsyMessages.value[index] = { ...adsyMessages.value[index], ...data };
+        } else {
+          adsyMessages.value[index].is_deleted = true;
+        }
+      }
+      showAdsyDeleteModal.value = false;
+      toast.add({
+        title: 'Message deleted',
+        color: 'green',
+        timeout: 2000,
+      });
+    } else {
+      throw new Error('Failed to delete message');
+    }
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    toast.add({
+      title: 'Failed to delete message',
+      color: 'red',
+      timeout: 3000,
+    });
+  } finally {
+    isDeletingAdsyMessage.value = false;
+    adsyMessageToDelete.value = null;
+  }
+}
 
 // Search users function
 async function searchUsers(loadMore = false) {

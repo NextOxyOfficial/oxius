@@ -52,10 +52,10 @@ class MessageSerializer(serializers.ModelSerializer):
             'id', 'chatroom', 'sender', 'receiver', 'message_type', 
             'content', 'display_content', 'media_url', 'thumbnail_url', 
             'file_name', 'file_size', 'voice_duration', 'is_read', 'read_at', 
-            'is_deleted', 'created_at', 'updated_at', 'time_display'
+            'is_deleted', 'is_edited', 'edited_at', 'created_at', 'updated_at', 'time_display'
         ]
         read_only_fields = ['id', 'sender', 'receiver', 'created_at', 
-                           'updated_at', 'read_at']
+                           'updated_at', 'read_at', 'is_edited', 'edited_at']
     
     def get_media_url(self, obj):
         if obj.media_file:

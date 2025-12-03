@@ -536,6 +536,44 @@ class BusinessNetworkService {
     }
   }
 
+  /// Get user followers list
+  static Future<Map<String, dynamic>> getUserFollowers(String userId, {int page = 1}) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/users/$userId/followers/?page=$page'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return {'results': [], 'count': 0};
+    } catch (e) {
+      print('Error fetching followers: $e');
+      return {'results': [], 'count': 0};
+    }
+  }
+
+  /// Get user following list
+  static Future<Map<String, dynamic>> getUserFollowing(String userId, {int page = 1}) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/users/$userId/following/?page=$page'),
+        headers: headers,
+      );
+      
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+      return {'results': [], 'count': 0};
+    } catch (e) {
+      print('Error fetching following: $e');
+      return {'results': [], 'count': 0};
+    }
+  }
+
   /// Get user profile data
   static Future<Map<String, dynamic>> getUserProfile(String userId) async {
     try {

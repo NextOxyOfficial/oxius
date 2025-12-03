@@ -135,12 +135,23 @@
             <!-- QR Code Button for mobile with premium styling -->
             <button
               @click="$emit('open-qr-modal')"
-              class="px-4 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden group min-w-[110px]"
+              class="px-4 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden group min-w-[90px]"
               title="View QR Code"
             >
               <span class="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></span>
               <UIcon name="i-cil-qr-code" class="size-5 relative z-10" />
-              <span class="relative z-10 font-semibold">QR Code</span>
+              <span class="relative z-10 font-semibold">QR</span>
+            </button>
+
+            <!-- Chat Button for mobile -->
+            <button
+              v-if="user?.id !== currentUser?.user?.id && currentUser"
+              @click="$emit('open-chat')"
+              class="px-4 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden group min-w-[90px]"
+              title="Send Message"
+            >
+              <UIcon name="i-heroicons-chat-bubble-left-right" class="size-5" />
+              <span class="font-semibold">Chat</span>
             </button>
             
             <!-- Follow/Following button for mobile with premium styling -->              
@@ -207,6 +218,7 @@
           @toggle-follow="$emit('toggle-follow')"
           @show-diamond-modal="$emit('show-diamond-modal')"
           @format-time-ago="$emit('format-time-ago', $event)"
+          @open-chat="$emit('open-chat')"
         />
       </div>
     </div>
@@ -247,6 +259,7 @@ const emit = defineEmits([
   'toggle-profile-photo-menu',
   'open-followers-modal',
   'show-diamond-modal',
-  'format-time-ago'
+  'format-time-ago',
+  'open-chat'
 ]);
 </script>

@@ -137,6 +137,22 @@ export const useAdsyChat = () => {
     }
   }
 
+  // Get or create chat room with a specific user
+  const getOrCreateChatRoom = async (userId) => {
+    try {
+      const { data, error } = await post('/adsyconnect/chatrooms/get_or_create/', {
+        user_id: userId
+      })
+      if (data && !error) {
+        return data
+      }
+      throw new Error('Failed to get or create chat room')
+    } catch (error) {
+      console.error('Error getting or creating chat room:', error)
+      throw error
+    }
+  }
+
   const selectChat = async (chat) => {
     if (!chat || !chat.id) return
     
@@ -328,6 +344,7 @@ export const useAdsyChat = () => {
     startPolling,
     stopPolling,
     isUserOnline,
-    updateOnlineStatus
+    updateOnlineStatus,
+    getOrCreateChatRoom
   }
 }

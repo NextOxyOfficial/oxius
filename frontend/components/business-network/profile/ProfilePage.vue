@@ -13,6 +13,7 @@
       @toggle-profile-photo-menu="$emit('toggle-profile-photo-menu')"
       @open-followers-modal="$emit('open-followers-modal', $event)"
       @show-diamond-modal="$emit('show-diamond-modal')"
+      @open-chat="$emit('open-chat')"
     />
 
     <!-- Tabs Section with ProfileTabs component -->

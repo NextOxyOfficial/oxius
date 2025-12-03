@@ -118,8 +118,16 @@
         @toggle-product-status="toggleProductStatus"
         @create-product="createProduct"
         @load-more-products="loadMoreProducts"
+        @open-chat="openChat"
       />
     </div>
+
+    <!-- Chat Slideout -->
+    <ProfileChatSlideout
+      v-model="showChatSlideout"
+      :user="user"
+      :chatroomId="chatRoomId"
+    />
 
     <!-- Modals -->
     <BusinessNetworkDiamondPurchaseModal
@@ -169,7 +177,9 @@ import FollowersModal from "~/components/business-network/FollowersModal.vue";
 import ProfilePage from "~/components/business-network/profile/ProfilePage.vue";
 import ProfileHeader from "~/components/business-network/profile/sections/ProfileHeader.vue";
 import ProfileQrCodeModal from "~/components/business-network/profile/ProfileQrCodeModal.vue";
+import ProfileChatSlideout from "~/components/business-network/profile/ProfileChatSlideout.vue";
 import { useApi } from "~/composables/useApi";
+import { useAdsyChat } from "~/composables/useAdsyChat";
 
 const route = useRoute();
 const router = useRouter();
@@ -218,6 +228,11 @@ const showProfilePhotoModal = ref(false);
 // Profile photo for MediaViewer
 const profilePhotoMedia = ref(null);
 const showMediaViewer = ref(false);
+
+// Chat state
+const showChatSlideout = ref(false);
+const chatRoomId = ref(null);
+const { getOrCreateChatRoom } = useAdsyChat();
 
 // Toggle profile photo menu
 const cameraButtonRef = ref(null);
@@ -523,6 +538,37 @@ const tabs = computed(() =>
 // Open QR code modal
 const openQrCodeModal = () => {
   showQrModal.value = true;
+};
+
+// Open chat with user
+const openChat = async () => {
+  if (!currentUser.value) {
+    toast.add({
+      title: 'Login Required',
+      description: 'Please login to send messages',
+      color: 'orange',
+      timeout: 3000,
+    });
+    return;
+  }
+
+  try {
+    // Get or create chatroom with this user
+    const chatRoom = await getOrCreateChatRoom(route.params.id);
+    
+    if (chatRoom?.id) {
+      chatRoomId.value = chatRoom.id;
+      showChatSlideout.value = true;
+    }
+  } catch (error) {
+    console.error('Error opening chat:', error);
+    toast.add({
+      title: 'Error',
+      description: 'Failed to open chat. Please try again.',
+      color: 'red',
+      timeout: 3000,
+    });
+  }
 };
 
 // Toggle follow action

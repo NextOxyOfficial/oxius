@@ -244,6 +244,48 @@ class MessageViewSet(viewsets.ModelViewSet):
         # Return the updated message data so frontend can update UI immediately
         serializer = self.get_serializer(message)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['patch'])
+    def edit(self, request, pk=None):
+        """Edit a text message"""
+        message = self.get_object()
+        
+        # Only sender can edit their own messages
+        if message.sender != request.user:
+            return Response(
+                {'error': 'You can only edit your own messages'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Only text messages can be edited
+        if message.message_type != 'text':
+            return Response(
+                {'error': 'Only text messages can be edited'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Cannot edit deleted messages
+        if message.is_deleted:
+            return Response(
+                {'error': 'Cannot edit deleted messages'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        new_content = request.data.get('content', '').strip()
+        if not new_content:
+            return Response(
+                {'error': 'Content is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Update the message
+        message.content = new_content
+        message.is_edited = True
+        message.edited_at = timezone.now()
+        message.save(update_fields=['content', 'is_edited', 'edited_at', 'updated_at'])
+        
+        serializer = self.get_serializer(message)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class MessageReportViewSet(viewsets.ModelViewSet):
