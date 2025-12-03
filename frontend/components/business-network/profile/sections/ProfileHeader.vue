@@ -147,11 +147,19 @@
             <button
               v-if="user?.id !== currentUser?.user?.id && currentUser"
               @click="$emit('open-chat')"
-              class="px-4 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-sm hover:shadow-md relative overflow-hidden group min-w-[90px]"
-              title="Send Message"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-green-50 transition-all duration-200 group"
             >
-              <UIcon name="i-heroicons-chat-bubble-left-right" class="size-5" />
-              <span class="font-semibold">Chat</span>
+              <div class="p-1.5 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                <NuxtImg 
+                  src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
+                  alt="Chat"
+                  class="w-5 h-5"
+                />
+              </div>
+              <span class="font-semibold relative overflow-hidden">
+                Chat
+                <span class="absolute bottom-0 left-0 w-full h-0.5 bg-green-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
+              </span>
             </button>
             
             <!-- Follow/Following button for mobile with premium styling -->              
@@ -262,4 +270,6 @@ const emit = defineEmits([
   'format-time-ago',
   'open-chat'
 ]);
+
+const { chatIconPath } = useStaticAssets();
 </script>

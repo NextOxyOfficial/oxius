@@ -61,11 +61,19 @@
         <button
           v-if="user?.id !== currentUser?.user?.id && currentUser"
           @click="$emit('open-chat')"
-          class="px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 transition-all shadow-sm hover:shadow"
-          title="Send Message"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-gray-700 hover:bg-green-50 transition-all duration-200 group"
         >
-          <UIcon name="i-heroicons-chat-bubble-left-right" class="w-4 h-4" />
-          <span>Chat</span>
+          <div class="p-1 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-sm transition-transform duration-300 group-hover:scale-110">
+            <NuxtImg 
+              src="https://adsyclub.com/static/frontend/images/chat_icon.png" 
+              alt="Chat"
+              class="w-4 h-4"
+            />
+          </div>
+          <span class="relative overflow-hidden">
+            Chat
+            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-green-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"></span>
+          </span>
         </button>
         
         <button
@@ -200,4 +208,6 @@ const emit = defineEmits([
   'format-time-ago',
   'open-chat'
 ]);
+
+const { chatIconPath } = useStaticAssets();
 </script>

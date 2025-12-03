@@ -799,11 +799,15 @@ const checkOnlineStatus = async () => {
     const { data, error } = await get(`/adsyconnect/online-status/?user_ids[]=${props.user.id}`)
     if (data && !error) {
       const statusList = Array.isArray(data) ? data : (data.results || [])
-      const userStatus = statusList.find(s => s.user === props.user.id || s.user_id === props.user.id)
+      // Check for user match with various possible field names
+      const userStatus = statusList.find(s => {
+        const statusUserId = s.user?.id || s.user_id || s.user
+        return String(statusUserId) === String(props.user.id)
+      })
       isUserOnline.value = userStatus?.is_online === true
     }
   } catch (error) {
-    // Silently handle
+    // Silently handle - keep previous status
   }
 }
 

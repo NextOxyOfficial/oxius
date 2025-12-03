@@ -8,8 +8,8 @@ export function useNotifications() {
 
   // Function to fetch unread notification count (both BN and workspace)
   async function fetchUnreadCount() {
-    // Don't attempt to fetch if user isn't logged in
-    if (!user.value?.user?.id) {
+    // Don't attempt to fetch if user isn't logged in or token not available
+    if (!user.value?.user?.id || !user.value?.token) {
       return;
     }
 
@@ -18,7 +18,7 @@ export function useNotifications() {
       
       // Fetch both BN notifications and workspace message counts in parallel
       const [bnRes, workspaceRes] = await Promise.all([
-        get("/bn/notifications/unread-count/"),
+        get("/bn/notifications/unread-count/").catch(() => ({ data: { count: 0 } })),
         get("/workspace/orders/unread-counts/").catch(() => ({ data: { total: 0 } }))
       ]);
 
@@ -30,7 +30,7 @@ export function useNotifications() {
         workspaceUnreadCount.value = workspaceRes.data.total;
       }
     } catch (error) {
-      console.error("Error fetching unread notification count:", error);
+      // Silently handle - user may not be fully authenticated yet
       unreadCount.value = 0;
       workspaceUnreadCount.value = 0;
     } finally {
