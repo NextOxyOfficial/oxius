@@ -1845,119 +1845,221 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.7,
+      height: MediaQuery.of(context).size.height * 0.65,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(
         children: [
-          // Handle
+          // Handle + Header
           Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 40,
-            height: 4,
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+              color: Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Handle
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                // Title Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.type == 'followers' ? 'Followers' : 'Following',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    Text(
+                      '${_users.length}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          
-          // Title
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              widget.type == 'followers' ? 'Followers' : 'Following',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          
-          const Divider(height: 1),
           
           // User List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
+                    ),
+                  )
                 : _users.isEmpty
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.people_outline, size: 48, color: Colors.grey[400]),
-                            const SizedBox(height: 12),
+                            Icon(Icons.people_outline_rounded, size: 40, color: Colors.grey.shade300),
+                            const SizedBox(height: 8),
                             Text(
                               widget.type == 'followers' ? 'No followers yet' : 'Not following anyone',
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade500,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
                         controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 4),
                         itemCount: _users.length + (_hasMore ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index >= _users.length) {
-                            return const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                            return Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
+                                  ),
+                                ),
+                              ),
                             );
                           }
                           
                           final user = _users[index];
+                          // API returns follower_details/following_details
                           final userData = widget.type == 'followers' 
-                              ? user['follower'] ?? user 
-                              : user['following'] ?? user;
+                              ? user['follower_details'] ?? user['follower'] ?? user 
+                              : user['following_details'] ?? user['following'] ?? user;
                           
-                          return ListTile(
+                          // Get user image
+                          final String? userImage = userData['image']?.toString();
+                          final bool hasImage = userImage != null && userImage.isNotEmpty;
+                          
+                          // Get display name
+                          String displayName = 'Unknown';
+                          if (userData['first_name'] != null && userData['first_name'].toString().isNotEmpty) {
+                            displayName = userData['first_name'].toString();
+                            if (userData['last_name'] != null && userData['last_name'].toString().isNotEmpty) {
+                              displayName += ' ${userData['last_name']}';
+                            }
+                          } else if (userData['name'] != null && userData['name'].toString().isNotEmpty) {
+                            displayName = userData['name'].toString();
+                          } else if (userData['username'] != null && userData['username'].toString().isNotEmpty) {
+                            displayName = userData['username'].toString();
+                          }
+                          
+                          // Get profession/headline
+                          final String? profession = userData['profession']?.toString() ?? userData['headline']?.toString();
+                          
+                          return InkWell(
                             onTap: () => widget.onUserTap(userData['id']?.toString() ?? ''),
-                            leading: CircleAvatar(
-                              radius: 24,
-                              backgroundImage: userData['avatar'] != null
-                                  ? NetworkImage(_getImageUrl(userData['avatar']))
-                                  : null,
-                              child: userData['avatar'] == null
-                                  ? Text(
-                                      (userData['name'] ?? 'U')[0].toUpperCase(),
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                    )
-                                  : null,
-                            ),
-                            title: Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    userData['name'] ?? 'Unknown',
-                                    style: const TextStyle(fontWeight: FontWeight.w600),
-                                    overflow: TextOverflow.ellipsis,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              child: Row(
+                                children: [
+                                  // Avatar
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: const Color(0xFFF3F4F6),
+                                    backgroundImage: hasImage
+                                        ? NetworkImage(_getImageUrl(userImage))
+                                        : null,
+                                    child: !hasImage
+                                        ? Text(
+                                            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                              color: Color(0xFF6B7280),
+                                            ),
+                                          )
+                                        : null,
                                   ),
-                                ),
-                                if (userData['kyc'] == true)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 4),
-                                    child: Icon(Icons.verified, size: 16, color: Colors.blue),
-                                  ),
-                                if (userData['is_pro'] == true)
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 4),
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
-                                      borderRadius: BorderRadius.circular(4),
+                                  const SizedBox(width: 10),
+                                  // Name & Profession
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                displayName,
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  letterSpacing: -0.1,
+                                                  color: Color(0xFF1F2937),
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            if (userData['kyc'] == true)
+                                              const Padding(
+                                                padding: EdgeInsets.only(left: 3),
+                                                child: Icon(Icons.verified_rounded, size: 14, color: Color(0xFF3B82F6)),
+                                              ),
+                                            if (userData['is_pro'] == true)
+                                              Container(
+                                                margin: const EdgeInsets.only(left: 3),
+                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                decoration: BoxDecoration(
+                                                  gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                                                  borderRadius: BorderRadius.circular(3),
+                                                ),
+                                                child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w700)),
+                                              ),
+                                          ],
+                                        ),
+                                        if (profession != null && profession.isNotEmpty) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            profession,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey.shade500,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ],
                                     ),
-                                    child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
                                   ),
-                              ],
+                                  // Arrow
+                                  Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey.shade400),
+                                ],
+                              ),
                             ),
-                            subtitle: userData['headline'] != null
-                                ? Text(
-                                    userData['headline'],
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                : null,
-                            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                           );
                         },
                       ),
