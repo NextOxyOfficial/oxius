@@ -452,6 +452,100 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
+  void _showProfilePictureViewer() {
+    if (_userData?['image'] == null) return;
+    
+    final userName = _userData?['first_name'] != null && _userData?['last_name'] != null
+        ? '${_userData!['first_name']} ${_userData!['last_name']}'
+        : _userData?['username'] ?? 'User';
+    
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: Stack(
+          children: [
+            // Full screen image with zoom
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: Image.network(
+                    _userData!['image'],
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade800,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 100,
+                          color: Colors.white54,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            // Header with close button and name
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 8,
+                  right: 8,
+                  bottom: 8,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black54,
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        userName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = AuthService.currentUser;
@@ -750,192 +844,190 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget _buildProfileHeader(bool isOwnProfile) {
     return Container(
       margin: const EdgeInsets.all(4),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 1),
-          ),
-        ],
       ),
       child: Column(
         children: [
-          // Name and Badges at Top
+          // Name, Badges and Profession - Compact Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Flexible(
-                child: Text(
-                  _userData?['first_name'] != null && _userData?['last_name'] != null
-                      ? '${_userData!['first_name']} ${_userData!['last_name']}'
-                      : _userData?['username'] ?? 'User',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                    letterSpacing: -0.3,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (_userData?['kyc'] == true) ...[
-                const SizedBox(width: 6),
-                const Icon(
-                  Icons.verified,
-                  size: 18,
-                  color: Color(0xFF3B82F6),
-                ),
-              ],
-              if (_userData?['is_pro'] == true) ...[
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF3B82F6)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'Pro',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          
-          // Profession
-          if (_userData?['profession'] != null) ...[
-            const SizedBox(height: 4),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                _userData!['profession'],
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-            ),
-          ],
-          
-          const SizedBox(height: 16),
-          
-          // Centered Profile Picture
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blue.shade300,
-                      Colors.indigo.shade400,
-                    ],
-                  ),
-                ),
-                padding: const EdgeInsets.all(3),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  padding: const EdgeInsets.all(3),
-                  child: ClipOval(
-                    child: _userData?['image'] != null
-                        ? Image.network(
-                            _userData!['image'],
-                            width: double.infinity,
-                            height: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey.shade200,
-                                child: Icon(
-                                  Icons.person,
-                                  size: 70,
-                                  color: Colors.grey.shade400,
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            color: Colors.grey.shade200,
-                            child: Icon(
-                              Icons.person,
-                              size: 70,
-                              color: Colors.grey.shade400,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name with badges
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            _userData?['first_name'] != null && _userData?['last_name'] != null
+                                ? '${_userData!['first_name']} ${_userData!['last_name']}'
+                                : _userData?['username'] ?? 'User',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black87,
+                              letterSpacing: -0.3,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                  ),
-                ),
-              ),
-              if (isOwnProfile)
-                Positioned(
-                  bottom: 2,
-                  right: 2,
-                  child: InkWell(
-                    onTap: _handleProfilePictureUpload,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 3,
+                        ),
+                        if (_userData?['kyc'] == true) ...[
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.verified,
+                            size: 16,
+                            color: Color(0xFF3B82F6),
                           ),
                         ],
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt,
-                        size: 16,
-                        color: Colors.white,
-                      ),
+                        if (_userData?['is_pro'] == true) ...[
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Pro',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ),
+                    // Profession
+                    if (_userData?['profession'] != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        _userData!['profession'],
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
+              ),
             ],
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
-          // Stats Row
+          // Compact Profile Picture with tap to view
+          GestureDetector(
+            onTap: () => _showProfilePictureViewer(),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.blue.shade300,
+                        Colors.indigo.shade400,
+                      ],
+                    ),
+                  ),
+                  padding: const EdgeInsets.all(2.5),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    padding: const EdgeInsets.all(2),
+                    child: ClipOval(
+                      child: _userData?['image'] != null
+                          ? Image.network(
+                              _userData!['image'],
+                              width: double.infinity,
+                              height: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey.shade200,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 50,
+                                    color: Colors.grey.shade400,
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: Colors.grey.shade200,
+                              child: Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Colors.grey.shade400,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+                if (isOwnProfile)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _handleProfilePictureUpload,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3B82F6),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Compact Stats Row
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildStatItem('Posts', _userData?['post_count'] ?? 0),
               Container(
                 width: 1,
-                height: 32,
-                color: Colors.grey.shade300,
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+                height: 28,
+                color: Colors.grey.shade200,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
               _buildStatItem('Followers', _userData?['followers_count'] ?? 0, onTap: () => _showFollowersFollowingSheet('followers')),
               Container(
                 width: 1,
-                height: 32,
-                color: Colors.grey.shade300,
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+                height: 28,
+                color: Colors.grey.shade200,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
               _buildStatItem('Following', _userData?['following_count'] ?? 0, onTap: () => _showFollowersFollowingSheet('following')),
             ],
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
           // Action Buttons - Pill Style (matching Vue design)
           _buildActionButtonsRow(isOwnProfile),
@@ -1028,17 +1120,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           Text(
             count.toString(),
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
-              color: onTap != null ? const Color(0xFF8B5CF6) : Colors.grey.shade600,
+              fontSize: 11,
+              color: onTap != null ? const Color(0xFF8B5CF6) : Colors.grey.shade500,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1080,11 +1171,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             _buildPillButton(
               customIcon: Image.asset(
                 'assets/images/chat_icon.png',
-                width: 20,
-                height: 20,
+                width: 18,
+                height: 18,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.chat_bubble_outline_rounded, size: 20, color: Colors.teal.shade600);
+                  return Icon(Icons.chat_bubble_outline_rounded, size: 18, color: Colors.teal.shade600);
                 },
               ),
               label: 'Chat',
@@ -1124,7 +1215,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ? Text(
             label,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade700,
             ),
@@ -1133,8 +1224,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
     final iconWidget = isLoading
         ? SizedBox(
-            width: 16,
-            height: 16,
+            width: 14,
+            height: 14,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade600),
@@ -1143,7 +1234,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         : customIcon ?? (icon != null
             ? Icon(
                 icon,
-                size: 20,
+                size: 18,
                 color: Colors.grey.shade700,
               )
             : null);
@@ -1153,8 +1244,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       borderRadius: BorderRadius.circular(50),
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: label != null ? 16 : 14,
-          vertical: 12,
+          horizontal: label != null ? 12 : 10,
+          vertical: 10,
         ),
         decoration: BoxDecoration(
           border: showBorder
@@ -1167,11 +1258,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           children: [
             if (labelFirst && labelWidget != null) ...[
               labelWidget,
-              if (iconWidget != null) const SizedBox(width: 6),
+              if (iconWidget != null) const SizedBox(width: 5),
             ],
             if (iconWidget != null) iconWidget,
             if (!labelFirst && labelWidget != null) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
               labelWidget,
             ],
           ],
