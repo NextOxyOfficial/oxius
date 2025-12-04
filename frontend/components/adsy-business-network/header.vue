@@ -313,6 +313,11 @@ const { user, logout } = useAuth();
 const { isScrollingDown, isScrollingUp } = useScrollDirection();
 const { totalUnreadCount, fetchUnreadCount } = useTickets();
 const { chatIconPath } = useStaticAssets();
+
+// Import AdsyChat for unread message count
+const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
+const { unreadCount: adsyUnreadCount, loadChatRooms } = useAdsyChat();
+
 const logo = ref([]);
 const cart = useStoreCart();
 const showQr = ref(false);
@@ -321,22 +326,18 @@ const menuRef = ref(null);
 const userButtonRef = ref(null);
 const searchDropdownRef = ref(null);
 const router = useRouter();
-const badgeCount = ref(0);
 const isScrolled = ref(false);
 
-// Watch for changes in unread count
-watch(
-  () => totalUnreadCount.value,
-  (newCount) => {
-    badgeCount.value = newCount;
-  }
-);
+// Combined badge count: tickets + updates + AdsyConnect messages
+const badgeCount = computed(() => {
+  return (totalUnreadCount.value || 0) + (adsyUnreadCount.value || 0);
+});
 
 // Fetch unread count when component mounts
 onMounted(async () => {
   if (user.value?.user) {
     await fetchUnreadCount();
-    badgeCount.value = totalUnreadCount.value;
+    await loadChatRooms(); // Load chat rooms to get unread count
   }
 });
 

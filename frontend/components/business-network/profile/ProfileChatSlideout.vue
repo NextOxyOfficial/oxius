@@ -11,9 +11,10 @@
         <div class="flex items-center space-x-3">
           <div class="relative">
             <img
-              :src="user?.image || '/static/frontend/images/placeholder.jpg'"
-              :alt="user?.name"
+              :src="user?.image || user?.avatar || defaultPlaceholder"
+              :alt="user?.name || user?.first_name"
               class="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md"
+              @error="handleImageError"
             />
             <!-- Online indicator -->
             <span 
@@ -90,9 +91,10 @@
             <!-- Avatar for received messages -->
             <div v-if="!isOwnMessage(message)" class="flex-shrink-0 mb-1">
               <img
-                :src="user?.image || '/static/frontend/images/placeholder.jpg'"
-                :alt="user?.name"
+                :src="user?.image || user?.avatar || defaultPlaceholder"
+                :alt="user?.name || user?.first_name"
                 class="w-7 h-7 rounded-full object-cover ring-2 ring-white shadow-sm"
+                @error="handleImageError"
               />
             </div>
 
@@ -438,6 +440,14 @@ const { user: currentUser } = useAuth()
 const { get, post, patch, del } = useApi()
 const { chatIconPath } = useStaticAssets()
 
+// Default placeholder image - use a data URI for guaranteed availability
+const defaultPlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239CA3AF"%3E%3Cpath d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/%3E%3C/svg%3E'
+
+// Handle broken image by falling back to placeholder
+const handleImageError = (event) => {
+  event.target.src = defaultPlaceholder
+}
+
 // State
 const isOpen = computed({
   get: () => props.modelValue,
@@ -476,6 +486,7 @@ const messageToDelete = ref(null)
 // Polling
 let pollingInterval = null
 let onlineStatusInterval = null
+let heartbeatInterval = null
 
 // Computed for current user ID (user object is nested)
 const currentUserId = computed(() => currentUser.value?.user?.id || currentUser.value?.id)
@@ -804,16 +815,45 @@ const checkOnlineStatus = async () => {
         const statusUserId = s.user?.id || s.user_id || s.user
         return String(statusUserId) === String(props.user.id)
       })
-      isUserOnline.value = userStatus?.is_online === true
+      
+      if (userStatus) {
+        const isOnline = userStatus.is_online === true
+        // Validate with last_seen - consider offline if last_seen > 30 seconds ago
+        if (userStatus.last_seen) {
+          const lastSeen = new Date(userStatus.last_seen)
+          const now = new Date()
+          const diffSeconds = (now - lastSeen) / 1000
+          isUserOnline.value = isOnline && diffSeconds < 30
+        } else {
+          isUserOnline.value = isOnline
+        }
+      } else {
+        isUserOnline.value = false
+      }
     }
   } catch (error) {
     // Silently handle - keep previous status
   }
 }
 
+// Update own online status
+const updateOnlineStatus = async (isOnline = true) => {
+  try {
+    await post('/adsyconnect/online-status/update_status/', {
+      is_online: isOnline
+    })
+  } catch (error) {
+    // Silently handle
+  }
+}
+
 const startPolling = () => {
   if (pollingInterval) clearInterval(pollingInterval)
   if (onlineStatusInterval) clearInterval(onlineStatusInterval)
+  if (heartbeatInterval) clearInterval(heartbeatInterval)
+  
+  // Set user as online immediately
+  updateOnlineStatus(true)
   
   // Poll for new messages every 3 seconds
   pollingInterval = setInterval(async () => {
@@ -833,9 +873,14 @@ const startPolling = () => {
     }
   }, 3000)
   
-  // Poll online status every 10 seconds
+  // Poll online status every 5 seconds (more responsive)
   checkOnlineStatus()
-  onlineStatusInterval = setInterval(checkOnlineStatus, 10000)
+  onlineStatusInterval = setInterval(checkOnlineStatus, 5000)
+  
+  // Heartbeat to keep user online - every 8 seconds
+  heartbeatInterval = setInterval(() => {
+    updateOnlineStatus(true)
+  }, 8000)
 }
 
 const stopPolling = () => {
@@ -847,6 +892,12 @@ const stopPolling = () => {
     clearInterval(onlineStatusInterval)
     onlineStatusInterval = null
   }
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval)
+    heartbeatInterval = null
+  }
+  // Set user as offline when closing chat
+  updateOnlineStatus(false)
 }
 
 const close = () => {

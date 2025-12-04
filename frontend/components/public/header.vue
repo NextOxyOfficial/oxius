@@ -833,7 +833,11 @@ const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
 const { isScrollingDown, isScrollingUp } = useScrollDirection();
 const { chatIconPath } = useStaticAssets();
 const toast = useToast();
-const badgeCount = ref(0);
+
+// Import AdsyChat for unread message count
+const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
+const { unreadCount: adsyUnreadCount, loadChatRooms } = useAdsyChat();
+
 const openMenu = ref(false);
 const router = useRouter();
 const open = ref(true);
@@ -842,6 +846,11 @@ const isOpen = ref(false);
 const showQr = ref(false);
 // Subscription alert state
 const warningDismissed = ref(false);
+
+// Combined badge count: tickets + updates + AdsyConnect messages
+const badgeCount = computed(() => {
+  return (totalUnreadCount.value || 0) + (adsyUnreadCount.value || 0);
+});
 
 // Use the app download composable
 import { useAppDownload } from "~/composables/useAppDownload";
@@ -874,18 +883,12 @@ const downloadAndroidApp = async () => {
   }
 };
 
-// Update badge count when totalUnreadCount changes
-watch(
-  () => totalUnreadCount.value,
-  (newCount) => {
-    badgeCount.value = newCount;
-  }
-);
-
 // Fetch unread ticket count when component mounts
 onMounted(async () => {
   await fetchUnreadCount();
-  badgeCount.value = totalUnreadCount.value;
+  if (user.value?.user) {
+    await loadChatRooms(); // Load chat rooms to get unread count
+  }
 });
 
 // Calculate days remaining before subscription expiration

@@ -76,9 +76,10 @@
             >
               <div class="relative">
                 <img
-                  :src="chat.other_user.profile_picture || chat.other_user.image || '/static/frontend/images/placeholder.jpg'"
-                  :alt="chat.other_user.username"
+                  :src="chat.other_user.avatar || chat.other_user.image || defaultPlaceholder"
+                  :alt="chat.other_user.first_name"
                   class="w-8 h-8 rounded-full object-cover"
+                  @error="handleImageError"
                 />
                 <div
                   v-if="isUserOnline(chat.other_user.id)"
@@ -125,9 +126,10 @@
                 <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
               </button>
               <img
-                :src="activeMiniChat.other_user.profile_picture || activeMiniChat.other_user.image || '/static/frontend/images/placeholder.jpg'"
-                :alt="activeMiniChat.other_user.username"
+                :src="activeMiniChat.other_user.avatar || activeMiniChat.other_user.image || defaultPlaceholder"
+                :alt="activeMiniChat.other_user.first_name"
                 class="w-6 h-6 rounded-full object-cover"
+                @error="handleImageError"
               />
               <div>
                 <p class="text-sm font-medium text-gray-900">
@@ -197,6 +199,28 @@
 </template>
 
 <script setup lang="ts">
+// Type definitions for chat data
+interface ChatUser {
+  id: string | number
+  username?: string
+  first_name?: string
+  last_name?: string
+  avatar?: string
+  image?: string
+  is_online?: boolean
+  is_pro?: boolean
+  kyc?: boolean
+  profession?: string
+}
+
+interface ChatRoom {
+  id: string | number
+  other_user: ChatUser
+  unread_count: number
+  last_message_preview?: string
+  last_message_at?: string
+}
+
 // Composables
 const { user } = useAuth()
 const { get, post } = useApi()
@@ -207,7 +231,22 @@ const {
   loadChatRooms,
   loadMessages,
   sendMessage: sendChatMessage,
+  isUserOnline,
+  fetchOnlineStatusForUsers,
+  updateOnlineStatus,
 } = useAdsyChat()
+
+// Cast chatRooms to proper type for template usage
+const typedChatRooms = computed(() => chatRooms.value as ChatRoom[])
+
+// Default placeholder image - use a data URI for guaranteed availability
+const defaultPlaceholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239CA3AF"%3E%3Cpath d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/%3E%3C/svg%3E'
+
+// Handle broken image by falling back to placeholder
+const handleImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement
+  target.src = defaultPlaceholder
+}
 
 // State
 const showMiniChat = ref(false)
@@ -216,14 +255,12 @@ const miniMessages = ref<any[]>([])
 const miniMessageText = ref('')
 const miniMessagesContainer = ref<HTMLElement>()
 const hasNewMessages = ref(false)
+let onlineStatusRefreshInterval: ReturnType<typeof setInterval> | null = null
 
 // Computed
-const recentChats = computed(() => {
-  return chatRooms.value.slice(0, 5)
+const recentChats = computed((): ChatRoom[] => {
+  return (chatRooms.value as ChatRoom[]).slice(0, 5)
 })
-
-// Helper function - online status from API
-const isUserOnline = (userId: string) => false
 
 const formatMessageTime = (timestamp: string) => {
   if (!timestamp) return ''
@@ -238,10 +275,36 @@ const formatMessageTime = (timestamp: string) => {
 }
 
 // Methods
-const toggleMiniChat = () => {
+const toggleMiniChat = async () => {
   showMiniChat.value = !showMiniChat.value
-  if (showMiniChat.value && recentChats.value.length === 0) {
-    loadChatRooms()
+  if (showMiniChat.value) {
+    if (recentChats.value.length === 0) {
+      await loadChatRooms()
+    }
+    // Refresh online status for chat list users
+    const userIds = chatRooms.value
+      .map((chat: any) => chat.other_user?.id)
+      .filter((id: any) => id)
+    if (userIds.length > 0) {
+      await fetchOnlineStatusForUsers(userIds)
+    }
+    // Start periodic refresh
+    if (!onlineStatusRefreshInterval) {
+      onlineStatusRefreshInterval = setInterval(async () => {
+        const ids = chatRooms.value
+          .map((chat: any) => chat.other_user?.id)
+          .filter((id: any) => id)
+        if (ids.length > 0) {
+          await fetchOnlineStatusForUsers(ids)
+        }
+      }, 10000)
+    }
+  } else {
+    // Stop periodic refresh when closing
+    if (onlineStatusRefreshInterval) {
+      clearInterval(onlineStatusRefreshInterval)
+      onlineStatusRefreshInterval = null
+    }
   }
   hasNewMessages.value = false
 }
@@ -312,9 +375,19 @@ watch(unreadCount, (newCount, oldCount) => {
 })
 
 // Load initial data
-onMounted(() => {
+onMounted(async () => {
   if (user.value) {
-    loadChatRooms()
+    await loadChatRooms()
+    // Set user as online
+    updateOnlineStatus(true)
+  }
+})
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (onlineStatusRefreshInterval) {
+    clearInterval(onlineStatusRefreshInterval)
+    onlineStatusRefreshInterval = null
   }
 })
 </script>
