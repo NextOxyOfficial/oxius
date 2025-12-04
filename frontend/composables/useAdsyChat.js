@@ -18,16 +18,29 @@ const isLoadingMessages = ref(false)
 const onlineUsers = ref(new Map()) // Track online user IDs with their status
 const otherUserOnline = ref(false) // Is the other user in active chat online?
 const lastOnlineCheck = ref(null) // Track last online check time
+const currentUserId = ref(null) // Store current user ID for message identification
 
 // Polling intervals
 let pollingInterval = null
 let onlineStatusInterval = null
 let heartbeatInterval = null // Heartbeat to keep user online
 let chatRoomsPollingInterval = null // Poll for new chat rooms/messages in list
+let headerPollingInterval = null // Poll for unread count in headers (global)
 
 export const useAdsyChat = () => {
   const toast = useToast()
   const { get, post } = useApi()
+  
+  // Get current user ID from auth
+  const { user } = useAuth()
+  
+  // Update current user ID when available
+  const updateCurrentUserId = () => {
+    const userId = user.value?.user?.id || user.value?.id
+    if (userId) {
+      currentUserId.value = userId
+    }
+  }
 
   const updateChatRoomLastMessage = (message) => {
     const chatRoom = chatRooms.value.find(chat => chat.id === message.chatroom)
@@ -46,6 +59,9 @@ export const useAdsyChat = () => {
 
   // API functions
   const loadChatRooms = async (fetchOnlineStatus = true) => {
+    // Ensure we have current user ID for message identification
+    updateCurrentUserId()
+    
     isLoading.value = true
     try {
       const { data, error } = await get('/adsyconnect/chatrooms/')
@@ -144,16 +160,20 @@ export const useAdsyChat = () => {
   const sendMessage = async () => {
     if (!newMessage.value.trim() || !activeChat.value) return
 
+    // Ensure we have current user ID
+    updateCurrentUserId()
+    
     const tempId = Date.now().toString()
     const tempMessage = {
       temp_id: tempId,
       content: newMessage.value.trim(),
-      sender: { id: 'current_user' },
+      sender: { id: currentUserId.value }, // Use actual user ID for proper message alignment
+      message_type: 'text',
       created_at: new Date().toISOString(),
       is_read: false
     }
 
-    // Add temporary message to UI
+    // Add temporary message to UI immediately (shows on right side)
     messages.value.push(tempMessage)
     const messageContent = newMessage.value.trim()
     newMessage.value = ''
@@ -276,6 +296,25 @@ export const useAdsyChat = () => {
     chatRoomsPollingInterval = setInterval(async () => {
       await refreshChatRoomsSilently()
     }, 5000)
+  }
+  
+  // Start header polling for unread count (used by headers when not in AdsyConnect tab)
+  const startHeaderPolling = () => {
+    // Don't start if already running
+    if (headerPollingInterval) return
+    
+    // Poll for unread count every 10 seconds
+    headerPollingInterval = setInterval(async () => {
+      await refreshChatRoomsSilently()
+    }, 10000)
+  }
+  
+  // Stop header polling
+  const stopHeaderPolling = () => {
+    if (headerPollingInterval) {
+      clearInterval(headerPollingInterval)
+      headerPollingInterval = null
+    }
   }
   
   const startOnlineStatusPolling = () => {
@@ -513,6 +552,7 @@ export const useAdsyChat = () => {
     unreadCount,
     otherUserOnline,
     onlineUsers,
+    currentUserId,
 
     // Methods
     loadChatRooms,
@@ -528,6 +568,9 @@ export const useAdsyChat = () => {
     fetchOnlineStatusForUsers,
     startOnlineStatusPolling,
     startChatRoomsPolling,
-    refreshChatRoomsSilently
+    startHeaderPolling,
+    stopHeaderPolling,
+    refreshChatRoomsSilently,
+    updateCurrentUserId
   }
 }

@@ -316,7 +316,7 @@ const { chatIconPath } = useStaticAssets();
 
 // Import AdsyChat for unread message count
 const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
-const { unreadCount: adsyUnreadCount, loadChatRooms } = useAdsyChat();
+const { unreadCount: adsyUnreadCount, loadChatRooms, startHeaderPolling, stopHeaderPolling } = useAdsyChat();
 
 const logo = ref([]);
 const cart = useStoreCart();
@@ -333,12 +333,18 @@ const badgeCount = computed(() => {
   return (totalUnreadCount.value || 0) + (adsyUnreadCount.value || 0);
 });
 
-// Fetch unread count when component mounts
+// Fetch unread count when component mounts and start polling
 onMounted(async () => {
   if (user.value?.user) {
     await fetchUnreadCount();
     await loadChatRooms(); // Load chat rooms to get unread count
+    startHeaderPolling(); // Start polling for real-time unread count updates
   }
+});
+
+// Stop polling when component unmounts
+onUnmounted(() => {
+  stopHeaderPolling();
 });
 
 async function getLogo() {

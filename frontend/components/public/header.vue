@@ -836,7 +836,7 @@ const toast = useToast();
 
 // Import AdsyChat for unread message count
 const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
-const { unreadCount: adsyUnreadCount, loadChatRooms } = useAdsyChat();
+const { unreadCount: adsyUnreadCount, loadChatRooms, startHeaderPolling, stopHeaderPolling } = useAdsyChat();
 
 const openMenu = ref(false);
 const router = useRouter();
@@ -883,12 +883,18 @@ const downloadAndroidApp = async () => {
   }
 };
 
-// Fetch unread ticket count when component mounts
+// Fetch unread ticket count when component mounts and start polling
 onMounted(async () => {
   await fetchUnreadCount();
   if (user.value?.user) {
     await loadChatRooms(); // Load chat rooms to get unread count
+    startHeaderPolling(); // Start polling for real-time unread count updates
   }
+});
+
+// Stop polling when component unmounts
+onUnmounted(() => {
+  stopHeaderPolling();
 });
 
 // Calculate days remaining before subscription expiration

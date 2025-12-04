@@ -481,7 +481,9 @@ const currentUserId = computed(() => currentUser.value?.user?.id || currentUser.
 
 // Methods
 const isOwnMessage = (message) => {
-  return message.sender?.id === currentUserId.value
+  if (!message?.sender?.id || !currentUserId.value) return false
+  // Use string comparison to handle type mismatch (number vs string)
+  return String(message.sender.id) === String(currentUserId.value)
 }
 
 const formatMessageTime = (timestamp) => {
