@@ -102,6 +102,39 @@ class WorkspaceService {
     }
   }
 
+  /// Fetch gigs by user ID (for viewing other user's gigs on their profile)
+  Future<Map<String, dynamic>> fetchUserGigs(String userId, {
+    int page = 1,
+    int pageSize = 10,
+  }) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final uri = Uri.parse('$baseUrl/workspace/gigs/').replace(
+        queryParameters: {
+          'user': userId,
+          'page': page.toString(),
+          'page_size': pageSize.toString(),
+        },
+      );
+      final response = await http.get(uri, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'results': List<Map<String, dynamic>>.from(data['results'] ?? []),
+          'count': data['count'] ?? 0,
+          'next': data['next'],
+          'previous': data['previous'],
+        };
+      } else {
+        return {'results': [], 'count': 0};
+      }
+    } catch (e) {
+      print('Error fetching user gigs: $e');
+      return {'results': [], 'count': 0};
+    }
+  }
+
   /// Create a new gig
   Future<Map<String, dynamic>> createGig(Map<String, dynamic> gigData) async {
     try {

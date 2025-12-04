@@ -78,6 +78,11 @@ class GigListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Gig.objects.filter(status='active').select_related('user')
         
+        # Filter by user ID
+        user_id = self.request.query_params.get('user')
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+        
         # Filter by category
         category = self.request.query_params.get('category')
         if category:

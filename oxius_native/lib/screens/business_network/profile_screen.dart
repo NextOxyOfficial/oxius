@@ -7,6 +7,7 @@ import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/adsyconnect_service.dart';
+import '../../services/workspace_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
@@ -17,6 +18,7 @@ import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
 import '../adsy_connect_chat_interface.dart';
+import '../workspace/gig_detail_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -35,19 +37,23 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Map<String, dynamic>? _userData;
   List<BusinessNetworkPost> _userPosts = [];
   List<BusinessNetworkPost> _savedPosts = [];
+  List<Map<String, dynamic>> _userGigs = [];
   bool _isFollowing = false;
   bool _followLoading = false;
   int _currentNavIndex = 3; // Profile tab is index 3
   int _unreadNotificationCount = 0;
   bool _isLoadingSaved = false;
+  bool _isLoadingGigs = false;
   bool _isContactInfoExpanded = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final WorkspaceService _workspaceService = WorkspaceService();
   
   late TabController _tabController;
   int _currentTabIndex = 0;
   
   final List<Tab> _tabs = const [
     Tab(text: 'Posts'),
+    Tab(text: 'My Workspace'),
     Tab(text: 'Media'),
     Tab(text: 'Saved'),
   ];
@@ -91,17 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() {
-          _currentTabIndex = _tabController.index;
-        });
-        // Load saved posts when Saved tab is selected
-        if (_currentTabIndex == 2 && _savedPosts.isEmpty && !_isLoadingSaved) {
-          _loadSavedPosts();
-        }
-      }
-    });
+    _tabController.addListener(_handleTabChange);
     _loadProfileData();
     _loadUnreadNotificationCount();
   }
@@ -121,8 +117,25 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
+  void _handleTabChange() {
+    if (!_tabController.indexIsChanging && _tabController.index != _currentTabIndex) {
+      setState(() {
+        _currentTabIndex = _tabController.index;
+      });
+      // Load gigs when My Workspace tab is selected (index 1)
+      if (_currentTabIndex == 1 && _userGigs.isEmpty && !_isLoadingGigs) {
+        _loadUserGigs();
+      }
+      // Load saved posts when Saved tab is selected (index 3)
+      if (_currentTabIndex == 3 && _savedPosts.isEmpty && !_isLoadingSaved) {
+        _loadSavedPosts();
+      }
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
   }
@@ -205,6 +218,26 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             backgroundColor: Colors.red,
           ),
         );
+      }
+    }
+  }
+
+  Future<void> _loadUserGigs() async {
+    setState(() => _isLoadingGigs = true);
+
+    try {
+      final result = await _workspaceService.fetchUserGigs(widget.userId);
+      
+      if (mounted) {
+        setState(() {
+          _userGigs = result['results'] as List<Map<String, dynamic>>;
+          _isLoadingGigs = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingGigs = false);
+        print('Error loading user gigs: $e');
       }
     }
   }
@@ -1307,13 +1340,20 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       child: TabBar(
         controller: _tabController,
         tabs: _tabs,
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
         labelColor: const Color(0xFF3B82F6),
         unselectedLabelColor: Colors.grey.shade600,
         indicatorColor: const Color(0xFF3B82F6),
         indicatorWeight: 3,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
         labelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -1323,20 +1363,58 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     return Container(
       margin: const EdgeInsets.only(top: 4),
       padding: const EdgeInsets.only(bottom: 80),
-      child: IndexedStack(
-        index: _currentTabIndex,
-        children: [
-          // Posts Tab
-          _buildPostsTab(),
-          
-          // Media Tab
-          _buildMediaTab(),
-          
-          // Saved Tab
-          _buildSavedTab(),
-        ],
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.05, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            ),
+          );
+        },
+        child: _buildCurrentTab(),
       ),
     );
+  }
+
+  Widget _buildCurrentTab() {
+    switch (_currentTabIndex) {
+      case 0:
+        return KeyedSubtree(
+          key: const ValueKey('posts'),
+          child: _buildPostsTab(),
+        );
+      case 1:
+        return KeyedSubtree(
+          key: const ValueKey('workspace'),
+          child: _buildWorkspaceTab(),
+        );
+      case 2:
+        return KeyedSubtree(
+          key: const ValueKey('media'),
+          child: _buildMediaTab(),
+        );
+      case 3:
+        return KeyedSubtree(
+          key: const ValueKey('saved'),
+          child: _buildSavedTab(),
+        );
+      default:
+        return KeyedSubtree(
+          key: const ValueKey('posts'),
+          child: _buildPostsTab(),
+        );
+    }
   }
 
   Widget _buildPostsTab() {
@@ -1481,6 +1559,194 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkspaceTab() {
+    if (_isLoadingGigs) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+          ),
+        ),
+      );
+    }
+    
+    if (_userGigs.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.work_outline_rounded,
+                size: 40,
+                color: Color(0xFF9CA3AF),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No Gigs Yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'This user hasn\'t created any gigs yet.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      itemCount: _userGigs.length,
+      itemBuilder: (context, index) {
+        final gig = _userGigs[index];
+        return _buildGigCard(gig);
+      },
+    );
+  }
+
+  Widget _buildGigCard(Map<String, dynamic> gig) {
+    final title = gig['title'] ?? 'Untitled Gig';
+    final price = gig['price']?.toString() ?? '0';
+    final currency = gig['currency'] ?? 'BDT';
+    final thumbnail = gig['thumbnail'];
+    final rating = (gig['average_rating'] ?? 0.0).toDouble();
+    final ordersCount = gig['orders_count'] ?? 0;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GigDetailScreen(gigId: gig['id'].toString()),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Row(
+            children: [
+              // Thumbnail
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: SizedBox(
+                  width: 55,
+                  height: 55,
+                  child: thumbnail != null
+                      ? Image.network(
+                          thumbnail,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[200],
+                            child: Icon(Icons.work_outline, color: Colors.grey[400], size: 24),
+                          ),
+                        )
+                      : Container(
+                          color: Colors.grey[200],
+                          child: Icon(Icons.work_outline, color: Colors.grey[400], size: 24),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    
+                    // Stats row
+                    Row(
+                      children: [
+                        // Rating
+                        const Icon(Icons.star, size: 14, color: Color(0xFFFBBF24)),
+                        const SizedBox(width: 3),
+                        Text(
+                          rating.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        
+                        // Orders
+                        Text(
+                          '$ordersCount sold',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                        
+                        const Spacer(),
+                        
+                        // Price
+                        Text(
+                          '$currency $price',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF059669),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

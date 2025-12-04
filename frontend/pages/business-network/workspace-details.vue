@@ -303,10 +303,31 @@
                   </div>
                   
                   <!-- Own Gig Notice -->
-                  <div v-if="isOwnGig && !showOrderFlow" class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-                    <div class="flex items-center gap-3">
-                      <UIcon name="i-heroicons-information-circle" class="w-5 h-5 text-purple-500" />
-                      <p class="text-sm text-purple-700">This is your gig. You can manage it from the <NuxtLink to="/business-network/workspaces?tab=my-gigs" class="font-medium underline">My Gigs</NuxtLink> section.</p>
+                  <div v-if="isOwnGig && !showOrderFlow" class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-5 mb-6">
+                    <div class="flex items-start gap-4">
+                      <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <UIcon name="i-heroicons-briefcase" class="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div class="flex-1">
+                        <h4 class="font-semibold text-purple-900 mb-1">This is your gig</h4>
+                        <p class="text-sm text-purple-700 mb-3">You can view statistics and manage this gig from your dashboard.</p>
+                        <div class="flex flex-wrap gap-2">
+                          <NuxtLink 
+                            to="/business-network/workspaces?tab=my-gigs" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                          >
+                            <UIcon name="i-heroicons-cog-6-tooth" class="w-4 h-4" />
+                            Manage Gig
+                          </NuxtLink>
+                          <button 
+                            @click="handleShare"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white text-purple-700 text-sm font-medium rounded-lg border border-purple-200 hover:bg-purple-50 transition-colors"
+                          >
+                            <Share2 class="w-4 h-4" />
+                            Share
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -956,7 +977,9 @@ const balanceAfterPayment = computed(() => {
 const isOwnGig = computed(() => {
   if (!gig.value || !user.value) return false;
   const userId = user.value?.user?.id || user.value?.id;
-  return gig.value.user?.id === userId;
+  const gigUserId = gig.value.user?.id;
+  // Compare as strings to handle type mismatch (number vs string)
+  return String(gigUserId) === String(userId);
 });
 
 // Helper functions
