@@ -128,8 +128,10 @@ class GigCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
+        print(f"📝 GigCreateView: Received data: {request.data}")
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
+            print(f"❌ GigCreateView: Validation errors: {serializer.errors}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         # Gig is created with status='pending' by default (set in model)

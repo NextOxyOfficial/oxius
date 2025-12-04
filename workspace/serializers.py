@@ -184,38 +184,37 @@ class GigCreateSerializer(serializers.ModelSerializer):
         # Map category slug to valid CATEGORY_CHOICES value
         # The frontend sends GigCategory.slug, but the model expects CATEGORY_CHOICES values
         if 'category' in mutable_data:
-            category_val = mutable_data['category']
+            category_val = str(mutable_data.get('category', '')).lower().strip()
             # Valid category choices from the Gig model
             valid_categories = ['design', 'development', 'writing', 'marketing', 'business']
             
-            # If the category is not in valid choices, try to map it
-            if category_val and category_val not in valid_categories:
-                # Try to find a matching GigCategory and map to closest valid choice
-                category_mapping = {
-                    'web-development': 'development',
-                    'app-development': 'development',
-                    'programming': 'development',
-                    'tech': 'development',
-                    'graphic-design': 'design',
-                    'logo-design': 'design',
-                    'creative': 'design',
-                    'content-writing': 'writing',
-                    'translation': 'writing',
-                    'copywriting': 'writing',
-                    'seo': 'marketing',
-                    'social-media': 'marketing',
-                    'digital-marketing': 'marketing',
-                    'consulting': 'business',
-                    'finance': 'business',
-                }
-                # Check if we have a mapping for this slug
-                mapped_category = category_mapping.get(category_val)
-                if mapped_category:
-                    mutable_data['category'] = mapped_category
+            print(f"GigCreateSerializer: Original category value: '{category_val}'")
+            
+            # If already a valid category, use it
+            if category_val in valid_categories:
+                mutable_data['category'] = category_val
+            else:
+                # Try to map slug to valid category
+                mapped_category = None
+                
+                # Check if any valid category is contained in the slug
+                # e.g., "design-creative" contains "design", "programming-tech" -> "development"
+                if 'design' in category_val or 'creative' in category_val or 'graphic' in category_val or 'logo' in category_val:
+                    mapped_category = 'design'
+                elif 'development' in category_val or 'programming' in category_val or 'tech' in category_val or 'web' in category_val or 'app' in category_val or 'software' in category_val:
+                    mapped_category = 'development'
+                elif 'writing' in category_val or 'translation' in category_val or 'content' in category_val or 'copywriting' in category_val:
+                    mapped_category = 'writing'
+                elif 'marketing' in category_val or 'seo' in category_val or 'social' in category_val or 'digital' in category_val:
+                    mapped_category = 'marketing'
+                elif 'business' in category_val or 'consulting' in category_val or 'finance' in category_val:
+                    mapped_category = 'business'
                 else:
-                    # Default to 'design' if no mapping found
-                    mutable_data['category'] = 'design'
-                print(f"GigCreateSerializer: Mapped category '{category_val}' to '{mutable_data['category']}'")
+                    # Default to 'design' if no match found
+                    mapped_category = 'design'
+                
+                mutable_data['category'] = mapped_category
+                print(f"GigCreateSerializer: Mapped category '{category_val}' to '{mapped_category}'")
         
         # Parse skills if it's a JSON string
         if 'skills' in mutable_data:
@@ -263,7 +262,13 @@ class GigCreateSerializer(serializers.ModelSerializer):
                     pass
         
         print(f"GigCreateSerializer: After processing: {mutable_data}")
-        return super().to_internal_value(mutable_data)
+        try:
+            result = super().to_internal_value(mutable_data)
+            print(f"GigCreateSerializer: Validation passed, result: {result}")
+            return result
+        except Exception as e:
+            print(f"❌ GigCreateSerializer: to_internal_value error: {e}")
+            raise
     
     def create(self, validated_data):
         from django.core.files.storage import default_storage
