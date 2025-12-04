@@ -23,6 +23,7 @@ const lastOnlineCheck = ref(null) // Track last online check time
 let pollingInterval = null
 let onlineStatusInterval = null
 let heartbeatInterval = null // Heartbeat to keep user online
+let chatRoomsPollingInterval = null // Poll for new chat rooms/messages in list
 
 export const useAdsyChat = () => {
   const toast = useToast()
@@ -70,6 +71,49 @@ export const useAdsyChat = () => {
       })
     } finally {
       isLoading.value = false
+    }
+  }
+
+  // Silent refresh for polling - doesn't show loading state
+  const refreshChatRoomsSilently = async () => {
+    try {
+      const { data, error } = await get('/adsyconnect/chatrooms/')
+      if (data && !error) {
+        const newChatRooms = data.results || data || []
+        
+        // Merge new data while preserving local state (is_online, unread_count for active chat)
+        newChatRooms.forEach(newChat => {
+          const existingChat = chatRooms.value.find(c => c.id === newChat.id)
+          if (existingChat) {
+            // Preserve is_online status from our polling
+            if (existingChat.other_user?.is_online !== undefined) {
+              newChat.other_user = newChat.other_user || {}
+              newChat.other_user.is_online = existingChat.other_user.is_online
+            }
+            // If this is the active chat, keep unread_count at 0 (user is viewing it)
+            if (activeChat.value?.id === newChat.id) {
+              newChat.unread_count = 0
+            }
+          }
+        })
+        
+        // Check if there are meaningful changes (new messages for non-active chats, new chats)
+        const hasChanges = newChatRooms.some((newChat) => {
+          const existingChat = chatRooms.value.find(c => c.id === newChat.id)
+          if (!existingChat) return true // New chat room
+          // Only count as change if it's not the active chat and has new messages
+          if (activeChat.value?.id !== newChat.id) {
+            return existingChat.last_message_at !== newChat.last_message_at
+          }
+          return false
+        })
+        
+        if (hasChanges || newChatRooms.length !== chatRooms.value.length) {
+          chatRooms.value = newChatRooms
+        }
+      }
+    } catch (error) {
+      // Silently handle polling errors
     }
   }
 
@@ -193,8 +237,9 @@ export const useAdsyChat = () => {
   
   const startPolling = () => {
     if (pollingInterval) clearInterval(pollingInterval)
+    if (chatRoomsPollingInterval) clearInterval(chatRoomsPollingInterval)
     
-    // Poll for new messages
+    // Poll for new messages in active chat
     pollingInterval = setInterval(async () => {
       if (activeChat.value) {
         try {
@@ -212,10 +257,25 @@ export const useAdsyChat = () => {
           // Silently handle polling errors
         }
       }
-    }, 5000) // Poll every 5 seconds
+    }, 3000) // Poll every 3 seconds for active chat messages
+    
+    // Poll for new chat rooms / incoming messages (for recipient to see new messages)
+    chatRoomsPollingInterval = setInterval(async () => {
+      await refreshChatRoomsSilently()
+    }, 5000) // Poll every 5 seconds for chat list updates
     
     // Start online status polling
     startOnlineStatusPolling()
+  }
+  
+  // Start only chat rooms polling (without active chat)
+  const startChatRoomsPolling = () => {
+    if (chatRoomsPollingInterval) clearInterval(chatRoomsPollingInterval)
+    
+    // Poll for new chat rooms / incoming messages
+    chatRoomsPollingInterval = setInterval(async () => {
+      await refreshChatRoomsSilently()
+    }, 5000)
   }
   
   const startOnlineStatusPolling = () => {
@@ -235,10 +295,10 @@ export const useAdsyChat = () => {
       }
     }, 5000)
     
-    // Heartbeat to keep user online - every 8 seconds
+    // Heartbeat to keep user online - every 5 seconds
     heartbeatInterval = setInterval(() => {
       updateOnlineStatus(true)
-    }, 8000)
+    }, 5000)
   }
   
   const checkOtherUserOnlineStatus = async () => {
@@ -262,26 +322,38 @@ export const useAdsyChat = () => {
         if (userStatus) {
           const isOnline = userStatus.is_online === true
           
-          // Check if last_seen is recent (within 30 seconds) as additional validation
+          // Check if last_seen is recent (within 120 seconds) as additional validation
           if (userStatus.last_seen) {
             const lastSeen = new Date(userStatus.last_seen)
             const now = new Date()
             const diffSeconds = (now - lastSeen) / 1000
-            // If last_seen is more than 30 seconds ago, consider offline
-            otherUserOnline.value = isOnline && diffSeconds < 30
+            // If last_seen is more than 120 seconds ago, consider offline
+            otherUserOnline.value = isOnline && diffSeconds < 120
           } else {
             otherUserOnline.value = isOnline
           }
           
-          // Update the chat room's other_user online status
+          // Update the chat room's other_user online status with proper reactivity
           if (activeChat.value?.other_user) {
-            activeChat.value.other_user.is_online = otherUserOnline.value
+            activeChat.value = {
+              ...activeChat.value,
+              other_user: {
+                ...activeChat.value.other_user,
+                is_online: otherUserOnline.value
+              }
+            }
           }
           
-          // Also update in chatRooms list
-          const chatRoom = chatRooms.value.find(c => c.id === activeChat.value?.id)
-          if (chatRoom?.other_user) {
-            chatRoom.other_user.is_online = otherUserOnline.value
+          // Also update in chatRooms list with proper reactivity
+          const chatIndex = chatRooms.value.findIndex(c => c.id === activeChat.value?.id)
+          if (chatIndex !== -1 && chatRooms.value[chatIndex]?.other_user) {
+            chatRooms.value[chatIndex] = {
+              ...chatRooms.value[chatIndex],
+              other_user: {
+                ...chatRooms.value[chatIndex].other_user,
+                is_online: otherUserOnline.value
+              }
+            }
           }
           
           // Store in onlineUsers map
@@ -321,6 +393,10 @@ export const useAdsyChat = () => {
       clearInterval(heartbeatInterval)
       heartbeatInterval = null
     }
+    if (chatRoomsPollingInterval) {
+      clearInterval(chatRoomsPollingInterval)
+      chatRoomsPollingInterval = null
+    }
     // Set user as offline when leaving chat
     updateOnlineStatus(false)
     otherUserOnline.value = false
@@ -351,28 +427,41 @@ export const useAdsyChat = () => {
       if (data && !error) {
         const statusList = Array.isArray(data) ? data : (data.results || [])
         
+        // First, mark all requested users as offline (default)
+        userIds.forEach(id => {
+          onlineUsers.value.set(String(id), false)
+        })
+        
+        // Then update with actual status from API
         statusList.forEach(status => {
           const userId = status.user?.id || status.user_id || status.user
           if (userId) {
             const isOnline = status.is_online === true
-            // Validate with last_seen
+            // Validate with last_seen - use 120 seconds threshold for tolerance
             if (status.last_seen) {
               const lastSeen = new Date(status.last_seen)
               const now = new Date()
               const diffSeconds = (now - lastSeen) / 1000
-              onlineUsers.value.set(String(userId), isOnline && diffSeconds < 30)
+              onlineUsers.value.set(String(userId), isOnline && diffSeconds < 120)
             } else {
               onlineUsers.value.set(String(userId), isOnline)
             }
           }
         })
         
-        // Update chatRooms with online status
-        chatRooms.value.forEach(chat => {
+        // Update chatRooms with online status - create new object for reactivity
+        chatRooms.value = chatRooms.value.map(chat => {
           if (chat.other_user?.id) {
             const isOnline = onlineUsers.value.get(String(chat.other_user.id)) === true
-            chat.other_user.is_online = isOnline
+            return {
+              ...chat,
+              other_user: {
+                ...chat.other_user,
+                is_online: isOnline
+              }
+            }
           }
+          return chat
         })
       }
     } catch (error) {
@@ -437,6 +526,8 @@ export const useAdsyChat = () => {
     updateOnlineStatus,
     getOrCreateChatRoom,
     fetchOnlineStatusForUsers,
-    startOnlineStatusPolling
+    startOnlineStatusPolling,
+    startChatRoomsPolling,
+    refreshChatRoomsSilently
   }
 }

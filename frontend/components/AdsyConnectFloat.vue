@@ -81,10 +81,6 @@
                   class="w-8 h-8 rounded-full object-cover"
                   @error="handleImageError"
                 />
-                <div
-                  v-if="isUserOnline(chat.other_user.id)"
-                  class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border border-white rounded-full"
-                ></div>
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -135,8 +131,8 @@
                 <p class="text-sm font-medium text-gray-900">
                   {{ activeMiniChat.other_user.first_name }} {{ activeMiniChat.other_user.last_name }}
                 </p>
-                <p class="text-xs text-gray-500">
-                  {{ isUserOnline(activeMiniChat.other_user.id) ? 'Online' : 'Offline' }}
+                <p v-if="activeMiniChat.other_user.profession" class="text-xs text-gray-500 truncate">
+                  {{ activeMiniChat.other_user.profession }}
                 </p>
               </div>
             </div>
@@ -207,7 +203,6 @@ interface ChatUser {
   last_name?: string
   avatar?: string
   image?: string
-  is_online?: boolean
   is_pro?: boolean
   kyc?: boolean
   profession?: string
@@ -231,9 +226,8 @@ const {
   loadChatRooms,
   loadMessages,
   sendMessage: sendChatMessage,
-  isUserOnline,
-  fetchOnlineStatusForUsers,
-  updateOnlineStatus,
+  startChatRoomsPolling,
+  stopPolling,
 } = useAdsyChat()
 
 // Cast chatRooms to proper type for template usage
@@ -255,7 +249,6 @@ const miniMessages = ref<any[]>([])
 const miniMessageText = ref('')
 const miniMessagesContainer = ref<HTMLElement>()
 const hasNewMessages = ref(false)
-let onlineStatusRefreshInterval: ReturnType<typeof setInterval> | null = null
 
 // Computed
 const recentChats = computed((): ChatRoom[] => {
@@ -281,30 +274,8 @@ const toggleMiniChat = async () => {
     if (recentChats.value.length === 0) {
       await loadChatRooms()
     }
-    // Refresh online status for chat list users
-    const userIds = chatRooms.value
-      .map((chat: any) => chat.other_user?.id)
-      .filter((id: any) => id)
-    if (userIds.length > 0) {
-      await fetchOnlineStatusForUsers(userIds)
-    }
-    // Start periodic refresh
-    if (!onlineStatusRefreshInterval) {
-      onlineStatusRefreshInterval = setInterval(async () => {
-        const ids = chatRooms.value
-          .map((chat: any) => chat.other_user?.id)
-          .filter((id: any) => id)
-        if (ids.length > 0) {
-          await fetchOnlineStatusForUsers(ids)
-        }
-      }, 10000)
-    }
-  } else {
-    // Stop periodic refresh when closing
-    if (onlineStatusRefreshInterval) {
-      clearInterval(onlineStatusRefreshInterval)
-      onlineStatusRefreshInterval = null
-    }
+    // Start periodic refresh for new messages
+    startChatRoomsPolling()
   }
   hasNewMessages.value = false
 }
@@ -378,17 +349,14 @@ watch(unreadCount, (newCount, oldCount) => {
 onMounted(async () => {
   if (user.value) {
     await loadChatRooms()
-    // Set user as online
-    updateOnlineStatus(true)
+    // Start polling for new messages
+    startChatRoomsPolling()
   }
 })
 
-// Cleanup on unmount
+// Cleanup on unmount - stopPolling handles all intervals
 onUnmounted(() => {
-  if (onlineStatusRefreshInterval) {
-    clearInterval(onlineStatusRefreshInterval)
-    onlineStatusRefreshInterval = null
-  }
+  stopPolling()
 })
 </script>
 

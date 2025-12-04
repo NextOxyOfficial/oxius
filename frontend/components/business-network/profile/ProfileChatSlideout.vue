@@ -16,11 +16,6 @@
               class="w-11 h-11 rounded-full object-cover border-2 border-white/40 shadow-md"
               @error="handleImageError"
             />
-            <!-- Online indicator -->
-            <span 
-              class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white"
-              :class="isUserOnline ? 'bg-green-400 animate-pulse' : 'bg-gray-400'"
-            ></span>
           </div>
           <div>
             <div class="flex items-center gap-1.5 flex-wrap">
@@ -39,11 +34,7 @@
                 PRO
               </span>
             </div>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <span class="text-xs text-white/80">{{ user?.profession || 'User' }}</span>
-              <span class="text-white/50">•</span>
-              <span class="text-xs text-white/70">{{ isUserOnline ? 'Online' : 'Offline' }}</span>
-            </div>
+            <span v-if="user?.profession" class="text-xs text-white/80 mt-0.5">{{ user.profession }}</span>
           </div>
         </div>
         <button
@@ -459,7 +450,6 @@ const newMessage = ref('')
 const isLoadingMessages = ref(false)
 const isSending = ref(false)
 const messagesContainer = ref(null)
-const isUserOnline = ref(false)
 
 // Attachment state
 const showAttachmentOptions = ref(false)
@@ -485,8 +475,6 @@ const messageToDelete = ref(null)
 
 // Polling
 let pollingInterval = null
-let onlineStatusInterval = null
-let heartbeatInterval = null
 
 // Computed for current user ID (user object is nested)
 const currentUserId = computed(() => currentUser.value?.user?.id || currentUser.value?.id)
@@ -804,56 +792,8 @@ const closeMenuOnClickOutside = () => {
   activeMessageMenu.value = null
 }
 
-const checkOnlineStatus = async () => {
-  if (!props.user?.id) return
-  try {
-    const { data, error } = await get(`/adsyconnect/online-status/?user_ids[]=${props.user.id}`)
-    if (data && !error) {
-      const statusList = Array.isArray(data) ? data : (data.results || [])
-      // Check for user match with various possible field names
-      const userStatus = statusList.find(s => {
-        const statusUserId = s.user?.id || s.user_id || s.user
-        return String(statusUserId) === String(props.user.id)
-      })
-      
-      if (userStatus) {
-        const isOnline = userStatus.is_online === true
-        // Validate with last_seen - consider offline if last_seen > 30 seconds ago
-        if (userStatus.last_seen) {
-          const lastSeen = new Date(userStatus.last_seen)
-          const now = new Date()
-          const diffSeconds = (now - lastSeen) / 1000
-          isUserOnline.value = isOnline && diffSeconds < 30
-        } else {
-          isUserOnline.value = isOnline
-        }
-      } else {
-        isUserOnline.value = false
-      }
-    }
-  } catch (error) {
-    // Silently handle - keep previous status
-  }
-}
-
-// Update own online status
-const updateOnlineStatus = async (isOnline = true) => {
-  try {
-    await post('/adsyconnect/online-status/update_status/', {
-      is_online: isOnline
-    })
-  } catch (error) {
-    // Silently handle
-  }
-}
-
 const startPolling = () => {
   if (pollingInterval) clearInterval(pollingInterval)
-  if (onlineStatusInterval) clearInterval(onlineStatusInterval)
-  if (heartbeatInterval) clearInterval(heartbeatInterval)
-  
-  // Set user as online immediately
-  updateOnlineStatus(true)
   
   // Poll for new messages every 3 seconds
   pollingInterval = setInterval(async () => {
@@ -872,15 +812,6 @@ const startPolling = () => {
       }
     }
   }, 3000)
-  
-  // Poll online status every 5 seconds (more responsive)
-  checkOnlineStatus()
-  onlineStatusInterval = setInterval(checkOnlineStatus, 5000)
-  
-  // Heartbeat to keep user online - every 8 seconds
-  heartbeatInterval = setInterval(() => {
-    updateOnlineStatus(true)
-  }, 8000)
 }
 
 const stopPolling = () => {
@@ -888,16 +819,6 @@ const stopPolling = () => {
     clearInterval(pollingInterval)
     pollingInterval = null
   }
-  if (onlineStatusInterval) {
-    clearInterval(onlineStatusInterval)
-    onlineStatusInterval = null
-  }
-  if (heartbeatInterval) {
-    clearInterval(heartbeatInterval)
-    heartbeatInterval = null
-  }
-  // Set user as offline when closing chat
-  updateOnlineStatus(false)
 }
 
 const close = () => {

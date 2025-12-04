@@ -459,10 +459,6 @@
                               class="w-10 h-10 rounded-full object-cover bg-gray-200"
                               @error="handleImageError"
                             />
-                            <div
-                              v-if="isUserOnline(chat.other_user?.id)"
-                              class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full animate-pulse"
-                            ></div>
                           </div>
 
                           <!-- Chat Info -->
@@ -559,15 +555,9 @@
                               PRO
                             </span>
                           </div>
-                          <div class="flex items-center gap-1.5">
-                            <span 
-                              class="w-2 h-2 rounded-full transition-colors duration-300"
-                              :class="otherUserOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-300'"
-                            ></span>
-                            <span class="text-[11px] text-gray-500">
-                              {{ otherUserOnline ? 'Online now' : 'Offline' }}
-                            </span>
-                          </div>
+                          <span v-if="activeAdsyChat.other_user?.profession" class="text-[11px] text-gray-500 truncate">
+                            {{ activeAdsyChat.other_user.profession }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -2078,19 +2068,12 @@ const {
   isLoading: adsyConnectLoading,
   isLoadingMessages: adsyMessagesLoading,
   unreadCount: adsyUnreadCount,
-  otherUserOnline,
   loadChatRooms,
   sendMessage: sendAdsyMessage,
   selectChat: selectAdsyChat,
   stopPolling,
-  isUserOnline,
-  fetchOnlineStatusForUsers,
-  updateOnlineStatus,
-  startOnlineStatusPolling
+  startChatRoomsPolling
 } = useAdsyChat();
-
-// Periodic online status refresh for chat list
-let chatListOnlineStatusInterval = null;
 
 // Other AdsyConnect state
 const adsySearchQuery = ref('');
@@ -2339,32 +2322,12 @@ function setActiveTab(tab) {
 // Initialize chat
 onMounted(async () => {
   await loadChatRooms();
-  // Don't auto-select a chat - let user tap to open
-  
-  // Set current user as online
-  updateOnlineStatus(true);
-  
-  // Periodically refresh online status for chat list users (every 10 seconds)
-  chatListOnlineStatusInterval = setInterval(async () => {
-    if (adsyChatRooms.value && adsyChatRooms.value.length > 0) {
-      const userIds = adsyChatRooms.value
-        .map(chat => chat.other_user?.id)
-        .filter(id => id);
-      if (userIds.length > 0) {
-        await fetchOnlineStatusForUsers(userIds);
-      }
-    }
-  }, 10000);
+  // Start polling for new chat rooms / incoming messages
+  startChatRoomsPolling();
 });
 
 // Cleanup on unmount
 onUnmounted(() => {
-  if (chatListOnlineStatusInterval) {
-    clearInterval(chatListOnlineStatusInterval);
-    chatListOnlineStatusInterval = null;
-  }
-  // Set user as offline when leaving inbox
-  updateOnlineStatus(false);
   stopPolling();
 });
 
