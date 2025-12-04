@@ -177,8 +177,8 @@
 
         <!-- Upload Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <!-- ID Upload Section -->
-          <div v-if="!id_verification">
+          <!-- ID Upload Section - Only show if user is NOT KYC verified -->
+          <div v-if="!id_verification && !user.user.kyc">
             <div
               class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden hover:shadow-sm transition-all duration-300"
             >
@@ -519,8 +519,8 @@
             </div>
           </div>
 
-          <!-- Upload Progress -->
-          <div v-if="!id_verification" class="md:col-span-2">
+          <!-- Upload Progress - Only show if user is NOT KYC verified -->
+          <div v-if="!id_verification && !user.user.kyc" class="md:col-span-2">
             <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
               <h3
                 class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-4"
@@ -593,6 +593,29 @@
                   Submit Documents
                 </UButton>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verified Success Message - Show when user is KYC verified -->
+        <div v-if="user.user.kyc" class="mt-8">
+          <div
+            class="bg-green-50 dark:bg-green-900/30 rounded-xl overflow-hidden shadow-sm p-6"
+          >
+            <div class="flex flex-col items-center text-center">
+              <div
+                class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center mb-4"
+              >
+                <UIcon name="i-heroicons-check-circle" class="text-3xl text-green-500" />
+              </div>
+              <h3
+                class="text-xl font-semibold text-green-800 dark:text-green-300 mb-2"
+              >
+                Identity Verified
+              </h3>
+              <p class="text-green-700 dark:text-green-400">
+                Your identity has been successfully verified. You have full access to all features.
+              </p>
             </div>
           </div>
         </div>

@@ -27,13 +27,17 @@ class PackageSerializer(serializers.ModelSerializer):
         help_text="The ID of the selected operator"
     )
     
-    operator_details = OperatorSerializer(
-        source='operator',
-        read_only=True
-    )
+    operator_details = serializers.SerializerMethodField()
+    
     class Meta:
         model = Package
         fields = '__all__'
+    
+    def get_operator_details(self, obj):
+        """Pass request context to nested OperatorSerializer for proper URL building"""
+        if obj.operator:
+            return OperatorSerializer(obj.operator, context=self.context).data
+        return None
 
 class RechargeSerializer(serializers.ModelSerializer):
     package = serializers.PrimaryKeyRelatedField(
@@ -41,24 +45,31 @@ class RechargeSerializer(serializers.ModelSerializer):
         help_text="The ID of the selected package"
     )
     
-    package_details = PackageSerializer(
-        source='package',
-        read_only=True
-    )
+    package_details = serializers.SerializerMethodField()
+    
     operator = serializers.PrimaryKeyRelatedField(
         queryset=Operator.objects.all(),
         help_text="The ID of the selected operator"
     )
     
-    operator_details = OperatorSerializer(
-        source='operator',
-        read_only=True
-    )
+    operator_details = serializers.SerializerMethodField()
     
     class Meta:
         model = Recharge
         fields = '__all__'
         read_only_fields = ['user', 'transaction_id']
+    
+    def get_package_details(self, obj):
+        """Pass request context to nested PackageSerializer for proper URL building"""
+        if obj.package:
+            return PackageSerializer(obj.package, context=self.context).data
+        return None
+    
+    def get_operator_details(self, obj):
+        """Pass request context to nested OperatorSerializer for proper URL building"""
+        if obj.operator:
+            return OperatorSerializer(obj.operator, context=self.context).data
+        return None
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
