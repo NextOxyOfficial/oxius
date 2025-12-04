@@ -11,14 +11,18 @@ class OperatorSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'icon', 'bg_color', 'icon_color']
     
     def get_icon(self, obj):
-        if obj.icon:
-            request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.icon.url)
-            # Fallback to absolute URL in production
-            if not settings.DEBUG:
-                return f"https://adsyclub.com{obj.icon.url}"
-            return obj.icon.url
+        if obj.icon and obj.icon.name:
+            try:
+                request = self.context.get("request")
+                if request:
+                    return request.build_absolute_uri(obj.icon.url)
+                # Fallback to absolute URL in production
+                if not settings.DEBUG:
+                    return f"https://adsyclub.com{obj.icon.url}"
+                return obj.icon.url
+            except Exception as e:
+                print(f"Error getting icon URL for {obj.name}: {e}")
+                return None
         return None
 
 class PackageSerializer(serializers.ModelSerializer):

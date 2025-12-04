@@ -107,8 +107,8 @@
                     <h3 class="mt-1 text-base font-semibold text-gray-800">
                       {{ pack.price }}
                     </h3>
-                    <NuxtImg
-                      v-if="pack.operator_details"
+                    <img
+                      v-if="pack.operator_details && pack.operator_details.icon"
                       :src="pack.operator_details.icon"
                       :alt="pack.operator_details.name"
                       class="size-5"
@@ -190,8 +190,8 @@
                     <h3 class="mt-1 text-base font-semibold text-gray-800">
                       {{ pack.price }}
                     </h3>
-                    <NuxtImg
-                      v-if="pack.operator_details"
+                    <img
+                      v-if="pack.operator_details && pack.operator_details.icon"
                       :src="pack.operator_details.icon"
                       :alt="pack.operator_details.name"
                       class="size-5"

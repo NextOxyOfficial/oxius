@@ -48,7 +48,7 @@
                 class="operator-icon w-8 h-8 rounded-full flex items-center justify-center"
                 :class="getOperatorClass(transaction?.operator)"
               >
-                <NuxtImg
+                <img
                   v-if="transaction?.operator_details?.icon"
                   :src="transaction.operator_details.icon"
                   class="w-5 h-5"
