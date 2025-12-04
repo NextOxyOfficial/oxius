@@ -587,10 +587,10 @@
                         v-for="message in adsyMessages"
                         :key="message.id"
                         class="flex items-end gap-2 group/msg"
-                        :class="message.sender?.id === currentUserId ? 'justify-end' : 'justify-start'"
+                        :class="isOwnMessage(message) ? 'justify-end' : 'justify-start'"
                       >
                         <!-- Avatar for received messages -->
-                        <div v-if="message.sender?.id !== currentUserId" class="flex-shrink-0 mb-1">
+                        <div v-if="!isOwnMessage(message)" class="flex-shrink-0 mb-1">
                           <img
                             :src="activeAdsyChat.other_user?.avatar || activeAdsyChat.other_user?.image || '/static/frontend/images/placeholder.jpg'"
                             :alt="activeAdsyChat.other_user?.username"
@@ -600,12 +600,13 @@
 
                         <!-- Message Actions (for own messages) -->
                         <div 
-                          v-if="message.sender?.id === currentUserId && !message.is_deleted" 
+                          v-if="isOwnMessage(message) && !message.is_deleted" 
                           class="flex-shrink-0 opacity-0 group-hover/msg:opacity-100 transition-opacity self-center"
+                          @click.stop
                         >
                           <div class="relative">
                             <button
-                              @click="toggleAdsyMessageMenu(message.id)"
+                              @click.stop="toggleAdsyMessageMenu(message.id)"
                               class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
                             >
                               <UIcon name="i-heroicons-ellipsis-vertical" class="w-4 h-4" />
@@ -614,17 +615,18 @@
                             <div
                               v-if="activeAdsyMessageMenu === message.id"
                               class="absolute right-0 bottom-full mb-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                              @click.stop
                             >
                               <button
                                 v-if="message.message_type === 'text'"
-                                @click="startEditAdsyMessage(message)"
+                                @click.stop="startEditAdsyMessage(message)"
                                 class="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                               >
                                 <UIcon name="i-heroicons-pencil" class="w-4 h-4" />
                                 Edit
                               </button>
                               <button
-                                @click="confirmDeleteAdsyMessage(message)"
+                                @click.stop="confirmDeleteAdsyMessage(message)"
                                 class="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                               >
                                 <UIcon name="i-heroicons-trash" class="w-4 h-4" />
@@ -636,7 +638,7 @@
                         
                         <div
                           class="max-w-[75%] rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md"
-                          :class="message.sender?.id === currentUserId 
+                          :class="isOwnMessage(message) 
                             ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-sm' 
                             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'"
                         >
@@ -662,7 +664,7 @@
                               <div class="flex items-center justify-end gap-1">
                                 <span class="text-[10px] opacity-60">{{ message.time_display }}</span>
                                 <UIcon 
-                                  v-if="message.sender?.id === currentUserId"
+                                  v-if="isOwnMessage(message)"
                                   :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
                                   class="w-3 h-3"
                                   :class="message.is_read ? 'text-blue-400' : 'opacity-50'"
@@ -685,7 +687,7 @@
                               <div class="flex items-center justify-end gap-1">
                                 <span class="text-[10px] opacity-60">{{ message.time_display }}</span>
                                 <UIcon 
-                                  v-if="message.sender?.id === currentUserId"
+                                  v-if="isOwnMessage(message)"
                                   :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
                                   class="w-3 h-3"
                                   :class="message.is_read ? 'text-blue-400' : 'opacity-50'"
@@ -696,8 +698,8 @@
                           
                           <div v-else-if="message.message_type === 'document' && message.media_url" class="px-3 py-2.5">
                             <div class="flex items-center gap-3">
-                              <div class="flex-shrink-0 p-2 rounded-lg" :class="message.sender?.id === currentUserId ? 'bg-white/20' : 'bg-gray-100'">
-                                <UIcon name="i-heroicons-document-text" class="w-6 h-6" :class="message.sender?.id === currentUserId ? 'text-white' : 'text-gray-600'" />
+                              <div class="flex-shrink-0 p-2 rounded-lg" :class="isOwnMessage(message) ? 'bg-white/20' : 'bg-gray-100'">
+                                <UIcon name="i-heroicons-document-text" class="w-6 h-6" :class="isOwnMessage(message) ? 'text-white' : 'text-gray-600'" />
                               </div>
                               <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium truncate">{{ message.file_name || 'Document' }}</p>
@@ -708,7 +710,7 @@
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="flex-shrink-0 p-2 rounded-full transition-colors"
-                                :class="message.sender?.id === currentUserId ? 'hover:bg-white/20' : 'hover:bg-gray-100'"
+                                :class="isOwnMessage(message) ? 'hover:bg-white/20' : 'hover:bg-gray-100'"
                               >
                                 <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
                               </a>
@@ -717,7 +719,7 @@
                             <div v-if="message.time_display" class="mt-1.5 flex items-center justify-end gap-1">
                               <span class="text-[10px] opacity-50">{{ message.time_display }}</span>
                               <UIcon 
-                                v-if="message.sender?.id === currentUserId"
+                                v-if="isOwnMessage(message)"
                                 :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
                                 class="w-3 h-3"
                                 :class="message.is_read ? 'text-white/80' : 'text-white/50'"
@@ -733,7 +735,7 @@
                               <span v-if="message.is_edited" class="text-[10px] opacity-50 italic">edited</span>
                               <span class="text-[10px] opacity-50">{{ message.time_display || formatMessageTime(message.created_at) }}</span>
                               <UIcon 
-                                v-if="message.sender?.id === currentUserId"
+                                v-if="isOwnMessage(message)"
                                 :name="message.is_read ? 'i-heroicons-check-circle-solid' : 'i-heroicons-check'"
                                 class="w-3 h-3"
                                 :class="message.is_read ? 'text-white/80' : 'text-white/50'"
@@ -2077,7 +2079,13 @@ const {
 const adsySearchQuery = ref('');
 const showAttachmentOptions = ref(false);
 const isUploadingAttachment = ref(false);
-const currentUserId = computed(() => user.value?.user?.id);
+const currentUserId = computed(() => user.value?.user?.id || user.value?.id);
+
+// Helper to check if message is from current user (handles type mismatch)
+const isOwnMessage = (message) => {
+  if (!message?.sender?.id || !currentUserId.value) return false;
+  return String(message.sender.id) === String(currentUserId.value);
+};
 
 // Edit/Delete message state
 const activeAdsyMessageMenu = ref(null);

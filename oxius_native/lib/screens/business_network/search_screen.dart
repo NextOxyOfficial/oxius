@@ -246,29 +246,30 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0.5,
+        elevation: 0,
+        toolbarHeight: 56,
         titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87, size: 20),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 22),
           onPressed: () => Navigator.pop(context),
+          padding: EdgeInsets.zero,
         ),
         title: Container(
-          height: 40,
-          margin: const EdgeInsets.only(right: 8),
+          height: 36,
+          margin: const EdgeInsets.only(right: 12),
           decoration: BoxDecoration(
             color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Padding(
-                padding: EdgeInsets.only(left: 12, right: 8),
+                padding: EdgeInsets.only(left: 12, right: 6),
                 child: Icon(
                   Icons.search,
-                  size: 20,
-                  color: Color(0xFF757575),
+                  size: 18,
+                  color: Color(0xFF9E9E9E),
                 ),
               ),
               Expanded(
@@ -277,42 +278,42 @@ class _SearchScreenState extends State<SearchScreen> {
                   focusNode: _searchFocusNode,
                   textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
-                    hintText: 'Search',
+                    hintText: 'Search people, posts...',
                     hintStyle: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: Color(0xFF9E9E9E),
                       fontWeight: FontWeight.w400,
                     ),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.cancel, size: 18, color: Colors.grey.shade500),
-                            onPressed: () {
-                              setState(() {
-                                _searchController.clear();
-                                _posts.clear();
-                                _people.clear();
-                                _hashtags.clear();
-                                _hasSearched = false;
-                                _currentQuery = '';
-                              });
-                            },
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          )
-                        : null,
                   ),
                   onSubmitted: _performSearch,
                   onChanged: _onSearchChanged,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w400,
                     color: Color(0xFF212121),
                   ),
                 ),
               ),
+              if (_searchController.text.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _searchController.clear();
+                      _posts.clear();
+                      _people.clear();
+                      _hashtags.clear();
+                      _hasSearched = false;
+                      _currentQuery = '';
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Icon(Icons.cancel, size: 16, color: Colors.grey.shade400),
+                  ),
+                ),
             ],
           ),
         ),
@@ -336,37 +337,32 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Column(
       children: [
-        // Results summary
+        // Compact Results summary
         if (_hasSearched && (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0), width: 1)),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            color: Colors.white,
             alignment: Alignment.centerLeft,
             child: Text(
               'Results for "$_currentQuery"',
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF616161),
-                fontWeight: FontWeight.w500,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
               ),
-              textAlign: TextAlign.left,
             ),
           ),
         
-        // Tab Bar
+        // Compact Tab Bar
         if (_hasSearched && (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
           Container(
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0), width: 1)),
+              border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
             ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
                   _buildTab('All', 'all', _people.length + _posts.length + _hashtags.length),
@@ -391,20 +387,19 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildTab(String label, String value, int count) {
     final isSelected = _selectedTab == value;
-    return InkWell(
+    return GestureDetector(
       onTap: () {
         setState(() {
           _selectedTab = value;
         });
       },
-      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF1976D2) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF1976D2) : const Color(0xFFE0E0E0),
+            color: isSelected ? const Color(0xFF1976D2) : Colors.grey.shade300,
             width: 1,
           ),
         ),
@@ -414,19 +409,19 @@ class _SearchScreenState extends State<SearchScreen> {
             Text(
               label,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : const Color(0xFF424242),
+                color: isSelected ? Colors.white : Colors.grey.shade700,
               ),
             ),
             if (count > 0) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               Text(
                 count.toString(),
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white.withOpacity(0.9) : const Color(0xFF757575),
+                  color: isSelected ? Colors.white70 : Colors.grey.shade500,
                 ),
               ),
             ],
@@ -553,26 +548,25 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildSectionHeader(String title, int count) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       color: Colors.white,
       child: Row(
         children: [
           Text(
             title,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: Color(0xFF212121),
-              letterSpacing: 0.1,
             ),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           Text(
             '($count)',
-            style: const TextStyle(
-              fontSize: 14,
+            style: TextStyle(
+              fontSize: 12,
               fontWeight: FontWeight.w400,
-              color: Color(0xFF757575),
+              color: Colors.grey.shade500,
             ),
           ),
         ],
@@ -593,16 +587,16 @@ class _SearchScreenState extends State<SearchScreen> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
-              // Avatar
+              // Compact Avatar
               Container(
-                width: 48,
-                height: 48,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey.shade200,
+                  color: Colors.grey.shade100,
                 ),
                 child: ClipOval(
                   child: person['image'] != null
@@ -610,20 +604,18 @@ class _SearchScreenState extends State<SearchScreen> {
                           person['image'],
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.person, color: Colors.grey.shade400, size: 24);
+                            return Icon(Icons.person, color: Colors.grey.shade400, size: 20);
                           },
                         )
-                      : Icon(Icons.person, color: Colors.grey.shade400, size: 24),
+                      : Icon(Icons.person, color: Colors.grey.shade400, size: 20),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               // Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: person['profession'] != null && person['profession'].toString().isNotEmpty
-                      ? MainAxisAlignment.start
-                      : MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
                       children: [
@@ -631,7 +623,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           child: Text(
                             _getPersonFullName(person),
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: Color(0xFF212121),
                             ),
@@ -640,17 +632,17 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         if (person['kyc'] == true) ...[
-                          const SizedBox(width: 4),
-                          Icon(Icons.verified, size: 16, color: Colors.blue.shade600),
+                          const SizedBox(width: 3),
+                          Icon(Icons.verified, size: 14, color: Colors.blue.shade600),
                         ],
                       ],
                     ),
                     if (person['profession'] != null && person['profession'].toString().isNotEmpty)
                       Text(
                         person['profession'],
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF757575),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -659,7 +651,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               // Arrow
-              Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
+              Icon(Icons.chevron_right, color: Colors.grey.shade300, size: 18),
             ],
           ),
         ),
@@ -670,34 +662,33 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget _buildHashtagsGrid() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
+        spacing: 6,
+        runSpacing: 6,
         children: _hashtags.map((hashtag) {
-          return InkWell(
+          return GestureDetector(
             onTap: () {
               _searchController.text = '#$hashtag';
               _performSearch('#$hashtag');
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F2F5),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey.shade300),
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.tag, size: 14, color: Colors.grey.shade700),
-                  const SizedBox(width: 4),
+                  Icon(Icons.tag, size: 12, color: Colors.grey.shade600),
+                  const SizedBox(width: 3),
                   Text(
                     hashtag,
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade800,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade700,
                     ),
                   ),
                 ],
