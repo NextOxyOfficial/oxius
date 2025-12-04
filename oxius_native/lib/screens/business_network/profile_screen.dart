@@ -118,7 +118,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   void _handleTabChange() {
-    if (!_tabController.indexIsChanging && _tabController.index != _currentTabIndex) {
+    // Update immediately when tab changes
+    if (_tabController.index != _currentTabIndex) {
       setState(() {
         _currentTabIndex = _tabController.index;
       });
@@ -1363,58 +1364,23 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     return Container(
       margin: const EdgeInsets.only(top: 4),
       padding: const EdgeInsets.only(bottom: 80),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        switchInCurve: Curves.easeInOut,
-        switchOutCurve: Curves.easeInOut,
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.05, 0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
-              child: child,
-            ),
-          );
-        },
-        child: _buildCurrentTab(),
+      child: IndexedStack(
+        index: _currentTabIndex,
+        children: [
+          // Posts Tab
+          _buildPostsTab(),
+          
+          // My Workspace Tab
+          _buildWorkspaceTab(),
+          
+          // Media Tab
+          _buildMediaTab(),
+          
+          // Saved Tab
+          _buildSavedTab(),
+        ],
       ),
     );
-  }
-
-  Widget _buildCurrentTab() {
-    switch (_currentTabIndex) {
-      case 0:
-        return KeyedSubtree(
-          key: const ValueKey('posts'),
-          child: _buildPostsTab(),
-        );
-      case 1:
-        return KeyedSubtree(
-          key: const ValueKey('workspace'),
-          child: _buildWorkspaceTab(),
-        );
-      case 2:
-        return KeyedSubtree(
-          key: const ValueKey('media'),
-          child: _buildMediaTab(),
-        );
-      case 3:
-        return KeyedSubtree(
-          key: const ValueKey('saved'),
-          child: _buildSavedTab(),
-        );
-      default:
-        return KeyedSubtree(
-          key: const ValueKey('posts'),
-          child: _buildPostsTab(),
-        );
-    }
   }
 
   Widget _buildPostsTab() {

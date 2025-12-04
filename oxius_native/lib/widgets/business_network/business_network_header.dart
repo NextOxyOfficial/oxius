@@ -177,49 +177,34 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                   },
                   child: Row(
                     children: [
-                      _businessNetworkLogoUrl != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                _businessNetworkLogoUrl!,
-                                width: 110,
-                                height: 110,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return const Text(
-                                    'Business Network',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black87,
-                                      letterSpacing: -0.3,
-                                    ),
-                                  );
-                                },
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    width: 72,
-                                    height: 72,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: 36,
-                                        height: 28,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.blue.shade500,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
+                      _businessNetworkLogoUrl != null && _businessNetworkLogoUrl!.isNotEmpty
+                          ? Image.network(
+                              _businessNetworkLogoUrl!,
+                              height: 32,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Text(
+                                  'Business Network',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                    letterSpacing: -0.3,
+                                  ),
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Text(
+                                  'Business Network',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                    letterSpacing: -0.3,
+                                  ),
+                                );
+                              },
                             )
                           : const Text(
                               'Business Network',

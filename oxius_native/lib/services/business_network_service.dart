@@ -17,36 +17,29 @@ class BusinessNetworkService {
         Uri.parse('${ApiService.baseUrl}/bn-logo/'),
       );
 
-      print('🔵 BN Logo API Status: ${response.statusCode}');
-      print('🔵 BN Logo API Response: ${response.body}');
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('🔵 Decoded data: $data');
         
-        // The endpoint returns a list, get the first (most recent) logo
-        if (data is List && data.isNotEmpty) {
-          final logoData = data[0];
-          final logoUrl = logoData['image'] as String?;
-          
-          print('🔵 Logo URL from API: $logoUrl');
-          
-          if (logoUrl != null && logoUrl.isNotEmpty) {
-            // Convert relative URL to absolute if needed
-            if (logoUrl.startsWith('/')) {
-              final fullUrl = '${ApiService.baseUrl}$logoUrl';
-              print('🔵 Full logo URL: $fullUrl');
-              return fullUrl;
-            }
-            print('🔵 Returning logo URL: $logoUrl');
-            return logoUrl;
+        // The endpoint returns a single object with 'image' field
+        String? logoUrl;
+        if (data is Map<String, dynamic>) {
+          logoUrl = data['image'] as String?;
+        } else if (data is List && data.isNotEmpty) {
+          // Fallback for list response
+          logoUrl = data[0]['image'] as String?;
+        }
+        
+        if (logoUrl != null && logoUrl.isNotEmpty) {
+          // Convert relative URL to absolute if needed
+          if (logoUrl.startsWith('/')) {
+            return '${ApiService.baseUrl}$logoUrl';
           }
+          return logoUrl;
         }
       }
-      print('❌ No logo found or API error');
       return null;
     } catch (e) {
-      print('❌ Error fetching business network logo: $e');
+      print('Error fetching business network logo: $e');
       return null;
     }
   }
