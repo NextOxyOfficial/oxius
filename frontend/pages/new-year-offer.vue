@@ -41,16 +41,16 @@
           </p>
 
           <!-- Reward Cards -->
-          <div class="flex flex-wrap justify-center gap-6 mb-10">
-            <div class="bg-white rounded-2xl p-6 shadow-xl border-2 border-emerald-200 min-w-[200px]">
-              <div class="text-4xl mb-2">👤</div>
-              <div class="text-sm text-gray-500 mb-1">You Earn</div>
-              <div class="text-3xl font-bold text-emerald-600">৳{{ program?.program?.referrer_reward || 100 }}</div>
+          <div class="grid grid-cols-2 gap-3 sm:gap-6 mb-10 max-w-md mx-auto">
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border-2 border-emerald-200">
+              <div class="text-3xl sm:text-4xl mb-2">👤</div>
+              <div class="text-xs sm:text-sm text-gray-500 mb-1">You Earn</div>
+              <div class="text-2xl sm:text-3xl font-bold text-emerald-600">৳{{ program?.program?.referrer_reward || 100 }}</div>
             </div>
-            <div class="bg-white rounded-2xl p-6 shadow-xl border-2 border-teal-200 min-w-[200px]">
-              <div class="text-4xl mb-2">👥</div>
-              <div class="text-sm text-gray-500 mb-1">Friend Earns</div>
-              <div class="text-3xl font-bold text-teal-600">৳{{ program?.program?.referee_reward || 50 }}</div>
+            <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border-2 border-teal-200">
+              <div class="text-3xl sm:text-4xl mb-2">👥</div>
+              <div class="text-xs sm:text-sm text-gray-500 mb-1">Friend Earns</div>
+              <div class="text-2xl sm:text-3xl font-bold text-teal-600">৳{{ program?.program?.referee_reward || 50 }}</div>
             </div>
           </div>
 
