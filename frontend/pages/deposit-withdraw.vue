@@ -14,11 +14,12 @@
             Mobile Recharge
           </h2>
           <div class="flex justify-center gap-2">
-            <NuxtImg
+            <img
               v-for="operator in operators"
               :key="operator.id"
               :src="operator.icon"
-              :title="operator.title"
+              :title="operator.name"
+              :alt="operator.name"
               class="size-6"
             />
           </div>
