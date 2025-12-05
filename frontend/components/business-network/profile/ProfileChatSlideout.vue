@@ -620,10 +620,90 @@ const pickCamera = () => {
   cameraInput.value?.click()
 }
 
-const handleImageUpload = (event) => {
+const handleImageUpload = async (event) => {
   const file = event.target.files?.[0]
-  if (file) sendMediaMessage(file, 'image')
+  if (file) {
+    // Check file size limit (10MB before compression)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.add({
+        title: 'File Too Large',
+        description: 'Image must be less than 10MB',
+        color: 'red',
+        timeout: 3000,
+      })
+      event.target.value = ''
+      return
+    }
+    
+    try {
+      // Compress image before sending
+      const compressedFile = await compressImage(file)
+      await sendMediaMessage(compressedFile, 'image')
+    } catch (error) {
+      console.error('Error compressing image:', error)
+      // Fallback to original file if compression fails
+      await sendMediaMessage(file, 'image')
+    }
+  }
   event.target.value = ''
+}
+
+// Image compression utility function
+const compressImage = (file, quality = 0.8, maxWidth = 1200, maxHeight = 1200) => {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+    
+    img.onload = () => {
+      // Calculate new dimensions while maintaining aspect ratio
+      let { width, height } = img
+      
+      if (width > height) {
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+      } else {
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height
+          height = maxHeight
+        }
+      }
+      
+      // Set canvas dimensions
+      canvas.width = width
+      canvas.height = height
+      
+      // Enable image smoothing for better quality
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
+      
+      // Draw and compress the image
+      ctx.drawImage(img, 0, 0, width, height)
+      
+      // Convert to blob with specified quality
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            // Create a new File object with the compressed blob
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            })
+            resolve(compressedFile)
+          } else {
+            reject(new Error('Canvas to Blob conversion failed'))
+          }
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    
+    img.onerror = reject
+    img.src = URL.createObjectURL(file)
+  })
 }
 
 const handleVideoUpload = (event) => {
