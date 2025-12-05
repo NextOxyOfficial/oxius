@@ -4226,9 +4226,144 @@ class AILinkView(generics.ListAPIView):
     View to retrieve AI link information.
     """
 
-    queryset = AILink.objects.all()
+    queryset = AILink.objects.filter(is_active=True)
     serializer_class = AILinkSerializer
     permission_classes = [AllowAny]
+    
+    def get(self, request, *args, **kwargs):
+        """Return the first active AI link configuration"""
+        ai_link = AILink.objects.filter(is_active=True).first()
+        if ai_link:
+            serializer = self.get_serializer(ai_link)
+            return Response(serializer.data)
+        return Response({"error": "No active AI configuration found"}, status=404)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def ai_business_finder(request):
+    """
+    AI-powered business finder using OpenAI API.
+    Searches for businesses based on location and business type.
+    """
+    try:
+        # Get request data
+        country = request.data.get('country', 'Bangladesh')
+        state = request.data.get('state', '')
+        city = request.data.get('city', '')
+        upazila = request.data.get('upazila', '')
+        business_type = request.data.get('business_type', '')
+        
+        if not business_type:
+            return Response({"error": "business_type is required"}, status=400)
+        
+        # Get active AI configuration
+        ai_config = AILink.objects.filter(is_active=True).first()
+        if not ai_config:
+            return Response({"error": "No active AI configuration found"}, status=404)
+        
+        # Build location string
+        location_parts = [part for part in [upazila, city, state, country] if part and part not in ['All Bangladesh', 'All Cities', 'All Areas']]
+        location_str = ', '.join(location_parts) if location_parts else country
+        
+        # If using Cloudflare worker (legacy)
+        if ai_config.provider == 'cloudflare' and ai_config.link:
+            try:
+                cloudflare_url = f"{ai_config.link}&country={country}&city={city}&state={state}&business_type={business_type}&extra_command=search for fields: name,description,address,phone,email,website"
+                cf_response = requests.get(cloudflare_url, timeout=30)
+                if cf_response.status_code == 200:
+                    data = cf_response.json()
+                    if isinstance(data.get('data'), list):
+                        return Response({"businesses": data['data']})
+                    elif isinstance(data.get('data', {}).get('businesses'), list):
+                        return Response({"businesses": data['data']['businesses']})
+                    return Response({"businesses": []})
+            except Exception as e:
+                print(f"Cloudflare worker error: {e}")
+                return Response({"error": "Failed to fetch from Cloudflare worker"}, status=500)
+        
+        # Using OpenAI
+        if ai_config.provider == 'openai' and ai_config.api_key:
+            try:
+                openai_url = "https://api.openai.com/v1/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {ai_config.api_key}",
+                    "Content-Type": "application/json"
+                }
+                
+                prompt = f"""You are a helpful assistant that finds local businesses. 
+Find {business_type} businesses in {location_str}.
+
+Return a JSON array of businesses with the following structure:
+[
+  {{
+    "name": "Business Name",
+    "description": "Brief description of the business",
+    "address": "Full address",
+    "phone": "Phone number if available",
+    "email": "Email if available",
+    "website": "Website URL if available"
+  }}
+]
+
+Important:
+- Return ONLY the JSON array, no other text
+- Include up to 5 relevant businesses
+- If you don't have specific information for a field, use null
+- Focus on real, well-known businesses in that area
+- If you cannot find specific businesses, provide general information about that type of business in the area"""
+
+                payload = {
+                    "model": ai_config.model or "gpt-3.5-turbo",
+                    "messages": [
+                        {"role": "system", "content": "You are a local business finder assistant. Always respond with valid JSON arrays only."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 1500
+                }
+                
+                openai_response = requests.post(openai_url, headers=headers, json=payload, timeout=60)
+                
+                if openai_response.status_code == 200:
+                    result = openai_response.json()
+                    content = result.get('choices', [{}])[0].get('message', {}).get('content', '[]')
+                    
+                    # Parse the JSON response
+                    try:
+                        # Clean up the response - remove markdown code blocks if present
+                        content = content.strip()
+                        if content.startswith('```json'):
+                            content = content[7:]
+                        if content.startswith('```'):
+                            content = content[3:]
+                        if content.endswith('```'):
+                            content = content[:-3]
+                        content = content.strip()
+                        
+                        businesses = json.loads(content)
+                        if isinstance(businesses, list):
+                            return Response({"businesses": businesses})
+                        return Response({"businesses": []})
+                    except json.JSONDecodeError as e:
+                        print(f"JSON parse error: {e}, content: {content}")
+                        return Response({"businesses": [], "raw_response": content})
+                else:
+                    error_msg = openai_response.json().get('error', {}).get('message', 'Unknown error')
+                    print(f"OpenAI API error: {openai_response.status_code} - {error_msg}")
+                    return Response({"error": f"OpenAI API error: {error_msg}"}, status=openai_response.status_code)
+                    
+            except requests.exceptions.Timeout:
+                return Response({"error": "Request timed out"}, status=504)
+            except Exception as e:
+                print(f"OpenAI error: {e}")
+                return Response({"error": str(e)}, status=500)
+        
+        return Response({"error": "AI configuration is incomplete"}, status=400)
+        
+    except Exception as e:
+        print(f"AI business finder error: {e}")
+        return Response({"error": str(e)}, status=500)
 
 
 # Utility functions for creating notifications

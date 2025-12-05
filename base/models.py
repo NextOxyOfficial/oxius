@@ -1329,8 +1329,31 @@ class AndroidAppVersion(models.Model):
 
 
 class AILink(models.Model):
+    """
+    Model to store AI configuration for AdsyAI Bot.
+    Supports OpenAI API integration for business finder functionality.
+    """
+    AI_PROVIDER_CHOICES = [
+        ('openai', 'OpenAI'),
+        ('cloudflare', 'Cloudflare Worker'),
+    ]
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    link = models.URLField()
+    name = models.CharField(max_length=100, default='AdsyAI', help_text='Name for this AI configuration')
+    provider = models.CharField(max_length=20, choices=AI_PROVIDER_CHOICES, default='openai', help_text='AI provider to use')
+    api_key = models.CharField(max_length=255, blank=True, null=True, help_text='OpenAI API key (starts with sk-)')
+    link = models.URLField(blank=True, null=True, help_text='Cloudflare worker URL (only for cloudflare provider)')
+    model = models.CharField(max_length=50, default='gpt-3.5-turbo', help_text='OpenAI model to use (e.g., gpt-3.5-turbo, gpt-4)')
+    is_active = models.BooleanField(default=True, help_text='Whether this AI configuration is active')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'AI Link'
+        verbose_name_plural = 'AI Links'
+    
+    def __str__(self):
+        return f"{self.name} ({self.provider})"
 
 
 class CountryVersion(models.Model):

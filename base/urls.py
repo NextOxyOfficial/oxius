@@ -307,6 +307,7 @@ urlpatterns = [
     path("android-app/latest/", get_latest_android_app, name="android_app_latest"),
     # AILink
     path("ai-link/", AILinkView.as_view(), name="ai_link"),
+    path("ai-business-finder/", ai_business_finder, name="ai_business_finder"),
     path("country-version/", CountryVersionListView.as_view(), name="country_version"),
     
     # Translation and Banner APIs for Flutter app

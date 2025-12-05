@@ -137,6 +137,36 @@
       </div>
     </section>
 
+    <!-- Error Message -->
+    <section v-else-if="errorMessage" class="py-6">
+      <div class="flex flex-col items-center justify-center">
+        <div class="bot-container mb-4">
+          <div class="bot-icon">
+            <UIcon name="i-carbon:bot" class="text-5xl text-red-500" />
+          </div>
+        </div>
+        <div class="text-lg font-medium text-gray-800">
+          <span>
+            আমি
+            <span class="text-lg font-semibold text-green-950">
+              AdsyAI Bot
+              <UIcon class="text-xl" name="i-carbon:bot" />
+            </span>
+            দুঃখিত, একটি সমস্যা হয়েছে: {{ errorMessage }}
+          </span>
+        </div>
+        <UButton
+          color="primary"
+          @click="userChoice = false; errorMessage = ''"
+          class="mt-4"
+          variant="soft"
+        >
+          Try Again
+          <UIcon name="i-heroicons-arrow-path" class="ml-1" />
+        </UButton>
+      </div>
+    </section>
+
     <!-- Search Results -->
     <section v-else-if="result">
       <div v-if="result.length === 0">
@@ -186,56 +216,66 @@ const props = defineProps({
   business_type: String,
   upazila: String,
 });
-const { get } = useApi();
+const { get, post } = useApi();
 
 const result = ref();
 const userChoice = ref(false); // Track if user has made a choice
 const isSearching = ref(false); // Track if search is in progress
 const searchDeclined = ref(false); // Track if user declined the search
-const aiLink = ref("");
+const aiConfig = ref(null);
+const errorMessage = ref("");
 
-async function fetchAILink() {
+async function fetchAIConfig() {
   try {
     const { data, error } = await get("/ai-link/");
     if (data) {
-      aiLink.value = data;
+      aiConfig.value = data;
     } else {
       throw error;
     }
   } catch (err) {
-    console.error("Error fetching AI link:", err);
+    console.error("Error fetching AI config:", err);
   }
 }
 
-await fetchAILink();
-
-// const url =
-//   "https://jolly-snow-f5d0.shimul929.workers.dev/business-finder?key=pk00xaytupk7";
-let extra_command =
-  "search for fields: name,description,address,phone,email,website";
-let hidden_fields = ["phone"];
+await fetchAIConfig();
 
 // Function to start search when user clicks "Yes"
 async function startSearch() {
   userChoice.value = true;
   isSearching.value = true;
   searchDeclined.value = false;
+  errorMessage.value = "";
 
   try {
-    const { data, pending, error } = await useFetch(
-      `${aiLink.value?.link}&country=${props.country}&city=${props.city}&state=${props.state}&business_type=${props.business_type}&extra_command=${extra_command}`,
-      {
-        method: "get",
-      }
-    );
+    // Use the new backend endpoint that handles OpenAI/Cloudflare internally
+    const { data, error } = await post("/ai-business-finder/", {
+      country: props.country,
+      state: props.state,
+      city: props.city,
+      upazila: props.upazila,
+      business_type: props.business_type,
+    });
 
-    if (Array.isArray(data.value.data)) {
-      result.value = data.value.data;
+    if (error) {
+      console.error("Error from AI business finder:", error);
+      errorMessage.value = error.message || "Failed to fetch business data";
+      result.value = [];
+    } else if (data) {
+      // Handle the response from our backend
+      if (Array.isArray(data.businesses)) {
+        result.value = data.businesses;
+      } else if (Array.isArray(data)) {
+        result.value = data;
+      } else {
+        result.value = [];
+      }
     } else {
-      result.value = data.value.data.businesses;
+      result.value = [];
     }
   } catch (err) {
     console.error("Error fetching business data:", err);
+    errorMessage.value = err.message || "An error occurred while searching";
     result.value = [];
   } finally {
     isSearching.value = false;
@@ -248,6 +288,7 @@ function declineSearch() {
   isSearching.value = false;
   searchDeclined.value = true;
   result.value = undefined;
+  errorMessage.value = "";
 }
 
 // No automatic fetching on mount - wait for user choice

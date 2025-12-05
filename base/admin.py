@@ -100,7 +100,37 @@ class EshopBannerAdmin(admin.ModelAdmin):
     mobile_image_preview.short_description = "Mobile Image"
 
 
-admin.site.register(AILink)
+@admin.register(AILink)
+class AILinkAdmin(admin.ModelAdmin):
+    list_display = ('name', 'provider', 'model', 'is_active', 'api_key_status', 'updated_at')
+    list_filter = ('provider', 'is_active')
+    search_fields = ('name',)
+    list_editable = ('is_active',)
+    ordering = ('-updated_at',)
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'provider', 'is_active')
+        }),
+        ('OpenAI Configuration', {
+            'fields': ('api_key', 'model'),
+            'description': 'Configure OpenAI API settings. Get your API key from https://platform.openai.com/api-keys',
+            'classes': ('collapse',),
+        }),
+        ('Cloudflare Configuration (Legacy)', {
+            'fields': ('link',),
+            'description': 'Only used if provider is set to Cloudflare Worker',
+            'classes': ('collapse',),
+        }),
+    )
+    
+    def api_key_status(self, obj):
+        if obj.api_key:
+            # Show masked key for security
+            masked = obj.api_key[:7] + '...' + obj.api_key[-4:] if len(obj.api_key) > 15 else '***'
+            return format_html('<span style="color: green;">✓ Set ({})</span>', masked)
+        return format_html('<span style="color: red;">✗ Not Set</span>')
+    api_key_status.short_description = 'API Key'
 
 
 class CustomUserChangeForm(UserChangeForm):

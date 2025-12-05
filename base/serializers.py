@@ -715,7 +715,8 @@ class AndroidAppVersionSerializer(serializers.ModelSerializer):
 class AILinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = AILink
-        fields = "__all__"
+        fields = ['id', 'name', 'provider', 'link', 'model', 'is_active']
+        # Note: api_key is excluded for security - never expose in API responses
 
 
 class CountryVersionSerializer(serializers.ModelSerializer):
