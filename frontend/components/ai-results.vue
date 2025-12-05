@@ -137,36 +137,6 @@
       </div>
     </section>
 
-    <!-- Error Message -->
-    <section v-else-if="errorMessage" class="py-6">
-      <div class="flex flex-col items-center justify-center">
-        <div class="bot-container mb-4">
-          <div class="bot-icon">
-            <UIcon name="i-carbon:bot" class="text-5xl text-red-500" />
-          </div>
-        </div>
-        <div class="text-lg font-medium text-gray-800">
-          <span>
-            আমি
-            <span class="text-lg font-semibold text-green-950">
-              AdsyAI Bot
-              <UIcon class="text-xl" name="i-carbon:bot" />
-            </span>
-            দুঃখিত, একটি সমস্যা হয়েছে: {{ errorMessage }}
-          </span>
-        </div>
-        <UButton
-          color="primary"
-          @click="userChoice = false; errorMessage = ''"
-          class="mt-4"
-          variant="soft"
-        >
-          Try Again
-          <UIcon name="i-heroicons-arrow-path" class="ml-1" />
-        </UButton>
-      </div>
-    </section>
-
     <!-- Search Results -->
     <section v-else-if="result">
       <div v-if="result.length === 0">

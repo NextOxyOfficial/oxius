@@ -506,7 +506,7 @@
 
       <div
         class="services mt-3"
-        v-if="nearby_services?.length && !location?.allOverBangladesh"
+        v-if="filteredNearbyServices?.length && !location?.allOverBangladesh"
       >
         <UCard
           :ui="{
@@ -525,10 +525,8 @@
             },
           }"
           class="service-card border even:border-t-0 even:border-b-0 bg-slate-50/70"
-          v-for="(service, i) in nearby_services.filter(
-            (service) => service.service_status.toLowerCase() === 'approved'
-          )"
-          :key="{ i }"
+          v-for="service in filteredNearbyServices"
+          :key="service.id || service.slug"
         >
           <NuxtLink :to="`/classified-categories/details/${service.slug}`">
             <div
@@ -614,17 +612,25 @@
         </UCard>
       </div>
       <UCard
-        v-else-if="
+        v-if="
           !isNearByLoading &&
-          !nearby_services?.length &&
-          !location?.allOverBangladesh
+          !filteredNearbyServices?.length &&
+          !location?.allOverBangladesh &&
+          searchError
         "
-        class="py-16 text-center mt-6"
+        class="py-8 text-center mt-4"
+        :ui="{
+          background: 'bg-slate-50',
+          ring: 'ring-1 ring-slate-200',
+        }"
       >
-        <p>
-          দুঃখিত, আপনার আশেপাশের উপজেলাতেও এই ক্যাটাগরিতে কোনো পোস্ট পড়েনি,
-          পার্শবর্তী জেলা সিলেক্ট করুন
-        </p>
+        <div class="flex flex-col items-center gap-2">
+          <UIcon name="i-heroicons-map-pin" class="text-3xl text-gray-400" />
+          <p class="text-gray-600 text-sm">
+            দুঃখিত, আপনার আশেপাশের এলাকাতেও এই ক্যাটাগরিতে কোনো পোস্ট পাওয়া যায়নি।
+            পার্শবর্তী জেলা সিলেক্ট করুন।
+          </p>
+        </div>
       </UCard>
       <h3 class="mt-3 mb-2 sm:my-6 text-lg font-semibold text-green-950">
         AdsyAI Bot
@@ -874,39 +880,58 @@ function getVisiblePages() {
 }
 
 const nearby_services = ref([]);
+
+// Computed property to get unique nearby ads that are not in main search results
+const filteredNearbyServices = computed(() => {
+  if (!nearby_services.value?.length) return [];
+  
+  // Get IDs of services already shown in main search results
+  const mainSearchIds = new Set(
+    (search.value || []).map(s => s.id || s.slug)
+  );
+  
+  // Filter out duplicates and already shown services
+  const seen = new Set();
+  return nearby_services.value
+    .filter((service) => {
+      // Must be approved and active
+      if (service.service_status?.toLowerCase() !== 'approved' || !service.active_service) {
+        return false;
+      }
+      
+      // Skip if already in main search results
+      const serviceId = service.id || service.slug;
+      if (mainSearchIds.has(serviceId)) {
+        return false;
+      }
+      
+      // Skip duplicates within nearby services
+      if (seen.has(serviceId)) {
+        return false;
+      }
+      seen.add(serviceId);
+      
+      return true;
+    })
+    .slice(0, 10); // Limit to 10 nearby ads for cleaner display
+});
+
 // Add this function to your script setup
 async function fetchNearbyAds() {
   if (!location.value) return;
 
   isNearByLoading.value = true;
 
-  // If showing all over Bangladesh, get a sample of ads from across the country
+  // If showing all over Bangladesh, skip nearby ads (main search handles it)
   if (location.value.allOverBangladesh) {
-    const countrySearchRes = await get(
-      `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&page=1&page_size=20`
-    );
-
-    if (countrySearchRes.data?.results) {
-      nearby_services.value = countrySearchRes.data.results.filter(
-        (service) =>
-          service.service_status.toLowerCase() === "approved" &&
-          service.active_service
-      );
-    } else if (Array.isArray(countrySearchRes.data)) {
-      nearby_services.value = countrySearchRes.data.filter(
-        (service) =>
-          service.service_status.toLowerCase() === "approved" &&
-          service.active_service
-      );
-    }
-
+    nearby_services.value = [];
     isNearByLoading.value = false;
     return;
   }
 
-  // First try: search in the same city, any upazila
+  // First try: search in the same city, different upazila
   const citySearchRes = await get(
-    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}&page=1&page_size=20`
+    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&city=${form.value.city}&page=1&page_size=15`
   );
 
   let nearbyData = [];
@@ -917,19 +942,22 @@ async function fetchNearbyAds() {
     nearbyData = citySearchRes.data;
   }
 
-  if (nearbyData.length > 0) {
-    nearby_services.value = nearbyData.filter(
-      (service) =>
-        service.service_status.toLowerCase() === "approved" &&
-        service.active_service
-    );
+  // Filter to only approved and active services
+  nearbyData = nearbyData.filter(
+    (service) =>
+      service.service_status?.toLowerCase() === "approved" &&
+      service.active_service
+  );
+
+  if (nearbyData.length >= 3) {
+    nearby_services.value = nearbyData;
     isNearByLoading.value = false;
     return;
   }
 
-  // Second try: search in the same state, any city
+  // Second try: search in the same state (broader area)
   const stateSearchRes = await get(
-    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&page=1&page_size=20`
+    `/classified-posts/filter/?category=${categoryDetails.value.id}&country=${form.value.country}&state=${form.value.state}&page=1&page_size=15`
   );
 
   let stateData = [];
@@ -941,7 +969,7 @@ async function fetchNearbyAds() {
 
   nearby_services.value = stateData.filter(
     (service) =>
-      service.service_status.toLowerCase() === "approved" &&
+      service.service_status?.toLowerCase() === "approved" &&
       service.active_service
   );
 
