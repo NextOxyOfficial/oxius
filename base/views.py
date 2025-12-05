@@ -4291,7 +4291,7 @@ def ai_business_finder(request):
                     "Content-Type": "application/json"
                 }
                 
-                prompt = f"""You are a helpful assistant that finds local businesses. 
+                prompt = f"""You are a helpful assistant that finds local businesses in Bangladesh. 
 Find {business_type} businesses in {location_str}.
 
 Return a JSON array of businesses with the following structure:
@@ -4299,19 +4299,20 @@ Return a JSON array of businesses with the following structure:
   {{
     "name": "Business Name",
     "description": "Brief description of the business",
-    "address": "Full address",
-    "phone": "Phone number if available",
-    "email": "Email if available",
-    "website": "Website URL if available"
+    "address": "Full address with area, city",
+    "phone": "Real Bangladesh phone number starting with +880 or 01XXX-XXXXXX format",
+    "email": "Business email address",
+    "website": "Website URL"
   }}
 ]
 
-Important:
-- Return ONLY the JSON array, no other text
-- Include up to 5 relevant businesses
-- If you don't have specific information for a field, use null
-- Focus on real, well-known businesses in that area
-- If you cannot find specific businesses, provide general information about that type of business in the area"""
+CRITICAL INSTRUCTIONS:
+- Return ONLY the JSON array, no other text or markdown
+- Include up to 5 real, well-known businesses that actually exist in that area
+- For phone numbers: Use realistic Bangladesh mobile format like +8801712345678 or landline like +880-2-1234567. DO NOT use placeholder X characters.
+- If you genuinely don't know a specific detail, use null instead of fake/placeholder data
+- Focus on actual businesses you have knowledge about from your training data
+- Include real website URLs if you know them, otherwise use null"""
 
                 payload = {
                     "model": ai_config.model or "gpt-3.5-turbo",
