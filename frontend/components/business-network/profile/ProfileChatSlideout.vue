@@ -130,13 +130,18 @@
               class="max-w-[75%] rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md overflow-hidden"
               :class="[
                 isOwnMessage(message) ? 'rounded-br-sm' : 'rounded-bl-sm',
-                (message.message_type === 'image' || message.message_type === 'video') 
+                (message.message_type === 'image' || message.message_type === 'video') && !message.is_deleted
                   ? '' 
                   : (isOwnMessage(message) ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' : 'bg-white text-gray-800 border border-gray-100')
               ]"
             >
+              <!-- Deleted Message (check first before any content) -->
+              <div v-if="message.is_deleted" class="px-3.5 py-2">
+                <p class="text-[13px] italic opacity-60">Message deleted</p>
+              </div>
+
               <!-- Image Message -->
-              <div v-if="message.message_type === 'image' && message.media_url" class="relative group rounded-2xl overflow-hidden">
+              <div v-else-if="message.message_type === 'image' && message.media_url" class="relative group rounded-2xl overflow-hidden">
                 <img
                   :src="message.media_url"
                   :alt="message.file_name || 'Image'"
@@ -228,11 +233,6 @@
                     :class="message.is_read ? 'text-white/80' : 'text-white/50'"
                   />
                 </div>
-              </div>
-
-              <!-- Deleted Message -->
-              <div v-else-if="message.is_deleted" class="px-3.5 py-2">
-                <p class="text-[13px] italic opacity-60">Message deleted</p>
               </div>
 
               <!-- Text Message -->

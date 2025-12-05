@@ -635,8 +635,13 @@
                             ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-sm' 
                             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'"
                         >
+                          <!-- Deleted Message (check first before any content) -->
+                          <div v-if="message.is_deleted" class="px-3.5 py-2">
+                            <p class="text-[13px] italic opacity-60">Message deleted</p>
+                          </div>
+                          
                           <!-- Media Content -->
-                          <div v-if="message.message_type === 'image' && message.media_url" class="relative group overflow-hidden rounded-t-2xl">
+                          <div v-else-if="message.message_type === 'image' && message.media_url" class="relative group overflow-hidden rounded-t-2xl">
                             <img
                               :src="message.media_url"
                               :alt="message.file_name || 'Image'"

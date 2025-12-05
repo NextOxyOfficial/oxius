@@ -153,11 +153,12 @@
                   ? 'bg-green-500 text-white' 
                   : 'bg-gray-100 text-gray-900'"
               >
-                <p v-if="message.message_type === 'text' && !message.is_deleted">
-                  {{ message.content }}
-                </p>
-                <p v-else-if="message.is_deleted" class="italic opacity-75">
+                <!-- Deleted Message (check first) -->
+                <p v-if="message.is_deleted" class="italic opacity-75">
                   Message deleted
+                </p>
+                <p v-else-if="message.message_type === 'text'">
+                  {{ message.content }}
                 </p>
                 <p v-else class="italic">
                   {{ getMessageTypeLabel(message.message_type) }}
