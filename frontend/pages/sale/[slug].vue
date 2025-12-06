@@ -533,7 +533,7 @@
               
               <!-- Chat with Seller Link -->
               <div
-                v-if="isAuthenticated && user?.user?.id !== product.user_details?.id"
+                v-if="user?.user?.id !== product.user_details?.id"
                 class="mt-4 pt-4 border-t border-gray-100"
               >
                 <button
@@ -1096,12 +1096,8 @@ const toggleShowPhone = () => {
 const startChatWithSeller = async () => {
   try {
     if (!isAuthenticated.value) {
-      toast.add({
-        title: 'Authentication Required',
-        description: 'Please log in to start a chat with the seller.',
-        color: 'red',
-        timeout: 3000,
-      });
+      // Redirect to login page
+      await navigateTo('/auth/login');
       return;
     }
 

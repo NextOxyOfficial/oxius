@@ -451,7 +451,7 @@
             
             <!-- Chat with Service Provider Link -->
             <div
-              v-if="isAuthenticated && user?.user?.id !== service.user?.id"
+              v-if="user?.user?.id !== service.user?.id"
               class="mt-4 pt-4 border-t border-gray-100"
             >
               <button
@@ -1075,12 +1075,8 @@ function pbs_click() {
 const startChatWithProvider = async () => {
   try {
     if (!isAuthenticated.value) {
-      toast.add({
-        title: 'Authentication Required',
-        description: 'Please log in to start a chat with the service provider.',
-        color: 'red',
-        timeout: 3000,
-      });
+      // Redirect to login page
+      await navigateTo('/auth/login');
       return;
     }
 
