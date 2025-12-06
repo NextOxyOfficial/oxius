@@ -560,9 +560,14 @@ class BusinessNetworkNotification(models.Model):
     parent_id = models.CharField(max_length=50, null=True, blank=True)  # ID of parent object (post for comments)
     content = models.TextField(null=True, blank=True)  # Optional content snippet
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Business Network Notification"
+        verbose_name_plural = "Business Network Notifications"
+    
     def __str__(self):
-        return f"{self.sponsor.business_name} - {self.title or 'Banner'}"
-
+        return f"{self.actor.username} → {self.recipient.username}: {self.type}"
 
 class HiddenPost(models.Model):
     """Model to track posts hidden by users"""
