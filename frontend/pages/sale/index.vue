@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50/80 min-h-screen">
+  <div class="bg-gradient-to-b from-gray-50 to-gray-100/80 min-h-screen">
     <!-- Top Navigation Bar with Search and Post Button -->
     <SaleSearchBar
       :initial-search-term="form.title"
@@ -8,14 +8,14 @@
       @search="handleSearch"
       @clear-location="handleClearLocation"
     />
-    <UContainer class="sm:py-6">
+    <UContainer class="py-3 sm:py-4">
       <!-- Overlay for mobile -->
       <div
         v-if="isMobileFilterOpen"
         class="fixed inset-0 bg-black bg-opacity-60 z-40 lg:hidden"
         @click="toggleMobileSidebar"
       ></div>
-      <div class="flex flex-col lg:flex-row gap-6">
+      <div class="flex flex-col lg:flex-row gap-4">
         <!-- Sale Sidebar Component -->
         <SaleSidebar
           :is-mobile-filter-open="isMobileFilterOpen"
@@ -31,199 +31,130 @@
         />
         <!-- Main Content Area -->
         <div class="flex-1 order-1 lg:order-2 min-w-0 overflow-hidden">
-          <!-- Sorting & View Options -->
+          <!-- Sorting & View Options - Compact Commercial -->
           <div
-            class="bg-white p-2 rounded-lg shadow-sm mb-4 flex flex-wrap justify-between items-center gap-4"
+            class="bg-white px-3 py-2 rounded-xl shadow-sm mb-3 flex flex-wrap justify-between items-center gap-2 border border-gray-100"
           >
             <!-- Mobile Layout: Ads found + Post Sale Ad button on same row -->
             <div
-              class="flex items-center justify-between w-full lg:w-auto lg:justify-start gap-3"
+              class="flex items-center justify-between w-full lg:w-auto lg:justify-start gap-2"
             >
-              <div class="flex items-center gap-3">
-                <p class="text-gray-600 text-sm">
-                  <span class="font-medium text-gray-800">{{
-                    selectedCategory
-                      ? getCateogryPostCount(selectedCategory)
-                      : totalListings
-                  }}</span>
-                  ads found
-                  <span v-if="selectedCategory">
-                    in
-                    <span class="font-medium text-gray-800">{{
-                      getCategoryName(selectedCategory)
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
+                  <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <p class="text-gray-700 text-xs font-medium">
+                    <span class="text-emerald-600 font-bold">{{
+                      selectedCategory
+                        ? getCateogryPostCount(selectedCategory)
+                        : totalListings
                     }}</span>
-                  </span>
-                </p>
+                    ads
+                    <span v-if="selectedCategory" class="text-gray-500">
+                      in <span class="text-gray-700">{{ getCategoryName(selectedCategory) }}</span>
+                    </span>
+                  </p>
+                </div>
               </div>
-              <!-- Post Sale Ad Button - Mobile position (right side of ads found row) -->
+              <!-- Post Sale Ad Button - Mobile position -->
               <div class="lg:hidden">
-                <div v-if="isAuthenticated" class="flex items-center gap-2">
+                <div v-if="isAuthenticated" class="flex items-center gap-1.5">
                   <NuxtLink
                     to="/sale/my-posts"
-                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
+                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1 h-7 border border-emerald-400 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors text-[11px] font-semibold"
                     @click="handleButtonClick('my-posts-mobile')"
                   >
-                    <div
-                      v-if="loadingButtons.has('my-posts-mobile')"
-                      class="dotted-spinner primary h-3 w-3"
-                    ></div>
-                    <UIcon
-                      v-else
-                      name="i-heroicons-list-bullet"
-                      class="h-3 w-3"
-                    />
-                    <span v-if="!loadingButtons.has('my-posts-mobile')"
-                      >My Posts</span
-                    >
+                    <UIcon name="i-heroicons-list-bullet" class="h-3 w-3" />
+                    <span>My Ads</span>
                   </NuxtLink>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
-                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-xs"
+                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1 h-7 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-all text-[11px] font-bold shadow-sm"
                     @click="handleButtonClick('post-ad-mobile')"
                   >
-                    <div
-                      v-if="loadingButtons.has('post-ad-mobile')"
-                      class="dotted-spinner white h-3 w-3"
-                    ></div>
-                    <UIcon
-                      v-else
-                      name="i-heroicons-plus-circle"
-                      class="h-3 w-3"
-                    />
-                    <span v-if="!loadingButtons.has('post-ad-mobile')"
-                      >Post Ad</span
-                    >
+                    <UIcon name="i-heroicons-plus" class="h-3 w-3" />
+                    <span>Post</span>
                   </NuxtLink>
                 </div>
                 <div v-else>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
-                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1.5 h-8 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-xs"
+                    class="whitespace-nowrap flex items-center gap-1 px-2 py-1 h-7 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-[11px] font-bold shadow-sm"
                   >
-                    <UIcon name="i-heroicons-plus-circle" class="h-3 w-3" />
+                    <UIcon name="i-heroicons-plus" class="h-3 w-3" />
                     Post Ad
                   </NuxtLink>
                 </div>
               </div>
             </div>
 
-            <!-- Desktop Layout: Sorting and Post Sale Ad button -->
-            <div class="hidden lg:flex gap-6 items-center">
+            <!-- Desktop Layout: Sorting and Post Sale Ad button - Compact -->
+            <div class="hidden lg:flex gap-3 items-center">
               <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-600">Sort by:</span>
+                <span class="text-sm text-gray-500">Sort:</span>
                 <USelect
                   v-model="sortOption"
                   :options="sortOptions"
                   option-attribute="label"
                   value-attribute="value"
                   size="sm"
-                  class="w-40 h-10 flex"
+                  class="w-40 h-9"
                   :ui="{
-                    padding: {
-                      sm: 'px-3 py-2',
-                    },
+                    padding: { sm: 'px-3 py-2' },
+                    size: { sm: 'text-sm' },
                   }"
                   @update:modelValue="applyFilters"
                 />
               </div>
-              <div
-                class="flex items-center border-l border-gray-200 pl-4 gap-2"
-              >
+              <div class="flex items-center border-l border-gray-200 pl-3 gap-2">
                 <div v-if="isAuthenticated" class="flex items-center gap-2">
                   <NuxtLink
                     to="/sale/my-posts"
-                    class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
-                    @click="handleButtonClick('my-posts-desktop')"
+                    class="whitespace-nowrap flex items-center gap-1.5 px-3 py-2 h-9 border border-emerald-400 text-emerald-600 rounded-lg hover:bg-emerald-50 transition-colors text-sm font-semibold"
                   >
-                    <div
-                      v-if="loadingButtons.has('my-posts-desktop')"
-                      class="dotted-spinner primary h-4 w-4"
-                    ></div>
-                    <UIcon
-                      v-else
-                      name="i-heroicons-list-bullet"
-                      class="h-4 w-4"
-                    />
-                    <span v-if="!loadingButtons.has('my-posts-desktop')"
-                      >My Posts</span
-                    >
+                    <UIcon name="i-heroicons-list-bullet" class="h-4 w-4" />
+                    <span>My Ads</span>
                   </NuxtLink>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
-                    class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm"
-                    @click="handleButtonClick('post-sale-ad-desktop')"
+                    class="whitespace-nowrap flex items-center gap-1.5 px-4 py-2 h-9 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:from-emerald-600 hover:to-teal-600 transition-all text-sm font-bold shadow-sm"
                   >
-                    <div
-                      v-if="loadingButtons.has('post-sale-ad-desktop')"
-                      class="dotted-spinner white h-4 w-4"
-                    ></div>
-                    <UIcon
-                      v-else
-                      name="i-heroicons-plus-circle"
-                      class="h-4 w-4"
-                    />
-                    <span v-if="!loadingButtons.has('post-sale-ad-desktop')"
-                      >Post Sale Ad</span
-                    >
+                    <UIcon name="i-heroicons-plus" class="h-4 w-4" />
+                    <span>Post Free Ad</span>
                   </NuxtLink>
                 </div>
                 <div v-else>
                   <NuxtLink
                     to="/sale/my-posts?tab=post-sale"
-                    class="whitespace-nowrap flex items-center gap-1 px-3 py-2 h-10 border border-primary-500 text-primary-600 rounded-md hover:bg-primary-50 transition-colors text-sm"
-                    @click="handleButtonClick('post-sale-ad-guest')"
+                    class="whitespace-nowrap flex items-center gap-1.5 px-4 py-2 h-9 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-sm font-bold shadow-sm"
                   >
-                    <div
-                      v-if="loadingButtons.has('post-sale-ad-guest')"
-                      class="dotted-spinner primary h-4 w-4"
-                    ></div>
-                    <UIcon
-                      v-else
-                      name="i-heroicons-plus-circle"
-                      class="h-4 w-4"
-                    />
-                    <span v-if="!loadingButtons.has('post-sale-ad-guest')"
-                      >Post Sale Ad</span
-                    >
+                    <UIcon name="i-heroicons-plus" class="h-4 w-4" />
+                    <span>Post Free Ad</span>
                   </NuxtLink>
                 </div>
               </div>
             </div>
-            <!-- Mobile Sort Options - Separate row -->
+            <!-- Mobile Sort Options - Compact -->
             <div class="lg:hidden w-full">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5">
                 <!-- Mobile Filter Button -->
-                <UButton
-                  icon="i-heroicons-bars-3"
-                  size="sm"
-                  color="primary"
-                  variant="soft"
-                  class="flex items-center gap-1.5"
+                <button
                   @click="toggleMobileSidebar"
-                  aria-label="Open Filters Menu"
+                  class="flex items-center gap-1 px-2 py-1 h-7 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-[11px] font-medium"
                 >
-                  <span class="text-xs font-medium">Menu</span>
-                </UButton>
-                <span class="text-sm text-gray-600">Sort by:</span>
+                  <UIcon name="i-heroicons-squares-2x2" class="h-3 w-3" />
+                  <span>Categories</span>
+                </button>
+                <span class="text-[11px] text-gray-500">Sort:</span>
                 <USelect
                   v-model="sortOption"
                   :options="sortOptions"
                   option-attribute="label"
                   value-attribute="value"
-                  size="sm"
-                  class="w-36 h-8 flex compact-select"
+                  size="xs"
+                  class="w-28 h-7 flex-1"
                   :ui="{
-                    padding: {
-                      sm: 'px-2 py-1',
-                    },
-                    gap: {
-                      sm: 'gap-1',
-                    },
-                    trailing: {
-                      padding: {
-                        sm: 'ps-1',
-                      },
-                    },
+                    padding: { xs: 'px-2 py-0.5' },
+                    size: { xs: 'text-[11px]' },
                   }"
                   @update:modelValue="applyFilters"
                 />
@@ -231,631 +162,370 @@
             </div>
           </div>
 
-          <!-- Active Filters Display -->
+          <!-- Active Filters Display - Compact -->
           <div
             v-if="hasActiveFilters"
-            class="bg-white p-3 rounded-lg shadow-sm mb-4"
+            class="bg-white/80 backdrop-blur-sm px-2.5 py-2 rounded-lg shadow-sm mb-3 border border-gray-100"
           >
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-sm text-gray-600">Filters:</span>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[10px] text-gray-500 font-medium">Active:</span>
 
-              <UBadge
+              <span
                 v-if="selectedCategory"
-                color="gray"
-                variant="subtle"
-                class="flex items-center gap-1"
+                class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-medium border border-emerald-200"
               >
-                Category: {{ getCategoryName(selectedCategory) }}
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  icon="i-heroicons-x-mark"
-                  size="xs"
-                  class="-mr-1"
-                  @click="clearCategory"
-                />
-              </UBadge>
+                {{ getCategoryName(selectedCategory) }}
+                <button @click="clearCategory" class="hover:text-emerald-900">
+                  <UIcon name="i-heroicons-x-mark" class="h-2.5 w-2.5" />
+                </button>
+              </span>
 
-              <UBadge
+              <span
                 v-if="selectedSubcategory"
-                color="gray"
-                variant="subtle"
-                class="flex items-center gap-1"
+                class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-medium border border-blue-200"
               >
-                {{ subcategoryTitle }}:
                 {{ getSubcategoryName(selectedSubcategory) }}
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  icon="i-heroicons-x-mark"
-                  size="xs"
-                  class="-mr-1"
-                  @click="clearSubcategory"
-                />
-              </UBadge>
+                <button @click="clearSubcategory" class="hover:text-blue-900">
+                  <UIcon name="i-heroicons-x-mark" class="h-2.5 w-2.5" />
+                </button>
+              </span>
 
-              <UBadge
+              <span
                 v-if="selectedDivision"
-                color="gray"
-                variant="subtle"
-                class="flex items-center gap-1"
+                class="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-[10px] font-medium border border-purple-200"
               >
-                Division: {{ selectedDivision }}
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  icon="i-heroicons-x-mark"
-                  size="xs"
-                  class="-mr-1"
-                  @click="handleClearLocation"
-                />
-              </UBadge>
+                <UIcon name="i-heroicons-map-pin" class="h-2.5 w-2.5" />
+                {{ selectedDivision }}
+                <button @click="handleClearLocation" class="hover:text-purple-900">
+                  <UIcon name="i-heroicons-x-mark" class="h-2.5 w-2.5" />
+                </button>
+              </span>
 
-              <UBadge
+              <span
                 v-if="priceRange.min || priceRange.max"
-                color="gray"
-                variant="subtle"
-                class="flex items-center gap-1"
+                class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[10px] font-medium border border-amber-200"
               >
-                Price: {{ priceRange.min || "Any" }} -
-                {{ priceRange.max || "Any" }}
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  icon="i-heroicons-x-mark"
-                  size="xs"
-                  class="-mr-1"
-                  @click="clearPriceRange"
-                />
-              </UBadge>
+                ৳{{ priceRange.min || "0" }} - ৳{{ priceRange.max || "Any" }}
+                <button @click="clearPriceRange" class="hover:text-amber-900">
+                  <UIcon name="i-heroicons-x-mark" class="h-2.5 w-2.5" />
+                </button>
+              </span>
 
-              <UBadge
+              <span
                 v-if="selectedCondition"
-                color="gray"
-                variant="subtle"
-                class="flex items-center gap-1"
+                class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-[10px] font-medium border border-gray-200"
               >
-                Condition: {{ getConditionLabel(selectedCondition) }}
-                <UButton
-                  color="gray"
-                  variant="ghost"
-                  icon="i-heroicons-x-mark"
-                  size="xs"
-                  class="-mr-1"
-                  @click="selectedCondition = ''"
-                />
-              </UBadge>
-              <UBadge
+                {{ getConditionLabel(selectedCondition) }}
+                <button @click="selectedCondition = ''" class="hover:text-gray-900">
+                  <UIcon name="i-heroicons-x-mark" class="h-2.5 w-2.5" />
+                </button>
+              </span>
+
+              <span
                 v-if="searchQuery"
-                color="emerald"
-                variant="subtle"
-                class="flex items-center gap-2"
+                class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 rounded-full text-[10px] font-medium border border-yellow-200"
               >
-                <UIcon name="i-heroicons-magnifying-glass" class="h-3 w-3" />
-                <span
-                  >Search: "<strong>{{ searchQuery }}</strong
-                  >"</span
-                >
-                <span v-if="listings?.length" class="text-xs opacity-75">
-                  ({{ listings.length }}
-                  {{ listings.length === 1 ? "result" : "results" }})
-                </span>
-                <UButton
-                  color="emerald"
-                  variant="ghost"
-                  icon="i-heroicons-x-mark"
-                  size="xs"
-                  class="-mr-1"
-                  @click="clearSearch"
-                />
-              </UBadge>
+                <UIcon name="i-heroicons-magnifying-glass" class="h-2.5 w-2.5" />
+                "{{ searchQuery }}"
+                <span v-if="listings?.length" class="opacity-75">({{ listings.length }})</span>
+                <button @click="clearSearch" class="hover:text-yellow-900">
+                  <UIcon name="i-heroicons-x-mark" class="h-2.5 w-2.5" />
+                </button>
+              </span>
             </div>
           </div>
 
-          <!-- Category Tabs Listings Section -->
+          <!-- Category Tabs Listings Section - Compact Commercial -->
           <div
-            class="bg-blue-50/50 rounded-lg border border-blue-100/50 p-1 mb-6"
+            class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden mb-4"
           >
-            <div
-              class="flex flex-col sm:flex-row items-center justify-between my-4 gap-2"
-            >
-              <h2 class="text-lg font-medium text-gray-800">
-                {{ categoryBrowserHeading }}
-              </h2>
+            <!-- Section Header -->
+            <div class="px-3 py-2 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                    <UIcon name="i-heroicons-shopping-bag" class="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <h2 class="text-sm font-bold text-gray-800">{{ categoryBrowserHeading }}</h2>
+                </div>
+                <span class="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{{ listings?.length || 0 }} items</span>
+              </div>
             </div>
 
             <!-- Category Posts Grid -->
-            <div v-if="loading" class="py-8 text-center">
-              <UIcon
-                name="i-heroicons-arrow-path"
-                class="animate-spin h-6 w-6 mx-auto text-blue-500"
-              />
-              <p class="mt-2 text-gray-600 text-sm">Loading listings...</p>
-            </div>
-            <div v-else-if="!listings?.length" class="py-8 text-center">
-              <div class="flex flex-col items-center">
-                <UIcon
-                  :name="
-                    searchQuery
-                      ? 'i-heroicons-magnifying-glass'
-                      : 'i-heroicons-square-3-stack-3d'
-                  "
-                  class="h-12 w-12 text-gray-400 mb-3"
-                />
-                <h3 class="text-lg font-medium text-gray-800 mb-2">
-                  {{
-                    searchQuery
-                      ? "No search results found"
-                      : "No listings found"
-                  }}
-                </h3>
-                <p class="text-gray-600 text-sm max-w-md">
-                  <span v-if="searchQuery">
-                    No posts found matching "<strong>{{ searchQuery }}</strong
-                    >". Try using different keywords or check the spelling.
-                  </span>
-                  <span v-else>
-                    No listings found in this category. Try selecting a
-                    different category or adjusting your filters.
-                  </span>
-                </p>
-                <div v-if="searchQuery" class="mt-4">
-                  <UButton
-                    color="primary"
-                    variant="soft"
-                    @click="clearSearch"
-                    size="sm"
-                  >
-                    Clear search and browse all listings
-                  </UButton>
+            <div class="p-2">
+              <div v-if="loading" class="py-12 text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <UIcon name="i-heroicons-arrow-path" class="animate-spin h-5 w-5 text-emerald-600" />
                 </div>
+                <p class="text-gray-500 text-xs">Loading listings...</p>
               </div>
-            </div>
-            <div
-              v-else
-              class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-2 w-full"
-            >
-              <NuxtLink
-                v-for="(post, i) in listings"
-                :key="`post-${i}`"
-                :to="`/sale/${post.slug}`"
-                class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group w-full max-w-full"
-                ><!-- Image -->
-                <div
-                  class="relative aspect-square w-full overflow-hidden bg-gray-100"
-                >
-                  <div
-                    v-if="
-                      !getListingImage(post) ||
-                      getListingImage(post).includes('placeholder')
-                    "
-                    class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center p-2"
-                  >
-                    <div class="bg-white/90 rounded-full p-2 mb-1">
-                      <UIcon
-                        name="i-heroicons-photo"
-                        class="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
-                      />
-                    </div>
-                    <p class="text-gray-500 text-xs text-center">No Photo</p>
-                  </div>
-                  <img
-                    v-else
-                    :src="getListingImage(post)"
-                    :alt="post?.title || `Image`"
-                    class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <!-- Price -->
-                <div class="pt-2 border-t border-gray-100">
-                  <div class="flex items-center justify-between px-2">
-                    <p class="text-green-700 font-medium">
-                      <span v-if="post.negotiable && !post.price"
-                        >Negotiable</span
-                      >
-                      <span v-else-if="post.price"
-                        >৳{{ formatPrice(post.price) }}</span
-                      >
-                      <span v-else>Contact for Price</span>
-                    </p>
-                    <p class="text-xs text-gray-600">
-                      {{ formatDate(post.created_at) }}
-                    </p>
-                  </div>
-                </div>
-                <!-- Title and Location -->
-                <div class="p-2">
-                  <div
-                    class="text-gray-600 text-sm font-semibold line-clamp-2"
-                    v-html="
-                      highlightSearchTerm(
-                        capitalizeTitle(post?.title) || 'Post title',
-                        searchQuery
-                      )
-                    "
-                  ></div>
-                  <div class="flex items-start mt-1 text-xs text-gray-600">
+              <div v-else-if="!listings?.length" class="py-12 text-center">
+                <div class="flex flex-col items-center">
+                  <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
                     <UIcon
-                      name="i-heroicons-map-pin"
-                      class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
+                      :name="searchQuery ? 'i-heroicons-magnifying-glass' : 'i-heroicons-inbox'"
+                      class="h-7 w-7 text-gray-400"
                     />
-                    {{
-                      post?.division && post?.district && post?.area
-                        ? `${post?.division}, ${post?.district}, ${post?.area}`
-                        : `All Over Bangladesh`
-                    }}
                   </div>
+                  <h3 class="text-sm font-semibold text-gray-700 mb-1">
+                    {{ searchQuery ? "No results found" : "No listings yet" }}
+                  </h3>
+                  <p class="text-gray-500 text-xs max-w-xs">
+                    <span v-if="searchQuery">Try different keywords</span>
+                    <span v-else>Be the first to post in this category!</span>
+                  </p>
+                  <button
+                    v-if="searchQuery"
+                    @click="clearSearch"
+                    class="mt-3 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium hover:bg-emerald-200 transition-colors"
+                  >
+                    Clear search
+                  </button>
                 </div>
-              </NuxtLink>
-            </div>
-            <!-- Load More Button -->
-            <div
-              v-if="hasMoreListings && !loading"
-              class="flex justify-center mt-8"
-            >
-              <button
-                @click="loadMorePosts"
-                :disabled="isLoadingMore"
-                class="text-emerald-600 hover:text-emerald-700 disabled:text-gray-400 font-medium transition-colors duration-200 flex items-center gap-2 hover:underline"
-              >
-                <UIcon
-                  v-if="isLoadingMore"
-                  name="i-heroicons-arrow-path"
-                  class="animate-spin h-4 w-4"
-                />
-                <span v-if="isLoadingMore">Loading more...</span>
-                <span v-else>See More</span>
-              </button>
-            </div>
-
-            <!-- All Posts Loaded Message -->
-            <div
-              v-if="!hasMoreListings && listings.length > 0 && !loading"
-              class="text-center py-8"
-            >
-              <div class="flex flex-col items-center justify-center">
-                <div
-                  class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4"
-                >
-                  <UIcon
-                    name="i-heroicons-check-circle"
-                    class="h-8 w-8 text-green-600"
-                  />
-                </div>
-                <h3 class="text-lg font-medium text-gray-800 mb-1">
-                  All posts loaded!
-                </h3>
-                <p class="text-gray-600 text-sm">
-                  You've seen all {{ totalListingsCount }} available listings
-                </p>
               </div>
-            </div>
-          </div>
-
-          <!-- Recent Listings Section -->
-          <div
-            class="bg-amber-50/40 rounded-lg border border-dashed border-amber-200 p-3 mb-6"
-          >
-            <div class="mb-4">
-              <h2 class="text-lg font-medium text-amber-700 flex items-center">
-                <UIcon name="i-heroicons-clock" class="mr-2 h-5 w-5" />
-                Recent Listings
-              </h2>
-            </div>
-            <!-- Recent Listings Horizontal Scroll -->
-            <div class="overflow-x-auto scrollbar-hide pb-4 -mx-1 px-1">
-              <div class="flex gap-4 min-w-max">
+              <!-- List Type Design - Compact -->
+              <div v-else class="space-y-2">
                 <NuxtLink
-                  v-for="(listing, i) in recentListings.slice(0, 5)"
-                  :key="`listing-${i}+${i}`"
-                  :to="`/sale/${listing.slug}`"
-                  class="flex-shrink-0 w-64 bg-white rounded-lg shadow-sm border border-amber-100 overflow-hidden hover:shadow-sm transition-shadow group"
+                  v-for="(post, i) in listings"
+                  :key="`post-${i}`"
+                  :to="`/sale/${post.slug}`"
+                  class="flex bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md hover:border-emerald-200 transition-all duration-200 group"
                 >
-                  <div class="relative h-36 overflow-hidden">
+                  <!-- Image - Left Side (Compact) -->
+                  <div class="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 overflow-hidden bg-gray-100">
+                    <div
+                      v-if="!getListingImage(post) || getListingImage(post).includes('placeholder')"
+                      class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
+                    >
+                      <UIcon name="i-heroicons-photo" class="h-6 w-6 text-gray-300" />
+                    </div>
                     <img
-                      :src="getListingImage(listing)"
-                      :alt="listing?.title || `Image`"
+                      v-else
+                      :src="getListingImage(post)"
+                      :alt="post?.title || 'Image'"
                       class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
                     />
-                    <div class="absolute top-2 right-2">
-                      <span
-                        class="bg-white/90 text-amber-700 text-xs px-2 py-0.5 rounded-full shadow-sm font-medium"
-                      >
-                        {{ getCategoryName(listing.category) }}
-                      </span>
+                    <!-- Condition Badge -->
+                    <div v-if="post.condition" class="absolute top-1 left-1">
+                      <span class="px-1.5 py-0.5 bg-emerald-600 text-white text-[8px] font-bold rounded uppercase">{{ post.condition }}</span>
                     </div>
                   </div>
-                  <div class="p-3">
+                  <!-- Content - Right Side -->
+                  <div class="flex-1 p-2 sm:p-2.5 flex flex-col justify-between min-w-0">
+                    <!-- Title -->
                     <h3
-                      class="font-medium text-gray-800 line-clamp-1 group-hover:text-amber-700"
-                    >
-                      {{ capitalizeTitle(listing?.title) || `Title` }}
-                    </h3>
-
-                    <div
-                      class="flex items-start mt-1 mb-2 text-xs text-gray-600"
-                    >
-                      <UIcon
-                        name="i-heroicons-map-pin"
-                        class="h-3 w-3 mr-1 mt-0.5 flex-shrink-0 text-gray-600"
-                      />
-                      {{
-                        post?.division && post?.district && post?.area
-                          ? `${post?.division}, ${post?.district}, ${post?.area}`
-                          : `All Over Bangladesh`
-                      }}
+                      class="text-gray-800 text-sm font-semibold line-clamp-1 leading-tight group-hover:text-emerald-600 transition-colors"
+                      v-html="highlightSearchTerm(capitalizeTitle(post?.title) || 'Post title', searchQuery)"
+                    ></h3>
+                    <!-- Location -->
+                    <div class="flex items-center gap-1 text-[11px] text-gray-500 mt-1">
+                      <UIcon name="i-heroicons-map-pin" class="h-3 w-3 flex-shrink-0 text-gray-400" />
+                      <span class="truncate">{{ post?.district ? `${post.district}, ${post.division}` : post?.division || 'Bangladesh' }}</span>
                     </div>
-
+                    <!-- Price & Date Row -->
                     <div class="flex items-center justify-between mt-1.5">
-                      <p class="text-amber-700 font-medium text-sm">
-                        <span v-if="listing.price"
-                          >৳{{ formatPrice(listing.price) }}</span
-                        >
-                        <span v-else>Negotiable</span>
+                      <p class="text-emerald-600 font-bold text-base">
+                        <span v-if="post.negotiable && !post.price" class="text-sm text-gray-600">Negotiable</span>
+                        <span v-else-if="post.price">৳{{ formatPrice(post.price) }}</span>
+                        <span v-else class="text-gray-500 text-xs">Contact</span>
                       </p>
-                      <p class="text-xs text-gray-600">
-                        {{ formatDate(listing.created_at) }}
+                      <p class="text-[10px] text-gray-400 flex items-center gap-0.5">
+                        <UIcon name="i-heroicons-clock" class="h-3 w-3" />
+                        {{ formatDate(post.created_at) }}
                       </p>
                     </div>
                   </div>
                 </NuxtLink>
               </div>
             </div>
-          </div>
-          <div
-            v-if="recentListingsLoading"
-            class="py-12 text-center bg-white rounded-lg shadow-sm"
-          >
-            <UIcon
-              name="i-heroicons-arrow-path"
-              class="animate-spin h-8 w-8 mx-auto text-amber-500"
-            />
-            <p class="mt-2 text-gray-600 text-sm">Loading recent listings...</p>
-          </div>
-          <!-- Enhanced Empty State with Professional Design --><!-- Enhanced Tips & Safety Guide -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12">
-            <!-- Smart Buying Tips -->
-            <div
-              class="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200/50 shadow-sm hover:shadow-sm transition-all duration-300"
-            >
-              <!-- Background Pattern -->
-              <div
-                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full -translate-y-16 translate-x-16"
-              ></div>
+            <!-- Load More Button - Compact -->
+            <div v-if="hasMoreListings && !loading" class="flex justify-center py-4">
+              <button
+                @click="loadMorePosts"
+                :disabled="isLoadingMore"
+                class="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg text-xs font-bold shadow-sm hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 transition-all"
+              >
+                <UIcon v-if="isLoadingMore" name="i-heroicons-arrow-path" class="animate-spin h-3.5 w-3.5" />
+                <UIcon v-else name="i-heroicons-arrow-down" class="h-3.5 w-3.5" />
+                <span>{{ isLoadingMore ? 'Loading...' : 'Load More' }}</span>
+              </button>
+            </div>
 
-              <div class="relative z-10 p-8">
-                <div class="flex items-start mb-6">
-                  <div
-                    class="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300"
+            <!-- All Posts Loaded Message - Compact -->
+            <div v-if="!hasMoreListings && listings.length > 0 && !loading" class="text-center py-4">
+              <div class="flex items-center justify-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <UIcon name="i-heroicons-check" class="h-3.5 w-3.5 text-emerald-600" />
+                </div>
+                <p class="text-xs text-gray-500">All <span class="font-semibold text-gray-700">{{ totalListingsCount }}</span> listings loaded</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Listings Section - Compact Commercial -->
+          <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden mb-4">
+            <!-- Section Header -->
+            <div class="px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+                  <UIcon name="i-heroicons-clock" class="w-3.5 h-3.5 text-white" />
+                </div>
+                <h2 class="text-sm font-bold text-amber-800">Recent Listings</h2>
+              </div>
+            </div>
+            <!-- Recent Listings Horizontal Scroll -->
+            <div class="p-2">
+              <div class="overflow-x-auto scrollbar-hide -mx-1 px-1">
+                <div class="flex gap-2 min-w-max pb-1">
+                  <NuxtLink
+                    v-for="(listing, i) in recentListings.slice(0, 6)"
+                    :key="`listing-${i}`"
+                    :to="`/sale/${listing.slug}`"
+                    class="flex-shrink-0 w-44 bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-md hover:border-amber-200 transition-all group"
                   >
-                    <UIcon
-                      name="i-heroicons-light-bulb"
-                      class="h-8 w-8 text-white"
-                    />
+                    <div class="relative h-28 overflow-hidden bg-gray-50">
+                      <img
+                        :src="getListingImage(listing)"
+                        :alt="listing?.title || 'Image'"
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div class="absolute top-1 right-1">
+                        <span class="bg-white/90 text-amber-700 text-[9px] px-1.5 py-0.5 rounded-full font-semibold shadow-sm">
+                          {{ getCategoryName(listing.category) }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="p-2">
+                      <h3 class="font-medium text-gray-700 text-[11px] line-clamp-1 group-hover:text-amber-700 transition-colors">
+                        {{ capitalizeTitle(listing?.title) || 'Title' }}
+                      </h3>
+                      <div class="flex items-center justify-between mt-1">
+                        <p class="text-amber-600 font-bold text-xs">
+                          <span v-if="listing.price">৳{{ formatPrice(listing.price) }}</span>
+                          <span v-else class="text-gray-500">Negotiable</span>
+                        </p>
+                        <p class="text-[9px] text-gray-400">{{ formatDate(listing.created_at) }}</p>
+                      </div>
+                    </div>
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="recentListingsLoading" class="py-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="w-8 h-8 mx-auto mb-2 rounded-full bg-amber-100 flex items-center justify-center">
+              <UIcon name="i-heroicons-arrow-path" class="animate-spin h-4 w-4 text-amber-600" />
+            </div>
+            <p class="text-gray-500 text-xs">Loading recent...</p>
+          </div>
+          <!-- Tips & Safety Guide - Compact Commercial -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
+            <!-- Smart Buying Tips -->
+            <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
+              <div class="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                    <UIcon name="i-heroicons-light-bulb" class="w-3.5 h-3.5 text-white" />
                   </div>
                   <div>
-                    <h3 class="text-xl font-bold text-blue-900 mb-2">
-                      Smart Buying Tips
-                    </h3>
-                    <p class="text-blue-700/80 text-sm">
-                      Make informed purchases with confidence
-                    </p>
+                    <h3 class="text-sm font-bold text-blue-800">Smart Buying Tips</h3>
+                    <p class="text-[10px] text-blue-600">Shop with confidence</p>
                   </div>
                 </div>
+              </div>
 
-                <div class="space-y-4">
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-eye"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Inspect Before You Buy
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        Always examine items thoroughly in person before making
-                        payment
-                      </p>
-                    </div>
+              <div class="p-3 space-y-2">
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-eye" class="h-2.5 w-2.5 text-blue-600" />
                   </div>
-
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-map-pin"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Meet in Public Places
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        Choose safe, well-lit locations for transactions
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-document-check"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Verify Authenticity
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        Check documentation and authenticity before purchase
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-blue-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-scale"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Compare Market Prices
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        Research similar listings to ensure fair pricing
-                      </p>
-                    </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Inspect Before Buying</p>
+                    <p class="text-gray-500 text-[10px]">Examine items in person before payment</p>
                   </div>
                 </div>
-
-                <div class="mt-6 pt-4 border-t border-blue-200/50">
-                  <NuxtLink
-                    to="/contact-us"
-                    class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm group/link"
-                  >
-                    Complete Buyer's Guide
-                    <UIcon
-                      name="i-heroicons-arrow-right"
-                      class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200"
-                    />
-                  </NuxtLink>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-map-pin" class="h-2.5 w-2.5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Meet in Public Places</p>
+                    <p class="text-gray-500 text-[10px]">Choose safe, well-lit locations</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-document-check" class="h-2.5 w-2.5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Verify Authenticity</p>
+                    <p class="text-gray-500 text-[10px]">Check documentation before purchase</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-scale" class="h-2.5 w-2.5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Compare Prices</p>
+                    <p class="text-gray-500 text-[10px]">Research similar listings for fair pricing</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Security & Safety -->
-            <div
-              class="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl border border-emerald-200/50 shadow-sm hover:shadow-sm transition-all duration-300"
-            >
-              <!-- Background Pattern -->
-              <div
-                class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/10 to-green-400/10 rounded-full -translate-y-16 translate-x-16"
-              ></div>
-
-              <div class="relative z-10 p-8">
-                <div class="flex items-start mb-6">
-                  <div
-                    class="bg-gradient-to-br from-emerald-500 to-green-600 p-3 rounded-xl shadow-sm mr-4 group-hover:scale-110 transition-transform duration-300"
-                  >
-                    <UIcon
-                      name="i-heroicons-shield-check"
-                      class="h-8 w-8 text-white"
-                    />
+            <div class="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
+              <div class="px-3 py-2 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-emerald-100">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center">
+                    <UIcon name="i-heroicons-shield-check" class="w-3.5 h-3.5 text-white" />
                   </div>
                   <div>
-                    <h3 class="text-xl font-bold text-emerald-900 mb-2">
-                      Security & Safety
-                    </h3>
-                    <p class="text-emerald-700/80 text-sm">
-                      Stay protected while shopping online
-                    </p>
+                    <h3 class="text-sm font-bold text-emerald-800">Security & Safety</h3>
+                    <p class="text-[10px] text-emerald-600">Stay protected online</p>
                   </div>
                 </div>
-
-                <div class="space-y-4">
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-lock-closed"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Protect Personal Info
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        Never share banking details or personal financial
-                        information
-                      </p>
-                    </div>
+              </div>
+              <div class="p-3 space-y-2">
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-lock-closed" class="h-2.5 w-2.5 text-emerald-600" />
                   </div>
-
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-exclamation-triangle"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Spot Red Flags
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        Be cautious of deals that seem unrealistically good
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-chat-bubble-left-ellipsis"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Use Platform Messaging
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        Keep communications on our platform for better security
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-start group/item">
-                    <div
-                      class="bg-emerald-500 rounded-full p-2 flex mr-3 mt-0.5 group-hover/item:scale-110 transition-transform duration-200"
-                    >
-                      <UIcon
-                        name="i-heroicons-user-group"
-                        class="h-3 w-3 text-white"
-                      />
-                    </div>
-                    <div>
-                      <p class="text-gray-800 font-medium text-sm">
-                        Trust Your Instincts
-                      </p>
-                      <p class="text-gray-600 text-xs mt-1">
-                        If something feels wrong, don't hesitate to walk away
-                      </p>
-                    </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Protect Personal Info</p>
+                    <p class="text-gray-500 text-[10px]">Never share banking details</p>
                   </div>
                 </div>
-
-                <div class="mt-6 pt-4 border-t border-emerald-200/50">
-                  <NuxtLink
-                    to="/contact-us"
-                    class="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium text-sm group/link"
-                  >
-                    Complete Safety Guide
-                    <UIcon
-                      name="i-heroicons-arrow-right"
-                      class="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform duration-200"
-                    />
-                  </NuxtLink>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-exclamation-triangle" class="h-2.5 w-2.5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Spot Red Flags</p>
+                    <p class="text-gray-500 text-[10px]">Be cautious of unrealistic deals</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-chat-bubble-left-ellipsis" class="h-2.5 w-2.5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Use Platform Messaging</p>
+                    <p class="text-gray-500 text-[10px]">Keep communications secure</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <UIcon name="i-heroicons-user-group" class="h-2.5 w-2.5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p class="text-gray-700 font-medium text-[11px]">Trust Your Instincts</p>
+                    <p class="text-gray-500 text-[10px]">Walk away if something feels wrong</p>
+                  </div>
                 </div>
               </div>
             </div>
