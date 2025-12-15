@@ -51,6 +51,7 @@ class RaiseUpPostSerializer(serializers.ModelSerializer):
     poster = PosterSerializer(read_only=True)
     details = RaiseUpPostDetailSerializer(read_only=True)
     progress_percent = serializers.ReadOnlyField()
+    top_donator = serializers.SerializerMethodField()
     
     # Frontend expects these field names
     stageColor = serializers.CharField(source='stage_color', read_only=True)
@@ -66,9 +67,19 @@ class RaiseUpPostSerializer(serializers.ModelSerializer):
             'id', 'title', 'summary', 'sector', 'location', 'city', 'area',
             'stage', 'stageColor', 'fundingType', 'minInvestment', 'expectedReturn',
             'riskLevel', 'traction', 'raised', 'goal', 'thumbnail', 'videoEmbedUrl',
-            'poster', 'details', 'progress_percent', 'created_at', 'updated_at',
+            'media_type', 'poster', 'details', 'progress_percent', 'top_donator', 'created_at', 'updated_at',
             'is_active', 'is_featured'
         ]
+    
+    def get_top_donator(self, obj):
+        """Get the top donator for this post"""
+        top_donation = obj.donations.order_by('-amount').first()
+        if top_donation:
+            return {
+                'name': top_donation.user.first_name or top_donation.user.username,
+                'amount': float(top_donation.amount)
+            }
+        return None
 
 class RaiseUpPostCreateSerializer(serializers.ModelSerializer):
     class Meta:

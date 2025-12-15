@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RaiseUpPost, RaiseUpPostDetail, UserProfile
+from .models import RaiseUpPost, RaiseUpPostDetail, UserProfile, Donation
 
 @admin.register(RaiseUpPost)
 class RaiseUpPostAdmin(admin.ModelAdmin):
@@ -20,3 +20,11 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ['user', 'profession', 'is_pro', 'kyc_verified']
     list_filter = ['is_pro', 'kyc_verified']
     search_fields = ['user__username', 'profession']
+
+@admin.register(Donation)
+class DonationAdmin(admin.ModelAdmin):
+    list_display = ['user', 'post', 'amount', 'payment_method', 'created_at']
+    list_filter = ['payment_method', 'created_at']
+    search_fields = ['user__username', 'post__title']
+    readonly_fields = ['created_at']
+    ordering = ['-created_at']

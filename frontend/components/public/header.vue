@@ -106,84 +106,45 @@
         leave-to-class="opacity-0 -translate-y-4"
       >
         <div
-          v-if="isExpired"
-          class="mx-auto my-2 relative overflow-hidden rounded-lg border border-red-400/70 dark:border-red-600/40 transition-all duration-300 shadow-sm hover:shadow-sm"
+          v-if="isExpired && !expiredWarningDismissed"
+          class="mx-auto my-2 px-3 py-2 relative overflow-hidden rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20"
         >
-          <!-- Alert Background -->
-          <div
-            class="absolute inset-0 bg-gradient-to-r from-red-50/90 via-red-100/80 to-red-50/90 dark:from-red-900/30 dark:via-red-800/20 dark:to-red-900/30 backdrop-blur-md"
-          ></div>
-
-          <!-- Decorative Elements -->
-          <div
-            class="absolute -left-20 -top-20 w-40 h-40 bg-red-200/20 rounded-full blur-2xl transform-gpu"
-          ></div>
-          <div
-            class="absolute -right-20 -bottom-20 w-40 h-40 bg-red-300/20 rounded-full blur-2xl transform-gpu"
-          ></div>
-
-          <!-- Pulsing Border -->
-          <div
-            class="absolute inset-0 rounded-lg border-2 border-red-400/20 dark:border-red-600/20 scale-[0.98] animate-pulse"
-          ></div>
-
-          <!-- Animated Border Lines -->
-          <div
-            class="absolute left-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"
-          ></div>
-          <div
-            class="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-red-400/50 dark:via-red-400/30 to-transparent opacity-70 animate-[shimmer_3s_linear_infinite]"
-          ></div>
-
           <!-- Content -->
-          <div
-            class="relative z-10 p-3 sm:p-3.5 flex items-center justify-between"
-          >
-            <div class="flex items-center gap-2 sm:gap-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
               <!-- Alert Icon -->
-              <div class="relative hidden xs:block">
-                <div
-                  class="size-7 rounded-full bg-gradient-to-br from-red-100 to-red-200 dark:from-red-800 dark:to-red-700 border border-red-300/50 dark:border-red-600/30 flex items-center justify-center shadow-inner"
-                >
-                  <UIcon
-                    name="i-heroicons-exclamation-triangle"
-                    class="w-5 h-5 text-red-600 dark:text-red-400"
-                  />
-                </div>
-                <div
-                  class="absolute -inset-1.5 bg-red-300/30 blur-md rounded-full animate-pulse opacity-70"
-                ></div>
-              </div>
+              <UIcon
+                name="i-heroicons-exclamation-triangle"
+                class="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0"
+              />
 
               <!-- Alert Text -->
-              <h3
-                class="text-xs sm:text-sm font-medium text-red-800 dark:text-red-300"
-              >
+              <p class="text-xs font-medium text-red-800 dark:text-red-300 truncate">
                 {{ $t("subscription_expired") }}
-              </h3>
+              </p>
             </div>
 
-            <!-- Renewal Button -->
-            <UButton
-              @click="renewSubscription"
-              size="2xs"
-              color="red"
-              variant="solid"
-              class="py-1 px-2.5 group hover:bg-red-600 transition-colors duration-300 relative overflow-hidden"
-            >
-              <div
-                class="absolute inset-0 bg-gradient-to-r from-red-400/0 via-white/10 to-red-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
-              ></div>
-              <span
-                class="text-xs whitespace-nowrap flex items-center gap-1 relative z-10"
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <UButton
+                @click="renewSubscription"
+                size="2xs"
+                color="red"
+                variant="solid"
+                class="text-xs font-medium"
               >
                 {{ $t("renew_now") }}
-                <UIcon
-                  name="i-heroicons-arrow-right"
-                  class="w-3 h-3 group-hover:translate-x-0.5 transition-transform"
-                />
-              </span>
-            </UButton>
+              </UButton>
+              <UButton
+                @click="dismissExpiredWarning"
+                size="2xs"
+                variant="ghost"
+                color="gray"
+                icon="i-heroicons-x-mark"
+                class="p-1"
+                aria-label="No Thanks"
+              />
+            </div>
           </div>
         </div>
       </transition>
@@ -846,6 +807,7 @@ const isOpen = ref(false);
 const showQr = ref(false);
 // Subscription alert state
 const warningDismissed = ref(false);
+const expiredWarningDismissed = ref(false);
 
 // Combined badge count: tickets + updates + AdsyConnect messages
 const badgeCount = computed(() => {
@@ -943,6 +905,17 @@ function dismissWarning() {
   );
 }
 
+// Dismiss the expired warning
+function dismissExpiredWarning() {
+  expiredWarningDismissed.value = true;
+  // Store in localStorage to remember dismissal
+  localStorage.setItem("expired_warning_dismissed", "true");
+  localStorage.setItem(
+    "expired_warning_dismissed_date",
+    new Date().toDateString()
+  );
+}
+
 // Open the subscription renewal page
 function renewSubscription() {
   openMenu.value = false; // Close any open menu
@@ -960,6 +933,17 @@ onMounted(() => {
     warningDismissed.value = storedDismissalDate === today;
   } else {
     warningDismissed.value = false;
+  }
+  
+  // Check expired warning dismissal
+  const expiredDismissalDate = localStorage.getItem(
+    "expired_warning_dismissed_date"
+  );
+  if (expiredDismissalDate) {
+    const today = new Date().toDateString();
+    expiredWarningDismissed.value = expiredDismissalDate === today;
+  } else {
+    expiredWarningDismissed.value = false;
   }
 });
 

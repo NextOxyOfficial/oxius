@@ -13,4 +13,6 @@ urlpatterns = [
     # Investment/Donation endpoints
     path('posts/<int:post_id>/invest/', views.invest_in_post, name='invest_in_post'),
     path('posts/<int:post_id>/donate/', views.donate_to_post, name='donate_to_post'),
+    path('posts/<int:post_id>/donations/', views.get_post_donations, name='get_post_donations'),
 ]
+

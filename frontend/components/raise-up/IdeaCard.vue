@@ -1,5 +1,5 @@
 <template>
-  <div class="group bg-white dark:bg-slate-800/80 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/60 hover:border-purple-300 dark:hover:border-purple-600/50 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 h-[540px] flex flex-col">
+  <div class="group bg-white dark:bg-slate-800/80 rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-700/60 hover:border-purple-300 dark:hover:border-purple-600/50 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-slate-900/50 flex flex-col">
     <!-- Video Thumbnail -->
     <button
       type="button"
@@ -29,8 +29,8 @@
           </span>
         </div>
 
-        <!-- Play Button -->
-        <div class="absolute inset-0 flex items-center justify-center">
+        <!-- Play Button - Only for videos -->
+        <div v-if="plan.media_type === 'video'" class="absolute inset-0 flex items-center justify-center">
           <div class="w-16 h-16 rounded-full bg-white/95 dark:bg-slate-900/95 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
             <UIcon name="i-heroicons-play-solid" class="w-7 h-7 text-purple-600 dark:text-purple-400 ml-1" />
           </div>
@@ -125,6 +125,7 @@
         {{ plan.summary }}
       </p>
 
+
       <!-- Stats Grid -->
       <div class="mt-3 grid grid-cols-3 gap-2">
         <div class="text-center p-2 rounded-xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700/50">
@@ -151,13 +152,36 @@
         </div>
       </div>
 
+      <!-- Top Donator Highlight -->
+      <div v-if="topDonator" class="mt-1.5 flex items-center justify-between px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-800">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <UIcon name="i-heroicons-trophy" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="text-[10px] font-medium text-amber-700 dark:text-amber-400">Top Donator:</span>
+            <span class="text-xs font-bold text-amber-800 dark:text-amber-300 truncate">{{ topDonator.name }}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="text-xs font-bold text-amber-700 dark:text-amber-400">৳{{ topDonator.amount.toLocaleString() }}</span>
+          <button
+            type="button"
+            @click.stop="showDonationsList(1)"
+            class="p-1 flex hover:bg-amber-100 dark:hover:bg-amber-800/50 rounded transition-colors"
+            aria-label="View all donations"
+          >
+            <UIcon name="i-heroicons-list-bullet" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+          </button>
+        </div>
+      </div>
+
       <!-- CTA Buttons -->
       <div class="mt-auto pt-3 grid grid-cols-3 gap-2">
         <NuxtLink
           :to="`/raise-up/${plan.id}`"
-          class="inline-flex items-center justify-center px-3 py-1.5 rounded-md text-sm font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+          class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
         >
-          Details
+          <UIcon name="i-heroicons-document-text" class="w-4 h-4" />
+          <span>Details</span>
         </NuxtLink>
         <UButton
           color="purple"
@@ -166,6 +190,9 @@
           class="justify-center font-semibold"
           @click.stop="handleDonate(plan)"
         >
+          <template #leading>
+            <UIcon name="i-heroicons-heart" class="w-4 h-4" />
+          </template>
           Donate
         </UButton>
         <UButton
@@ -173,6 +200,9 @@
           class="justify-center font-semibold bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-0"
           @click.stop="handleInvest(plan)"
         >
+          <template #leading>
+            <UIcon name="i-heroicons-currency-dollar" class="w-4 h-4" />
+          </template>
           Invest
         </UButton>
       </div>
@@ -181,6 +211,110 @@
     <!-- Modals -->
     <DonateModal v-model="showDonateModal" :plan="plan" @success="onDonateSuccess" />
     <InvestModal v-model="showInvestModal" :plan="plan" @success="onInvestSuccess" />
+    
+    <!-- Donations List Modal -->
+    <UModal v-model="showDonationsListModal" :ui="{ width: 'sm:max-w-md' }">
+      <UCard>
+        <template #header>
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">All Donations</h3>
+            <UButton
+              color="gray"
+              variant="ghost"
+              icon="i-heroicons-x-mark"
+              @click="showDonationsListModal = false"
+            />
+          </div>
+        </template>
+
+        <div v-if="loadingDonations" class="flex items-center justify-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        </div>
+
+        <div v-else-if="donationsList.length === 0" class="text-center py-8">
+          <UIcon name="i-heroicons-inbox" class="w-12 h-12 mx-auto text-gray-400 mb-2" />
+          <p class="text-sm text-gray-500 dark:text-gray-400">No donations yet</p>
+        </div>
+
+        <div v-else>
+          <!-- Donations List -->
+          <div class="space-y-2 max-h-80 overflow-y-auto mb-4">
+            <div
+              v-for="(donation, index) in donationsList"
+              :key="index"
+              class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {{ donation.user_name.charAt(0).toUpperCase() }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">{{ donation.user_name }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ donation.created_at }}</p>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="text-sm font-bold text-purple-600 dark:text-purple-400">৳{{ donation.amount.toLocaleString() }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="totalPages > 1" class="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-2">
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="gray"
+                :disabled="currentPage === 1"
+                @click="prevPage"
+                icon="i-heroicons-chevron-left"
+              />
+              
+              <div class="flex items-center gap-1">
+                <template v-for="page in Math.min(totalPages, 5)" :key="page">
+                  <UButton
+                    v-if="shouldShowPage(page)"
+                    size="xs"
+                    :variant="currentPage === page ? 'solid' : 'ghost'"
+                    :color="currentPage === page ? 'purple' : 'gray'"
+                    @click="goToPage(page)"
+                    class="min-w-[28px]"
+                  >
+                    {{ page }}
+                  </UButton>
+                  <span v-else-if="page === 4 && totalPages > 5" class="text-xs text-gray-400 px-1">...</span>
+                </template>
+                
+                <UButton
+                  v-if="totalPages > 5 && currentPage < totalPages - 2"
+                  size="xs"
+                  variant="ghost"
+                  color="gray"
+                  @click="goToPage(totalPages)"
+                  class="min-w-[28px]"
+                >
+                  {{ totalPages }}
+                </UButton>
+              </div>
+              
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="gray"
+                :disabled="currentPage === totalPages"
+                @click="nextPage"
+                icon="i-heroicons-chevron-right"
+              />
+            </div>
+            
+            <div class="text-xs text-gray-500 dark:text-gray-400">
+              Page {{ currentPage }} of {{ totalPages }}
+            </div>
+          </div>
+        </div>
+      </UCard>
+    </UModal>
     
     <!-- Chat Slideout -->
     <ProfileChatSlideout v-if="chatUser" v-model="showChatSlideout" :user="chatUser" :chatroom-id="chatRoomId" />
@@ -203,6 +337,9 @@ const toast = useToast()
 const { user: currentUser } = useAuth()
 const { getOrCreateChatRoom } = useAdsyChat()
 const router = useRouter()
+
+// Top donator state
+const topDonator = ref(props.plan.top_donator || null)
 
 // Computed properties
 const progressPercent = computed(() => {
@@ -263,11 +400,19 @@ const openChat = async (poster) => {
 // Modal states
 const showDonateModal = ref(false)
 const showInvestModal = ref(false)
+const showDonationsListModal = ref(false)
 
 // Chat slideout states
 const showChatSlideout = ref(false)
 const chatUser = ref(null)
 const chatRoomId = ref(null)
+
+// Donations list state
+const donationsList = ref([])
+const loadingDonations = ref(false)
+const currentPage = ref(1)
+const totalPages = ref(1)
+const itemsPerPage = 10
 
 const handleDonate = (plan) => {
   if (!plan) return
@@ -301,8 +446,12 @@ const handleInvest = (plan) => {
   showInvestModal.value = true
 }
 
-const onDonateSuccess = () => {
-  // Optionally refresh data or update UI
+const onDonateSuccess = (response) => {
+  // Update top donator if returned in response
+  if (response?.top_donator) {
+    topDonator.value = response.top_donator
+  }
+  
   toast.add({
     title: 'Thank You!',
     description: 'Your donation has been recorded',
@@ -310,12 +459,73 @@ const onDonateSuccess = () => {
   })
 }
 
-const onInvestSuccess = () => {
-  // Optionally refresh data or update UI
+const onInvestSuccess = (response) => {
+  // Update top donator if returned in response
+  if (response?.top_donator) {
+    topDonator.value = response.top_donator
+  }
+  
   toast.add({
     title: 'Investment Confirmed',
     description: 'Your investment has been recorded',
     color: 'green',
   })
+}
+
+// Show donations list
+const showDonationsList = async (page = 1) => {
+  if (page === 1) {
+    showDonationsListModal.value = true
+  }
+  loadingDonations.value = true
+  currentPage.value = page
+  
+  try {
+    const config = useRuntimeConfig()
+    console.log('Fetching donations from:', `${config.public.baseURL}/api/raise-up/posts/${props.plan.id}/donations/?page=${page}&page_size=${itemsPerPage}`)
+    const response = await $fetch(`${config.public.baseURL}/api/raise-up/posts/${props.plan.id}/donations/?page=${page}&page_size=${itemsPerPage}`)
+    console.log('Donations response:', response)
+    donationsList.value = response.donations || []
+    totalPages.value = Math.ceil((response.total_donations || 0) / itemsPerPage)
+  } catch (error) {
+    console.error('Error fetching donations:', error)
+    console.error('Error details:', error.response || error.message)
+    toast.add({
+      title: 'Error',
+      description: `Unable to load donations list: ${error.message || 'Unknown error'}`,
+      color: 'red',
+      timeout: 5000,
+    })
+  } finally {
+    loadingDonations.value = false
+  }
+}
+
+// Pagination helpers
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value && page !== currentPage.value) {
+    showDonationsList(page)
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    goToPage(currentPage.value + 1)
+  }
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    goToPage(currentPage.value - 1)
+  }
+}
+
+// Helper function for pagination display
+const shouldShowPage = (page) => {
+  if (totalPages.value <= 5) return true
+  if (page <= 3) return true
+  if (page >= totalPages.value - 2) return true
+  if (Math.abs(page - currentPage.value) <= 1) return true
+  return false
 }
 </script>

@@ -56,6 +56,7 @@ class RaiseUpPost(models.Model):
     # Media
     thumbnail = models.URLField()
     video_embed_url = models.URLField(blank=True)
+    media_type = models.CharField(max_length=20, choices=[('image', 'Image'), ('video', 'Video')], default='image')
     
     # Poster (User)
     poster = models.ForeignKey(User, on_delete=models.CASCADE, related_name='raise_up_posts')
@@ -98,3 +99,17 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return f"{self.user.username} Profile"
+
+class Donation(models.Model):
+    """Track donations/investments to posts"""
+    post = models.ForeignKey(RaiseUpPost, on_delete=models.CASCADE, related_name='donations')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='donations')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_method = models.CharField(max_length=20, default='balance')
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        ordering = ['-amount', '-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - ৳{self.amount} to {self.post.title}"

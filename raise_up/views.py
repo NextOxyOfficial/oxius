@@ -7,7 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Sum
 from django.db import models
-from .models import RaiseUpPost, RaiseUpPostDetail, UserProfile
+from .models import RaiseUpPost, RaiseUpPostDetail, UserProfile, Donation
 from .serializers import RaiseUpPostSerializer, RaiseUpPostCreateSerializer, RaiseUpPostDetailSerializer
 
 class RaiseUpPostPagination(PageNumberPagination):
@@ -123,9 +123,26 @@ def invest_in_post(request, post_id):
             user.balance -= amount
             user.save()
         
+        # Create donation record (investments are tracked as donations)
+        Donation.objects.create(
+            post=post,
+            user=request.user,
+            amount=amount,
+            payment_method=payment_method
+        )
+        
         # Update post raised amount
         post.raised += amount
         post.save()
+        
+        # Get top donator
+        top_donation = post.donations.order_by('-amount').first()
+        top_donator = None
+        if top_donation:
+            top_donator = {
+                'name': top_donation.user.first_name or top_donation.user.username,
+                'amount': float(top_donation.amount)
+            }
         
         return Response({
             'success': True,
@@ -133,7 +150,8 @@ def invest_in_post(request, post_id):
             'post_id': post_id,
             'amount': amount,
             'new_balance': request.user.balance if payment_method == 'balance' else None,
-            'post_raised': post.raised
+            'post_raised': float(post.raised),
+            'top_donator': top_donator
         })
     except RaiseUpPost.DoesNotExist:
         return Response({
@@ -174,9 +192,26 @@ def donate_to_post(request, post_id):
             user.balance -= amount
             user.save()
         
+        # Create donation record
+        Donation.objects.create(
+            post=post,
+            user=request.user,
+            amount=amount,
+            payment_method=payment_method
+        )
+        
         # Update post raised amount
         post.raised += amount
         post.save()
+        
+        # Get top donator
+        top_donation = post.donations.order_by('-amount').first()
+        top_donator = None
+        if top_donation:
+            top_donator = {
+                'name': top_donation.user.first_name or top_donation.user.username,
+                'amount': float(top_donation.amount)
+            }
         
         return Response({
             'success': True,
@@ -184,7 +219,53 @@ def donate_to_post(request, post_id):
             'post_id': post_id,
             'amount': amount,
             'new_balance': request.user.balance if payment_method == 'balance' else None,
-            'post_raised': post.raised
+            'post_raised': float(post.raised),
+            'top_donator': top_donator
+        })
+    except RaiseUpPost.DoesNotExist:
+        return Response({
+            'success': False,
+            'message': 'Post not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'success': False,
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def get_post_donations(request, post_id):
+    """Get all donations for a post with pagination"""
+    try:
+        from django.core.paginator import Paginator
+        
+        post = RaiseUpPost.objects.get(id=post_id, is_active=True)
+        donations = post.donations.select_related('user').order_by('-amount', '-created_at')
+        
+        # Pagination
+        page = int(request.GET.get('page', 1))
+        page_size = int(request.GET.get('page_size', 10))
+        
+        paginator = Paginator(donations, page_size)
+        page_obj = paginator.get_page(page)
+        
+        donations_list = []
+        for donation in page_obj:
+            donations_list.append({
+                'user_name': donation.user.first_name or donation.user.username,
+                'amount': float(donation.amount),
+                'created_at': donation.created_at.strftime('%b %d, %Y'),
+                'payment_method': donation.payment_method
+            })
+        
+        return Response({
+            'success': True,
+            'donations': donations_list,
+            'total_donations': paginator.count,
+            'current_page': page,
+            'total_pages': paginator.num_pages,
+            'has_next': page_obj.has_next(),
+            'has_previous': page_obj.has_previous()
         })
     except RaiseUpPost.DoesNotExist:
         return Response({
