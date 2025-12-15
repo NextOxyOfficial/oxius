@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
@@ -97,41 +98,101 @@ def post_stats(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def invest_in_post(request, post_id):
-    """Mock investment endpoint"""
+    """Investment endpoint with balance deduction"""
     try:
         post = RaiseUpPost.objects.get(id=post_id, is_active=True)
-        amount = request.data.get('amount', 0)
+        amount = Decimal(str(request.data.get('amount', 0)))
+        payment_method = request.data.get('payment_method', 'balance')
         
-        # Mock investment logic
+        if amount <= 0:
+            return Response({
+                'success': False,
+                'message': 'Invalid amount'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # If paying with balance, deduct from user balance
+        if payment_method == 'balance':
+            user = request.user
+            if user.balance < amount:
+                return Response({
+                    'success': False,
+                    'message': 'Insufficient balance'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Deduct amount from user balance
+            user.balance -= amount
+            user.save()
+        
+        # Update post raised amount
+        post.raised += amount
+        post.save()
+        
         return Response({
             'success': True,
             'message': f'Investment of ৳{amount} in "{post.title}" recorded',
             'post_id': post_id,
-            'amount': amount
+            'amount': amount,
+            'new_balance': request.user.balance if payment_method == 'balance' else None,
+            'post_raised': post.raised
         })
     except RaiseUpPost.DoesNotExist:
         return Response({
             'success': False,
             'message': 'Post not found'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'success': False,
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def donate_to_post(request, post_id):
-    """Mock donation endpoint"""
+    """Donation endpoint with balance deduction"""
     try:
         post = RaiseUpPost.objects.get(id=post_id, is_active=True)
-        amount = request.data.get('amount', 0)
+        amount = Decimal(str(request.data.get('amount', 0)))
+        payment_method = request.data.get('payment_method', 'balance')
         
-        # Mock donation logic
+        if amount <= 0:
+            return Response({
+                'success': False,
+                'message': 'Invalid amount'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # If paying with balance, deduct from user balance
+        if payment_method == 'balance':
+            user = request.user
+            if user.balance < amount:
+                return Response({
+                    'success': False,
+                    'message': 'Insufficient balance'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Deduct amount from user balance
+            user.balance -= amount
+            user.save()
+        
+        # Update post raised amount
+        post.raised += amount
+        post.save()
+        
         return Response({
             'success': True,
             'message': f'Donation of ৳{amount} to "{post.title}" recorded',
             'post_id': post_id,
-            'amount': amount
+            'amount': amount,
+            'new_balance': request.user.balance if payment_method == 'balance' else None,
+            'post_raised': post.raised
         })
     except RaiseUpPost.DoesNotExist:
         return Response({
             'success': False,
             'message': 'Post not found'
         }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'success': False,
+            'message': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

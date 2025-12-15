@@ -201,16 +201,32 @@ const handleInvest = async () => {
   processing.value = true
 
   try {
+    console.log('Making investment request with:', {
+      url: `${config.public.baseURL}/api/raise-up/posts/${props.plan.id}/invest/`,
+      token: user.value.access ? 'Token exists' : 'No token',
+      amount: Number(amount.value),
+      payment_method: paymentMethod.value,
+      planId: props.plan.id
+    })
+    
     const response = await $fetch(`${config.public.baseURL}/api/raise-up/posts/${props.plan.id}/invest/`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${user.value.token}`
+        'Authorization': `Bearer ${user.value.access}`,
+        'Content-Type': 'application/json'
       },
       body: {
         amount: Number(amount.value),
         payment_method: paymentMethod.value
       }
     })
+    
+    console.log('Investment response:', response)
+
+    // Update user balance in frontend if balance was used
+    if (paymentMethod.value === 'balance' && response.new_balance !== null) {
+      user.value.user.balance = response.new_balance
+    }
 
     toast.add({
       title: 'Investment Successful',
@@ -227,11 +243,26 @@ const handleInvest = async () => {
     paymentMethod.value = 'balance'
   } catch (err) {
     console.error('Investment error:', err)
+    console.error('Full error object:', JSON.stringify(err, null, 2))
+    
+    let errorMessage = 'Unable to process investment. Please try again.'
+    
+    // Check different error response formats
+    if (err.data?.message) {
+      errorMessage = err.data.message
+    } else if (err.data?.detail) {
+      errorMessage = err.data.detail
+    } else if (err.message) {
+      errorMessage = err.message
+    } else if (err.statusText) {
+      errorMessage = `${err.status}: ${err.statusText}`
+    }
+    
     toast.add({
       title: 'Investment Failed',
-      description: err.data?.message || 'Unable to process investment. Please try again.',
+      description: errorMessage,
       color: 'red',
-      timeout: 3000,
+      timeout: 5000,
     })
   } finally {
     processing.value = false

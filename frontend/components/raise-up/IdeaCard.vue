@@ -181,12 +181,16 @@
     <!-- Modals -->
     <DonateModal v-model="showDonateModal" :plan="plan" @success="onDonateSuccess" />
     <InvestModal v-model="showInvestModal" :plan="plan" @success="onInvestSuccess" />
+    
+    <!-- Chat Slideout -->
+    <ProfileChatSlideout v-if="chatUser" v-model="showChatSlideout" :user="chatUser" :chatroom-id="chatRoomId" />
   </div>
 </template>
 
 <script setup>
 import DonateModal from './DonateModal.vue'
 import InvestModal from './InvestModal.vue'
+import ProfileChatSlideout from '~/components/business-network/profile/ProfileChatSlideout.vue'
 
 const props = defineProps({
   plan: {
@@ -233,14 +237,21 @@ const openChat = async (poster) => {
   try {
     const room = await getOrCreateChatRoom(poster.id)
     if (room?.id) {
-      // Note: Chat slideout functionality would need to be handled by parent component
-      toast.add({
-        title: 'Chat Feature',
-        description: 'Chat functionality needs parent component integration',
-        color: 'blue',
-      })
+      // Set chat user data for slideout
+      chatUser.value = {
+        id: poster.id,
+        name: poster.name,
+        image: poster.avatar,
+        avatar: poster.avatar,
+        profession: poster.profession,
+        kyc: poster.kyc,
+        is_pro: poster.is_pro
+      }
+      chatRoomId.value = room.id
+      showChatSlideout.value = true
     }
   } catch (e) {
+    console.error('Chat error:', e)
     toast.add({
       title: 'Chat Error',
       description: 'Unable to open chat right now',
@@ -252,6 +263,11 @@ const openChat = async (poster) => {
 // Modal states
 const showDonateModal = ref(false)
 const showInvestModal = ref(false)
+
+// Chat slideout states
+const showChatSlideout = ref(false)
+const chatUser = ref(null)
+const chatRoomId = ref(null)
 
 const handleDonate = (plan) => {
   if (!plan) return
