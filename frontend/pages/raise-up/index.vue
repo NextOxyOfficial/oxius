@@ -193,10 +193,10 @@
             :key="plan.id"
             :plan="plan"
           />
-          </div>
         </div>
+      </div>
 
-        <!-- Safety Tips Section -->
+      <!-- Safety Tips Section -->
         <div class="bg-slate-100 dark:bg-slate-800/50 rounded-xl p-4 sm:p-5 mb-4 sm:mb-6">
           <div class="flex items-start gap-2.5 sm:gap-3 mb-3 sm:mb-4">
             <UIcon name="i-heroicons-shield-check" class="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
@@ -274,7 +274,7 @@
 import IdeaCard from '~/components/raise-up/IdeaCard.vue'
 
 // Use shared plans data
-const { plans } = usePlans()
+const { plans, loading, fetchAllPlans } = usePlans()
 
 // Banner slider
 const currentSlide = ref(0)
@@ -318,38 +318,51 @@ const searchQuery = ref('')
 const selectedStage = ref('')
 const sortBy = ref('funded')
 
-const filteredPlans = computed(() => {
-  let result = [...plans.value]
-  
-  // Search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(p => 
-      p.title.toLowerCase().includes(query) ||
-      p.sector.toLowerCase().includes(query) ||
-      p.city.toLowerCase().includes(query) ||
-      p.poster.name.toLowerCase().includes(query)
-    )
+// Reactive data for API results
+const allPlans = ref([])
+const totalCount = ref(0)
+const currentPage = ref(1)
+
+const filteredPlans = computed(() => allPlans.value)
+
+// Load plans from API
+const loadPlans = async () => {
+  try {
+    const params = {
+      page: currentPage.value,
+      search: searchQuery.value || undefined,
+      stage: selectedStage.value || undefined,
+      sort_by: sortBy.value || undefined
+    }
+    
+    const response = await fetchAllPlans(params)
+    allPlans.value = response.results || []
+    totalCount.value = response.count || 0
+  } catch (error) {
+    console.error('Error loading plans:', error)
+    allPlans.value = []
   }
-  
-  // Stage filter
-  if (selectedStage.value) {
-    result = result.filter(p => p.stage === selectedStage.value)
-  }
-  
-  // Sort
-  if (sortBy.value === 'funded') {
-    result.sort((a, b) => (b.raised / b.goal) - (a.raised / a.goal))
-  } else if (sortBy.value === 'newest') {
-    result.sort((a, b) => b.id - a.id)
-  }
-  
-  return result
-})
+}
 
 const clearFilters = () => {
   searchQuery.value = ''
   selectedStage.value = ''
+  currentPage.value = 1
+  loadPlans()
 }
 
+// Watch for filter changes (debounced)
+let filterTimeout = null
+watch([searchQuery, selectedStage, sortBy], () => {
+  currentPage.value = 1
+  if (filterTimeout) clearTimeout(filterTimeout)
+  filterTimeout = setTimeout(() => {
+    loadPlans()
+  }, 300)
+})
+
+// Load initial data
+onMounted(() => {
+  loadPlans()
+})
 </script>

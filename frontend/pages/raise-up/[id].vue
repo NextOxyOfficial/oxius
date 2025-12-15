@@ -332,140 +332,36 @@ const route = useRoute()
 const toast = useToast()
 const { user: currentUser } = useAuth()
 const { getOrCreateChatRoom } = useAdsyChat()
+const { getPlanById } = usePlans()
 
 const loading = ref(true)
 const plan = ref(null)
+const error = ref(null)
 
 const showChatSlideout = ref(false)
 const chatRoomId = ref(null)
 const chatUser = ref({})
 
-// Mock data - same as carousel
-const plans = [
-  {
-    id: 1,
-    title: 'Solar Water Purifier Micro-Business',
-    poster: {
-      id: 101,
-      name: 'Nusrat Jahan',
-      profession: 'Founder, CleanTech',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=60',
-      is_pro: true,
-      kyc: true,
-    },
-    summary: 'Low-cost solar purification units with local distribution partners. Seeking seed capital + impact donations.',
-    sector: 'CleanTech',
-    location: 'Rajshahi',
-    city: 'Rajshahi',
-    area: 'Boalia',
-    stage: 'Seed',
-    stageColor: 'purple',
-    fundingType: 'Investment + Donation',
-    minInvestment: 10000,
-    expectedReturn: '12-18% (est.)',
-    riskLevel: 'Medium',
-    traction: '120 pre-orders',
-    raised: 38500,
-    goal: 120000,
-    thumbnail: 'https://images.unsplash.com/photo-1509395062183-67c5ad6faff9?auto=format&fit=crop&w=1200&q=60',
-    videoEmbedUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
-    details: {
-      overview: 'We will manufacture solar purifier units and sell through local agents. Donations will subsidize units for ultra-low-income families while investment funds production capacity.',
-      useOfFunds: [
-        'Production tooling & materials (first 200 units)',
-        'Local agent onboarding and sales training',
-        'Quality testing and warranty support',
-      ],
-      milestones: [
-        'Month 1: Build 50 units + pilot sales',
-        'Month 2-3: Expand to 5 unions + 200 units',
-        'Month 4: Break-even target and scale plan',
-      ],
-    },
-  },
-  {
-    id: 2,
-    title: 'Micro-Clinic: Affordable Health Checkups',
-    poster: {
-      id: 102,
-      name: 'Rafi Hasan',
-      profession: 'Founder, HealthTech',
-      avatar: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=256&q=60',
-      is_pro: false,
-      kyc: true,
-    },
-    summary: 'A subscription-based micro-clinic model for low-income areas. Looking for investors to scale 3 locations.',
-    sector: 'HealthTech',
-    location: 'Dhaka',
-    city: 'Dhaka',
-    area: 'Mirpur',
-    stage: 'Growth',
-    stageColor: 'blue',
-    fundingType: 'Investment',
-    minInvestment: 25000,
-    expectedReturn: '20-28% (est.)',
-    riskLevel: 'Low',
-    traction: '1,800 members',
-    raised: 76000,
-    goal: 250000,
-    thumbnail: 'https://images.unsplash.com/photo-1580281657527-47f249e8f33a?auto=format&fit=crop&w=1200&q=60',
-    videoEmbedUrl: 'https://www.youtube.com/embed/ScMzIvxBSi4',
-    details: {
-      overview: 'We run micro-clinics with low-cost diagnostics and a monthly membership. Funds will expand operations to 3 new areas and hire medical assistants.',
-      useOfFunds: [
-        'Rent + basic setup for 3 micro-clinics',
-        'Medical equipment and diagnostics kits',
-        'Hiring and training frontline staff',
-      ],
-      milestones: [
-        'Month 1: Secure locations and staffing',
-        'Month 2: Launch 2 branches',
-        'Month 3: Launch 3rd branch + marketing push',
-      ],
-    },
-  },
-  {
-    id: 3,
-    title: 'Skill Hub: Youth Training & Job Placement',
-    poster: {
-      id: 103,
-      name: 'Mahmudul Islam',
-      profession: 'Program Coordinator, EdTech',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=60',
-      is_pro: true,
-      kyc: false,
-    },
-    summary: 'Training youth on digital skills and connecting to jobs. Donations help sponsor courses; investors help expand.',
-    sector: 'EdTech',
-    location: 'Chattogram',
-    city: 'Chattogram',
-    area: 'Agrabad',
-    stage: 'Early',
-    stageColor: 'purple',
-    fundingType: 'Donation + Revenue-share',
-    minInvestment: 5000,
-    expectedReturn: 'Revenue-share',
-    riskLevel: 'High',
-    traction: '320 learners',
-    raised: 24500,
-    goal: 90000,
-    thumbnail: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=60',
-    videoEmbedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-    details: {
-      overview: 'We partner with mentors to train youth and connect them with jobs. Donations sponsor training seats; investors fund curriculum + placement team with revenue-share returns.',
-      useOfFunds: [
-        'Scholarships for 100 learners',
-        'Mentor fees and curriculum production',
-        'Job placement and employer partnerships',
-      ],
-      milestones: [
-        'Month 1: Recruit mentors + finalize curriculum',
-        'Month 2: Train 100 learners',
-        'Month 3: Place first batch into jobs',
-      ],
-    },
-  },
-]
+// Fetch plan from API
+const fetchPlan = async () => {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const id = route.params.id
+    const data = await getPlanById(id)
+    plan.value = data
+  } catch (err) {
+    console.error('Error fetching plan:', err)
+    error.value = err
+    plan.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+// Similar plans - will be fetched separately if needed
+const similarPlans = ref([])
 
 const progressPercent = computed(() => {
   if (!plan.value) return 0
@@ -508,31 +404,103 @@ const openChat = async (poster) => {
   }
 }
 
-const handleDonate = () => {
-  toast.add({
-    title: 'Donate (Mock)',
-    description: `You clicked Donate for: ${plan.value?.title}`,
-    color: 'purple',
-  })
+const handleDonate = async () => {
+  if (!currentUser.value) {
+    toast.add({
+      title: 'Login Required',
+      description: 'Please login to donate',
+      color: 'orange',
+      timeout: 3000,
+    })
+    return
+  }
+
+  try {
+    const config = useRuntimeConfig()
+    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${route.params.id}/donate/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentUser.value.token}`
+      }
+    })
+    
+    toast.add({
+      title: 'Donation Successful',
+      description: `Thank you for supporting ${plan.value?.title}`,
+      color: 'green',
+      timeout: 3000,
+    })
+  } catch (err) {
+    console.error('Donation error:', err)
+    toast.add({
+      title: 'Donation Failed',
+      description: 'Unable to process donation. Please try again.',
+      color: 'red',
+      timeout: 3000,
+    })
+  }
 }
 
-const handleInvest = () => {
-  toast.add({
-    title: 'Invest (Mock)',
-    description: `You clicked Invest for: ${plan.value?.title}`,
-    color: 'indigo',
-  })
+const handleInvest = async () => {
+  if (!currentUser.value) {
+    toast.add({
+      title: 'Login Required',
+      description: 'Please login to invest',
+      color: 'orange',
+      timeout: 3000,
+    })
+    return
+  }
+
+  try {
+    const config = useRuntimeConfig()
+    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${route.params.id}/invest/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentUser.value.token}`
+      }
+    })
+    
+    toast.add({
+      title: 'Investment Successful',
+      description: `You have invested in ${plan.value?.title}`,
+      color: 'green',
+      timeout: 3000,
+    })
+  } catch (err) {
+    console.error('Investment error:', err)
+    toast.add({
+      title: 'Investment Failed',
+      description: 'Unable to process investment. Please try again.',
+      color: 'red',
+      timeout: 3000,
+    })
+  }
 }
 
-// Similar plans computed property
-const similarPlans = computed(() => {
-  if (!plan.value) return []
-  return plans.filter(p => p.id !== plan.value.id && p.sector === plan.value.sector).slice(0, 3)
-})
+// Fetch similar plans from API
+const fetchSimilarPlans = async () => {
+  if (!plan.value) return
+  
+  try {
+    const { fetchAllPlans } = usePlans()
+    const response = await fetchAllPlans({ 
+      sector: plan.value.sector,
+      page: 1 
+    })
+    
+    // Filter out current plan and take first 3
+    similarPlans.value = (response.results || [])
+      .filter(p => p.id !== plan.value.id)
+      .slice(0, 3)
+  } catch (err) {
+    console.error('Error fetching similar plans:', err)
+    similarPlans.value = []
+  }
+}
 
-onMounted(() => {
-  const id = Number(route.params.id)
-  plan.value = plans.find(p => p.id === id) || null
-  loading.value = false
+onMounted(async () => {
+  await fetchPlan()
+  await fetchSimilarPlans()
 })
 </script>

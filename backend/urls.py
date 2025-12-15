@@ -51,6 +51,8 @@ urlpatterns = urlpatterns + [
     path("api/workspace/", include("workspace.urls")),
     # Referral rewards system URLs
     path("api/referral-rewards/", include("referral_rewards.urls")),
+    # Raise Up crowdfunding system URLs
+    path("api/raise-up/", include("raise_up.urls")),
     # for frontend
     path("", index, name="index"),
     path("<str:param>", index, name="index2"),

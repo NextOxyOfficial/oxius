@@ -242,21 +242,81 @@ const openChat = async (poster) => {
   }
 }
 
-const handleDonate = (plan) => {
+const handleDonate = async (plan) => {
   if (!plan) return
-  toast.add({
-    title: 'Donate (Mock)',
-    description: `You clicked Donate for: ${plan.title}`,
-    color: 'emerald',
-  })
+  
+  if (!currentUser.value) {
+    toast.add({
+      title: 'Login Required',
+      description: 'Please login to donate',
+      color: 'orange',
+      timeout: 3000,
+    })
+    return
+  }
+
+  try {
+    const config = useRuntimeConfig()
+    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${plan.id}/donate/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentUser.value.token}`
+      }
+    })
+    
+    toast.add({
+      title: 'Donation Successful',
+      description: `Thank you for supporting ${plan.title}`,
+      color: 'green',
+      timeout: 3000,
+    })
+  } catch (err) {
+    console.error('Donation error:', err)
+    toast.add({
+      title: 'Donation Failed',
+      description: 'Unable to process donation. Please try again.',
+      color: 'red',
+      timeout: 3000,
+    })
+  }
 }
 
-const handleInvest = (plan) => {
+const handleInvest = async (plan) => {
   if (!plan) return
-  toast.add({
-    title: 'Invest (Mock)',
-    description: `You clicked Invest for: ${plan.title}`,
-    color: 'blue',
-  })
+  
+  if (!currentUser.value) {
+    toast.add({
+      title: 'Login Required',
+      description: 'Please login to invest',
+      color: 'orange',
+      timeout: 3000,
+    })
+    return
+  }
+
+  try {
+    const config = useRuntimeConfig()
+    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${plan.id}/invest/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentUser.value.token}`
+      }
+    })
+    
+    toast.add({
+      title: 'Investment Successful',
+      description: `You have invested in ${plan.title}`,
+      color: 'green',
+      timeout: 3000,
+    })
+  } catch (err) {
+    console.error('Investment error:', err)
+    toast.add({
+      title: 'Investment Failed',
+      description: 'Unable to process investment. Please try again.',
+      color: 'red',
+      timeout: 3000,
+    })
+  }
 }
 </script>

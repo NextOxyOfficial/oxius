@@ -94,7 +94,12 @@ const { user: currentUser } = useAuth()
 const { getOrCreateChatRoom } = useAdsyChat()
 
 // Use shared plans data
-const { plans } = usePlans()
+const { plans, loading, fetchPlans } = usePlans()
+
+// Fetch plans on component mount
+onMounted(() => {
+  fetchPlans()
+})
 
 const showChatSlideout = ref(false)
 const chatRoomId = ref(null)

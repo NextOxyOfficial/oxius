@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "adsyconnect",  # AdsyConnect chat system
     "workspace",  # Workspace gigs system
     "referral_rewards",  # New Year referral reward program
+    "raise_up",  # Raise Up crowdfunding system
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
