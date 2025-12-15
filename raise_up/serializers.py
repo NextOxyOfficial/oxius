@@ -77,7 +77,8 @@ class RaiseUpPostSerializer(serializers.ModelSerializer):
         if top_donation:
             return {
                 'name': top_donation.user.first_name or top_donation.user.username,
-                'amount': float(top_donation.amount)
+                'amount': float(top_donation.amount),
+                'user_id': top_donation.user.id
             }
         return None
 

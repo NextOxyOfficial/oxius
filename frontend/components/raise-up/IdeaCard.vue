@@ -158,7 +158,12 @@
           <UIcon name="i-heroicons-trophy" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
           <div class="flex items-center gap-1.5 min-w-0">
             <span class="text-[10px] font-medium text-amber-700 dark:text-amber-400">Top Donator:</span>
-            <span class="text-xs font-bold text-amber-800 dark:text-amber-300 truncate">{{ topDonator.name }}</span>
+            <NuxtLink 
+              :to="`/business-network/profile/${topDonator.user_id}`"
+              class="text-xs font-bold text-amber-800 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 truncate transition-colors cursor-pointer"
+            >
+              {{ topDonator.name }}
+            </NuxtLink>
           </div>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">

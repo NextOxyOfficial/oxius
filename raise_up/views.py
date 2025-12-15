@@ -141,7 +141,8 @@ def invest_in_post(request, post_id):
         if top_donation:
             top_donator = {
                 'name': top_donation.user.first_name or top_donation.user.username,
-                'amount': float(top_donation.amount)
+                'amount': float(top_donation.amount),
+                'user_id': top_donation.user.id
             }
         
         return Response({
@@ -210,7 +211,8 @@ def donate_to_post(request, post_id):
         if top_donation:
             top_donator = {
                 'name': top_donation.user.first_name or top_donation.user.username,
-                'amount': float(top_donation.amount)
+                'amount': float(top_donation.amount),
+                'user_id': top_donation.user.id
             }
         
         return Response({
@@ -255,7 +257,8 @@ def get_post_donations(request, post_id):
                 'user_name': donation.user.first_name or donation.user.username,
                 'amount': float(donation.amount),
                 'created_at': donation.created_at.strftime('%b %d, %Y'),
-                'payment_method': donation.payment_method
+                'payment_method': donation.payment_method,
+                'user_id': donation.user.id
             })
         
         return Response({
