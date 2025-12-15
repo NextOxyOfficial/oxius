@@ -8,6 +8,7 @@
         class="relative"
       >
         <CommonHeroBanner />
+        <CommonDonationInvestmentCarousel />
         <CommonSaleCategory />
         <!-- Premium decorative elements -->
         <div
