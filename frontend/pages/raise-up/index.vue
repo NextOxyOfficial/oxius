@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-slate-900">
     <!-- Container -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div class="max-w-7xl mx-auto px-2 lg:px-8 py-4 sm:py-6">
       <!-- Breadcrumb - Hidden on mobile -->
       <nav class="hidden sm:flex items-center gap-2 text-sm mb-4 sm:mb-6">
         <NuxtLink to="/" class="text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition">
@@ -187,7 +187,7 @@
           </button>
         </div>
         
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <IdeaCard
             v-for="plan in filteredPlans"
             :key="plan.id"

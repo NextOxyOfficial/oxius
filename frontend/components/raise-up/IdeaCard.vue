@@ -177,10 +177,17 @@
         </UButton>
       </div>
     </div>
+
+    <!-- Modals -->
+    <DonateModal v-model="showDonateModal" :plan="plan" @success="onDonateSuccess" />
+    <InvestModal v-model="showInvestModal" :plan="plan" @success="onInvestSuccess" />
   </div>
 </template>
 
 <script setup>
+import DonateModal from './DonateModal.vue'
+import InvestModal from './InvestModal.vue'
+
 const props = defineProps({
   plan: {
     type: Object,
@@ -242,7 +249,11 @@ const openChat = async (poster) => {
   }
 }
 
-const handleDonate = async (plan) => {
+// Modal states
+const showDonateModal = ref(false)
+const showInvestModal = ref(false)
+
+const handleDonate = (plan) => {
   if (!plan) return
   
   if (!currentUser.value) {
@@ -255,33 +266,10 @@ const handleDonate = async (plan) => {
     return
   }
 
-  try {
-    const config = useRuntimeConfig()
-    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${plan.id}/donate/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${currentUser.value.token}`
-      }
-    })
-    
-    toast.add({
-      title: 'Donation Successful',
-      description: `Thank you for supporting ${plan.title}`,
-      color: 'green',
-      timeout: 3000,
-    })
-  } catch (err) {
-    console.error('Donation error:', err)
-    toast.add({
-      title: 'Donation Failed',
-      description: 'Unable to process donation. Please try again.',
-      color: 'red',
-      timeout: 3000,
-    })
-  }
+  showDonateModal.value = true
 }
 
-const handleInvest = async (plan) => {
+const handleInvest = (plan) => {
   if (!plan) return
   
   if (!currentUser.value) {
@@ -294,29 +282,24 @@ const handleInvest = async (plan) => {
     return
   }
 
-  try {
-    const config = useRuntimeConfig()
-    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${plan.id}/invest/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${currentUser.value.token}`
-      }
-    })
-    
-    toast.add({
-      title: 'Investment Successful',
-      description: `You have invested in ${plan.title}`,
-      color: 'green',
-      timeout: 3000,
-    })
-  } catch (err) {
-    console.error('Investment error:', err)
-    toast.add({
-      title: 'Investment Failed',
-      description: 'Unable to process investment. Please try again.',
-      color: 'red',
-      timeout: 3000,
-    })
-  }
+  showInvestModal.value = true
+}
+
+const onDonateSuccess = () => {
+  // Optionally refresh data or update UI
+  toast.add({
+    title: 'Thank You!',
+    description: 'Your donation has been recorded',
+    color: 'green',
+  })
+}
+
+const onInvestSuccess = () => {
+  // Optionally refresh data or update UI
+  toast.add({
+    title: 'Investment Confirmed',
+    description: 'Your investment has been recorded',
+    color: 'green',
+  })
 }
 </script>

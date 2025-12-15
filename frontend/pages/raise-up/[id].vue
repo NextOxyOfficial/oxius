@@ -9,7 +9,7 @@
     </div>
 
     <!-- Content -->
-    <div v-else-if="plan" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div v-else-if="plan" class="max-w-7xl mx-auto px-2 lg:px-8 py-4 sm:py-6">
       <!-- Breadcrumb - Hidden on mobile -->
       <nav class="hidden sm:flex items-center gap-2 text-sm mb-4 sm:mb-6">
         <NuxtLink to="/" class="text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition">
@@ -324,10 +324,17 @@
 
     <!-- Chat Slideout -->
     <ProfileChatSlideout v-model="showChatSlideout" :user="chatUser" :chatroom-id="chatRoomId" />
+    
+    <!-- Modals -->
+    <DonateModal v-model="showDonateModal" :plan="plan" @success="onDonateSuccess" />
+    <InvestModal v-model="showInvestModal" :plan="plan" @success="onInvestSuccess" />
   </div>
 </template>
 
 <script setup>
+import DonateModal from '~/components/raise-up/DonateModal.vue'
+import InvestModal from '~/components/raise-up/InvestModal.vue'
+
 const route = useRoute()
 const toast = useToast()
 const { user: currentUser } = useAuth()
@@ -404,7 +411,11 @@ const openChat = async (poster) => {
   }
 }
 
-const handleDonate = async () => {
+// Modal states
+const showDonateModal = ref(false)
+const showInvestModal = ref(false)
+
+const handleDonate = () => {
   if (!currentUser.value) {
     toast.add({
       title: 'Login Required',
@@ -415,33 +426,10 @@ const handleDonate = async () => {
     return
   }
 
-  try {
-    const config = useRuntimeConfig()
-    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${route.params.id}/donate/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${currentUser.value.token}`
-      }
-    })
-    
-    toast.add({
-      title: 'Donation Successful',
-      description: `Thank you for supporting ${plan.value?.title}`,
-      color: 'green',
-      timeout: 3000,
-    })
-  } catch (err) {
-    console.error('Donation error:', err)
-    toast.add({
-      title: 'Donation Failed',
-      description: 'Unable to process donation. Please try again.',
-      color: 'red',
-      timeout: 3000,
-    })
-  }
+  showDonateModal.value = true
 }
 
-const handleInvest = async () => {
+const handleInvest = () => {
   if (!currentUser.value) {
     toast.add({
       title: 'Login Required',
@@ -452,30 +440,17 @@ const handleInvest = async () => {
     return
   }
 
-  try {
-    const config = useRuntimeConfig()
-    await $fetch(`${config.public.baseURL}/api/raise-up/posts/${route.params.id}/invest/`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${currentUser.value.token}`
-      }
-    })
-    
-    toast.add({
-      title: 'Investment Successful',
-      description: `You have invested in ${plan.value?.title}`,
-      color: 'green',
-      timeout: 3000,
-    })
-  } catch (err) {
-    console.error('Investment error:', err)
-    toast.add({
-      title: 'Investment Failed',
-      description: 'Unable to process investment. Please try again.',
-      color: 'red',
-      timeout: 3000,
-    })
-  }
+  showInvestModal.value = true
+}
+
+const onDonateSuccess = () => {
+  // Optionally refresh plan data
+  fetchPlan()
+}
+
+const onInvestSuccess = () => {
+  // Optionally refresh plan data
+  fetchPlan()
 }
 
 // Fetch similar plans from API
