@@ -172,7 +172,7 @@
               </select>
             </div>
           </div>
-        </div>
+        </div> 
 
         <!-- Ideas Grid -->
         <div v-if="filteredPlans.length === 0" class="text-center py-12">
