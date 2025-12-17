@@ -173,7 +173,7 @@
             </div>
           </div>
         </div> 
-
+ 
         <!-- Ideas Grid -->
         <div v-if="filteredPlans.length === 0" class="text-center py-12">
           <UIcon name="i-heroicons-magnifying-glass" class="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
