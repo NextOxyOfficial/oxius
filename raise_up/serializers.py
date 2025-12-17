@@ -116,6 +116,9 @@ class RaiseUpPostCreateSerializer(serializers.ModelSerializer):
         # Set poster
         validated_data['poster'] = self.context['request'].user
         
+        # Set is_active to False for admin approval
+        validated_data['is_active'] = False
+        
         # Create post
         post = super().create(validated_data)
         

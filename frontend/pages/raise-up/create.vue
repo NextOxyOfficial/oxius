@@ -387,6 +387,18 @@ const router = useRouter()
 const toast = useToast()
 const { user: currentUser } = useAuth()
 
+// Check login on page load
+onMounted(() => {
+  if (!currentUser.value) {
+    toast.add({
+      title: 'Login Required',
+      description: 'Please login to post your idea',
+      color: 'orange',
+    })
+    router.push('/auth/login')
+  }
+})
+
 const isSubmitting = ref(false)
 
 // File upload states
@@ -542,13 +554,13 @@ const uploadFile = async (file, type) => {
 }
 
 const handleSubmit = async () => {
-  if (!currentUser.value) {
+  // Check KYC verification
+  if (!currentUser.value?.raise_up_profile?.kyc_verified) {
     toast.add({
-      title: 'Login Required',
-      description: 'Please login to post your idea',
-      color: 'orange',
+      title: 'KYC Verification Required',
+      description: 'You must complete KYC verification to post on Raise Up',
+      color: 'red',
     })
-    router.push('/auth/login')
     return
   }
 
@@ -565,10 +577,14 @@ const handleSubmit = async () => {
     { field: 'goal', name: 'Funding Goal' },
     { field: 'traction', name: 'Traction' },
     { field: 'mediaType', name: 'Media Type' },
-    { field: 'thumbnail', name: 'Thumbnail' },
   ]
 
   const missingFields = requiredFields.filter(({ field }) => !form.value[field])
+  
+  // Check thumbnail separately (can be file or URL)
+  if (!thumbnailFile.value && !form.value.thumbnail) {
+    missingFields.push({ field: 'thumbnail', name: 'Thumbnail' })
+  }
   
   if (missingFields.length > 0) {
     toast.add({

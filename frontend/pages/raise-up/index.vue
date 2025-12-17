@@ -148,14 +148,14 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search ideas by title, sector, or location..."
-                class="w-full h-12 pl-12 pr-4 text-base bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                class="w-full h-10 pl-12 pr-4 text-base bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
               />
             </div>
             <!-- Filters -->
             <div class="flex items-center gap-3">
               <select 
                 v-model="selectedStage"
-                class="h-12 text-base bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition min-w-[140px]"
+                class="h-10 text-base bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition min-w-[140px]"
               >
                 <option value="">All Stages</option>
                 <option value="Seed">Seed</option>
@@ -164,7 +164,7 @@
               </select>
               <select 
                 v-model="sortBy"
-                class="h-12 text-base bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition min-w-[160px]"
+                class="h-10 text-base bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition min-w-[160px]"
               >
                 <option value="funded">Most Funded</option>
                 <option value="newest">Newest</option>

@@ -9,7 +9,7 @@
     </div>
 
     <!-- Content -->
-    <div v-else-if="plan" class="max-w-7xl mx-auto px-2 lg:px-8 py-4 sm:py-6">
+    <div v-else-if="plan" class="max-w-7xl mx-auto px-1.5 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
       <!-- Breadcrumb - Hidden on mobile -->
       <nav class="hidden sm:flex items-center gap-2 text-sm mb-4 sm:mb-6">
         <NuxtLink to="/" class="text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition">
@@ -24,10 +24,10 @@
       </nav>
 
       <!-- Mobile Back Button -->
-      <div class="sm:hidden flex items-center gap-2 mb-4">
-        <NuxtLink to="/raise-up" class="inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+      <div class="sm:hidden flex items-center gap-2 mb-3">
+        <NuxtLink to="/raise-up" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition">
           <UIcon name="i-heroicons-arrow-left" class="w-4 h-4" />
-          Back
+          Back to Raise Up
         </NuxtLink>
       </div>
 
@@ -36,7 +36,7 @@
         <!-- Main Content -->
         <div class="flex-1 min-w-0">
           <!-- Video Section -->
-          <div class="rounded-xl sm:rounded-2xl overflow-hidden bg-black mb-4 sm:mb-6 -mx-4 sm:mx-0">
+          <div class="rounded-lg sm:rounded-xl lg:rounded-2xl overflow-hidden bg-black mb-3 sm:mb-4 lg:mb-6 -mx-3 sm:mx-0">
             <iframe
               v-if="plan.videoEmbedUrl"
               class="w-full aspect-video"
@@ -55,12 +55,12 @@
           </div>
 
           <!-- Title & Stage -->
-          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-            <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3 sm:mb-4">
+            <h1 class="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 dark:text-white leading-tight">
               {{ plan.title }}
             </h1>
             <span
-              class="self-start shrink-0 inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wide"
+              class="self-start shrink-0 inline-flex items-center px-2.5 sm:px-3 lg:px-3 py-1 sm:py-1 rounded-full text-xs sm:text-xs font-bold uppercase tracking-wide"
               :class="{
                 'bg-purple-500 text-white': plan.stageColor === 'emerald' || plan.stageColor === 'purple',
                 'bg-blue-500 text-white': plan.stageColor === 'blue',
@@ -71,46 +71,49 @@
             </span>
           </div>
 
+          <!-- Main Info Card -->
+          <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden mb-4 sm:mb-6">
+          
           <!-- Sector & Location Info -->
-          <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl border border-purple-200 dark:border-purple-800 p-4 mb-4 sm:mb-6">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-3 sm:p-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-purple-500 flex items-center justify-center">
-                  <UIcon name="i-heroicons-building-office" class="w-4 h-4 text-white" />
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-purple-500 flex items-center justify-center shrink-0">
+                  <UIcon name="i-heroicons-building-office" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
                 </div>
-                <div>
-                  <div class="text-xs text-purple-600 dark:text-purple-400 font-medium">Sector</div>
-                  <div class="text-sm font-bold text-gray-900 dark:text-white">{{ plan.sector }}</div>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-xs text-purple-600 dark:text-purple-400 font-medium">Sector</div>
+                  <div class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">{{ plan.sector }}</div>
                 </div>
               </div>
               
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center">
-                  <UIcon name="i-heroicons-map-pin" class="w-4 h-4 text-white" />
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-indigo-500 flex items-center justify-center shrink-0">
+                  <UIcon name="i-heroicons-map-pin" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
                 </div>
-                <div>
-                  <div class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Location</div>
-                  <div class="text-sm font-bold text-gray-900 dark:text-white">{{ plan.location }}</div>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-xs text-indigo-600 dark:text-indigo-400 font-medium">Location</div>
+                  <div class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">{{ plan.location }}</div>
                 </div>
               </div>
               
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center">
-                  <UIcon name="i-heroicons-map" class="w-4 h-4 text-white" />
+              <div class="flex items-center gap-2 col-span-2 sm:col-span-1">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+                  <UIcon name="i-heroicons-map" class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
                 </div>
-                <div>
-                  <div class="text-xs text-amber-600 dark:text-amber-400 font-medium">Area</div>
-                  <div class="text-sm font-bold text-gray-900 dark:text-white">{{ plan.city }}, {{ plan.area }}</div>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-xs text-amber-600 dark:text-amber-400 font-medium">Area</div>
+                  <div class="text-sm sm:text-base font-bold text-gray-900 dark:text-white truncate">{{ plan.city }}, {{ plan.area }}</div>
                 </div>
               </div>
             </div>
             
             <!-- Risk Level -->
-            <div class="mt-3 pt-3 border-t border-purple-200 dark:border-purple-700">
+            <div class="mt-2.5 sm:mt-3 pt-2.5 sm:pt-3 border-t border-purple-200 dark:border-purple-700">
               <div class="flex items-center justify-between">
-                <span class="text-xs text-purple-600 dark:text-purple-400 font-medium">Risk Assessment</span>
+                <span class="text-xs sm:text-xs text-purple-600 dark:text-purple-400 font-medium">Risk Assessment</span>
                 <span
-                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold"
+                  class="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1 rounded-full text-xs sm:text-xs font-bold"
                   :class="riskBadgeClass(plan.riskLevel)"
                 >
                   <UIcon name="i-heroicons-shield-check" class="w-3 h-3" />
@@ -121,7 +124,7 @@
           </div>
 
           <!-- Founder Card -->
-          <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 mb-4 sm:mb-6">
+          <div class="border-t border-slate-200 dark:border-slate-700 p-3 sm:p-4">
             <div class="flex items-center justify-between gap-3">
               <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 <NuxtLink :to="`/business-network/profile/${plan.poster.id}`" class="shrink-0">
@@ -169,47 +172,47 @@
           </div>
 
           <!-- Progress & Top Donator -->
-          <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-4 sm:mb-6">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-sm font-bold text-slate-800 dark:text-slate-200">Funding Progress</span>
-              <span class="text-lg font-bold text-purple-600 dark:text-purple-400">{{ progressPercent }}%</span>
+          <div class="border-t border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+            <div class="flex items-center justify-between mb-2.5 sm:mb-3">
+              <span class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-200">Funding Progress</span>
+              <span class="text-lg sm:text-xl font-bold text-purple-600 dark:text-purple-400">{{ progressPercent }}%</span>
             </div>
             
-            <div class="h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-4">
+            <div class="h-2.5 sm:h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-3 sm:mb-4">
               <div
                 class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-500"
                 :style="{ width: `${progressPercent}%` }"
               ></div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4 mb-4">
-              <div class="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
-                <div class="text-xs text-slate-500 dark:text-slate-400 mb-1">Raised</div>
-                <div class="text-lg font-bold text-slate-800 dark:text-slate-100">৳{{ plan.raised.toLocaleString() }}</div>
+            <div class="grid grid-cols-2 gap-2.5 sm:gap-4 mb-3 sm:mb-4">
+              <div class="text-center p-2.5 sm:p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                <div class="text-xs sm:text-xs text-slate-500 dark:text-slate-400 mb-0.5 sm:mb-1">Raised</div>
+                <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-800 dark:text-slate-100">৳{{ plan.raised.toLocaleString() }}</div>
               </div>
-              <div class="text-center p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
-                <div class="text-xs text-slate-500 dark:text-slate-400 mb-1">Goal</div>
-                <div class="text-lg font-bold text-slate-800 dark:text-slate-100">৳{{ plan.goal.toLocaleString() }}</div>
+              <div class="text-center p-2.5 sm:p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50">
+                <div class="text-xs sm:text-xs text-slate-500 dark:text-slate-400 mb-0.5 sm:mb-1">Goal</div>
+                <div class="text-base sm:text-lg lg:text-xl font-bold text-slate-800 dark:text-slate-100">৳{{ plan.goal.toLocaleString() }}</div>
               </div>
             </div>
 
             <!-- Top Donator Section -->
-            <div v-if="plan.top_donator" class="pt-4 border-t border-slate-200 dark:border-slate-700">
-              <div class="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-800">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                  <UIcon name="i-heroicons-trophy" class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <div v-if="plan.top_donator" class="pt-3 sm:pt-4 border-t border-slate-200 dark:border-slate-700">
+              <div class="flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-800">
+                <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <UIcon name="i-heroicons-trophy" class="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                   <div class="min-w-0">
-                    <div class="text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">Top Donator</div>
+                    <div class="text-xs sm:text-xs font-medium text-amber-700 dark:text-amber-400">Top Donator</div>
                     <NuxtLink 
                       :to="`/business-network/profile/${plan.top_donator.user_id}`"
-                      class="text-sm font-bold text-amber-800 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 truncate transition-colors"
+                      class="text-sm sm:text-base font-bold text-amber-800 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-200 truncate transition-colors block"
                     >
                       {{ plan.top_donator.name }}
                     </NuxtLink>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <span class="text-sm font-bold text-amber-700 dark:text-amber-400">৳{{ plan.top_donator.amount.toLocaleString() }}</span>
+                <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <span class="text-sm sm:text-base font-bold text-amber-700 dark:text-amber-400">৳{{ plan.top_donator.amount.toLocaleString() }}</span>
                   <button
                     type="button"
                     @click="showDonationsList"
@@ -224,53 +227,58 @@
           </div>
 
           <!-- Enhanced Stats Grid -->
-          <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-4 sm:mb-6">
-            <h3 class="text-base font-bold text-gray-900 dark:text-white mb-4">Key Metrics</h3>
+          <div class="border-t border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+            <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Key Metrics</h3>
             
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div class="text-center p-3 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-700">
-                <UIcon name="i-heroicons-banknotes" class="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
-                <div class="text-xs text-purple-600 dark:text-purple-400 font-medium mb-1">Funding Type</div>
-                <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ plan.fundingType }}</div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
+              <div class="text-center p-2.5 sm:p-3 rounded-lg bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-200 dark:border-purple-700">
+                <UIcon name="i-heroicons-banknotes" class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600 dark:text-purple-400 mx-auto mb-1.5 sm:mb-2" />
+                <div class="text-xs sm:text-xs text-purple-600 dark:text-purple-400 font-medium mb-0.5 sm:mb-1">Funding Type</div>
+                <div class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate">{{ plan.fundingType }}</div>
               </div>
               
-              <div class="text-center p-3 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700">
-                <UIcon name="i-heroicons-currency-dollar" class="w-6 h-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                <div class="text-xs text-green-600 dark:text-green-400 font-medium mb-1">Min Investment</div>
-                <div class="text-sm font-bold text-slate-800 dark:text-slate-100">৳{{ plan.minInvestment.toLocaleString() }}</div>
+              <div class="text-center p-2.5 sm:p-3 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700">
+                <UIcon name="i-heroicons-currency-dollar" class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 dark:text-green-400 mx-auto mb-1.5 sm:mb-2" />
+                <div class="text-xs sm:text-xs text-green-600 dark:text-green-400 font-medium mb-0.5 sm:mb-1">Min Investment</div>
+                <div class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate">৳{{ plan.minInvestment.toLocaleString() }}</div>
               </div>
               
-              <div class="text-center p-3 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700">
-                <UIcon name="i-heroicons-chart-bar" class="w-6 h-6 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
-                <div class="text-xs text-amber-600 dark:text-amber-400 font-medium mb-1">Expected Return</div>
-                <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ plan.expectedReturn }}</div>
+              <div class="text-center p-2.5 sm:p-3 rounded-lg bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-700">
+                <UIcon name="i-heroicons-chart-bar" class="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400 mx-auto mb-1.5 sm:mb-2" />
+                <div class="text-xs sm:text-xs text-amber-600 dark:text-amber-400 font-medium mb-0.5 sm:mb-1">Expected Return</div>
+                <div class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate">{{ plan.expectedReturn }}</div>
               </div>
               
-              <div class="text-center p-3 rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700">
-                <UIcon name="i-heroicons-rocket-launch" class="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                <div class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Traction</div>
-                <div class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ plan.traction }}</div>
+              <div class="text-center p-2.5 sm:p-3 rounded-lg bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700">
+                <UIcon name="i-heroicons-rocket-launch" class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 mx-auto mb-1.5 sm:mb-2" />
+                <div class="text-xs sm:text-xs text-blue-600 dark:text-blue-400 font-medium mb-0.5 sm:mb-1">Traction</div>
+                <div class="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 truncate">{{ plan.traction }}</div>
               </div>
             </div>
           </div>
+          </div>
+          <!-- End Main Info Card -->
 
+          <!-- Details Card -->
+          <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden mb-4 sm:mb-6">
+          
           <!-- Overview -->
-          <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 mb-4 sm:mb-6">
-            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">Overview</h3>
-            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{{ plan.summary }}</p>
-            <p v-if="plan.details?.overview" class="mt-2 sm:mt-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+          <div class="p-3 sm:p-4">
+            <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">Overview</h3>
+            <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">{{ plan.summary }}</p>
+            <p v-if="plan.details?.overview" class="mt-2 sm:mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
               {{ plan.details.overview }}
             </p>
           </div>
 
           <!-- Use of Funds -->
-          <div v-if="plan.details?.useOfFunds?.length" class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 mb-4 sm:mb-6">
-            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">Use of Funds</h3>
+          <div v-if="plan.details?.useOfFunds?.length" class="border-t border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+            <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">Use of Funds</h3>
             <ul class="space-y-1.5 sm:space-y-2">
               <li
                 v-for="(item, idx) in plan.details.useOfFunds"
                 :key="idx"
-                class="flex items-start gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300"
+                class="flex items-start gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-300"
               >
                 <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0"></span>
                 <span>{{ item }}</span>
@@ -279,55 +287,57 @@
           </div>
 
           <!-- Milestones -->
-          <div v-if="plan.details?.milestones?.length" class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 mb-4 sm:mb-6">
-            <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">Milestones</h3>
+          <div v-if="plan.details?.milestones?.length" class="border-t border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+            <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">Milestones</h3>
             <ul class="space-y-1.5 sm:space-y-2">
               <li
                 v-for="(item, idx) in plan.details.milestones"
                 :key="idx"
-                class="flex items-start gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300"
+                class="flex items-start gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-300"
               >
                 <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0"></span>
                 <span>{{ item }}</span>
               </li>
             </ul>
           </div>
+          </div>
+          <!-- End Details Card -->
 
           <!-- CTA Buttons - Fixed on mobile, inline on desktop -->
-          <div class="fixed bottom-0 left-0 right-0 sm:relative sm:bottom-auto bg-white dark:bg-slate-800 border-t sm:border-t-0 border-slate-200 dark:border-slate-700 p-3 sm:p-0 sm:mb-6 z-40">
+          <div class="fixed bottom-0 left-0 right-0 sm:relative sm:bottom-auto bg-white dark:bg-slate-800 border-t sm:border-t-0 border-slate-200 dark:border-slate-700 p-2.5 sm:p-0 sm:mb-6 z-40 shadow-lg sm:shadow-none">
             <div class="grid grid-cols-2 gap-2 sm:gap-3 max-w-7xl mx-auto">
               <UButton
                 color="purple"
                 variant="soft"
                 size="md"
-                class="justify-center font-semibold text-sm sm:text-base"
+                class="justify-center font-semibold text-xs sm:text-sm lg:text-base py-2.5 sm:py-3"
                 @click="handleDonate"
               >
-                <UIcon name="i-heroicons-heart" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                <UIcon name="i-heroicons-heart" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-1.5 lg:mr-2" />
                 Donate
               </UButton>
               <UButton
                 size="md"
-                class="justify-center font-semibold text-sm sm:text-base bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-0"
+                class="justify-center font-semibold text-xs sm:text-sm lg:text-base py-2.5 sm:py-3 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-0"
                 @click="handleInvest"
               >
-                <UIcon name="i-heroicons-banknotes" class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
+                <UIcon name="i-heroicons-banknotes" class="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-1.5 lg:mr-2" />
                 Invest
               </UButton>
             </div>
           </div>
 
           <!-- Spacer for fixed CTA on mobile -->
-          <div class="h-16 sm:hidden"></div>
+          <div class="sm:hidden"></div>
         </div>
 
         <!-- Sidebar - Shows below on mobile -->
-        <div class="w-full lg:w-80 xl:w-96 shrink-0 mt-6 lg:mt-0">
-          <div class="lg:sticky lg:top-6 space-y-4 sm:space-y-6">
+        <div class="w-full lg:w-80 xl:w-96 shrink-0 mt-4 sm:mt-6 lg:mt-0">
+          <div class="lg:sticky lg:top-6 space-y-3 sm:space-y-4 lg:space-y-6">
             <!-- Similar Ideas -->
-            <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4">
-              <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Similar Ideas</h3>
-              <div class="space-y-2 sm:space-y-3">
+            <div class="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+              <h3 class="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-2.5 sm:mb-3 lg:mb-4">Similar Ideas</h3>
+              <div class="space-y-2 sm:space-y-2.5 lg:space-y-3">
                 <NuxtLink
                   v-for="similarPlan in similarPlans"
                   :key="similarPlan.id"
@@ -520,12 +530,16 @@
         </div>
       </UCard>
     </UModal>
+    
+    <!-- Chat Slideout -->
+    <ProfileChatSlideout v-if="chatUser" v-model="showChatSlideout" :user="chatUser" :chatroom-id="chatRoomId" />
   </div>
 </template>
 
 <script setup>
 import DonateModal from '~/components/raise-up/DonateModal.vue'
 import InvestModal from '~/components/raise-up/InvestModal.vue'
+import ProfileChatSlideout from '~/components/business-network/profile/ProfileChatSlideout.vue'
 
 const route = useRoute()
 const toast = useToast()
@@ -663,16 +677,20 @@ const showDonationsList = async (page = 1) => {
   
   try {
     const config = useRuntimeConfig()
-    const response = await $fetch(`${config.public.baseURL}/api/raise-up/posts/${plan.value.id}/donations/?page=${page}&page_size=${itemsPerPage}`)
+    const url = `${config.public.baseURL}/api/raise-up/posts/${plan.value.id}/donations/?page=${page}&page_size=${itemsPerPage}`
+    console.log('Fetching donations from:', url)
+    const response = await $fetch(url)
+    console.log('Donations response:', response)
     donationsList.value = response.donations || []
     totalPages.value = Math.ceil((response.total_donations || 0) / itemsPerPage)
   } catch (error) {
     console.error('Error fetching donations:', error)
+    console.error('Error details:', error.response || error.message)
     toast.add({
       title: 'Error',
-      description: 'Unable to load donations list',
+      description: `Unable to load donations list: ${error.message || 'Unknown error'}`,
       color: 'red',
-      timeout: 3000,
+      timeout: 5000,
     })
   } finally {
     loadingDonations.value = false

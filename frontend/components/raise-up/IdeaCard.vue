@@ -50,9 +50,11 @@
     <div class="p-4 flex flex-col flex-1">
       <!-- Title & Tags -->
       <div>
-        <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug line-clamp-2 mb-2">
-          {{ plan.title }}
-        </h3>
+        <NuxtLink :to="`/raise-up/${plan.id}`">
+          <h3 class="text-base font-bold text-gray-900 dark:text-white leading-snug line-clamp-2 mb-2 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer">
+            {{ plan.title }}
+          </h3>
+        </NuxtLink>
         <div class="flex items-center justify-between gap-2">
           <span
             class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold"

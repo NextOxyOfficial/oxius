@@ -1,7 +1,7 @@
 from decimal import Decimal
 from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
@@ -32,7 +32,21 @@ class RaiseUpPostListView(generics.ListCreateAPIView):
         return RaiseUpPostSerializer
     
     def create(self, request, *args, **kwargs):
-        """Override create to add detailed error logging"""
+        """Override create to add detailed error logging and KYC verification"""
+        # Check KYC verification
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            if not user_profile.kyc_verified:
+                return Response({
+                    'success': False,
+                    'message': 'KYC verification required. You must complete KYC verification to post on Raise Up.'
+                }, status=status.HTTP_403_FORBIDDEN)
+        except UserProfile.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'User profile not found. Please complete your profile setup.'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
         print("=" * 50)
         print("POST Request Data:", request.data)
         print("=" * 50)
@@ -53,7 +67,7 @@ class RaiseUpPostListView(generics.ListCreateAPIView):
             return Response({
                 'success': True,
                 'data': serializer.data,
-                'message': 'Post created successfully'
+                'message': 'Post created successfully! Your post is pending admin approval and will be visible once approved.'
             }, status=status.HTTP_201_CREATED, headers=headers)
         except Exception as e:
             print("Create Error:", str(e))
@@ -132,6 +146,8 @@ def post_stats(request):
 def invest_in_post(request, post_id):
     """Investment endpoint with balance deduction"""
     try:
+        from base.models import Balance
+        
         post = RaiseUpPost.objects.get(id=post_id, is_active=True)
         amount = Decimal(str(request.data.get('amount', 0)))
         payment_method = request.data.get('payment_method', 'balance')
@@ -151,9 +167,18 @@ def invest_in_post(request, post_id):
                     'message': 'Insufficient balance'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Deduct amount from user balance
-            user.balance -= amount
-            user.save()
+            # Create Balance transaction record for investment
+            Balance.objects.create(
+                user=request.user,
+                amount=amount,
+                payable_amount=amount,
+                transaction_type='raise_up_investment',
+                payment_method=payment_method,
+                description=f'Investment in "{post.title}"',
+                completed=True,
+                approved=True,
+                bank_status='completed'
+            )
         
         # Create donation record (investments are tracked as donations)
         Donation.objects.create(
@@ -202,6 +227,8 @@ def invest_in_post(request, post_id):
 def donate_to_post(request, post_id):
     """Donation endpoint with balance deduction"""
     try:
+        from base.models import Balance
+        
         post = RaiseUpPost.objects.get(id=post_id, is_active=True)
         amount = Decimal(str(request.data.get('amount', 0)))
         payment_method = request.data.get('payment_method', 'balance')
@@ -221,9 +248,18 @@ def donate_to_post(request, post_id):
                     'message': 'Insufficient balance'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Deduct amount from user balance
-            user.balance -= amount
-            user.save()
+            # Create Balance transaction record for donation
+            Balance.objects.create(
+                user=request.user,
+                amount=amount,
+                payable_amount=amount,
+                transaction_type='raise_up_donation',
+                payment_method=payment_method,
+                description=f'Donation to "{post.title}"',
+                completed=True,
+                approved=True,
+                bank_status='completed'
+            )
         
         # Create donation record
         Donation.objects.create(
@@ -268,13 +304,16 @@ def donate_to_post(request, post_id):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_post_donations(request, post_id):
     """Get all donations for a post with pagination"""
     try:
         from django.core.paginator import Paginator
         
+        print(f"Fetching donations for post_id: {post_id}")
         post = RaiseUpPost.objects.get(id=post_id, is_active=True)
         donations = post.donations.select_related('user').order_by('-amount', '-created_at')
+        print(f"Found {donations.count()} donations")
         
         # Pagination
         page = int(request.GET.get('page', 1))
@@ -303,11 +342,15 @@ def get_post_donations(request, post_id):
             'has_previous': page_obj.has_previous()
         })
     except RaiseUpPost.DoesNotExist:
+        print(f"Post not found: {post_id}")
         return Response({
             'success': False,
             'message': 'Post not found'
         }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
+        import traceback
+        print(f"Error in get_post_donations: {str(e)}")
+        print(traceback.format_exc())
         return Response({
             'success': False,
             'message': str(e)
