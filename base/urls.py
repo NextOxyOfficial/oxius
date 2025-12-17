@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
 from .cities_light_views import CityViewSet, CountryViewSet, RegionViewSet
 from .pay import *
 from .views import *
+from .upload_views import upload_file
 
 router = DefaultRouter()
 router.register(r"cities", CityViewSet)
@@ -17,6 +18,7 @@ router.register(r"countries", CountryViewSet)
 
 
 urlpatterns = [
+    path("upload/", upload_file, name="upload_file"),
     path("logo/", getLogo, name="logo"),
     path("eshop-logo/", get_eshop_logo, name="eshop_logo"),
     path("faq/", get_faq, name="faq"),

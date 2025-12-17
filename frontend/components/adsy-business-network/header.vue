@@ -116,7 +116,8 @@
           <PublicTranslateHandler class="hidden sm:block px-2" />            
           
           <!-- Not Logged In User Section -->
-          <div v-if="!user" class="flex relative menu-container items-center">            <!-- Mobile Profile Icon -->
+          <div v-if="!user" class="flex relative menu-container items-center">            
+            <!-- Mobile Profile Icon -->
             <div class="sm:hidden">
               <NuxtLink to="/auth/login">
                 <div 
@@ -206,7 +207,7 @@
                     v-if="user?.user?.image"
                     :src="user.user.image"
                     :alt="user.user.name || user.user.first_name"
-                    class="w-full h-full object-cover rounded-full z-10"
+                    class="w-full h-full object-contain rounded-full z-10"
                   />
                   <UIcon v-else name="i-heroicons-user" class="w-6 h-6 text-gray-600 flex z-10" />
                 </div>
@@ -258,7 +259,7 @@
                       v-if="user?.user?.image"
                       :src="user.user.image"
                       :alt="user.user.name || user.user.first_name"
-                      class="w-full h-full object-cover"
+                      class="w-full h-full object-contain"
                     />
                     <UIcon v-else name="i-heroicons-user-circle" class="w-6 h-6 text-gray-600 dark:text-gray-300" />
                   </div>

@@ -44,18 +44,18 @@ class RaiseUpPost(models.Model):
     stage = models.CharField(max_length=20, choices=STAGE_CHOICES)
     stage_color = models.CharField(max_length=20, choices=STAGE_COLOR_CHOICES)
     funding_type = models.CharField(max_length=50, choices=FUNDING_TYPE_CHOICES)
-    min_investment = models.DecimalField(max_digits=12, decimal_places=2)
-    expected_return = models.CharField(max_length=100)
-    risk_level = models.CharField(max_length=20, choices=RISK_LEVEL_CHOICES)
-    traction = models.CharField(max_length=200)
+    min_investment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    expected_return = models.CharField(max_length=100, blank=True, default='')
+    risk_level = models.CharField(max_length=20, choices=RISK_LEVEL_CHOICES, default='medium')
+    traction = models.CharField(max_length=200, blank=True, default='')
     
     # Financial
     raised = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     goal = models.DecimalField(max_digits=12, decimal_places=2)
     
     # Media
-    thumbnail = models.URLField()
-    video_embed_url = models.URLField(blank=True)
+    thumbnail = models.URLField(blank=True, default='')
+    video_embed_url = models.URLField(blank=True, default='')
     media_type = models.CharField(max_length=20, choices=[('image', 'Image'), ('video', 'Video')], default='image')
     
     # Poster (User)

@@ -83,15 +83,49 @@ class RaiseUpPostSerializer(serializers.ModelSerializer):
         return None
 
 class RaiseUpPostCreateSerializer(serializers.ModelSerializer):
+    # Optional detail fields
+    overview = serializers.CharField(required=False, allow_blank=True, default='')
+    use_of_funds = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    milestones = serializers.ListField(child=serializers.CharField(), required=False, default=list)
+    
+    # Make these fields optional to match frontend
+    min_investment = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, default=0)
+    expected_return = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
+    risk_level = serializers.CharField(max_length=20, required=False, default='medium')
+    video_embed_url = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
+    thumbnail = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
+    area = serializers.CharField(max_length=100, required=False, allow_blank=True, default='')
+    media_type = serializers.CharField(max_length=20, required=False, default='image')
+    traction = serializers.CharField(max_length=200, required=False, allow_blank=True, default='')
+    
     class Meta:
         model = RaiseUpPost
         fields = [
             'title', 'summary', 'sector', 'location', 'city', 'area',
             'stage', 'stage_color', 'funding_type', 'min_investment', 
             'expected_return', 'risk_level', 'traction', 'goal', 'thumbnail',
-            'video_embed_url'
+            'video_embed_url', 'media_type', 'overview', 'use_of_funds', 'milestones'
         ]
     
     def create(self, validated_data):
+        # Extract detail fields
+        overview = validated_data.pop('overview', '')
+        use_of_funds = validated_data.pop('use_of_funds', [])
+        milestones = validated_data.pop('milestones', [])
+        
+        # Set poster
         validated_data['poster'] = self.context['request'].user
-        return super().create(validated_data)
+        
+        # Create post
+        post = super().create(validated_data)
+        
+        # Create detail object if any detail data provided
+        if overview or use_of_funds or milestones:
+            RaiseUpPostDetail.objects.create(
+                post=post,
+                overview=overview,
+                use_of_funds=use_of_funds,
+                milestones=milestones
+            )
+        
+        return post

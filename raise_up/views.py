@@ -31,6 +31,38 @@ class RaiseUpPostListView(generics.ListCreateAPIView):
             return RaiseUpPostCreateSerializer
         return RaiseUpPostSerializer
     
+    def create(self, request, *args, **kwargs):
+        """Override create to add detailed error logging"""
+        print("=" * 50)
+        print("POST Request Data:", request.data)
+        print("=" * 50)
+        
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print("Validation Errors:", serializer.errors)
+            print("=" * 50)
+            return Response({
+                'success': False,
+                'errors': serializer.errors,
+                'message': 'Validation failed'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response({
+                'success': True,
+                'data': serializer.data,
+                'message': 'Post created successfully'
+            }, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as e:
+            print("Create Error:", str(e))
+            print("=" * 50)
+            return Response({
+                'success': False,
+                'message': f'Error creating post: {str(e)}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
     def get_queryset(self):
         queryset = super().get_queryset()
         
