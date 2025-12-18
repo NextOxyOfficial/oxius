@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/workspace_service.dart';
+import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 

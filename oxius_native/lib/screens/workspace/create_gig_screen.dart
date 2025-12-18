@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/workspace_service.dart';
+import '../../utils/network_error_handler.dart';
 
 class CreateGigScreen extends StatefulWidget {
   final VoidCallback? onGigCreated;

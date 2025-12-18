@@ -7,6 +7,7 @@ import 'package:flutter_html/flutter_html.dart';
 import '../models/classified_post.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
+import '../utils/network_error_handler.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../config/app_config.dart';
@@ -63,7 +64,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
         NetworkErrorHandler.showErrorSnackbar(
           context, 
           e,
-          onRetry: () => _loadPostDetails(),
+          onRetry: () => _loadPost(),
         );
       }
     }

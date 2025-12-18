@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
+import '../utils/network_error_handler.dart';
 import '../widgets/product_card.dart';
 import '../models/cart_item.dart';
 

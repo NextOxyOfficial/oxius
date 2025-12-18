@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
+import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
 import 'order_chat_screen.dart';
 import 'gig_detail_screen.dart';

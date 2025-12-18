@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
+import '../utils/network_error_handler.dart';
 import '../services/user_state_service.dart';
 import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
