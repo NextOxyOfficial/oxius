@@ -60,8 +60,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load post: $e')),
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          onRetry: () => _loadPostDetails(),
         );
       }
     }

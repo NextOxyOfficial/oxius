@@ -38,8 +38,10 @@ class _MyGigsTabState extends State<MyGigsTab> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load gigs: $e')),
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          onRetry: () => _loadGigs(),
         );
       }
     }

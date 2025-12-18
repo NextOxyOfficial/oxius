@@ -161,8 +161,10 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
         setState(() {
           _messages.removeWhere((m) => m['id'] == tempMessage['id']);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to send message')),
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          'Failed to send message',
+          customMessage: 'Unable to send message',
         );
       }
     }
@@ -189,8 +191,10 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
         if (result != null) {
           await _loadMessages();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to send image')),
+          NetworkErrorHandler.showErrorSnackbar(
+            context, 
+            'Failed to send image',
+            customMessage: 'Unable to send image',
           );
         }
       }

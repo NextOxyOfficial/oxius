@@ -91,8 +91,10 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to complete order: $e')),
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          customMessage: 'Unable to complete order',
         );
       }
     }

@@ -81,9 +81,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
     } catch (e) {
       print('Error picking image: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        NetworkErrorHandler.showErrorSnackbar(context, e);
       }
     } finally {
       setState(() => _isCompressing = false);

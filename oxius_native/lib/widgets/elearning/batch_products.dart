@@ -193,7 +193,7 @@ class _BatchProductsState extends State<BatchProducts> {
           // Products horizontal scroll
           if (!_loading && _error == null && _products.isNotEmpty)
             SizedBox(
-              height: 335,
+              height: 380,
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,

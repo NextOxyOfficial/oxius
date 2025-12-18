@@ -181,8 +181,10 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick images: $e')),
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          customMessage: 'Unable to pick images',
         );
       }
     }

@@ -314,9 +314,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       print('❌ Error loading products: $e');
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading products: $e')),
-        );
+        NetworkErrorHandler.showErrorSnackbar(context, e);
       }
     }
   }

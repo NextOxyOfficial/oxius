@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:866607241594:android:7f934d27a708dbf0a79ec3",
+        "android_client_info": {
+          "package_name": "com.adsyclub.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8VY8UHWTyqJ0VQjRPJfipovo8PxjMUiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:866607241594:android:d0be49d7002eaa42a79ec3",
         "android_client_info": {
           "package_name": "com.oxius.app"

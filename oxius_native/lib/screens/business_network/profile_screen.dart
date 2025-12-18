@@ -182,11 +182,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading profile: $e'),
-            backgroundColor: Colors.red,
-          ),
+        // Use NetworkErrorHandler for professional error display
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          onRetry: () => _loadProfileData(),
         );
       }
     }
@@ -213,11 +213,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingSaved = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading saved posts: $e'),
-            backgroundColor: Colors.red,
-          ),
+        // Use NetworkErrorHandler for professional error display
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          onRetry: () => _loadSavedPosts(),
         );
       }
     }
@@ -238,7 +238,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingGigs = false);
-        print('Error loading user gigs: $e');
+        // Use NetworkErrorHandler for professional error display
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          onRetry: () => _loadUserGigs(),
+        );
       }
     }
   }
@@ -301,18 +306,17 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           SnackBar(
             content: Text('Failed to ${wasFollowing ? 'unfollow' : 'follow'} user'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
           ),
         );
       }
     } catch (e) {
-      print('Error in _toggleFollow: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        // Use NetworkErrorHandler for professional error display
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          customMessage: 'Unable to update follow status',
+          onRetry: () => _toggleFollow(),
         );
       }
     } finally {
@@ -375,11 +379,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       if (mounted) Navigator.pop(context);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to open chat: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
+        // Use NetworkErrorHandler for professional error display
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          customMessage: 'Unable to open chat',
         );
       }
     }
@@ -476,11 +480,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        // Use NetworkErrorHandler for professional error display
+        NetworkErrorHandler.showErrorSnackbar(
+          context, 
+          e,
+          customMessage: 'Unable to upload profile picture',
         );
       }
     }

@@ -305,9 +305,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         'cartItems': [CartItem(product: cartProduct, quantity: 1)],
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-      );
+      NetworkErrorHandler.showErrorSnackbar(context, e);
     }
   }
 

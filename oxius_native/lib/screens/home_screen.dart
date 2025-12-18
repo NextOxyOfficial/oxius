@@ -18,6 +18,8 @@ import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
+import '../services/offline_cache_service.dart';
+import '../utils/network_error_handler.dart';
 import '../models/classified_post.dart';
 import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
@@ -170,6 +172,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
       print('✅ HomeScreen: Fetched ${posts.length} recent posts');
 
+      // Cache the posts for offline viewing
+      final postsJson = posts.map((post) => post.toJson()).toList();
+      await OfflineCacheService.cacheSalePosts(postsJson);
+
       if (mounted && !_disposed) {
         setState(() {
           _recentPosts = posts;
@@ -179,11 +185,50 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (e) {
       print('❌ Error fetching recent posts: $e');
+      
+      // Try to load from cache when network fails
+      final cachedPosts = await OfflineCacheService.getCachedSalePosts();
+      
       if (mounted && !_disposed) {
-        setState(() {
-          _recentPosts = [];
-          _isLoadingPosts = false;
-        });
+        if (cachedPosts != null && cachedPosts.isNotEmpty) {
+          // Convert cached data back to ClassifiedPost objects
+          final posts = cachedPosts.map((json) => ClassifiedPost.fromJson(json)).toList();
+          setState(() {
+            _recentPosts = posts;
+            _isLoadingPosts = false;
+          });
+          
+          // Show offline indicator
+          if (NetworkErrorHandler.isNetworkError(e)) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 16),
+                    const SizedBox(width: 8),
+                    const Text('Showing cached content', style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF6B7280),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        } else {
+          setState(() {
+            _recentPosts = [];
+            _isLoadingPosts = false;
+          });
+          
+          // Show network error with professional message
+          NetworkErrorHandler.showErrorSnackbar(
+            context, 
+            e,
+            onRetry: () => _fetchRecentPosts(forceRefresh: true),
+          );
+        }
       }
     }
   }

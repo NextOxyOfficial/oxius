@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:oxius_native/screens/product_details_screen.dart';
+import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
 
 class ProductCard extends StatefulWidget {
