@@ -439,7 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         
-        // Animated Header positioned at top
+        // Animated Header positioned at top with proper elevation
         Positioned(
           top: 0,
           left: 0,
@@ -452,18 +452,10 @@ class _HomeScreenState extends State<HomeScreen> {
               0,
             ),
             curve: Curves.easeInOut,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
-                    offset: const Offset(0, 2),
-                    blurRadius: 8,
-                  ),
-                ],
-              ),
+            child: Material(
+              elevation: 4,
+              shadowColor: Colors.black.withOpacity(0.15),
+              color: Colors.white,
               child: SafeArea(
                 bottom: false,
                 child: _buildFixedHeader(context),

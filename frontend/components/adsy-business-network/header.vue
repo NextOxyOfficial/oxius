@@ -9,6 +9,63 @@
       isScrollingDown ? 'md:translate-y-0 -translate-y-full' : 'translate-y-0'
     ]"
   >
+    <!-- Mobile App Download Banner -->
+    <transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      leave-active-class="transition duration-200 ease-in"
+      leave-to-class="opacity-0 -translate-y-2"
+    >
+      <div v-if="showDownloadBanner" class="sm:hidden px-3 pb-2">
+        <div class="relative rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 p-[1px] shadow-lg shadow-emerald-500/20">
+          <div class="relative flex items-center gap-2 rounded-[11px] bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-3 py-2.5 pr-8">
+            <!-- Decorative circles -->
+            <div class="absolute -left-6 -top-6 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+            <div class="absolute -right-4 -bottom-4 w-12 h-12 bg-white/10 rounded-full blur-lg"></div>
+            
+            <!-- App Icon -->
+            <div class="relative shrink-0 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner">
+              <NuxtImg 
+                src="/icon.png" 
+                alt="Adsy App" 
+                class="w-7 h-7 rounded-lg"
+                loading="lazy"
+              />
+            </div>
+            
+            <!-- Text Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[13px] font-bold text-white">Adsy App</span>
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-white/20 text-white rounded-full uppercase tracking-wide">Free</span>
+              </div>
+              <div class="text-[11px] text-emerald-100 mt-0.5">
+                Get the best experience on mobile
+              </div>
+            </div>
+            
+            <!-- Download Button -->
+            <button
+              @click="downloadAndroidApp"
+              class="shrink-0 flex items-center gap-1.5 text-[12px] font-bold px-4 py-2 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 active:scale-95 transition-all shadow-md"
+            >
+              <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+              <span>GET</span>
+            </button>
+            
+            <!-- Close Button -->
+            <button
+              @click="dismissDownloadBanner"
+              class="absolute top-1/2 -translate-y-1/2 right-1.5 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition"
+              aria-label="Close"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <div class="max-w-5xl mx-auto px-4">
       <div class="flex items-center justify-between">
         <!-- Left Section: Sidebar Toggle (mobile only) + Logo -->
@@ -294,6 +351,7 @@ import { ref, nextTick, onMounted, onUnmounted, computed, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useApi } from "~/composables/useApi";
 import { useAuth } from "~/composables/useAuth";
+import { useAppDownload } from "~/composables/useAppDownload";
 import { useStoreCart } from "~/store/cart";
 import { useRouter } from "vue-router";
 import { useScrollDirection } from "~/composables/useScrollDirection";
@@ -329,6 +387,43 @@ const searchDropdownRef = ref(null);
 const router = useRouter();
 const isScrolled = ref(false);
 
+const { downloadApp } = useAppDownload();
+
+const showDownloadBanner = ref(false);
+const _downloadBannerCookie = 'adsy_download_app_banner_dismissed_v1';
+
+const _getCookie = (name) => {
+  try {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  } catch (_) {
+  }
+  return null;
+};
+
+const _setCookieHours = (name, value, hours) => {
+  try {
+    const date = new Date();
+    date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  } catch (_) {
+  }
+};
+
+const dismissDownloadBanner = () => {
+  _setCookieHours(_downloadBannerCookie, '1', 24);
+  showDownloadBanner.value = false;
+};
+
+const downloadAndroidApp = async () => {
+  try {
+    await downloadApp();
+  } catch (error) {
+    console.error('Download error:', error);
+  }
+};
+
 // Combined badge count: tickets + updates + AdsyConnect messages
 const badgeCount = computed(() => {
   return (totalUnreadCount.value || 0) + (adsyUnreadCount.value || 0);
@@ -340,6 +435,10 @@ onMounted(async () => {
     await fetchUnreadCount();
     await loadChatRooms(); // Load chat rooms to get unread count
     startHeaderPolling(); // Start polling for real-time unread count updates
+  }
+
+  if (!_getCookie(_downloadBannerCookie)) {
+    showDownloadBanner.value = true;
   }
 });
 

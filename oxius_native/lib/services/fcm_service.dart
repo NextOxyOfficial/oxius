@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
@@ -25,6 +26,9 @@ class FCMService {
   
   static String? _fcmToken;
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static Map<String, dynamic>? _pendingNavigationData;
+  static Timer? _pendingNavigationTimer;
+  static int _pendingNavigationAttempts = 0;
 
   /// Initialize FCM
   static Future<void> initialize() async {
@@ -180,7 +184,7 @@ class FCMService {
     print('🔔 Notification tapped');
     print('Data: ${message.data}');
 
-    final data = message.data;
+    final data = Map<String, dynamic>.from(message.data);
     _navigateBasedOnData(data);
   }
 
@@ -190,8 +194,12 @@ class FCMService {
     print('Payload: $payload');
 
     try {
-      final data = jsonDecode(payload) as Map<String, dynamic>;
-      _navigateBasedOnData(data);
+      final decoded = jsonDecode(payload);
+      if (decoded is Map) {
+        _navigateBasedOnData(Map<String, dynamic>.from(decoded));
+      } else {
+        print('⚠️ Local notification payload is not a Map');
+      }
     } catch (e) {
       print('Error parsing payload: $e');
     }
@@ -199,14 +207,91 @@ class FCMService {
 
   /// Navigate based on notification data
   static void _navigateBasedOnData(Map<String, dynamic> data) {
-    final context = navigatorKey.currentContext;
-    if (context == null) {
-      print('⚠️ Navigator context is null, cannot navigate');
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) {
+      print('⚠️ Navigator is not ready yet. Queuing navigation.');
+      _pendingNavigationData = Map<String, dynamic>.from(data);
+      _schedulePendingNavigation();
       return;
     }
 
-    final type = data['type']?.toString();
-    final notificationType = data['notification_type']?.toString();
+    _navigateBasedOnDataNow(navigator, data);
+  }
+
+  static void _schedulePendingNavigation() {
+    if (_pendingNavigationTimer != null) return;
+
+    _pendingNavigationAttempts = 0;
+    _pendingNavigationTimer = Timer.periodic(const Duration(milliseconds: 350), (timer) {
+      final navigator = navigatorKey.currentState;
+      if (navigator != null && _pendingNavigationData != null) {
+        final data = _pendingNavigationData!;
+        _pendingNavigationData = null;
+        timer.cancel();
+        _pendingNavigationTimer = null;
+        _navigateBasedOnDataNow(navigator, data);
+        return;
+      }
+
+      _pendingNavigationAttempts += 1;
+      if (_pendingNavigationAttempts >= 25) {
+        print('⚠️ Navigator not ready after waiting. Dropping pending navigation.');
+        _pendingNavigationData = null;
+        timer.cancel();
+        _pendingNavigationTimer = null;
+      }
+    });
+  }
+
+  static Map<String, dynamic> _normalizeNotificationData(Map<String, dynamic> data) {
+    final normalized = Map<String, dynamic>.from(data);
+
+    for (final key in ['data', 'payload', 'extra']) {
+      final value = normalized[key];
+      if (value is String && value.isNotEmpty) {
+        final trimmed = value.trim();
+        if ((trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+            (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+          try {
+            final decoded = jsonDecode(trimmed);
+            if (decoded is Map) {
+              normalized.addAll(Map<String, dynamic>.from(decoded));
+            }
+          } catch (_) {
+            // Ignore
+          }
+        }
+      }
+    }
+
+    return normalized;
+  }
+
+  static void _navigateBasedOnDataNow(NavigatorState navigator, Map<String, dynamic> rawData) {
+    final context = navigator.context;
+    final data = _normalizeNotificationData(rawData);
+
+    final rawType = data['type']?.toString();
+    final rawNotificationType = data['notification_type']?.toString();
+
+    String? type = rawType;
+    final notificationType = rawNotificationType;
+
+    if ((type == null || type.isEmpty) && notificationType != null && notificationType.isNotEmpty) {
+      type = notificationType;
+    }
+
+    if (type == 'business_network' && notificationType != null && notificationType.isNotEmpty) {
+      type = notificationType;
+    }
+
+    final directRoute = data['route']?.toString() ?? data['screen']?.toString();
+    if (directRoute != null && directRoute.startsWith('/')) {
+      print('   → Navigating to direct route: $directRoute');
+      navigator.pushNamed(directRoute);
+      return;
+    }
+
     print('🔔 Navigating based on notification type: $type, notification_type: $notificationType');
     print('   Data: $data');
 
@@ -215,7 +300,6 @@ class FCMService {
     // ============================================
     if (type == 'workspace') {
       final orderId = data['order_id']?.toString();
-      final gigId = data['gig_id']?.toString();
       
       // Handle different workspace notification types
       if (notificationType == 'new_order' || 
@@ -230,16 +314,14 @@ class FCMService {
           notificationType == 'order_refunded') {
         if (orderId != null) {
           print('   → Navigating to workspace order: $orderId');
-          Navigator.push(
-            context,
+          navigator.push(
             MaterialPageRoute(
               builder: (context) => OrderDetailScreen(orderId: orderId),
             ),
           );
         } else {
           print('   ⚠️ Order ID is null, navigating to inbox updates tab');
-          Navigator.push(
-            context,
+          navigator.push(
             MaterialPageRoute(
               builder: (context) => const InboxScreen(initialTab: 1),
             ),
@@ -248,12 +330,11 @@ class FCMService {
       } else if (notificationType == 'new_review') {
         // Navigate to gig detail or my gigs
         print('   → Navigating to my gigs for review notification');
-        Navigator.pushNamed(context, '/my-gigs');
+        navigator.pushNamed('/my-gigs');
       } else {
         // Default workspace - go to inbox updates tab
         print('   → Default workspace notification, navigating to inbox updates');
-        Navigator.push(
-          context,
+        navigator.push(
           MaterialPageRoute(
             builder: (context) => const InboxScreen(initialTab: 1),
           ),
@@ -268,8 +349,7 @@ class FCMService {
       final userId = data['actor_id']?.toString() ?? data['user_id']?.toString();
       if (userId != null) {
         print('   → Navigating to profile: $userId');
-        Navigator.push(
-          context,
+        navigator.push(
           MaterialPageRoute(
             builder: (context) => ProfileScreen(userId: userId),
           ),
@@ -292,7 +372,7 @@ class FCMService {
     } else if (type == 'solution') {
       // Navigate to MindForce
       print('   → Navigating to MindForce');
-      Navigator.pushNamed(context, '/mindforce');
+      navigator.pushNamed('/mindforce');
     } else if (type == 'gift_diamonds') {
       // Navigate to post detail
       final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
@@ -308,8 +388,7 @@ class FCMService {
       // Navigate to inbox AdsyConnect tab
       final chatId = data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
       print('   → Navigating to AdsyConnect chat: $chatId');
-      Navigator.push(
-        context,
+      navigator.push(
         MaterialPageRoute(
           builder: (context) => InboxScreen(
             initialTab: 0, // AdsyConnect tab is index 0
@@ -324,8 +403,7 @@ class FCMService {
     else if (type == 'support_ticket' || type == 'ticket' || type == 'ticket_reply' || type == 'ticket_status_update') {
       final ticketId = data['ticket_id']?.toString();
       print('   → Navigating to support ticket: $ticketId');
-      Navigator.push(
-        context,
+      navigator.push(
         MaterialPageRoute(
           builder: (context) => InboxScreen(
             initialTab: 2, // Support tab is index 2
@@ -341,7 +419,7 @@ class FCMService {
              type == 'deposit' || type == 'deposit_successful' || type == 'transfer_sent' || 
              type == 'transfer_received') {
       print('   → Navigating to wallet for: $type');
-      Navigator.pushNamed(context, '/deposit-withdraw');
+      navigator.pushNamed('/deposit-withdraw');
     }
     // ============================================
     // ORDERS (Legacy)
@@ -350,16 +428,14 @@ class FCMService {
       final orderId = data['order_id']?.toString();
       if (orderId != null) {
         print('   → Navigating to order: $orderId');
-        Navigator.push(
-          context,
+        navigator.push(
           MaterialPageRoute(
             builder: (context) => OrderDetailScreen(orderId: orderId),
           ),
         );
       } else {
         print('   → Navigating to inbox updates tab');
-        Navigator.push(
-          context,
+        navigator.push(
           MaterialPageRoute(
             builder: (context) => const InboxScreen(initialTab: 1),
           ),
@@ -371,14 +447,14 @@ class FCMService {
     // ============================================
     else if (type == 'pro_subscribed' || type == 'pro_expiring' || type == 'pro_expired') {
       print('   → Navigating to upgrade to pro for: $type');
-      Navigator.pushNamed(context, '/upgrade-to-pro');
+      navigator.pushNamed('/upgrade-to-pro');
     }
     // ============================================
     // GIG UPDATES
     // ============================================
     else if (type == 'gig_posted' || type == 'gig_approved' || type == 'gig_rejected') {
       print('   → Navigating to my gigs for: $type');
-      Navigator.pushNamed(context, '/my-gigs');
+      navigator.pushNamed('/my-gigs');
     }
     // ============================================
     // CLASSIFIED POSTS
@@ -387,8 +463,7 @@ class FCMService {
       final postId = data['post_id']?.toString() ?? data['classified_id']?.toString();
       if (postId != null) {
         print('   → Navigating to classified post: $postId');
-        Navigator.pushNamed(
-          context,
+        navigator.pushNamed(
           '/classified-post-details',
           arguments: {'postId': postId},
         );
@@ -399,8 +474,7 @@ class FCMService {
     // ============================================
     else if (type == 'general' || type == 'admin_notice' || type == 'system' || type == 'announcement') {
       print('   → General notification, navigating to inbox updates tab');
-      Navigator.push(
-        context,
+      navigator.push(
         MaterialPageRoute(
           builder: (context) => const InboxScreen(initialTab: 0),
         ),
@@ -412,8 +486,7 @@ class FCMService {
     else if (type == 'kyc_approved' || type == 'kyc_rejected' || type == 'account_warning' || 
              type == 'account_suspended' || type == 'account_activated') {
       print('   → Account notification, navigating to inbox updates tab');
-      Navigator.push(
-        context,
+      navigator.push(
         MaterialPageRoute(
           builder: (context) => const InboxScreen(initialTab: 0),
         ),
@@ -425,7 +498,7 @@ class FCMService {
     else {
       print('   ⚠️ Unknown notification type: $type');
       // Default to inbox
-      Navigator.pushNamed(context, '/inbox');
+      navigator.pushNamed('/inbox');
     }
   }
 

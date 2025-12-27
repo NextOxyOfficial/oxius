@@ -69,6 +69,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '866607241594',
     projectId: 'adsyclub',
     storageBucket: 'adsyclub.firebasestorage.app',
-    iosBundleId: 'com.oxius.app',
+    iosBundleId: 'com.adsyclub.app',
   );
 }

@@ -61,7 +61,7 @@ class _HeaderActionsState extends State<HeaderActions> {
               context: context,
               builder: (context) => AdsyPayQrModal(
                 qrData: 'adsypay://pay/${user.id}',
-                title: '${user.firstName ?? user.username ?? "User"}\'s QR',
+                title: '${user.firstName ?? user.username}\'s QR',
               ),
             );
           },

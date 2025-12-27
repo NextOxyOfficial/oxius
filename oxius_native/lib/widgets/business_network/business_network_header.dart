@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
-import '../../services/api_service.dart';
 import '../../services/adsyconnect_service.dart';
 import '../../screens/business_network/search_screen.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
 
 class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidget {

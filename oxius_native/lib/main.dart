@@ -46,48 +46,81 @@ import 'services/translation_service.dart';
 import 'models/cart_item.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Set status bar to white with dark icons
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.white,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
-  );
-  
-  // Print app configuration (shows which environment is active)
-  AppConfig.printConfig();
-  
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
-  // Initialize FCM
-  await FCMService.initialize();
-  
-  // Initialize translation service
-  print('Initializing translation service...');
-  final translationService = TranslationService();
-  await translationService.initialize();
-  print('Translation service initialized with locale: ${translationService.currentLanguage}');
-  
-  // Initialize user state service (this will initialize auth service internally)
-  print('Initializing authentication session...');
-  final userState = UserStateService();
-  await userState.initialize();
-  
-  if (userState.isAuthenticated) {
-    print('Session restored successfully for user: ${userState.userName}');
-  } else {
-    print('No existing session found');
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+    
+    // Set status bar to white with dark icons
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.white,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+    
+    // Print app configuration (shows which environment is active)
+    AppConfig.printConfig();
+    
+    // Initialize Firebase
+    print('Initializing Firebase...');
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('Firebase initialized successfully');
+    
+    // Initialize FCM
+    print('Initializing FCM...');
+    await FCMService.initialize();
+    print('FCM initialized successfully');
+    
+    // Initialize translation service
+    print('Initializing translation service...');
+    final translationService = TranslationService();
+    await translationService.initialize();
+    print('Translation service initialized with locale: ${translationService.currentLanguage}');
+    
+    // Initialize user state service (this will initialize auth service internally)
+    print('Initializing authentication session...');
+    final userState = UserStateService();
+    await userState.initialize();
+    
+    if (userState.isAuthenticated) {
+      print('Session restored successfully for user: ${userState.userName}');
+    } else {
+      print('No existing session found');
+    }
+    
+    runApp(MyApp(userState: userState));
+  } catch (e, stackTrace) {
+    print('Error during app initialization: $e');
+    print('Stack trace: $stackTrace');
+    
+    // Run app with minimal setup if initialization fails
+    runApp(
+      MaterialApp(
+        title: 'AdsyClub',
+        home: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  'App initialization failed',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text('Error: $e'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
-  
-  runApp(MyApp(userState: userState));
 }
 
 class MyApp extends StatelessWidget {

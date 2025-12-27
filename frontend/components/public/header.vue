@@ -14,6 +14,64 @@
       padding-top: max(12px, env(safe-area-inset-top));
     "
   >
+    <!-- Mobile App Download Banner -->
+    <transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      leave-active-class="transition duration-200 ease-in"
+      leave-to-class="opacity-0 -translate-y-2"
+    >
+      <div v-if="showDownloadBanner" class="sm:hidden px-3 pb-2">
+        <div class="relative rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 p-[1px] shadow-lg shadow-emerald-500/20">
+          <!-- Inner content with subtle pattern -->
+          <div class="relative flex items-center gap-2 rounded-[11px] bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-3 py-2.5 pr-8">
+            <!-- Decorative circles -->
+            <div class="absolute -left-6 -top-6 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
+            <div class="absolute -right-4 -bottom-4 w-12 h-12 bg-white/10 rounded-full blur-lg"></div>
+            
+            <!-- App Icon -->
+            <div class="relative shrink-0 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner">
+              <NuxtImg 
+                src="/icon.png" 
+                alt="Adsy App" 
+                class="w-7 h-7 rounded-lg"
+                loading="lazy"
+              />
+            </div>
+            
+            <!-- Text Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[13px] font-bold text-white">Adsy App</span>
+                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-white/20 text-white rounded-full uppercase tracking-wide">Free</span>
+              </div>
+              <div class="text-[11px] text-emerald-100 mt-0.5">
+                Get the best experience on mobile
+              </div>
+            </div>
+            
+            <!-- Download Button -->
+            <button
+              @click="downloadAndroidApp"
+              class="shrink-0 flex items-center gap-1.5 text-[12px] font-bold px-4 py-2 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 active:scale-95 transition-all shadow-md"
+            >
+              <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
+              <span>GET</span>
+            </button>
+            
+            <!-- Close Button -->
+            <button
+              @click="dismissDownloadBanner"
+              class="absolute top-1/2 -translate-y-1/2 right-1.5 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition"
+              aria-label="Close"
+            >
+              <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- Subscription Warnings Section -->
     <div class="relative px-4">
       <!-- Pre-expiration Warning -->
@@ -784,262 +842,249 @@
 </template>
 
 <script setup>
-import UserDropdownMenu from "./user-dropdown-menu.vue";
-import { useScrollDirection } from "~/composables/useScrollDirection";
-
-const { t } = useI18n();
-const { user, logout } = useAuth();
-const { get } = useApi();
-const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
-const { isScrollingDown, isScrollingUp } = useScrollDirection();
-const { chatIconPath } = useStaticAssets();
-const toast = useToast();
-
-// Import AdsyChat for unread message count
-const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
-const { unreadCount: adsyUnreadCount, loadChatRooms, startHeaderPolling, stopHeaderPolling } = useAdsyChat();
-
-const openMenu = ref(false);
-const router = useRouter();
-const open = ref(true);
-const logo = ref({});
-const isOpen = ref(false);
-const showQr = ref(false);
-// Subscription alert state
-const warningDismissed = ref(false);
-const expiredWarningDismissed = ref(false);
-
-// Combined badge count: tickets + updates + AdsyConnect messages
-const badgeCount = computed(() => {
-  return (totalUnreadCount.value || 0) + (adsyUnreadCount.value || 0);
-});
-
-// Use the app download composable
-import { useAppDownload } from "~/composables/useAppDownload";
-const { downloadApp } = useAppDownload();
-
-// Download Android app function
-const downloadAndroidApp = async () => {
-  try {
-    // Use the composable to get the dynamic download URL from admin
-    await downloadApp();
-
-    // Close the mobile menu
-    isOpen.value = false;
-
-    // Show success toast
-    toast.add({
-      title: "Download Started",
-      description: "AdsyClub Android app is downloading...",
-      color: "green",
-      icon: "i-heroicons-check-circle",
-    });
-  } catch (error) {
-    console.error("Download error:", error);
-    toast.add({
-      title: "Download Error",
-      description: "Failed to start download. Please try again.",
-      color: "red",
-      icon: "i-heroicons-exclamation-triangle",
-    });
-  }
-};
-
-// Fetch unread ticket count when component mounts and start polling
-onMounted(async () => {
-  await fetchUnreadCount();
-  if (user.value?.user) {
-    await loadChatRooms(); // Load chat rooms to get unread count
-    startHeaderPolling(); // Start polling for real-time unread count updates
-  }
-});
-
-// Stop polling when component unmounts
-onUnmounted(() => {
-  stopHeaderPolling();
-});
-
-// Calculate days remaining before subscription expiration
-const daysRemaining = computed(() => {
-  if (!user.value?.user?.pro_validity) return 0;
-
-  const today = new Date();
-  const expiryDate = new Date(user.value.user.pro_validity);
-  const diffTime = expiryDate - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays > 0 ? Math.min(diffDays, 7) : 0;
-});
-
-// Should show warning only if user is pro and has 1-7 days left
-const shouldShowWarning = computed(() => {
-  if (!user.value?.user?.is_pro) return false;
-
-  const today = new Date();
-  const expiryDate = new Date(user.value?.user?.pro_validity || null);
-  const diffTime = expiryDate - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays > 0 && diffDays <= 7;
-});
-
-// Check if subscription is expired
-const isExpired = computed(() => {
-  if (!user.value?.user?.is_pro || !user.value?.user?.pro_validity)
-    return false;
-
-  const today = new Date();
-  const expiryDate = new Date(user.value.user.pro_validity);
-
-  return today > expiryDate;
-});
-
-// Dismiss the warning for the current session
-function dismissWarning() {
-  warningDismissed.value = true;
-  // Store in localStorage to remember dismissal
-  localStorage.setItem("subscription_warning_dismissed", "true");
-  localStorage.setItem(
-    "subscription_warning_dismissed_date",
-    new Date().toDateString()
-  );
-}
-
-// Dismiss the expired warning
-function dismissExpiredWarning() {
-  expiredWarningDismissed.value = true;
-  // Store in localStorage to remember dismissal
-  localStorage.setItem("expired_warning_dismissed", "true");
-  localStorage.setItem(
-    "expired_warning_dismissed_date",
-    new Date().toDateString()
-  );
-}
-
-// Open the subscription renewal page
-function renewSubscription() {
-  openMenu.value = false; // Close any open menu
-  router.push("/upgrade-to-pro");
-}
-
-// Check localStorage on mount to see if warning was dismissed
-onMounted(() => {
-  const storedDismissalDate = localStorage.getItem(
-    "subscription_warning_dismissed_date"
-  );
-  if (storedDismissalDate) {
-    // Only consider it dismissed if the stored date is from today
-    const today = new Date().toDateString();
-    warningDismissed.value = storedDismissalDate === today;
-  } else {
-    warningDismissed.value = false;
-  }
-  
-  // Check expired warning dismissal
-  const expiredDismissalDate = localStorage.getItem(
-    "expired_warning_dismissed_date"
-  );
-  if (expiredDismissalDate) {
-    const today = new Date().toDateString();
-    expiredWarningDismissed.value = expiredDismissalDate === today;
-  } else {
-    expiredWarningDismissed.value = false;
-  }
-});
-
-// Set color mode
-const colorMode = useColorMode();
-colorMode.preference = "light";
-onMounted(() => {
-  localStorage.setItem("nuxt-color-mode", "light");
-});
-
-// Get logo data
-async function getLogo() {
-  try {
-    const res = await get("/logo/");
-    if (res.data) {
-      logo.value = res.data;
-    }
-  } catch (error) {
-    // Silently fallback to default logo
-    logo.value = {};
-  }
-}
-getLogo();
-
-// Navigation functions
-function upgradeToPro() {
-  openMenu.value = false;
-  router.push("/upgrade-to-pro");
-}
-
-function manageSubscription() {
-  openMenu.value = false;
-  router.push("/account/subscription");
-}
-
-function navigateToInbox() {
-  router.push("/inbox/");
-}
-
-function formatDate(date) {
-  return new Date(date).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-// Keyboard shortcuts
-defineShortcuts({
-  o: () => (open.value = !open.value),
-});
-
-// Handle clicks outside the menu
-const handleClickOutside = (event) => {
-  const menuContainer = document.querySelector(".menu-container");
-  if (menuContainer && !menuContainer.contains(event.target)) {
-    openMenu.value = false;
-  }
-};
-
-// Handle scroll events
-const isScrolled = ref(false);
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 80;
-};
-
-// Add and clean up event listeners
-onMounted(() => {
-  window.addEventListener("scroll", handleScroll);
-  document.addEventListener("click", handleClickOutside);
-
-  // Initialize subscription status check
-  const subscriptionEndDate = new Date(user?.user?.pro_validity);
-  const currentDate = new Date();
-  const timeDifference = subscriptionEndDate - currentDate;
-  const days = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-
-  if (days <= 7 && days > 0) {
-    shouldShowWarning.value = true;
-  } else if (days <= 0) {
-    isExpired.value = true;
-  }
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-  document.removeEventListener("click", handleClickOutside);
-});
-
-// Close sidebar if route changes
-watch(router.currentRoute, () => {
-  if (openMenu.value) {
-    openMenu.value = false;
-    isOpen.value = false;
-  }
-});
+ import UserDropdownMenu from "./user-dropdown-menu.vue";
+ import { useScrollDirection } from "~/composables/useScrollDirection";
+ 
+ const { t } = useI18n();
+ const { user, logout } = useAuth();
+ const { get } = useApi();
+ const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
+ const { isScrollingDown, isScrollingUp } = useScrollDirection();
+ const { chatIconPath } = useStaticAssets();
+ const toast = useToast();
+ 
+ const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
+ const { unreadCount: adsyUnreadCount, loadChatRooms, startHeaderPolling, stopHeaderPolling } = useAdsyChat();
+ 
+ const openMenu = ref(false);
+ const router = useRouter();
+ const open = ref(true);
+ const logo = ref({});
+ const isOpen = ref(false);
+ const showQr = ref(false);
+ const warningDismissed = ref(false);
+ const expiredWarningDismissed = ref(false);
+ 
+ const badgeCount = computed(() => {
+   return (totalUnreadCount.value || 0) + (adsyUnreadCount.value || 0);
+ });
+ 
+ import { useAppDownload } from "~/composables/useAppDownload";
+ const { downloadApp } = useAppDownload();
+ 
+ const downloadAndroidApp = async () => {
+   try {
+     await downloadApp();
+     isOpen.value = false;
+     toast.add({
+       title: "Download Started",
+       description: "AdsyClub Android app is downloading...",
+       color: "green",
+       icon: "i-heroicons-check-circle",
+     });
+   } catch (error) {
+     console.error("Download error:", error);
+     toast.add({
+       title: "Download Error",
+       description: "Failed to start download. Please try again.",
+       color: "red",
+       icon: "i-heroicons-exclamation-triangle",
+     });
+   }
+ };
+ 
+ const showDownloadBanner = ref(false);
+ const _downloadBannerCookie = 'adsy_download_app_banner_dismissed_v1';
+ 
+ const _getCookie = (name) => {
+   try {
+     const value = `; ${document.cookie}`;
+     const parts = value.split(`; ${name}=`);
+     if (parts.length === 2) return parts.pop().split(';').shift();
+   } catch (_) {
+   }
+   return null;
+ };
+ 
+ const _setCookieHours = (name, value, hours) => {
+   try {
+     const date = new Date();
+     date.setTime(date.getTime() + hours * 60 * 60 * 1000);
+     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+   } catch (_) {
+   }
+ };
+ 
+ const dismissDownloadBanner = () => {
+   _setCookieHours(_downloadBannerCookie, '1', 24);
+   showDownloadBanner.value = false;
+ };
+ 
+ onMounted(async () => {
+   await fetchUnreadCount();
+   if (user.value?.user) {
+     await loadChatRooms();
+     startHeaderPolling();
+   }
+ 
+   if (!_getCookie(_downloadBannerCookie)) {
+     showDownloadBanner.value = true;
+   }
+ });
+ 
+ onUnmounted(() => {
+   stopHeaderPolling();
+ });
+ 
+ const daysRemaining = computed(() => {
+   if (!user.value?.user?.pro_validity) return 0;
+ 
+   const today = new Date();
+   const expiryDate = new Date(user.value.user.pro_validity);
+   const diffTime = expiryDate - today;
+   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+ 
+   return diffDays > 0 ? Math.min(diffDays, 7) : 0;
+ });
+ 
+ const shouldShowWarning = computed(() => {
+   if (!user.value?.user?.is_pro) return false;
+ 
+   const today = new Date();
+   const expiryDate = new Date(user.value?.user?.pro_validity || null);
+   const diffTime = expiryDate - today;
+   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+ 
+   return diffDays > 0 && diffDays <= 7;
+ });
+ 
+ const isExpired = computed(() => {
+   if (!user.value?.user?.is_pro || !user.value?.user?.pro_validity) return false;
+ 
+   const today = new Date();
+   const expiryDate = new Date(user.value.user.pro_validity);
+ 
+   return today > expiryDate;
+ });
+ 
+ function dismissWarning() {
+   warningDismissed.value = true;
+   localStorage.setItem("subscription_warning_dismissed", "true");
+   localStorage.setItem("subscription_warning_dismissed_date", new Date().toDateString());
+ }
+ 
+ function dismissExpiredWarning() {
+   expiredWarningDismissed.value = true;
+   localStorage.setItem("expired_warning_dismissed", "true");
+   localStorage.setItem("expired_warning_dismissed_date", new Date().toDateString());
+ }
+ 
+ function renewSubscription() {
+   openMenu.value = false;
+   router.push("/upgrade-to-pro");
+ }
+ 
+ onMounted(() => {
+   const storedDismissalDate = localStorage.getItem("subscription_warning_dismissed_date");
+   if (storedDismissalDate) {
+     const today = new Date().toDateString();
+     warningDismissed.value = storedDismissalDate === today;
+   } else {
+     warningDismissed.value = false;
+   }
+ 
+   const expiredDismissalDate = localStorage.getItem("expired_warning_dismissed_date");
+   if (expiredDismissalDate) {
+     const today = new Date().toDateString();
+     expiredWarningDismissed.value = expiredDismissalDate === today;
+   } else {
+     expiredWarningDismissed.value = false;
+   }
+ });
+ 
+ const colorMode = useColorMode();
+ colorMode.preference = "light";
+ onMounted(() => {
+   localStorage.setItem("nuxt-color-mode", "light");
+ });
+ 
+ async function getLogo() {
+   try {
+     const res = await get("/logo/");
+     if (res.data) {
+       logo.value = res.data;
+     }
+   } catch (error) {
+     logo.value = {};
+   }
+ }
+ getLogo();
+ 
+ function upgradeToPro() {
+   openMenu.value = false;
+   router.push("/upgrade-to-pro");
+ }
+ 
+ function manageSubscription() {
+   openMenu.value = false;
+   router.push("/account/subscription");
+ }
+ 
+ function navigateToInbox() {
+   router.push("/inbox/");
+ }
+ 
+ function formatDate(date) {
+   return new Date(date).toLocaleDateString(undefined, {
+     year: "numeric",
+     month: "short",
+     day: "numeric",
+   });
+ }
+ 
+ defineShortcuts({
+   o: () => (open.value = !open.value),
+ });
+ 
+ const handleClickOutside = (event) => {
+   const menuContainer = document.querySelector(".menu-container");
+   if (menuContainer && !menuContainer.contains(event.target)) {
+     openMenu.value = false;
+   }
+ };
+ 
+ const isScrolled = ref(false);
+ const handleScroll = () => {
+   isScrolled.value = window.scrollY > 80;
+ };
+ 
+ onMounted(() => {
+   window.addEventListener("scroll", handleScroll);
+   document.addEventListener("click", handleClickOutside);
+ 
+   const subscriptionEndDate = new Date(user?.user?.pro_validity);
+   const currentDate = new Date();
+   const timeDifference = subscriptionEndDate - currentDate;
+   const days = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+ 
+   if (days <= 7 && days > 0) {
+     shouldShowWarning.value = true;
+   } else if (days <= 0) {
+     isExpired.value = true;
+   }
+ });
+ 
+ onUnmounted(() => {
+   window.removeEventListener("scroll", handleScroll);
+   document.removeEventListener("click", handleClickOutside);
+ });
+ 
+ watch(router.currentRoute, () => {
+   if (openMenu.value) {
+     openMenu.value = false;
+     isOpen.value = false;
+   }
+ });
 </script>
 
 <!-- Using simple Tailwind animation utilities -->
