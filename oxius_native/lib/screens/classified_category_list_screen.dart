@@ -1369,8 +1369,11 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   Future<void> _startAISearch() async {
     final location = _location;
     final businessType = _categoryDetails?.businessType;
+    final effectiveBusinessType = (businessType != null && businessType.trim().isNotEmpty)
+        ? businessType.trim()
+        : (_categoryDetails?.title.trim() ?? '');
 
-    if (location == null || businessType == null || businessType.isEmpty) return;
+    if (location == null || effectiveBusinessType.isEmpty) return;
 
     setState(() {
       _aiUserChoice = true;
@@ -1388,15 +1391,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     
     try {
       final uri = Uri.parse('${ApiService.baseUrl}/ai-business-finder/');
+      final headers = await ApiService.getHeaders();
       final response = await http.post(
         uri,
-        headers: const {'Content-Type': 'application/json'},
+        headers: headers,
         body: jsonEncode({
           'country': location.country,
-          'state': location.allOverBangladesh ? '' : (location.state ?? ''),
-          'city': location.allOverBangladesh ? '' : (location.city ?? ''),
-          'upazila': location.allOverBangladesh ? '' : (location.upazila ?? ''),
-          'business_type': businessType,
+          'state': location.allOverBangladesh ? 'All Bangladesh' : (location.state ?? ''),
+          'city': location.allOverBangladesh ? 'All Cities' : (location.city ?? ''),
+          'upazila': location.allOverBangladesh ? 'All Areas' : (location.upazila ?? ''),
+          'business_type': effectiveBusinessType,
         }),
       );
 
@@ -1405,11 +1409,18 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        if (decoded is Map && decoded['businesses'] is List) {
-          businesses = (decoded['businesses'] as List)
-              .whereType<Map>()
-              .map((e) => Map<String, dynamic>.from(e))
-              .toList();
+        if (decoded is Map) {
+          final dynamic dataNode = decoded['data'];
+          final dynamic businessesNode = decoded['businesses'] ??
+              (dataNode is Map ? dataNode['businesses'] : null) ??
+              (dataNode is Map ? dataNode['data'] : null);
+
+          if (businessesNode is List) {
+            businesses = businessesNode
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
+          }
         } else if (decoded is List) {
           businesses = decoded
               .whereType<Map>()
@@ -1419,14 +1430,20 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       } else {
         try {
           final decoded = jsonDecode(response.body);
-          if (decoded is Map && decoded['error'] != null) {
-            errorMessage = decoded['error']?.toString();
+          if (decoded is Map) {
+            if (decoded['error'] != null) {
+              errorMessage = decoded['error']?.toString();
+            } else if (decoded['detail'] != null) {
+              errorMessage = decoded['detail']?.toString();
+            } else if (decoded['message'] != null) {
+              errorMessage = decoded['message']?.toString();
+            }
           }
         } catch (_) {
           errorMessage = null;
         }
 
-        errorMessage ??= 'Failed to fetch AI results';
+        errorMessage ??= 'Failed to fetch AI results (${response.statusCode})';
       }
 
       if (!mounted) return;

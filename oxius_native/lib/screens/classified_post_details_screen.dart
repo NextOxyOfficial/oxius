@@ -94,9 +94,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
     try {
       final uri = Uri.parse('${ApiService.baseUrl}/ai-business-finder/');
+      final headers = await ApiService.getHeaders();
       final response = await http.post(
         uri,
-        headers: const {'Content-Type': 'application/json'},
+        headers: headers,
         body: jsonEncode({
           'country': post.country ?? 'Bangladesh',
           'state': post.state ?? '',
@@ -125,14 +126,18 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
       } else {
         try {
           final decoded = jsonDecode(response.body);
-          if (decoded is Map && decoded['error'] != null) {
-            errorMessage = decoded['error']?.toString();
+          if (decoded is Map) {
+            if (decoded['error'] != null) {
+              errorMessage = decoded['error']?.toString();
+            } else if (decoded['detail'] != null) {
+              errorMessage = decoded['detail']?.toString();
+            }
           }
         } catch (_) {
           errorMessage = null;
         }
 
-        errorMessage ??= 'Failed to fetch AI results';
+        errorMessage ??= 'Failed to fetch AI results (${response.statusCode})';
       }
 
       if (!mounted) return;

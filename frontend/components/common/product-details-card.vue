@@ -442,7 +442,7 @@
                   "
                   color="gray"
                   variant="soft"
-                  size="xs"
+                  size="sm"
                   :to="`/eshop/${
                     currentProduct.owner_details?.store_username ||
                     currentProduct.owner_details?.id
@@ -464,7 +464,7 @@
                   "
                   color="amber"
                   variant="solid"
-                  size="xs"
+                  size="sm"
                   class="font-semibold"
                 >
                   <UIcon name="i-heroicons-star-solid" class="w-3 h-3 mr-1" />
