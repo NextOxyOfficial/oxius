@@ -73,6 +73,7 @@ class _ElearningScreenState extends State<ElearningScreen> {
               // Content with rounded top
               Expanded(
                 child: Container(
+                  clipBehavior: Clip.antiAlias,
                   decoration: const BoxDecoration(
                     color: Color(0xFFF9FAFB),
                     borderRadius: BorderRadius.only(
@@ -88,7 +89,7 @@ class _ElearningScreenState extends State<ElearningScreen> {
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 12 : 16,
+                            horizontal: isMobile ? 4 : 16,
                             vertical: isMobile ? 12 : 16,
                           ),
                           child: Column(
@@ -144,7 +145,7 @@ class _ElearningScreenState extends State<ElearningScreen> {
                         Container(
                           constraints: const BoxConstraints(maxWidth: 1280),
                           padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 8 : 16,
+                            horizontal: isMobile ? 1 : 16,
                             vertical: 12,
                           ),
                           child: Column(

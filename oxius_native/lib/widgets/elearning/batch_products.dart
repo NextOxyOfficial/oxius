@@ -193,7 +193,7 @@ class _BatchProductsState extends State<BatchProducts> {
           // Products horizontal scroll
           if (!_loading && _error == null && _products.isNotEmpty)
             SizedBox(
-              height: 320,
+              height: 340,
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
@@ -224,7 +224,7 @@ class _BatchProductsState extends State<BatchProducts> {
                 child: TextButton.icon(
                   onPressed: () {
                     // Navigate to all products
-                    // Navigator.push(context, MaterialPageRoute(builder: (context) => EshopScreen()));
+                    Navigator.pushNamed(context, '/eshop');
                   },
                   icon: const Icon(Icons.arrow_forward, size: 16),
                   label: const Text('View All Products'),

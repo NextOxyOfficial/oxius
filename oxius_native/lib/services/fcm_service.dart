@@ -1,6 +1,7 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -12,11 +13,17 @@ import '../screens/business_network/post_detail_screen.dart';
 import '../screens/inbox_screen.dart';
 import '../screens/workspace/order_detail_screen.dart';
 
+void _log(String message) {
+  if (kDebugMode) {
+    debugPrint(message);
+  }
+}
+
 // Top-level function for background messages
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('📱 Background message received: ${message.messageId}');
-  print('📦 Data: ${message.data}');
+  _log('📱 Background message received: ${message.messageId}');
+  _log('📦 Data: ${message.data}');
 }
 
 class FCMService {
@@ -33,8 +40,8 @@ class FCMService {
   /// Initialize FCM
   static Future<void> initialize() async {
     try {
-      print('🔥 Initializing FCM Service...');
-      print('=' * 60);
+      _log('🔥 Initializing FCM Service...');
+      _log('=' * 60);
 
       // Request notification permissions with more aggressive settings
       NotificationSettings settings = await _firebaseMessaging.requestPermission(
@@ -47,13 +54,13 @@ class FCMService {
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        print('✅ Notification permission granted');
+        _log('✅ Notification permission granted');
       } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-        print('⚠️ Notification permission granted (provisional)');
+        _log('⚠️ Notification permission granted (provisional)');
       } else {
-        print('❌ Notification permission denied');
-        print('   Status: ${settings.authorizationStatus}');
-        print('   Please enable notifications in device settings');
+        _log('❌ Notification permission denied');
+        _log('   Status: ${settings.authorizationStatus}');
+        _log('   Please enable notifications in device settings');
         // Continue anyway - user might enable later
       }
 
@@ -62,23 +69,23 @@ class FCMService {
 
       // Get FCM token
       _fcmToken = await _firebaseMessaging.getToken();
-      print('\n📱 FCM TOKEN (COPY THIS FOR TESTING):');
-      print('=' * 60);
-      print(_fcmToken);
-      print('=' * 60);
-      print('');
+      _log('\n📱 FCM TOKEN (DEBUG ONLY):');
+      _log('=' * 60);
+      _log(_fcmToken ?? 'null');
+      _log('=' * 60);
+      _log('');
 
       // Send token to backend
       if (_fcmToken != null) {
-        print('📤 Sending FCM token to backend...');
+        _log('📤 Sending FCM token to backend...');
         await _sendTokenToBackend(_fcmToken!);
       } else {
-        print('❌ Failed to get FCM token');
+        _log('❌ Failed to get FCM token');
       }
 
       // Listen for token refresh
       _firebaseMessaging.onTokenRefresh.listen((newToken) {
-        print('🔄 FCM Token refreshed: $newToken');
+        _log('🔄 FCM Token refreshed: $newToken');
         _fcmToken = newToken;
         _sendTokenToBackend(newToken);
       });
@@ -98,9 +105,9 @@ class FCMService {
         _handleNotificationTap(initialMessage);
       }
 
-      print('✅ FCM Service initialized successfully');
+      _log('✅ FCM Service initialized successfully');
     } catch (e) {
-      print('❌ Error initializing FCM: $e');
+      _log('❌ Error initializing FCM: $e');
     }
   }
 
@@ -139,10 +146,10 @@ class FCMService {
 
   /// Handle foreground messages
   static void _handleForegroundMessage(RemoteMessage message) {
-    print('📨 Foreground message received');
-    print('Title: ${message.notification?.title}');
-    print('Body: ${message.notification?.body}');
-    print('Data: ${message.data}');
+    _log('📨 Foreground message received');
+    _log('Title: ${message.notification?.title}');
+    _log('Body: ${message.notification?.body}');
+    _log('Data: ${message.data}');
 
     // Show local notification
     _showLocalNotification(message);
@@ -181,8 +188,8 @@ class FCMService {
 
   /// Handle notification tap
   static void _handleNotificationTap(RemoteMessage message) {
-    print('🔔 Notification tapped');
-    print('Data: ${message.data}');
+    _log('🔔 Notification tapped');
+    _log('Data: ${message.data}');
 
     final data = Map<String, dynamic>.from(message.data);
     _navigateBasedOnData(data);
@@ -190,18 +197,18 @@ class FCMService {
 
   /// Handle local notification tap
   static void _handleLocalNotificationTap(String payload) {
-    print('🔔 Local notification tapped');
-    print('Payload: $payload');
+    _log('🔔 Local notification tapped');
+    _log('Payload: $payload');
 
     try {
       final decoded = jsonDecode(payload);
       if (decoded is Map) {
         _navigateBasedOnData(Map<String, dynamic>.from(decoded));
       } else {
-        print('⚠️ Local notification payload is not a Map');
+        _log('⚠️ Local notification payload is not a Map');
       }
     } catch (e) {
-      print('Error parsing payload: $e');
+      _log('Error parsing payload: $e');
     }
   }
 
@@ -209,7 +216,7 @@ class FCMService {
   static void _navigateBasedOnData(Map<String, dynamic> data) {
     final navigator = navigatorKey.currentState;
     if (navigator == null) {
-      print('⚠️ Navigator is not ready yet. Queuing navigation.');
+      _log('⚠️ Navigator is not ready yet. Queuing navigation.');
       _pendingNavigationData = Map<String, dynamic>.from(data);
       _schedulePendingNavigation();
       return;
@@ -235,7 +242,7 @@ class FCMService {
 
       _pendingNavigationAttempts += 1;
       if (_pendingNavigationAttempts >= 25) {
-        print('⚠️ Navigator not ready after waiting. Dropping pending navigation.');
+        _log('⚠️ Navigator not ready after waiting. Dropping pending navigation.');
         _pendingNavigationData = null;
         timer.cancel();
         _pendingNavigationTimer = null;
@@ -287,13 +294,13 @@ class FCMService {
 
     final directRoute = data['route']?.toString() ?? data['screen']?.toString();
     if (directRoute != null && directRoute.startsWith('/')) {
-      print('   → Navigating to direct route: $directRoute');
+      _log('   → Navigating to direct route: $directRoute');
       navigator.pushNamed(directRoute);
       return;
     }
 
-    print('🔔 Navigating based on notification type: $type, notification_type: $notificationType');
-    print('   Data: $data');
+    _log('🔔 Navigating based on notification type: $type, notification_type: $notificationType');
+    _log('   Data: $data');
 
     // ============================================
     // WORKSPACE NOTIFICATIONS
@@ -313,14 +320,14 @@ class FCMService {
           notificationType == 'order_cancelled' ||
           notificationType == 'order_refunded') {
         if (orderId != null) {
-          print('   → Navigating to workspace order: $orderId');
+          _log('   → Navigating to workspace order: $orderId');
           navigator.push(
             MaterialPageRoute(
               builder: (context) => OrderDetailScreen(orderId: orderId),
             ),
           );
         } else {
-          print('   ⚠️ Order ID is null, navigating to inbox updates tab');
+          _log('   ⚠️ Order ID is null, navigating to inbox updates tab');
           navigator.push(
             MaterialPageRoute(
               builder: (context) => const InboxScreen(initialTab: 1),
@@ -329,11 +336,11 @@ class FCMService {
         }
       } else if (notificationType == 'new_review') {
         // Navigate to gig detail or my gigs
-        print('   → Navigating to my gigs for review notification');
+        _log('   → Navigating to my gigs for review notification');
         navigator.pushNamed('/my-gigs');
       } else {
         // Default workspace - go to inbox updates tab
-        print('   → Default workspace notification, navigating to inbox updates');
+        _log('   → Default workspace notification, navigating to inbox updates');
         navigator.push(
           MaterialPageRoute(
             builder: (context) => const InboxScreen(initialTab: 1),
@@ -348,7 +355,7 @@ class FCMService {
       // Navigate to user profile
       final userId = data['actor_id']?.toString() ?? data['user_id']?.toString();
       if (userId != null) {
-        print('   → Navigating to profile: $userId');
+        _log('   → Navigating to profile: $userId');
         navigator.push(
           MaterialPageRoute(
             builder: (context) => ProfileScreen(userId: userId),
@@ -359,25 +366,25 @@ class FCMService {
       // Navigate to post detail
       final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
-        print('   → Navigating to post: $postId');
+        _log('   → Navigating to post: $postId');
         _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
       }
     } else if (type == 'like_comment' || type == 'reply') {
       // Navigate to post detail using parent_id
       final postId = data['parent_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
-        print('   → Navigating to post: $postId');
+        _log('   → Navigating to post: $postId');
         _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
       }
     } else if (type == 'solution') {
       // Navigate to MindForce
-      print('   → Navigating to MindForce');
+      _log('   → Navigating to MindForce');
       navigator.pushNamed('/mindforce');
     } else if (type == 'gift_diamonds') {
       // Navigate to post detail
       final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
-        print('   → Navigating to post: $postId');
+        _log('   → Navigating to post: $postId');
         _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
       }
     }
@@ -387,7 +394,7 @@ class FCMService {
     else if (type == 'message' || type == 'chat_message') {
       // Navigate to inbox AdsyConnect tab
       final chatId = data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
-      print('   → Navigating to AdsyConnect chat: $chatId');
+      _log('   → Navigating to AdsyConnect chat: $chatId');
       navigator.push(
         MaterialPageRoute(
           builder: (context) => InboxScreen(
@@ -402,7 +409,7 @@ class FCMService {
     // ============================================
     else if (type == 'support_ticket' || type == 'ticket' || type == 'ticket_reply' || type == 'ticket_status_update') {
       final ticketId = data['ticket_id']?.toString();
-      print('   → Navigating to support ticket: $ticketId');
+      _log('   → Navigating to support ticket: $ticketId');
       navigator.push(
         MaterialPageRoute(
           builder: (context) => InboxScreen(
@@ -418,7 +425,7 @@ class FCMService {
     else if (type == 'wallet' || type == 'withdraw_successful' || type == 'mobile_recharge_successful' || 
              type == 'deposit' || type == 'deposit_successful' || type == 'transfer_sent' || 
              type == 'transfer_received') {
-      print('   → Navigating to wallet for: $type');
+      _log('   → Navigating to wallet for: $type');
       navigator.pushNamed('/deposit-withdraw');
     }
     // ============================================
@@ -427,14 +434,14 @@ class FCMService {
     else if (type == 'order' || type == 'order_received' || type == 'order_status' || type == 'order_placed') {
       final orderId = data['order_id']?.toString();
       if (orderId != null) {
-        print('   → Navigating to order: $orderId');
+        _log('   → Navigating to order: $orderId');
         navigator.push(
           MaterialPageRoute(
             builder: (context) => OrderDetailScreen(orderId: orderId),
           ),
         );
       } else {
-        print('   → Navigating to inbox updates tab');
+        _log('   → Navigating to inbox updates tab');
         navigator.push(
           MaterialPageRoute(
             builder: (context) => const InboxScreen(initialTab: 1),
@@ -446,14 +453,14 @@ class FCMService {
     // PRO SUBSCRIPTION
     // ============================================
     else if (type == 'pro_subscribed' || type == 'pro_expiring' || type == 'pro_expired') {
-      print('   → Navigating to upgrade to pro for: $type');
+      _log('   → Navigating to upgrade to pro for: $type');
       navigator.pushNamed('/upgrade-to-pro');
     }
     // ============================================
     // GIG UPDATES
     // ============================================
     else if (type == 'gig_posted' || type == 'gig_approved' || type == 'gig_rejected') {
-      print('   → Navigating to my gigs for: $type');
+      _log('   → Navigating to my gigs for: $type');
       navigator.pushNamed('/my-gigs');
     }
     // ============================================
@@ -462,7 +469,7 @@ class FCMService {
     else if (type == 'classified_post' || type == 'classified') {
       final postId = data['post_id']?.toString() ?? data['classified_id']?.toString();
       if (postId != null) {
-        print('   → Navigating to classified post: $postId');
+        _log('   → Navigating to classified post: $postId');
         navigator.pushNamed(
           '/classified-post-details',
           arguments: {'postId': postId},
@@ -473,7 +480,7 @@ class FCMService {
     // GENERAL/ADMIN NOTICES
     // ============================================
     else if (type == 'general' || type == 'admin_notice' || type == 'system' || type == 'announcement') {
-      print('   → General notification, navigating to inbox updates tab');
+      _log('   → General notification, navigating to inbox updates tab');
       navigator.push(
         MaterialPageRoute(
           builder: (context) => const InboxScreen(initialTab: 0),
@@ -485,7 +492,7 @@ class FCMService {
     // ============================================
     else if (type == 'kyc_approved' || type == 'kyc_rejected' || type == 'account_warning' || 
              type == 'account_suspended' || type == 'account_activated') {
-      print('   → Account notification, navigating to inbox updates tab');
+      _log('   → Account notification, navigating to inbox updates tab');
       navigator.push(
         MaterialPageRoute(
           builder: (context) => const InboxScreen(initialTab: 0),
@@ -496,7 +503,7 @@ class FCMService {
     // DEFAULT
     // ============================================
     else {
-      print('   ⚠️ Unknown notification type: $type');
+      _log('   ⚠️ Unknown notification type: $type');
       // Default to inbox
       navigator.pushNamed('/inbox');
     }
@@ -505,16 +512,16 @@ class FCMService {
   /// Send FCM token to backend
   static Future<void> _sendTokenToBackend(String token) async {
     try {
-      print('   Checking authentication...');
+      _log('   Checking authentication...');
       final authToken = await AuthService.getValidToken();
       if (authToken == null) {
-        print('   ⚠️ No auth token, skipping FCM token upload');
-        print('   💡 User needs to login first');
+        _log('   ⚠️ No auth token, skipping FCM token upload');
+        _log('   💡 User needs to login first');
         return;
       }
 
-      print('   ✅ User is authenticated');
-      print('   📡 Sending to: ${ApiService.baseUrl}/save-fcm-token/');
+      _log('   ✅ User is authenticated');
+      _log('   📡 Sending to: ${ApiService.baseUrl}/save-fcm-token/');
       
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/save-fcm-token/'),
@@ -525,18 +532,18 @@ class FCMService {
         body: jsonEncode({'fcm_token': token, 'device_type': 'android'}),
       );
 
-      print('   Response status: ${response.statusCode}');
-      print('   Response body: ${response.body}');
+      _log('   Response status: ${response.statusCode}');
+      _log('   Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('   ✅ FCM token sent to backend successfully!');
+        _log('   ✅ FCM token sent to backend successfully!');
       } else {
-        print('   ❌ Failed to send FCM token: ${response.statusCode}');
-        print('   Response: ${response.body}');
+        _log('   ❌ Failed to send FCM token: ${response.statusCode}');
+        _log('   Response: ${response.body}');
       }
     } catch (e) {
-      print('   ❌ Error sending FCM token: $e');
-      print('   💡 Check if backend server is running');
+      _log('   ❌ Error sending FCM token: $e');
+      _log('   💡 Check if backend server is running');
     }
   }
 
@@ -552,14 +559,14 @@ class FCMService {
         await _sendTokenToBackend(_fcmToken!);
       }
     } catch (e) {
-      print('Error refreshing FCM token: $e');
+      _log('Error refreshing FCM token: $e');
     }
   }
 
   /// Helper method to navigate to post detail by fetching the post first
   static Future<void> _navigateToPostDetail(BuildContext context, int postId) async {
     if (postId <= 0) {
-      print('   ⚠️ Invalid post ID: $postId');
+      _log('   ⚠️ Invalid post ID: $postId');
       return;
     }
     
@@ -589,10 +596,10 @@ class FCMService {
           ),
         );
       } else {
-        print('   ⚠️ Post not found: $postId');
+        _log('   ⚠️ Post not found: $postId');
       }
     } catch (e) {
-      print('   ⚠️ Error fetching post: $e');
+      _log('   ⚠️ Error fetching post: $e');
       if (context.mounted) {
         Navigator.pop(context); // Close loading dialog
       }

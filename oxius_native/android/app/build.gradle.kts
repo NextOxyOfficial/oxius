@@ -19,7 +19,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.oxius.app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "25.1.8937393"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -66,6 +66,12 @@ android {
             }
         }
     }
+
+    packaging {
+        jniLibs {
+            keepDebugSymbols += listOf("**/*.so")
+        }
+    }
 }
 
 flutter {
@@ -77,4 +83,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     // Core library desugaring for flutter_local_notifications (requires 2.1.4+)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+}
+
+tasks.matching { it.name.startsWith("stripReleaseDebugSymbols") }.configureEach {
+    enabled = false
 }

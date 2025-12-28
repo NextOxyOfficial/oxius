@@ -356,8 +356,7 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                     // End of product info InkWell
 
-                    // Push button to bottom
-                    const Spacer(),
+                    const SizedBox(height: 6),
 
                     // Full Width Buy Now Button
                     SizedBox(

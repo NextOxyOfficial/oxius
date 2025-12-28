@@ -85,10 +85,8 @@ class _QrCodeModalState extends State<QrCodeModal> {
       // Get downloads directory
       Directory? directory;
       if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          directory = await getExternalStorageDirectory();
-        }
+        directory = await getExternalStorageDirectory();
+        directory ??= await getApplicationDocumentsDirectory();
       } else if (Platform.isIOS) {
         directory = await getApplicationDocumentsDirectory();
       } else {
