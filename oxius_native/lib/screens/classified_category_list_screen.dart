@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:http/http.dart' as http;
 import '../models/classified_post.dart';
 import '../models/geo_location.dart';
 import '../services/classified_post_service.dart';
@@ -55,6 +57,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   bool _aiSearching = false;
   bool _aiSearchDeclined = false;
   List<Map<String, dynamic>> _aiResults = [];
+  String? _aiErrorMessage;
 
   @override
   void initState() {
@@ -989,8 +992,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Widget _buildAdsyAIBot() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(12),
@@ -1176,6 +1179,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 setState(() {
                   _aiUserChoice = false;
                   _aiSearchDeclined = false;
+                  _aiResults = [];
+                  _aiErrorMessage = null;
                 });
               },
               icon: const Icon(Icons.refresh),
@@ -1208,8 +1213,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               final result = entry.value;
               
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -1326,17 +1331,53 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 height: 1.5,
               ),
             ),
+            if (_aiErrorMessage != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _aiErrorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  height: 1.35,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFDC2626),
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () {
+                setState(() {
+                  _aiUserChoice = false;
+                  _aiSearchDeclined = false;
+                  _aiResults = [];
+                  _aiErrorMessage = null;
+                });
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Try Again'),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF10B981),
+              ),
+            ),
           ],
         ],
       ),
     );
   }
 
-  void _startAISearch() {
+  Future<void> _startAISearch() async {
+    final location = _location;
+    final businessType = _categoryDetails?.businessType;
+
+    if (location == null || businessType == null || businessType.isEmpty) return;
+
     setState(() {
       _aiUserChoice = true;
       _aiSearching = true;
       _aiSearchDeclined = false;
+      _aiResults = [];
+      _aiErrorMessage = null;
     });
     
     // TODO: Replace with actual API call to your AI service
@@ -1345,15 +1386,63 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     // final data = json.decode(response.body);
     // _aiResults = data['data'] or data['data']['businesses'];
     
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _aiSearching = false;
-          // No dummy results - will show "no results found" message
-          _aiResults = [];
-        });
+    try {
+      final uri = Uri.parse('${ApiService.baseUrl}/ai-business-finder/');
+      final response = await http.post(
+        uri,
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'country': location.country,
+          'state': location.allOverBangladesh ? '' : (location.state ?? ''),
+          'city': location.allOverBangladesh ? '' : (location.city ?? ''),
+          'upazila': location.allOverBangladesh ? '' : (location.upazila ?? ''),
+          'business_type': businessType,
+        }),
+      );
+
+      List<Map<String, dynamic>> businesses = [];
+      String? errorMessage;
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map && decoded['businesses'] is List) {
+          businesses = (decoded['businesses'] as List)
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        } else if (decoded is List) {
+          businesses = decoded
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        }
+      } else {
+        try {
+          final decoded = jsonDecode(response.body);
+          if (decoded is Map && decoded['error'] != null) {
+            errorMessage = decoded['error']?.toString();
+          }
+        } catch (_) {
+          errorMessage = null;
+        }
+
+        errorMessage ??= 'Failed to fetch AI results';
       }
-    });
+
+      if (!mounted) return;
+      setState(() {
+        _aiSearching = false;
+        _aiResults = businesses;
+        _aiErrorMessage = errorMessage;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _aiSearching = false;
+        _aiResults = [];
+        _aiErrorMessage = e.toString();
+      });
+    }
   }
 
   void _declineAISearch() {
@@ -1362,6 +1451,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       _aiSearching = false;
       _aiSearchDeclined = true;
       _aiResults = [];
+      _aiErrorMessage = null;
     });
   }
 

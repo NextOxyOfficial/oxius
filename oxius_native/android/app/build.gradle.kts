@@ -19,7 +19,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.oxius.app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "25.1.8937393"
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -86,5 +86,13 @@ dependencies {
 }
 
 tasks.matching { it.name.startsWith("stripReleaseDebugSymbols") }.configureEach {
+    enabled = false
+}
+
+tasks.matching {
+    it.name.contains("DebugSymbols", ignoreCase = true) &&
+        it.name.contains("strip", ignoreCase = true) &&
+        it.name.contains("Release", ignoreCase = true)
+}.configureEach {
     enabled = false
 }

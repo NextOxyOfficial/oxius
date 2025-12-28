@@ -1,13 +1,16 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'business_network_service.dart';
+import '../firebase_options.dart';
 import '../screens/business_network/profile_screen.dart';
 import '../screens/business_network/post_detail_screen.dart';
 import '../screens/inbox_screen.dart';
@@ -22,6 +25,9 @@ void _log(String message) {
 // Top-level function for background messages
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   _log('📱 Background message received: ${message.messageId}');
   _log('📦 Data: ${message.data}');
 }
@@ -31,11 +37,51 @@ class FCMService {
   static final FlutterLocalNotificationsPlugin _localNotifications = 
       FlutterLocalNotificationsPlugin();
   
+  static const String _fcmTokenKey = 'adsyclub_fcm_token';
+  static const String _lastUploadedKey = 'adsyclub_fcm_token_last_uploaded';
   static String? _fcmToken;
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   static Map<String, dynamic>? _pendingNavigationData;
   static Timer? _pendingNavigationTimer;
   static int _pendingNavigationAttempts = 0;
+
+  static Future<void> _persistFcmToken(String token) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_fcmTokenKey, token);
+    } catch (e) {
+      _log('⚠️ Failed to persist FCM token: $e');
+    }
+  }
+
+  static Future<String?> _getPersistedFcmToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(_fcmTokenKey);
+      return (token != null && token.isNotEmpty) ? token : null;
+    } catch (e) {
+      _log('⚠️ Failed to read persisted FCM token: $e');
+      return null;
+    }
+  }
+
+  /// Sync the current (or persisted) FCM token to the backend.
+  /// Call this after login/session restore so the token upload doesn't get skipped.
+  static Future<void> syncTokenWithBackend() async {
+    try {
+      final token = _fcmToken ?? await _getPersistedFcmToken() ?? await _firebaseMessaging.getToken();
+      if (token == null || token.isEmpty) {
+        _log('❌ Cannot sync token: FCM token is null/empty');
+        return;
+      }
+
+      _fcmToken = token;
+      await _persistFcmToken(token);
+      await _sendTokenToBackend(token);
+    } catch (e) {
+      _log('❌ Error syncing FCM token: $e');
+    }
+  }
 
   /// Initialize FCM
   static Future<void> initialize() async {
@@ -75,6 +121,10 @@ class FCMService {
       _log('=' * 60);
       _log('');
 
+      if (_fcmToken != null && _fcmToken!.isNotEmpty) {
+        await _persistFcmToken(_fcmToken!);
+      }
+
       // Send token to backend
       if (_fcmToken != null) {
         _log('📤 Sending FCM token to backend...');
@@ -87,6 +137,7 @@ class FCMService {
       _firebaseMessaging.onTokenRefresh.listen((newToken) {
         _log('🔄 FCM Token refreshed: $newToken');
         _fcmToken = newToken;
+        _persistFcmToken(newToken);
         _sendTokenToBackend(newToken);
       });
 
@@ -512,12 +563,27 @@ class FCMService {
   /// Send FCM token to backend
   static Future<void> _sendTokenToBackend(String token) async {
     try {
+      final currentUserId = AuthService.currentUser?.id ?? '';
+      final uploadKey = '$currentUserId:$token';
+
       _log('   Checking authentication...');
       final authToken = await AuthService.getValidToken();
       if (authToken == null) {
         _log('   ⚠️ No auth token, skipping FCM token upload');
         _log('   💡 User needs to login first');
         return;
+      }
+
+      // Avoid re-uploading the exact same token for the same logged-in user
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final lastUploaded = prefs.getString(_lastUploadedKey);
+        if (lastUploaded == uploadKey) {
+          _log('   ℹ️ FCM token already uploaded for this user, skipping');
+          return;
+        }
+      } catch (_) {
+        // Ignore
       }
 
       _log('   ✅ User is authenticated');
@@ -537,6 +603,12 @@ class FCMService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         _log('   ✅ FCM token sent to backend successfully!');
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_lastUploadedKey, uploadKey);
+        } catch (_) {
+          // Ignore
+        }
       } else {
         _log('   ❌ Failed to send FCM token: ${response.statusCode}');
         _log('   Response: ${response.body}');

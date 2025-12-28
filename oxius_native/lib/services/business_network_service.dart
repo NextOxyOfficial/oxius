@@ -30,11 +30,8 @@ class BusinessNetworkService {
         }
         
         if (logoUrl != null && logoUrl.isNotEmpty) {
-          // Convert relative URL to absolute if needed
-          if (logoUrl.startsWith('/')) {
-            return '${ApiService.baseUrl}$logoUrl';
-          }
-          return logoUrl;
+          // Convert relative URL to absolute (MEDIA base URL), keep absolute URLs as-is
+          return ApiService.getAbsoluteUrl(logoUrl);
         }
       }
       return null;

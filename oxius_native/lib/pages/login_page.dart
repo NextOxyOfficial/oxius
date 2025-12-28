@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
+import '../services/fcm_service.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/terms_and_conditions_screen.dart';
 
@@ -47,6 +48,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       if (mounted && authResponse != null) {
         final userState = UserStateService();
         userState.updateUser(authResponse.user);
+
+        await FCMService.syncTokenWithBackend();
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

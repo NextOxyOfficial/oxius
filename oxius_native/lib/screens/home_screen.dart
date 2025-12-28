@@ -330,6 +330,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final refreshEdgeOffset = topPadding + 56;
+
     return PopScope(
       canPop: false,
       onPopInvoked: (bool didPop) async {
@@ -355,13 +358,16 @@ class _HomeScreenState extends State<HomeScreen> {
             onRefresh: _handleRefresh,
             color: const Color(0xFF3B82F6),
             backgroundColor: Colors.white,
+            edgeOffset: refreshEdgeOffset,
+            displacement: 24,
+            triggerMode: RefreshIndicatorTriggerMode.anywhere,
             child: SingleChildScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 children: [
                   // Add spacing for header
-                  SizedBox(height: MediaQuery.of(context).padding.top + 56 + 8),
+                  SizedBox(height: topPadding + 56 + 8),
                   // 1. Hero Banner - Main banner slider + service menu grid
                   const HeroBanner(),
                   

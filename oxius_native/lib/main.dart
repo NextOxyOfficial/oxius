@@ -88,6 +88,7 @@ void main() async {
     
     if (userState.isAuthenticated) {
       print('Session restored successfully for user: ${userState.userName}');
+      await FCMService.syncTokenWithBackend();
     } else {
       print('No existing session found');
     }

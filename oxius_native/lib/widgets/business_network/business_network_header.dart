@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
 import '../../services/adsyconnect_service.dart';
@@ -175,34 +176,51 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                   child: Row(
                     children: [
                       _businessNetworkLogoUrl != null && _businessNetworkLogoUrl!.isNotEmpty
-                          ? Image.network(
-                              _businessNetworkLogoUrl!,
-                              height: 32,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Text(
-                                  'Business Network',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
-                                    letterSpacing: -0.3,
-                                  ),
-                                );
-                              },
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const Text(
-                                  'Business Network',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
-                                    letterSpacing: -0.3,
-                                  ),
-                                );
-                              },
-                            )
+                          ? (_businessNetworkLogoUrl!.toLowerCase().contains('.svg')
+                              ? SvgPicture.network(
+                                  _businessNetworkLogoUrl!,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                  placeholderBuilder: (context) {
+                                    return const Text(
+                                      'Business Network',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Image.network(
+                                  _businessNetworkLogoUrl!,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Text(
+                                      'Business Network',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    );
+                                  },
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Text(
+                                      'Business Network',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black87,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    );
+                                  },
+                                ))
                           : const Text(
                               'Business Network',
                               style: TextStyle(
