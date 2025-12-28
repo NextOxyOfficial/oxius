@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.io.StringReader
 
 plugins {
     id("com.android.application")
@@ -13,8 +14,26 @@ plugins {
 val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
-    keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
+    val bytes = keystorePropertiesFile.readBytes()
+    val content = when {
+        bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xFE.toByte() -> String(bytes, Charsets.UTF_16LE)
+        bytes.size >= 2 && bytes[0] == 0xFE.toByte() && bytes[1] == 0xFF.toByte() -> String(bytes, Charsets.UTF_16BE)
+        else -> String(bytes, Charsets.UTF_8)
+    }
+
+    keystoreProperties.load(StringReader(content))
 }
+
+fun keystoreProp(name: String): String? {
+    return keystoreProperties.getProperty(name)
+        ?: keystoreProperties.getProperty("\uFEFF$name")
+}
+
+val hasReleaseSigning =
+    !keystoreProp("keyAlias").isNullOrBlank() &&
+        !keystoreProp("keyPassword").isNullOrBlank() &&
+        !keystoreProp("storePassword").isNullOrBlank() &&
+        !keystoreProp("storeFile").isNullOrBlank()
 
 android {
     namespace = "com.oxius.app"
@@ -41,22 +60,22 @@ android {
 
     signingConfigs {
         create("release") {
-            if (keystoreProperties.containsKey("keyAlias")) {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
+            if (!hasReleaseSigning) {
+                throw GradleException(
+                    "Release signing is not configured. Please create android/key.properties with storeFile, storePassword, keyAlias, keyPassword."
+                )
             }
+
+            keyAlias = keystoreProp("keyAlias")
+            keyPassword = keystoreProp("keyPassword")
+            storeFile = file(keystoreProp("storeFile")!!)
+            storePassword = keystoreProp("storePassword")
         }
     }
 
     buildTypes {
         release {
-            signingConfig = if (keystoreProperties.containsKey("keyAlias")) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            signingConfig = signingConfigs.getByName("release")
             // Temporarily disable minification to avoid symbol stripping issues
             isMinifyEnabled = false
             isShrinkResources = false
@@ -64,12 +83,6 @@ android {
             ndk {
                 debugSymbolLevel = "NONE"
             }
-        }
-    }
-
-    packaging {
-        jniLibs {
-            keepDebugSymbols += listOf("**/*.so")
         }
     }
 }
@@ -83,16 +96,4 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     // Core library desugaring for flutter_local_notifications (requires 2.1.4+)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-}
-
-tasks.matching { it.name.startsWith("stripReleaseDebugSymbols") }.configureEach {
-    enabled = false
-}
-
-tasks.matching {
-    it.name.contains("DebugSymbols", ignoreCase = true) &&
-        it.name.contains("strip", ignoreCase = true) &&
-        it.name.contains("Release", ignoreCase = true)
-}.configureEach {
-    enabled = false
 }
