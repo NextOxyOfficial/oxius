@@ -367,7 +367,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 userName: _userData!['first_name'] != null && _userData!['last_name'] != null
                     ? '${_userData!['first_name']} ${_userData!['last_name']}'
                     : _userData!['username'] ?? 'User',
-                userAvatar: _userData!['profile_picture'],
+                userAvatar: _userData?['image'] ?? _userData?['profile_picture'] ?? _userData?['avatar'],
                 profession: _userData!['profession'],
                 isOnline: false,
               ),

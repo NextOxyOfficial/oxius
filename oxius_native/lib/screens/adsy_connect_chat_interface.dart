@@ -16,6 +16,7 @@ import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/chat_video_player.dart';
 import '../widgets/skeleton_loader.dart';
+import '../config/app_config.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -1629,35 +1630,41 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                         ],
                       ),
                     ),
-                    child: widget.userAvatar != null
-                        ? ClipOval(
-                            child: Image.network(
-                              widget.userAvatar!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Text(
-                                    widget.userName[0].toUpperCase(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                    child: () {
+                      final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
+
+                      if (avatarUrl.isNotEmpty) {
+                        return ClipOval(
+                          child: Image.network(
+                            avatarUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Text(
+                                  widget.userName[0].toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
                                   ),
-                                );
-                              },
-                            ),
-                          )
-                        : Center(
-                            child: Text(
-                              widget.userName[0].toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                                ),
+                              );
+                            },
                           ),
+                        );
+                      }
+
+                      return Center(
+                        child: Text(
+                          widget.userName[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      );
+                    }(),
                   ),
                 ),
                 if (widget.isOnline)
@@ -1907,7 +1914,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               child: widget.userAvatar != null
                   ? ClipOval(
                       child: Image.network(
-                        widget.userAvatar!,
+                        AppConfig.getAbsoluteUrl(widget.userAvatar),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Center(

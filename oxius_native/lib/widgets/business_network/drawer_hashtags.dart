@@ -33,15 +33,16 @@ class _DrawerHashtagsState extends State<DrawerHashtags> {
         final data = json.decode(response.body);
         if (data is List) {
           setState(() {
-            _tags = List<Map<String, dynamic>>.from(
-              data.take(30).map((item) => {
+            final mapped = List<Map<String, dynamic>>.from(
+              data.map((item) => {
                 'id': item['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
                 'tag': item['tag'] ?? '',
                 'count': item['count'] ?? 0,
               }),
             );
-            // Sort by count descending
-            _tags.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+
+            mapped.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+            _tags = mapped.take(12).toList();
           });
         }
       }

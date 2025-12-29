@@ -260,6 +260,55 @@ class MindForceService {
     }
   }
 
+  static Future<MindForceComment?> updateComment({
+    required String commentId,
+    required String content,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) return null;
+
+      final response = await http.patch(
+        Uri.parse('${ApiService.baseUrl}/bn/mindforce/comments/$commentId/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'content': content}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return MindForceComment.fromJson(data);
+      }
+
+      return null;
+    } catch (e) {
+      print('Error updating comment: $e');
+      return null;
+    }
+  }
+
+  static Future<bool> deleteComment(String commentId) async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) return false;
+
+      final response = await http.delete(
+        Uri.parse('${ApiService.baseUrl}/bn/mindforce/comments/$commentId/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      return response.statusCode == 204 || response.statusCode == 200;
+    } catch (e) {
+      print('Error deleting comment: $e');
+      return false;
+    }
+  }
+
   // Mark problem as solved
   static Future<bool> markProblemAsSolved(String problemId) async {
     return updateProblem(problemId, {'status': 'solved'});
