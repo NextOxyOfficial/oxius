@@ -41,6 +41,31 @@ class AdsyConnectService {
     }
   }
 
+  static Future<Map<String, dynamic>?> getChatRoomDetails(String chatroomId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$baseUrl/chatrooms/$chatroomId/'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('Error fetching chatroom details: $e');
+      return null;
+    }
+  }
+
   // Get all chat rooms
   static Future<List<dynamic>> getChatRooms({
     int page = 1,

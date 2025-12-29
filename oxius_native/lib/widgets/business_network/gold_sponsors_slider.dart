@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import 'package:flutter_html/flutter_html.dart';
 import '../../models/gold_sponsor_models.dart';
 import '../../services/gold_sponsor_service.dart';
 
@@ -549,15 +550,19 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                       ),
                                       if (widget.sponsor.businessDescription != null) ...[
                                         const SizedBox(height: 3),
-                                        Text(
-                                          widget.sponsor.businessDescription!,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade600,
-                                            height: 1.3,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                        Html(
+                                          data: widget.sponsor.businessDescription!,
+                                          style: {
+                                            '*': Style(
+                                              margin: Margins.zero,
+                                              padding: HtmlPaddings.zero,
+                                              fontSize: FontSize(12),
+                                              color: Colors.grey.shade600,
+                                              lineHeight: const LineHeight(1.3),
+                                              maxLines: 2,
+                                              textOverflow: TextOverflow.ellipsis,
+                                            ),
+                                          },
                                         ),
                                       ],
                                     ],

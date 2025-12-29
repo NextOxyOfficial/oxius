@@ -228,6 +228,162 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     return user != null && _problem != null && user.id == _problem!.userDetails.id;
   }
 
+  bool _isCommentAuthor(MindForceComment comment) {
+    final user = AuthService.currentUser;
+    return user != null && user.id == comment.userDetails.id;
+  }
+
+  bool _canDeleteComment(MindForceComment comment) {
+    return isOwner || _isCommentAuthor(comment);
+  }
+
+  bool _canEditComment(MindForceComment comment) {
+    return _isCommentAuthor(comment);
+  }
+
+  void _showCommentActions(MindForceComment comment) {
+    final canEdit = _canEditComment(comment);
+    final canDelete = _canDeleteComment(comment);
+
+    if (!canEdit && !canDelete) return;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (canEdit)
+                ListTile(
+                  leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
+                  title: const Text('Edit'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _editComment(comment);
+                  },
+                ),
+              if (canEdit && canDelete) const Divider(height: 1),
+              if (canDelete)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deleteComment(comment);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _editComment(MindForceComment comment) async {
+    final controller = TextEditingController(text: comment.content);
+    try {
+      final shouldSave = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Edit advice'),
+            content: TextField(
+              controller: controller,
+              maxLines: null,
+              decoration: const InputDecoration(
+                hintText: 'Update your advice',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (shouldSave != true) return;
+      final newText = controller.text.trim();
+      if (newText.isEmpty) return;
+
+      final updated = await MindForceService.updateComment(
+        commentId: comment.id,
+        content: newText,
+      );
+
+      if (!mounted) return;
+
+      if (updated != null) {
+        await _loadProblemDetails();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Comment updated')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update comment'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } finally {
+      controller.dispose();
+    }
+  }
+
+  Future<void> _deleteComment(MindForceComment comment) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete advice'),
+          content: const Text('Are you sure you want to delete this advice?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    final success = await MindForceService.deleteComment(comment.id);
+    if (!mounted) return;
+
+    if (success) {
+      await _loadProblemDetails();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Comment deleted')),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -692,17 +848,22 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
   }
 
   Widget _buildCommentItem(MindForceComment comment) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: comment.isSolved ? Colors.green.shade50 : Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: comment.isSolved ? Colors.green.shade200 : Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return InkWell(
+      onLongPress: (_canEditComment(comment) || _canDeleteComment(comment))
+          ? () => _showCommentActions(comment)
+          : null,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: comment.isSolved ? Colors.green.shade50 : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: comment.isSolved ? Colors.green.shade200 : Colors.grey.shade200),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Row(
             children: [
               Container(

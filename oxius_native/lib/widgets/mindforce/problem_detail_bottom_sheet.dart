@@ -75,6 +75,169 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     }
   }
 
+  bool _isCommentAuthor(MindForceComment comment) {
+    final currentUserId = AuthService.currentUser?.id;
+    if (currentUserId == null) return false;
+    return comment.userDetails.id == currentUserId;
+  }
+
+  bool _isProblemOwner() {
+    final currentUserId = AuthService.currentUser?.id;
+    if (currentUserId == null || _problem == null) return false;
+    return _problem!.userDetails.id == currentUserId;
+  }
+
+  bool _canDeleteComment(MindForceComment comment) {
+    return _isProblemOwner() || _isCommentAuthor(comment);
+  }
+
+  bool _canEditComment(MindForceComment comment) {
+    return _isCommentAuthor(comment);
+  }
+
+  void _showCommentActions(MindForceComment comment) {
+    final canEdit = _canEditComment(comment);
+    final canDelete = _canDeleteComment(comment);
+
+    if (!canEdit && !canDelete) return;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (canEdit)
+                ListTile(
+                  leading: const Icon(Icons.edit, color: Color(0xFF3B82F6)),
+                  title: const Text('Edit'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _editComment(comment);
+                  },
+                ),
+              if (canEdit && canDelete) const Divider(height: 1),
+              if (canDelete)
+                ListTile(
+                  leading: const Icon(Icons.delete, color: Colors.red),
+                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _deleteComment(comment);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _editComment(MindForceComment comment) async {
+    final controller = TextEditingController(text: comment.content);
+    try {
+      final shouldSave = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Edit comment'),
+            content: TextField(
+              controller: controller,
+              maxLines: null,
+              decoration: const InputDecoration(
+                hintText: 'Update your comment',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (shouldSave != true) return;
+      final newText = controller.text.trim();
+      if (newText.isEmpty) return;
+
+      final updated = await MindForceService.updateComment(
+        commentId: comment.id,
+        content: newText,
+      );
+
+      if (!mounted) return;
+
+      if (updated != null) {
+        await _reloadComments();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Comment updated')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update comment'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } finally {
+      controller.dispose();
+    }
+  }
+
+  Future<void> _deleteComment(MindForceComment comment) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete comment'),
+          content: const Text('Are you sure you want to delete this comment?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    final success = await MindForceService.deleteComment(comment.id);
+    if (!mounted) return;
+
+    if (success) {
+      await _reloadComments();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Comment deleted')),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   Future<void> _reloadComments() async {
     setState(() => _isLoadingComments = true);
 
@@ -649,218 +812,221 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     final currentUserId = AuthService.currentUser?.id;
     final isOwner = _problem?.userDetails.id == currentUserId;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 1),
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            color: comment.isSolved ? Colors.green.shade400 : Colors.grey.shade300,
-            width: 3,
-          ),
-          bottom: BorderSide(
-            color: Colors.grey.shade200,
-            width: 0.5,
+    return InkWell(
+      onLongPress: (_canEditComment(comment) || _canDeleteComment(comment))
+          ? () => _showCommentActions(comment)
+          : null,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 1),
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: comment.isSolved ? Colors.green.shade400 : Colors.grey.shade300,
+              width: 3,
+            ),
+            bottom: BorderSide(
+              color: Colors.grey.shade200,
+              width: 0.5,
+            ),
           ),
         ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-        color: comment.isSolved ? Colors.green.shade50.withOpacity(0.3) : Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor: comment.isSolved ? Colors.green.shade100 : Colors.blue.shade100,
-                  backgroundImage: comment.userDetails.image != null
-                      ? NetworkImage(AppConfig.getAbsoluteUrl(comment.userDetails.image!))
-                      : null,
-                  child: comment.userDetails.image == null
-                      ? Text(
-                          comment.userDetails.name[0].toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: comment.isSolved ? Colors.green.shade700 : Colors.blue.shade700,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/business-network/profile',
-                              arguments: {'userId': comment.userDetails.id},
-                            );
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  comment.userDetails.name,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF3B82F6),
-                                    decoration: TextDecoration.none,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (comment.userDetails.isPro) ...[
-                                const SizedBox(width: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                                    ),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    'PRO',
-                                    style: TextStyle(
-                                      fontSize: 7,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              if (comment.userDetails.kyc) ...[
-                                const SizedBox(width: 3),
-                                Icon(
-                                  Icons.verified,
-                                  size: 12,
-                                  color: Colors.blue.shade600,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '• ${formatTimeAgo(comment.createdAt)}',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                      if (comment.isSolved) ...[
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade600,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.check_circle, size: 9, color: Colors.white),
-                              SizedBox(width: 3),
-                              Text(
-                                'Solution',
-                                style: TextStyle(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                // Mark as solution button on the right
-                if (isOwner && !comment.isSolved && _problem!.status != 'solved')
-                  InkWell(
-                    onTap: () => _markAsSolution(comment.id),
-                    borderRadius: BorderRadius.circular(4),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade50,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: Colors.green.shade300, width: 0.5),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.check_circle_outline, size: 12, color: Colors.green.shade700),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Mark as solution',
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+          color: comment.isSolved ? Colors.green.shade50.withOpacity(0.3) : Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 12,
+                    backgroundColor: comment.isSolved ? Colors.green.shade100 : Colors.blue.shade100,
+                    backgroundImage: comment.userDetails.image != null
+                        ? NetworkImage(AppConfig.getAbsoluteUrl(comment.userDetails.image!))
+                        : null,
+                    child: comment.userDetails.image == null
+                        ? Text(
+                            comment.userDetails.name[0].toUpperCase(),
                             style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.green.shade700,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: comment.isSolved ? Colors.green.shade700 : Colors.blue.shade700,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/business-network/profile',
+                                arguments: {'userId': comment.userDetails.id},
+                              );
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    comment.userDetails.name,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF3B82F6),
+                                      decoration: TextDecoration.none,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (comment.userDetails.isPro) ...[
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'PRO',
+                                      style: TextStyle(
+                                        fontSize: 7,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                if (comment.userDetails.kyc) ...[
+                                  const SizedBox(width: 3),
+                                  Icon(
+                                    Icons.verified,
+                                    size: 12,
+                                    color: Colors.blue.shade600,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '• ${formatTimeAgo(comment.createdAt)}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                        if (comment.isSolved) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade600,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.check_circle, size: 9, color: Colors.white),
+                                SizedBox(width: 3),
+                                Text(
+                                  'Solution',
+                                  style: TextStyle(
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
+                      ],
+                    ),
+                  ),
+                  if (isOwner && !comment.isSolved && _problem!.status != 'solved')
+                    InkWell(
+                      onTap: () => _markAsSolution(comment.id),
+                      borderRadius: BorderRadius.circular(4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.green.shade300, width: 0.5),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_outline, size: 12, color: Colors.green.shade700),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Mark as solution',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Padding(
-              padding: const EdgeInsets.only(left: 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    comment.content,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      height: 1.4,
-                      color: Color(0xFF374151),
-                    ),
-                  ),
-                  // Comment images
-                  if (comment.media.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: comment.media.map((media) {
-                        final fullUrl = AppConfig.getAbsoluteUrl(media.image);
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Image.network(
-                            fullUrl,
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 60,
-                              height: 60,
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.broken_image, size: 16),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(left: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      comment.content,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        height: 1.4,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                    if (comment.media.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: comment.media.map((media) {
+                          final fullUrl = AppConfig.getAbsoluteUrl(media.image);
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              fullUrl,
+                              width: 60,
+                              height: 60,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: 60,
+                                height: 60,
+                                color: Colors.grey.shade200,
+                                child: const Icon(Icons.broken_image, size: 16),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -825,7 +825,7 @@ class _CommentItemState extends State<_CommentItem> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      data['username'] ?? data['full_name'] ?? data['display'] ?? '',
+                                      data['full_name'] ?? data['display'] ?? '',
                                       style: const TextStyle(fontSize: 14),
                                     ),
                                   ],

@@ -70,16 +70,76 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   String? _playingVoiceMessageId;
   Duration _voicePosition = Duration.zero;
   Duration _voiceDuration = Duration.zero;
+  bool _isChatBlocked = false;
+  bool _blockedByMe = false;
+  bool _isLoadingChatroomStatus = false;
+  int _statusPollCounter = 0;
 
   @override
   void initState() {
     super.initState();
     // Set this chat as active to prevent push notifications
     ActiveChatTracker.setActiveChat(widget.chatroomId);
+    _loadChatroomStatus();
     _loadMessages();
     _messageController.addListener(_onTypingChanged);
     _scrollController.addListener(_onScroll);
     _startMessagePolling();
+  }
+
+  bool _parseBool(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final v = value.toLowerCase().trim();
+      return v == 'true' || v == '1' || v == 'yes';
+    }
+    return false;
+  }
+
+  Future<void> _loadChatroomStatus() async {
+    if (_isLoadingChatroomStatus) return;
+    setState(() => _isLoadingChatroomStatus = true);
+
+    try {
+      final data = await AdsyConnectService.getChatRoomDetails(widget.chatroomId);
+      if (!mounted) return;
+
+      if (data == null) {
+        setState(() => _isLoadingChatroomStatus = false);
+        return;
+      }
+
+      final currentUserId = AuthService.currentUser?.id;
+
+      final isBlocked = _parseBool(data['is_blocked'] ?? data['blocked'] ?? data['isBlocked']);
+      bool blockedByMe = _parseBool(data['blocked_by_me'] ?? data['is_blocked_by_me'] ?? data['blockedByMe']);
+
+      final blockedBy = data['blocked_by'];
+      if (!blockedByMe && currentUserId != null && blockedBy != null) {
+        if (blockedBy is Map) {
+          final id = blockedBy['id']?.toString() ?? blockedBy['user_id']?.toString();
+          if (id != null && id == currentUserId) {
+            blockedByMe = true;
+          }
+        } else {
+          if (blockedBy.toString() == currentUserId) {
+            blockedByMe = true;
+          }
+        }
+      }
+
+      setState(() {
+        _isChatBlocked = isBlocked || blockedByMe;
+        _blockedByMe = blockedByMe;
+        _isLoadingChatroomStatus = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingChatroomStatus = false);
+      }
+    }
   }
 
   void _onScroll() {
@@ -226,6 +286,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     _messagePollingTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted && !_isLoadingMessages) {
         _checkForNewMessages();
+        _statusPollCounter++;
+        if (_statusPollCounter >= 5) {
+          _statusPollCounter = 0;
+          _loadChatroomStatus();
+        }
       }
     });
   }
@@ -455,6 +520,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Future<void> _sendMessage() async {
+    if (_isChatBlocked) return;
     if (_messageController.text.trim().isEmpty) return;
 
     final messageText = _messageController.text.trim();
@@ -484,6 +550,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       print('🔴 Error sending message: $e');
       if (mounted) {
         setState(() => _isSendingMessage = false);
+
+        final errorStr = e.toString().toLowerCase();
+        if (errorStr.contains('403') || errorStr.contains('permission denied') || errorStr.contains('blocked')) {
+          setState(() {
+            _isChatBlocked = true;
+            _blockedByMe = false;
+          });
+        }
         
         // Restore the message text
         _messageController.text = messageText;
@@ -1088,6 +1162,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Future<void> _sendSelectedImages() async {
+    if (_isChatBlocked) return;
     if (_selectedImages.isEmpty) return;
 
     setState(() => _isSendingMessage = true);
@@ -1168,6 +1243,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Future<void> _sendMediaMessage(String filePath, String type, {String? fileName}) async {
+    if (_isChatBlocked) return;
     setState(() {
       _isSendingMessage = true;
       _isUploadingAttachment = true;
@@ -1203,6 +1279,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });
+
+        final errorStr = e.toString().toLowerCase();
+        if (errorStr.contains('403') || errorStr.contains('permission denied') || errorStr.contains('blocked')) {
+          setState(() {
+            _isChatBlocked = true;
+            _blockedByMe = false;
+          });
+        }
         
         // Show professional error message
         NetworkErrorHandler.showErrorSnackbar(
@@ -1216,6 +1300,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   Future<void> _sendMediaMessageWeb(List<int> bytes, String type, {String? fileName}) async {
+    if (_isChatBlocked) return;
     setState(() {
       _isSendingMessage = true;
       _isUploadingAttachment = true;
@@ -1251,6 +1336,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });
+
+        final errorStr = e.toString().toLowerCase();
+        if (errorStr.contains('403') || errorStr.contains('permission denied') || errorStr.contains('blocked')) {
+          setState(() {
+            _isChatBlocked = true;
+            _blockedByMe = false;
+          });
+        }
         
         // Show professional error message
         NetworkErrorHandler.showErrorSnackbar(
@@ -1277,10 +1370,67 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         // TODO: Show block confirmation
         _showBlockConfirmation();
         break;
+      case 'unblock':
+        _showUnblockConfirmation();
+        break;
       case 'report':
         // TODO: Show report dialog
         _showReportDialog();
         break;
+    }
+  }
+
+  Future<void> _blockUser() async {
+    try {
+      await AdsyConnectService.blockUser(widget.chatroomId);
+      if (mounted) {
+        setState(() {
+          _isChatBlocked = true;
+          _blockedByMe = true;
+        });
+      }
+
+      await _loadChatroomStatus();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${widget.userName} has been blocked'),
+            backgroundColor: const Color(0xFFF59E0B),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        NetworkErrorHandler.showErrorSnackbar(context, e);
+      }
+    }
+  }
+
+  Future<void> _unblockUser() async {
+    try {
+      await AdsyConnectService.unblockUser(widget.chatroomId);
+      if (mounted) {
+        setState(() {
+          _isChatBlocked = false;
+          _blockedByMe = false;
+          _selectedImages.clear();
+          _compressedImages.clear();
+        });
+      }
+
+      await _loadChatroomStatus();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${widget.userName} has been unblocked'),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        NetworkErrorHandler.showErrorSnackbar(context, e);
+      }
     }
   }
 
@@ -1319,18 +1469,60 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             onPressed: () {
               Navigator.pop(context);
               // TODO: Block user
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${widget.userName} has been blocked'),
-                  backgroundColor: const Color(0xFFF59E0B),
-                ),
-              );
+              _blockUser();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFF59E0B),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUnblockConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.lock_open_rounded, color: Color(0xFF10B981), size: 20),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Unblock User',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Text(
+          'Unblock ${widget.userName} to continue messaging.',
+          style: const TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _unblockUser();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Unblock'),
           ),
         ],
       ),
@@ -1805,13 +1997,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               ),
             ),
             PopupMenuItem(
-              value: 'block',
+              value: _blockedByMe ? 'unblock' : 'block',
               child: Row(
                 children: [
-                  const Icon(Icons.block_rounded, size: 18, color: Color(0xFFF59E0B)),
+                  Icon(
+                    _blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
+                    size: 18,
+                    color: _blockedByMe ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                  ),
                   const SizedBox(width: 12),
                   Text(
-                    'Block',
+                    _blockedByMe ? 'Unblock' : 'Block',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -2521,6 +2717,82 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   Widget _buildMessageInput() {
     if (_isRecording) {
       return _buildRecordingUI();
+    }
+
+    if (_isChatBlocked) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(
+            top: BorderSide(
+              color: const Color(0xFFE5E7EB).withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: (_blockedByMe ? const Color(0xFFF59E0B) : const Color(0xFFEF4444)).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.block_rounded,
+                      size: 18,
+                      color: _blockedByMe ? const Color(0xFFF59E0B) : const Color(0xFFEF4444),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _blockedByMe ? 'You blocked this user' : 'You can\'t send messages',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1F2937),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _blockedByMe
+                              ? 'Unblock to send messages again.'
+                              : 'Messaging is disabled in this conversation.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_blockedByMe)
+                    TextButton(
+                      onPressed: _unblockUser,
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF10B981),
+                      ),
+                      child: const Text(
+                        'Unblock',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     return Column(

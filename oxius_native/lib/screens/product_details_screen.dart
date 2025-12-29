@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/eshop_service.dart';
@@ -1243,14 +1244,27 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 // Description Tab
                 SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: Text(
-                    description.isNotEmpty ? description : 'No description available',
-                    style: GoogleFonts.roboto(
-                      fontSize: 14,
-                      color: Colors.grey.shade700,
-                      height: 1.6,
-                    ),
-                  ),
+                  child: description.isNotEmpty
+                      ? Html(
+                          data: description,
+                          style: {
+                            '*': Style(
+                              margin: Margins.zero,
+                              padding: HtmlPaddings.zero,
+                              fontSize: FontSize(14),
+                              color: Colors.grey.shade700,
+                              lineHeight: const LineHeight(1.6),
+                            ),
+                          },
+                        )
+                      : Text(
+                          'No description available',
+                          style: GoogleFonts.roboto(
+                            fontSize: 14,
+                            color: Colors.grey.shade700,
+                            height: 1.6,
+                          ),
+                        ),
                 ),
                 // Delivery Information Tab
                 _buildDeliveryTab(product),
