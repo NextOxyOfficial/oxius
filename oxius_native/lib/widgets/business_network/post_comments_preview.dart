@@ -512,7 +512,8 @@ class _CommentItemState extends State<_CommentItem> {
       final users = await UserSearchService.searchUsers(query);
       return users.map((user) => {
         'id': user.id ?? user.name,
-        'display': user.name,
+        'display': (user.username != null && user.username!.trim().isNotEmpty) ? user.username!.trim() : user.name,
+        'full_name': user.name,
         'photo': user.image ?? user.avatar,
       }).toList();
     } catch (e) {
@@ -824,7 +825,7 @@ class _CommentItemState extends State<_CommentItem> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      data['display'],
+                                      data['username'] ?? data['full_name'] ?? data['display'] ?? '',
                                       style: const TextStyle(fontSize: 14),
                                     ),
                                   ],
@@ -870,14 +871,10 @@ class _CommentItemState extends State<_CommentItem> {
                             onPressed: () async {
                               // Get text from FlutterMentions and format for storage
                               final plainText = _editMentionKey.currentState?.controller?.text ?? '';
-                              final formattedText = plainText.replaceAllMapped(
-                                RegExp(r'@([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)(?=\s|[.!?,;:]|$)'),
-                                (match) => '@${match.group(1)}  ',
-                              );
                               
                               final updatedComment = await BusinessNetworkService.updateComment(
                                 commentId: widget.comment.id,
-                                content: formattedText,
+                                content: plainText.trim(),
                               );
                               if (!mounted) return;
                               
