@@ -81,7 +81,7 @@ android {
             isShrinkResources = false
             // Disable native debug symbol stripping to avoid build issues
             ndk {
-                debugSymbolLevel = "NONE"
+                debugSymbolLevel = "FULL"
             }
         }
     }
