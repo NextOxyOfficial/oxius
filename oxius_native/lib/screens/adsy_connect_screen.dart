@@ -19,6 +19,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   bool _hasMore = true;
   Timer? _pollingTimer;
 
+  static const int _pageSize = 20;
+
   @override
   void initState() {
     super.initState();
@@ -37,7 +39,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   Future<void> _refreshChatsInBackground() async {
     try {
-      final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
+      final chatRooms = await AdsyConnectService.getChatRooms(page: 1, pageSize: _pageSize);
       
       if (mounted) {
         setState(() {
@@ -83,8 +85,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
     
     try {
-      print('🔵 Loading chat rooms, page: $_currentPage');
-      final chatRooms = await AdsyConnectService.getChatRooms(page: _currentPage);
+      final pageToLoad = loadMore ? _currentPage + 1 : 1;
+      print('🔵 Loading chat rooms, page: $pageToLoad');
+      final chatRooms = await AdsyConnectService.getChatRooms(page: pageToLoad, pageSize: _pageSize);
       print('🟢 Loaded ${chatRooms.length} chat rooms');
       
       if (mounted) {
@@ -101,15 +104,16 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             print('📊 Adding ${uniqueNewChats.length} unique chats (filtered ${newChats.length - uniqueNewChats.length} duplicates)');
             _chatConversations.addAll(uniqueNewChats);
             
-            // Increment page for next load
-            _currentPage++;
+            // Move to the page we just successfully loaded
+            _currentPage = pageToLoad;
           } else {
             _chatConversations = newChats;
+            _currentPage = 1;
           }
           
           _isLoadingChats = false;
           _isLoadingMore = false;
-          _hasMore = chatRooms.length >= 20;
+          _hasMore = chatRooms.length >= _pageSize;
         });
       }
     } catch (e) {
@@ -293,7 +297,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           color: const Color(0xFF3B82F6),
           child: NotificationListener<ScrollNotification>(
             onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+              if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
                 _loadMoreChats();
               }
               return false;

@@ -42,13 +42,16 @@ class AdsyConnectService {
   }
 
   // Get all chat rooms
-  static Future<List<dynamic>> getChatRooms({int page = 1}) async {
+  static Future<List<dynamic>> getChatRooms({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
       final headers = await _getHeaders();
-      print('🔵 Fetching chat rooms from: $baseUrl/chatrooms/?page=$page');
+      print('🔵 Fetching chat rooms from: $baseUrl/chatrooms/?page=$page&page_size=$pageSize');
       
       final response = await http.get(
-        Uri.parse('$baseUrl/chatrooms/?page=$page'),
+        Uri.parse('$baseUrl/chatrooms/?page=$page&page_size=$pageSize'),
         headers: headers,
       );
 
@@ -65,7 +68,13 @@ class AdsyConnectService {
         
         // Otherwise assume it's a direct list
         if (data is List) {
-          return data;
+          final full = List<dynamic>.from(data);
+          final start = (page - 1) * pageSize;
+          if (start >= full.length) {
+            return [];
+          }
+          final end = (start + pageSize) > full.length ? full.length : (start + pageSize);
+          return full.sublist(start, end);
         }
         
         // If neither, return empty list
@@ -80,13 +89,17 @@ class AdsyConnectService {
   }
 
   // Get messages for a chat room
-  static Future<List<dynamic>> getMessages(String chatroomId, {int page = 1}) async {
+  static Future<List<dynamic>> getMessages(
+    String chatroomId, {
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
       final headers = await _getHeaders();
-      print('🔵 Fetching messages from: $baseUrl/messages/?chatroom=$chatroomId&page=$page');
+      print('🔵 Fetching messages from: $baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize');
       
       final response = await http.get(
-        Uri.parse('$baseUrl/messages/?chatroom=$chatroomId&page=$page'),
+        Uri.parse('$baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize'),
         headers: headers,
       );
 
@@ -103,7 +116,13 @@ class AdsyConnectService {
         
         // Otherwise assume it's a direct list
         if (data is List) {
-          return data;
+          final full = List<dynamic>.from(data);
+          final start = (page - 1) * pageSize;
+          if (start >= full.length) {
+            return [];
+          }
+          final end = (start + pageSize) > full.length ? full.length : (start + pageSize);
+          return full.sublist(start, end);
         }
         
         // If neither, return empty list

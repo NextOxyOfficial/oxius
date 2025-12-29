@@ -272,6 +272,7 @@ class WalletService {
     String? type, // deposit, withdraw, transfer
     String? status, // completed, pending, rejected
     int page = 1,
+    int pageSize = 20,
   }) async {
     try {
       final token = await AuthService.getValidToken();
@@ -286,7 +287,7 @@ class WalletService {
 
       // Use the same endpoint as getBalance to get user's transactions
       final response = await http.get(
-        Uri.parse('$baseUrl/user-balance/${user.email}/?page=$page'),
+        Uri.parse('$baseUrl/user-balance/${user.email}/?page=$page&page_size=$pageSize'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -294,7 +295,23 @@ class WalletService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final decoded = json.decode(response.body);
+
+        List<dynamic> data;
+        if (decoded is Map && decoded['results'] is List) {
+          data = List<dynamic>.from(decoded['results'] as List);
+        } else if (decoded is List) {
+          final full = List<dynamic>.from(decoded);
+          final start = (page - 1) * pageSize;
+          if (start >= full.length) {
+            data = [];
+          } else {
+            final end = (start + pageSize) > full.length ? full.length : (start + pageSize);
+            data = full.sublist(start, end);
+          }
+        } else {
+          data = [];
+        }
         
         // Filter transactions based on optional parameters
         List<Transaction> transactions = [];
@@ -330,7 +347,10 @@ class WalletService {
   }
 
   /// Get received transfers
-  static Future<List<Transaction>> getReceivedTransfers({int page = 1}) async {
+  static Future<List<Transaction>> getReceivedTransfers({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
       final token = await AuthService.getValidToken();
       if (token == null) {
@@ -338,7 +358,7 @@ class WalletService {
       }
 
       final response = await http.get(
-        Uri.parse('$baseUrl/received-transfers/?page=$page'),
+        Uri.parse('$baseUrl/received-transfers/?page=$page&page_size=$pageSize'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
@@ -346,7 +366,24 @@ class WalletService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final decoded = json.decode(response.body);
+
+        List<dynamic> data;
+        if (decoded is Map && decoded['results'] is List) {
+          data = List<dynamic>.from(decoded['results'] as List);
+        } else if (decoded is List) {
+          final full = List<dynamic>.from(decoded);
+          final start = (page - 1) * pageSize;
+          if (start >= full.length) {
+            data = [];
+          } else {
+            final end = (start + pageSize) > full.length ? full.length : (start + pageSize);
+            data = full.sublist(start, end);
+          }
+        } else {
+          data = [];
+        }
+
         return data.map((json) => Transaction.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load received transfers: ${response.statusCode}');

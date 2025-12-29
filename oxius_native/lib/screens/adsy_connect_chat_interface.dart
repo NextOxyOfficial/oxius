@@ -9,6 +9,7 @@ import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
@@ -82,7 +83,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   void _onScroll() {
     // Load more messages when scrolled to top (older messages)
-    if (_scrollController.position.pixels <= 100 &&
+    if (_scrollController.position.pixels >=
+            (_scrollController.position.maxScrollExtent - 100) &&
         !_isLoadingMoreMessages &&
         _hasMoreMessages) {
       _loadOlderMessages();
@@ -236,7 +238,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       
       if (messages.isEmpty) return;
       
-      final parsedMessages = _parseMessages(messages);
+      // Backend returns newest first; reverse to keep oldest-to-newest order
+      final parsedMessages = _parseMessages(messages.reversed.toList());
       if (parsedMessages.isEmpty) return;
       
       bool hasUpdates = false;
@@ -268,9 +271,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         
         // Auto-scroll to bottom if user is near bottom
         if (_scrollController.hasClients) {
-          final maxScroll = _scrollController.position.maxScrollExtent;
           final currentScroll = _scrollController.position.pixels;
-          final isNearBottom = maxScroll - currentScroll < 100;
+          final isNearBottom = currentScroll < 100;
           
           if (isNearBottom) {
             _scrollToBottom();
@@ -349,7 +351,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       final sender = msg['sender'] ?? {};
       final receiver = msg['receiver'] ?? {};
       final senderId = sender['id']?.toString() ?? '';
-      final isMe = senderId == widget.userId;
+      final currentUserId = AuthService.currentUser?.id;
+      final isMe = currentUserId != null && senderId == currentUserId;
       
       // Check if message has been seen by recipient
       // is_read means the recipient has opened and viewed the message
@@ -363,7 +366,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             ? DateTime.parse(msg['created_at']) 
             : DateTime.now(),
         'timeDisplay': msg['time_display']?.toString(),
-        'isMe': !isMe, // Invert because we're the receiver if sender is not us
+        'isMe': isMe,
         'type': msg['message_type']?.toString() ?? 'text',
         'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
         'thumbnailUrl': msg['thumbnail_url']?.toString(),
@@ -412,8 +415,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       if (mounted) {
         setState(() {
           for (var message in _messages) {
-            if (message['isMe'] == true && message['isRead'] == false) {
-              message['isRead'] = true;
+            if (message['isMe'] == false && message['isSeen'] == false) {
+              message['isSeen'] = true;
             }
           }
         });
@@ -430,7 +433,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients && mounted) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
+            _scrollController.position.minScrollExtent,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -441,7 +444,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted && _scrollController.hasClients) {
           _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
+            _scrollController.position.minScrollExtent,
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOut,
           );
@@ -1476,11 +1479,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                     ? _buildEmptyState()
                     : ListView.builder(
                         controller: _scrollController,
+                        reverse: true,
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         itemCount: _messages.length + (_isLoadingMoreMessages || !_hasMoreMessages ? 1 : 0),
                         itemBuilder: (context, index) {
-                          // Show loading indicator or "no more messages" at top
-                          if (index == 0) {
+                          final hasHeader = _isLoadingMoreMessages || !_hasMoreMessages;
+                          final isHeaderIndex = hasHeader && index == (_messages.length);
+
+                          if (isHeaderIndex) {
                             if (_isLoadingMoreMessages) {
                               return Container(
                                 padding: const EdgeInsets.all(16),
@@ -1509,7 +1515,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                   ],
                                 ),
                               );
-                            } else if (!_hasMoreMessages && _messages.length >= 20) {
+                            }
+
+                            if (!_hasMoreMessages && _messages.length >= 20) {
                               return Container(
                                 padding: const EdgeInsets.all(12),
                                 alignment: Alignment.center,
@@ -1534,15 +1542,20 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                 ),
                               );
                             }
-                          }
-                          
-                          final messageIndex = (_isLoadingMoreMessages || !_hasMoreMessages) ? index - 1 : index;
-                          if (messageIndex < 0 || messageIndex >= _messages.length) {
+
                             return const SizedBox.shrink();
                           }
-                          final message = _messages[messageIndex];
-                          final showAvatar = messageIndex == 0 ||
-                              _messages[messageIndex - 1]['isMe'] != message['isMe'];
+
+                          final listIndex = _messages.length - 1 - index;
+                          if (listIndex < 0 || listIndex >= _messages.length) {
+                            return const SizedBox.shrink();
+                          }
+
+                          final message = _messages[listIndex];
+
+                          final showAvatar = listIndex == _messages.length - 1 ||
+                              _messages[listIndex + 1]['isMe'] != message['isMe'];
+
                           return _buildMessageBubble(message, showAvatar);
                         },
                       ),

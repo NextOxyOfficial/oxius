@@ -28,6 +28,7 @@ class _WalletScreenState extends State<WalletScreen> {
   bool _isLoadingTransactions = true;
   
   // Pagination
+  static const int _pageSize = 20;
   int _sentPage = 1;
   int _receivedPage = 1;
   bool _hasMoreSent = true;
@@ -116,15 +117,15 @@ class _WalletScreenState extends State<WalletScreen> {
     });
     
     try {
-      final sent = await WalletService.getTransactions(page: _sentPage);
-      final received = await WalletService.getReceivedTransfers(page: _receivedPage);
+      final sent = await WalletService.getTransactions(page: _sentPage, pageSize: _pageSize);
+      final received = await WalletService.getReceivedTransfers(page: _receivedPage, pageSize: _pageSize);
       
       if (mounted) {
         setState(() {
           _sentTransactions = sent;
           _receivedTransactions = received;
-          _hasMoreSent = sent.length >= 10; // Assume 10 items per page
-          _hasMoreReceived = received.length >= 10;
+          _hasMoreSent = sent.length >= _pageSize;
+          _hasMoreReceived = received.length >= _pageSize;
           _isLoadingTransactions = false;
         });
       }
@@ -148,12 +149,12 @@ class _WalletScreenState extends State<WalletScreen> {
       _sentPage++;
     });
     
-    final moreSent = await WalletService.getTransactions(page: _sentPage);
+    final moreSent = await WalletService.getTransactions(page: _sentPage, pageSize: _pageSize);
     
     if (mounted) {
       setState(() {
         _sentTransactions.addAll(moreSent);
-        _hasMoreSent = moreSent.length >= 10;
+        _hasMoreSent = moreSent.length >= _pageSize;
         _isLoadingMoreSent = false;
       });
     }
@@ -167,12 +168,12 @@ class _WalletScreenState extends State<WalletScreen> {
       _receivedPage++;
     });
     
-    final moreReceived = await WalletService.getReceivedTransfers(page: _receivedPage);
+    final moreReceived = await WalletService.getReceivedTransfers(page: _receivedPage, pageSize: _pageSize);
     
     if (mounted) {
       setState(() {
         _receivedTransactions.addAll(moreReceived);
-        _hasMoreReceived = moreReceived.length >= 10;
+        _hasMoreReceived = moreReceived.length >= _pageSize;
         _isLoadingMoreReceived = false;
       });
     }
@@ -220,6 +221,7 @@ class _WalletScreenState extends State<WalletScreen> {
         onRefresh: _refreshAll,
         color: const Color(0xFF10B981),
         child: SingleChildScrollView(
+          controller: _transactionScrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
@@ -601,7 +603,6 @@ class _WalletScreenState extends State<WalletScreen> {
     
     return ListView.builder(
       key: ValueKey('${_transactionTab}_${transactions.length}'),
-      controller: _transactionScrollController,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: transactions.length + (isLoadingMore ? 1 : 0),
