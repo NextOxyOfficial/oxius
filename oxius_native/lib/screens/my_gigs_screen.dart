@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/user_state_service.dart';
@@ -451,77 +452,205 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       if (mounted && gigDetails != null) {
         final isRejected = _getGigStatus(gigDetails) == 'rejected';
         final rejectionReason = gigDetails['rejection_reason'] ?? '';
+        final gigStatus = _getGigStatus(gigDetails);
+        final isActive = _isGigActive(gigDetails);
         
-        showDialog(
+        showModalBottomSheet(
           context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(gigDetails['title'] ?? 'Gig Details'),
-              content: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (gigDetails['category_details'] != null && gigDetails['category_details']['title'] != null)
-                      _buildDetailRow('Category', gigDetails['category_details']['title']),
-                    _buildDetailRow('Status', _getStatusText(_getGigStatus(gigDetails), _isGigActive(gigDetails))),
-                    _buildDetailRow('Price', '৳${gigDetails['price']}'),
-                    _buildDetailRow('Progress', '${gigDetails['filled_quantity']}/${gigDetails['required_quantity']}'),
-                    _buildDetailRow('Balance', '৳${gigDetails['balance']}'),
-                    _buildDetailRow('Total Cost', '৳${gigDetails['total_cost']}'),
-                    _buildDetailRow('Created', _formatDate(gigDetails['created_at'])),
-                    if (isRejected && rejectionReason.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red.shade200),
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(gigStatus, isActive),
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Rejection Reason:',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            gigDetails['title'] ?? 'Gig Details',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close_rounded),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  // Content
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Info Grid
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              children: [
+                                if (gigDetails['category_details'] != null && gigDetails['category_details']['title'] != null)
+                                  _buildDetailRow('Category', gigDetails['category_details']['title']),
+                                _buildDetailRow('Status', _getStatusText(gigStatus, isActive)),
+                                _buildDetailRow('Price', '৳${gigDetails['price']}'),
+                                _buildDetailRow('Progress', '${gigDetails['filled_quantity']}/${gigDetails['required_quantity']}'),
+                                _buildDetailRow('Balance', '৳${gigDetails['balance']}'),
+                                _buildDetailRow('Total Cost', '৳${gigDetails['total_cost']}'),
+                                _buildDetailRow('Created', _formatDate(gigDetails['created_at'])),
+                              ],
+                            ),
+                          ),
+                          if (isRejected && rejectionReason.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.red.shade200),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.error_outline, size: 18, color: Colors.red.shade700),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Rejection Reason',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.red.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    rejectionReason,
+                                    style: TextStyle(color: Colors.red.shade800),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              rejectionReason,
-                              style: TextStyle(color: Colors.red.shade800),
+                          ],
+                          if (gigDetails['instructions'] != null && gigDetails['instructions'].toString().isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Instructions',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: Html(
+                                data: gigDetails['instructions'].toString(),
+                                style: {
+                                  'body': Style(
+                                    margin: Margins.zero,
+                                    padding: HtmlPaddings.zero,
+                                    fontSize: FontSize(14),
+                                    lineHeight: const LineHeight(1.5),
+                                  ),
+                                  'p': Style(
+                                    margin: Margins.only(bottom: 8),
+                                  ),
+                                },
+                              ),
                             ),
                           ],
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Actions
+                  if (isRejected)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _handleResubmitGig(gigDetails);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text(
+                            'Edit & Resubmit',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                    if (gigDetails['instructions'] != null && gigDetails['instructions'].toString().isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      const Text('Instructions:', style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text(gigDetails['instructions'].toString()),
-                    ],
-                  ],
-                ),
+                    ),
+                ],
               ),
-              actions: [
-                if (isRejected)
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      _handleResubmitGig(gigDetails);
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                    child: const Text('Edit & Resubmit', style: TextStyle(color: Colors.white)),
-                  ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
             );
           },
         );
@@ -918,7 +1047,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),

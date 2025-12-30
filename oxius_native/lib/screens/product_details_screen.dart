@@ -480,19 +480,37 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             pinned: true,
             backgroundColor: Colors.white,
             elevation: 0,
-            automaticallyImplyLeading: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
-              onPressed: () => Navigator.pop(context),
+            automaticallyImplyLeading: false,
+            titleSpacing: 0,
+            title: Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.roboto(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.2,
+                      color: const Color(0xFF1F2937),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.share_rounded, color: Color(0xFF1F2937), size: 20),
                 onPressed: () async {
                   final product = _productDetails ?? widget.product;
-                  final title = product['name'] ?? product['title'] ?? 'Product';
+                  final productTitle = product['name'] ?? product['title'] ?? 'Product';
                   final productSlug = product['slug'] ?? product['id'];
-                  final shareText = 'Check out this product: $title\n\nView on AdsyClub: https://adsyclub.com/products/$productSlug';
+                  final shareText = 'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/products/$productSlug';
                   
                   try {
                     // Using share_plus package

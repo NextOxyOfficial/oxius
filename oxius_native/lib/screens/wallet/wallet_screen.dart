@@ -518,6 +518,8 @@ class _WalletScreenState extends State<WalletScreen> {
         return Icons.workspace_premium;
       case 'referral_commission':
         return Icons.people;
+      case 'referral_reward':
+        return Icons.card_giftcard;
       default:
         return Icons.money;
     }
@@ -545,6 +547,8 @@ class _WalletScreenState extends State<WalletScreen> {
         return const Color(0xFFF59E0B); // Amber
       case 'referral_commission':
         return const Color(0xFFEAB308); // Yellow
+      case 'referral_reward':
+        return const Color(0xFF0EA5E9); // Sky
       default:
         return Colors.grey;
     }
@@ -848,6 +852,8 @@ class _WalletScreenState extends State<WalletScreen> {
         return 'Product Purchase';
       case 'referral_commission':
         return 'Referral Commission';
+      case 'referral_reward':
+        return 'Referral Reward';
       default:
         return type.replaceAll('_', ' ').split(' ').map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)).join(' ');
     }
@@ -973,6 +979,8 @@ class _WalletScreenState extends State<WalletScreen> {
         return 'Mobile recharge transaction';
       case 'referral_commission':
         return 'Referral commission earned';
+      case 'referral_reward':
+        return 'Referral reward earned';
       case 'diamond_purchase':
         return 'Diamond purchase';
       case 'diamond_gift':
@@ -1006,6 +1014,7 @@ class _WalletScreenState extends State<WalletScreen> {
       case 'pro_subscription':
       case 'mobile_recharge':
       case 'referral_commission':
+      case 'referral_reward':
         return 'Account Balance';
       case 'diamond_purchase':
       case 'diamond_gift':

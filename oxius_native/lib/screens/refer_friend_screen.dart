@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import '../services/referral_service.dart';
 import '../models/referral_models.dart';
+import '../models/referral_reward_models.dart';
 import 'dart:math' as math;
 
 class ReferFriendScreen extends StatefulWidget {
@@ -28,6 +29,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   
   String? _commissionError;
   String? _usersError;
+  
+  // Referral Reward Program
+  MyClaimsResponse? _claimsData;
+  bool _isLoadingClaims = false;
+  bool _isClaimingReward = false;
   
   late TabController _tabController;
   int _activeTab = 0;
@@ -58,6 +64,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       _loadReferralInfo();
       _loadCommissionHistory();
       _loadReferredUsers();
+      _loadRewardClaims();
     }
   }
 
@@ -135,6 +142,48 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           _isLoadingUsers = false;
         });
       }
+    }
+  }
+
+  Future<void> _loadRewardClaims() async {
+    setState(() => _isLoadingClaims = true);
+    try {
+      final data = await ReferralService.getMyClaims();
+      if (mounted) {
+        setState(() {
+          _claimsData = data;
+          _isLoadingClaims = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingClaims = false);
+    }
+  }
+
+  Future<void> _claimReward(int claimId) async {
+    setState(() => _isClaimingReward = true);
+    try {
+      final result = await ReferralService.claimReward(claimId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: result.success ? const Color(0xFF10B981) : Colors.red,
+          ),
+        );
+        if (result.success) {
+          _loadRewardClaims();
+          AuthService.refreshUserData();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to claim reward'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isClaimingReward = false);
     }
   }
 
@@ -496,6 +545,10 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             ),
           ),
           const SizedBox(height: 12),
+
+          // Referral Reward Program Card
+          if (_claimsData != null && _claimsData!.activeProgram)
+            _buildRewardProgramCard(),
 
           // Commission Stats
           if (_commissionData != null)
@@ -911,6 +964,255 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           ),
         );
       },
+    );
+  }
+
+  Widget _buildRewardProgramCard() {
+    final claims = _claimsData!;
+    final refereeClaim = claims.refereeClaim;
+    final referrerClaims = claims.referrerClaims;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0EA5E9).withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        claims.program?.name ?? 'Referral Reward',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        'Complete tasks to claim rewards!',
+                        style: GoogleFonts.roboto(
+                          fontSize: 11,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Referee Claim (if user was referred)
+          if (refereeClaim != null)
+            _buildClaimCard(refereeClaim, isReferee: true),
+
+          // Referrer Claims (for users who referred others)
+          ...referrerClaims.map((claim) => _buildClaimCard(claim, isReferee: false)),
+
+          if (refereeClaim == null && referrerClaims.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Text(
+                'Refer friends or get referred to earn rewards!',
+                style: GoogleFonts.roboto(fontSize: 12, color: Colors.white.withOpacity(0.9)),
+                textAlign: TextAlign.center,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClaimCard(ReferralRewardClaim claim, {required bool isReferee}) {
+    final isClaimed = claim.isClaimed;
+    final isEligible = claim.isEligible;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title row
+          Row(
+            children: [
+              Icon(
+                isReferee ? Icons.person_rounded : Icons.people_rounded,
+                size: 16,
+                color: const Color(0xFF0EA5E9),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  isReferee
+                      ? 'Your Reward (Referred by ${claim.referredUserName ?? 'someone'})'
+                      : 'Referrer Reward for ${claim.referredUserName ?? 'user'}',
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1F2937),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isClaimed
+                      ? Colors.green.withOpacity(0.1)
+                      : isEligible
+                          ? Colors.amber.withOpacity(0.1)
+                          : Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  isClaimed ? 'Claimed' : isEligible ? 'Eligible' : 'Pending',
+                  style: GoogleFonts.roboto(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: isClaimed ? Colors.green : isEligible ? Colors.amber.shade700 : Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Conditions
+          Row(
+            children: [
+              _buildConditionChip('BN Post', claim.conditions.hasPostedBn),
+              const SizedBox(width: 6),
+              _buildConditionChip('Microgig', claim.conditions.hasCompletedMicrogig),
+              const SizedBox(width: 6),
+              _buildConditionChip('KYC', claim.conditions.hasKycVerified),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Amount and claim button
+          Row(
+            children: [
+              Text(
+                '৳ ${claim.rewardAmount.toStringAsFixed(0)}',
+                style: GoogleFonts.roboto(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF10B981),
+                ),
+              ),
+              const Spacer(),
+              if (!isClaimed)
+                SizedBox(
+                  height: 32,
+                  child: ElevatedButton(
+                    onPressed: isEligible && !_isClaimingReward
+                        ? () => _claimReward(claim.id)
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      elevation: 0,
+                    ),
+                    child: _isClaimingReward
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : Text(
+                            isEligible ? 'Claim Now' : 'Complete Tasks',
+                            style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w600),
+                          ),
+                  ),
+                ),
+              if (isClaimed)
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle_rounded, size: 16, color: Colors.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Claimed',
+                      style: GoogleFonts.roboto(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConditionChip(String label, bool met) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: met ? Colors.green.withOpacity(0.1) : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: met ? Colors.green.withOpacity(0.3) : Colors.grey.shade300,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            met ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            size: 12,
+            color: met ? Colors.green : Colors.grey,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.roboto(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: met ? Colors.green.shade700 : Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

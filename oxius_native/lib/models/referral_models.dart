@@ -129,13 +129,40 @@ class CommissionTransaction {
     this.referredUser,
   });
 
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static String _parseCommissionRate(dynamic value) {
+    if (value == null) return '5%';
+    if (value is String) {
+      final v = value.trim();
+      if (v.isEmpty) return '5%';
+      return v.contains('%') ? v : '${v}%';
+    }
+    if (value is num) {
+      final d = value.toDouble();
+      final s = d % 1 == 0
+          ? d.toStringAsFixed(0)
+          : d
+              .toStringAsFixed(2)
+              .replaceAll(RegExp(r'0+$'), '')
+              .replaceAll(RegExp(r'\.$'), '');
+      return '$s%';
+    }
+    return value.toString();
+  }
+
   factory CommissionTransaction.fromJson(Map<String, dynamic> json) {
     return CommissionTransaction(
-      date: json['date'] ?? '',
+      date: json['date']?.toString() ?? '',
       type: json['type'] ?? 'Unknown',
       typeCode: json['type_code'] ?? 'gig_completion',
-      amount: (json['amount'] ?? 0).toDouble(),
-      commissionRate: json['commission_rate'] ?? '5%',
+      amount: _parseDouble(json['amount']),
+      commissionRate: _parseCommissionRate(json['commission_rate']),
       referredUser: json['referred_user'] != null
           ? ReferredUserInfo.fromJson(json['referred_user'])
           : null,

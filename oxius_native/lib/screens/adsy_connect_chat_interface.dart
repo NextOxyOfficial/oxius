@@ -171,8 +171,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       print('🟢 Loaded ${messages.length} older messages');
       
       if (mounted && messages.isNotEmpty) {
-        // Backend returns newest first, so reverse for oldest-to-newest display
-        final parsedMessages = _parseMessages(messages.reversed.toList());
+        // Backend returns oldest-to-newest (ascending by created_at)
+        final parsedMessages = _parseMessages(messages);
         setState(() {
           // Insert older messages at the beginning
           _messages.insertAll(0, parsedMessages);
@@ -304,8 +304,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       
       if (messages.isEmpty) return;
       
-      // Backend returns newest first; reverse to keep oldest-to-newest order
-      final parsedMessages = _parseMessages(messages.reversed.toList());
+      // Backend returns oldest-to-newest (ascending by created_at)
+      final parsedMessages = _parseMessages(messages);
       if (parsedMessages.isEmpty) return;
       
       bool hasUpdates = false;
@@ -375,8 +375,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       print('🟢 Loaded ${messages.length} messages');
       
       if (mounted) {
-        // Backend returns newest first, so reverse for oldest-to-newest display
-        final parsedMessages = _parseMessages(messages.reversed.toList());
+        // Backend returns oldest-to-newest (ascending by created_at)
+        final parsedMessages = _parseMessages(messages);
         setState(() {
           if (loadMore) {
             _messages.insertAll(0, parsedMessages);
@@ -1676,8 +1676,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         itemCount: _messages.length + (_isLoadingMoreMessages || !_hasMoreMessages ? 1 : 0),
                         itemBuilder: (context, index) {
+                          // With reverse: true, index 0 is at bottom (newest message)
+                          // Header for loading older messages should be at the top (highest index)
                           final hasHeader = _isLoadingMoreMessages || !_hasMoreMessages;
-                          final isHeaderIndex = hasHeader && index == (_messages.length);
+                          final isHeaderIndex = hasHeader && index == _messages.length;
 
                           if (isHeaderIndex) {
                             if (_isLoadingMoreMessages) {
@@ -1739,6 +1741,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                             return const SizedBox.shrink();
                           }
 
+                          // With reverse: true and messages stored oldest-to-newest,
+                          // index 0 should map to the last (newest) message
                           final listIndex = _messages.length - 1 - index;
                           if (listIndex < 0 || listIndex >= _messages.length) {
                             return const SizedBox.shrink();
@@ -1746,8 +1750,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
                           final message = _messages[listIndex];
 
-                          final showAvatar = listIndex == _messages.length - 1 ||
-                              _messages[listIndex + 1]['isMe'] != message['isMe'];
+                          // Show avatar if this is the last message from this sender in a group
+                          final showAvatar = listIndex == 0 ||
+                              _messages[listIndex - 1]['isMe'] != message['isMe'];
 
                           return _buildMessageBubble(message, showAvatar);
                         },

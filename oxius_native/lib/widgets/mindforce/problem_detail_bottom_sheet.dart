@@ -1033,8 +1033,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
   }
 
   Widget _buildCommentInput() {
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.fromLTRB(12, 12, 12, 12 + bottomPadding),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
