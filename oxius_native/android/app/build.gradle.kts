@@ -76,9 +76,10 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            // Temporarily disable minification to avoid symbol stripping issues
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Enable minification and obfuscation for Play Console
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Disable native debug symbol stripping to avoid build issues
             ndk {
                 debugSymbolLevel = "FULL"
@@ -96,4 +97,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     // Core library desugaring for flutter_local_notifications (requires 2.1.4+)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    implementation("androidx.camera:camera-core:1.4.0")
+    implementation("androidx.camera:camera-camera2:1.4.0")
+    implementation("androidx.camera:camera-lifecycle:1.4.0")
 }

@@ -49,3 +49,12 @@
 ## Prevent obfuscation of model classes (if using reflection or Gson)
 # Add your model packages here
 # -keep class com.oxius.app.models.** { *; }
+
+## Firebase
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.firebase.**
+-dontwarn com.google.android.gms.**
+
+## Keep all plugin classes
+-keep class io.flutter.plugins.** { *; }

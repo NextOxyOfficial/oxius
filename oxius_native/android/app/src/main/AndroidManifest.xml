@@ -16,7 +16,11 @@
         android:label="AdsyClub"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="false">
+        android:usesCleartextTraffic="false"
+        android:allowNativeHeapPointerTagging="false">
+        
+        <!-- Support for 16 KB memory page sizes -->
+        <property android:name="android.app.16kb_page_size" android:value="true"/>
         
         <!-- UCrop Activity for image cropping -->
         <activity
