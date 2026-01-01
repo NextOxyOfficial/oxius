@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:math';
 import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -142,11 +143,13 @@ class AdsyConnectService {
         // Otherwise assume it's a direct list
         if (data is List) {
           final full = List<dynamic>.from(data);
-          final start = (page - 1) * pageSize;
-          if (start >= full.length) {
+          final total = full.length;
+
+          final end = total - (page - 1) * pageSize;
+          if (end <= 0) {
             return [];
           }
-          final end = (start + pageSize) > full.length ? full.length : (start + pageSize);
+          final start = max(0, end - pageSize);
           return full.sublist(start, end);
         }
         

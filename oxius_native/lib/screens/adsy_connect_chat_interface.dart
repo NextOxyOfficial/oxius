@@ -74,6 +74,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   bool _blockedByMe = false;
   bool _isLoadingChatroomStatus = false;
   int _statusPollCounter = 0;
+  bool _isUserNearBottom = true;
 
   @override
   void initState() {
@@ -143,8 +144,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   void _onScroll() {
+    if (_scrollController.hasClients) {
+      _isUserNearBottom = _scrollController.position.pixels < 100;
+    }
     // Load more messages when scrolled to top (older messages)
-    if (_scrollController.position.pixels >=
+    if (_scrollController.position.maxScrollExtent > 0 &&
+        _scrollController.position.pixels > 0 &&
+        _scrollController.position.pixels >=
             (_scrollController.position.maxScrollExtent - 100) &&
         !_isLoadingMoreMessages &&
         _hasMoreMessages) {
@@ -154,7 +160,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   Future<void> _loadOlderMessages() async {
     if (_isLoadingMoreMessages || !_hasMoreMessages) return;
-    
+
+    double? previousPixels;
+    double? previousMaxScrollExtent;
+    if (_scrollController.hasClients) {
+      previousPixels = _scrollController.position.pixels;
+      previousMaxScrollExtent = _scrollController.position.maxScrollExtent;
+    }
+
     setState(() {
       _isLoadingMoreMessages = true;
     });
@@ -179,6 +192,20 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           _currentPage = nextPage;
           _hasMoreMessages = messages.length >= 20;
           _isLoadingMoreMessages = false;
+        });
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_scrollController.hasClients) return;
+          if (previousPixels == null || previousMaxScrollExtent == null) return;
+
+          final newMaxScrollExtent = _scrollController.position.maxScrollExtent;
+          final delta = newMaxScrollExtent - previousMaxScrollExtent;
+          final target = previousPixels + delta;
+
+          final min = _scrollController.position.minScrollExtent;
+          final max = _scrollController.position.maxScrollExtent;
+          final clampedTarget = target < min ? min : (target > max ? max : target);
+          _scrollController.jumpTo(clampedTarget);
         });
       } else {
         setState(() {
@@ -312,7 +339,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       
       // Update seen status for existing messages
       for (var serverMsg in parsedMessages) {
-        final existingIndex = _messages.indexWhere((m) => m['id'] == serverMsg['id']);
+        final serverId = serverMsg['id']?.toString() ?? '';
+        final existingIndex = _messages.indexWhere(
+          (m) => (m['id']?.toString() ?? '') == serverId,
+        );
         if (existingIndex != -1) {
           // Check if seen status changed
           if (_messages[existingIndex]['isSeen'] != serverMsg['isSeen']) {
@@ -327,22 +357,20 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       
       // Find new messages that we don't have yet
       final newMessages = parsedMessages.where((msg) {
-        return !_messages.any((existing) => existing['id'] == msg['id']);
+        final msgId = msg['id']?.toString() ?? '';
+        return !_messages.any((existing) => (existing['id']?.toString() ?? '') == msgId);
       }).toList();
       
       if (newMessages.isNotEmpty) {
         hasUpdates = true;
-        _messages.addAll(newMessages);
+        for (final m in newMessages) {
+          _upsertMessage(m);
+        }
         _lastMessageId = newMessages.last['id'];
-        
+
         // Auto-scroll to bottom if user is near bottom
-        if (_scrollController.hasClients) {
-          final currentScroll = _scrollController.position.pixels;
-          final isNearBottom = currentScroll < 100;
-          
-          if (isNearBottom) {
-            _scrollToBottom();
-          }
+        if (_isUserNearBottom) {
+          _scrollToBottom();
         }
       }
       
@@ -519,6 +547,27 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     }
   }
 
+  void _upsertMessage(Map<String, dynamic> message) {
+    final id = message['id']?.toString() ?? '';
+    if (id.isEmpty) {
+      _messages.add(message);
+      return;
+    }
+
+    final existingIndex = _messages.indexWhere(
+      (m) => (m['id']?.toString() ?? '') == id,
+    );
+
+    if (existingIndex == -1) {
+      _messages.add(message);
+      return;
+    }
+
+    final merged = Map<String, dynamic>.from(_messages[existingIndex]);
+    merged.addAll(message);
+    _messages[existingIndex] = merged;
+  }
+
   Future<void> _sendMessage() async {
     if (_isChatBlocked) return;
     if (_messageController.text.trim().isEmpty) return;
@@ -541,7 +590,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       
       if (mounted) {
         setState(() {
-          _messages.add(_parseSingleMessage(sentMessage));
+          _upsertMessage(_parseSingleMessage(sentMessage));
           _isSendingMessage = false;
         });
         _scrollToBottom();
@@ -680,7 +729,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           
           if (mounted) {
             setState(() {
-              _messages.add(_parseSingleMessage(sentMessage));
+              _upsertMessage(_parseSingleMessage(sentMessage));
               _isSendingMessage = false;
               _recordDuration = 0;
             });
@@ -1266,7 +1315,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       
       if (mounted) {
         setState(() {
-          _messages.add(_parseSingleMessage(sentMessage));
+          _upsertMessage(_parseSingleMessage(sentMessage));
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });
@@ -1323,7 +1372,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       
       if (mounted) {
         setState(() {
-          _messages.add(_parseSingleMessage(sentMessage));
+          _upsertMessage(_parseSingleMessage(sentMessage));
           _isSendingMessage = false;
           _isUploadingAttachment = false;
         });

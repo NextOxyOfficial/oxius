@@ -77,6 +77,14 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     // Handle boolean, int, and string representations
     return active == true || active == 1 || active == '1' || active == 'true' || active == 'True';
   }
+
+  String _getGigCategoryIconUrl(Map<String, dynamic>? categoryDetails) {
+    final dynamic raw = categoryDetails?['image'] ??
+        categoryDetails?['icon'] ??
+        categoryDetails?['image_url'] ??
+        categoryDetails?['imageUrl'];
+    return ApiService.getAbsoluteUrl(raw?.toString());
+  }
   
   void _applyFilter() {
     print('🔍 Applying filter: $_selectedFilter');
@@ -975,26 +983,37 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   }
   
   Widget _buildGigHeader(Map<String, dynamic> gig, Map<String, dynamic>? categoryDetails, String gigStatus, bool isActive) {
+    final categoryIconUrl = _getGigCategoryIconUrl(categoryDetails);
     return Row(
       children: [
         // Category Image
         ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          child: CachedNetworkImage(
-            imageUrl: categoryDetails?['image'] ?? '',
-            width: 48,
-            height: 48,
-            fit: BoxFit.cover,
-            errorWidget: (context, url, error) => Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Icon(Icons.category, color: Colors.grey.shade600),
-            ),
-          ),
+          child: categoryIconUrl.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: categoryIconUrl,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.contain,
+                  errorWidget: (context, url, error) => Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Icon(Icons.category, color: Colors.grey.shade600),
+                  ),
+                )
+              : Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Icon(Icons.category, color: Colors.grey.shade600),
+                ),
         ),
         const SizedBox(width: 16),
         
@@ -1037,21 +1056,17 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       color: _getStatusColor(gigStatus, isActive),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Text('|', style: TextStyle(color: Colors.grey)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      gig['title'] ?? 'Untitled Gig',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
                 ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                gig['title'] ?? 'Untitled Gig',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
