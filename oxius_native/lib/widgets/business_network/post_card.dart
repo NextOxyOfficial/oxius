@@ -9,11 +9,13 @@ import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/url_launcher_utils.dart';
+import '../chat_video_player.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
 import 'post_comments_preview.dart';
 import 'post_comment_input.dart';
+import '../../screens/business_network/post_media_viewer_screen.dart';
 
 class PostCard extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -116,124 +118,14 @@ class _PostCardState extends State<PostCard> {
   }
 
   void _handleMediaTap(int index) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade600,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              // Close button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Image ${index + 1} of ${_post.media.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              // Image
-              Expanded(
-                child: PageView.builder(
-                  controller: PageController(initialPage: index),
-                  itemCount: _post.media.length,
-                  itemBuilder: (context, pageIndex) => InteractiveViewer(
-                    minScale: 0.5,
-                    maxScale: 4.0,
-                    child: Center(
-                      child: Image.network(
-                        _post.media[pageIndex].image,
-                        fit: BoxFit.contain,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                              color: Colors.white,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.error_outline, size: 64, color: Colors.grey.shade600),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Failed to load image',
-                                  style: TextStyle(color: Colors.grey.shade600),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Image indicator dots
-              if (_post.media.length > 1)
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _post.media.length,
-                      (dotIndex) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: dotIndex == index
-                              ? Colors.white
-                              : Colors.grey.shade600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostMediaViewerScreen(
+          post: _post,
+          initialIndex: index,
         ),
+        fullscreenDialog: true,
       ),
     );
   }
@@ -662,6 +554,20 @@ class _PostCardState extends State<PostCard> {
             onFollowToggle: null, // Don't show follow button in posts
             onMorePressed: _showPostOptions,
           ),
+          // Post Media Gallery (Vue-style: media on top)
+          if (_post.media.isNotEmpty)
+            PostMediaGallery(
+              media: _post.media,
+              onMediaTap: _handleMediaTap,
+            ),
+          // Post Actions (Vue-style: actions directly under media)
+          PostActions(
+            post: _post,
+            onLike: _handleLike,
+            onComment: _handleViewAllComments,
+            onShare: _handleShare,
+            onSave: _handleSave,
+          ),
           // Post Title
           if (_post.title.isNotEmpty)
             Padding(
@@ -753,20 +659,6 @@ class _PostCardState extends State<PostCard> {
                   ),
               ],
             ),
-          ),
-          // Post Media Gallery
-          if (_post.media.isNotEmpty)
-            PostMediaGallery(
-              media: _post.media,
-              onMediaTap: _handleMediaTap,
-            ),
-          // Post Actions
-          PostActions(
-            post: _post,
-            onLike: _handleLike,
-            onComment: _handleViewAllComments,
-            onShare: _handleShare,
-            onSave: _handleSave,
           ),
           // Comments Preview
           PostCommentsPreview(

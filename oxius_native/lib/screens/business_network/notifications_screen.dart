@@ -11,6 +11,7 @@ import '../../widgets/notifications/notification_item.dart';
 import '../business_network/profile_screen.dart';
 import '../business_network/post_detail_screen.dart';
 import '../business_network/create_post_screen.dart';
+import 'profile_options.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -386,12 +387,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       case 3:
         // Profile
-        final currentUser = AuthService.currentUser;
-        if (currentUser != null) {
-          Navigator.pushReplacement(
+        if (AuthService.isAuthenticated) {
+          Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProfileScreen(userId: currentUser.id),
+              builder: (context) => const ProfileOptionsScreen(),
             ),
           );
         } else {

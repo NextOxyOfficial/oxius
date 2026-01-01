@@ -35,9 +35,28 @@ def generate_unique_slug(model_class, field_value, instance=None):
 
 
 class BusinessNetworkMedia(models.Model):
+    MEDIA_TYPE_CHOICES = [
+        ('image', 'Image'),
+        ('video', 'Video'),
+    ]
+    
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
+    type = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='image')
     image = models.ImageField(upload_to='business_network/images/', blank=True, null=True)
+    video = models.FileField(upload_to='business_network/videos/', blank=True, null=True)
+    thumbnail = models.ImageField(upload_to='business_network/thumbnails/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        filename = ""
+        if self.type == "video" and self.video:
+            filename = os.path.basename(self.video.name)
+        elif self.image:
+            filename = os.path.basename(self.image.name)
+        elif self.thumbnail:
+            filename = os.path.basename(self.thumbnail.name)
+        return f"{self.type}:{self.id}{(' - ' + filename) if filename else ''}"
+
     def generate_id(self):
         from datetime import datetime
         import random

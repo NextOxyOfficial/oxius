@@ -12,6 +12,7 @@ import '../business_network/notifications_screen.dart';
 import '../business_network/create_post_screen.dart';
 import 'create_problem_screen.dart';
 import '../../widgets/mindforce/problem_detail_bottom_sheet.dart';
+import 'profile_options.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -719,12 +720,11 @@ class _MindForceScreenState extends State<MindForceScreen> {
         break;
       case 3:
         // Profile
-        final user = AuthService.currentUser;
-        if (user != null) {
-          Navigator.pushReplacement(
+        if (AuthService.isAuthenticated) {
+          Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProfileScreen(userId: user.id),
+              builder: (context) => const ProfileOptionsScreen(),
             ),
           );
         } else {

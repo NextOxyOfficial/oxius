@@ -20,12 +20,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final ImagePicker _picker = ImagePicker();
   
   List<String> _selectedImages = [];
+  List<Map<String, dynamic>> _selectedVideos = []; // {path, base64}
   List<String> _hashtags = [];
   String _visibility = 'public'; // public or private
   bool _isLoading = false;
   bool _isCompressing = false;
   int _compressionProgress = 0;
   String _compressionStatus = '';
+  
+  static const int _maxPhotos = 12;
+  static const int _maxVideos = 2;
+  static const int _maxVideoDurationSeconds = 180; // 3 minutes
 
   @override
   void dispose() {
@@ -134,6 +139,175 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     });
   }
 
+  Future<void> _pickVideo() async {
+    // Check video limit
+    if (_selectedVideos.length >= _maxVideos) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Maximum $_maxVideos videos allowed per post'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final XFile? video = await _picker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(seconds: _maxVideoDurationSeconds),
+      );
+
+      if (video == null) return;
+
+      setState(() {
+        _isCompressing = true;
+        _compressionStatus = 'Processing video...';
+      });
+
+      // Read video file using XFile's readAsBytes (cross-platform)
+      final bytes = await video.readAsBytes();
+      
+      // Check file size (limit to 50MB for practical upload)
+      final fileSizeMB = bytes.length / (1024 * 1024);
+      if (fileSizeMB > 50) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Video is too large (${fileSizeMB.toStringAsFixed(1)}MB). Maximum is 50MB.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        setState(() {
+          _isCompressing = false;
+          _compressionStatus = '';
+        });
+        return;
+      }
+      
+      final base64Video = 'data:video/mp4;base64,${base64Encode(bytes)}';
+      
+      setState(() {
+        _selectedVideos.add({
+          'path': video.path,
+          'base64': base64Video,
+          'name': video.name,
+        });
+        _isCompressing = false;
+        _compressionStatus = '';
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Video added (${fileSizeMB.toStringAsFixed(1)}MB)'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isCompressing = false;
+        _compressionStatus = '';
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting video: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _removeVideo(int index) {
+    setState(() {
+      _selectedVideos.removeAt(index);
+    });
+  }
+
+  void _showMediaPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Upload Media',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Photos option
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.photo_library_rounded, color: Colors.blue.shade600, size: 24),
+                ),
+                title: const Text('Photos', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text('${_selectedImages.length}/$_maxPhotos selected', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                enabled: _selectedImages.length < _maxPhotos,
+                onTap: _selectedImages.length < _maxPhotos ? () {
+                  Navigator.pop(context);
+                  _pickImage();
+                } : null,
+              ),
+              const SizedBox(height: 8),
+              // Videos option
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.videocam_rounded, color: Colors.purple.shade600, size: 24),
+                ),
+                title: const Text('Video', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text('${_selectedVideos.length}/$_maxVideos selected (max 3 min, 50MB)', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                enabled: _selectedVideos.length < _maxVideos,
+                onTap: _selectedVideos.length < _maxVideos ? () {
+                  Navigator.pop(context);
+                  _pickVideo();
+                } : null,
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _addHashtag() {
     final hashtag = _hashtagController.text.trim();
     if (hashtag.isEmpty) return;
@@ -160,12 +334,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final hasTitle = _titleController.text.trim().isNotEmpty;
     final hasContent = _contentController.text.trim().isNotEmpty;
     final hasImages = _selectedImages.isNotEmpty;
+    final hasVideos = _selectedVideos.isNotEmpty;
     final hasTags = _hashtags.isNotEmpty;
     
-    if (!hasTitle && !hasContent && !hasImages && !hasTags) {
+    if (!hasTitle && !hasContent && !hasImages && !hasVideos && !hasTags) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please add at least a title, content, image, or hashtag'),
+          content: Text('Please add at least a title, content, image, video, or hashtag'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -175,10 +350,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Extract base64 videos from selected videos
+      final videoBase64List = hasVideos 
+          ? _selectedVideos.map((v) => v['base64'] as String).toList()
+          : null;
+      
       final post = await BusinessNetworkService.createPost(
         title: hasTitle ? _titleController.text.trim() : null,
         content: hasContent ? _contentController.text.trim() : null,
         images: hasImages ? _selectedImages : null,
+        videos: videoBase64List,
         tags: hasTags ? _hashtags : null,
         visibility: _visibility,
       );
@@ -581,118 +762,104 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             
             const SizedBox(height: 24),
 
-            // Media Section
+            // Combined Media Section (Photos + Videos)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.photo_library_rounded, size: 20, color: Colors.grey.shade600),
+                    Icon(Icons.perm_media_rounded, size: 20, color: Colors.grey.shade600),
                     const SizedBox(width: 8),
                     Text(
-                      'Photos',
+                      'Media',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade700,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: _selectedImages.length >= 12
-                            ? Colors.orange.shade50
-                            : const Color(0xFF3B82F6).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: _selectedImages.length >= 12
-                              ? Colors.orange.shade300
-                              : const Color(0xFF3B82F6).withOpacity(0.3),
-                        ),
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '${_selectedImages.length}/12',
+                        '${_selectedImages.length}/$_maxPhotos photos',
                         style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: _selectedImages.length >= 12
-                              ? Colors.orange.shade700
-                              : const Color(0xFF3B82F6),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${_selectedVideos.length}/$_maxVideos videos',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.purple.shade700,
                         ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                  // Compression Progress
-                  if (_isCompressing) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _compressionStatus,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    LinearProgressIndicator(
-                                      value: _compressionProgress / 100,
-                                      backgroundColor: Colors.grey.shade200,
-                                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '$_compressionProgress%',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF3B82F6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                
+                // Compression Progress
+                if (_isCompressing) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    const SizedBox(height: 12),
-                  ],
-                  
-                  // Image Grid
-                  if (_selectedImages.isNotEmpty) ...[
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 6,
-                        mainAxisSpacing: 6,
-                        childAspectRatio: 1,
-                      ),
-                      itemCount: _selectedImages.length,
-                      itemBuilder: (context, index) {
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _compressionStatus,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                
+                // Combined Media Grid (Images + Videos)
+                if (_selectedImages.isNotEmpty || _selectedVideos.isNotEmpty) ...[
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 6,
+                      mainAxisSpacing: 6,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: _selectedImages.length + _selectedVideos.length,
+                    itemBuilder: (context, index) {
+                      // Show images first, then videos
+                      if (index < _selectedImages.length) {
                         final image = _selectedImages[index];
                         return Stack(
                           children: [
@@ -726,42 +893,118 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                             ),
                           ],
                         );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  
-                  // Add Image Button
-                  if (_selectedImages.length < 12)
-                    InkWell(
-                      onTap: _pickImage,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      } else {
+                        // Video item
+                        final videoIndex = index - _selectedImages.length;
+                        return Stack(
                           children: [
-                            Icon(Icons.add_photo_alternate_outlined, size: 22, color: Colors.grey.shade600),
-                            const SizedBox(width: 10),
-                            Text(
-                              'Add Photos',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade700,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                color: Colors.grey.shade800,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.play_circle_fill,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 4,
+                              left: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.purple.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.videocam, color: Colors.white, size: 10),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      'VIDEO',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: () => _removeVideo(videoIndex),
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.7),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                    ),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
                 ],
-              ),
+                
+                // Single Upload Media Button
+                InkWell(
+                  onTap: _showMediaPicker,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_photo_alternate_outlined, size: 22, color: Colors.grey.shade600),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Upload Media',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Helper text
+                Text(
+                  'Max $_maxPhotos photos + $_maxVideos videos (3 min, 50MB max)',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
 
             // Safe area bottom padding for devices with gesture navigation
             SizedBox(height: MediaQuery.of(context).padding.bottom + 80),

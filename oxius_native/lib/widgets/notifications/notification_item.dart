@@ -16,6 +16,8 @@ class NotificationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final actorNameRaw = (notification.actor?.name ?? '').trim();
+    final actorDisplayName = actorNameRaw.isNotEmpty ? actorNameRaw : 'Someone';
     return Container(
       decoration: BoxDecoration(
         color: notification.read 
@@ -99,7 +101,7 @@ class NotificationItem extends StatelessWidget {
                       ),
                       children: [
                         TextSpan(
-                          text: notification.actor?.name ?? 'Someone',
+                          text: actorDisplayName,
                           style: TextStyle(
                             fontWeight: notification.read ? FontWeight.w600 : FontWeight.w700,
                             color: const Color(0xFF050505),
@@ -180,12 +182,19 @@ class NotificationItem extends StatelessWidget {
   }
 
   String _getInitials() {
-    final name = notification.actor?.name ?? 'U';
-    final parts = name.split(' ');
+    final name = (notification.actor?.name ?? '').trim();
+    if (name.isEmpty) return 'U';
+
+    final parts = name
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+
+    if (parts.isEmpty) return 'U';
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
-    return name[0].toUpperCase();
+    return parts[0][0].toUpperCase();
   }
 
   Color _getTypeColor() {

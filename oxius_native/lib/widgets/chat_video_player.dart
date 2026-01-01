@@ -5,11 +5,15 @@ import 'package:chewie/chewie.dart';
 class ChatVideoPlayer extends StatefulWidget {
   final String videoUrl;
   final bool isMe;
+  final double width;
+  final double height;
 
   const ChatVideoPlayer({
     super.key,
     required this.videoUrl,
     required this.isMe,
+    this.width = 280,
+    this.height = 180,
   });
 
   @override
@@ -48,6 +52,7 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
         looping: false,
         aspectRatio: _videoPlayerController.value.aspectRatio,
         autoInitialize: true,
+        hideControlsTimer: const Duration(milliseconds: 900),
         errorBuilder: (context, errorMessage) {
           return Center(
             child: Column(
@@ -98,8 +103,8 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
   Widget build(BuildContext context) {
     if (_hasError) {
       return Container(
-        width: 280,
-        height: 180,
+        width: widget.width,
+        height: widget.height,
         decoration: BoxDecoration(
           color: Colors.grey.shade200,
           borderRadius: BorderRadius.circular(12),
@@ -127,8 +132,8 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
 
     if (!_isInitialized || _chewieController == null) {
       return Container(
-        width: 280,
-        height: 180,
+        width: widget.width,
+        height: widget.height,
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.05),
           borderRadius: BorderRadius.circular(12),
@@ -145,8 +150,8 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        width: 280,
-        height: 180,
+        width: widget.width,
+        height: widget.height,
         child: Chewie(
           controller: _chewieController!,
         ),

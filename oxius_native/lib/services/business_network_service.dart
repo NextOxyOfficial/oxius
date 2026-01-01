@@ -99,6 +99,7 @@ class BusinessNetworkService {
     String? title,
     String? content,
     List<String>? images,
+    List<String>? videos,
     String? category,
     List<String>? tags,
     String visibility = 'public',
@@ -111,6 +112,7 @@ class BusinessNetworkService {
         if (content != null && content.isNotEmpty) 'content': content,
         'visibility': visibility,
         if (images != null && images.isNotEmpty) 'images': images,
+        if (videos != null && videos.isNotEmpty) 'videos': videos,
         if (category != null) 'category': category,
         if (tags != null && tags.isNotEmpty) 'tags': tags,
       };
@@ -212,11 +214,52 @@ class BusinessNetworkService {
     }
   }
 
+  static Future<List<BusinessNetworkComment>> getPostComments({
+    required int postId,
+  }) async {
+    try {
+      final headers = await ApiService.getHeaders();
+
+      final url = '$_baseUrl/posts/$postId/comments/';
+      final response = await http.get(Uri.parse(url), headers: headers);
+
+      if (response.statusCode != 200) {
+        return <BusinessNetworkComment>[];
+      }
+
+      final data = json.decode(response.body);
+      final List<dynamic> rawList;
+      if (data is List) {
+        rawList = data;
+      } else if (data is Map<String, dynamic>) {
+        final results = data['results'];
+        if (results is List) {
+          rawList = results;
+        } else {
+          final comments = data['comments'];
+          rawList = comments is List ? comments : <dynamic>[];
+        }
+      } else {
+        rawList = <dynamic>[];
+      }
+
+      return rawList
+          .whereType<Map>()
+          .map((e) => BusinessNetworkComment.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } catch (e) {
+      print('Error fetching comments: $e');
+      return <BusinessNetworkComment>[];
+    }
+  }
+
   /// Add a comment to a post
   static Future<BusinessNetworkComment?> addComment({
     required int postId,
     required String content,
     int? parentCommentId,
+    bool isGiftComment = false,
+    int? diamondAmount,
   }) async {
     try {
       final headers = await ApiService.getHeaders();
@@ -224,6 +267,8 @@ class BusinessNetworkService {
       final body = {
         'content': content,
         if (parentCommentId != null) 'parent_comment': parentCommentId,
+        if (isGiftComment) 'is_gift_comment': true,
+        if (diamondAmount != null && diamondAmount > 0) 'diamond_amount': diamondAmount,
       };
       
       print('=== Add Comment Debug ===');

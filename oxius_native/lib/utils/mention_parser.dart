@@ -111,7 +111,7 @@ class MentionParser {
     final effectiveLinkStyle = linkStyle ??
         normalStyle.copyWith(
           color: const Color(0xFF2563EB),
-          decoration: TextDecoration.underline,
+          decoration: TextDecoration.none,
         );
 
     final List<InlineSpan> spans = [];

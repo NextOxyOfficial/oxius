@@ -1,3 +1,5 @@
+import '../config/app_config.dart';
+
 // Helper function to parse IDs that can be strings or integers
 int _parseId(dynamic value) {
   if (value == null) return 0;
@@ -43,15 +45,52 @@ class BusinessNetworkPost {
     try {
       // Handle both 'user' and 'author_details' fields
       final userData = json['author_details'] ?? json['user'];
-      
-      // Handle post media - ensure it's a list
-      final mediaList = json['post_media'] ?? json['images'] ?? [];
-      final mediaItems = (mediaList is List ? mediaList : []).map((e) {
+
+      // Handle post media - merge possible keys
+      final List<dynamic> mergedMediaList = [];
+      final postMediaList = json['post_media'] ?? json['media'];
+      if (postMediaList is List) mergedMediaList.addAll(postMediaList);
+      final imagesList = json['images'];
+      if (imagesList is List) mergedMediaList.addAll(imagesList);
+      final videosList = json['videos'];
+      if (videosList is List) mergedMediaList.addAll(videosList);
+
+      final mediaItems = mergedMediaList.map((e) {
         try {
           if (e is Map) {
             return PostMedia.fromJson(Map<String, dynamic>.from(e));
           }
-          return PostMedia(id: 0, image: e.toString(), post: json['id'] ?? 0);
+
+          final raw = e.toString();
+          final lower = raw.toLowerCase();
+          final looksLikeVideo = lower.contains('.mp4') ||
+              lower.contains('.mov') ||
+              lower.contains('.m4v') ||
+              lower.contains('.webm') ||
+              lower.contains('.mkv') ||
+              lower.contains('.avi');
+
+          if (looksLikeVideo) {
+            return PostMedia(
+              id: 0,
+              image: '',
+              type: 'video',
+              url: raw,
+              video: raw,
+              thumbnail: '',
+              post: _parseId(json['id']),
+            );
+          }
+
+          return PostMedia(
+            id: 0,
+            image: raw,
+            type: 'image',
+            url: raw,
+            video: null,
+            thumbnail: null,
+            post: _parseId(json['id']),
+          );
         } catch (e) {
           print('Error parsing media item: $e');
           return null;
@@ -94,7 +133,9 @@ class BusinessNetworkPost {
       return BusinessNetworkPost(
         id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
         title: json['title'] ?? '',
-        user: userData != null ? BusinessNetworkUser.fromJson(userData) : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false),
+        user: userData != null
+            ? BusinessNetworkUser.fromJson(userData)
+            : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false, isPro: false),
         content: json['content'] ?? '',
         media: mediaItems,
         tags: tagItems,
@@ -147,6 +188,7 @@ class BusinessNetworkPost {
 
   BusinessNetworkPost copyWith({
     BusinessNetworkUser? user,
+    List<PostMedia>? media,
     int? likesCount,
     bool? isLiked,
     bool? isSaved,
@@ -159,7 +201,7 @@ class BusinessNetworkPost {
       title: title,
       user: user ?? this.user,
       content: content,
-      media: media,
+      media: media ?? this.media,
       tags: tags,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
@@ -176,18 +218,87 @@ class BusinessNetworkPost {
 class PostMedia {
   final int id;
   final String image;
+  final String? type;
+  final String? url;
+  final String? video;
+  final String? thumbnail;
   final int post;
 
   PostMedia({
     required this.id,
     required this.image,
+    this.type,
+    this.url,
+    this.video,
+    this.thumbnail,
     required this.post,
   });
 
+  bool get isVideo {
+    final t = (type ?? '').toLowerCase().trim();
+    if (t == 'video') return true;
+
+    final raw = '${video ?? ''} ${url ?? ''} ${image} ${thumbnail ?? ''}'.toLowerCase();
+    if (raw.contains('.mp4') ||
+        raw.contains('.mov') ||
+        raw.contains('.m4v') ||
+        raw.contains('.webm') ||
+        raw.contains('.mkv') ||
+        raw.contains('.avi')) {
+      return true;
+    }
+
+    if ((video ?? '').isNotEmpty) return true;
+    return false;
+  }
+
+  String get bestUrl {
+    if (isVideo) {
+      return AppConfig.getAbsoluteUrl((video ?? url ?? image).toString());
+    }
+    final value = (image.isNotEmpty ? image : (url ?? thumbnail ?? '')).toString();
+    return AppConfig.getAbsoluteUrl(value);
+  }
+
+  String get bestThumbnailUrl {
+    final thumb = (thumbnail ?? '').toString();
+    if (thumb.isNotEmpty) return AppConfig.getAbsoluteUrl(thumb);
+
+    if (!isVideo) {
+      final u = (url ?? '').toString();
+      if (u.isNotEmpty) return AppConfig.getAbsoluteUrl(u);
+    }
+
+    final img = image.toString();
+    final lower = img.toLowerCase();
+    final looksLikeVideo = lower.contains('.mp4') ||
+        lower.contains('.mov') ||
+        lower.contains('.m4v') ||
+        lower.contains('.webm') ||
+        lower.contains('.mkv') ||
+        lower.contains('.avi');
+
+    if (img.isNotEmpty && !looksLikeVideo) {
+      return AppConfig.getAbsoluteUrl(img);
+    }
+
+    return '';
+  }
+
   factory PostMedia.fromJson(Map<String, dynamic> json) {
+    final rawType = json['type']?.toString();
+    final rawImage = (json['image'] ?? '').toString();
+    final rawVideo = (json['video'] ?? json['video_url'] ?? '').toString();
+    final rawUrl = (json['url'] ?? '').toString();
+    final rawThumb = (json['thumbnail'] ?? json['thumbnail_url'] ?? json['thumb'] ?? '').toString();
+
     return PostMedia(
       id: _parseId(json['id']),
-      image: json['image'] ?? '',
+      image: rawImage,
+      type: rawType,
+      url: rawUrl.isNotEmpty ? rawUrl : null,
+      video: rawVideo.isNotEmpty ? rawVideo : null,
+      thumbnail: rawThumb.isNotEmpty ? rawThumb : null,
       post: _parseId(json['post']),
     );
   }
@@ -196,6 +307,10 @@ class PostMedia {
     return {
       'id': id,
       'image': image,
+      'type': type,
+      'url': url,
+      'video': video,
+      'thumbnail': thumbnail,
       'post': post,
     };
   }
@@ -256,6 +371,7 @@ class BusinessNetworkUser {
   final String? avatar;
   final String? image;
   final bool isVerified;
+  final bool isPro;
   final String? bio;
   final String? username;
   final String? firstName;
@@ -269,6 +385,7 @@ class BusinessNetworkUser {
     this.avatar,
     this.image,
     required this.isVerified,
+    this.isPro = false,
     this.bio,
     this.username,
     this.firstName,
@@ -312,6 +429,7 @@ class BusinessNetworkUser {
       avatar: avatarValue ?? profilePictureValue,
       image: imageValue,
       isVerified: json['is_verified'] ?? json['kyc'] ?? false,
+      isPro: json['is_pro'] ?? json['isPro'] ?? json['pro'] ?? false,
       bio: json['bio'],
       username: json['username'],
       firstName: json['first_name'],
@@ -327,6 +445,7 @@ class BusinessNetworkUser {
       'avatar': avatar,
       'image': image,
       'is_verified': isVerified,
+      'is_pro': isPro,
       'bio': bio,
       'username': username,
       'first_name': firstName,
@@ -359,7 +478,9 @@ class BusinessNetworkComment {
     final userData = json['user'] ?? json['author_details'];
     return BusinessNetworkComment(
       id: _parseId(json['id']),
-      user: userData != null ? BusinessNetworkUser.fromJson(userData) : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false),
+      user: userData != null
+          ? BusinessNetworkUser.fromJson(userData)
+          : BusinessNetworkUser(id: 0, name: 'Unknown', isVerified: false, isPro: false),
       content: json['content'] ?? json['comment'] ?? '',
       createdAt: json['created_at'] ?? '',
       parentComment: _parseId(json['parent_comment']),

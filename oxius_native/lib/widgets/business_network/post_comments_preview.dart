@@ -15,6 +15,8 @@ class PostCommentsPreview extends StatefulWidget {
   final VoidCallback onViewAll;
   final Function(BusinessNetworkComment, String)? onReplySubmit;
   final VoidCallback? onCommentCountChanged;
+  final bool showAll;
+  final bool showHeader;
 
   PostCommentsPreview({
     super.key,
@@ -22,6 +24,8 @@ class PostCommentsPreview extends StatefulWidget {
     required this.onViewAll,
     this.onReplySubmit,
     this.onCommentCountChanged,
+    this.showAll = false,
+    this.showHeader = false,
   });
 
   @override
@@ -31,6 +35,7 @@ class PostCommentsPreview extends StatefulWidget {
 class _PostCommentsPreviewState extends State<PostCommentsPreview> {
   BusinessNetworkComment? _replyingTo;
   final Set<int> _deletedCommentIds = {};
+  final Set<int> _expandedReplies = {};
 
   @override
   void didUpdateWidget(PostCommentsPreview oldWidget) {
@@ -135,10 +140,14 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
     // Sort comments by creation date in ascending order (oldest first)
     displayedComments.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     
-    // Get last 3 comments (most recent)
-    final recentParents = displayedComments.length <= 3
-        ? displayedComments.reversed.toList()
-        : displayedComments.sublist(displayedComments.length - 3).reversed.toList();
+    final List<BusinessNetworkComment> recentParents;
+    if (widget.showAll) {
+      recentParents = displayedComments.reversed.toList();
+    } else {
+      recentParents = displayedComments.length <= 3
+          ? displayedComments.reversed.toList()
+          : displayedComments.sublist(displayedComments.length - 3).reversed.toList();
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -154,6 +163,30 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (widget.showHeader) ...[
+            Row(
+              children: [
+                Text(
+                  'Comments',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '(${widget.post.commentsCount})',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
           // Pinned highest gift comment (if exists)
           if (highestGiftComment != null) ...[
             Row(
@@ -235,6 +268,10 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                 .toList()
               ..sort((a, b) => a.createdAt.compareTo(b.createdAt)); // Sort by time
             final isReplyingToThis = _replyingTo?.id == comment.id;
+            final isExpanded = _expandedReplies.contains(comment.id);
+            final repliesToShow = widget.showAll
+                ? (isExpanded ? commentReplies : commentReplies.take(4).toList())
+                : commentReplies.take(3).toList();
             
             if (commentReplies.isNotEmpty) {
               print('Comment ${comment.id} has ${commentReplies.length} replies');
@@ -270,10 +307,9 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                   },
                 ),
               // Replies to this comment (child comments)
-              if (commentReplies.isNotEmpty) ...[
+              if (repliesToShow.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                // Show only last 3 replies
-                ...commentReplies.take(3).map((reply) => Container(
+                ...repliesToShow.map((reply) => Container(
                   margin: const EdgeInsets.only(left: 40, bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(
@@ -293,27 +329,53 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                     onCommentUpdated: _handleCommentUpdated,
                   ),
                 )),
-                // "See more replies" button if there are more than 3
-                if (commentReplies.length > 3)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 48, bottom: 8, right: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        InkWell(
-                          onTap: widget.onViewAll,
-                          child: Text(
-                            'See ${commentReplies.length - 3} more ${commentReplies.length - 3 == 1 ? 'reply' : 'replies'}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.w600,
+                if (widget.showAll) ...[
+                  if (commentReplies.length > 4 && !isExpanded)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 48, bottom: 8, right: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _expandedReplies.add(comment.id);
+                              });
+                            },
+                            child: Text(
+                              'See ${commentReplies.length - 4} more ${commentReplies.length - 4 == 1 ? 'reply' : 'replies'}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.blue.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
+                ] else ...[
+                  if (commentReplies.length > 3)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 48, bottom: 8, right: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          InkWell(
+                            onTap: widget.onViewAll,
+                            child: Text(
+                              'See ${commentReplies.length - 3} more ${commentReplies.length - 3 == 1 ? 'reply' : 'replies'}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.blue.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ],
               // Spacing between comment groups
               if (index < recentParents.length - 1)
@@ -321,7 +383,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
             ];
           }),
           // View all comments button
-          if (widget.post.commentsCount > 2) ...[
+          if (!widget.showAll && widget.post.commentsCount > 2) ...[
             const SizedBox(height: 8),
             InkWell(
               onTap: widget.onViewAll,

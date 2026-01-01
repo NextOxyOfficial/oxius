@@ -1,6 +1,7 @@
 import base64
 
 from django.core.files.base import ContentFile
+from django.db import transaction
 from django.db.models import Case, Count, IntegerField, Q, Subquery, Value, When
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
@@ -32,6 +33,45 @@ def base64ToFile(base64_data):
     filename = "uploaded_image.png"  # Customize as needed
 
     # Save the file to the appropriate storage (e.g., media directory)
+    file.name = filename
+    return file
+
+
+def base64ToVideoFile(base64_data):
+    """Convert base64 video data to a Django ContentFile"""
+    content_type = "video/mp4"
+    raw = base64_data
+
+    if isinstance(raw, str) and "," in raw and "base64" in raw:
+        header, payload = raw.split(",", 1)
+        if ":" in header and ";" in header:
+            content_type = header.split(":", 1)[1].split(";", 1)[0].strip() or content_type
+        raw = payload
+    elif isinstance(raw, str) and (raw.startswith("data:video") or raw.startswith("data:application")):
+        parts = raw.split("base64,", 1)
+        raw = parts[1] if len(parts) == 2 else ""
+
+    ext = "mp4"
+    ct = (content_type or "").lower()
+    if "webm" in ct:
+        ext = "webm"
+    elif "quicktime" in ct or "mov" in ct:
+        ext = "mov"
+    elif "x-matroska" in ct or "mkv" in ct:
+        ext = "mkv"
+    elif "mp4" in ct:
+        ext = "mp4"
+
+    try:
+        file_data = base64.b64decode(raw)
+    except Exception:
+        file_data = base64.b64decode(raw + "===")
+
+    file = ContentFile(file_data)
+
+    import time
+
+    filename = f"uploaded_video_{int(time.time())}.{ext}"
     file.name = filename
     return file
 
@@ -120,7 +160,7 @@ class UserSearchView(generics.ListAPIView):
 class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostSerializer
     pagination_class = MediumDevicePagination  # Changed for better performance
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]  # Allow public access to view posts
 
     def get_queryset(self):
         """
@@ -211,50 +251,79 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        images_data = request.data.pop("images", None)
-        tags_data = request.data.pop("tags", None)
-        serializer = self.get_serializer(
-            data={
-                "title": request.data["title"],
-                "content": request.data["content"],
-                "author": request.user.id,
-            }
-        )
+        images_data = request.data.get("images")
+        videos_data = request.data.get("videos")
+        tags_data = request.data.get("tags")
 
-        serializer.is_valid(raise_exception=True)
-        post = serializer.save()
+        with transaction.atomic():
+            serializer = self.get_serializer(
+                data={
+                    "title": request.data.get("title"),
+                    "content": request.data.get("content"),
+                    "visibility": request.data.get("visibility", "public"),
+                    "author": request.user.id,
+                }
+            )
 
-        # Print or log the serializer errors
+            serializer.is_valid(raise_exception=True)
+            post = serializer.save()
 
-        if images_data:
-            # Handle both list of images and single image
-            if not isinstance(images_data, list):
-                images_data = [images_data]
+            if images_data:
+                if not isinstance(images_data, list):
+                    images_data = [images_data]
 
-            for image_data in images_data:
-                try:
-                    if isinstance(image_data, str) and image_data.startswith(
-                        "data:image"
-                    ):
-                        # Process base64 image
-                        image_file = base64ToFile(image_data)
-                        post_media = BusinessNetworkMedia.objects.create(
-                            image=image_file
-                        )
+                for image_data in images_data:
+                    try:
+                        if isinstance(image_data, dict):
+                            image_data = image_data.get("base64") or image_data.get("image") or image_data.get("data")
+
+                        if not isinstance(image_data, str) or not image_data:
+                            continue
+
+                        if image_data.startswith("data:image"):
+                            image_file = base64ToFile(image_data)
+                        elif "base64," in image_data:
+                            image_file = base64ToFile(image_data)
+                        else:
+                            image_file = base64ToFile(f"data:image/png;base64,{image_data}")
+
+                        post_media = BusinessNetworkMedia.objects.create(type="image", image=image_file)
                         post.media.add(post_media)
-                except Exception as e:
-                    # Log error but continue processing
-                    print(f"Error processing image: {str(e)}")
+                    except Exception as e:
+                        raise ValidationError({"images": f"Error processing image: {str(e)}"})
 
-        if tags_data:
-            if tags_data and isinstance(tags_data, list):
-                for tag_data in tags_data:
-                    tag, _ = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
-                    post.tags.add(tag)
+            if videos_data:
+                if not isinstance(videos_data, list):
+                    videos_data = [videos_data]
 
-        headers = self.get_success_headers(serializer.data)
+                for video_data in videos_data:
+                    try:
+                        if isinstance(video_data, dict):
+                            video_data = video_data.get("base64") or video_data.get("video") or video_data.get("data")
+
+                        if not isinstance(video_data, str) or not video_data:
+                            continue
+
+                        if "base64," in video_data:
+                            video_file = base64ToVideoFile(video_data)
+                        else:
+                            video_file = base64ToVideoFile(f"data:video/mp4;base64,{video_data}")
+
+                        post_media = BusinessNetworkMedia.objects.create(type="video", video=video_file)
+                        post.media.add(post_media)
+                    except Exception as e:
+                        raise ValidationError({"videos": f"Error processing video: {str(e)}"})
+
+            if tags_data:
+                if isinstance(tags_data, list):
+                    for tag_data in tags_data:
+                        tag, _ = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
+                        post.tags.add(tag)
+
+        response_serializer = self.get_serializer(post)
+        headers = self.get_success_headers(response_serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            response_serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
 
@@ -1428,7 +1497,7 @@ class BusinessNetworkUnreadNotificationCountView(generics.GenericAPIView):
         return Response({"count": count}, status=status.HTTP_200_OK)
 
 
-class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
+class BusinessNetworkPostListCreateViewLegacy(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostSerializer
     pagination_class = StandardResultsSetPagination
     # permission_classes = [IsAuthenticated]

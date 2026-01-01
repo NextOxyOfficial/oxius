@@ -357,7 +357,7 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                 fontSize: 13,
                 color: onTap != null ? Colors.amber.shade700 : const Color(0xFF374151),
                 fontWeight: FontWeight.w500,
-                decoration: onTap != null ? TextDecoration.underline : null,
+                decoration: TextDecoration.none,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

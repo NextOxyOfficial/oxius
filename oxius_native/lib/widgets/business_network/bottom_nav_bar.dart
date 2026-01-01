@@ -275,22 +275,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
               ),
               
               // Active indicator line
-              if (isActive)
-                Container(
-                  margin: const EdgeInsets.only(top: 1),
-                  width: 20,
-                  height: 2,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        color.withOpacity(0.5),
-                        color,
-                        color.withOpacity(0.5),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+              if (isActive) const SizedBox.shrink(),
             ],
           ),
         ),

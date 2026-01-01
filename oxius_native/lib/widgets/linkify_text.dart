@@ -88,11 +88,11 @@ class _LinkifyTextState extends State<LinkifyText> {
           style: widget.linkStyle ??
               (widget.style?.copyWith(
                     color: const Color(0xFF2563EB),
-                    decoration: TextDecoration.underline,
+                    decoration: TextDecoration.none,
                   ) ??
                   const TextStyle(
                     color: Color(0xFF2563EB),
-                    decoration: TextDecoration.underline,
+                    decoration: TextDecoration.none,
                   )),
           recognizer: recognizer,
         ));

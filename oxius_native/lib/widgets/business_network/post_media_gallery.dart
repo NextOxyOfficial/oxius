@@ -38,6 +38,131 @@ class PostMediaGallery extends StatelessWidget {
     }
   }
 
+  Widget _buildMediaContent(
+    BuildContext context,
+    int index, {
+    required BoxFit fit,
+    double errorIconSize = 48,
+  }) {
+    final item = media[index];
+    final imageUrl = item.bestThumbnailUrl;
+
+    if (imageUrl.isEmpty) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            color: item.isVideo ? Colors.grey.shade900 : Colors.grey.shade200,
+            child: Center(
+              child: Icon(
+                item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
+                size: errorIconSize,
+                color: item.isVideo ? Colors.white.withOpacity(0.9) : Colors.grey,
+              ),
+            ),
+          ),
+          if (item.isVideo)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.55),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
+                    SizedBox(width: 4),
+                    Text(
+                      'VIDEO',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.network(
+          imageUrl,
+          fit: fit,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey.shade200,
+              child: Center(
+                child: Icon(
+                  item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
+                  size: errorIconSize,
+                  color: item.isVideo ? Colors.grey.shade700 : Colors.grey,
+                ),
+              ),
+            );
+          },
+        ),
+        if (item.isVideo)
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.55),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withOpacity(0.15)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
+                  SizedBox(width: 4),
+                  Text(
+                    'VIDEO',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (item.isVideo)
+          Center(
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.45),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.play_arrow_rounded,
+                color: Colors.white,
+                size: 34,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildSingleImage(BuildContext context, int index) {
     return GestureDetector(
       onTap: () => onMediaTap(index),
@@ -46,31 +171,11 @@ class PostMediaGallery extends StatelessWidget {
           maxHeight: 500,
           minHeight: 200,
         ),
-        child: Image.network(
-          media[index].image,
+        child: _buildMediaContent(
+          context,
+          index,
           fit: BoxFit.contain,
-          width: double.infinity,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              height: 300,
-              color: Colors.grey.shade200,
-              child: const Icon(Icons.image, size: 48, color: Colors.grey),
-            );
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              height: 300,
-              color: Colors.grey.shade100,
-              child: Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                      : null,
-                ),
-              ),
-            );
-          },
+          errorIconSize: 48,
         ),
       ),
     );
@@ -90,15 +195,11 @@ class PostMediaGallery extends StatelessWidget {
                 onTap: () => onMediaTap(0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(0),
-                  child: Image.network(
-                    media[0].image,
+                  child: _buildMediaContent(
+                    context,
+                    0,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.image, size: 48, color: Colors.grey),
-                      );
-                    },
+                    errorIconSize: 48,
                   ),
                 ),
               ),
@@ -109,15 +210,11 @@ class PostMediaGallery extends StatelessWidget {
                 onTap: () => onMediaTap(1),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(0),
-                  child: Image.network(
-                    media[1].image,
+                  child: _buildMediaContent(
+                    context,
+                    1,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.image, size: 48, color: Colors.grey),
-                      );
-                    },
+                    errorIconSize: 48,
                   ),
                 ),
               ),
@@ -143,15 +240,11 @@ class PostMediaGallery extends StatelessWidget {
                 onTap: () => onMediaTap(0),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(0),
-                  child: Image.network(
-                    media[0].image,
+                  child: _buildMediaContent(
+                    context,
+                    0,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(Icons.image, size: 48, color: Colors.grey),
-                      );
-                    },
+                    errorIconSize: 48,
                   ),
                 ),
               ),
@@ -165,15 +258,11 @@ class PostMediaGallery extends StatelessWidget {
                       onTap: () => onMediaTap(1),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(0),
-                        child: Image.network(
-                          media[1].image,
+                        child: _buildMediaContent(
+                          context,
+                          1,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.image, size: 24, color: Colors.grey),
-                            );
-                          },
+                          errorIconSize: 24,
                         ),
                       ),
                     ),
@@ -184,15 +273,11 @@ class PostMediaGallery extends StatelessWidget {
                       onTap: () => onMediaTap(2),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(0),
-                        child: Image.network(
-                          media[2].image,
+                        child: _buildMediaContent(
+                          context,
+                          2,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.image, size: 24, color: Colors.grey),
-                            );
-                          },
+                          errorIconSize: 24,
                         ),
                       ),
                     ),
@@ -220,15 +305,11 @@ class PostMediaGallery extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(0),
-                    child: Image.network(
-                      media[0].image,
+                    child: _buildMediaContent(
+                      context,
+                      0,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                        );
-                      },
+                      errorIconSize: 32,
                     ),
                   ),
                 ),
@@ -236,15 +317,11 @@ class PostMediaGallery extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(1),
-                    child: Image.network(
-                      media[1].image,
+                    child: _buildMediaContent(
+                      context,
+                      1,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                        );
-                      },
+                      errorIconSize: 32,
                     ),
                   ),
                 ),
@@ -258,15 +335,11 @@ class PostMediaGallery extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(2),
-                    child: Image.network(
-                      media[2].image,
+                    child: _buildMediaContent(
+                      context,
+                      2,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                        );
-                      },
+                      errorIconSize: 32,
                     ),
                   ),
                 ),
@@ -274,15 +347,11 @@ class PostMediaGallery extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(3),
-                    child: Image.network(
-                      media[3].image,
+                    child: _buildMediaContent(
+                      context,
+                      3,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                        );
-                      },
+                      errorIconSize: 32,
                     ),
                   ),
                 ),
@@ -308,15 +377,11 @@ class PostMediaGallery extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(0),
-                    child: Image.network(
-                      media[0].image,
+                    child: _buildMediaContent(
+                      context,
+                      0,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                        );
-                      },
+                      errorIconSize: 32,
                     ),
                   ),
                 ),
@@ -324,15 +389,11 @@ class PostMediaGallery extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(1),
-                    child: Image.network(
-                      media[1].image,
+                    child: _buildMediaContent(
+                      context,
+                      1,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                        );
-                      },
+                      errorIconSize: 32,
                     ),
                   ),
                 ),
@@ -346,15 +407,11 @@ class PostMediaGallery extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onMediaTap(2),
-                    child: Image.network(
-                      media[2].image,
+                    child: _buildMediaContent(
+                      context,
+                      2,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                        );
-                      },
+                      errorIconSize: 32,
                     ),
                   ),
                 ),
@@ -365,15 +422,11 @@ class PostMediaGallery extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.network(
-                          media[3].image,
+                        _buildMediaContent(
+                          context,
+                          3,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(Icons.image, size: 32, color: Colors.grey),
-                            );
-                          },
+                          errorIconSize: 32,
                         ),
                         if (media.length > 4)
                           Container(

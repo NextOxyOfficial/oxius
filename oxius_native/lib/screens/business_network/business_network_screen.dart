@@ -17,6 +17,7 @@ import 'create_post_screen.dart';
 import 'profile_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
+import 'profile_options.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
   const BusinessNetworkScreen({super.key});
@@ -26,6 +27,8 @@ class BusinessNetworkScreen extends StatefulWidget {
 }
 
 class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
+  
+  
   List<BusinessNetworkPost> _posts = [];
   List<Map<String, dynamic>> _sponsoredProducts = [];
   bool _isLoading = true;
@@ -85,17 +88,21 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return shuffled.take(count).toList();
   }
 
-  int _calculateTotalItems() {
-    int total = _posts.length + 1; // +1 for gold sponsors at top
+  List<BusinessNetworkPost> _getVisiblePosts() {
+    return _posts;
+  }
+
+  int _calculateTotalItems(List<BusinessNetworkPost> visiblePosts) {
+    int total = visiblePosts.length + 1; // +1 for gold sponsors at top
     
     // Add user suggestions cards (every 10th post) - only for logged in users
     if (AuthService.isAuthenticated) {
-      final suggestionsCount = (_posts.length / 10).floor();
+      final suggestionsCount = (visiblePosts.length / 10).floor();
       total += suggestionsCount;
     }
     
     // Add sponsored product cards (every 5th post)
-    final productsCount = (_posts.length / 5).floor();
+    final productsCount = (visiblePosts.length / 5).floor();
     total += productsCount;
     
     // +1 for loading/end indicator
@@ -198,6 +205,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final visiblePosts = _getVisiblePosts();
     
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -241,16 +249,16 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                 ? _buildLoadingState()
                 : _errorMessage != null
                     ? _buildErrorState()
-                    : _posts.isEmpty
+                    : visiblePosts.isEmpty
                         ? _buildEmptyState()
                         : ListView.builder(
-                        controller: _scrollController,
-                        padding: EdgeInsets.fromLTRB(4, 8, 4, isMobile ? 80 : 16),
-                        itemCount: _calculateTotalItems(),
-                        itemBuilder: (context, index) {
-                          return _buildFeedItem(index);
-                        },
-                      ),
+                            controller: _scrollController,
+                            padding: EdgeInsets.fromLTRB(4, 8, 4, isMobile ? 80 : 16),
+                            itemCount: _calculateTotalItems(visiblePosts),
+                            itemBuilder: (context, index) {
+                              return _buildFeedItem(index, visiblePosts);
+                            },
+                          ),
           ),
         ),
       ),
@@ -312,23 +320,17 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         break;
       case 3:
         if (isLoggedIn) {
-          // Profile (for logged-in users)
-          final currentUser = AuthService.currentUser;
-          if (currentUser != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileScreen(userId: currentUser.id),
-              ),
-            ).then((_) {
-              // Reset index when coming back
-              if (mounted) setState(() => _currentNavIndex = 0);
-            });
-          }
+          // Profile - Navigate to ProfileOptionsScreen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfileOptionsScreen(),
+            ),
+          ).then((_) {
+            if (mounted) setState(() => _currentNavIndex = 0);
+          });
         } else {
-          // Earn (for logged-out users) - could navigate to earn page or show info
-          // For now, just reset index
-          setState(() => _currentNavIndex = 0);
+          Navigator.pushNamed(context, '/login');
         }
         break;
       case 4:
@@ -338,20 +340,29 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     }
   }
 
-  Widget _buildFeedItem(int index) {
-    // Show Gold Sponsors at the top (index 0)
+  Widget _buildFeedTopHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: GoldSponsorsSlider(),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget _buildFeedItem(int index, List<BusinessNetworkPost> visiblePosts) {
+    // Show Gold Sponsors + tabs at the top (index 0)
     if (index == 0) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4),
-        child: GoldSponsorsSlider(),
-      );
+      return _buildFeedTopHeader();
     }
 
     // Calculate actual post position considering injected cards
-    int currentPostCount = 0;
     int currentIndex = 1; // Start after gold sponsors
     
-    for (int i = 0; i < _posts.length; i++) {
+    for (int i = 0; i < visiblePosts.length; i++) {
       // Check if we should inject user suggestions (every 10th post) - only for logged in users
       if (i > 0 && i % 10 == 0 && AuthService.isAuthenticated) {
         if (currentIndex == index) {
@@ -372,21 +383,21 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       
       // Show the post
       if (currentIndex == index) {
+        final post = visiblePosts[i];
         return PostCard(
-          post: _posts[i],
-          onLikeToggle: () => _handleLikeToggle(i),
-          onCommentAdded: (comment) => _handleCommentAdded(i, comment),
-          onPostDeleted: () => _handlePostDeleted(i),
+          post: post,
+          onLikeToggle: () => _handleLikeToggleByPostId(post.id),
+          onCommentAdded: (comment) => _handleCommentAddedByPostId(post.id, comment),
+          onPostDeleted: () => _handlePostDeletedByPostId(post.id),
         );
       }
       currentIndex++;
-      currentPostCount++;
     }
     
     // Show loading or end indicator after all posts
     if (_isLoadingMore) {
       return _buildLoadingMoreIndicator();
-    } else if (!_hasMore && _posts.isNotEmpty) {
+    } else if (!_hasMore && visiblePosts.isNotEmpty) {
       return _buildEndOfFeedIndicator();
     }
     
@@ -716,7 +727,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     );
   }
 
-  void _handleLikeToggle(int index) async {
+  void _handleLikeToggleByPostId(int postId) async {
+    final index = _posts.indexWhere((p) => p.id == postId);
+    if (index < 0) return;
+
     final post = _posts[index];
     final success = await BusinessNetworkService.toggleLike(post.id, post.isLiked);
     
@@ -730,9 +744,12 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     }
   }
 
-  void _handleCommentAdded(int index, BusinessNetworkComment comment) {
+  void _handleCommentAddedByPostId(int postId, BusinessNetworkComment comment) {
     if (mounted) {
       setState(() {
+        final index = _posts.indexWhere((p) => p.id == postId);
+        if (index < 0) return;
+
         final post = _posts[index];
         _posts[index] = post.copyWith(
           commentsCount: post.commentsCount + 1,
@@ -742,10 +759,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     }
   }
 
-  void _handlePostDeleted(int index) {
+  void _handlePostDeletedByPostId(int postId) {
     if (mounted) {
       setState(() {
-        _posts.removeAt(index);
+        _posts.removeWhere((p) => p.id == postId);
       });
     }
   }

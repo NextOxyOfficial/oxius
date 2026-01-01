@@ -20,6 +20,7 @@ import 'create_post_screen.dart';
 import 'notifications_screen.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../workspace/gig_detail_screen.dart';
+import 'profile_options.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -664,7 +665,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   void _handleNavTap(int index) {
-    if (index == _currentNavIndex) return; // Already on profile
+    if (index == _currentNavIndex && index != 3) return; // Already on profile
     
     switch (index) {
       case 0:
@@ -696,6 +697,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         break;
       case 3:
         // Profile - Already here
+        if (AuthService.isAuthenticated) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ProfileOptionsScreen(),
+            ),
+          );
+        } else {
+          Navigator.pushNamed(context, '/login');
+        }
         break;
       case 4:
         // AdsyClub / Home - Navigate to main home screen
