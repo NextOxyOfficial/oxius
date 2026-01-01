@@ -10,6 +10,7 @@ import '../../utils/time_utils.dart';
 import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
 import '../../widgets/skeleton_loader.dart';
+import '../../widgets/linkify_text.dart';
 
 class ProblemDetailBottomSheet extends StatefulWidget {
   final String problemId;
@@ -626,7 +627,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
         const SizedBox(height: 16),
 
         // Description
-        Text(
+        LinkifyText(
           _problem!.description,
           style: const TextStyle(fontSize: 14, height: 1.5),
         ),
@@ -989,7 +990,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LinkifyText(
                       comment.content,
                       style: const TextStyle(
                         fontSize: 12,

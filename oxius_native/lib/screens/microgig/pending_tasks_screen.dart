@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/microgig_models.dart';
 import '../../services/microgig_service.dart';
 import '../../services/translation_service.dart';
+import '../../widgets/linkify_text.dart';
 
 class PendingTasksScreen extends StatefulWidget {
   const PendingTasksScreen({super.key});
@@ -592,7 +593,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(color: Colors.grey[300]!),
                               ),
-                              child: Text(
+                              child: LinkifyText(
                                 _stripHtmlTags(_selectedTask!.submitDetails!),
                                 style: const TextStyle(fontSize: 14),
                               ),

@@ -233,6 +233,18 @@ class HeaderDrawer extends StatelessWidget {
       ),
       onTap: () {
         Navigator.pop(context);
+        if (route == '/#classified-services') {
+          Navigator.pushReplacementNamed(
+            context,
+            '/',
+            arguments: const {'scrollTo': 'classified'},
+          );
+          return;
+        }
+        if (route == '/#micro-gigs') {
+          Navigator.pushNamed(context, '/micro-gigs');
+          return;
+        }
         Navigator.pushNamed(context, route);
       },
     );

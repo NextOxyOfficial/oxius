@@ -8,6 +8,7 @@ import '../../utils/time_utils.dart';
 import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
 import '../../widgets/skeleton_loader.dart';
+import '../../widgets/linkify_text.dart';
 
 class MindForceDetailScreen extends StatefulWidget {
   final String problemId;
@@ -599,22 +600,16 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: _problem!.paymentOption == 'paid' 
-                      ? Colors.green.shade50 
-                      : Colors.blue.shade50,
+                  color: _problem!.paymentOption == 'paid' ? Colors.green.shade50 : Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      _problem!.paymentOption == 'paid' 
-                          ? Icons.payments 
-                          : Icons.volunteer_activism,
+                      _problem!.paymentOption == 'paid' ? Icons.payments : Icons.volunteer_activism,
                       size: 12,
-                      color: _problem!.paymentOption == 'paid' 
-                          ? Colors.green.shade700 
-                          : Colors.blue.shade700,
+                      color: _problem!.paymentOption == 'paid' ? Colors.green.shade700 : Colors.blue.shade700,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -624,9 +619,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _problem!.paymentOption == 'paid' 
-                            ? Colors.green.shade700 
-                            : Colors.blue.shade700,
+                        color: _problem!.paymentOption == 'paid' ? Colors.green.shade700 : Colors.blue.shade700,
                       ),
                     ),
                   ],
@@ -692,72 +685,13 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     );
   }
 
-  Widget _buildProblemBadges() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        if (_problem!.category != null)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              _problem!.category!.name,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade800,
-              ),
-            ),
-          ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: _problem!.paymentOption == 'paid' ? Colors.green.shade50 : Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_problem!.paymentOption == 'paid' && _problem!.paymentAmount != null) ...[
-                Text('I can pay ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.green.shade700)),
-                Icon(Icons.currency_exchange, size: 14, color: Colors.green.shade700),
-                Text(_problem!.paymentAmount!.toStringAsFixed(0), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.green.shade700)),
-              ] else
-                Text('I need help for free', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.blue.shade700)),
-            ],
-          ),
-        ),
-        if (_problem!.status == 'solved')
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [Colors.green.shade500, Colors.green.shade600]),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle, size: 14, color: Colors.white),
-                SizedBox(width: 4),
-                Text('Solved', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
   Widget _buildProblemContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(_problem!.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.3)),
         const SizedBox(height: 12),
-        Text(_problem!.description, style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.5)),
+        LinkifyText(_problem!.description, style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.5)),
       ],
     );
   }
@@ -969,7 +903,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(comment.content, style: TextStyle(fontSize: 14, color: Colors.grey.shade800, height: 1.4)),
+          LinkifyText(comment.content, style: TextStyle(fontSize: 14, color: Colors.grey.shade800, height: 1.4)),
           if (comment.media.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(

@@ -8,6 +8,7 @@ import '../../config/app_config.dart';
 import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
 import '../../utils/network_error_handler.dart';
+import '../../utils/url_launcher_utils.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
@@ -727,6 +728,9 @@ class _PostCardState extends State<PostCard> {
               children: [
                 Html(
                   data: _showFullContent ? _post.content : (_post.content.length > 160 ? '${_post.content.substring(0, 160)}...' : _post.content),
+                  onLinkTap: (url, attributes, element) {
+                    UrlLauncherUtils.launchExternalUrl(url);
+                  },
                 ),
                 if (_post.content.length > 160)
                   TextButton(

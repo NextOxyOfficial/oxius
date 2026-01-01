@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
+import '../utils/url_launcher_utils.dart';
 import 'terms_and_conditions_screen.dart';
 import 'privacy_policy_screen.dart';
 
@@ -551,6 +552,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
             ),
             child: Html(
               data: instructions,
+              onLinkTap: (url, attributes, element) {
+                UrlLauncherUtils.launchExternalUrl(url);
+              },
               style: {
                 "body": Style(
                   fontSize: FontSize(13),

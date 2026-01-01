@@ -898,7 +898,7 @@ class _CommentItemState extends State<_CommentItem> {
                   // Regular comment with mention support
                   Text.rich(
                     TextSpan(
-                      children: MentionParser.parseTextWithMentions(
+                      children: MentionParser.parseTextWithMentionsAndLinks(
                         widget.comment.content,
                         context,
                         onMentionTap: (username) async {

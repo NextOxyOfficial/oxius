@@ -44,11 +44,15 @@ class _HomeScreenState extends State<HomeScreen> {
   late ClassifiedPostService _postService;
   final ScrollDirectionService _scrollService = ScrollDirectionService();
   final TranslationService _translationService = TranslationService();
+  final GlobalKey _classifiedSectionKey = GlobalKey();
+  final GlobalKey _microGigsSectionKey = GlobalKey();
+  bool _handledInitialScroll = false;
   bool _disposed = false;
   bool _isDropdownOpen = false; // Track dropdown menu state
   List<ClassifiedPost>? _recentPosts;
   bool _isLoadingPosts = false;
   int _unreadMessageCount = 0;
+
   Timer? _messageCountTimer;
 
   // Header animation
@@ -76,10 +80,60 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !_disposed) {
         _scrollService.initialize(_scrollController);
+        _handleInitialScrollIfNeeded();
       }
     });
     _fetchRecentPosts();
     _startMessageCountPolling();
+  }
+
+  void _handleInitialScrollIfNeeded() {
+    if (_handledInitialScroll) return;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map) {
+      final scrollTo = args['scrollTo']?.toString();
+      if (scrollTo != null && scrollTo.isNotEmpty) {
+        _handledInitialScroll = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || _disposed) return;
+          _scrollToSection(scrollTo);
+        });
+        return;
+      }
+    }
+    _handledInitialScroll = true;
+  }
+
+  Future<void> _scrollToSection(String section) async {
+    final key = switch (section) {
+      'classified' => _classifiedSectionKey,
+      'micro-gigs' => _microGigsSectionKey,
+      _ => null,
+    };
+
+    if (key == null) return;
+    if (!_scrollController.hasClients) return;
+
+    final ctx = key.currentContext;
+    if (ctx == null) return;
+
+    final box = ctx.findRenderObject();
+    if (box is! RenderBox) return;
+
+    final topPadding = MediaQuery.of(context).padding.top;
+    final headerHeight = topPadding + 56;
+
+    final targetY = box.localToGlobal(Offset.zero).dy;
+    final targetOffset = (_scrollController.offset + targetY - headerHeight).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+
+    await _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _startMessageCountPolling() {
@@ -378,7 +432,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   // This is a placeholder for the search form section from Vue
                   
                   // 4. Classified Services - Service categories
-                  const ClassifiedServicesSection(),
+                  Container(
+                    key: _classifiedSectionKey,
+                    child: const ClassifiedServicesSection(),
+                  ),
                   
                   // 5. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
                   if (_isLoadingPosts)
@@ -433,7 +490,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   const EshopSection(),
                   
                   // 7. Micro Gigs Section (with Account Balance & Mobile Recharge inside)
-                  const MicroGigsSection(),
+                  Container(
+                    key: _microGigsSectionKey,
+                    child: const MicroGigsSection(),
+                  ),
                   
                   // Footer - always show the main footer content
                   const SizedBox(height: 32),
@@ -749,7 +809,7 @@ class _HomeScreenState extends State<HomeScreen> {
             InkWell(
               onTap: () {
                 setState(() => _isDropdownOpen = false);
-                Navigator.pushNamed(context, '/upgrade-pro');
+                Navigator.pushNamed(context, '/upgrade-to-pro');
               },
               child: Container(
                 padding: const EdgeInsets.all(14), // p-3.5

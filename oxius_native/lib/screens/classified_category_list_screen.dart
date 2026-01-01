@@ -9,6 +9,7 @@ import '../models/geo_location.dart';
 import '../services/classified_post_service.dart';
 import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
+import '../utils/url_launcher_utils.dart';
 import '../widgets/geo_selector_dialog.dart';
 import '../widgets/skeleton_loader.dart';
 import 'classified_post_details_screen.dart';
@@ -1676,6 +1677,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       constraints: const BoxConstraints(maxHeight: 28), // Limit height to ~2 lines
                       child: Html(
                         data: snippet,
+                        onLinkTap: (url, attributes, element) {
+                          UrlLauncherUtils.launchExternalUrl(url);
+                        },
                         style: {
                           "body": Style(
                             fontSize: FontSize(10),

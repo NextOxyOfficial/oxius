@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/mindforce_models.dart';
 import '../../utils/time_utils.dart';
+import '../../widgets/linkify_text.dart';
 
 class MindForceProblemCard extends StatelessWidget {
   final MindForceProblem problem;
@@ -152,7 +153,7 @@ class MindForceProblemCard extends StatelessWidget {
             const SizedBox(height: 8),
             
             // Description
-            Text(
+            LinkifyText(
               problem.description,
               style: TextStyle(
                 fontSize: 14,

@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../models/news_models.dart';
 import '../services/news_service.dart';
+import '../utils/url_launcher_utils.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final String slug;
@@ -261,6 +262,9 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                               // Content
                               Html(
                                 data: _post!.content,
+                                onLinkTap: (url, attributes, element) {
+                                  UrlLauncherUtils.launchExternalUrl(url);
+                                },
                                 style: {
                                   "body": Style(
                                     fontSize: FontSize(15),

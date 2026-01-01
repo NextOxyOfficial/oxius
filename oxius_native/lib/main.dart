@@ -37,6 +37,7 @@ import 'screens/contact_us_screen.dart';
 import 'screens/refer_friend_screen.dart';
 import 'screens/terms_and_conditions_screen.dart';
 import 'screens/privacy_policy_screen.dart';
+import 'screens/elearning_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
@@ -189,11 +190,14 @@ class MyApp extends StatelessWidget {
             '/register': (context) => const RegisterPage(),
             '/reset-password': (context) => const ResetPasswordPage(),
             '/inbox': (context) => const InboxScreen(),
+            '/support': (context) => const InboxScreen(initialTab: 2),
             '/my-gigs': (context) => const MyGigsScreen(),
             '/micro-gigs': (context) => const MicroGigsScreen(),
             '/post-a-gig': (context) => const PostGigScreen(),
             '/business-network': (context) => const BusinessNetworkScreen(),
             '/mindforce': (context) => const MindForceScreen(),
+            '/courses': (context) => const ElearningScreen(),
+            '/elearning': (context) => const ElearningScreen(),
             '/deposit-withdraw': (context) => const WalletScreen(),
             '/pending-tasks': (context) => Scaffold(
               appBar: AppBar(title: const Text('Pending Tasks')),

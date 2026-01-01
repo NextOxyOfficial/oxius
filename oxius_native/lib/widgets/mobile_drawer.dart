@@ -251,7 +251,11 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFF10B981),
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/');
+                        Navigator.pushReplacementNamed(
+                          context,
+                          '/',
+                          arguments: const {'scrollTo': 'classified'},
+                        );
                       },
                     ),
                     _buildDrawerItem(
@@ -271,7 +275,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       iconColor: const Color(0xFFF59E0B),
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/');
+                        Navigator.pushNamed(context, '/micro-gigs');
                       },
                     ),
                     _buildDrawerItem(

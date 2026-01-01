@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/eshop_service.dart';
 import '../services/api_service.dart';
+import '../utils/url_launcher_utils.dart';
 import '../widgets/product_card.dart';
 import '../models/cart_item.dart';
 import 'vendor_store_screen.dart';
@@ -1265,6 +1266,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   child: description.isNotEmpty
                       ? Html(
                           data: description,
+                          onLinkTap: (url, attributes, element) {
+                            UrlLauncherUtils.launchExternalUrl(url);
+                          },
                           style: {
                             '*': Style(
                               margin: Margins.zero,

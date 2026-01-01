@@ -12,6 +12,7 @@ import '../../widgets/business_network/post_comment_input.dart';
 import '../../services/user_search_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/mention_parser.dart';
+import '../../utils/url_launcher_utils.dart';
 import 'profile_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -614,6 +615,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
                           child: Html(
                             data: _post.content,
+                            onLinkTap: (url, attributes, element) {
+                              UrlLauncherUtils.launchExternalUrl(url);
+                            },
                           ),
                         ),
                         
@@ -1099,7 +1103,7 @@ class _CommentItem extends StatelessWidget {
                 // Comment text with mention support
                 Text.rich(
                   TextSpan(
-                    children: MentionParser.parseTextWithMentions(
+                    children: MentionParser.parseTextWithMentionsAndLinks(
                       comment.content,
                       context,
                       onMentionTap: (username) async {

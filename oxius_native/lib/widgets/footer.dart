@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../screens/eshop_screen.dart';
 import '../config/app_config.dart';
+import '../utils/url_launcher_utils.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
@@ -238,7 +239,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   Widget _buildNavigationSection(BuildContext context, bool isMobile) {
     final navLinks = [
       {'title': t('classified_service'), 'route': '/'},
-      {'title': t('earn_money'), 'route': '/'},
+      {'title': t('earn_money'), 'route': '/micro-gigs'},
       {'title': t('mobile_recharge'), 'route': '/mobile-recharge'},
       {'title': t('packeges'), 'route': '/upgrade-to-pro'},
       {'title': t('refer_program'), 'route': '/refer-a-friend'},
@@ -876,6 +877,25 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
 
   // Helper methods
   void _handleNavigation(BuildContext context, String destination) {
+    if (destination.startsWith('http://') || destination.startsWith('https://')) {
+      UrlLauncherUtils.launchExternalUrl(destination);
+      return;
+    }
+
+    if (destination == '/#classified-services') {
+      Navigator.pushReplacementNamed(
+        context,
+        '/',
+        arguments: const {'scrollTo': 'classified'},
+      );
+      return;
+    }
+
+    if (destination == '/#micro-gigs') {
+      Navigator.pushNamed(context, '/micro-gigs');
+      return;
+    }
+
     // Map destinations to routes
     String? route;
     
@@ -901,10 +921,17 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         route = '/mobile-recharge';
         break;
       case 'classified service':
-        route = '/';
-        break;
+        Navigator.pushReplacementNamed(
+          context,
+          '/',
+          arguments: const {'scrollTo': 'classified'},
+        );
+        return;
       case 'earn money':
-        route = '/#micro-gigs';
+        route = '/micro-gigs';
+        break;
+      case 'microgigs':
+        route = '/micro-gigs';
         break;
       case 'packages':
       case 'packeges':

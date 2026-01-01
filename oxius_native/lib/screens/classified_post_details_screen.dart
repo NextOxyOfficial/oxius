@@ -13,6 +13,7 @@ import '../utils/network_error_handler.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../config/app_config.dart';
+import '../utils/url_launcher_utils.dart';
 import '../widgets/skeleton_loader.dart';
 import 'adsy_connect_chat_interface.dart';
 
@@ -1092,6 +1093,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                           const SizedBox(height: 10),
                           Html(
                             data: _post!.instructions!,
+                            onLinkTap: (url, attributes, element) {
+                              UrlLauncherUtils.launchExternalUrl(url);
+                            },
                             style: {
                               "body": Style(
                                 margin: Margins.zero,
@@ -1382,6 +1386,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           const SizedBox(height: 10),
           Html(
             data: _post!.instructions!,
+            onLinkTap: (url, attributes, element) {
+              UrlLauncherUtils.launchExternalUrl(url);
+            },
             style: {
               "body": Style(
                 margin: Margins.zero,

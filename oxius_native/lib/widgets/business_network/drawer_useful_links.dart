@@ -7,7 +7,7 @@ class DrawerUsefulLinks extends StatelessWidget {
   Widget build(BuildContext context) {
     final links = [
       {'label': 'eShop', 'icon': Icons.shopping_bag_outlined, 'path': '/eshop'},
-      {'label': 'Earn Money', 'icon': Icons.attach_money, 'path': '/#micro-gigs'},
+      {'label': 'Earn Money', 'icon': Icons.attach_money, 'path': '/micro-gigs'},
       {'label': 'Sell Products', 'icon': Icons.store_outlined, 'path': '/shop-manager'},
       {'label': 'Mobile Recharge', 'icon': Icons.phone_android, 'path': '/mobile-recharge'},
     ];

@@ -9,6 +9,7 @@ import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../widgets/linkify_text.dart';
 import 'adsy_connect_chat_interface.dart';
 
 /// Sale Post Detail Screen - View full post details with image gallery and all features
@@ -806,7 +807,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
+          LinkifyText(
             _stripHtmlTags(post.description!),
             style: TextStyle(
               fontSize: 12,

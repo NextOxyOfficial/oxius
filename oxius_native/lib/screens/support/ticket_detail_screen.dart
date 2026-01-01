@@ -3,6 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import '../../models/support_ticket_models.dart';
 import '../../services/support_ticket_service.dart';
 import 'package:intl/intl.dart';
+import '../../utils/url_launcher_utils.dart';
 
 class TicketDetailScreen extends StatefulWidget {
   final String ticketId;
@@ -532,6 +533,9 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                   ),
                   child: Html(
                     data: message,
+                    onLinkTap: (url, attributes, element) {
+                      UrlLauncherUtils.launchExternalUrl(url);
+                    },
                     style: {
                       "body": Style(
                         margin: Margins.zero,

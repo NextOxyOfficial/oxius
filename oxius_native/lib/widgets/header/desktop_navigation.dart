@@ -40,7 +40,7 @@ class DesktopNavigation extends StatelessWidget {
           context,
           icon: Icons.attach_money,
           label: 'Earn Money',
-          route: '/#micro-gigs',
+          route: '/micro-gigs',
           color: const Color(0xFFEF4444),
         ),
       ],

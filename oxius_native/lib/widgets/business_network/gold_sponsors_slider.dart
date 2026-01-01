@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter_html/flutter_html.dart';
 import '../../models/gold_sponsor_models.dart';
 import '../../services/gold_sponsor_service.dart';
+import '../../utils/url_launcher_utils.dart';
 
 class GoldSponsorsSlider extends StatefulWidget {
   const GoldSponsorsSlider({super.key});
@@ -552,6 +553,9 @@ class _SponsorDetailModalState extends State<_SponsorDetailModal> {
                                         const SizedBox(height: 3),
                                         Html(
                                           data: widget.sponsor.businessDescription!,
+                                          onLinkTap: (url, attributes, element) {
+                                            UrlLauncherUtils.launchExternalUrl(url);
+                                          },
                                           style: {
                                             '*': Style(
                                               margin: Margins.zero,

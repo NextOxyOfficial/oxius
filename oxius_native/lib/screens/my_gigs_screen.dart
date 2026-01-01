@@ -7,6 +7,7 @@ import '../services/user_state_service.dart';
 import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../utils/url_launcher_utils.dart';
 import '../widgets/home/account_balance_section.dart';
 
 class MyGigsScreen extends StatefulWidget {
@@ -606,6 +607,9 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                               ),
                               child: Html(
                                 data: gigDetails['instructions'].toString(),
+                                onLinkTap: (url, attributes, element) {
+                                  UrlLauncherUtils.launchExternalUrl(url);
+                                },
                                 style: {
                                   'body': Style(
                                     margin: Margins.zero,
