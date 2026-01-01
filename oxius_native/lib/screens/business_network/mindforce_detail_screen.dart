@@ -9,6 +9,7 @@ import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../widgets/linkify_text.dart';
+import '../../widgets/link_preview_card.dart';
 
 class MindForceDetailScreen extends StatefulWidget {
   final String problemId;
@@ -692,6 +693,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         Text(_problem!.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.3)),
         const SizedBox(height: 12),
         LinkifyText(_problem!.description, style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.5)),
+        FirstLinkPreview(text: _problem!.description),
       ],
     );
   }
@@ -904,6 +906,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           ),
           const SizedBox(height: 8),
           LinkifyText(comment.content, style: TextStyle(fontSize: 14, color: Colors.grey.shade800, height: 1.4)),
+          FirstLinkPreview(text: comment.content),
           if (comment.media.isNotEmpty) ...[
             const SizedBox(height: 12),
             Wrap(

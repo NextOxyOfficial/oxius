@@ -209,6 +209,7 @@
                 >
                   {{ problem.description }}
                 </div>
+                <CommonFirstLinkPreview :text="problem.description" />
 
                 <!-- Problem photos gallery -->
                 <div
@@ -398,6 +399,7 @@
                         >
                           {{ comment.content }}
                         </p>
+                        <CommonFirstLinkPreview :text="comment.content" />
 
                         <!-- Comment Media Gallery -->
                         <div

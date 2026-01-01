@@ -13,6 +13,7 @@ import '../../services/user_search_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/url_launcher_utils.dart';
+import '../../widgets/link_preview_card.dart';
 import 'profile_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -1101,32 +1102,38 @@ class _CommentItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 // Comment text with mention support
-                Text.rich(
-                  TextSpan(
-                    children: MentionParser.parseTextWithMentionsAndLinks(
-                      comment.content,
-                      context,
-                      onMentionTap: (username) async {
-                        // Search for user by name to get their ID
-                        try {
-                          final users = await UserSearchService.searchUsers(username);
-                          if (users.isNotEmpty && context.mounted) {
-                            final user = users.first;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProfileScreen(
-                                  userId: user.id ?? username,
-                                ),
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          print('Error finding user: $e');
-                        }
-                      },
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text.rich(
+                      TextSpan(
+                        children: MentionParser.parseTextWithMentionsAndLinks(
+                          comment.content,
+                          context,
+                          onMentionTap: (username) async {
+                            // Search for user by name to get their ID
+                            try {
+                              final users = await UserSearchService.searchUsers(username);
+                              if (users.isNotEmpty && context.mounted) {
+                                final user = users.first;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfileScreen(
+                                      userId: user.id ?? username,
+                                    ),
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              print('Error finding user: $e');
+                            }
+                          },
+                        ),
+                      ),
                     ),
-                  ),
+                    FirstLinkPreview(text: comment.content),
+                  ],
                 ),
                 // Reply button
                 if (onReply != null) ...[

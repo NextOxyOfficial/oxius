@@ -8,6 +8,7 @@ import '../../utils/time_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
+import '../../widgets/link_preview_card.dart';
 
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -753,13 +754,19 @@ class _CommentItemState extends State<_CommentItem> {
                           () {
                             final extractedMessage = _extractGiftMessage(widget.comment.content);
                             if (extractedMessage.isNotEmpty) {
-                              return Text(
-                                extractedMessage,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade800,
-                                  height: 1.4,
-                                ),
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    extractedMessage,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade800,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                  FirstLinkPreview(text: extractedMessage),
+                                ],
                               );
                             }
                             return const SizedBox.shrink();
@@ -896,32 +903,38 @@ class _CommentItemState extends State<_CommentItem> {
                   )
                 else
                   // Regular comment with mention support
-                  Text.rich(
-                    TextSpan(
-                      children: MentionParser.parseTextWithMentionsAndLinks(
-                        widget.comment.content,
-                        context,
-                        onMentionTap: (username) async {
-                          // Search for user by name to get their ID
-                          try {
-                            final users = await UserSearchService.searchUsers(username);
-                            if (users.isNotEmpty && context.mounted) {
-                              final user = users.first;
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ProfileScreen(
-                                    userId: user.id ?? username,
-                                  ),
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            print('Error finding user: $e');
-                          }
-                        },
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text.rich(
+                        TextSpan(
+                          children: MentionParser.parseTextWithMentionsAndLinks(
+                            widget.comment.content,
+                            context,
+                            onMentionTap: (username) async {
+                              // Search for user by name to get their ID
+                              try {
+                                final users = await UserSearchService.searchUsers(username);
+                                if (users.isNotEmpty && context.mounted) {
+                                  final user = users.first;
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfileScreen(
+                                        userId: user.id ?? username,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                print('Error finding user: $e');
+                              }
+                            },
+                          ),
+                        ),
                       ),
-                    ),
+                      FirstLinkPreview(text: widget.comment.content),
+                    ],
                   ),
                 // Reply button
                 if (widget.onReply != null && !_isEditing) ...[

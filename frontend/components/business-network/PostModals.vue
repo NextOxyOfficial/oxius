@@ -394,6 +394,7 @@
                               <p class="gift-message-text">
                                 {{ extractGiftMessage(comment?.content) }}
                               </p>
+                              <CommonFirstLinkPreview :text="extractGiftMessage(comment?.content)" />
                             </div>
                           </div>
                           <!-- Regular comment with mention processing -->
@@ -403,6 +404,7 @@
                             style="word-break: break-word"
                             v-html="processMentionsInComment(comment?.content)"
                           ></div>
+                          <CommonFirstLinkPreview v-if="!comment?.is_gift_comment" :text="comment?.content || ''" />
                         </div>
                       </div>
 

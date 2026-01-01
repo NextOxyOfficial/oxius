@@ -266,6 +266,7 @@
                       )
                     "
                   ></p>
+                  <CommonFirstLinkPreview :text="extractGiftMessage(comment?.content)" />
                 </div>
               </div>
               <!-- Regular comment with mention processing -->
@@ -279,6 +280,7 @@
                 "
                 v-html="processMentionsInComment(comment?.content)"
               ></div>
+              <CommonFirstLinkPreview v-if="!comment?.is_gift_comment" :text="comment?.content || ''" />
             </div>
           </div>
 

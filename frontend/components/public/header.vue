@@ -62,7 +62,7 @@
             <!-- Close Button -->
             <button
               @click="dismissDownloadBanner"
-              class="absolute top-1/2 -translate-y-1/2 right-1.5 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition"
+              class="absolute flex top-1/2 -translate-y-1/2 right-1.5 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition"
               aria-label="Close"
             >
               <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />

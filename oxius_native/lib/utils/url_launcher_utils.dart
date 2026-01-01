@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
@@ -13,7 +14,7 @@ class UrlLauncherUtils {
 
       return await launchUrl(
         uri,
-        mode: LaunchMode.externalApplication,
+        mode: kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
       );
     } catch (_) {
       return false;
@@ -31,7 +32,8 @@ class UrlLauncherUtils {
     if (url.startsWith('/')) {
       url = AppConfig.getAbsoluteUrl(url);
     } else if (!url.contains('://') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
-      url = 'https://$url';
+      final scheme = _shouldDefaultToHttp(url) ? 'http' : 'https';
+      url = '$scheme://$url';
     }
 
     return Uri.tryParse(url);
@@ -46,5 +48,19 @@ class UrlLauncherUtils {
       value = value.substring(0, value.length - 1);
     }
     return value;
+  }
+
+  static bool _shouldDefaultToHttp(String urlWithoutScheme) {
+    final lower = urlWithoutScheme.toLowerCase();
+    if (lower.startsWith('localhost') || lower.startsWith('127.0.0.1') || lower.startsWith('0.0.0.0')) {
+      return true;
+    }
+    if (lower.startsWith('10.') || lower.startsWith('192.168.')) return true;
+    final m = RegExp(r'^172\.(\d{1,2})\.').firstMatch(lower);
+    if (m != null) {
+      final n = int.tryParse(m.group(1) ?? '');
+      if (n != null && n >= 16 && n <= 31) return true;
+    }
+    return false;
   }
 }

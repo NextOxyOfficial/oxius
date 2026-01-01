@@ -90,7 +90,10 @@
                   </button>
                 </div>
               </div>
-              <p v-else class="text-sm mt-1" v-html="processMentionsInComment(comment.content)" style="word-break: break-word"></p>
+              <div v-else>
+                <p class="text-sm mt-1" v-html="processMentionsInComment(comment.content)" style="word-break: break-word"></p>
+                <CommonFirstLinkPreview :text="comment.content" />
+              </div>
             </div>
             <div class="flex items-center mt-1 space-x-3">
               <span class="text-sm text-gray-600">{{

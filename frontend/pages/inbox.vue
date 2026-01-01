@@ -728,6 +728,7 @@
                           <!-- Text Content -->
                           <div v-else class="px-3.5 py-2">
                             <p class="text-[13px] leading-relaxed whitespace-pre-wrap break-words" v-html="linkifyText(message.content || message.display_content)"></p>
+                            <CommonFirstLinkPreview :text="message.content || message.display_content || ''" />
                             <!-- Time and Status for Text Messages -->
                             <div class="mt-1 flex items-center justify-end gap-1">
                               <span v-if="message.is_edited" class="text-[10px] opacity-50 italic">edited</span>

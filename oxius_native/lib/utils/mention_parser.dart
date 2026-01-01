@@ -11,7 +11,7 @@ class MentionParser {
   );
 
   static final RegExp _urlRegex = RegExp(
-    r"((?:https?:\/\/)?(?:www\.)?[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+(?:\/[\w\-._~%!$&'()*+,;=:@\/?#\[\]]*)?)",
+    r"((?:https?:\/\/)?(?:www\.)?(?:localhost|(?:\d{1,3}\.){3}\d{1,3}|[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+)(?::\d{2,5})?(?:\/[\w\-._~%!$&'()*+,;=:@\/?#\[\]]*)?)",
     caseSensitive: false,
   );
 

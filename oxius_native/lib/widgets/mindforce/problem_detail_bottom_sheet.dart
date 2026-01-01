@@ -11,6 +11,7 @@ import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../widgets/linkify_text.dart';
+import '../../widgets/link_preview_card.dart';
 
 class ProblemDetailBottomSheet extends StatefulWidget {
   final String problemId;
@@ -631,6 +632,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
           _problem!.description,
           style: const TextStyle(fontSize: 14, height: 1.5),
         ),
+        FirstLinkPreview(text: _problem!.description),
 
         // Images
         if (_problem!.media.isNotEmpty) ...[
@@ -998,6 +1000,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                         color: Color(0xFF374151),
                       ),
                     ),
+                    FirstLinkPreview(text: comment.content),
                     if (comment.media.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Wrap(

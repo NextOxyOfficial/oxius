@@ -15,6 +15,8 @@ import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/chat_video_player.dart';
+import '../widgets/link_preview_card.dart';
+import '../widgets/linkify_text.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
 
@@ -2258,14 +2260,26 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                     ? _buildVideoContent(message, isMe)
                                     : message['type'] == 'document'
                                         ? _buildDocumentContent(message, isMe)
-                                        : Text(
-                                            message['message'],
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w400,
-                                              color: isMe ? Colors.white : const Color(0xFF1F2937),
-                                              letterSpacing: -0.1,
-                                            ),
+                                        : Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              LinkifyText(
+                                                (message['message'] ?? '').toString(),
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w400,
+                                                  color: isMe ? Colors.white : const Color(0xFF1F2937),
+                                                  letterSpacing: -0.1,
+                                                ),
+                                                linkStyle: TextStyle(
+                                                  color: isMe ? Colors.white : const Color(0xFF2563EB),
+                                                  decoration: TextDecoration.underline,
+                                                ),
+                                              ),
+                                              FirstLinkPreview(
+                                                text: (message['message'] ?? '').toString(),
+                                              ),
+                                            ],
                                           ),
                   ),
                 ),
