@@ -26,7 +26,7 @@ class FirstLinkPreview extends StatelessWidget {
   }
 }
 
-class LinkPreviewCard extends StatelessWidget {
+class LinkPreviewCard extends StatefulWidget {
   final String url;
 
   const LinkPreviewCard({
@@ -35,9 +35,30 @@ class LinkPreviewCard extends StatelessWidget {
   });
 
   @override
+  State<LinkPreviewCard> createState() => _LinkPreviewCardState();
+}
+
+class _LinkPreviewCardState extends State<LinkPreviewCard> {
+  late Future<LinkPreviewData?> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = LinkPreviewService.getPreview(widget.url);
+  }
+
+  @override
+  void didUpdateWidget(covariant LinkPreviewCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url) {
+      _future = LinkPreviewService.getPreview(widget.url);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<LinkPreviewData?>(
-      future: LinkPreviewService.getPreview(url),
+      future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoading();
@@ -53,7 +74,7 @@ class LinkPreviewCard extends StatelessWidget {
 
   Widget _buildLoading() {
     return Container(
-      height: 78,
+      height: 92,
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
         borderRadius: BorderRadius.circular(12),

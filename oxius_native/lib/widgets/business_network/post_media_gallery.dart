@@ -18,7 +18,7 @@ class PostMediaGallery extends StatelessWidget {
     if (media.isEmpty) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: _buildMediaLayout(context),
@@ -513,7 +513,7 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
       _controller = controller;
       await controller.initialize();
       await controller.setLooping(true);
-      await controller.setVolume(0);
+      await controller.setVolume(1.0);
 
       if (!mounted) return;
       setState(() {
@@ -591,8 +591,34 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
               ),
             )
           else if (!_isInitialized || c == null)
-            const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 10,
+                      width: 160,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 10,
+                      width: 92,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             )
           else
             Center(

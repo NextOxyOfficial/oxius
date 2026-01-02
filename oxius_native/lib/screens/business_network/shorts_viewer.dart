@@ -89,126 +89,132 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
       minChildSize: 0.35,
       maxChildSize: 0.92,
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(18),
-              topRight: Radius.circular(18),
+        final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+        return AnimatedPadding(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(bottom: bottomInset),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(18),
+              ),
             ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 10),
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(999),
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 2, 12, 10),
-                child: Row(
-                  children: [
-                    Text(
-                      'Comments',
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 2, 12, 10),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Comments',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close_rounded),
-                      splashRadius: 20,
-                    ),
-                  ],
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded),
+                        splashRadius: 20,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Divider(height: 1),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-                    : _post.comments.isEmpty
-                        ? Center(
-                            child: Text(
-                              'No comments yet',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                const Divider(height: 1),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                      : _post.comments.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No comments yet',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
-                          )
-                        : SingleChildScrollView(
-                            controller: scrollController,
-                            child: PostCommentsPreview(
-                              post: _post,
-                              onViewAll: () {},
-                              showAll: true,
-                              showHeader: false,
-                              onReplySubmit: (comment, content) async {
-                                final newComment = await BusinessNetworkService.addComment(
-                                  postId: _post.id,
-                                  content: content,
-                                  parentCommentId: comment.id,
-                                );
+                            )
+                          : SingleChildScrollView(
+                              controller: scrollController,
+                              child: PostCommentsPreview(
+                                post: _post,
+                                onViewAll: () {},
+                                showAll: true,
+                                showHeader: false,
+                                onReplySubmit: (comment, content) async {
+                                  final newComment = await BusinessNetworkService.addComment(
+                                    postId: _post.id,
+                                    content: content,
+                                    parentCommentId: comment.id,
+                                  );
 
-                                if (newComment != null && mounted) {
+                                  if (newComment != null && mounted) {
+                                    setState(() {
+                                      _post = _post.copyWith(
+                                        commentsCount: _post.commentsCount + 1,
+                                        comments: [..._post.comments, newComment],
+                                      );
+                                    });
+                                    widget.onCommentAdded();
+                                  }
+                                },
+                                onCommentCountChanged: () {
+                                  if (!mounted) return;
                                   setState(() {
                                     _post = _post.copyWith(
-                                      commentsCount: _post.commentsCount + 1,
-                                      comments: [..._post.comments, newComment],
+                                      commentsCount: _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
                                     );
                                   });
-                                  widget.onCommentAdded();
-                                }
-                              },
-                              onCommentCountChanged: () {
-                                if (!mounted) return;
-                                setState(() {
-                                  _post = _post.copyWith(
-                                    commentsCount: _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
-                                  );
-                                });
-                              },
+                                },
+                              ),
                             ),
-                          ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
                 ),
-                child: PostCommentInput(
-                  onSubmit: (content) async {
-                    final comment = await BusinessNetworkService.addComment(
-                      postId: widget.post.id,
-                      content: content,
-                    );
-                    if (comment != null) {
-                      if (!mounted) return;
-                      setState(() {
-                        _post = _post.copyWith(
-                          commentsCount: _post.commentsCount + 1,
-                          comments: [..._post.comments, comment],
-                        );
-                      });
-                      widget.onCommentAdded();
-                    }
-                  },
-                  userAvatar: AuthService.currentUser?.profilePicture,
-                  postId: widget.post.id.toString(),
-                  postAuthorId: widget.post.user.uuid ?? widget.post.user.id.toString(),
-                  postAuthorName: widget.post.user.name,
-                  onGiftSent: isLoggedIn ? _loadComments : null,
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+                  ),
+                  child: PostCommentInput(
+                    onSubmit: (content) async {
+                      final comment = await BusinessNetworkService.addComment(
+                        postId: widget.post.id,
+                        content: content,
+                      );
+                      if (comment != null) {
+                        if (!mounted) return;
+                        setState(() {
+                          _post = _post.copyWith(
+                            commentsCount: _post.commentsCount + 1,
+                            comments: [..._post.comments, comment],
+                          );
+                        });
+                        widget.onCommentAdded();
+                      }
+                    },
+                    userAvatar: AuthService.currentUser?.profilePicture,
+                    postId: widget.post.id.toString(),
+                    postAuthorId: widget.post.user.uuid ?? widget.post.user.id.toString(),
+                    postAuthorName: widget.post.user.name,
+                    onGiftSent: isLoggedIn ? _loadComments : null,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -504,6 +510,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
 
     if (oldWidget.isActive != widget.isActive) {
       if (widget.isActive) {
+        _controller?.setVolume(1.0);
         _controller?.play();
         _maybeScheduleViewCount();
       } else {
@@ -534,10 +541,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
         httpHeaders: const {
           'User-Agent': 'OxiUsFlutter/1.0',
         },
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
       );
       _controller = controller;
       await controller.initialize();
       await controller.setLooping(true);
+      await controller.setVolume(1.0);
 
       if (!mounted) return;
       setState(() {
@@ -579,7 +588,6 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
     if (_viewCounted) return;
     final c = _controller;
     if (c == null || !_isInitialized) return;
-    if (!c.value.isPlaying) return;
     if (_viewTimer != null) return;
 
     _viewTimer = Timer(const Duration(seconds: 3), () async {
@@ -890,8 +898,34 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
                 )
               else
                 Container(color: Colors.black),
-              const Center(
-                child: CircularProgressIndicator(color: Colors.white),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 10,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        height: 10,
+                        width: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           )
@@ -1012,7 +1046,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
         Positioned(
           left: 12,
           right: 80,
-          bottom: 18,
+          bottom: 34,
           child: IgnorePointer(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

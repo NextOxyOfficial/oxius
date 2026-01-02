@@ -73,7 +73,15 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         print('DEBUG: Processing category: ${catMap['title']}');
         return ClassifiedCategory.fromJson(catMap);
       }).toList();
-      print('DEBUG: Created ${categoryObjects.length} category objects');
+      
+      // Sort categories: featured first, then by update time
+      categoryObjects.sort((a, b) {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        return 0;
+      });
+      
+      print('DEBUG: Created ${categoryObjects.length} category objects (sorted with featured first)');
       setState(() {
         _categories
           ..clear()

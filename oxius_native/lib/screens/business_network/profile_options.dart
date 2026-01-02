@@ -438,7 +438,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   void _shareProfile(BuildContext context) {
     final user = AuthService.currentUser;
     if (user == null) return;
-    final profileUrl = '${AppConfig.mediaBaseUrl}/profile/${user.username}';
+    final profileUrl = '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
     Share.share(
       'Check out my profile on Oxius: $profileUrl',
       subject: 'My Oxius Profile',
@@ -448,7 +448,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   void _showQrCode(BuildContext context) {
     final user = AuthService.currentUser;
     if (user == null) return;
-    final profileUrl = '${AppConfig.mediaBaseUrl}/profile/${user.username}';
+    final profileUrl = '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
     
     showModalBottomSheet(
       context: context,

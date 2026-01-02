@@ -6,12 +6,14 @@ class ClassifiedCategory {
   final String title;
   final String? slug;
   final String? image; // fallback asset if null
+  final bool isFeatured;
 
   ClassifiedCategory({
     required this.id,
     required this.title,
     this.slug,
     this.image,
+    this.isFeatured = false,
   });
 
   factory ClassifiedCategory.fromJson(Map<String, dynamic> json) => ClassifiedCategory(
@@ -19,6 +21,7 @@ class ClassifiedCategory {
         title: (json['title'] ?? '').toString(),
         slug: json['slug']?.toString(),
         image: json['image']?.toString(),
+        isFeatured: json['is_featured'] == true,
       );
 
   /// Get the local asset path for category icons, with fallback to server image

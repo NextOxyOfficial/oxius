@@ -2269,6 +2269,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                         : Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
+                                              FirstLinkPreview(
+                                                text: (message['message'] ?? '').toString(),
+                                                margin: const EdgeInsets.only(bottom: 6),
+                                              ),
                                               LinkifyText(
                                                 (message['message'] ?? '').toString(),
                                                 style: TextStyle(
@@ -2280,9 +2284,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                                   color: isMe ? Colors.white : const Color(0xFF2563EB),
                                                   decoration: TextDecoration.none,
                                                 ),
-                                              ),
-                                              FirstLinkPreview(
-                                                text: (message['message'] ?? '').toString(),
                                               ),
                                             ],
                                           ),

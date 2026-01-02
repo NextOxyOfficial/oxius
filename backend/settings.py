@@ -276,9 +276,9 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-# Increase max upload size to 50MB (default is around 2.5MB)
-DATA_UPLOAD_MAX_MEMORY_SIZE = 209715200  # 200MB in bytes
-FILE_UPLOAD_MAX_MEMORY_SIZE = 209715200  # 200MB in bytes
+# Increase max upload size to 1024MB (default is around 2.5MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
