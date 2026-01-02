@@ -45,7 +45,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   void initState() {
     super.initState();
     _isLoggedIn = AuthService.isAuthenticated;
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() => _activeTab = _tabController.index);
@@ -791,10 +791,6 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           ),
           const SizedBox(height: 12),
 
-          // Referral Reward Program Card
-          if (_claimsData != null && _claimsData!.activeProgram)
-            _buildRewardProgramCard(),
-
           // Commission Stats
           if (_commissionData != null)
             Container(
@@ -909,6 +905,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   tabs: [
                     Tab(text: 'Earnings (${_commissionData?.recentTransactions.length ?? 0})'),
                     Tab(text: 'Referred (${_referredUsers.length})'),
+                    const Tab(text: 'Bonus'),
                   ],
                 ),
                 Container(
@@ -919,6 +916,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                     children: [
                       _buildEarningsTab(),
                       _buildReferredUsersTab(),
+                      _buildBonusTab(),
                     ],
                   ),
                 ),
@@ -1450,6 +1448,38 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             },
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildBonusTab() {
+    if (!_isLoggedIn) {
+      return Center(
+        child: Text(
+          'Login to view bonus history',
+          style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
+        ),
+      );
+    }
+
+    if (_isLoadingClaims) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)));
+    }
+
+    final claims = _claimsData;
+    if (claims == null || !claims.activeProgram) {
+      return Center(
+        child: Text(
+          'No bonus program available',
+          style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
+        ),
+      );
+    }
+
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        _buildRewardProgramCard(),
       ],
     );
   }

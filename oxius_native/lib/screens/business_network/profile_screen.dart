@@ -19,6 +19,7 @@ import 'notifications_screen.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../workspace/gig_detail_screen.dart';
 import 'profile_options.dart';
+import 'post_media_viewer_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -128,9 +129,22 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         _loadUserGigs();
       }
       // Load saved posts when Saved tab is selected (index 3)
-      if (_currentTabIndex == 3 && _savedPosts.isEmpty && !_isLoadingSaved) {
+      if (_currentTabIndex == 3 && !_isLoadingSaved) {
         _loadSavedPosts();
       }
+    }
+  }
+
+  Future<void> _refreshCurrentTab() async {
+    await _loadProfileData();
+    if (!mounted) return;
+
+    // Refresh tab-specific data
+    if (_currentTabIndex == 1 && !_isLoadingGigs) {
+      await _loadUserGigs();
+    }
+    if (_currentTabIndex == 3 && !_isLoadingSaved) {
+      await _loadSavedPosts();
     }
   }
 
@@ -619,7 +633,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       body: _isLoading
           ? _buildLoadingState()
           : RefreshIndicator(
-              onRefresh: _loadProfileData,
+              onRefresh: _refreshCurrentTab,
               color: const Color(0xFF3B82F6),
               child: SingleChildScrollView(
                 child: Center(
@@ -1451,9 +1465,21 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         itemCount: allMedia.length,
         itemBuilder: (context, index) {
           final media = allMedia[index];
+          final displayUrl = media.isVideo ? media.bestThumbnailUrl : media.bestUrl;
           return InkWell(
             onTap: () {
-              _showMediaViewer(allMedia, index);
+              final parentPost = _findParentPostForMedia(media);
+              final initialIndex = _findMediaIndexInPost(parentPost, media);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PostMediaViewerScreen(
+                    post: parentPost,
+                    initialIndex: initialIndex,
+                  ),
+                  fullscreenDialog: true,
+                ),
+              );
             },
             child: Container(
               decoration: BoxDecoration(
@@ -1462,19 +1488,50 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  media.image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade300,
-                      child: Icon(
-                        Icons.broken_image,
-                        color: Colors.grey.shade500,
-                        size: 32,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (displayUrl.isNotEmpty)
+                      Image.network(
+                        displayUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey.shade300,
+                            child: Icon(
+                              Icons.broken_image,
+                              color: Colors.grey.shade500,
+                              size: 32,
+                            ),
+                          );
+                        },
+                      )
+                    else
+                      Container(
+                        color: Colors.grey.shade300,
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Colors.grey.shade500,
+                          size: 32,
+                        ),
                       ),
-                    );
-                  },
+                    if (media.isVideo)
+                      Center(
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.35),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -1482,6 +1539,31 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         },
       ),
     );
+  }
+
+  BusinessNetworkPost _findParentPostForMedia(PostMedia media) {
+    // Best-effort mapping back to the post that contains this media.
+    // Falls back to first post to avoid crashes.
+    for (final p in _userPosts) {
+      if (media.id != 0) {
+        if (p.media.any((m) => m.id == media.id)) return p;
+      } else {
+        final target = media.bestUrl;
+        if (p.media.any((m) => m.bestUrl == target)) return p;
+      }
+    }
+    return _userPosts.isNotEmpty ? _userPosts.first : BusinessNetworkPost.fromJson({});
+  }
+
+  int _findMediaIndexInPost(BusinessNetworkPost post, PostMedia media) {
+    if (post.media.isEmpty) return 0;
+    if (media.id != 0) {
+      final idx = post.media.indexWhere((m) => m.id == media.id);
+      if (idx != -1) return idx;
+    }
+    final target = media.bestUrl;
+    final idx = post.media.indexWhere((m) => m.bestUrl == target);
+    return idx == -1 ? 0 : idx;
   }
 
   void _showMediaViewer(List<PostMedia> mediaList, int initialIndex) {
@@ -1766,6 +1848,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           post: _savedPosts[index],
           onLikeToggle: () {
             // Refresh saved posts if needed
+          },
+          onSaveChanged: (postId, isSaved) {
+            if (!isSaved) {
+              setState(() {
+                _savedPosts.removeWhere((p) => p.id == postId);
+              });
+            }
           },
           onCommentAdded: (comment) {
             // Handle comment added

@@ -23,6 +23,7 @@ class PostCard extends StatefulWidget {
   final VoidCallback? onLikeToggle;
   final Function(BusinessNetworkComment)? onCommentAdded;
   final VoidCallback? onPostDeleted;
+  final void Function(int postId, bool isSaved)? onSaveChanged;
 
   const PostCard({
     super.key,
@@ -30,6 +31,7 @@ class PostCard extends StatefulWidget {
     this.onLikeToggle,
     this.onCommentAdded,
     this.onPostDeleted,
+    this.onSaveChanged,
   });
 
   @override
@@ -320,6 +322,8 @@ class _PostCardState extends State<PostCard> {
           isSaved: !_post.isSaved,
         );
       });
+
+      widget.onSaveChanged?.call(_post.id, _post.isSaved);
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
