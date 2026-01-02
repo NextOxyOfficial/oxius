@@ -233,7 +233,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         vertical: 8,
       ),
       child: Align(
-        alignment: Alignment.centerLeft,
+        alignment: Alignment.centerRight,
         child: InkWell(
           onTap: () {
             setState(() {
