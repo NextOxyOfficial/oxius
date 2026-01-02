@@ -465,6 +465,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
+  String? _errorUrl;
+  String? _errorText;
   bool _showPlayHint = false;
   int _commentsCount = 0;
   int _viewsCount = 0;
@@ -519,9 +521,13 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
       if (url.isEmpty) {
         setState(() {
           _hasError = true;
+          _errorUrl = url;
+          _errorText = 'Empty video url';
         });
         return;
       }
+
+      _errorUrl = url;
 
       final controller = VideoPlayerController.networkUrl(
         Uri.parse(url),
@@ -549,6 +555,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
       if (!mounted) return;
       setState(() {
         _hasError = true;
+        _errorUrl = widget.media.bestUrl;
+        _errorText = e.toString();
       });
     }
   }
@@ -831,9 +839,40 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
           Container(
             color: Colors.black,
             child: Center(
-              child: Text(
-                'Failed to load video',
-                style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Failed to load video',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
+                      textAlign: TextAlign.center,
+                    ),
+                    if ((_errorUrl ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        _errorUrl!,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.65),
+                          fontSize: 11,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    if ((_errorText ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _errorText!,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.55),
+                          fontSize: 11,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           )

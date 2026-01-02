@@ -46,7 +46,15 @@ class AppConfig {
   static String getAbsoluteUrl(String? url) {
     final value = (url ?? '').trim();
     if (value.isEmpty) return '';
-    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+    if (value.startsWith('https://')) return value;
+    if (value.startsWith('http://')) {
+      // On Android, cleartext HTTP is often blocked. Also, some CDNs redirect http->https,
+      // which can break some media loaders. Only upgrade known production host.
+      if (value.startsWith('http://adsyclub.com')) {
+        return value.replaceFirst('http://', 'https://');
+      }
+      return value;
+    }
 
     // Protocol-relative URL, e.g. //example.com/path
     if (value.startsWith('//')) return 'https:$value';
