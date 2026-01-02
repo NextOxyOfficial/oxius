@@ -99,13 +99,87 @@ class BusinessNetworkService {
     String? content,
     List<String>? images,
     List<String>? videos,
+    List<String>? videoPaths,
     String? category,
     List<String>? tags,
     String visibility = 'public',
   }) async {
     try {
+      final hasVideoFiles = videoPaths != null && videoPaths.isNotEmpty;
+
+      if (hasVideoFiles) {
+        final headers = await ApiService.getHeaders();
+        headers.remove('Content-Type');
+
+        final formData = FormData();
+        if (title != null && title.isNotEmpty) {
+          formData.fields.add(MapEntry('title', title));
+        }
+        if (content != null && content.isNotEmpty) {
+          formData.fields.add(MapEntry('content', content));
+        }
+        formData.fields.add(MapEntry('visibility', visibility));
+        if (category != null && category.isNotEmpty) {
+          formData.fields.add(MapEntry('category', category));
+        }
+        if (tags != null && tags.isNotEmpty) {
+          for (final tag in tags) {
+            if (tag.trim().isEmpty) continue;
+            formData.fields.add(MapEntry('tags', tag));
+          }
+        }
+        if (images != null && images.isNotEmpty) {
+          for (final img in images) {
+            if (img.trim().isEmpty) continue;
+            formData.fields.add(MapEntry('images', img));
+          }
+        }
+        if (videos != null && videos.isNotEmpty) {
+          for (final v in videos) {
+            if (v.trim().isEmpty) continue;
+            formData.fields.add(MapEntry('videos', v));
+          }
+        }
+
+        for (final path in videoPaths) {
+          if (path.trim().isEmpty) continue;
+          final p = path.replaceAll('\\', '/');
+          final filename = p.split('/').isNotEmpty ? p.split('/').last : 'video.mp4';
+          formData.files.add(
+            MapEntry(
+              'videos',
+              await MultipartFile.fromFile(path, filename: filename),
+            ),
+          );
+        }
+
+        final dio = Dio();
+        final response = await dio.post(
+          '$_baseUrl/posts/',
+          data: formData,
+          options: Options(
+            headers: headers,
+            validateStatus: (status) => true,
+          ),
+        );
+
+        print('=== Create Post Debug ===');
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.data}');
+
+        if (response.statusCode == 201 || response.statusCode == 200) {
+          final data = response.data is Map
+              ? Map<String, dynamic>.from(response.data)
+              : json.decode(response.data.toString());
+          final post = BusinessNetworkPost.fromJson(data);
+          return post;
+        }
+
+        throw Exception('Failed to create post: ${response.statusCode} ${response.data}');
+      }
+
       final headers = await ApiService.getHeaders();
-      
+
       final body = {
         if (title != null && title.isNotEmpty) 'title': title,
         if (content != null && content.isNotEmpty) 'content': content,
@@ -115,37 +189,29 @@ class BusinessNetworkService {
         if (category != null) 'category': category,
         if (tags != null && tags.isNotEmpty) 'tags': tags,
       };
-      
+
       final response = await http.post(
         Uri.parse('$_baseUrl/posts/'),
         headers: headers,
         body: json.encode(body),
       );
-      
+
       print('=== Create Post Debug ===');
       print('Request body: ${json.encode(body)}');
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
-      
+
       if (response.statusCode == 201 || response.statusCode == 200) {
-        try {
-          final data = json.decode(response.body);
-          print('Decoded response data: $data');
-          final post = BusinessNetworkPost.fromJson(data);
-          print('Successfully created post with ID: ${post.id}');
-          return post;
-        } catch (parseError) {
-          print('Error parsing response: $parseError');
-          return null;
-        }
-      } else {
-        print('Failed with status: ${response.statusCode}');
-        return null;
+        final data = json.decode(response.body);
+        final post = BusinessNetworkPost.fromJson(data);
+        return post;
       }
+
+      throw Exception('Failed to create post: ${response.statusCode} ${response.body}');
     } catch (e, stackTrace) {
       print('Error creating post: $e');
       print('Stack trace: $stackTrace');
-      return null;
+      rethrow;
     }
   }
 

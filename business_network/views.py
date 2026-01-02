@@ -317,9 +317,36 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        images_data = request.data.get("images")
-        videos_data = request.data.get("videos")
-        tags_data = request.data.get("tags")
+        def _get_list_value(key):
+            data = request.data
+            if hasattr(data, "getlist"):
+                values = data.getlist(key)
+                if not values:
+                    values = data.getlist(f"{key}[]")
+                if values:
+                    return values
+            value = data.get(key)
+            if value is None:
+                return []
+            if isinstance(value, list):
+                return value
+            return [value]
+
+        def _get_file_list(key):
+            files = request.FILES
+            values = []
+            if hasattr(files, "getlist"):
+                values = files.getlist(key)
+                if not values:
+                    values = files.getlist(f"{key}[]")
+            return values or []
+
+        images_data = _get_list_value("images")
+        videos_data = _get_list_value("videos")
+        tags_data = _get_list_value("tags")
+
+        image_files = _get_file_list("images")
+        video_files = _get_file_list("videos")
 
         with transaction.atomic():
             serializer = self.get_serializer(
@@ -334,10 +361,15 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
             serializer.is_valid(raise_exception=True)
             post = serializer.save()
 
-            if images_data:
-                if not isinstance(images_data, list):
-                    images_data = [images_data]
+            if image_files:
+                for image_file in image_files:
+                    try:
+                        post_media = BusinessNetworkMedia.objects.create(type="image", image=image_file)
+                        post.media.add(post_media)
+                    except Exception as e:
+                        raise ValidationError({"images": f"Error processing image file: {str(e)}"})
 
+            if images_data:
                 for image_data in images_data:
                     try:
                         if isinstance(image_data, dict):
@@ -358,10 +390,24 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     except Exception as e:
                         raise ValidationError({"images": f"Error processing image: {str(e)}"})
 
-            if videos_data:
-                if not isinstance(videos_data, list):
-                    videos_data = [videos_data]
+            if video_files:
+                for video_file in video_files:
+                    try:
+                        post_media = BusinessNetworkMedia.objects.create(type="video", video=video_file)
+                        post.media.add(post_media)
 
+                        try:
+                            if post_media.video and post_media.video.path:
+                                thumb_file = generate_video_thumbnail(post_media.video.path)
+                                if thumb_file:
+                                    post_media.thumbnail = thumb_file
+                                    post_media.save()
+                        except Exception as thumb_err:
+                            print(f"Could not generate video thumbnail: {thumb_err}")
+                    except Exception as e:
+                        raise ValidationError({"videos": f"Error processing video file: {str(e)}"})
+
+            if videos_data:
                 for video_data in videos_data:
                     try:
                         if isinstance(video_data, dict):
@@ -377,8 +423,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
                         post_media = BusinessNetworkMedia.objects.create(type="video", video=video_file)
                         post.media.add(post_media)
-                        
-                        # Generate thumbnail from video
+
                         try:
                             if post_media.video and post_media.video.path:
                                 thumb_file = generate_video_thumbnail(post_media.video.path)
@@ -391,10 +436,14 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                         raise ValidationError({"videos": f"Error processing video: {str(e)}"})
 
             if tags_data:
-                if isinstance(tags_data, list):
-                    for tag_data in tags_data:
-                        tag, _ = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
-                        post.tags.add(tag)
+                for tag_data in tags_data:
+                    if not isinstance(tag_data, str):
+                        continue
+                    tag_data = tag_data.strip()
+                    if not tag_data:
+                        continue
+                    tag, _ = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
+                    post.tags.add(tag)
 
         response_serializer = self.get_serializer(post)
         headers = self.get_success_headers(response_serializer.data)

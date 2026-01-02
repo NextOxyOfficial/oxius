@@ -22,7 +22,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final ImagePicker _picker = ImagePicker();
   
   List<String> _selectedImages = [];
-  List<Map<String, dynamic>> _selectedVideos = []; // {path, base64}
+  List<Map<String, dynamic>> _selectedVideos = []; // {path, name}
   List<String> _hashtags = [];
   String _visibility = 'public'; // public or private
   bool _isLoading = false;
@@ -194,15 +194,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         // If we fail to read duration, allow selection to proceed
       }
 
-      // Read video file using XFile's readAsBytes (cross-platform)
-      final bytes = await video.readAsBytes();
-      
-      final base64Video = 'data:video/mp4;base64,${base64Encode(bytes)}';
-      
       setState(() {
         _selectedVideos.add({
           'path': video.path,
-          'base64': base64Video,
           'name': video.name,
         });
         _isCompressing = false;
@@ -360,16 +354,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Extract base64 videos from selected videos
-      final videoBase64List = hasVideos 
-          ? _selectedVideos.map((v) => v['base64'] as String).toList()
+      final videoPathList = hasVideos
+          ? _selectedVideos.map((v) => v['path'] as String).toList()
           : null;
       
       final post = await BusinessNetworkService.createPost(
         title: hasTitle ? _titleController.text.trim() : null,
         content: hasContent ? _contentController.text.trim() : null,
         images: hasImages ? _selectedImages : null,
-        videos: videoBase64List,
+        videoPaths: videoPathList,
         tags: hasTags ? _hashtags : null,
         visibility: _visibility,
       );
