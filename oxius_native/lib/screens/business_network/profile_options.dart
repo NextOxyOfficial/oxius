@@ -280,7 +280,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
 
             // Profile Info
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+              padding: const EdgeInsets.fromLTRB(12, 16, 12, 32),
               child: Row(
                 children: [
                   // Avatar with ring
@@ -347,13 +347,11 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                               child: Text(
                                 name,
                                 style: const TextStyle(
-                                  fontSize: 22,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                   letterSpacing: -0.5,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             if (isVerified) ...[

@@ -599,14 +599,6 @@ class _PostCardState extends State<PostCard> {
               media: _post.media,
               onMediaTap: _handleMediaTap,
             ),
-          // Post Actions (Vue-style: actions directly under media)
-          PostActions(
-            post: _post,
-            onLike: _handleLike,
-            onComment: _handleViewAllComments,
-            onShare: _handleShare,
-            onSave: _handleSave,
-          ),
           // Post Title
           if (_post.title.isNotEmpty)
             Padding(
@@ -623,6 +615,41 @@ class _PostCardState extends State<PostCard> {
                 ),
               ),
             ),
+          // Post Content
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Html(
+                  data: _showFullContent ? _post.content : (_post.content.length > 160 ? '${_post.content.substring(0, 160)}...' : _post.content),
+                  onLinkTap: (url, attributes, element) {
+                    UrlLauncherUtils.launchExternalUrl(url);
+                  },
+                ),
+                FirstLinkPreview(text: _post.content),
+                if (_post.content.length > 160)
+                  TextButton(
+                    onPressed: () {
+                      setState(() => _showFullContent = !_showFullContent);
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      _showFullContent ? 'Read less' : 'Read more',
+                      style: const TextStyle(
+                        color: Color(0xFF3B82F6),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           // Post Tags
           if (_post.tags.isNotEmpty)
             Padding(
@@ -665,40 +692,13 @@ class _PostCardState extends State<PostCard> {
                 }).toList(),
               ),
             ),
-          // Post Content
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Html(
-                  data: _showFullContent ? _post.content : (_post.content.length > 160 ? '${_post.content.substring(0, 160)}...' : _post.content),
-                  onLinkTap: (url, attributes, element) {
-                    UrlLauncherUtils.launchExternalUrl(url);
-                  },
-                ),
-                FirstLinkPreview(text: _post.content),
-                if (_post.content.length > 160)
-                  TextButton(
-                    onPressed: () {
-                      setState(() => _showFullContent = !_showFullContent);
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(
-                      _showFullContent ? 'Read less' : 'Read more',
-                      style: const TextStyle(
-                        color: Color(0xFF3B82F6),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+          // Post Actions (moved below title, content, and hashtags)
+          PostActions(
+            post: _post,
+            onLike: _handleLike,
+            onComment: _handleViewAllComments,
+            onShare: _handleShare,
+            onSave: _handleSave,
           ),
           // Comments Preview
           PostCommentsPreview(
