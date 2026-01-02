@@ -37,24 +37,46 @@ def get_active_program(request):
 @permission_classes([IsAuthenticated])
 def get_my_claims(request):
     """Get user's reward claims with condition status"""
+    from base.models import User
+
     program = ReferralRewardProgram.get_active()
     
     if not program:
         return Response({'active_program': False, 'claims': []})
     
+    referred_users = User.objects.filter(refer=request.user)
+    for referred_user in referred_users:
+        claim, _ = ReferralRewardClaim.objects.get_or_create(
+            program=program,
+            user=request.user,
+            claim_type='referrer',
+            referred_user=referred_user,
+            defaults={'reward_amount': program.referrer_reward},
+        )
+        if claim.reward_amount != program.referrer_reward:
+            claim.reward_amount = program.referrer_reward
+            claim.save(update_fields=['reward_amount'])
+
     claims = ReferralRewardClaim.objects.filter(user=request.user, program=program)
     
     claims_data = []
     for claim in claims:
         claim.check_conditions()
+        referred_user_payload = None
+        if claim.referred_user:
+            referred_user_payload = {
+                'id': str(claim.referred_user.id),
+                'name': (f"{claim.referred_user.first_name} {claim.referred_user.last_name}").strip()
+                if claim.referred_user.first_name
+                else (claim.referred_user.name or claim.referred_user.username),
+            }
+
         claims_data.append({
             'id': claim.id,
             'claim_type': claim.claim_type,
             'status': claim.status,
             'reward_amount': float(claim.reward_amount),
-            'referred_user': {
-                'name': claim.referred_user.first_name or claim.referred_user.username,
-            } if claim.referred_user else None,
+            'referred_user': referred_user_payload,
             'conditions': {
                 'has_posted_bn': claim.has_posted_bn,
                 'has_completed_microgig': claim.has_completed_microgig,

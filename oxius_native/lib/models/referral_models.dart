@@ -1,3 +1,5 @@
+import 'package:characters/characters.dart';
+
 class PlatformStats {
   final int activeReferrers;
   final double topEarnerAmount;
@@ -188,33 +190,75 @@ class ReferredUserInfo {
 }
 
 class ReferredUser {
-  final int id;
-  final String name;
+  final String id;
+  final String? firstName;
+  final String? lastName;
+  final String? username;
+  final String? name;
   final String email;
   final String? phone;
+  final String? image;
+  final bool isActive;
   final String joinedDate;
-  final String status;
-  final double totalSpent;
 
   ReferredUser({
     required this.id,
-    required this.name,
+    this.firstName,
+    this.lastName,
+    this.username,
+    this.name,
     required this.email,
     this.phone,
+    this.image,
+    required this.isActive,
     required this.joinedDate,
-    required this.status,
-    required this.totalSpent,
   });
+
+  static bool _parseBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final v = value.trim().toLowerCase();
+      if (v == 'true' || v == '1' || v == 'yes') return true;
+      if (v == 'false' || v == '0' || v == 'no') return false;
+    }
+    return false;
+  }
 
   factory ReferredUser.fromJson(Map<String, dynamic> json) {
     return ReferredUser(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? 'Unknown User',
-      email: json['email'] ?? '',
-      phone: json['phone'],
-      joinedDate: json['joined_date'] ?? json['date_joined'] ?? '',
-      status: json['status'] ?? 'active',
-      totalSpent: (json['total_spent'] ?? 0).toDouble(),
+      id: json['id']?.toString() ?? '',
+      firstName: json['first_name']?.toString(),
+      lastName: json['last_name']?.toString(),
+      username: json['username']?.toString(),
+      name: json['name']?.toString(),
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString(),
+      image: json['image']?.toString(),
+      isActive: _parseBool(json['is_active'] ?? json['active'] ?? true),
+      joinedDate: json['date_joined']?.toString() ?? json['joined_date']?.toString() ?? '',
     );
+  }
+
+  String get displayName {
+    final fn = firstName?.trim() ?? '';
+    final ln = lastName?.trim() ?? '';
+    final full = ('$fn $ln').trim();
+    if (full.isNotEmpty) return full;
+
+    final n = name?.trim() ?? '';
+    if (n.isNotEmpty) return n;
+
+    final u = username?.trim() ?? '';
+    if (u.isNotEmpty) return u;
+
+    if (email.trim().isNotEmpty) return email.trim();
+    return 'User';
+  }
+
+  String get initial {
+    final t = displayName.trim();
+    if (t.isEmpty) return 'U';
+    return t.characters.first.toUpperCase();
   }
 }

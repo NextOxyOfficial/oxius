@@ -82,6 +82,7 @@ class ReferralRewardClaim {
   final String claimType; // 'referrer' or 'referee'
   final String status; // 'pending', 'eligible', 'claimed'
   final double rewardAmount;
+  final String? referredUserId;
   final String? referredUserName;
   final RewardClaimConditions conditions;
   final bool allMet;
@@ -92,6 +93,7 @@ class ReferralRewardClaim {
     required this.claimType,
     required this.status,
     required this.rewardAmount,
+    this.referredUserId,
     this.referredUserName,
     required this.conditions,
     required this.allMet,
@@ -104,6 +106,7 @@ class ReferralRewardClaim {
       claimType: json['claim_type'] ?? 'referee',
       status: json['status'] ?? 'pending',
       rewardAmount: (json['reward_amount'] ?? 0).toDouble(),
+      referredUserId: json['referred_user']?['id']?.toString(),
       referredUserName: json['referred_user']?['name'],
       conditions: RewardClaimConditions.fromJson(json['conditions'] ?? {}),
       allMet: json['all_met'] ?? false,
@@ -141,8 +144,12 @@ class MyClaimsResponse {
   }
 
   /// Get the referee claim (for referred users)
-  ReferralRewardClaim? get refereeClaim =>
-      claims.where((c) => c.claimType == 'referee').firstOrNull;
+  ReferralRewardClaim? get refereeClaim {
+    for (final c in claims) {
+      if (c.claimType == 'referee') return c;
+    }
+    return null;
+  }
 
   /// Get referrer claims (for users who referred others)
   List<ReferralRewardClaim> get referrerClaims =>

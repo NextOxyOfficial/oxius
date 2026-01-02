@@ -9,6 +9,7 @@ import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/url_launcher_utils.dart';
+import '../../widgets/link_preview_card.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
@@ -616,7 +617,7 @@ class _PostCardState extends State<PostCard> {
                   _post.title,
                   style: const TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w400,
                     color: Colors.black87,
                   ),
                 ),
@@ -676,6 +677,7 @@ class _PostCardState extends State<PostCard> {
                     UrlLauncherUtils.launchExternalUrl(url);
                   },
                 ),
+                FirstLinkPreview(text: _post.content),
                 if (_post.content.length > 160)
                   TextButton(
                     onPressed: () {

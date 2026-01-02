@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import '../services/referral_service.dart';
 import '../models/referral_models.dart';
@@ -31,6 +33,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   
   // Referral Reward Program
   MyClaimsResponse? _claimsData;
+  CheckConditionsResponse? _conditionsData;
   bool _isLoadingClaims = false;
   bool _isClaimingReward = false;
   
@@ -147,6 +150,12 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   Future<void> _loadRewardClaims() async {
     setState(() => _isLoadingClaims = true);
     try {
+      final conditions = await ReferralService.checkConditions();
+      if (mounted) {
+        setState(() {
+          _conditionsData = conditions;
+        });
+      }
       final data = await ReferralService.getMyClaims();
       if (mounted) {
         setState(() {
@@ -157,6 +166,68 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     } catch (e) {
       if (mounted) setState(() => _isLoadingClaims = false);
     }
+  }
+
+  ReferralRewardClaim? _getClaimForReferredUser(String referredUserId) {
+    final claims = _claimsData?.claims;
+    if (claims == null) return null;
+
+    for (final c in claims) {
+      if (c.claimType != 'referrer') continue;
+      if (c.referredUserId == null) continue;
+      if (c.referredUserId.toString() == referredUserId.toString()) return c;
+    }
+    return null;
+  }
+
+  int get _eligibleReferrerClaimsCount {
+    final claims = _claimsData?.claims;
+    if (claims == null) return 0;
+    int count = 0;
+    for (final c in claims) {
+      if (c.claimType == 'referrer' && c.status == 'eligible') {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  Future<void> _claimAllRewards() async {
+    final claims = _claimsData?.claims;
+    if (claims == null) return;
+
+    final eligible = claims.where((c) => c.claimType == 'referrer' && c.status == 'eligible').toList();
+    if (eligible.isEmpty) return;
+
+    setState(() => _isClaimingReward = true);
+
+    int successCount = 0;
+    double totalAmount = 0;
+    for (final c in eligible) {
+      try {
+        final res = await ReferralService.claimReward(c.id);
+        if (res.success) {
+          successCount += 1;
+          totalAmount += c.rewardAmount;
+        }
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          successCount > 0
+              ? 'Claimed $successCount reward(s) (৳${totalAmount.toStringAsFixed(0)})'
+              : 'Failed to claim rewards',
+        ),
+        backgroundColor: successCount > 0 ? const Color(0xFF10B981) : Colors.red,
+      ),
+    );
+
+    setState(() => _isClaimingReward = false);
+    _loadRewardClaims();
+    AuthService.refreshUserData();
   }
 
   Future<void> _claimReward(int claimId) async {
@@ -206,6 +277,178 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     }
   }
 
+  void _openShareSheet() {
+    final link = _referralLink;
+    if (link == null || link.isEmpty) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Share Your Referral Link',
+                          style: GoogleFonts.roboto(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1F2937),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            link,
+                            style: GoogleFonts.roboto(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF111827),
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 34,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _copyToClipboard(link),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
+                            icon: const Icon(Icons.copy_rounded, size: 16, color: Colors.white),
+                            label: Text(
+                              'Copy',
+                              style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: QrImageView(
+                        data: link,
+                        size: 160,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: Text(
+                      'Scan to open referral link',
+                      style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Share on Social Media',
+                    style: GoogleFonts.roboto(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildSocialButton('Facebook', Icons.facebook, const Color(0xFF1877F2), () => _shareOnSocial('facebook')),
+                      _buildSocialButton('Twitter', Icons.alternate_email, const Color(0xFF1DA1F2), () => _shareOnSocial('twitter')),
+                      _buildSocialButton('WhatsApp', Icons.chat, const Color(0xFF25D366), () => _shareOnSocial('whatsapp')),
+                      _buildSocialButton('More', Icons.share_rounded, const Color(0xFF10B981), _shareLink),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSocialButton(String label, IconData icon, Color color, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withOpacity(0.18)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _shareOnSocial(String platform) async {
     if (_referralLink == null) return;
     
@@ -237,6 +480,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   }
 
   String _formatDate(String dateString) {
+    if (dateString.trim().isEmpty) {
+      return 'N/A';
+    }
     try {
       final date = DateTime.parse(dateString);
       return '${date.day}/${date.month}/${date.year}';
@@ -521,7 +767,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                     const SizedBox(width: 8),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: _shareLink,
+                        onPressed: _openShareSheet,
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xFF10B981)),
                           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -590,6 +836,54 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                         ),
                       ),
                     ],
+                  ),
+                ],
+              ),
+            ),
+          if (_commissionData != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Commission Breakdown',
+                    style: GoogleFonts.roboto(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1,
+                      color: const Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildBreakdownItem(
+                    title: 'Gig Completions',
+                    color: Colors.blue,
+                    rate: _commissionData!.commissionBreakdown.gigCompletion.rate,
+                    count: _commissionData!.commissionBreakdown.gigCompletion.count,
+                    amount: _commissionData!.commissionBreakdown.gigCompletion.totalAmount,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildBreakdownItem(
+                    title: 'Pro Subscriptions',
+                    color: Colors.purple,
+                    rate: _commissionData!.commissionBreakdown.proSubscription.rate,
+                    count: _commissionData!.commissionBreakdown.proSubscription.count,
+                    amount: _commissionData!.commissionBreakdown.proSubscription.totalAmount,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildBreakdownItem(
+                    title: 'Gold Sponsors',
+                    color: Colors.amber,
+                    rate: _commissionData!.commissionBreakdown.goldSponsor.rate,
+                    count: _commissionData!.commissionBreakdown.goldSponsor.count,
+                    amount: _commissionData!.commissionBreakdown.goldSponsor.totalAmount,
                   ),
                 ],
               ),
@@ -755,6 +1049,65 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     );
   }
 
+  Widget _buildBreakdownItem({
+    required String title,
+    required Color color,
+    required String rate,
+    required int count,
+    required double amount,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1F2937),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$count transaction(s) • $rate',
+                  style: GoogleFonts.roboto(
+                    fontSize: 10,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '৳ ${amount.toStringAsFixed(0)}',
+            style: GoogleFonts.roboto(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF10B981),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEarningsTab() {
     if (_isLoadingCommissions) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)));
@@ -887,82 +1240,217 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       );
     }
 
-    return ListView.builder(
-      itemCount: _referredUsers.length,
-      itemBuilder: (context, index) {
-        final user = _referredUsers[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Center(
-                  child: Text(
-                    user.name[0].toUpperCase(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF10B981),
+    return Column(
+      children: [
+        if (_eligibleReferrerClaimsCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Row(
+              children: [
+                const Spacer(),
+                SizedBox(
+                  height: 32,
+                  child: ElevatedButton.icon(
+                    onPressed: _isClaimingReward ? null : _claimAllRewards,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    icon: _isClaimingReward
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : const Icon(Icons.card_giftcard_rounded, size: 16, color: Colors.white),
+                    label: Text(
+                      'Claim All ($_eligibleReferrerClaimsCount)',
+                      style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+          ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _referredUsers.length,
+            itemBuilder: (context, index) {
+              final user = _referredUsers[index];
+              final claim = _getClaimForReferredUser(user.id);
+
+              final avatarUrl = AppConfig.getAbsoluteUrl(user.image);
+
+              Widget trailing;
+              if (claim == null) {
+                trailing = Text('-', style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade400));
+              } else if (claim.isEligible) {
+                trailing = SizedBox(
+                  height: 30,
+                  child: ElevatedButton.icon(
+                    onPressed: _isClaimingReward ? null : () => _claimReward(claim.id),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.card_giftcard_rounded, size: 14, color: Colors.white),
+                    label: Text(
+                      '৳${claim.rewardAmount.toStringAsFixed(0)}',
+                      style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                    ),
+                  ),
+                );
+              } else if (claim.isClaimed) {
+                trailing = Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Claimed',
+                    style: GoogleFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.green),
+                  ),
+                );
+              } else {
+                trailing = Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Pending',
+                    style: GoogleFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.amber.shade800),
+                  ),
+                );
+              }
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Row(
                   children: [
-                    Text(
-                      user.name,
-                      style: GoogleFonts.roboto(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1F2937),
+                    if (avatarUrl.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Image.network(
+                          avatarUrl,
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Center(
+                              child: Text(
+                                user.initial,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF10B981),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Center(
+                          child: Text(
+                            user.initial,
+                            style: GoogleFonts.roboto(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF10B981),
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.displayName,
+                            style: GoogleFonts.roboto(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1F2937),
+                            ),
+                          ),
+                          Text(
+                            user.email,
+                            style: GoogleFonts.roboto(
+                              fontSize: 10,
+                              color: Colors.grey.shade600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Joined ${_formatDate(user.joinedDate)}',
+                            style: GoogleFonts.roboto(
+                              fontSize: 10,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    Text(
-                      'Joined ${_formatDate(user.joinedDate)}',
-                      style: GoogleFonts.roboto(
-                        fontSize: 10,
-                        color: Colors.grey.shade600,
-                      ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: user.isActive
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            user.isActive ? 'Active' : 'Inactive',
+                            style: GoogleFonts.roboto(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: user.isActive ? Colors.green : Colors.grey,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        trailing,
+                      ],
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: user.status == 'active'
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.grey.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  user.status,
-                  style: GoogleFonts.roboto(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: user.status == 'active' ? Colors.green : Colors.grey,
-                  ),
-                ),
-              ),
-            ],
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -1054,6 +1542,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   Widget _buildClaimCard(ReferralRewardClaim claim, {required bool isReferee}) {
     final isClaimed = claim.isClaimed;
     final isEligible = claim.isEligible;
+    final referrerName = _conditionsData?.rewardInfo?.referrerName;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
@@ -1077,7 +1566,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               Expanded(
                 child: Text(
                   isReferee
-                      ? 'Your Reward (Referred by ${claim.referredUserName ?? 'someone'})'
+                      ? 'Your Reward${referrerName != null && referrerName.isNotEmpty ? ' (Referred by $referrerName)' : ''}'
                       : 'Referrer Reward for ${claim.referredUserName ?? 'user'}',
                   style: GoogleFonts.roboto(
                     fontSize: 12,

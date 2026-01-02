@@ -6,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/image_compressor.dart';
+import '../../widgets/link_preview_card.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -195,7 +196,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
       // Read video file using XFile's readAsBytes (cross-platform)
       final bytes = await video.readAsBytes();
-      final fileSizeMB = bytes.length / (1024 * 1024);
       
       final base64Video = 'data:video/mp4;base64,${base64Encode(bytes)}';
       
@@ -212,7 +212,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Video added (${fileSizeMB.toStringAsFixed(1)}MB)'),
+            content: const Text('Video added'),
             backgroundColor: Colors.green,
           ),
         );
@@ -643,6 +643,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               maxLines: null,
               minLines: 3,
             ),
+
+            AnimatedBuilder(
+              animation: Listenable.merge([
+                _titleController,
+                _contentController,
+              ]),
+              builder: (context, _) {
+                final text = '${_titleController.text}\n${_contentController.text}';
+                return FirstLinkPreview(
+                  text: text,
+                  margin: const EdgeInsets.only(top: 12),
+                );
+              },
+            ),
             
             const SizedBox(height: 24),
 
@@ -1007,7 +1021,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 const SizedBox(height: 8),
                 // Helper text
                 Text(
-                  'Max $_maxPhotos photos + $_maxVideos videos (3 min, 50MB max)',
+                  'Max $_maxPhotos photos + $_maxVideos videos (2 min)',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey.shade500,
