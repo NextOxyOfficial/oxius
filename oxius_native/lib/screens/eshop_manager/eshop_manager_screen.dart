@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../services/auth_service.dart';
 import '../../services/eshop_manager_service.dart';
 import '../../models/eshop_manager_models.dart';
@@ -76,7 +75,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
     print('🏪 User storeName: ${user.storeName}');
     print('🏪 User productLimit: ${user.productLimit}');
 
-    _isPro = user.isPro ?? false;
+    _isPro = user.isPro;
     _hasStore = user.storeUsername != null && user.storeUsername!.isNotEmpty;
     _productLimit = user.productLimit ?? 10;
 

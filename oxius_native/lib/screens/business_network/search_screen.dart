@@ -8,7 +8,6 @@ import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import 'profile_screen.dart';
-import 'post_detail_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;

@@ -1,6 +1,4 @@
-import 'package:http/http.dart' as http;
 import 'api_service.dart';
-import 'auth_service.dart';
 
 /// Service to track which chat user is currently viewing
 /// This prevents push notifications when user is already in the chat

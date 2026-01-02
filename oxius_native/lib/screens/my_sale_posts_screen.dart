@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
-import '../services/auth_service.dart';
 import '../models/sale_post.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';

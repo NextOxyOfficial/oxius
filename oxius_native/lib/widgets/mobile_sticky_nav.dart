@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import '../services/user_state_service.dart';
 import '../services/notification_service.dart';
-import '../screens/eshop_screen.dart';
 import '../screens/eshop_manager_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/news_screen.dart';

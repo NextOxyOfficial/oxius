@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../config/app_config.dart';
+import '../../models/business_network_models.dart';
+import '../../services/business_network_service.dart';
 import 'profile_screen.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import 'notifications_screen.dart';
 import 'create_post_screen.dart';
+import 'shorts_player_screen.dart';
+import '../inbox_screen.dart';
+import '../workspace/workspace_screen.dart';
 import '../settings_screen.dart';
 import '../verification_screen.dart';
 
@@ -22,7 +27,7 @@ class ProfileOptionsScreen extends StatelessWidget {
         : '';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9FAFB),
       body: SafeArea(
         child: Column(
           children: [
@@ -259,64 +264,66 @@ class ProfileOptionsScreen extends StatelessWidget {
                       icon: Icons.history_rounded,
                       label: 'History',
                       onTap: () {
-                        // TODO: Navigate to History
+                        Navigator.pushNamed(context, '/deposit-withdraw');
                       },
                     ),
                     _buildMenuItem(
                       context: context,
-                      icon: Icons.people_outline_rounded,
-                      label: 'Subscriber',
+                      icon: Icons.chat_bubble_rounded,
+                      label: 'AdsyConnect',
                       onTap: () {
-                        // TODO: Navigate to Subscriber
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const InboxScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildMenuItem(
                       context: context,
-                      icon: Icons.subscriptions_outlined,
-                      label: 'Subscription',
+                      icon: Icons.video_library_rounded,
+                      label: 'Shorts',
                       onTap: () {
-                        // TODO: Navigate to Subscription
+                        // ignore: discarded_futures
+                        _openShorts(context);
                       },
                     ),
                     _buildMenuItem(
                       context: context,
-                      icon: Icons.location_on_outlined,
-                      label: 'Rent',
+                      icon: Icons.monetization_on_rounded,
+                      label: 'Earn money',
                       onTap: () {
-                        // TODO: Navigate to Rent
+                        Navigator.pushNamed(context, '/micro-gigs');
                       },
                     ),
                     _buildMenuItem(
                       context: context,
-                      icon: Icons.bookmark_outline_rounded,
-                      label: 'Watch later',
+                      icon: Icons.psychology_alt_rounded,
+                      label: 'Mindforce',
                       onTap: () {
-                        // TODO: Navigate to Watch later
+                        Navigator.pushNamed(context, '/mindforce');
                       },
                     ),
                     _buildMenuItem(
                       context: context,
-                      icon: Icons.favorite_rounded,
-                      iconColor: const Color(0xFFEF4444),
-                      label: 'Liked Video',
+                      icon: Icons.workspaces_rounded,
+                      label: 'Workspace',
                       onTap: () {
-                        // TODO: Navigate to Liked Video
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WorkspaceScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildMenuItem(
                       context: context,
-                      icon: Icons.crop_square_rounded,
-                      label: 'Active User Panel',
+                      icon: Icons.help_center_rounded,
+                      label: 'Help Center',
                       onTap: () {
-                        // TODO: Navigate to Active User Panel
-                      },
-                    ),
-                    _buildMenuItem(
-                      context: context,
-                      icon: Icons.logout_rounded,
-                      label: 'Logout',
-                      onTap: () {
-                        // TODO: Logout
+                        Navigator.pushNamed(context, '/faq');
                       },
                     ),
                     const SizedBox(height: 20),
@@ -405,7 +412,7 @@ class ProfileOptionsScreen extends StatelessWidget {
   Widget _buildAvatarPlaceholder(String name) {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'G';
     return Container(
-      color: const Color(0xFF3B82F6).withOpacity(0.1),
+      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
       child: Center(
         child: Text(
           initial,
@@ -431,6 +438,77 @@ class ProfileOptionsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _openShorts(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFF10B981),
+            strokeWidth: 2,
+          ),
+        );
+      },
+    );
+
+    try {
+      final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 7);
+      if (!context.mounted) return;
+      final posts = (result['posts'] as List<BusinessNetworkPost>?) ?? <BusinessNetworkPost>[];
+
+      BusinessNetworkPost? firstPost;
+      PostMedia? firstMedia;
+
+      for (final p in posts) {
+        final idx = p.media.indexWhere((m) => m.isVideo);
+        if (idx >= 0) {
+          firstPost = p;
+          firstMedia = p.media[idx];
+          break;
+        }
+      }
+
+      if (!context.mounted) return;
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      if (firstPost == null || firstMedia == null) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No shorts yet'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      if (!context.mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShortsPlayerScreen(
+            initialPost: firstPost!,
+            initialMedia: firstMedia!,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (context.mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to open shorts: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   Widget _buildMenuItem({
     required BuildContext context,
     required IconData icon,
@@ -438,36 +516,51 @@ class ProfileOptionsScreen extends StatelessWidget {
     required VoidCallback onTap,
     Color? iconColor,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 24,
-                color: iconColor ?? Colors.grey.shade700,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1F2937),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        elevation: 0,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: (iconColor ?? const Color(0xFF10B981)).withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 20,
+                    color: iconColor ?? const Color(0xFF111827),
                   ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: Colors.grey.shade400,
-              ),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 22,
+                  color: Colors.grey.shade400,
+                ),
+              ],
+            ),
           ),
         ),
       ),

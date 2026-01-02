@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'package:video_player/video_player.dart';
 import '../../services/business_network_service.dart';
-import '../../models/business_network_models.dart';
 import '../../services/auth_service.dart';
 import '../../utils/image_compressor.dart';
 
@@ -30,7 +31,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   
   static const int _maxPhotos = 12;
   static const int _maxVideos = 2;
-  static const int _maxVideoDurationSeconds = 180; // 3 minutes
+  static const int _maxVideoDurationSeconds = 120; // 2 minutes
 
   @override
   void dispose() {
@@ -166,26 +167,35 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         _compressionStatus = 'Processing video...';
       });
 
+      // Enforce duration limit (max 2 minutes)
+      try {
+        final controller = VideoPlayerController.file(File(video.path));
+        await controller.initialize();
+        final duration = controller.value.duration;
+        await controller.dispose();
+
+        if (duration > const Duration(seconds: _maxVideoDurationSeconds)) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Video is too long. Maximum length is 2 minutes.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          setState(() {
+            _isCompressing = false;
+            _compressionStatus = '';
+          });
+          return;
+        }
+      } catch (_) {
+        // If we fail to read duration, allow selection to proceed
+      }
+
       // Read video file using XFile's readAsBytes (cross-platform)
       final bytes = await video.readAsBytes();
-      
-      // Check file size (limit to 50MB for practical upload)
       final fileSizeMB = bytes.length / (1024 * 1024);
-      if (fileSizeMB > 50) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Video is too large (${fileSizeMB.toStringAsFixed(1)}MB). Maximum is 50MB.'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
-        setState(() {
-          _isCompressing = false;
-          _compressionStatus = '';
-        });
-        return;
-      }
       
       final base64Video = 'data:video/mp4;base64,${base64Encode(bytes)}';
       
@@ -292,7 +302,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   child: Icon(Icons.videocam_rounded, color: Colors.purple.shade600, size: 24),
                 ),
                 title: const Text('Video', style: TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('${_selectedVideos.length}/$_maxVideos selected (max 3 min, 50MB)', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                subtitle: Text('${_selectedVideos.length}/$_maxVideos selected (max 2 min)', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                 trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
                 enabled: _selectedVideos.length < _maxVideos,
                 onTap: _selectedVideos.length < _maxVideos ? () {

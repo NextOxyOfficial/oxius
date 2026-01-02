@@ -65,9 +65,9 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
       if (isValid) {
         // Get updated user data
         final user = AuthService.currentUser;
-        if (user != null && user.balance != null) {
+        if (user != null) {
           setState(() {
-            _userBalance = user.balance!.toDouble();
+            _userBalance = user.balance.toDouble();
           });
         }
       } else {

@@ -20,6 +20,7 @@ class ShortsPlayerScreen extends StatefulWidget {
 
 class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   final List<BusinessNetworkPost> _posts = [];
+  final Map<int, BusinessNetworkPost> _updatedPostsById = {};
   bool _isLoadingMore = false;
   bool _hasMore = true;
   int _currentPage = 1;
@@ -57,6 +58,15 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
     }
   }
 
+  void _recordPostUpdate(BusinessNetworkPost post) {
+    _updatedPostsById[post.id] = post;
+
+    final idx = _posts.indexWhere((p) => p.id == post.id);
+    if (idx >= 0) {
+      _posts[idx] = post;
+    }
+  }
+
   Future<void> _loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
 
@@ -87,13 +97,22 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: ShortsViewer(
-        posts: _posts,
-        initialVideoUrl: widget.initialMedia.bestUrl,
-        onRequestMore: _loadMore,
-        onClose: () => Navigator.pop(context),
+    return PopScope<Map<int, BusinessNetworkPost>>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, Map<int, BusinessNetworkPost>? result) {
+        if (didPop) return;
+        Navigator.pop(context, _updatedPostsById.isEmpty ? null : _updatedPostsById);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: ShortsViewer(
+          posts: _posts,
+          initialVideoUrl: widget.initialMedia.bestUrl,
+          onRequestMore: _loadMore,
+          onLike: _recordPostUpdate,
+          onComment: _recordPostUpdate,
+          onClose: () => Navigator.pop(context, _updatedPostsById.isEmpty ? null : _updatedPostsById),
+        ),
       ),
     );
   }

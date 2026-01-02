@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../models/sale_post.dart';
 import '../services/api_service.dart';
 
@@ -610,7 +609,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                               value: null,
                               child: Text('All Categories'),
                             ),
-                            ...(_categories ?? []).map((category) {
+                            ..._categories.map((category) {
                               return DropdownMenuItem<String>(
                                 value: category['id'].toString(),
                                 child: Text(

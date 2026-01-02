@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import '../models/business_network_models.dart';
 import 'api_service.dart';
-import '../utils/network_error_handler.dart';
 
 class BusinessNetworkService {
   static String get _baseUrl => '${ApiService.baseUrl}/bn';
@@ -924,6 +923,33 @@ class BusinessNetworkService {
     } catch (e) {
       print('Error fetching top tags: $e');
       return [];
+    }
+  }
+
+  static Future<int?> incrementMediaViews(String mediaId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/media/$mediaId/increment-views/'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.body.isEmpty) return null;
+        final data = json.decode(response.body);
+        if (data is Map<String, dynamic>) {
+          final raw = data['views'] ?? data['views_count'] ?? data['count'];
+          if (raw is int) return raw;
+          if (raw is String) return int.tryParse(raw);
+        }
+      }
+
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 }

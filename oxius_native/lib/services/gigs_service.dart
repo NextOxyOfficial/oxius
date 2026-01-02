@@ -30,7 +30,7 @@ class GigsService {
           // Fallback for non-paginated response
           return {
             'results': List<Map<String, dynamic>>.from(data),
-            'count': (data as List).length,
+            'count': (data).length,
             'next': null,
             'previous': null,
           };
@@ -71,7 +71,7 @@ class GigsService {
           // Fallback for non-paginated response
           return {
             'results': List<Map<String, dynamic>>.from(data),
-            'count': (data as List).length,
+            'count': (data).length,
             'next': null,
             'previous': null,
           };

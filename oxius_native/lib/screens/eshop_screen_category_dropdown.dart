@@ -110,15 +110,11 @@ Widget buildCategoryDropdown({
       ];
     },
     onSelected: (value) {
-      if (value == null) {
-        onCategorySelected(null, null);
-      } else {
-        final category = categories.firstWhere(
-          (cat) => cat['id'].toString() == value,
-          orElse: () => {},
-        );
-        onCategorySelected(value, category['name']?.toString());
-      }
-    },
+      final category = categories.firstWhere(
+        (cat) => cat['id'].toString() == value,
+        orElse: () => {},
+      );
+      onCategorySelected(value, category['name']?.toString());
+        },
   );
 }

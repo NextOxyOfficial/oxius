@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
-import '../../models/user_model.dart' as UserModel;
 import 'diamond_gift_bottom_sheet.dart';
 import '../../config/app_config.dart';
 
@@ -97,7 +96,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
     try {
       final users = await UserSearchService.searchUsers(query);
       return users.map((user) => {
-        'id': user.id ?? user.name,
+        'id': user.id.toString(),
         'display': user.name,
         'full_name': user.name,
         'photo': user.image ?? user.avatar,

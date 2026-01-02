@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class FirstUrlExtractor {
   static final RegExp _urlRegex = RegExp(
     r"((?:https?:\/\/)?(?:www\.)?(?:localhost|(?:\d{1,3}\.){3}\d{1,3}|[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+)(?::\d{2,5})?(?:\/[\w\-._~%!$&'()*+,;=:@\/?#\[\]]*)?)",
@@ -17,7 +15,6 @@ class FirstUrlExtractor {
     return _stripTrailingPunctuation(url);
   }
 
-  @visibleForTesting
   static String _stripTrailingPunctuation(String url) {
     const trailing = ['.', ',', ';', ':', ')', ']', '}', '"', "'"];
     var value = url;

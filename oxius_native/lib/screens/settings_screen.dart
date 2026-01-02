@@ -8,7 +8,6 @@ import '../models/user_profile.dart';
 import '../models/geo_location.dart';
 import '../config/app_config.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
@@ -174,7 +173,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _populateControllers() async {
     if (_userProfile == null) return;
     
-    _emailController.text = _userProfile!.email ?? '';
+    _emailController.text = _userProfile!.email;
     _firstNameController.text = _userProfile!.firstName ?? '';
     _lastNameController.text = _userProfile!.lastName ?? '';
     _phoneController.text = _userProfile!.phone ?? '';

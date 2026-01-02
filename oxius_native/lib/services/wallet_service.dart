@@ -70,13 +70,9 @@ class WalletService {
           final refreshedUser = AuthService.currentUser;
           
           if (refreshedUser != null) {
-            if (refreshedUser.balance != null) {
-              actualBalance = refreshedUser.balance!;
-            }
-            if (refreshedUser.pendingBalance != null) {
-              pendingBalance = refreshedUser.pendingBalance!;
-            }
-          }
+            actualBalance = refreshedUser.balance;
+                      pendingBalance = refreshedUser.pendingBalance;
+                    }
         }
         
         // Collect pending transactions for display (not for balance calculation)

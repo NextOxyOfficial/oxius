@@ -94,6 +94,16 @@ class BusinessNetworkMediaSerializer(serializers.ModelSerializer):
     media_likes = BusinessNetworkMediaLikeSerializer(many=True, read_only=True)
     media_comments = BusinessNetworkMediaCommentSerializer(many=True, read_only=True)
 
+    def to_representation(self, instance):
+        try:
+            if getattr(instance, "type", None) == "video" and not getattr(instance, "thumbnail", None):
+                ensure = getattr(instance, "ensure_thumbnail", None)
+                if callable(ensure):
+                    ensure()
+        except Exception:
+            pass
+        return super().to_representation(instance)
+
     class Meta:
         model = BusinessNetworkMedia
         fields = "__all__"

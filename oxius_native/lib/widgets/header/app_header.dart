@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'header_logo.dart';
 import 'header_actions.dart';
-import 'header_drawer.dart';
 import 'desktop_navigation.dart';
 
 /// Main App Header - Mobile Responsive

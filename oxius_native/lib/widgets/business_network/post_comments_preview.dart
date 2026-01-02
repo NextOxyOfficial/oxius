@@ -205,7 +205,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
             ),
             const SizedBox(height: 6),
             _CommentItem(
-              comment: highestGiftComment!,
+              comment: highestGiftComment,
               post: widget.post,
               onReply: widget.onReplySubmit != null ? () {
                 setState(() {
@@ -237,7 +237,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
             // Reply input for highest gift
             if (_replyingTo?.id == highestGiftComment.id)
               _ReplyInput(
-                replyingTo: highestGiftComment!,
+                replyingTo: highestGiftComment,
                 onCancel: () {
                   setState(() {
                     _replyingTo = null;
@@ -574,7 +574,7 @@ class _CommentItemState extends State<_CommentItem> {
     try {
       final users = await UserSearchService.searchUsers(query);
       return users.map((user) => {
-        'id': user.id ?? user.name,
+        'id': user.id.toString(),
         'display': (user.username != null && user.username!.trim().isNotEmpty) ? user.username!.trim() : user.name,
         'full_name': user.name,
         'photo': user.image ?? user.avatar,
@@ -983,7 +983,7 @@ class _CommentItemState extends State<_CommentItem> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => ProfileScreen(
-                                        userId: user.id ?? username,
+                                        userId: user.id.toString(),
                                       ),
                                     ),
                                   );

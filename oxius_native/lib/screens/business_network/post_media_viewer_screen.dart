@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../models/business_network_models.dart';
 import '../../services/auth_service.dart';
-import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
@@ -26,11 +25,13 @@ class PostMediaViewerScreen extends StatefulWidget {
 class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
   late final PageController _pageController;
   late int _currentIndex;
+  late BusinessNetworkPost _post;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex.clamp(0, widget.post.media.isEmpty ? 0 : widget.post.media.length - 1);
+    _post = widget.post;
+    _currentIndex = widget.initialIndex.clamp(0, _post.media.isEmpty ? 0 : _post.media.length - 1);
     _pageController = PageController(initialPage: _currentIndex);
   }
 
@@ -38,6 +39,33 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _openShorts(PostMedia media) {
+    // ignore: discarded_futures
+    _openShortsAsync(media);
+  }
+
+  Future<void> _openShortsAsync(PostMedia media) async {
+    final updates = await Navigator.push<Map<int, BusinessNetworkPost>?>
+    (
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShortsPlayerScreen(
+          initialPost: _post,
+          initialMedia: media,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+
+    if (!mounted) return;
+    final updated = updates?[_post.id];
+    if (updated != null) {
+      setState(() {
+        _post = updated;
+      });
+    }
   }
 
   void _handleNavTap(int index) {
@@ -81,19 +109,6 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
         Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
         break;
     }
-  }
-
-  void _openShorts(PostMedia media) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ShortsPlayerScreen(
-          initialPost: widget.post,
-          initialMedia: media,
-        ),
-        fullscreenDialog: true,
-      ),
-    );
   }
 
   Widget _buildVideoPreview(PostMedia media) {
@@ -163,74 +178,62 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: widget.post.media.isEmpty
-          ? Center(
-              child: Text(
-                'No media',
-                style: TextStyle(color: Colors.white.withOpacity(0.8)),
-              ),
-            )
-          : Stack(
-              children: [
-                PageView.builder(
-                  controller: _pageController,
-                  scrollDirection: Axis.vertical,
-                  itemCount: widget.post.media.length,
-                  onPageChanged: (i) {
-                    setState(() {
-                      _currentIndex = i;
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    final media = widget.post.media[index];
-                    if (media.isVideo) {
-                      return _buildVideoPreview(media);
-                    }
-                    return _buildImage(media);
-                  },
+    return PopScope<BusinessNetworkPost>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, BusinessNetworkPost? result) {
+        if (didPop) return;
+        Navigator.pop(context, _post);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: _post.media.isEmpty
+            ? Center(
+                child: Text(
+                  'No media',
+                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
                 ),
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  right: 12,
-                  child: SafeArea(
-                    bottom: false,
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.45),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withOpacity(0.16)),
+              )
+            : Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    scrollDirection: Axis.vertical,
+                    itemCount: _post.media.length,
+                    onPageChanged: (i) {
+                      setState(() {
+                        _currentIndex = i;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final media = _post.media[index];
+                      if (media.isVideo) {
+                        return _buildVideoPreview(media);
+                      }
+                      return _buildImage(media);
+                    },
+                  ),
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    right: 12,
+                    child: SafeArea(
+                      bottom: false,
+                      child: Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context, _post),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.45),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white.withOpacity(0.16)),
+                              ),
+                              child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
                             ),
-                            child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.45),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: Colors.white.withOpacity(0.16)),
-                          ),
-                          child: Text(
-                            '${_currentIndex + 1}/${widget.post.media.length}',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.92),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        if (widget.post.media[_currentIndex].isVideo)
+                          const SizedBox(width: 10),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
@@ -239,7 +242,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                               border: Border.all(color: Colors.white.withOpacity(0.16)),
                             ),
                             child: Text(
-                              'Tap play for Shorts',
+                              '${_currentIndex + 1}/${_post.media.length}',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.92),
                                 fontSize: 12,
@@ -247,20 +250,22 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                               ),
                             ),
                           ),
-                      ],
+                          const Spacer(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-      bottomNavigationBar: isMobile
-          ? BusinessNetworkBottomNavBar(
-              currentIndex: 0,
-              isLoggedIn: AuthService.isAuthenticated,
-              unreadCount: 0,
-              onTap: _handleNavTap,
-            )
-          : null,
+                ],
+              ),
+        bottomNavigationBar: isMobile
+            ? BusinessNetworkBottomNavBar(
+                currentIndex: 0,
+                isLoggedIn: AuthService.isAuthenticated,
+                unreadCount: 0,
+                onTap: _handleNavTap,
+              )
+            : null,
+      ),
     );
   }
 }

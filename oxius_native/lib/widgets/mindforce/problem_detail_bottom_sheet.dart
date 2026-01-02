@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
@@ -9,7 +8,6 @@ import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
-import '../../widgets/skeleton_loader.dart';
 import '../../widgets/linkify_text.dart';
 import '../../widgets/link_preview_card.dart';
 

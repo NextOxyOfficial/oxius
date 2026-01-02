@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import 'buy_slots_bottom_sheet.dart';
-import '../../../services/auth_service.dart';
 
 class StoreDetailsCard extends StatefulWidget {
   final StoreDetails storeDetails;

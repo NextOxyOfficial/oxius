@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
-import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
 import '../screens/gig_details_screen.dart';
 import 'home/account_balance_section.dart';

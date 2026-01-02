@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'dart:io';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
@@ -157,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         setState(() {
           _userData = userData;
           final posts = postsResult['posts'] as List<BusinessNetworkPost>;
-          _isFollowing = userData?['is_following'] ?? false;
+          _isFollowing = userData['is_following'] ?? false;
           
           // Update all posts to reflect current follow status
           _userPosts = posts.map((post) {
@@ -1907,13 +1905,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           InkWell(
             onTap: () {
               setState(() {
-                _isContactInfoExpanded = !(_isContactInfoExpanded ?? false);
+                _isContactInfoExpanded = !_isContactInfoExpanded;
               });
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                (_isContactInfoExpanded ?? false)
+                _isContactInfoExpanded
                     ? 'Show less' 
                     : 'See more about $userName...',
                 style: TextStyle(

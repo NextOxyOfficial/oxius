@@ -2,7 +2,6 @@
 // Add this to your lib/screens/home_screen.dart
 
 // 1. Import the widget at the top of your file:
-import '../widgets/classified_categories_widget.dart';
 
 // 2. Add one of these widgets to your home screen layout:
 

@@ -72,6 +72,97 @@ class BusinessNetworkMedia(models.Model):
             self.id = self.generate_id()
         super().save(*args, **kwargs)
 
+    def ensure_thumbnail(self):
+        if self.type != "video":
+            return
+        if not self.video:
+            return
+        if self.thumbnail:
+            return
+
+        try:
+            video_path = getattr(self.video, "path", None)
+            if not video_path:
+                return
+
+            import os
+            import tempfile
+            from django.core.files.base import ContentFile
+
+            try:
+                import imageio.v3 as iio
+                from PIL import Image
+
+                frame = iio.imread(video_path, index=0)
+                if frame is not None:
+                    img = Image.fromarray(frame)
+                    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                        tmp_path = tmp.name
+                    img.save(tmp_path, format="JPEG", quality=85)
+
+                    with open(tmp_path, "rb") as f:
+                        thumb_data = f.read()
+                    os.unlink(tmp_path)
+
+                    thumb_file = ContentFile(thumb_data)
+                    thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+                    self.thumbnail.save(thumb_file.name, thumb_file, save=True)
+                    return
+            except Exception as e:
+                print(f"ensure_thumbnail imageio failed: {e}")
+
+            try:
+                from moviepy.editor import VideoFileClip
+
+                clip = VideoFileClip(video_path)
+                frame_time = 0
+                try:
+                    if getattr(clip, "duration", 0):
+                        frame_time = min(0.5, clip.duration / 2)
+                except Exception:
+                    frame_time = 0
+
+                with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                    tmp_path = tmp.name
+
+                clip.save_frame(tmp_path, t=frame_time)
+                clip.close()
+
+                with open(tmp_path, "rb") as f:
+                    thumb_data = f.read()
+                os.unlink(tmp_path)
+
+                thumb_file = ContentFile(thumb_data)
+                thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+                self.thumbnail.save(thumb_file.name, thumb_file, save=True)
+                return
+            except Exception as e:
+                print(f"ensure_thumbnail moviepy failed: {e}")
+                
+
+            try:
+                import cv2
+
+                cap = cv2.VideoCapture(video_path)
+                ret, frame = cap.read()
+                cap.release()
+                if not ret:
+                    return
+
+                ok, buffer = cv2.imencode(".jpg", frame)
+                if not ok:
+                    return
+
+                thumb_file = ContentFile(buffer.tobytes())
+                thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+                self.thumbnail.save(thumb_file.name, thumb_file, save=True)
+            except Exception as e:
+                print(f"ensure_thumbnail opencv failed: {e}")
+                return
+        except Exception:
+            return
+
+
 class BusinessNetworkMediaLike(models.Model):
     id = models.CharField(max_length=20, unique=True, editable=False, primary_key=True)
     media = models.ForeignKey('BusinessNetworkMedia', on_delete=models.CASCADE, related_name='media_likes')

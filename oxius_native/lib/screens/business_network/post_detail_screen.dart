@@ -11,6 +11,7 @@ import '../../widgets/business_network/post_comment_input.dart';
 import '../../widgets/business_network/post_comments_preview.dart';
 import '../../utils/time_utils.dart';
 import '../../utils/url_launcher_utils.dart';
+import 'post_media_viewer_screen.dart';
 import 'profile_screen.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -174,126 +175,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void _handleMediaTap(int index) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade600,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              // Close button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Image ${index + 1} of ${_post.media.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              // Image
-              Expanded(
-                child: PageView.builder(
-                  controller: PageController(initialPage: index),
-                  itemCount: _post.media.length,
-                  itemBuilder: (context, pageIndex) => InteractiveViewer(
-                    minScale: 0.5,
-                    maxScale: 4.0,
-                    child: Center(
-                      child: Image.network(
-                        _post.media[pageIndex].image,
-                        fit: BoxFit.contain,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                              color: Colors.white,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.error_outline, size: 64, color: Colors.grey.shade600),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Failed to load image',
-                                  style: TextStyle(color: Colors.grey.shade600),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Image indicator dots
-              if (_post.media.length > 1)
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _post.media.length,
-                      (dotIndex) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: dotIndex == index
-                              ? Colors.white
-                              : Colors.grey.shade600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
+    // ignore: discarded_futures
+    _openMediaViewer(index);
+  }
+
+  Future<void> _openMediaViewer(int index) async {
+    final updatedPost = await Navigator.push<BusinessNetworkPost?>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PostMediaViewerScreen(
+          post: _post,
+          initialIndex: index,
         ),
+        fullscreenDialog: true,
       ),
     );
+
+    if (updatedPost != null && mounted) {
+      setState(() {
+        _post = updatedPost;
+      });
+    }
   }
 
   bool _isSelfPost() {
@@ -384,242 +286,254 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              child: Row(
-                children: [
-                  // Back Button
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
-                    color: Colors.black87,
-                    onPressed: () => Navigator.pop(context, _post),
-                    padding: const EdgeInsets.all(8),
-                  ),
-                  // Profile Section
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: _navigateToProfile,
-                      child: Row(
-                        children: [
-                          // Profile Photo
-                          Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 2,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: ClipOval(
-                            child: () {
-                              final rawAvatarUrl = _post.user.image ?? _post.user.avatar;
-                              final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
-                              
-                              if (avatarUrl.isNotEmpty) {
-                                return Image.network(
-                                  avatarUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: Colors.grey.shade100,
-                                      child: Icon(
-                                        Icons.person,
-                                        color: Colors.grey.shade400,
-                                        size: 20,
-                                      ),
-                                    );
-                                  },
-                                );
-                              }
-                              return Container(
-                                color: Colors.grey.shade100,
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.grey.shade400,
-                                  size: 20,
+    return PopScope<BusinessNetworkPost>(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, BusinessNetworkPost? result) {
+        if (didPop) return;
+        Navigator.pop(context, _post);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: Row(
+                  children: [
+                    // Back Button
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios, size: 20),
+                      color: Colors.black87,
+                      onPressed: () => Navigator.pop(context, _post),
+                      padding: const EdgeInsets.all(8),
+                    ),
+                    // Profile Section
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: _navigateToProfile,
+                        child: Row(
+                          children: [
+                            // Profile Photo
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.grey.shade200,
+                                  width: 2,
                                 ),
-                              );
-                            }(),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Name and Verified Badge
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Row(
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      _post.user.name,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: -0.2,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
                                   ),
-                                  if (_post.user.isVerified) ...[
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.verified,
-                                      size: 16,
-                                      color: Color(0xFF3B82F6),
-                                    ),
-                                  ],
-                                                  // Follow/Following Button (not for self posts) - inline with name
-                                  if (!_isSelfPost()) ...[
-                                    if (!_post.user.isFollowing) ...[
-                                      const SizedBox(width: 8),
-                                      InkWell(
-                                        onTap: _handleFollowToggle,
-                                        child: const Text(
-                                          '• Follow',
-                                          style: TextStyle(
-                                            color: Color(0xFF3B82F6),
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ] else ...[
-                                      const SizedBox(width: 8),
-                                      InkWell(
-                                        onTap: _handleFollowToggle,
-                                        child: Text(
-                                          '• Following',
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
                                 ],
                               ),
-                              Text(
-                                formatTimeAgo(_post.createdAt),
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w400,
-                                ),
+                              child: ClipOval(
+                                child: () {
+                                  final rawAvatarUrl = _post.user.image ?? _post.user.avatar;
+                                  final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
+                                  
+                                  if (avatarUrl.isNotEmpty) {
+                                    return Image.network(
+                                      avatarUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey.shade100,
+                                          child: Icon(
+                                            Icons.person,
+                                            color: Colors.grey.shade400,
+                                            size: 20,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  }
+                                  return Container(
+                                    color: Colors.grey.shade100,
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.grey.shade400,
+                                      size: 20,
+                                    ),
+                                  );
+                                }(),
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Name and Verified Badge
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          _post.user.name,
+                                          style: const TextStyle(
+                                            color: Colors.black87,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: -0.2,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (_post.user.isVerified) ...[
+                                        const SizedBox(width: 4),
+                                        const Icon(
+                                          Icons.verified,
+                                          size: 16,
+                                          color: Color(0xFF3B82F6),
+                                        ),
+                                      ],
+                                      // Follow/Following Button (not for self posts) - inline with name
+                                      if (!_isSelfPost()) ...[
+                                        if (!_post.user.isFollowing) ...[
+                                          const SizedBox(width: 8),
+                                          InkWell(
+                                            onTap: _handleFollowToggle,
+                                            child: const Text(
+                                              '• Follow',
+                                              style: TextStyle(
+                                                color: Color(0xFF3B82F6),
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ] else ...[
+                                          const SizedBox(width: 8),
+                                          InkWell(
+                                            onTap: _handleFollowToggle,
+                                            child: Text(
+                                              '• Following',
+                                              style: TextStyle(
+                                                color: Colors.grey.shade600,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ],
+                                  ),
+                                  Text(
+                                    formatTimeAgo(_post.createdAt),
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Scrollable Content
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: _loadFullPost,
-                child: SingleChildScrollView(
-                  controller: _scrollController,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 672),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Post Title
-                        if (_post.title.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                            child: Text(
-                              _post.title,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Scrollable Content
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _loadFullPost,
+                  color: const Color(0xFF3B82F6),
+                  child: _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : SingleChildScrollView(
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 672),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Post Title
+                                if (_post.title.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                    child: Text(
+                                      _post.title,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                
+                                // Post Content
+                                Padding(
+                                  padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
+                                  child: Html(
+                                    data: _post.content,
+                                    onLinkTap: (url, attributes, element) {
+                                      UrlLauncherUtils.launchExternalUrl(url);
+                                    },
+                                  ),
+                                ),
+                                
+                                const SizedBox(height: 16),
+                                
+                                // Post Media
+                                if (_post.media.isNotEmpty)
+                                  PostMediaGallery(
+                                    media: _post.media,
+                                    onMediaTap: _handleMediaTap,
+                                  ),
+                                
+                                // Post Actions
+                                PostActions(
+                                  post: _post,
+                                  onLike: _handleLikeToggle,
+                                  onComment: () {
+                                    // Scroll to comment input
+                                  },
+                                  onShare: _handleShare,
+                                  onSave: _handleSave,
+                                ),
+                          
+                                const Divider(height: 1),
+                                
+                                // All Comments Section with inline reply inputs
+                                _buildUnifiedCommentsSection(),
+                                
+                                const SizedBox(height: 80), // Space for bottom input
+                              ],
                             ),
                           ),
-                        
-                        // Post Content
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
-                          child: Html(
-                            data: _post.content,
-                            onLinkTap: (url, attributes, element) {
-                              UrlLauncherUtils.launchExternalUrl(url);
-                            },
-                          ),
                         ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Post Media
-                        if (_post.media.isNotEmpty)
-                          PostMediaGallery(
-                            media: _post.media,
-                            onMediaTap: _handleMediaTap,
-                          ),
-                        
-                        // Post Actions
-                        PostActions(
-                          post: _post,
-                          onLike: _handleLikeToggle,
-                          onComment: () {
-                            // Scroll to comment input
-                          },
-                          onShare: _handleShare,
-                          onSave: _handleSave,
-                        ),
-                  
-                        const Divider(height: 1),
-                        
-                        // All Comments Section with inline reply inputs
-                        _buildUnifiedCommentsSection(),
-                        
-                        const SizedBox(height: 80), // Space for bottom input
-                      ],
-                    ),
-                  ),
                 ),
               ),
-            ),
             // Sticky Bottom Input
             Container(
               decoration: BoxDecoration(
@@ -649,6 +563,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
             ),
           ],
+          ),
         ),
       ),
     );

@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
-import 'dart:io' if (dart.library.html) 'dart:html' as io;
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'active_chat_tracker.dart';
-import '../utils/network_error_handler.dart';
 
 class AdsyConnectService {
   static String get baseUrl => '${ApiService.baseUrl}/adsyconnect';

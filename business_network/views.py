@@ -76,6 +76,67 @@ def base64ToVideoFile(base64_data):
     return file
 
 
+def generate_video_thumbnail(video_path):
+    """Generate a thumbnail from the first frame of a video"""
+    import tempfile
+    import os
+    
+    try:
+        # Try using moviepy first
+        from moviepy.editor import VideoFileClip
+        
+        clip = VideoFileClip(video_path)
+        # Get frame at 0.5 seconds or first frame
+        frame_time = min(0.5, clip.duration / 2) if clip.duration > 0 else 0
+        
+        # Create temp file for thumbnail
+        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+            tmp_path = tmp.name
+        
+        clip.save_frame(tmp_path, t=frame_time)
+        clip.close()
+        
+        # Read the thumbnail file and create ContentFile
+        with open(tmp_path, 'rb') as f:
+            thumb_data = f.read()
+        
+        # Clean up temp file
+        os.unlink(tmp_path)
+        
+        thumb_file = ContentFile(thumb_data)
+        thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+        return thumb_file
+        
+    except ImportError:
+        # moviepy not installed, try opencv
+        try:
+            import cv2
+            
+            cap = cv2.VideoCapture(video_path)
+            # Read first frame
+            ret, frame = cap.read()
+            cap.release()
+            
+            if not ret:
+                return None
+            
+            # Encode frame as JPEG
+            _, buffer = cv2.imencode('.jpg', frame)
+            thumb_data = buffer.tobytes()
+            
+            thumb_file = ContentFile(thumb_data)
+            thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+            return thumb_file
+            
+        except ImportError:
+            # Neither moviepy nor opencv available
+            print("Warning: Neither moviepy nor opencv installed. Cannot generate video thumbnails.")
+            return None
+    except Exception as e:
+        print(f"Error generating video thumbnail: {e}")
+        return None
+
+
 # user search generics view
 
 
@@ -160,7 +221,12 @@ class UserSearchView(generics.ListAPIView):
 class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
     serializer_class = BusinessNetworkPostSerializer
     pagination_class = MediumDevicePagination  # Changed for better performance
-    # permission_classes = [IsAuthenticated]  # Allow public access to view posts
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return []
+        return super().get_permissions()
 
     def get_queryset(self):
         """
@@ -311,6 +377,16 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
                         post_media = BusinessNetworkMedia.objects.create(type="video", video=video_file)
                         post.media.add(post_media)
+                        
+                        # Generate thumbnail from video
+                        try:
+                            if post_media.video and post_media.video.path:
+                                thumb_file = generate_video_thumbnail(post_media.video.path)
+                                if thumb_file:
+                                    post_media.thumbnail = thumb_file
+                                    post_media.save()
+                        except Exception as thumb_err:
+                            print(f"Could not generate video thumbnail: {thumb_err}")
                     except Exception as e:
                         raise ValidationError({"videos": f"Error processing video: {str(e)}"})
 

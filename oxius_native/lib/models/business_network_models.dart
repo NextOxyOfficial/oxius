@@ -222,6 +222,7 @@ class PostMedia {
   final String? url;
   final String? video;
   final String? thumbnail;
+  final int views;
   final int post;
 
   PostMedia({
@@ -231,6 +232,7 @@ class PostMedia {
     this.url,
     this.video,
     this.thumbnail,
+    this.views = 0,
     required this.post,
   });
 
@@ -282,6 +284,16 @@ class PostMedia {
       return AppConfig.getAbsoluteUrl(img);
     }
 
+    // For videos, try using the image field even if it looks like video URL
+    // This helps when backend stores video URL in image field but has separate thumbnail
+    if (isVideo) {
+      final videoThumb = (video ?? '').toString();
+      // Check if there's a thumbnail parameter in video URL
+      if (videoThumb.contains('thumb') || videoThumb.contains('poster')) {
+        return AppConfig.getAbsoluteUrl(videoThumb);
+      }
+    }
+
     return '';
   }
 
@@ -291,6 +303,7 @@ class PostMedia {
     final rawVideo = (json['video'] ?? json['video_url'] ?? '').toString();
     final rawUrl = (json['url'] ?? '').toString();
     final rawThumb = (json['thumbnail'] ?? json['thumbnail_url'] ?? json['thumb'] ?? '').toString();
+    final rawViews = json['views'];
 
     return PostMedia(
       id: _parseId(json['id']),
@@ -299,6 +312,7 @@ class PostMedia {
       url: rawUrl.isNotEmpty ? rawUrl : null,
       video: rawVideo.isNotEmpty ? rawVideo : null,
       thumbnail: rawThumb.isNotEmpty ? rawThumb : null,
+      views: rawViews is int ? rawViews : int.tryParse((rawViews ?? '').toString()) ?? 0,
       post: _parseId(json['post']),
     );
   }
@@ -311,6 +325,7 @@ class PostMedia {
       'url': url,
       'video': video,
       'thumbnail': thumbnail,
+      'views': views,
       'post': post,
     };
   }

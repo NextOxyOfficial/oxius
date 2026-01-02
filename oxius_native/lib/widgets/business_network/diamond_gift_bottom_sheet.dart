@@ -17,14 +17,14 @@ class DiamondGiftBottomSheet extends StatefulWidget {
     this.onGiftSent,
   });
 
-  static void show(
+  static Future<void> show(
     BuildContext context, {
     required String postId,
     required String postAuthorId,
     required String postAuthorName,
     VoidCallback? onGiftSent,
   }) {
-    showModalBottomSheet(
+    return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

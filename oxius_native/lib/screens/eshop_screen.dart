@@ -3,7 +3,6 @@ import 'dart:async';
 import '../services/eshop_service.dart';
 import '../services/translation_service.dart';
 import '../utils/network_error_handler.dart';
-import '../services/user_state_service.dart';
 import '../widgets/mobile_banner.dart';
 import '../widgets/hot_deals_section.dart';
 import '../widgets/product_card.dart';
@@ -827,25 +826,17 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 ];
               },
               onSelected: (value) {
-                if (value == null) {
-                  setState(() {
-                    _selectedCategoryId = null;
-                    _selectedCategoryName = null;
-                    _selectedCategorySlug = null;
-                  });
-                } else {
-                  final category = _allCategories.firstWhere(
-                    (cat) => cat['id'].toString() == value,
-                    orElse: () => {},
-                  );
-                  setState(() {
-                    _selectedCategoryId = value;
-                    _selectedCategoryName = category['name']?.toString();
-                    _selectedCategorySlug = category['slug']?.toString();
-                  });
-                  print('🏷️ Category selected from dropdown: ${_selectedCategoryName} (slug: $_selectedCategorySlug)');
-                }
-                _loadInitialData();
+                final category = _allCategories.firstWhere(
+                  (cat) => cat['id'].toString() == value,
+                  orElse: () => {},
+                );
+                setState(() {
+                  _selectedCategoryId = value;
+                  _selectedCategoryName = category['name']?.toString();
+                  _selectedCategorySlug = category['slug']?.toString();
+                });
+                print('🏷️ Category selected from dropdown: ${_selectedCategoryName} (slug: $_selectedCategorySlug)');
+                              _loadInitialData();
               },
             ),
         ],

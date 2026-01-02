@@ -346,7 +346,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                             ],
                           ),
                           child: Text(
-                            badge!.toUpperCase(),
+                            badge.toUpperCase(),
                             style: GoogleFonts.roboto(
                               fontSize: 8,
                               fontWeight: FontWeight.w700,

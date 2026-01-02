@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../models/elearning_models.dart';
 import '../../services/elearning_service.dart';
 import '../../screens/elearning/video_player_screen.dart';

@@ -6,7 +6,6 @@ import '../../services/auth_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/home/account_balance_section.dart';
 import '../../widgets/home/mobile_recharge_section.dart';
-import '../microgig/pending_tasks_screen.dart';
 import 'deposit_tab.dart';
 import 'withdraw_tab.dart';
 import 'transfer_tab.dart';

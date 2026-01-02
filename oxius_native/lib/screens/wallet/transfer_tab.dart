@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
@@ -166,7 +165,7 @@ class _TransferTabState extends State<TransferTab> {
                   Text(
                     '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim().isNotEmpty
                         ? '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim()
-                        : user.username ?? '',
+                        : user.username,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -174,7 +173,7 @@ class _TransferTabState extends State<TransferTab> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    user.email ?? '',
+                    user.email,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[600],

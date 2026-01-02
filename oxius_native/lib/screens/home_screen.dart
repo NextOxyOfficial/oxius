@@ -8,8 +8,6 @@ import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
 import '../widgets/eshop_section.dart';
 import '../widgets/micro_gigs_section.dart';
-import '../widgets/home/account_balance_section.dart';
-import '../widgets/home/mobile_recharge_section.dart';
 import '../widgets/mobile_sticky_nav.dart';
 import '../widgets/ads_scroll_widget.dart';
 import '../services/scroll_direction_service.dart';
@@ -1919,7 +1917,7 @@ class _HomeScreenState extends State<HomeScreen> {
               context: context,
               builder: (context) => AdsyPayQrModal(
                 qrData: 'adsypay://pay/${user.id}',
-                title: '${user.firstName ?? user.username ?? "User"}\'s QR',
+                title: '${user.firstName ?? user.username}\'s QR',
               ),
             );
           },

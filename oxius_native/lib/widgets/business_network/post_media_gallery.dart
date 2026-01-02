@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 import '../../models/business_network_models.dart';
 
 class PostMediaGallery extends StatelessWidget {
@@ -26,6 +28,10 @@ class PostMediaGallery extends StatelessWidget {
 
   Widget _buildMediaLayout(BuildContext context) {
     if (media.length == 1) {
+      final item = media[0];
+      if (item.isVideo) {
+        return _buildSingleVideo(context, 0);
+      }
       return _buildSingleImage(context, 0);
     } else if (media.length == 2) {
       return _buildTwoImages(context);
@@ -52,13 +58,22 @@ class PostMediaGallery extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Container(
-            color: item.isVideo ? Colors.grey.shade900 : Colors.grey.shade200,
-            child: Center(
-              child: Icon(
-                item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
-                size: errorIconSize,
-                color: item.isVideo ? Colors.white.withOpacity(0.9) : Colors.grey,
-              ),
+            decoration: item.isVideo
+                ? BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.grey.shade800, Colors.grey.shade900],
+                    ),
+                  )
+                : null,
+            color: item.isVideo ? null : Colors.grey.shade200,
+          ),
+          Center(
+            child: Icon(
+              item.isVideo ? Icons.play_circle_fill_rounded : Icons.image,
+              size: errorIconSize,
+              color: item.isVideo ? Colors.white.withOpacity(0.9) : Colors.grey,
             ),
           ),
           if (item.isVideo)
@@ -72,22 +87,7 @@ class PostMediaGallery extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(color: Colors.white.withOpacity(0.15)),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
-                    SizedBox(width: 4),
-                    Text(
-                      'VIDEO',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                  ],
-                ),
+                child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
               ),
             ),
         ],
@@ -125,22 +125,7 @@ class PostMediaGallery extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(color: Colors.white.withOpacity(0.15)),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
-                  SizedBox(width: 4),
-                  Text(
-                    'VIDEO',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
+              child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
             ),
           ),
         if (item.isVideo)
@@ -177,6 +162,34 @@ class PostMediaGallery extends StatelessWidget {
           fit: BoxFit.contain,
           errorIconSize: 48,
         ),
+      ),
+    );
+  }
+
+  Widget _buildSingleVideo(BuildContext context, int index) {
+    final item = media[index];
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxHeight: 500,
+        minHeight: 200,
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _AutoPlaySingleVideoPreview(
+            media: item,
+          ),
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => onMediaTap(index),
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -447,6 +460,158 @@ class PostMediaGallery extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AutoPlaySingleVideoPreview extends StatefulWidget {
+  final PostMedia media;
+
+  const _AutoPlaySingleVideoPreview({required this.media});
+
+  @override
+  State<_AutoPlaySingleVideoPreview> createState() => _AutoPlaySingleVideoPreviewState();
+}
+
+class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview> {
+  VideoPlayerController? _controller;
+  bool _isInitialized = false;
+  bool _hasError = false;
+  bool _isVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AutoPlaySingleVideoPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.media.bestUrl != widget.media.bestUrl) {
+      _disposeController();
+      _isInitialized = false;
+      _hasError = false;
+      _init();
+    }
+  }
+
+  Future<void> _init() async {
+    try {
+      final url = widget.media.bestUrl;
+      if (url.isEmpty) {
+        if (!mounted) return;
+        setState(() => _hasError = true);
+        return;
+      }
+
+      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      _controller = controller;
+      await controller.initialize();
+      await controller.setLooping(true);
+      await controller.setVolume(0);
+
+      if (!mounted) return;
+      setState(() {
+        _isInitialized = true;
+        _hasError = false;
+      });
+
+      _updatePlayback();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _hasError = true);
+    }
+  }
+
+  void _updatePlayback() {
+    final c = _controller;
+    if (c == null || !_isInitialized) return;
+
+    if (_isVisible) {
+      if (!c.value.isPlaying) {
+        c.play();
+      }
+    } else {
+      if (c.value.isPlaying) {
+        c.pause();
+      }
+    }
+  }
+
+  void _disposeController() {
+    final c = _controller;
+    _controller = null;
+    c?.dispose();
+  }
+
+  @override
+  void dispose() {
+    _disposeController();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final thumbUrl = widget.media.bestThumbnailUrl;
+    final c = _controller;
+
+    return VisibilityDetector(
+      key: ValueKey('bn_autoplay_${widget.media.id}_${widget.media.bestUrl}'),
+      onVisibilityChanged: (info) {
+        final nextVisible = info.visibleFraction >= 0.65;
+        if (nextVisible == _isVisible) return;
+
+        setState(() {
+          _isVisible = nextVisible;
+        });
+        _updatePlayback();
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(color: Colors.black),
+          if (thumbUrl.isNotEmpty)
+            Image.network(
+              thumbUrl,
+              fit: BoxFit.contain,
+              width: double.infinity,
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            ),
+          if (_hasError)
+            Center(
+              child: Icon(
+                Icons.play_circle_fill_rounded,
+                size: 48,
+                color: Colors.white.withOpacity(0.9),
+              ),
+            )
+          else if (!_isInitialized || c == null)
+            const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            )
+          else
+            Center(
+              child: AspectRatio(
+                aspectRatio: c.value.aspectRatio,
+                child: VideoPlayer(c),
+              ),
+            ),
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.55),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Colors.white.withOpacity(0.15)),
+              ),
+              child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 12),
             ),
           ),
         ],

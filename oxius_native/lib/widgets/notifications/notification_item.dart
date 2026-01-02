@@ -44,8 +44,8 @@ class NotificationItem extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 52,
+                      height: 52,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                       ),
@@ -67,7 +67,7 @@ class NotificationItem extends StatelessWidget {
                   bottom: -1,
                   right: -1,
                   child: Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: _getTypeColor(),
                       shape: BoxShape.circle,
@@ -75,7 +75,7 @@ class NotificationItem extends StatelessWidget {
                     ),
                     child: Icon(
                       _getTypeIcon(),
-                      size: 9,
+                      size: 10,
                       color: Colors.white,
                     ),
                   ),

@@ -7,7 +7,6 @@ import '../services/auth_service.dart';
 import '../services/referral_service.dart';
 import '../models/referral_models.dart';
 import '../models/referral_reward_models.dart';
-import 'dart:math' as math;
 
 class ReferFriendScreen extends StatefulWidget {
   const ReferFriendScreen({super.key});

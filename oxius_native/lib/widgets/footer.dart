@@ -972,10 +972,8 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     }
     
     // Navigate using named route
-    if (route != null) {
-      Navigator.pushNamed(context, route);
+    Navigator.pushNamed(context, route);
     }
-  }
 
   void _showComingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(

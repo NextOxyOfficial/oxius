@@ -41,7 +41,6 @@ import 'screens/elearning_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
-import 'services/auth_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
 import 'models/cart_item.dart';

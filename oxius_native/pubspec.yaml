@@ -79,6 +79,8 @@ dependencies:
   # Video Playback
   video_player: ^2.8.2
   chewie: ^1.7.5
+
+  visibility_detector: ^0.4.0+2
   
   # App Badge (notification count on app icon)
   app_badge_plus: ^1.1.4
@@ -86,6 +88,8 @@ dependencies:
   firebase_messaging: ^16.0.4
   flutter_local_notifications: ^19.5.0
 
+  flutter_portal: any
+  flutter_cache_manager: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

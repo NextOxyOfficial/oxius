@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/notification_models.dart';
-import '../../models/business_network_models.dart';
 import '../../services/notification_service.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';

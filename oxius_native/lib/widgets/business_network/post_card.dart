@@ -9,13 +9,13 @@ import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/url_launcher_utils.dart';
-import '../chat_video_player.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
 import 'post_comments_preview.dart';
 import 'post_comment_input.dart';
 import '../../screens/business_network/post_media_viewer_screen.dart';
+import '../../screens/business_network/shorts_player_screen.dart';
 
 class PostCard extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -118,7 +118,39 @@ class _PostCardState extends State<PostCard> {
   }
 
   void _handleMediaTap(int index) {
-    Navigator.push(
+    // ignore: discarded_futures
+    _handleMediaTapAsync(index);
+  }
+
+  Future<void> _handleMediaTapAsync(int index) async {
+    if (_post.media.length == 1 && index == 0 && _post.media[0].isVideo) {
+      final updates = await Navigator.push<Map<int, BusinessNetworkPost>?>
+      (
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShortsPlayerScreen(
+            initialPost: _post,
+            initialMedia: _post.media[0],
+          ),
+          fullscreenDialog: true,
+        ),
+      );
+
+      if (!mounted) return;
+      final updated = updates?[_post.id];
+      if (updated != null) {
+        setState(() {
+          _post = updated;
+        });
+      }
+      return;
+    }
+
+    await _openMediaViewer(index);
+  }
+
+  Future<void> _openMediaViewer(int index) async {
+    final updatedPost = await Navigator.push<BusinessNetworkPost?>(
       context,
       MaterialPageRoute(
         builder: (context) => PostMediaViewerScreen(
@@ -128,6 +160,12 @@ class _PostCardState extends State<PostCard> {
         fullscreenDialog: true,
       ),
     );
+
+    if (updatedPost != null && mounted) {
+      setState(() {
+        _post = updatedPost;
+      });
+    }
   }
 
   Future<void> _handleViewAllComments() async {
