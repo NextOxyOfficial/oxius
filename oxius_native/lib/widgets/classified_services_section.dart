@@ -232,47 +232,42 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         horizontal: isMobile ? 8 : 16,
         vertical: 8,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          OutlinedButton.icon(
-            onPressed: () {
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
-            },
-            icon: Icon(
-              _isExpanded 
-                  ? Icons.keyboard_arrow_up_rounded
-                  : Icons.keyboard_arrow_down_rounded,
-              size: 18,
-              color: const Color(0xFF06B6D4),
-            ),
-            label: Text(
-              _isExpanded
-                  ? _translationService.t('see_less', fallback: 'See Less')
-                  : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
-              style: GoogleFonts.roboto(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF06B6D4),
-              side: BorderSide(
-                color: const Color(0xFF06B6D4).withOpacity(0.3),
-                width: 1.5,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _isExpanded = !_isExpanded;
+            });
+          },
+          borderRadius: BorderRadius.circular(4),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _isExpanded 
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 16,
+                  color: const Color(0xFF06B6D4),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _isExpanded
+                      ? _translationService.t('see_less', fallback: 'See Less')
+                      : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
+                  style: GoogleFonts.roboto(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF06B6D4),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
