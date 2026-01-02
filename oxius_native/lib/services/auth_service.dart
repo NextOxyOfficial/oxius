@@ -9,6 +9,7 @@ class User {
   final String username;
   final String? firstName;
   final String? lastName;
+  final String? profession;
   final String userType;
   final bool isSuperuser;
   final bool isActive;
@@ -35,6 +36,7 @@ class User {
     required this.username,
     this.firstName,
     this.lastName,
+    this.profession,
     required this.userType,
     required this.isSuperuser,
     required this.isActive,
@@ -79,6 +81,7 @@ class User {
       username: json['username'] ?? '',
       firstName: json['first_name'],
       lastName: json['last_name'],
+      profession: json['profession'],
       userType: json['user_type'] ?? 'regular',
       isSuperuser: json['is_superuser'] ?? false,
       isActive: json['is_active'] ?? true,
@@ -116,6 +119,7 @@ class User {
       'username': username,
       'first_name': firstName,
       'last_name': lastName,
+      'profession': profession,
       'user_type': userType,
       'is_superuser': isSuperuser,
       'is_active': isActive,
@@ -132,6 +136,9 @@ class User {
       'phone': phone,
       'city': city,
       'zip': zip,
+      'store_username': storeUsername,
+      'store_name': storeName,
+      'product_limit': productLimit,
     };
   }
 

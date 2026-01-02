@@ -935,6 +935,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           ],
         ],
       ),
+      ),
     );
   }
 

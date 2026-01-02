@@ -277,8 +277,6 @@ class _ShortsViewerState extends State<ShortsViewer> {
   @override
   void didUpdateWidget(covariant ShortsViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.posts == widget.posts) return;
-
     final nextItems = widget.posts
         .expand((p) => p.media.where((m) => m.isVideo).map((m) => _ShortItem(post: p, media: m)))
         .toList();

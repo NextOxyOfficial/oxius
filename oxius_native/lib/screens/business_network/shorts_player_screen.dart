@@ -23,7 +23,6 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   final Map<int, BusinessNetworkPost> _updatedPostsById = {};
   bool _isLoadingMore = false;
   bool _hasMore = true;
-  int _currentPage = 1;
   String? _lastCreatedAt;
 
   @override
@@ -43,7 +42,6 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
       _mergePosts(newPosts);
       _hasMore = result['hasMore'] as bool? ?? true;
       if (newPosts.isNotEmpty) {
-        _currentPage = 1;
         _lastCreatedAt = newPosts.last.createdAt;
       }
     });
@@ -74,9 +72,8 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
       _isLoadingMore = true;
     });
 
-    _currentPage++;
     final result = await BusinessNetworkService.getPosts(
-      page: _currentPage,
+      page: 1,
       pageSize: 5,
       olderThan: _lastCreatedAt,
     );
@@ -106,11 +103,12 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
       child: Scaffold(
         backgroundColor: Colors.black,
         body: ShortsViewer(
-          posts: _posts,
+          posts: List<BusinessNetworkPost>.from(_posts),
           initialVideoUrl: widget.initialMedia.bestUrl,
           onRequestMore: _loadMore,
           onLike: _recordPostUpdate,
           onComment: _recordPostUpdate,
+          allLoaded: !_hasMore,
           onClose: () => Navigator.pop(context, _updatedPostsById.isEmpty ? null : _updatedPostsById),
         ),
       ),

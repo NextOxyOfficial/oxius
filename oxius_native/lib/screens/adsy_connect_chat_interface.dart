@@ -466,6 +466,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
         'thumbnailUrl': msg['thumbnail_url']?.toString(),
         'fileName': msg['file_name']?.toString(),
+        'voice_duration': (msg['voice_duration'] as int?) ?? (msg['voiceDuration'] as int?) ?? 0,
         'isSeen': isSeen, // Changed from isRead to isSeen for clarity
         'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
       };
@@ -640,6 +641,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
       'thumbnailUrl': msg['thumbnail_url']?.toString(),
       'fileName': msg['file_name']?.toString(),
+      'voice_duration': (msg['voice_duration'] as int?) ?? (msg['voiceDuration'] as int?) ?? 0,
       'isSeen': isSeen, // Changed from isRead to isSeen for clarity
       'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
       'showTimestamp': true, // Always show timestamp for sent messages
@@ -730,7 +732,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           
           if (mounted) {
             setState(() {
-              _upsertMessage(_parseSingleMessage(sentMessage));
+              final parsed = _parseSingleMessage(sentMessage);
+              parsed['voice_duration'] = (sentMessage['voice_duration'] as int?) ??
+                  (sentMessage['voiceDuration'] as int?) ??
+                  _recordDuration;
+              parsed['voiceDuration'] = parsed['voice_duration'];
+              _upsertMessage(parsed);
               _isSendingMessage = false;
               _recordDuration = 0;
             });
@@ -2266,13 +2273,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                                 (message['message'] ?? '').toString(),
                                                 style: TextStyle(
                                                   fontSize: 15,
-                                                  fontWeight: FontWeight.w400,
                                                   color: isMe ? Colors.white : const Color(0xFF1F2937),
-                                                  letterSpacing: -0.1,
+                                                  height: 1.3,
                                                 ),
                                                 linkStyle: TextStyle(
                                                   color: isMe ? Colors.white : const Color(0xFF2563EB),
-                                                  decoration: TextDecoration.underline,
+                                                  decoration: TextDecoration.none,
                                                 ),
                                               ),
                                               FirstLinkPreview(
@@ -2939,6 +2945,28 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                       );
                     },
                   ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Spacer(),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedImages.clear();
+                          _compressedImages.clear();
+                        });
+                      },
+                      child: Text(
+                        'Cancel preview',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
