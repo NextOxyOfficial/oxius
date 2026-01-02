@@ -110,6 +110,9 @@ class BusinessNetworkService {
       if (hasVideoFiles) {
         final headers = await ApiService.getHeaders();
         headers.remove('Content-Type');
+        headers.remove('content-type');
+        headers.remove('Content-type');
+        headers.removeWhere((k, _) => k.toLowerCase() == 'content-type');
 
         final formData = FormData();
         if (title != null && title.isNotEmpty) {
@@ -143,6 +146,11 @@ class BusinessNetworkService {
 
         for (final path in videoPaths) {
           if (path.trim().isEmpty) continue;
+          final file = File(path);
+          if (!file.existsSync()) {
+            throw Exception('Selected video file not found at path: $path');
+          }
+
           final p = path.replaceAll('\\', '/');
           final filename = p.split('/').isNotEmpty ? p.split('/').last : 'video.mp4';
           formData.files.add(
@@ -153,12 +161,17 @@ class BusinessNetworkService {
           );
         }
 
-        final dio = Dio();
+        final dio = Dio(
+          BaseOptions(
+            responseType: ResponseType.json,
+          ),
+        );
         final response = await dio.post(
           '$_baseUrl/posts/',
           data: formData,
           options: Options(
             headers: headers,
+            contentType: null,
             validateStatus: (status) => true,
           ),
         );

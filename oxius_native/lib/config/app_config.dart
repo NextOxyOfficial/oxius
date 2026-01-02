@@ -44,9 +44,22 @@ class AppConfig {
   // ==================== HELPER METHODS ====================
   /// Helper method to convert relative URLs to absolute
   static String getAbsoluteUrl(String? url) {
-    if (url == null || url.isEmpty) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    final path = url.startsWith('/') ? url : '/$url';
+    final value = (url ?? '').trim();
+    if (value.isEmpty) return '';
+    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+
+    // Protocol-relative URL, e.g. //example.com/path
+    if (value.startsWith('//')) return 'https:$value';
+
+    // Host + path without scheme, e.g. adsyclub.com/media/...
+    if (!value.startsWith('/') && value.contains('/')) {
+      final firstSegment = value.split('/').first;
+      if (firstSegment.contains('.')) {
+        return 'https://$value';
+      }
+    }
+
+    final path = value.startsWith('/') ? value : '/$value';
     return '$mediaBaseUrl$path';
   }
   

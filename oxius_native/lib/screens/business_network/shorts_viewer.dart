@@ -515,6 +515,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
   Future<void> _init() async {
     try {
       final url = widget.media.bestUrl;
+      print('ShortsViewer: initializing video url=$url mediaId=${widget.media.id}');
       if (url.isEmpty) {
         setState(() {
           _hasError = true;
@@ -522,7 +523,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
         return;
       }
 
-      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      final controller = VideoPlayerController.networkUrl(
+        Uri.parse(url),
+        httpHeaders: const {
+          'User-Agent': 'OxiUsFlutter/1.0',
+        },
+      );
       _controller = controller;
       await controller.initialize();
       await controller.setLooping(true);
@@ -537,7 +543,9 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
         controller.play();
         _maybeScheduleViewCount();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('ShortsViewer: failed to initialize video url=${widget.media.bestUrl} mediaId=${widget.media.id} error=$e');
+      print('ShortsViewer: stackTrace=$stackTrace');
       if (!mounted) return;
       setState(() {
         _hasError = true;
