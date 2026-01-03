@@ -2,7 +2,7 @@ import base64
 
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Case, Count, IntegerField, Q, Subquery, Value, When
+from django.db.models import Case, Count, F, IntegerField, Q, Subquery, Value, When
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -553,6 +553,20 @@ class BusinessNetworkMediaDestroyView(generics.DestroyAPIView):
                 {"detail": "You do not have permission to delete this media."},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+
+@api_view(["POST"])
+def increment_media_views(request, media_id):
+    """Increment views count for a media item"""
+    try:
+        updated = BusinessNetworkMedia.objects.filter(id=media_id).update(views=F("views") + 1)
+        if not updated:
+            return Response({"error": "Media not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        media = BusinessNetworkMedia.objects.get(id=media_id)
+        return Response({"message": "Views incremented", "views": media.views}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Like Views

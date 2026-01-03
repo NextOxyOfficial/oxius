@@ -45,6 +45,7 @@ class BusinessNetworkMedia(models.Model):
     image = models.ImageField(upload_to='business_network/images/', blank=True, null=True)
     video = models.FileField(upload_to='business_network/videos/', blank=True, null=True)
     thumbnail = models.ImageField(upload_to='business_network/thumbnails/', blank=True, null=True)
+    views = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

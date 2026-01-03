@@ -107,7 +107,7 @@ class BusinessNetworkMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessNetworkMedia
         fields = "__all__"
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "created_at", "views"]
 
 
 class BusinessNetworkPostLikeSerializer(serializers.ModelSerializer):

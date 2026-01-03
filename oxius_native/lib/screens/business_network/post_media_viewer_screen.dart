@@ -27,6 +27,27 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
   late int _currentIndex;
   late BusinessNetworkPost _post;
 
+  Widget _buildVideoThumbFallback() {
+    return Container(
+      color: Colors.grey.shade300,
+      child: Center(
+        child: Container(
+          width: 54,
+          height: 54,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.35),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.play_arrow_rounded,
+            color: Colors.white,
+            size: 34,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -122,11 +143,11 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
             thumbUrl,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
-              return Container(color: Colors.black);
+              return _buildVideoThumbFallback();
             },
           )
         else
-          Container(color: Colors.black),
+          _buildVideoThumbFallback(),
         Center(
           child: GestureDetector(
             onTap: () => _openShorts(media),

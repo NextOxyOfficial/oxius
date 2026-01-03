@@ -25,6 +25,10 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   bool _hasMore = true;
   String? _lastCreatedAt;
 
+  bool _hasVideo(BusinessNetworkPost post) {
+    return post.media.any((m) => m.isVideo);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +37,7 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   }
 
   Future<void> _loadInitial() async {
-    final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 5);
+    final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 10);
     final newPosts = (result['posts'] as List<BusinessNetworkPost>?) ?? <BusinessNetworkPost>[];
 
     if (!mounted) return;
@@ -50,6 +54,7 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   void _mergePosts(List<BusinessNetworkPost> incoming) {
     final existingIds = _posts.map((e) => e.id).toSet();
     for (final p in incoming) {
+      if (!_hasVideo(p)) continue;
       if (!existingIds.contains(p.id)) {
         _posts.add(p);
       }
@@ -74,7 +79,7 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
 
     final result = await BusinessNetworkService.getPosts(
       page: 1,
-      pageSize: 5,
+      pageSize: 10,
       olderThan: _lastCreatedAt,
     );
 

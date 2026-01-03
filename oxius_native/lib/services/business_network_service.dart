@@ -832,10 +832,18 @@ class BusinessNetworkService {
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final List<dynamic> results = data['results'] ?? data;
-        
+        final List<dynamic> results = data is List ? data : (data['results'] ?? []);
+
         return results
-            .map((json) => BusinessNetworkPost.fromJson(json))
+            .whereType<Map>()
+            .map((e) {
+              final item = Map<String, dynamic>.from(e);
+              final postDetails = item['post_details'];
+              if (postDetails is Map) {
+                return BusinessNetworkPost.fromJson(Map<String, dynamic>.from(postDetails));
+              }
+              return BusinessNetworkPost.fromJson(item);
+            })
             .toList();
       }
       

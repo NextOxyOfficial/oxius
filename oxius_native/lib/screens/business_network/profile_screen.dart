@@ -72,6 +72,27 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     
     return '$first$masked$last';
   }
+
+  bool _isOwnProfile() {
+    final currentUser = AuthService.currentUser;
+    if (currentUser == null) return false;
+
+    if (widget.userId == currentUser.id) return true;
+
+    final userData = _userData;
+    if (userData == null) return false;
+
+    final profileId = (userData['id'] ?? '').toString();
+    if (profileId.isNotEmpty && profileId == currentUser.id) return true;
+
+    final profileUuid = (userData['uuid'] ?? userData['user_id'] ?? '').toString();
+    if (profileUuid.isNotEmpty && profileUuid == currentUser.id) return true;
+
+    final profileUsername = (userData['username'] ?? '').toString();
+    if (profileUsername.isNotEmpty && profileUsername == currentUser.username) return true;
+
+    return false;
+  }
   
   /// Mask email based on privacy setting
   String _maskEmail(String email, bool? isPublic) {
@@ -207,11 +228,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Future<void> _loadSavedPosts() async {
-    final currentUser = AuthService.currentUser;
-    if (currentUser == null || widget.userId != currentUser.id) {
-      // Only load saved posts for own profile
-      return;
-    }
+    if (!_isOwnProfile()) return;
 
     setState(() => _isLoadingSaved = true);
 
@@ -1816,7 +1833,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Widget _buildSavedTab() {
     final currentUser = AuthService.currentUser;
-    final isOwnProfile = currentUser?.id == widget.userId;
+    final isOwnProfile = currentUser != null && _isOwnProfile();
     
     // Only show saved posts for own profile
     if (!isOwnProfile) {

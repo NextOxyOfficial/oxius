@@ -560,6 +560,19 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
     final thumbUrl = widget.media.bestThumbnailUrl;
     final c = _controller;
 
+    Widget thumbFallback() {
+      return Container(
+        color: Colors.grey.shade300,
+        child: Center(
+          child: Icon(
+            Icons.play_circle_fill_rounded,
+            size: 48,
+            color: Colors.black.withOpacity(0.35),
+          ),
+        ),
+      );
+    }
+
     return VisibilityDetector(
       key: ValueKey('bn_autoplay_${widget.media.id}_${widget.media.bestUrl}'),
       onVisibilityChanged: (info) {
@@ -574,7 +587,7 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Container(color: Colors.black),
+          thumbFallback(),
           if (thumbUrl.isNotEmpty)
             Image.network(
               thumbUrl,

@@ -11,6 +11,7 @@ import '../../utils/network_error_handler.dart';
 import '../../widgets/business_network/post_comment_input.dart';
 import '../../widgets/business_network/post_comments_preview.dart';
 import '../../widgets/business_network/diamond_gift_bottom_sheet.dart';
+import 'profile_screen.dart';
 
 class ShortsViewer extends StatefulWidget {
   final List<BusinessNetworkPost> posts;
@@ -837,6 +838,27 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
     final post = _post;
     final thumbUrl = widget.media.bestThumbnailUrl;
 
+    Widget thumbFallback() {
+      return Container(
+        color: Colors.grey.shade300,
+        child: Center(
+          child: Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.play_arrow_rounded,
+              color: Colors.white,
+              size: 34,
+            ),
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: _togglePlay,
       behavior: HitTestBehavior.translucent,
@@ -893,11 +915,11 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
                   thumbUrl,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return Container(color: Colors.black);
+                    return thumbFallback();
                   },
                 )
               else
-                Container(color: Colors.black),
+                thumbFallback(),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
@@ -1047,12 +1069,22 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
           left: 12,
           right: 80,
           bottom: 34,
-          child: IgnorePointer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-              RichText(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(
+                      userId: post.user.uuid ?? post.user.id.toString(),
+                    ),
+                  ),
+                );
+              },
+              child: RichText(
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 text: TextSpan(
@@ -1101,24 +1133,38 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
                   ],
                 ),
               ),
-              if (post.title.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(
-                  post.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.95),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    height: 1.2,
-                  ),
-                ),
-                ],
-              ],
             ),
-          ),
+            if (post.title.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                post.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.95),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                ),
+              ),
+            ],
+            if (post.content.trim().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                post.content,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ],
         ),
+      ),
         ],
       ),
     );

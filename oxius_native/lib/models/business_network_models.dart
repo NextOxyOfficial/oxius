@@ -55,7 +55,7 @@ class BusinessNetworkPost {
       final videosList = json['videos'];
       if (videosList is List) mergedMediaList.addAll(videosList);
 
-      final mediaItems = mergedMediaList.map((e) {
+      final parsedMediaItems = mergedMediaList.map((e) {
         try {
           if (e is Map) {
             return PostMedia.fromJson(Map<String, dynamic>.from(e));
@@ -96,6 +96,30 @@ class BusinessNetworkPost {
           return null;
         }
       }).whereType<PostMedia>().toList();
+
+      final Map<String, PostMedia> uniqueMedia = {};
+      for (final m in parsedMediaItems) {
+        final key = (m.video ?? m.url ?? m.thumbnail ?? m.image).toString().trim();
+        if (key.isEmpty) continue;
+
+        final existing = uniqueMedia[key];
+        if (existing == null) {
+          uniqueMedia[key] = m;
+          continue;
+        }
+
+        final preferCandidate =
+            (existing.id == 0 && m.id != 0) ||
+            ((existing.thumbnail ?? '').isEmpty && (m.thumbnail ?? '').isNotEmpty) ||
+            (existing.type == null && m.type != null) ||
+            (existing.video == null && m.video != null);
+
+        if (preferCandidate) {
+          uniqueMedia[key] = m;
+        }
+      }
+
+      final mediaItems = uniqueMedia.values.toList();
       
       // Handle post tags - ensure it's a list
       final tagsList = json['post_tags'] ?? [];
@@ -266,9 +290,16 @@ class PostMedia {
     final thumb = (thumbnail ?? '').toString();
     if (thumb.isNotEmpty) return AppConfig.getAbsoluteUrl(thumb);
 
-    if (!isVideo) {
-      final u = (url ?? '').toString();
-      if (u.isNotEmpty) return AppConfig.getAbsoluteUrl(u);
+    final u = (url ?? '').toString();
+    if (u.isNotEmpty) {
+      final lowerU = u.toLowerCase();
+      final looksLikeVideo = lowerU.contains('.mp4') ||
+          lowerU.contains('.mov') ||
+          lowerU.contains('.m4v') ||
+          lowerU.contains('.webm') ||
+          lowerU.contains('.mkv') ||
+          lowerU.contains('.avi');
+      if (!looksLikeVideo) return AppConfig.getAbsoluteUrl(u);
     }
 
     final img = image.toString();
@@ -302,7 +333,18 @@ class PostMedia {
     final rawImage = (json['image'] ?? '').toString();
     final rawVideo = (json['video'] ?? json['video_url'] ?? '').toString();
     final rawUrl = (json['url'] ?? '').toString();
-    final rawThumb = (json['thumbnail'] ?? json['thumbnail_url'] ?? json['thumb'] ?? '').toString();
+    final rawThumb = (json['thumbnail'] ??
+            json['thumbnail_url'] ??
+            json['thumb'] ??
+            json['poster'] ??
+            json['poster_url'] ??
+            json['preview'] ??
+            json['preview_url'] ??
+            json['preview_image'] ??
+            json['video_thumbnail'] ??
+            json['video_poster'] ??
+            '')
+        .toString();
     final rawViews = json['views'];
 
     return PostMedia(

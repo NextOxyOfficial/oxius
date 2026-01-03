@@ -125,6 +125,11 @@ urlpatterns = [
         SimpleUserSuggestionsView.as_view(),
         name="simple-user-suggestions",
     ),
+    path(
+        "media/<str:media_id>/increment-views/",
+        increment_media_views,
+        name="media-increment-views",
+    ),
     # media like endpoints
     path(
         "media/<str:media_id>/like/",
