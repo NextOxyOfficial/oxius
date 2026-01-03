@@ -20,6 +20,7 @@ import '../adsy_connect_chat_interface.dart';
 import '../workspace/gig_detail_screen.dart';
 import 'profile_options.dart';
 import 'post_media_viewer_screen.dart';
+import 'shorts_player_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -1486,17 +1487,32 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           return InkWell(
             onTap: () {
               final parentPost = _findParentPostForMedia(media);
-              final initialIndex = _findMediaIndexInPost(parentPost, media);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PostMediaViewerScreen(
-                    post: parentPost,
-                    initialIndex: initialIndex,
+              if (media.isVideo) {
+                // Open video in Shorts player
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ShortsPlayerScreen(
+                      initialPost: parentPost,
+                      initialMedia: media,
+                    ),
+                    fullscreenDialog: true,
                   ),
-                  fullscreenDialog: true,
-                ),
-              );
+                );
+              } else {
+                // Open image in media viewer
+                final initialIndex = _findMediaIndexInPost(parentPost, media);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PostMediaViewerScreen(
+                      post: parentPost,
+                      initialIndex: initialIndex,
+                    ),
+                    fullscreenDialog: true,
+                  ),
+                );
+              }
             },
             child: Container(
               decoration: BoxDecoration(
@@ -1513,23 +1529,28 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         displayUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
+                          // Grey placeholder for failed thumbnails
                           return Container(
-                            color: Colors.grey.shade300,
-                            child: Icon(
-                              Icons.broken_image,
-                              color: Colors.grey.shade500,
-                              size: 32,
+                            color: Colors.grey.shade400,
+                            child: Center(
+                              child: Icon(
+                                media.isVideo ? Icons.play_circle_outline : Icons.image_outlined,
+                                color: Colors.white.withOpacity(0.7),
+                                size: 40,
+                              ),
                             ),
                           );
                         },
                       )
                     else
                       Container(
-                        color: Colors.grey.shade300,
-                        child: Icon(
-                          Icons.broken_image,
-                          color: Colors.grey.shade500,
-                          size: 32,
+                        color: Colors.grey.shade400,
+                        child: Center(
+                          child: Icon(
+                            media.isVideo ? Icons.play_circle_outline : Icons.image_outlined,
+                            color: Colors.white.withOpacity(0.7),
+                            size: 40,
+                          ),
                         ),
                       ),
                     if (media.isVideo)

@@ -236,6 +236,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
   int _currentIndex = 0;
   bool _isRequestingMore = false;
   final Map<int, int> _mediaViewsOverrides = {};
+  final Map<int, VideoPlayerController> _preloadedControllers = {};
 
   @override
   void initState() {
@@ -306,7 +307,71 @@ class _ShortsViewerState extends State<ShortsViewer> {
   @override
   void dispose() {
     _pageController.dispose();
+    _disposeAllPreloadedControllers();
     super.dispose();
+  }
+
+  void _disposeAllPreloadedControllers() {
+    for (final controller in _preloadedControllers.values) {
+      controller.dispose();
+    }
+    _preloadedControllers.clear();
+  }
+
+  Future<void> _preloadVideos(int currentIndex) async {
+    // Preload next 2 videos
+    for (int i = 1; i <= 2; i++) {
+      final nextIndex = currentIndex + i;
+      if (nextIndex >= _items.length) break;
+      
+      final item = _items[nextIndex];
+      final mediaId = item.media.id;
+      
+      // Skip if already preloaded
+      if (_preloadedControllers.containsKey(mediaId)) continue;
+      
+      final url = item.media.bestUrl;
+      if (url.isEmpty) continue;
+      
+      try {
+        final controller = VideoPlayerController.networkUrl(
+          Uri.parse(url),
+          httpHeaders: const {
+            'User-Agent': 'OxiUsFlutter/1.0',
+          },
+          videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+        );
+        
+        await controller.initialize();
+        await controller.setLooping(true);
+        await controller.setVolume(0.0); // Muted until active
+        
+        if (!mounted) {
+          controller.dispose();
+          return;
+        }
+        
+        _preloadedControllers[mediaId] = controller;
+        print('Preloaded video at index $nextIndex (mediaId: $mediaId)');
+      } catch (e) {
+        print('Failed to preload video at index $nextIndex: $e');
+      }
+    }
+    
+    // Clean up old preloaded videos (keep only next 2)
+    final validIds = <int>{};
+    for (int i = 1; i <= 2; i++) {
+      final nextIndex = currentIndex + i;
+      if (nextIndex < _items.length) {
+        validIds.add(_items[nextIndex].media.id);
+      }
+    }
+    
+    final toRemove = _preloadedControllers.keys.where((id) => !validIds.contains(id)).toList();
+    for (final id in toRemove) {
+      _preloadedControllers[id]?.dispose();
+      _preloadedControllers.remove(id);
+    }
   }
 
   @override
@@ -340,6 +405,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
                 _currentIndex = i;
               });
               _maybeRequestMore(i);
+              _preloadVideos(i);
             },
             itemBuilder: (context, index) {
               // Show "All videos loaded" page at the end
@@ -379,6 +445,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
                 post: item.post,
                 media: item.media,
                 isActive: index == _currentIndex,
+                preloadedController: _preloadedControllers[item.media.id],
                 onLike: widget.onLike,
                 onComment: widget.onComment,
                 onShare: widget.onShare,
@@ -387,6 +454,10 @@ class _ShortsViewerState extends State<ShortsViewer> {
                   setState(() {
                     _mediaViewsOverrides[item.media.id] = nextViews;
                   });
+                },
+                onControllerCreated: (controller) {
+                  // Remove from preloaded map once it's being used
+                  _preloadedControllers.remove(item.media.id);
                 },
               );
             },
@@ -448,20 +519,24 @@ class _ShortVideoPage extends StatefulWidget {
   final BusinessNetworkPost post;
   final PostMedia media;
   final bool isActive;
+  final VideoPlayerController? preloadedController;
   final void Function(BusinessNetworkPost post)? onLike;
   final void Function(BusinessNetworkPost post)? onComment;
   final void Function(BusinessNetworkPost post)? onShare;
   final void Function(int views)? onViewsChanged;
+  final void Function(VideoPlayerController controller)? onControllerCreated;
 
   const _ShortVideoPage({
     super.key,
     required this.post,
     required this.media,
     required this.isActive,
+    this.preloadedController,
     this.onLike,
     this.onComment,
     this.onShare,
     this.onViewsChanged,
+    this.onControllerCreated,
   });
 
   @override
@@ -537,6 +612,29 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
 
       _errorUrl = url;
 
+      // Use preloaded controller if available
+      if (widget.preloadedController != null) {
+        print('ShortsViewer: using preloaded controller for mediaId=${widget.media.id}');
+        _controller = widget.preloadedController;
+        widget.onControllerCreated?.call(widget.preloadedController!);
+        
+        // Controller is already initialized, just set volume and play
+        await _controller!.setVolume(1.0);
+        
+        if (!mounted) return;
+        setState(() {
+          _isInitialized = true;
+          _hasError = false;
+        });
+
+        if (widget.isActive) {
+          _controller!.play();
+          _maybeScheduleViewCount();
+        }
+        return;
+      }
+
+      // No preloaded controller, initialize normally
       final controller = VideoPlayerController.networkUrl(
         Uri.parse(url),
         httpHeaders: const {
@@ -545,6 +643,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
         videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
       );
       _controller = controller;
+      widget.onControllerCreated?.call(controller);
+      
       await controller.initialize();
       await controller.setLooping(true);
       await controller.setVolume(1.0);
@@ -574,7 +674,11 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
   void _disposeController() {
     final c = _controller;
     _controller = null;
-    c?.dispose();
+    // Only dispose if it wasn't a preloaded controller
+    // (preloaded controllers are managed by parent)
+    if (c != null && c != widget.preloadedController) {
+      c.dispose();
+    }
   }
 
   @override
