@@ -52,8 +52,15 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
     setState(() => _isLoading = true);
     try {
       final regions = await _geoService.fetchRegions();
+      // Remove duplicates by nameEng
+      final uniqueRegions = <String, Region>{};
+      for (final region in regions) {
+        if (!uniqueRegions.containsKey(region.nameEng)) {
+          uniqueRegions[region.nameEng] = region;
+        }
+      }
       setState(() {
-        _regions = regions;
+        _regions = uniqueRegions.values.toList();
         _isLoading = false;
       });
       
@@ -75,8 +82,15 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
     setState(() => _isLoading = true);
     try {
       final cities = await _geoService.fetchCities(regionName: stateName);
+      // Remove duplicates by nameEng
+      final uniqueCities = <String, City>{};
+      for (final city in cities) {
+        if (!uniqueCities.containsKey(city.nameEng)) {
+          uniqueCities[city.nameEng] = city;
+        }
+      }
       setState(() {
-        _cities = cities;
+        _cities = uniqueCities.values.toList();
         _isLoading = false;
       });
       
@@ -98,8 +112,15 @@ class _GeoSelectorDialogState extends State<GeoSelectorDialog> {
     setState(() => _isLoading = true);
     try {
       final upazilas = await _geoService.fetchUpazilas(cityName: cityName);
+      // Remove duplicates by nameEng
+      final uniqueUpazilas = <String, Upazila>{};
+      for (final upazila in upazilas) {
+        if (!uniqueUpazilas.containsKey(upazila.nameEng)) {
+          uniqueUpazilas[upazila.nameEng] = upazila;
+        }
+      }
       setState(() {
-        _upazilas = upazilas;
+        _upazilas = uniqueUpazilas.values.toList();
         _isLoading = false;
       });
     } catch (e) {

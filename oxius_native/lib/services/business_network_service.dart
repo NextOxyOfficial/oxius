@@ -47,23 +47,22 @@ class BusinessNetworkService {
     String? olderThan,
   }) async {
     try {
-      final headers = await ApiService.getHeaders();
-      
       String url = '$_baseUrl/posts/?page=$page&page_size=$pageSize';
       if (olderThan != null) {
         url += '&older_than=$olderThan';
       }
       
-      final response = await http.get(
+      // First try without auth to avoid token issues
+      final basicHeaders = {'Content-Type': 'application/json'};
+      var response = await http.get(
         Uri.parse(url),
-        headers: headers,
+        headers: basicHeaders,
       );
       
       print('=== Business Network API Debug ===');
       print('URL: $url');
-      print('Headers: $headers');
       print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('Response body length: ${response.body.length}');
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -78,10 +77,6 @@ class BusinessNetworkService {
           'hasMore': data['next'] != null,
           'count': data['count'] ?? 0,
         };
-      } else if (response.statusCode == 401) {
-        print('ERROR: Unauthorized - User not authenticated');
-        print('Response: ${response.body}');
-        return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0, 'error': 'unauthorized'};
       } else {
         print('ERROR: ${response.statusCode} - ${response.body}');
         return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0, 'error': response.body};

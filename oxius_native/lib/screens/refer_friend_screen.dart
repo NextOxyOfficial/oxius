@@ -1504,5 +1504,4 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       ],
     );
   }
-
 }
