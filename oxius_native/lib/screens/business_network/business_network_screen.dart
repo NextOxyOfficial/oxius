@@ -41,6 +41,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   int _unreadNotificationCount = 0;
   
   final ScrollController _scrollController = ScrollController();
+  bool _isChromeVisible = true;
+  bool _disposed = false;
+  double _lastScrollPosition = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Random _random = Random();
 
@@ -113,16 +116,48 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
   @override
   void dispose() {
+    _disposed = true;
     _scrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_disposed || !mounted) return;
+
+    final currentScrollPosition = _scrollController.position.pixels;
+    final scrollDelta = currentScrollPosition - _lastScrollPosition;
+
+    // Load more posts when near bottom
+    if (currentScrollPosition >= _scrollController.position.maxScrollExtent - 200) {
       if (!_isLoadingMore && _hasMore) {
         _loadMorePosts();
       }
     }
+
+    // Only react to significant scroll movements (threshold of 5px)
+    if (scrollDelta.abs() < 5) {
+      _lastScrollPosition = currentScrollPosition;
+      return;
+    }
+
+    // Check if user is scrolling down or up
+    if (scrollDelta > 0 && currentScrollPosition > 100) {
+      // Scrolling down - hide header/footer
+      if (_isChromeVisible) {
+        setState(() {
+          _isChromeVisible = false;
+        });
+      }
+    } else if (scrollDelta < 0) {
+      // Scrolling up - show header/footer
+      if (!_isChromeVisible) {
+        setState(() {
+          _isChromeVisible = true;
+        });
+      }
+    }
+
+    _lastScrollPosition = currentScrollPosition;
   }
 
   Future<void> _loadPosts() async {
@@ -206,6 +241,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
     final visiblePosts = _getVisiblePosts();
+    final topPadding = MediaQuery.of(context).padding.top;
+    final headerHeight = topPadding + kToolbarHeight;
     
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
@@ -214,77 +251,114 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         statusBarBrightness: Brightness.light,
       ),
       child: Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: BusinessNetworkHeader(
-        onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
-        onSearchTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const SearchScreen(),
-            ),
-          );
-        },
-        onProfileTap: () {
-          final currentUser = AuthService.currentUser;
-          if (currentUser != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileScreen(userId: currentUser.id),
+        key: _scaffoldKey,
+        backgroundColor: const Color(0xFFF9FAFB),
+        drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network') : null,
+        body: Stack(
+          children: [
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 672), // max-w-3xl (768px - padding)
+                child: RefreshIndicator(
+                  onRefresh: _refreshPosts,
+                  color: const Color(0xFF3B82F6),
+                  edgeOffset: headerHeight,
+                  child: _isLoading
+                      ? _buildLoadingState()
+                      : _errorMessage != null
+                          ? _buildErrorState()
+                          : visiblePosts.isEmpty
+                              ? _buildEmptyState()
+                              : ListView.builder(
+                                  controller: _scrollController,
+                                  padding: EdgeInsets.fromLTRB(
+                                    4,
+                                    headerHeight + 8,
+                                    4,
+                                    isMobile ? 80 : 16,
+                                  ),
+                                  itemCount: _calculateTotalItems(visiblePosts),
+                                  itemBuilder: (context, index) {
+                                    return _buildFeedItem(index, visiblePosts);
+                                  },
+                                ),
+                ),
               ),
-            );
-          }
-        },
-      ),
-      drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network') : null,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 672), // max-w-3xl (768px - padding)
-          child: RefreshIndicator(
-            onRefresh: _refreshPosts,
-            color: const Color(0xFF3B82F6),
-            child: _isLoading
-                ? _buildLoadingState()
-                : _errorMessage != null
-                    ? _buildErrorState()
-                    : visiblePosts.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            controller: _scrollController,
-                            padding: EdgeInsets.fromLTRB(4, 8, 4, isMobile ? 80 : 16),
-                            itemCount: _calculateTotalItems(visiblePosts),
-                            itemBuilder: (context, index) {
-                              return _buildFeedItem(index, visiblePosts);
-                            },
-                          ),
-          ),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                transform: Matrix4.translationValues(
+                  0,
+                  _isChromeVisible ? 0 : -(headerHeight + 16),
+                  0,
+                ),
+                curve: Curves.easeInOut,
+                child: BusinessNetworkHeader(
+                  onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                  onSearchTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SearchScreen(),
+                      ),
+                    );
+                  },
+                  onProfileTap: () {
+                    final currentUser = AuthService.currentUser;
+                    if (currentUser != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileScreen(userId: currentUser.id),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+            if (isMobile)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  transform: Matrix4.translationValues(
+                    0,
+                    _isChromeVisible ? 0 : 120,
+                    0,
+                  ),
+                  curve: Curves.easeInOut,
+                  child: BusinessNetworkBottomNavBar(
+                    currentIndex: _currentNavIndex,
+                    isLoggedIn: AuthService.isAuthenticated,
+                    onTap: (index) {
+                      if (index == 2) {
+                        // Create post button
+                        _openCreatePost();
+                      } else {
+                        _handleNavTap(index);
+                      }
+                    },
+                    unreadCount: _unreadNotificationCount,
+                  ),
+                ),
+              ),
+          ],
         ),
-      ),
-      bottomNavigationBar: isMobile
-          ? BusinessNetworkBottomNavBar(
-              currentIndex: _currentNavIndex,
-              isLoggedIn: AuthService.isAuthenticated,
-              onTap: (index) {
-                if (index == 2) {
-                  // Create post button
-                  _openCreatePost();
-                } else {
-                  _handleNavTap(index);
-                }
-              },
-              unreadCount: _unreadNotificationCount,
-            )
-          : null,
-      floatingActionButton: !isMobile
-          ? FloatingActionButton(
-              onPressed: _openCreatePost,
-              backgroundColor: const Color(0xFF3B82F6),
-              elevation: 4,
-              child: const Icon(Icons.add, color: Colors.white, size: 28),
-            )
-          : null,
+        floatingActionButton: !isMobile
+            ? FloatingActionButton(
+                onPressed: _openCreatePost,
+                backgroundColor: const Color(0xFF3B82F6),
+                elevation: 4,
+                child: const Icon(Icons.add, color: Colors.white, size: 28),
+              )
+            : null,
       ),
     );
   }

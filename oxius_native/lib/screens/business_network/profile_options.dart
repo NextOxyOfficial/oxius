@@ -316,23 +316,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                           ),
                         ),
                       ),
-                      if (isVerified)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF1E293B),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.verified_rounded,
-                              color: Color(0xFF3B82F6),
-                              size: 22,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                   const SizedBox(width: 20),
