@@ -439,8 +439,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         // Gigs List
         _buildGigsList(),
         
-        // Pagination
-        if (_microGigs.isNotEmpty) _buildPagination(),
+        // Pagination - only show if more than one page
+        if (_microGigs.isNotEmpty && _totalPages > 1) _buildPagination(),
       ],
     );
   }
@@ -469,7 +469,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           child: Column(
             children: [
               _buildGigsList(),
-              if (_microGigs.isNotEmpty) _buildPagination(),
+              if (_microGigs.isNotEmpty && _totalPages > 1) _buildPagination(),
             ],
           ),
         ),

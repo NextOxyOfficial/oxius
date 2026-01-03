@@ -45,7 +45,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   void initState() {
     super.initState();
     _isLoggedIn = AuthService.isAuthenticated;
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
         setState(() => _activeTab = _tabController.index);
@@ -900,23 +900,22 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   controller: _tabController,
                   labelColor: const Color(0xFF10B981),
                   unselectedLabelColor: Colors.grey.shade600,
-                  labelStyle: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600),
+                  labelStyle: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
                   indicatorColor: const Color(0xFF10B981),
+                  indicatorSize: TabBarIndicatorSize.tab,
                   tabs: [
                     Tab(text: 'Earnings (${_commissionData?.recentTransactions.length ?? 0})'),
-                    Tab(text: 'Referred (${_referredUsers.length})'),
-                    const Tab(text: 'Bonus'),
+                    Tab(text: 'Referred & Bonus'),
                   ],
                 ),
                 Container(
-                  height: 300,
-                  padding: const EdgeInsets.all(12),
+                  height: 340,
+                  padding: const EdgeInsets.all(8),
                   child: TabBarView(
                     controller: _tabController,
                     children: [
                       _buildEarningsTab(),
-                      _buildReferredUsersTab(),
-                      _buildBonusTab(),
+                      _buildReferredAndBonusTab(),
                     ],
                   ),
                 ),
@@ -1208,270 +1207,46 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     );
   }
 
-  Widget _buildReferredUsersTab() {
-    if (_isLoadingUsers) {
+  Widget _buildReferredAndBonusTab() {
+    // Loading state
+    if (_isLoadingUsers || _isLoadingClaims) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)));
     }
 
-    if (_usersError != null) {
-      return Center(
-        child: Text(
-          _usersError!,
-          style: GoogleFonts.roboto(fontSize: 12, color: Colors.red),
-        ),
-      );
-    }
-
-    if (_referredUsers.isEmpty) {
+    // Not logged in
+    if (!_isLoggedIn) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.people_outline_rounded, size: 48, color: Colors.grey.shade300),
+            Icon(Icons.lock_outline_rounded, size: 40, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
-              'No referred users yet',
-              style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
+              'Login to view referrals & bonus',
+              style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
             ),
           ],
         ),
       );
     }
 
-    return Column(
-      children: [
-        if (_eligibleReferrerClaimsCount > 0)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              children: [
-                const Spacer(),
-                SizedBox(
-                  height: 32,
-                  child: ElevatedButton.icon(
-                    onPressed: _isClaimingReward ? null : _claimAllRewards,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 0,
-                    ),
-                    icon: _isClaimingReward
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Icon(Icons.card_giftcard_rounded, size: 16, color: Colors.white),
-                    label: Text(
-                      'Claim All ($_eligibleReferrerClaimsCount)',
-                      style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: _referredUsers.length,
-            itemBuilder: (context, index) {
-              final user = _referredUsers[index];
-              final claim = _getClaimForReferredUser(user.id);
-
-              final avatarUrl = AppConfig.getAbsoluteUrl(user.image);
-
-              Widget trailing;
-              if (claim == null) {
-                trailing = Text('-', style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade400));
-              } else if (claim.isEligible) {
-                trailing = SizedBox(
-                  height: 30,
-                  child: ElevatedButton.icon(
-                    onPressed: _isClaimingReward ? null : () => _claimReward(claim.id),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.card_giftcard_rounded, size: 14, color: Colors.white),
-                    label: Text(
-                      '৳${claim.rewardAmount.toStringAsFixed(0)}',
-                      style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
-                    ),
-                  ),
-                );
-              } else if (claim.isClaimed) {
-                trailing = Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Claimed',
-                    style: GoogleFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.green),
-                  ),
-                );
-              } else {
-                trailing = Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Pending',
-                    style: GoogleFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.amber.shade800),
-                  ),
-                );
-              }
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  children: [
-                    if (avatarUrl.isNotEmpty)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Image.network(
-                          avatarUrl,
-                          width: 36,
-                          height: 36,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Center(
-                              child: Text(
-                                user.initial,
-                                style: GoogleFonts.roboto(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF10B981),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Center(
-                          child: Text(
-                            user.initial,
-                            style: GoogleFonts.roboto(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF10B981),
-                            ),
-                          ),
-                        ),
-                      ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user.displayName,
-                            style: GoogleFonts.roboto(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1F2937),
-                            ),
-                          ),
-                          Text(
-                            user.email,
-                            style: GoogleFonts.roboto(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Joined ${_formatDate(user.joinedDate)}',
-                            style: GoogleFonts.roboto(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: user.isActive
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.grey.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            user.isActive ? 'Active' : 'Inactive',
-                            style: GoogleFonts.roboto(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                              color: user.isActive ? Colors.green : Colors.grey,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        trailing,
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBonusTab() {
-    if (!_isLoggedIn) {
-      return Center(
-        child: Text(
-          'Login to view bonus history',
-          style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
-        ),
-      );
-    }
-
-    if (_isLoadingClaims) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)));
-    }
-
     final claims = _claimsData;
-    if (claims == null || !claims.activeProgram) {
+    final hasBonus = claims != null && claims.activeProgram;
+    final hasReferredUsers = _referredUsers.isNotEmpty;
+
+    // Empty state
+    if (!hasReferredUsers && !hasBonus) {
       return Center(
-        child: Text(
-          'No bonus program available',
-          style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.people_outline_rounded, size: 40, color: Colors.grey.shade300),
+            const SizedBox(height: 8),
+            Text(
+              'No referred users or bonus yet',
+              style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+            ),
+          ],
         ),
       );
     }
@@ -1479,258 +1254,255 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        _buildRewardProgramCard(),
+        // Bonus Program Card (compact)
+        if (hasBonus) _buildCompactBonusCard(),
+        
+        // Referred Users Section
+        if (hasReferredUsers) ...[
+          if (hasBonus) const SizedBox(height: 8),
+          _buildReferredUsersSection(),
+        ],
       ],
     );
   }
 
-  Widget _buildRewardProgramCard() {
+  Widget _buildCompactBonusCard() {
     final claims = _claimsData!;
     final refereeClaim = claims.refereeClaim;
     final referrerClaims = claims.referrerClaims;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF0EA5E9), Color(0xFF0284C7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0EA5E9).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        claims.program?.name ?? 'Referral Reward',
-                        style: GoogleFonts.roboto(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Complete tasks to claim rewards!',
-                        style: GoogleFonts.roboto(
-                          fontSize: 11,
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Referee Claim (if user was referred)
-          if (refereeClaim != null)
-            _buildClaimCard(refereeClaim, isReferee: true),
-
-          // Referrer Claims (for users who referred others)
-          ...referrerClaims.map((claim) => _buildClaimCard(claim, isReferee: false)),
-
-          if (refereeClaim == null && referrerClaims.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Text(
-                'Refer friends or get referred to earn rewards!',
-                style: GoogleFonts.roboto(fontSize: 12, color: Colors.white.withOpacity(0.9)),
-                textAlign: TextAlign.center,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildClaimCard(ReferralRewardClaim claim, {required bool isReferee}) {
-    final isClaimed = claim.isClaimed;
-    final isEligible = claim.isEligible;
-    final referrerName = _conditionsData?.rewardInfo?.referrerName;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title row
+          // Header
           Row(
             children: [
-              Icon(
-                isReferee ? Icons.person_rounded : Icons.people_rounded,
-                size: 16,
-                color: const Color(0xFF0EA5E9),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 16),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isReferee
-                      ? 'Your Reward${referrerName != null && referrerName.isNotEmpty ? ' (Referred by $referrerName)' : ''}'
-                      : 'Referrer Reward for ${claim.referredUserName ?? 'user'}',
-                  style: GoogleFonts.roboto(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1F2937),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  claims.program?.name ?? 'Referral Reward',
+                  style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: isClaimed
-                      ? Colors.green.withOpacity(0.1)
-                      : isEligible
-                          ? Colors.amber.withOpacity(0.1)
-                          : Colors.grey.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  isClaimed ? 'Claimed' : isEligible ? 'Eligible' : 'Pending',
-                  style: GoogleFonts.roboto(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: isClaimed ? Colors.green : isEligible ? Colors.amber.shade700 : Colors.grey,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Conditions
-          Row(
-            children: [
-              _buildConditionChip('BN Post', claim.conditions.hasPostedBn),
-              const SizedBox(width: 6),
-              _buildConditionChip('Microgig', claim.conditions.hasCompletedMicrogig),
-              const SizedBox(width: 6),
-              _buildConditionChip('KYC', claim.conditions.hasKycVerified),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Amount and claim button
-          Row(
-            children: [
-              Text(
-                '৳ ${claim.rewardAmount.toStringAsFixed(0)}',
-                style: GoogleFonts.roboto(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF10B981),
-                ),
-              ),
-              const Spacer(),
-              if (!isClaimed)
+              if (_eligibleReferrerClaimsCount > 0)
                 SizedBox(
-                  height: 32,
+                  height: 26,
                   child: ElevatedButton(
-                    onPressed: isEligible && !_isClaimingReward
-                        ? () => _claimReward(claim.id)
-                        : null,
+                    onPressed: _isClaimingReward ? null : _claimAllRewards,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      disabledBackgroundColor: Colors.grey.shade300,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      backgroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                       elevation: 0,
                     ),
                     child: _isClaimingReward
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : Text(
-                            isEligible ? 'Claim Now' : 'Complete Tasks',
-                            style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w600),
-                          ),
+                        ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0EA5E9)))
+                        : Text('Claim All ($_eligibleReferrerClaimsCount)', style: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF0EA5E9))),
                   ),
-                ),
-              if (isClaimed)
-                Row(
-                  children: [
-                    const Icon(Icons.check_circle_rounded, size: 16, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Claimed',
-                      style: GoogleFonts.roboto(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.green,
-                      ),
-                    ),
-                  ],
                 ),
             ],
           ),
+          const SizedBox(height: 8),
+          // Claims summary
+          if (refereeClaim != null || referrerClaims.isNotEmpty)
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                if (refereeClaim != null) _buildMiniClaimChip(refereeClaim, isReferee: true),
+                ...referrerClaims.take(3).map((c) => _buildMiniClaimChip(c, isReferee: false)),
+                if (referrerClaims.length > 3)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(6)),
+                    child: Text('+${referrerClaims.length - 3} more', style: GoogleFonts.roboto(fontSize: 9, color: Colors.white)),
+                  ),
+              ],
+            )
+          else
+            Text('Refer friends to earn rewards!', style: GoogleFonts.roboto(fontSize: 10, color: Colors.white.withOpacity(0.9))),
         ],
       ),
     );
   }
 
-  Widget _buildConditionChip(String label, bool met) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: met ? Colors.green.withOpacity(0.1) : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: met ? Colors.green.withOpacity(0.3) : Colors.grey.shade300,
+  Widget _buildMiniClaimChip(ReferralRewardClaim claim, {required bool isReferee}) {
+    final isClaimed = claim.isClaimed;
+    final isEligible = claim.isEligible;
+    return GestureDetector(
+      onTap: isEligible && !_isClaimingReward ? () => _claimReward(claim.id) : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
         ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            met ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-            size: 12,
-            color: met ? Colors.green : Colors.grey,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.roboto(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: met ? Colors.green.shade700 : Colors.grey.shade600,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isClaimed ? Icons.check_circle_rounded : isEligible ? Icons.card_giftcard_rounded : Icons.hourglass_empty_rounded,
+              size: 12,
+              color: isClaimed ? Colors.green : isEligible ? const Color(0xFF10B981) : Colors.amber.shade700,
             ),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Text(
+              '৳${claim.rewardAmount.toStringAsFixed(0)}',
+              style: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  Widget _buildReferredUsersSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Referred Users (${_referredUsers.length})',
+              style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ..._referredUsers.map((user) {
+          final claim = _getClaimForReferredUser(user.id);
+          final avatarUrl = AppConfig.getAbsoluteUrl(user.image);
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                // Avatar
+                avatarUrl.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.network(
+                          avatarUrl,
+                          width: 28,
+                          height: 28,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildUserInitial(user.initial),
+                        ),
+                      )
+                    : _buildUserInitial(user.initial),
+                const SizedBox(width: 8),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.displayName,
+                        style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        _formatDate(user.joinedDate),
+                        style: GoogleFonts.roboto(fontSize: 9, color: Colors.grey.shade500),
+                      ),
+                    ],
+                  ),
+                ),
+                // Status + Claim
+                _buildUserTrailing(user, claim),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildUserInitial(String initial) {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Center(
+        child: Text(initial, style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
+      ),
+    );
+  }
+
+  Widget _buildUserTrailing(ReferredUser user, ReferralRewardClaim? claim) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: user.isActive ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            user.isActive ? 'Active' : 'Inactive',
+            style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w600, color: user.isActive ? Colors.green : Colors.grey),
+          ),
+        ),
+        const SizedBox(width: 6),
+        if (claim != null)
+          claim.isClaimed
+              ? Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                  child: Text('Claimed', style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.green)),
+                )
+              : claim.isEligible
+                  ? SizedBox(
+                      height: 24,
+                      child: ElevatedButton(
+                        onPressed: _isClaimingReward ? null : () => _claimReward(claim.id),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          elevation: 0,
+                        ),
+                        child: Text('৳${claim.rewardAmount.toStringAsFixed(0)}', style: GoogleFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
+                      ),
+                    )
+                  : Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Text('Pending', style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.amber.shade700)),
+                    )
+        else
+          Text('-', style: GoogleFonts.roboto(fontSize: 10, color: Colors.grey.shade400)),
+      ],
+    );
+  }
+
 }
