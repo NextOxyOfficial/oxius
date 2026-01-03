@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
+import '../features/adsyconnect_call/services/call_listener_service.dart';
 
 /// Global user state management service
 /// Provides reactive updates to user authentication state across the app
@@ -49,13 +50,16 @@ class UserStateService extends ChangeNotifier {
       if (isValid) {
         _currentUser = AuthService.currentUser;
         _isAuthenticated = true;
+        CallListenerService.instance.start();
       } else {
         _currentUser = null;
         _isAuthenticated = false;
+        CallListenerService.instance.stop();
       }
     } else {
       _currentUser = null;
       _isAuthenticated = false;
+      CallListenerService.instance.stop();
     }
 
     _isInitializing = false;
@@ -66,11 +70,13 @@ class UserStateService extends ChangeNotifier {
   void updateUser(User user) {
     _currentUser = user;
     _isAuthenticated = true;
+    CallListenerService.instance.start();
     notifyListeners();
   }
 
   /// Clear user state on logout
   Future<void> clearUser() async {
+    CallListenerService.instance.stop();
     _currentUser = null;
     _isAuthenticated = false;
     await AuthService.clearAuthData();

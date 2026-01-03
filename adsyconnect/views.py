@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from django.db.models import Q, Max
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -17,6 +18,28 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def firebase_custom_token(request):
+    try:
+        import os
+        from django.conf import settings
+        import firebase_admin
+        from firebase_admin import credentials, auth
+
+        if not firebase_admin._apps:
+            cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+
+        uid = str(request.user.id)
+        token_bytes = auth.create_custom_token(uid)
+        token = token_bytes.decode('utf-8') if hasattr(token_bytes, 'decode') else str(token_bytes)
+        return Response({'token': token, 'uid': uid})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ChatRoomViewSet(viewsets.ModelViewSet):

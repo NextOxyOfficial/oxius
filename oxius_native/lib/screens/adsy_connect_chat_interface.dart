@@ -18,6 +18,8 @@ import '../widgets/link_preview_card.dart';
 import '../widgets/linkify_text.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
+import '../features/adsyconnect_call/models/adsy_call.dart';
+import '../features/adsyconnect_call/screens/adsy_call_screen.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -2034,6 +2036,38 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         ),
       ),
       actions: [
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AdsyCallScreen(
+                  isCaller: true,
+                  otherUserId: widget.userId,
+                  otherUserName: widget.userName,
+                  type: AdsyCallType.audio,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.call_rounded, color: Colors.white, size: 20),
+        ),
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AdsyCallScreen(
+                  isCaller: true,
+                  otherUserId: widget.userId,
+                  otherUserName: widget.userName,
+                  type: AdsyCallType.video,
+                ),
+              ),
+            );
+          },
+          icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
+        ),
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
           offset: const Offset(0, 50),

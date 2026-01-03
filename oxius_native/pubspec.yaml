@@ -85,8 +85,12 @@ dependencies:
   # App Badge (notification count on app icon)
   app_badge_plus: ^1.1.4
   firebase_core: ^4.2.1
+  firebase_auth: ^6.0.0
+  cloud_firestore: ^6.0.0
   firebase_messaging: ^16.0.4
   flutter_local_notifications: ^19.5.0
+
+  flutter_webrtc: ^0.12.0
 
   flutter_portal: any
   flutter_cache_manager: any

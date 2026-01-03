@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ChatRoomViewSet, MessageViewSet, MessageReportViewSet,
-    BlockedUserViewSet, OnlineStatusViewSet, TypingStatusViewSet
+    BlockedUserViewSet, OnlineStatusViewSet, TypingStatusViewSet,
+    firebase_custom_token
 )
 
 router = DefaultRouter()
@@ -14,5 +15,6 @@ router.register(r'online-status', OnlineStatusViewSet, basename='online-status')
 router.register(r'typing-status', TypingStatusViewSet, basename='typing-status')
 
 urlpatterns = [
+    path('firebase-token/', firebase_custom_token, name='firebase_custom_token'),
     path('', include(router.urls)),
 ]
