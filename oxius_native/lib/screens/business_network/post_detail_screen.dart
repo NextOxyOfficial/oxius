@@ -613,7 +613,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(left: 4, right: 4, top: 8),
+      padding: const EdgeInsets.only(left: 0, right: 0, top: 4),
       child: PostCommentsPreview(
         post: _post,
         onViewAll: () {},

@@ -272,9 +272,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                               : ListView.builder(
                                   controller: _scrollController,
                                   padding: EdgeInsets.fromLTRB(
-                                    4,
+                                    1,
                                     headerHeight + 8,
-                                    4,
+                                    1,
                                     isMobile ? 80 : 16,
                                   ),
                                   itemCount: _calculateTotalItems(visiblePosts),

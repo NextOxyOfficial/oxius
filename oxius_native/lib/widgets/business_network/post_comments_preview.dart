@@ -429,12 +429,63 @@ class _ReplyInput extends StatefulWidget {
 }
 
 class _ReplyInputState extends State<_ReplyInput> {
-  final TextEditingController _controller = TextEditingController();
+  final GlobalKey<FlutterMentionsState> _mentionKey = GlobalKey<FlutterMentionsState>();
+  List<Map<String, dynamic>> _userData = [];
+  bool _isSubmitting = false;
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadInitialUsers();
+  }
+
+  Future<void> _loadInitialUsers() async {
+    final users = await _searchUsers('');
+    if (mounted) {
+      setState(() {
+        _userData = users;
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
+    try {
+      final users = await UserSearchService.searchUsers(query);
+      return users.map((user) => {
+        'id': user.id.toString(),
+        'display': user.name,
+        'full_name': user.name,
+        'photo': user.image ?? user.avatar,
+      }).toList();
+    } catch (e) {
+      print('Error searching users: $e');
+      return [];
+    }
+  }
+
+  void _handleSubmit() {
+    if (_isSubmitting) return;
+    
+    final plainText = _mentionKey.currentState?.controller?.text ?? '';
+    if (plainText.trim().isEmpty) return;
+
+    setState(() => _isSubmitting = true);
+
+    // Format mentions with double space after name for parsing
+    final formattedText = plainText.replaceAllMapped(
+      RegExp(r'@([A-Za-z][A-Za-z\s]+?)(?=\s{2,}|[.!?,;:]|\s+[^A-Z]|$)'),
+      (match) {
+        final name = match.group(1)?.trim() ?? '';
+        return '@$name  ';
+      },
+    ).trim();
+
+    widget.onSubmit(formattedText);
+    _mentionKey.currentState?.controller?.clear();
+    
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -461,10 +512,13 @@ class _ReplyInputState extends State<_ReplyInput> {
           Expanded(
             child: ConstrainedBox(
               constraints: const BoxConstraints(
-                maxHeight: 60, // ~4 lines
+                maxHeight: 80,
               ),
-              child: TextField(
-                controller: _controller,
+              child: FlutterMentions(
+                key: _mentionKey,
+                suggestionPosition: SuggestionPosition.Top,
+                maxLines: 3,
+                minLines: 1,
                 decoration: InputDecoration(
                   hintText: 'Reply to ${widget.replyingTo.user.name}...',
                   hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
@@ -473,8 +527,72 @@ class _ReplyInputState extends State<_ReplyInput> {
                   isDense: true,
                 ),
                 style: const TextStyle(fontSize: 11, height: 1.3),
-                maxLines: null,
-                minLines: 1,
+                onChanged: (value) async {
+                  if (value.contains('@')) {
+                    final lastAtIndex = value.lastIndexOf('@');
+                    final textAfterAt = value.substring(lastAtIndex + 1);
+                    
+                    if (textAfterAt.isNotEmpty && !textAfterAt.contains(' ')) {
+                      final users = await _searchUsers(textAfterAt);
+                      if (mounted) {
+                        setState(() {
+                          _userData = users;
+                        });
+                      }
+                    }
+                  }
+                },
+                mentions: [
+                  Mention(
+                    trigger: '@',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    data: _userData,
+                    matchAll: false,
+                    disableMarkup: false,
+                    suggestionBuilder: (data) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey.shade100,
+                              ),
+                              child: ClipOval(
+                                child: () {
+                                  final avatarUrl = AppConfig.getAbsoluteUrl(data['photo']);
+                                  if (avatarUrl.isNotEmpty) {
+                                    return Image.network(
+                                      avatarUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Icon(Icons.person, color: Colors.grey.shade400, size: 14);
+                                      },
+                                    );
+                                  }
+                                  return Icon(Icons.person, color: Colors.grey.shade400, size: 14);
+                                }(),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                data['display'] ?? '',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -482,15 +600,19 @@ class _ReplyInputState extends State<_ReplyInput> {
           Padding(
             padding: const EdgeInsets.only(bottom: 2),
             child: InkWell(
-              onTap: () {
-                if (_controller.text.trim().isNotEmpty) {
-                  widget.onSubmit(_controller.text.trim());
-                  _controller.clear();
-                }
-              },
+              onTap: _isSubmitting ? null : _handleSubmit,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                child: Icon(Icons.send, size: 14, color: Colors.blue.shade700),
+                child: _isSubmitting
+                    ? SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.blue.shade700,
+                        ),
+                      )
+                    : Icon(Icons.send, size: 14, color: Colors.blue.shade700),
               ),
             ),
           ),
