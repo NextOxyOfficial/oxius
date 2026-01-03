@@ -761,6 +761,28 @@ class _CommentItemState extends State<_CommentItem> {
                                   ),
                                 ),
                               ],
+                              if (widget.comment.user.isPro) ...[
+                                const TextSpan(text: ' '),
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: Colors.indigo.shade600,
+                                      borderRadius: BorderRadius.circular(999),
+                                      border: Border.all(color: Colors.white.withOpacity(0.18)),
+                                    ),
+                                    child: const Text(
+                                      'Pro',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                           maxLines: null,

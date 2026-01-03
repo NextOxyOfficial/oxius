@@ -226,14 +226,14 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
 
   Widget _buildNavigationSection(BuildContext context, bool isMobile) {
     final navLinks = [
-      {'title': 'Services', 'route': '/'},
-      {'title': 'Earn', 'route': '/micro-gigs'},
-      {'title': 'Recharge', 'route': '/mobile-recharge'},
-      {'title': 'Pro', 'route': '/upgrade-to-pro'},
-      {'title': 'Refer', 'route': '/refer-a-friend'},
-      {'title': 'About', 'route': '/about'},
+      {'title': 'Classified Services', 'route': '/'},
+      {'title': 'Earn Money', 'route': '/micro-gigs'},
+      {'title': 'Mobile Recharge', 'route': '/mobile-recharge'},
+      {'title': 'Upgrade to Pro', 'route': '/upgrade-to-pro'},
+      {'title': 'Refer Program', 'route': '/refer-a-friend'},
+      {'title': 'About Us', 'route': '/about'},
       {'title': 'FAQ', 'route': '/faq'},
-      {'title': 'Contact', 'route': '/contact-us'},
+      {'title': 'Contact Us', 'route': '/contact-us'},
     ];
 
     return Container(
@@ -301,13 +301,13 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         ),
         const SizedBox(height: 6),
         Container(
-          constraints: const BoxConstraints(maxWidth: 280),
+          constraints: const BoxConstraints(maxWidth: 320),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: Image.asset(
               'assets/images/payment.png',
               fit: BoxFit.contain,
-              height: 45,
+              height: 70,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -366,25 +366,25 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
-              'Terms',
+              'Terms & Conditions',
               style: GoogleFonts.roboto(
-                fontSize: 9,
+                fontSize: 11,
                 color: Colors.grey.shade500,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
         ),
-        Text('•', style: TextStyle(fontSize: 8, color: Colors.grey.shade400)),
+        Text('•', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
         InkWell(
           onTap: () => _handleNavigation(context, t('privacy_policy')),
           borderRadius: BorderRadius.circular(4),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
-              'Privacy',
+              'Privacy Policy',
               style: GoogleFonts.roboto(
-                fontSize: 9,
+                fontSize: 11,
                 color: Colors.grey.shade500,
                 fontWeight: FontWeight.w500,
               ),
@@ -482,7 +482,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           Text(
             'Developed with ❤️ by Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
             style: GoogleFonts.roboto(
-              fontSize: 9,
+              fontSize: 11,
               color: Colors.grey.shade400,
               fontWeight: FontWeight.w500,
             ),
