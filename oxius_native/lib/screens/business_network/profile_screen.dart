@@ -1409,24 +1409,23 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget _buildTabContent() {
     return Container(
       margin: const EdgeInsets.only(top: 4),
-      padding: const EdgeInsets.only(bottom: 80),
-      child: IndexedStack(
-        index: _currentTabIndex,
-        children: [
-          // Posts Tab
-          _buildPostsTab(),
-          
-          // My Workspace Tab
-          _buildWorkspaceTab(),
-          
-          // Media Tab
-          _buildMediaTab(),
-          
-          // Saved Tab
-          _buildSavedTab(),
-        ],
-      ),
+      child: _buildCurrentTab(),
     );
+  }
+
+  Widget _buildCurrentTab() {
+    switch (_currentTabIndex) {
+      case 0:
+        return _buildPostsTab();
+      case 1:
+        return _buildWorkspaceTab();
+      case 2:
+        return _buildMediaTab();
+      case 3:
+        return _buildSavedTab();
+      default:
+        return _buildPostsTab();
+    }
   }
 
   Widget _buildPostsTab() {
@@ -1677,43 +1676,46 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
     
     if (_userGigs.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
-                borderRadius: BorderRadius.circular(20),
+      return Center(
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F4F6),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.work_outline_rounded,
+                  size: 40,
+                  color: Color(0xFF9CA3AF),
+                ),
               ),
-              child: const Icon(
-                Icons.work_outline_rounded,
-                size: 40,
-                color: Color(0xFF9CA3AF),
+              const SizedBox(height: 16),
+              const Text(
+                'No Gigs Yet',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1F2937),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No Gigs Yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1F2937),
+              const SizedBox(height: 8),
+              Text(
+                'This user hasn\'t created any gigs yet.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[500],
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'This user hasn\'t created any gigs yet.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -1908,25 +1910,29 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildEmptyState(String message, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 64,
-            color: Colors.grey.shade300,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 64,
+              color: Colors.grey.shade300,
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
