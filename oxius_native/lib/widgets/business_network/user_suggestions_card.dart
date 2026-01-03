@@ -97,7 +97,25 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
 
       if (success && mounted) {
         setState(() {
-          _followingStates[userId] = !isFollowing;
+          if (!isFollowing) {
+            // User was followed - remove from suggestions list
+            _allSuggestions.removeWhere((u) => u['id'].toString() == userId);
+            _displayedSuggestions.removeWhere((u) => u['id'].toString() == userId);
+            
+            // If we have more suggestions, add a new one to display
+            if (_displayedSuggestions.length < 2 && _allSuggestions.isNotEmpty) {
+              final remaining = _allSuggestions.where((u) => 
+                !_displayedSuggestions.any((d) => d['id'].toString() == u['id'].toString())
+              ).toList();
+              if (remaining.isNotEmpty) {
+                remaining.shuffle();
+                _displayedSuggestions.add(remaining.first);
+              }
+            }
+          } else {
+            // User was unfollowed - just update state
+            _followingStates[userId] = false;
+          }
         });
       }
     } catch (e) {

@@ -96,6 +96,8 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                         post_id__in=user_interacted_posts
                     ).exclude(
                         user=user
+                    ).exclude(
+                        user_id__in=following_ids
                     ).values_list('user_id', flat=True)
                 )
                 
@@ -105,11 +107,15 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                         post_id__in=user_interacted_posts
                     ).exclude(
                         author=user
+                    ).exclude(
+                        author_id__in=following_ids
                     ).values_list('author_id', flat=True)
                 )
             
-            # Build candidate user IDs
+            # Build candidate user IDs - exclude self and already followed users
             candidate_ids = friends_of_friends_ids.union(similar_interest_users)
+            candidate_ids.discard(user.id)  # Remove self if present
+            candidate_ids = candidate_ids - following_ids  # Remove already followed users
             
             # If we don't have enough candidates, add recent users
             if len(candidate_ids) < 20:
@@ -117,6 +123,10 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                     Q(id=user.id) | Q(id__in=following_ids)
                 ).order_by('-date_joined').values_list('id', flat=True)[:30])
                 candidate_ids = candidate_ids.union(recent_users)
+            
+            # Final safety check - remove any followed users that might have slipped through
+            candidate_ids = candidate_ids - following_ids
+            candidate_ids.discard(user.id)
             
             # Score each candidate
             user_scores = {}
