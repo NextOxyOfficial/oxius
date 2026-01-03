@@ -157,21 +157,53 @@
         হয়েছি:
       </div>
       <UDivider label="" class="mb-2" />
-      <div class="flex gap-4 py-2" v-for="(b, i) in result" :key="b.id">
-        <div class="text-left">
-          <h1 class="text-lg font-semibold break-words">
-            {{ i + 1 }}. {{ b.name }}
-          </h1>
-          <p v-if="b.description" class="break-words">{{ b.description }}</p>
-          <p v-if="b.address" class="break-words">{{ b.address }}</p>
-
-          <ul class="list-disc list-inside">
-            <li v-if="b.phone" class="break-words">Mobile: {{ b.phone }}</li>
-            <li v-if="b.email" class="break-words">Email: {{ b.email }}</li>
-            <li v-if="b.website" class="break-words">
-              Website: {{ b.website }}
-            </li>
-          </ul>
+      <div class="flex gap-4 py-2" v-for="(b, i) in result" :key="b.id || i">
+        <div class="text-left flex-1">
+          <div class="flex items-start justify-between">
+            <h1 class="text-lg font-semibold break-words flex-1">
+              {{ i + 1 }}. {{ b.name }}
+            </h1>
+            <button 
+              @click="copyAllInfo(b)" 
+              class="ml-2 p-1 text-gray-500 hover:text-gray-700 rounded"
+              title="Copy all info"
+            >
+              <UIcon name="i-heroicons-clipboard-document" class="w-5 h-5" />
+            </button>
+          </div>
+          <p v-if="b.description" class="break-words text-gray-600">{{ b.description }}</p>
+          
+          <div v-if="b.address" class="flex items-start gap-2 mt-1">
+            <UIcon name="i-heroicons-map-pin" class="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+            <span class="break-words flex-1 text-gray-600">{{ b.address }}</span>
+            <button @click="copyText(b.address)" class="p-1 text-gray-400 hover:text-gray-600" title="Copy">
+              <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div v-if="b.phone" class="flex items-start gap-2 mt-1">
+            <UIcon name="i-heroicons-phone" class="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+            <a :href="'tel:' + b.phone" class="break-words flex-1 text-gray-600 hover:text-primary">{{ b.phone }}</a>
+            <button @click="copyText(b.phone)" class="p-1 text-gray-400 hover:text-gray-600" title="Copy">
+              <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div v-if="b.email" class="flex items-start gap-2 mt-1">
+            <UIcon name="i-heroicons-envelope" class="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+            <a :href="'mailto:' + b.email" class="break-words flex-1 text-gray-600 hover:text-primary">{{ b.email }}</a>
+            <button @click="copyText(b.email)" class="p-1 text-gray-400 hover:text-gray-600" title="Copy">
+              <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div v-if="b.website" class="flex items-start gap-2 mt-1">
+            <UIcon name="i-heroicons-globe-alt" class="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+            <a :href="normalizeUrl(b.website)" target="_blank" rel="noopener" class="break-words flex-1 text-primary hover:underline">{{ b.website }}</a>
+            <button @click="copyText(b.website)" class="p-1 text-gray-400 hover:text-gray-600" title="Copy">
+              <UIcon name="i-heroicons-clipboard" class="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -189,11 +221,149 @@ const props = defineProps({
 const { get, post } = useApi();
 
 const result = ref();
-const userChoice = ref(false); // Track if user has made a choice
-const isSearching = ref(false); // Track if search is in progress
-const searchDeclined = ref(false); // Track if user declined the search
+const userChoice = ref(false);
+const isSearching = ref(false);
+const searchDeclined = ref(false);
 const aiConfig = ref(null);
 const errorMessage = ref("");
+
+function sanitizeAiValue(value) {
+  if (value === null || value === undefined) return null;
+  const text = String(value).trim();
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  if (['null', 'n/a', 'na', 'none', 'unknown'].includes(lower)) return null;
+  return text;
+}
+
+function isValidBangladeshPhone(value) {
+  const compact = value.replace(/[\s\-()]/g, '');
+  if (!compact) return false;
+  if (compact.toLowerCase().includes('x')) return false;
+  if (compact.includes('1234567') || compact.includes('12345678')) return false;
+  const mobileIntl = /^\+8801\d{9}$/.test(compact);
+  const mobileLocal = /^01\d{9}$/.test(compact);
+  const landlineIntl = /^\+880\d{1,2}\d{6,8}$/.test(compact);
+  return mobileIntl || mobileLocal || landlineIntl;
+}
+
+function isValidEmail(value) {
+  const email = value.trim();
+  if (!email) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isLikelyValidWebsite(value) {
+  const text = value.trim();
+  if (!text) return false;
+  if (text.includes(' ')) return false;
+  const lower = text.toLowerCase();
+  if (lower.includes('example.com') || lower.includes('test.com')) return false;
+  if (lower.startsWith('http://') || lower.startsWith('https://')) return text.includes('.');
+  return /^[a-z0-9\-_.]+\.[a-z]{2,}/.test(lower);
+}
+
+function extractEmailDomain(email) {
+  const trimmed = email.trim().toLowerCase();
+  const at = trimmed.indexOf('@');
+  if (at <= 0 || at >= trimmed.length - 1) return null;
+  return trimmed.substring(at + 1);
+}
+
+function extractHostFromWebsite(website) {
+  let w = website.trim();
+  if (!w.toLowerCase().startsWith('http://') && !w.toLowerCase().startsWith('https://')) {
+    w = 'https://' + w;
+  }
+  try {
+    const url = new URL(w);
+    let host = url.hostname.toLowerCase();
+    if (host.startsWith('www.')) host = host.substring(4);
+    return host || null;
+  } catch {
+    return null;
+  }
+}
+
+function isWebsiteConsistentWithEmail(email, website) {
+  if (!email || !website) return true;
+  const emailDomain = extractEmailDomain(email);
+  const websiteHost = extractHostFromWebsite(website);
+  if (!emailDomain || !websiteHost) return false;
+  const cleanEmailDomain = emailDomain.startsWith('www.') ? emailDomain.substring(4) : emailDomain;
+  return websiteHost === cleanEmailDomain || 
+         websiteHost.endsWith('.' + cleanEmailDomain) || 
+         cleanEmailDomain.endsWith('.' + websiteHost);
+}
+
+function sanitizeAiBusiness(business) {
+  const sanitized = { ...business };
+
+  const name = sanitizeAiValue(sanitized.name);
+  if (!name) return null;
+  sanitized.name = name;
+
+  const description = sanitizeAiValue(sanitized.description);
+  if (!description) delete sanitized.description;
+  else sanitized.description = description;
+
+  const address = sanitizeAiValue(sanitized.address);
+  if (!address) delete sanitized.address;
+  else sanitized.address = address;
+
+  const phone = sanitizeAiValue(sanitized.phone);
+  if (!phone || !isValidBangladeshPhone(phone)) delete sanitized.phone;
+  else sanitized.phone = phone;
+
+  const email = sanitizeAiValue(sanitized.email);
+  if (!email || !isValidEmail(email)) delete sanitized.email;
+  else sanitized.email = email;
+
+  const website = sanitizeAiValue(sanitized.website);
+  if (!website || !isLikelyValidWebsite(website)) delete sanitized.website;
+  else sanitized.website = website;
+
+  if (!isWebsiteConsistentWithEmail(sanitized.email, sanitized.website)) {
+    delete sanitized.website;
+  }
+
+  return sanitized;
+}
+
+function dropRepeatedFieldsAcrossResults(items) {
+  const phoneCount = {};
+  const websiteCount = {};
+
+  for (const item of items) {
+    if (item.phone) {
+      const p = item.phone.trim();
+      phoneCount[p] = (phoneCount[p] || 0) + 1;
+    }
+    if (item.website) {
+      const w = item.website.trim();
+      websiteCount[w] = (websiteCount[w] || 0) + 1;
+    }
+  }
+
+  for (const item of items) {
+    if (item.phone && phoneCount[item.phone.trim()] > 1) {
+      delete item.phone;
+    }
+    if (item.website && websiteCount[item.website.trim()] > 1) {
+      delete item.website;
+    }
+  }
+
+  return items;
+}
+
+function sanitizeBusinesses(businesses) {
+  if (!Array.isArray(businesses)) return [];
+  const cleaned = businesses
+    .map(sanitizeAiBusiness)
+    .filter(b => b !== null);
+  return dropRepeatedFieldsAcrossResults(cleaned);
+}
 
 async function fetchAIConfig() {
   try {
@@ -232,14 +402,13 @@ async function startSearch() {
       errorMessage.value = error.message || "Failed to fetch business data";
       result.value = [];
     } else if (data) {
-      // Handle the response from our backend
+      let businesses = [];
       if (Array.isArray(data.businesses)) {
-        result.value = data.businesses;
+        businesses = data.businesses;
       } else if (Array.isArray(data)) {
-        result.value = data;
-      } else {
-        result.value = [];
+        businesses = data;
       }
+      result.value = sanitizeBusinesses(businesses);
     } else {
       result.value = [];
     }
@@ -261,7 +430,25 @@ function declineSearch() {
   errorMessage.value = "";
 }
 
-// No automatic fetching on mount - wait for user choice
+function normalizeUrl(url) {
+  const trimmed = url.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return 'https://' + trimmed;
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text);
+}
+
+function copyAllInfo(business) {
+  const parts = [business.name];
+  if (business.description) parts.push(business.description);
+  if (business.address) parts.push(business.address);
+  if (business.phone) parts.push(business.phone);
+  if (business.email) parts.push(business.email);
+  if (business.website) parts.push(business.website);
+  navigator.clipboard.writeText(parts.join('\n'));
+}
 </script>
 
 <style scoped>

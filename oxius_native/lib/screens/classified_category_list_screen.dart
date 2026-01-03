@@ -61,6 +61,156 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   List<Map<String, dynamic>> _aiResults = [];
   String? _aiErrorMessage;
 
+  String? _sanitizeAiValue(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString().trim();
+    if (text.isEmpty) return null;
+    final lower = text.toLowerCase();
+    if (lower == 'null' || lower == 'n/a' || lower == 'na' || lower == 'none' || lower == 'unknown') {
+      return null;
+    }
+    return text;
+  }
+
+  bool _isValidBangladeshPhone(String value) {
+    final compact = value.replaceAll(RegExp(r'[\s\-()]'), '');
+    if (compact.isEmpty) return false;
+    if (compact.toLowerCase().contains('x')) return false;
+    if (compact.contains('1234567') || compact.contains('12345678')) return false;
+
+    final mobileIntl = RegExp(r'^\+8801\d{9}$');
+    final mobileLocal = RegExp(r'^01\d{9}$');
+    final landlineIntl = RegExp(r'^\+880\d{1,2}\d{6,8}$');
+    final landlineIntlDash = RegExp(r'^\+880\-?\d{1,2}\-?\d{6,8}$');
+    return mobileIntl.hasMatch(compact) || mobileLocal.hasMatch(compact) || landlineIntl.hasMatch(compact) || landlineIntlDash.hasMatch(value);
+  }
+
+  bool _isValidEmail(String value) {
+    final email = value.trim();
+    if (email.isEmpty) return false;
+    final re = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+    return re.hasMatch(email);
+  }
+
+  bool _isLikelyValidWebsite(String value) {
+    final text = value.trim();
+    if (text.isEmpty) return false;
+    if (text.contains(' ')) return false;
+    final lower = text.toLowerCase();
+    if (lower.contains('example.com') || lower.contains('test.com')) return false;
+    return lower.contains('.') && (lower.startsWith('http://') || lower.startsWith('https://') || RegExp(r'^[a-z0-9\-_.]+\.[a-z]{2,}').hasMatch(lower));
+  }
+
+  String _normalizeUrlForLaunch(String url) {
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    return 'https://$trimmed';
+  }
+
+  String? _extractEmailDomain(String email) {
+    final trimmed = email.trim().toLowerCase();
+    final at = trimmed.indexOf('@');
+    if (at <= 0 || at >= trimmed.length - 1) return null;
+    return trimmed.substring(at + 1);
+  }
+
+  String? _extractHostFromWebsite(String website) {
+    final normalized = _normalizeUrlForLaunch(website);
+    final uri = Uri.tryParse(normalized);
+    final host = uri?.host.trim().toLowerCase();
+    if (host == null || host.isEmpty) return null;
+    return host.startsWith('www.') ? host.substring(4) : host;
+  }
+
+  bool _isWebsiteConsistentWithEmail({String? email, String? website}) {
+    if (email == null || website == null) return true;
+    final emailDomain = _extractEmailDomain(email);
+    final websiteHost = _extractHostFromWebsite(website);
+    if (emailDomain == null || websiteHost == null) return false;
+    final cleanEmailDomain = emailDomain.startsWith('www.') ? emailDomain.substring(4) : emailDomain;
+    return websiteHost == cleanEmailDomain || websiteHost.endsWith('.$cleanEmailDomain') || cleanEmailDomain.endsWith('.$websiteHost');
+  }
+
+  List<Map<String, dynamic>> _dropRepeatedFieldsAcrossAiResults(List<Map<String, dynamic>> items) {
+    final phoneCount = <String, int>{};
+    final websiteCount = <String, int>{};
+
+    for (final item in items) {
+      final p = item['phone'];
+      if (p is String && p.trim().isNotEmpty) {
+        phoneCount[p.trim()] = (phoneCount[p.trim()] ?? 0) + 1;
+      }
+      final w = item['website'];
+      if (w is String && w.trim().isNotEmpty) {
+        websiteCount[w.trim()] = (websiteCount[w.trim()] ?? 0) + 1;
+      }
+    }
+
+    for (final item in items) {
+      final p = item['phone'];
+      if (p is String && (phoneCount[p.trim()] ?? 0) > 1) {
+        item.remove('phone');
+      }
+      final w = item['website'];
+      if (w is String && (websiteCount[w.trim()] ?? 0) > 1) {
+        item.remove('website');
+      }
+    }
+
+    return items;
+  }
+
+  Map<String, dynamic> _sanitizeAiBusiness(Map<String, dynamic> business) {
+    final sanitized = Map<String, dynamic>.from(business);
+
+    final name = _sanitizeAiValue(sanitized['name']);
+    if (name == null) return <String, dynamic>{};
+    sanitized['name'] = name;
+
+    final description = _sanitizeAiValue(sanitized['description']);
+    if (description == null) {
+      sanitized.remove('description');
+    } else {
+      sanitized['description'] = description;
+    }
+
+    final address = _sanitizeAiValue(sanitized['address']);
+    if (address == null) {
+      sanitized.remove('address');
+    } else {
+      sanitized['address'] = address;
+    }
+
+    final phone = _sanitizeAiValue(sanitized['phone']);
+    if (phone == null || !_isValidBangladeshPhone(phone)) {
+      sanitized.remove('phone');
+    } else {
+      sanitized['phone'] = phone;
+    }
+
+    final email = _sanitizeAiValue(sanitized['email']);
+    if (email == null || !_isValidEmail(email)) {
+      sanitized.remove('email');
+    } else {
+      sanitized['email'] = email;
+    }
+
+    final website = _sanitizeAiValue(sanitized['website']);
+    if (website == null || !_isLikelyValidWebsite(website)) {
+      sanitized.remove('website');
+    } else {
+      sanitized['website'] = website;
+    }
+
+    final finalEmail = sanitized['email'] as String?;
+    final finalWebsite = sanitized['website'] as String?;
+    if (!_isWebsiteConsistentWithEmail(email: finalEmail, website: finalWebsite)) {
+      sanitized.remove('website');
+    }
+
+    return sanitized;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1213,6 +1363,23 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
             ..._aiResults.asMap().entries.map((entry) {
               final index = entry.key;
               final result = entry.value;
+              final name = _sanitizeAiValue(result['name']);
+              if (name == null) return const SizedBox.shrink();
+
+              final description = _sanitizeAiValue(result['description']);
+              final address = _sanitizeAiValue(result['address']);
+              final phone = _sanitizeAiValue(result['phone']);
+              final email = _sanitizeAiValue(result['email']);
+              final website = _sanitizeAiValue(result['website']);
+
+              final copyAll = <String>[
+                name,
+                if (description != null) description,
+                if (address != null) address,
+                if (phone != null) phone,
+                if (email != null) email,
+                if (website != null) website,
+              ].join('\n');
               
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
@@ -1225,13 +1392,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name with copy button
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: Text(
-                            '${index + 1}. ${result['name'] ?? 'N/A'}',
+                            '${index + 1}. $name',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -1239,53 +1405,49 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                             ),
                           ),
                         ),
-                        _buildCopyButton(result['name'] ?? ''),
+                        _buildCopyButton(copyAll, icon: Icons.copy_all_rounded),
                       ],
                     ),
-                    if (result['description'] != null) ...[
+                    if (description != null) ...[
                       const SizedBox(height: 6),
                       Text(
-                        result['description'].toString(),
+                        description,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF4B5563),
                         ),
                       ),
                     ],
-                    if (result['address'] != null) ...[
+                    if (address != null) ...[
                       const SizedBox(height: 6),
                       _buildInfoRow(
                         icon: Icons.location_on,
-                        value: result['address'].toString(),
-                        onCopy: () => _copyToClipboard(result['address'].toString()),
+                        value: address,
                       ),
                     ],
-                    if (result['phone'] != null) ...[
+                    if (phone != null) ...[
                       const SizedBox(height: 6),
                       _buildInfoRow(
                         icon: Icons.phone,
-                        value: result['phone'].toString(),
-                        onCopy: () => _copyToClipboard(result['phone'].toString()),
-                        onTap: () => UrlLauncherUtils.launchExternalUrl('tel:${result['phone']}'),
+                        value: phone,
+                        onTap: () => UrlLauncherUtils.launchExternalUrl('tel:$phone'),
                       ),
                     ],
-                    if (result['email'] != null) ...[
+                    if (email != null) ...[
                       const SizedBox(height: 6),
                       _buildInfoRow(
                         icon: Icons.email,
-                        value: result['email'].toString(),
-                        onCopy: () => _copyToClipboard(result['email'].toString()),
-                        onTap: () => UrlLauncherUtils.launchExternalUrl('mailto:${result['email']}'),
+                        value: email,
+                        onTap: () => UrlLauncherUtils.launchExternalUrl('mailto:$email'),
                       ),
                     ],
-                    if (result['website'] != null) ...[
+                    if (website != null) ...[
                       const SizedBox(height: 6),
                       _buildInfoRow(
                         icon: Icons.language,
-                        value: result['website'].toString(),
+                        value: website,
                         isLink: true,
-                        onCopy: () => _copyToClipboard(result['website'].toString()),
-                        onTap: () => UrlLauncherUtils.launchExternalUrl(result['website'].toString()),
+                        onTap: () => UrlLauncherUtils.launchExternalUrl(_normalizeUrlForLaunch(website)),
                       ),
                     ],
                   ],
@@ -1424,7 +1586,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       if (!mounted) return;
       setState(() {
         _aiSearching = false;
-        _aiResults = businesses;
+        final cleaned = businesses.map(_sanitizeAiBusiness).where((e) => e.isNotEmpty).toList();
+        _aiResults = _dropRepeatedFieldsAcrossAiResults(cleaned);
         _aiErrorMessage = errorMessage;
       });
     } catch (e) {
@@ -1459,17 +1622,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     );
   }
 
-  /// Build copy button widget
-  Widget _buildCopyButton(String text) {
+  Widget _buildCopyButton(String text, {IconData icon = Icons.copy_rounded}) {
     return InkWell(
       onTap: () => _copyToClipboard(text),
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(6),
       child: Container(
-        padding: const EdgeInsets.all(4),
-        child: const Icon(
-          Icons.copy_rounded,
-          size: 16,
-          color: Color(0xFF6B7280),
+        padding: const EdgeInsets.all(6),
+        child: Icon(
+          icon,
+          size: 18,
+          color: const Color(0xFF6B7280),
         ),
       ),
     );
@@ -1480,7 +1642,6 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     required IconData icon,
     required String value,
     bool isLink = false,
-    VoidCallback? onCopy,
     VoidCallback? onTap,
   }) {
     return Row(
@@ -1500,19 +1661,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
             ),
           ),
         ),
-        if (onCopy != null)
-          InkWell(
-            onTap: onCopy,
-            borderRadius: BorderRadius.circular(4),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              child: const Icon(
-                Icons.copy_rounded,
-                size: 14,
-                color: Color(0xFF9CA3AF),
-              ),
-            ),
-          ),
+        const SizedBox(width: 6),
+        _buildCopyButton(value),
       ],
     );
   }

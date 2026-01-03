@@ -594,7 +594,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     setState(() {
                       _searchQuery = value.isEmpty ? null : value;
                     });
-                    _fetchPosts();
+                    _fetchPosts(refresh: true);
                   });
                 },
               )
@@ -626,7 +626,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 if (!_isSearchActive) {
                   _searchController.clear();
                   _searchQuery = null;
-                  _fetchPosts();
+                  _fetchPosts(refresh: true);
                 }
               });
             },

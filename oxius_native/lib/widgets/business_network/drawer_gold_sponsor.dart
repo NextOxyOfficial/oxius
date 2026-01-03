@@ -261,7 +261,6 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
       ),
       child: Column(
         children: [
-          // Icon with glow
           Container(
             width: 56,
             height: 56,
@@ -295,7 +294,6 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
-          // Login Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -328,7 +326,6 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
             ),
           ),
           const SizedBox(height: 10),
-          // Register link
           TextButton(
             onPressed: () {
               Navigator.pushNamed(context, '/register');

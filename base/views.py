@@ -4247,6 +4247,138 @@ def ai_business_finder(request):
     Searches for businesses based on location and business type.
     """
     try:
+        def _clean_str(v):
+            if v is None:
+                return None
+            s = str(v).strip()
+            if not s:
+                return None
+            low = s.lower()
+            if low in {"null", "n/a", "na", "none", "unknown"}:
+                return None
+            return s
+
+        def _is_valid_bd_phone(phone: str) -> bool:
+            p = phone.strip()
+            if not p:
+                return False
+            if "x" in p.lower():
+                return False
+            compact = re.sub(r"[\s\-()]", "", p)
+            if "1234567" in compact or "12345678" in compact:
+                return False
+            mobile_intl = re.fullmatch(r"\+8801\d{9}", compact)
+            mobile_local = re.fullmatch(r"01\d{9}", compact)
+            landline_intl = re.fullmatch(r"\+880\d{1,2}\d{6,8}", compact)
+            landline_dash = re.fullmatch(r"\+880\-?\d{1,2}\-?\d{6,8}", p)
+            return bool(mobile_intl or mobile_local or landline_intl or landline_dash)
+
+        def _is_valid_email(email: str) -> bool:
+            e = email.strip()
+            if not e:
+                return False
+            return bool(re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", e))
+
+        def _is_likely_valid_website(url: str) -> bool:
+            u = url.strip()
+            if not u:
+                return False
+            if " " in u:
+                return False
+            low = u.lower()
+            if "example.com" in low or "test.com" in low:
+                return False
+            if low.startswith("http://") or low.startswith("https://"):
+                return "." in low
+            return bool(re.fullmatch(r"[a-z0-9\-_.]+\.[a-z]{2,}.*", low))
+
+        def _extract_email_domain(email: str):
+            e = email.strip().lower()
+            if "@" not in e:
+                return None
+            return e.split("@", 1)[1]
+
+        def _extract_website_host(website: str):
+            w = website.strip()
+            if not w:
+                return None
+            if not (w.lower().startswith("http://") or w.lower().startswith("https://")):
+                w = "https://" + w
+            try:
+                host = requests.utils.urlparse(w).hostname or ""
+            except Exception:
+                host = ""
+            host = host.lower().strip()
+            if host.startswith("www."):
+                host = host[4:]
+            return host or None
+
+        def _is_website_consistent(email, website):
+            if not email or not website:
+                return True
+            ed = _extract_email_domain(email)
+            wh = _extract_website_host(website)
+            if not ed or not wh:
+                return False
+            if ed.startswith("www."):
+                ed = ed[4:]
+            return wh == ed or wh.endswith("." + ed) or ed.endswith("." + wh)
+
+        def _sanitize_businesses(businesses):
+            cleaned = []
+            for b in businesses or []:
+                if not isinstance(b, dict):
+                    continue
+                name = _clean_str(b.get("name"))
+                if not name:
+                    continue
+                item = {"name": name}
+
+                description = _clean_str(b.get("description"))
+                if description:
+                    item["description"] = description
+
+                address = _clean_str(b.get("address"))
+                if address:
+                    item["address"] = address
+
+                phone = _clean_str(b.get("phone"))
+                if phone and _is_valid_bd_phone(phone):
+                    item["phone"] = phone
+
+                email = _clean_str(b.get("email"))
+                if email and _is_valid_email(email):
+                    item["email"] = email
+
+                website = _clean_str(b.get("website"))
+                if website and _is_likely_valid_website(website):
+                    item["website"] = website
+
+                if not _is_website_consistent(item.get("email"), item.get("website")):
+                    item.pop("website", None)
+
+                cleaned.append(item)
+
+            phone_counts = {}
+            website_counts = {}
+            for item in cleaned:
+                p = item.get("phone")
+                if isinstance(p, str) and p.strip():
+                    phone_counts[p.strip()] = phone_counts.get(p.strip(), 0) + 1
+                w = item.get("website")
+                if isinstance(w, str) and w.strip():
+                    website_counts[w.strip()] = website_counts.get(w.strip(), 0) + 1
+
+            for item in cleaned:
+                p = item.get("phone")
+                if isinstance(p, str) and phone_counts.get(p.strip(), 0) > 1:
+                    item.pop("phone", None)
+                w = item.get("website")
+                if isinstance(w, str) and website_counts.get(w.strip(), 0) > 1:
+                    item.pop("website", None)
+
+            return cleaned
+
         # Get request data
         country = request.data.get('country', 'Bangladesh')
         state = request.data.get('state', '')
@@ -4274,9 +4406,9 @@ def ai_business_finder(request):
                 if cf_response.status_code == 200:
                     data = cf_response.json()
                     if isinstance(data.get('data'), list):
-                        return Response({"businesses": data['data']})
+                        return Response({"businesses": _sanitize_businesses(data['data'])})
                     elif isinstance(data.get('data', {}).get('businesses'), list):
-                        return Response({"businesses": data['data']['businesses']})
+                        return Response({"businesses": _sanitize_businesses(data['data']['businesses'])})
                     return Response({"businesses": []})
             except Exception as e:
                 print(f"Cloudflare worker error: {e}")
@@ -4320,7 +4452,7 @@ CRITICAL INSTRUCTIONS:
                         {"role": "system", "content": "You are a local business finder assistant. Always respond with valid JSON arrays only."},
                         {"role": "user", "content": prompt}
                     ],
-                    "temperature": 0.7,
+                    "temperature": 0.2,
                     "max_tokens": 1500
                 }
                 
@@ -4344,7 +4476,7 @@ CRITICAL INSTRUCTIONS:
                         
                         businesses = json.loads(content)
                         if isinstance(businesses, list):
-                            return Response({"businesses": businesses})
+                            return Response({"businesses": _sanitize_businesses(businesses)})
                         return Response({"businesses": []})
                     except json.JSONDecodeError as e:
                         print(f"JSON parse error: {e}, content: {content}")
