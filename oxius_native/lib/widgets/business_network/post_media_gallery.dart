@@ -99,6 +99,9 @@ class PostMediaGallery extends StatelessWidget {
       children: [
         Image.network(
           imageUrl,
+          headers: const {
+            'User-Agent': 'OxiUsFlutter/1.0',
+          },
           fit: fit,
           width: double.infinity,
           errorBuilder: (context, error, stackTrace) {
@@ -151,15 +154,14 @@ class PostMediaGallery extends StatelessWidget {
   Widget _buildSingleImage(BuildContext context, int index) {
     return GestureDetector(
       onTap: () => onMediaTap(index),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxHeight: 500,
-          minHeight: 200,
-        ),
+      child: _AdaptiveAspectRatioBox(
+        imageUrl: media[index].bestThumbnailUrl,
+        minHeight: 180,
+        maxHeight: 520,
         child: _buildMediaContent(
           context,
           index,
-          fit: BoxFit.contain,
+          fit: BoxFit.cover,
           errorIconSize: 48,
         ),
       ),
@@ -468,6 +470,113 @@ class PostMediaGallery extends StatelessWidget {
   }
 }
 
+class _AdaptiveAspectRatioBox extends StatefulWidget {
+  final String imageUrl;
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  const _AdaptiveAspectRatioBox({
+    required this.imageUrl,
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  State<_AdaptiveAspectRatioBox> createState() => _AdaptiveAspectRatioBoxState();
+}
+
+class _AdaptiveAspectRatioBoxState extends State<_AdaptiveAspectRatioBox> {
+  double? _aspectRatio;
+  ImageStream? _stream;
+  ImageStreamListener? _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AdaptiveAspectRatioBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _removeListener();
+      _aspectRatio = null;
+      _resolve();
+    }
+  }
+
+  void _removeListener() {
+    if (_stream != null && _listener != null) {
+      _stream!.removeListener(_listener!);
+    }
+    _stream = null;
+    _listener = null;
+  }
+
+  void _resolve() {
+    final url = widget.imageUrl.trim();
+    if (url.isEmpty) return;
+
+    final provider = NetworkImage(
+      url,
+      headers: const {
+        'User-Agent': 'OxiUsFlutter/1.0',
+      },
+    );
+
+    final stream = provider.resolve(const ImageConfiguration());
+    _stream = stream;
+
+    final listener = ImageStreamListener(
+      (info, _) {
+        final img = info.image;
+        if (img.width == 0 || img.height == 0) return;
+        final ratio = img.width / img.height;
+        if (!mounted) return;
+        setState(() {
+          _aspectRatio = ratio;
+        });
+      },
+      onError: (_, __) {},
+    );
+
+    _listener = listener;
+    stream.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    _removeListener();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxW = constraints.maxWidth;
+        var ratio = (_aspectRatio ?? 1.0);
+        if (ratio <= 0) ratio = 1.0;
+
+        final expectedH = maxW / ratio;
+        if (expectedH > widget.maxHeight) {
+          ratio = maxW / widget.maxHeight;
+        } else if (expectedH < widget.minHeight) {
+          ratio = maxW / widget.minHeight;
+        }
+
+        return AspectRatio(
+          aspectRatio: ratio,
+          child: widget.child,
+        );
+      },
+    );
+  }
+}
+
 class _AutoPlaySingleVideoPreview extends StatefulWidget {
   final PostMedia media;
 
@@ -509,7 +618,13 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
         return;
       }
 
-      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      final controller = VideoPlayerController.networkUrl(
+        Uri.parse(url),
+        httpHeaders: const {
+          'User-Agent': 'OxiUsFlutter/1.0',
+        },
+        videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+      );
       _controller = controller;
       await controller.initialize();
       await controller.setLooping(true);
@@ -591,6 +706,9 @@ class _AutoPlaySingleVideoPreviewState extends State<_AutoPlaySingleVideoPreview
           if (thumbUrl.isNotEmpty)
             Image.network(
               thumbUrl,
+              headers: const {
+                'User-Agent': 'OxiUsFlutter/1.0',
+              },
               fit: BoxFit.contain,
               width: double.infinity,
               errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
