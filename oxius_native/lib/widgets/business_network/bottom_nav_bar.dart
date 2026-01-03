@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../login_prompt_dialog.dart';
 
 class BusinessNetworkBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -286,7 +287,13 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
   Widget _buildCreateButton(BuildContext context, {required bool enabled}) {
     return Expanded(
       child: GestureDetector(
-        onTap: enabled ? () => onTap(2) : null,
+        onTap: enabled 
+            ? () => onTap(2) 
+            : () => LoginPromptDialog.show(
+                context, 
+                action: 'create posts',
+                icon: Icons.edit_note_rounded,
+              ),
         child: Transform.translate(
           offset: const Offset(0, -6),
           child: Column(

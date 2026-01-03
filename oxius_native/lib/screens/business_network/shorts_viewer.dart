@@ -11,6 +11,7 @@ import '../../utils/network_error_handler.dart';
 import '../../widgets/business_network/post_comment_input.dart';
 import '../../widgets/business_network/post_comments_preview.dart';
 import '../../widgets/business_network/diamond_gift_bottom_sheet.dart';
+import '../../widgets/login_prompt_dialog.dart';
 import 'profile_screen.dart';
 
 class ShortsViewer extends StatefulWidget {
@@ -918,29 +919,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
   }
 
   void _showLoginPrompt(String action) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Login Required'),
-        content: Text('Please login to $action'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/login');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
-            ),
-            child: const Text('Login'),
-          ),
-        ],
-      ),
-    );
+    LoginPromptDialog.show(context, action: action);
   }
 
   Future<void> _handleLike() async {

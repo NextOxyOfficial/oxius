@@ -1123,9 +1123,6 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             
             // Provider Card
             _buildProviderCard(),
-
-            if ((_post!.categoryDetails?.businessType?.isNotEmpty ?? false))
-              _buildAdsyAIBot(),
             
             // Safety Tips
             _buildSafetyTipsCard(),

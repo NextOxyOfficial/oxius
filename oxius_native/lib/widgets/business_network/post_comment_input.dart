@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
+import '../../widgets/login_prompt_dialog.dart';
 import 'diamond_gift_bottom_sheet.dart';
 import '../../config/app_config.dart';
 
@@ -117,29 +118,53 @@ class _PostCommentInputState extends State<PostCommentInput> {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         child: InkWell(
           onTap: () {
-            Navigator.pushNamed(context, '/login');
+            LoginPromptDialog.show(context, action: 'comment on this post');
           },
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF10B981).withOpacity(0.08),
+                  const Color(0xFF059669).withOpacity(0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.grey.shade200,
-                width: 0.5,
+                color: const Color(0xFF10B981).withOpacity(0.3),
+                width: 1,
               ),
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.login, size: 18, color: Colors.grey.shade600),
-                const SizedBox(width: 8),
-                Text(
-                  'Login to comment',
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    size: 16,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'Login to join the conversation',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF10B981),
                   ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16,
+                  color: Color(0xFF10B981),
                 ),
               ],
             ),

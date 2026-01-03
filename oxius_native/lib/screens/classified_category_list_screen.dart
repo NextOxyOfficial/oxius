@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:http/http.dart' as http;
@@ -1224,18 +1225,27 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${index + 1}. ${result['name'] ?? 'N/A'}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                      ),
+                    // Name with copy button
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${index + 1}. ${result['name'] ?? 'N/A'}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                            ),
+                          ),
+                        ),
+                        _buildCopyButton(result['name'] ?? ''),
+                      ],
                     ),
                     if (result['description'] != null) ...[
                       const SizedBox(height: 6),
                       Text(
-                        result['description'],
+                        result['description'].toString(),
                         style: const TextStyle(
                           fontSize: 14,
                           color: Color(0xFF4B5563),
@@ -1244,74 +1254,38 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                     ],
                     if (result['address'] != null) ...[
                       const SizedBox(height: 6),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Icons.location_on, size: 16, color: Color(0xFF6B7280)),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              result['address'],
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ),
-                          ),
-                        ],
+                      _buildInfoRow(
+                        icon: Icons.location_on,
+                        value: result['address'].toString(),
+                        onCopy: () => _copyToClipboard(result['address'].toString()),
                       ),
                     ],
                     if (result['phone'] != null) ...[
                       const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(Icons.phone, size: 16, color: Color(0xFF6B7280)),
-                          const SizedBox(width: 4),
-                          Text(
-                            result['phone'],
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
+                      _buildInfoRow(
+                        icon: Icons.phone,
+                        value: result['phone'].toString(),
+                        onCopy: () => _copyToClipboard(result['phone'].toString()),
+                        onTap: () => UrlLauncherUtils.launchExternalUrl('tel:${result['phone']}'),
                       ),
                     ],
                     if (result['email'] != null) ...[
                       const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(Icons.email, size: 16, color: Color(0xFF6B7280)),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              result['email'],
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ),
-                          ),
-                        ],
+                      _buildInfoRow(
+                        icon: Icons.email,
+                        value: result['email'].toString(),
+                        onCopy: () => _copyToClipboard(result['email'].toString()),
+                        onTap: () => UrlLauncherUtils.launchExternalUrl('mailto:${result['email']}'),
                       ),
                     ],
                     if (result['website'] != null) ...[
                       const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(Icons.language, size: 16, color: Color(0xFF6B7280)),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              result['website'],
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF10B981),
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ],
+                      _buildInfoRow(
+                        icon: Icons.language,
+                        value: result['website'].toString(),
+                        isLink: true,
+                        onCopy: () => _copyToClipboard(result['website'].toString()),
+                        onTap: () => UrlLauncherUtils.launchExternalUrl(result['website'].toString()),
                       ),
                     ],
                   ],
@@ -1471,6 +1445,76 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       _aiResults = [];
       _aiErrorMessage = null;
     });
+  }
+
+  /// Copy text to clipboard
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Copied to clipboard'),
+        duration: Duration(seconds: 1),
+        backgroundColor: Color(0xFF10B981),
+      ),
+    );
+  }
+
+  /// Build copy button widget
+  Widget _buildCopyButton(String text) {
+    return InkWell(
+      onTap: () => _copyToClipboard(text),
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        child: const Icon(
+          Icons.copy_rounded,
+          size: 16,
+          color: Color(0xFF6B7280),
+        ),
+      ),
+    );
+  }
+
+  /// Build info row with icon, value, copy and optional tap action
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String value,
+    bool isLink = false,
+    VoidCallback? onCopy,
+    VoidCallback? onTap,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: const Color(0xFF6B7280)),
+        const SizedBox(width: 4),
+        Expanded(
+          child: GestureDetector(
+            onTap: onTap,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                color: isLink ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+              ),
+            ),
+          ),
+        ),
+        if (onCopy != null)
+          InkWell(
+            onTap: onCopy,
+            borderRadius: BorderRadius.circular(4),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              child: const Icon(
+                Icons.copy_rounded,
+                size: 14,
+                color: Color(0xFF9CA3AF),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   /// Build professional description matches section

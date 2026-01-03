@@ -10,6 +10,7 @@ import '../../screens/business_network/search_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/url_launcher_utils.dart';
 import '../../widgets/link_preview_card.dart';
+import '../../widgets/login_prompt_dialog.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
@@ -194,29 +195,7 @@ class _PostCardState extends State<PostCard> {
   }
   
   void _showLoginPrompt(String action) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Login Required'),
-        content: Text('Please login to $action'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/login');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
-            ),
-            child: const Text('Login'),
-          ),
-        ],
-      ),
-    );
+    LoginPromptDialog.show(context, action: action);
   }
 
   Future<void> _handleShare() async {
