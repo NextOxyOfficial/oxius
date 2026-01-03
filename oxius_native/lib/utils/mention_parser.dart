@@ -4,9 +4,9 @@ import 'url_launcher_utils.dart';
 
 class MentionParser {
   // Regex to match @mentions in text
-  // Matches @Name or @First Last (capitalized words only, stops at lowercase or special chars)
+  // Matches @Name or @First Last (any case, stops at double space or punctuation)
   static final RegExp _mentionRegex = RegExp(
-    r'@([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)(?=\s|[.!?,:;]|$)',
+    r'@([A-Za-z][A-Za-z0-9_]*(?:\s+[A-Za-z][A-Za-z0-9_]*)*)(?=\s{2,}|[.!?,:;]|\s+[^A-Za-z]|$)',
     multiLine: true,
   );
 

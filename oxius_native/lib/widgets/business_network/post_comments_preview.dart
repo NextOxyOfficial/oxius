@@ -230,6 +230,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                 comment: reply,
                 post: widget.post,
                 isReply: true,
+                replyToUserName: highestGiftComment!.user.name,
                 onCommentDeleted: () => _handleCommentDeleted(reply.id),
                 onCommentUpdated: _handleCommentUpdated,
               ));
@@ -325,6 +326,7 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
                     post: widget.post,
                     onReply: null, // Don't allow replying to replies for now
                     isReply: true,
+                    replyToUserName: comment.user.name,
                     onCommentDeleted: () => _handleCommentDeleted(reply.id),
                     onCommentUpdated: _handleCommentUpdated,
                   ),
@@ -640,6 +642,7 @@ class _CommentItem extends StatefulWidget {
   final Function(BusinessNetworkComment)? onCommentUpdated;
   final VoidCallback? onCommentDeleted;
   final BusinessNetworkPost? post;
+  final String? replyToUserName;
 
   const _CommentItem({
     required this.comment,
@@ -648,6 +651,7 @@ class _CommentItem extends StatefulWidget {
     this.post,
     this.onCommentUpdated,
     this.onCommentDeleted,
+    this.replyToUserName,
   });
 
   @override
@@ -923,6 +927,31 @@ class _CommentItemState extends State<_CommentItem> {
                     ),
                   ],
                 ),
+                // Reply indicator
+                if (widget.isReply && widget.replyToUserName != null) ...[                  
+                  Row(
+                    children: [
+                      Icon(Icons.reply, size: 12, color: Colors.grey.shade500),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Replying to ',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                      Text(
+                        '@${widget.replyToUserName}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                ],
                 // Comment text or gift comment
                 if (widget.comment.isGiftComment)
                   Container(
