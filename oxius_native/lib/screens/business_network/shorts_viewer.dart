@@ -289,18 +289,43 @@ class _ShortsViewerState extends State<ShortsViewer> {
         .expand((p) => p.media.where((m) => m.isVideo).map((m) => _ShortItem(post: p, media: m)))
         .toList();
 
-    final nextIndex = _currentIndex.clamp(0, nextItems.isEmpty ? 0 : nextItems.length - 1);
+    final wasOnEndPage = _currentIndex >= _items.length;
+    final oldItemsLength = _items.length;
+    
     setState(() {
-      _currentIndex = nextIndex;
       _items
         ..clear()
         ..addAll(nextItems);
     });
 
+    // If user was on end page and new items were added, stay on end page
+    // Otherwise keep current position
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final target = _currentIndex.clamp(0, _items.isEmpty ? 0 : _items.length - 1);
-      _pageController.jumpToPage(target);
+      
+      if (wasOnEndPage) {
+        // If new items were loaded, user can continue watching
+        // If no new items, stay on end page
+        if (nextItems.length > oldItemsLength) {
+          // New videos loaded - go to first new video
+          _pageController.jumpToPage(oldItemsLength);
+          setState(() {
+            _currentIndex = oldItemsLength;
+          });
+        } else {
+          // No new videos - stay on end page
+          _pageController.jumpToPage(nextItems.length);
+          setState(() {
+            _currentIndex = nextItems.length;
+          });
+        }
+      } else {
+        // User was watching a video - keep position
+        final target = _currentIndex.clamp(0, _items.isEmpty ? 0 : _items.length - 1);
+        if (_pageController.page?.round() != target) {
+          _pageController.jumpToPage(target);
+        }
+      }
     });
   }
 
@@ -399,7 +424,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
           PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
-            itemCount: _items.length + (widget.allLoaded ? 1 : 0),
+            itemCount: _items.length + 1,
             onPageChanged: (i) {
               setState(() {
                 _currentIndex = i;
@@ -408,33 +433,167 @@ class _ShortsViewerState extends State<ShortsViewer> {
               _preloadVideos(i);
             },
             itemBuilder: (context, index) {
-              // Show "All videos loaded" page at the end
+              // Show end page (loading or all caught up)
               if (index >= _items.length) {
+                // If still loading more, show loading indicator
+                if (!widget.allLoaded && _isRequestingMore) {
+                  return Container(
+                    color: Colors.black,
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 3,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Loading more shorts...',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                
+                // Show "All Caught Up" page
                 return Container(
-                  color: Colors.black,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check_circle_outline, color: Colors.white.withValues(alpha: 0.7), size: 48),
-                        const SizedBox(height: 12),
-                        Text(
-                          'All shorts loaded',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Swipe down to go back',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 13,
-                          ),
-                        ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFF1a1a2e),
+                        const Color(0xFF16213e),
+                        const Color(0xFF0f3460),
                       ],
+                    ),
+                  ),
+                  child: SafeArea(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Animated checkmark icon with glow
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    const Color(0xFF667eea),
+                                    const Color(0xFF764ba2),
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF667eea).withOpacity(0.4),
+                                    blurRadius: 30,
+                                    spreadRadius: 5,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.play_circle_filled_rounded,
+                                color: Colors.white,
+                                size: 56,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            // Main title
+                            const Text(
+                              "You're All Caught Up!",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            // Subtitle
+                            Text(
+                              "You've watched all the latest shorts.\nCheck back later for more amazing content!",
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 15,
+                                height: 1.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 40),
+                            // Create shorts button
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                                // Navigate to create post with video
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF667eea).withOpacity(0.3),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Create Your Short',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // Swipe hint
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.swipe_down_rounded,
+                                  color: Colors.white.withOpacity(0.5),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Swipe down to go back',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.5),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 );

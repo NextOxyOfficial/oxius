@@ -1497,7 +1497,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   : Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: Text('Pending', style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.amber.shade700)),
+                      child: Text('Incompleted', style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.amber.shade700)),
                     )
         else
           Text('-', style: GoogleFonts.roboto(fontSize: 10, color: Colors.grey.shade400)),
