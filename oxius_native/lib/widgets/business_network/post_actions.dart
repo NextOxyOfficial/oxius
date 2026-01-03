@@ -25,39 +25,39 @@ class PostActions extends StatelessWidget {
         children: [
           // Like Button
           _ActionButton(
-            icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-            iconColor: post.isLiked ? Colors.red : Colors.grey.shade600,
+            iconPath: post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
             label: _formatCount(post.likesCount),
             onTap: onLike,
           ),
           const SizedBox(width: 16),
           // Comment Button
           _ActionButton(
-            icon: Icons.chat_bubble_outline_rounded,
-            iconColor: Colors.grey.shade600,
+            iconPath: 'assets/icons/comments.png',
             label: _formatCount(post.commentsCount),
             onTap: onComment,
           ),
           const SizedBox(width: 16),
           // Share Button
           _ActionButton(
-            icon: Icons.share_rounded,
-            iconColor: Colors.grey.shade600,
+            iconPath: 'assets/icons/share.png',
             label: 'Share',
             onTap: onShare,
           ),
           const Spacer(),
           // Save Button
           if (onSave != null)
-            IconButton(
-              onPressed: onSave,
-              icon: Icon(
-                post.isSaved ? Icons.bookmark : Icons.bookmark_border_rounded,
-                color: post.isSaved ? const Color(0xFF3B82F6) : Colors.grey.shade600,
-                size: 23,
+            InkWell(
+              onTap: onSave,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Image.asset(
+                  post.isSaved ? 'assets/icons/saved.png' : 'assets/icons/save.png',
+                  width: 22,
+                  height: 22,
+                  fit: BoxFit.contain,
+                ),
               ),
-              padding: const EdgeInsets.all(4),
-              constraints: const BoxConstraints(),
             ),
         ],
       ),
@@ -75,14 +75,12 @@ class PostActions extends StatelessWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
+  final String iconPath;
   final String label;
   final VoidCallback onTap;
 
   const _ActionButton({
-    required this.icon,
-    required this.iconColor,
+    required this.iconPath,
     required this.label,
     required this.onTap,
   });
@@ -96,12 +94,20 @@ class _ActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: iconColor),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Image.asset(
+                iconPath,
+                width: 22,
+                height: 22,
+                fit: BoxFit.contain,
+              ),
+            ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 15,
                 color: Colors.grey.shade700,
                 fontWeight: FontWeight.w500,
               ),

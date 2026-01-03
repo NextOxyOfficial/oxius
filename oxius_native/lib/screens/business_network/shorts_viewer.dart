@@ -1138,20 +1138,21 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _ActionButton(
-                icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
+                iconPath: post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
                 label: post.likesCount.toString(),
                 onTap: _handleLike,
+                applyGrayFill: !post.isLiked,
               ),
               const SizedBox(height: 14),
               _ActionButton(
-                icon: Icons.comment_rounded,
+                iconPath: 'assets/icons/comments.png',
                 label: _commentsCount.toString(),
                 onTap: _openCommentsSheet,
               ),
               const SizedBox(height: 14),
               if (!_isOwnPost()) ...[
                 _ActionButton(
-                  icon: Icons.card_giftcard,
+                  materialIcon: Icons.card_giftcard,
                   label: 'Gift',
                   onTap: () {
                     // ignore: discarded_futures
@@ -1161,7 +1162,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
                 const SizedBox(height: 14),
               ],
               _ActionButton(
-                icon: Icons.share_rounded,
+                iconPath: 'assets/icons/share.png',
                 label: 'Share',
                 onTap: _handleShare,
               ),
@@ -1276,15 +1277,19 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
 }
 
 class _ActionButton extends StatelessWidget {
-  final IconData icon;
+  final String? iconPath;
+  final IconData? materialIcon;
   final String label;
   final VoidCallback? onTap;
+  final bool applyGrayFill;
 
   const _ActionButton({
-    required this.icon,
+    this.iconPath,
+    this.materialIcon,
     required this.label,
     required this.onTap,
-  });
+    this.applyGrayFill = false,
+  }) : assert(iconPath != null || materialIcon != null, 'Either iconPath or materialIcon must be provided');
 
   @override
   Widget build(BuildContext context) {
@@ -1299,9 +1304,34 @@ class _ActionButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.35),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
-            child: Icon(icon, color: Colors.white, size: 22),
+            child: Center(
+              child: iconPath != null
+                  ? (applyGrayFill
+                      ? ColorFiltered(
+                          colorFilter: ColorFilter.mode(
+                            Colors.grey.shade400,
+                            BlendMode.srcIn,
+                          ),
+                          child: Image.asset(
+                            iconPath!,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : Image.asset(
+                          iconPath!,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.contain,
+                        ))
+                  : Icon(
+                      materialIcon!,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+            ),
           ),
           const SizedBox(height: 6),
           SizedBox(
@@ -1313,7 +1343,7 @@ class _ActionButton extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.9),
-                fontSize: 11,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
