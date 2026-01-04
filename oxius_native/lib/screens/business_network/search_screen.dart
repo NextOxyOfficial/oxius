@@ -457,8 +457,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   return _buildLoadMoreButton();
                 }
                 return PostCard(
+                  key: ValueKey('post_${_posts[index].id}_${_posts[index].isLiked}_${_posts[index].isSaved}'),
                   post: _posts[index],
-                  onLikeToggle: () {},
+                  onPostUpdated: (updatedPost) {
+                    setState(() {
+                      _posts[index] = updatedPost;
+                    });
+                  },
                   onCommentAdded: (comment) {},
                   onPostDeleted: () {
                     setState(() {
@@ -491,16 +496,25 @@ class _SearchScreenState extends State<SearchScreen> {
           ],
           if (_posts.isNotEmpty) ...[
             _buildSectionHeader('Posts', _posts.length),
-            ..._posts.map((post) => PostCard(
-              post: post,
-              onLikeToggle: () {},
-              onCommentAdded: (comment) {},
-              onPostDeleted: () {
-                setState(() {
-                  _posts.remove(post);
-                });
-              },
-            )),
+            ..._posts.asMap().entries.map((entry) {
+              final index = entry.key;
+              final post = entry.value;
+              return PostCard(
+                key: ValueKey('post_${post.id}_${post.isLiked}_${post.isSaved}'),
+                post: post,
+                onPostUpdated: (updatedPost) {
+                  setState(() {
+                    _posts[index] = updatedPost;
+                  });
+                },
+                onCommentAdded: (comment) {},
+                onPostDeleted: () {
+                  setState(() {
+                    _posts.remove(post);
+                  });
+                },
+              );
+            }),
             if (_hasMore) _buildLoadMoreButton(),
           ],
         ],

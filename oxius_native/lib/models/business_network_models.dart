@@ -43,6 +43,18 @@ class BusinessNetworkPost {
 
   factory BusinessNetworkPost.fromJson(Map<String, dynamic> json) {
     try {
+      bool parseBool(dynamic value) {
+        if (value is bool) return value;
+        if (value is int) return value != 0;
+        if (value is double) return value != 0;
+        if (value is String) {
+          final v = value.toLowerCase().trim();
+          if (v == 'true' || v == '1' || v == 'yes') return true;
+          if (v == 'false' || v == '0' || v == 'no') return false;
+        }
+        return false;
+      }
+
       // Handle both 'user' and 'author_details' fields
       final userData = json['author_details'] ?? json['user'];
 
@@ -151,8 +163,8 @@ class BusinessNetworkPost {
           return null;
         }
       }).whereType<PostLike>().toList();
-      
-      bool isLiked = json['is_liked'] ?? likesList.isNotEmpty;
+
+      final bool isLiked = parseBool(json['is_liked'] ?? json['isLiked']);
       
       return BusinessNetworkPost(
         id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
@@ -166,7 +178,7 @@ class BusinessNetworkPost {
         likesCount: json['like_count'] ?? json['likes_count'] ?? 0,
         commentsCount: json['comment_count'] ?? json['comments_count'] ?? 0,
         isLiked: isLiked,
-        isSaved: json['is_saved'] ?? json['isSaved'] ?? false,
+        isSaved: parseBool(json['is_saved'] ?? json['isSaved']),
         createdAt: json['created_at'] ?? DateTime.now().toIso8601String(),
         category: json['category'],
         comments: (commentsList is List ? commentsList : [])

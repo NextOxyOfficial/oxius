@@ -50,6 +50,7 @@ class UserStateService extends ChangeNotifier {
       if (isValid) {
         _currentUser = AuthService.currentUser;
         _isAuthenticated = true;
+        // Start call listener asynchronously (don't await to not block init)
         CallListenerService.instance.start();
       } else {
         _currentUser = null;
@@ -70,6 +71,7 @@ class UserStateService extends ChangeNotifier {
   void updateUser(User user) {
     _currentUser = user;
     _isAuthenticated = true;
+    // Start call listener asynchronously
     CallListenerService.instance.start();
     notifyListeners();
   }

@@ -1440,13 +1440,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       itemCount: _userPosts.length,
       itemBuilder: (context, index) {
         return PostCard(
+          key: ValueKey('post_${_userPosts[index].id}_${_userPosts[index].isLiked}_${_userPosts[index].isSaved}'),
           post: _userPosts[index],
-          onLikeToggle: () {
-            // TODO: Handle like toggle
+          onPostUpdated: (updatedPost) {
+            setState(() {
+              _userPosts[index] = updatedPost;
+            });
           },
-          onCommentAdded: (comment) {
-            // TODO: Handle comment added
-          },
+          onCommentAdded: (comment) {},
           onPostDeleted: () {
             setState(() {
               _userPosts.removeAt(index);
@@ -1885,9 +1886,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       itemCount: _savedPosts.length,
       itemBuilder: (context, index) {
         return PostCard(
+          key: ValueKey('post_${_savedPosts[index].id}_${_savedPosts[index].isLiked}_${_savedPosts[index].isSaved}'),
           post: _savedPosts[index],
-          onLikeToggle: () {
-            // Refresh saved posts if needed
+          onPostUpdated: (updatedPost) {
+            setState(() {
+              _savedPosts[index] = updatedPost;
+            });
           },
           onSaveChanged: (postId, isSaved) {
             if (!isSaved) {
@@ -1896,9 +1900,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               });
             }
           },
-          onCommentAdded: (comment) {
-            // Handle comment added
-          },
+          onCommentAdded: (comment) {},
           onPostDeleted: () {
             setState(() {
               _savedPosts.removeAt(index);

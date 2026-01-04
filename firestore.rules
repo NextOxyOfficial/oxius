@@ -30,33 +30,38 @@ service cloud.firestore {
         request.resource.data.type in ['audio', 'video'] &&
         request.resource.data.state == 'calling';
 
-      allow read: if isParticipantByCallId(callId);
+      // Allow read if user is caller or callee (for both get and list queries)
+      allow read: if isSignedIn() && 
+        (resource.data.callerId == request.auth.uid || resource.data.calleeId == request.auth.uid);
 
-      allow update: if isParticipantByCallId(callId) &&
+      // Allow update if user is caller or callee
+      allow update: if isSignedIn() && 
+        (resource.data.callerId == request.auth.uid || resource.data.calleeId == request.auth.uid) &&
         request.resource.data.callerId == resource.data.callerId &&
         request.resource.data.calleeId == resource.data.calleeId &&
-        request.resource.data.type == resource.data.type &&
-        request.resource.data.diff(resource.data).changedKeys().hasOnly([
-          'state',
-          'offer',
-          'answer',
-          'updatedAt',
-          'endedAt'
-        ]) &&
-        (!('offer' in request.resource.data.diff(resource.data).changedKeys()) || isCallerByCallId(callId)) &&
-        (!('answer' in request.resource.data.diff(resource.data).changedKeys()) || isCalleeByCallId(callId));
+        request.resource.data.type == resource.data.type;
 
       allow delete: if false;
 
       match /callerCandidates/{candidateId} {
-        allow create: if isCallerByCallId(callId);
-        allow read: if isParticipantByCallId(callId);
+        // Only caller can create their candidates
+        allow create: if isSignedIn() && 
+          get(/databases/$(database)/documents/calls/$(callId)).data.callerId == request.auth.uid;
+        // Both participants can read
+        allow read: if isSignedIn() && 
+          (get(/databases/$(database)/documents/calls/$(callId)).data.callerId == request.auth.uid || 
+           get(/databases/$(database)/documents/calls/$(callId)).data.calleeId == request.auth.uid);
         allow update, delete: if false;
       }
 
       match /calleeCandidates/{candidateId} {
-        allow create: if isCalleeByCallId(callId);
-        allow read: if isParticipantByCallId(callId);
+        // Only callee can create their candidates
+        allow create: if isSignedIn() && 
+          get(/databases/$(database)/documents/calls/$(callId)).data.calleeId == request.auth.uid;
+        // Both participants can read
+        allow read: if isSignedIn() && 
+          (get(/databases/$(database)/documents/calls/$(callId)).data.callerId == request.auth.uid || 
+           get(/databases/$(database)/documents/calls/$(callId)).data.calleeId == request.auth.uid);
         allow update, delete: if false;
       }
     }

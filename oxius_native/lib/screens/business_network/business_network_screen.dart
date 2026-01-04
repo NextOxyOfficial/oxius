@@ -459,8 +459,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       if (currentIndex == index) {
         final post = visiblePosts[i];
         return PostCard(
+          key: ValueKey('post_${post.id}_${post.isLiked}_${post.isSaved}'),
           post: post,
-          onLikeToggle: () => _handleLikeToggleByPostId(post.id),
+          onPostUpdated: _handlePostUpdated,
           onCommentAdded: (comment) => _handleCommentAddedByPostId(post.id, comment),
           onPostDeleted: () => _handlePostDeletedByPostId(post.id),
         );
@@ -801,21 +802,15 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     );
   }
 
-  void _handleLikeToggleByPostId(int postId) async {
-    final index = _posts.indexWhere((p) => p.id == postId);
+  void _handlePostUpdated(BusinessNetworkPost updatedPost) {
+    if (!mounted) return;
+
+    final index = _posts.indexWhere((p) => p.id == updatedPost.id);
     if (index < 0) return;
 
-    final post = _posts[index];
-    final success = await BusinessNetworkService.toggleLike(post.id, post.isLiked);
-    
-    if (success && mounted) {
-      setState(() {
-        _posts[index] = post.copyWith(
-          isLiked: !post.isLiked,
-          likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1,
-        );
-      });
-    }
+    setState(() {
+      _posts[index] = updatedPost;
+    });
   }
 
   void _handleCommentAddedByPostId(int postId, BusinessNetworkComment comment) {

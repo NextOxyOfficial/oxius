@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 
 import 'package:flutter/material.dart';
 
 import '../../../services/fcm_service.dart';
 import '../models/adsy_call.dart';
+import 'firebase_call_auth_service.dart';
 import 'firestore_call_signaling_service.dart';
 import '../screens/adsy_call_screen.dart';
 
@@ -17,20 +19,61 @@ class CallListenerService {
   Timer? _navTimer;
   int _navAttempts = 0;
 
-  void start() {
-    _sub ??= FirestoreCallSignalingService.instance.watchIncomingCalls().listen((snap) {
-      for (final doc in snap.docs) {
-        if (_activeCallId != null) return;
+  bool _isStarting = false;
 
-        final callId = doc.id;
-        final call = AdsyCallDoc.fromSnapshot(doc);
-        if (call == null) continue;
+  Future<void> start() async {
+    if (_sub != null || _isStarting) {
+      dev.log('[CallListener] Already started or starting');
+      return;
+    }
+    
+    _isStarting = true;
+    dev.log('[CallListener] Starting incoming call listener...');
+    
+    // First ensure Firebase Auth is signed in
+    final authOk = await FirebaseCallAuthService.instance.ensureSignedIn();
+    if (!authOk) {
+      dev.log('[CallListener] ERROR: Firebase Auth failed - ${FirebaseCallAuthService.instance.lastError}');
+      _isStarting = false;
+      return;
+    }
+    
+    final uid = FirebaseCallAuthService.instance.uid;
+    dev.log('[CallListener] Firebase Auth OK, uid=$uid');
+    
+    _sub = FirestoreCallSignalingService.instance.watchIncomingCalls().listen(
+      (snap) {
+        dev.log('[CallListener] Received snapshot with ${snap.docs.length} docs');
+        for (final doc in snap.docs) {
+          if (_activeCallId != null) {
+            dev.log('[CallListener] Already handling call $_activeCallId, skipping');
+            return;
+          }
 
-        _activeCallId = callId;
-        _navigateToIncoming(call);
-        break;
-      }
-    });
+          final callId = doc.id;
+          dev.log('[CallListener] Processing incoming call: $callId');
+          final call = AdsyCallDoc.fromSnapshot(doc);
+          if (call == null) {
+            dev.log('[CallListener] Failed to parse call doc');
+            continue;
+          }
+
+          dev.log('[CallListener] Incoming call from ${call.callerId}, type=${call.type}');
+          _activeCallId = callId;
+          _navigateToIncoming(call);
+          break;
+        }
+      },
+      onError: (e, st) {
+        dev.log('[CallListener] Stream error: $e\n$st');
+      },
+      onDone: () {
+        dev.log('[CallListener] Stream closed');
+      },
+    );
+    
+    _isStarting = false;
+    dev.log('[CallListener] Listener started successfully');
   }
 
   void stop() {
@@ -43,6 +86,7 @@ class CallListenerService {
   }
 
   void _navigateToIncoming(AdsyCallDoc call) {
+    dev.log('[CallListener] _navigateToIncoming: callId=${call.id}, callerId=${call.callerId}');
     _navTimer?.cancel();
     _navAttempts = 0;
 
@@ -50,7 +94,9 @@ class CallListenerService {
       final nav = FCMService.navigatorKey.currentState;
       if (nav == null) {
         _navAttempts += 1;
+        dev.log('[CallListener] Navigator not ready, attempt $_navAttempts/20');
         if (_navAttempts >= 20) {
+          dev.log('[CallListener] Max nav attempts reached, giving up');
           t.cancel();
           _navTimer = null;
           _activeCallId = null;
@@ -60,6 +106,7 @@ class CallListenerService {
 
       t.cancel();
       _navTimer = null;
+      dev.log('[CallListener] Navigating to incoming call screen');
 
       nav
           .push(
@@ -74,6 +121,7 @@ class CallListenerService {
         ),
       )
           .then((_) {
+        dev.log('[CallListener] Call screen closed');
         _activeCallId = null;
       });
     });

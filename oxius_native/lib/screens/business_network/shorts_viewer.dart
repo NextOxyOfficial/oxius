@@ -978,7 +978,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
       }
 
       shareText += _post.content;
-      shareText += '\n\nView on Business Network: ${AppConfig.mediaBaseUrl}/bn/posts/${_post.id}/';
+      shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
 
       await Share.share(
         shareText,

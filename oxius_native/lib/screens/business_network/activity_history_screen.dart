@@ -359,7 +359,13 @@ class _SavedPostsTab extends StatelessWidget {
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: PostCard(post: posts[index]),
+              child: PostCard(
+                key: ValueKey('post_${posts[index].id}_${posts[index].isLiked}_${posts[index].isSaved}'),
+                post: posts[index],
+                onPostUpdated: (updatedPost) {
+                  // Activity history is read-only, no need to update
+                },
+              ),
             );
           },
         );

@@ -41,6 +41,10 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         ],
       ),
       child: SafeArea(
+        top: false,
+        left: true,
+        right: true,
+        bottom: false,
         minimum: EdgeInsets.zero,
         child: Container(
           height: 56,

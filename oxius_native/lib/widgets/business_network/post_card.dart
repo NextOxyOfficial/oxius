@@ -21,7 +21,7 @@ import '../../screens/business_network/shorts_player_screen.dart';
 
 class PostCard extends StatefulWidget {
   final BusinessNetworkPost post;
-  final VoidCallback? onLikeToggle;
+  final void Function(BusinessNetworkPost updatedPost)? onPostUpdated;
   final Function(BusinessNetworkComment)? onCommentAdded;
   final VoidCallback? onPostDeleted;
   final void Function(int postId, bool isSaved)? onSaveChanged;
@@ -29,7 +29,7 @@ class PostCard extends StatefulWidget {
   const PostCard({
     super.key,
     required this.post,
-    this.onLikeToggle,
+    this.onPostUpdated,
     this.onCommentAdded,
     this.onPostDeleted,
     this.onSaveChanged,
@@ -55,7 +55,11 @@ class _PostCardState extends State<PostCard> {
   @override
   void didUpdateWidget(PostCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.post != widget.post) {
+    if (oldWidget.post.id != widget.post.id ||
+        oldWidget.post.isLiked != widget.post.isLiked ||
+        oldWidget.post.isSaved != widget.post.isSaved ||
+        oldWidget.post.likesCount != widget.post.likesCount ||
+        oldWidget.post.commentsCount != widget.post.commentsCount) {
       setState(() {
         _post = widget.post;
       });
@@ -210,7 +214,7 @@ class _PostCardState extends State<PostCard> {
       shareText += _post.content;
       
       // Add post link
-      shareText += '\n\nView on Business Network: ${AppConfig.mediaBaseUrl}/bn/posts/${_post.id}/';
+      shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
       
       // Share the content
       await Share.share(
@@ -247,34 +251,34 @@ class _PostCardState extends State<PostCard> {
     
     // Optimistic update - update UI immediately
     if (mounted) {
+      final updated = _post.copyWith(
+        isLiked: !originalIsLiked,
+        likesCount: originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1,
+      );
       setState(() {
-        _post = _post.copyWith(
-          isLiked: !originalIsLiked,
-          likesCount: originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1,
-        );
+        _post = updated;
       });
+      widget.onPostUpdated?.call(updated);
     }
     
     // Make API call
     try {
       await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
       _isLiking = false;
-      
-      // Trigger callback if provided
-      if (widget.onLikeToggle != null) {
-        widget.onLikeToggle!();
-      }
+      widget.onPostUpdated?.call(_post);
     } catch (e) {
       _isLiking = false;
       
       // Failed - rollback to original state
       if (mounted) {
+        final rolledBack = _post.copyWith(
+          isLiked: originalIsLiked,
+          likesCount: originalLikesCount,
+        );
         setState(() {
-          _post = _post.copyWith(
-            isLiked: originalIsLiked,
-            likesCount: originalLikesCount,
-          );
+          _post = rolledBack;
         });
+        widget.onPostUpdated?.call(rolledBack);
         
         // Show professional error message
         NetworkErrorHandler.showErrorSnackbar(
@@ -293,15 +297,19 @@ class _PostCardState extends State<PostCard> {
       return;
     }
     
-    final success = await BusinessNetworkService.toggleSave(_post.id, _post.isSaved);
+    final originalIsSaved = _post.isSaved;
+    final updated = _post.copyWith(isSaved: !originalIsSaved);
+
+    if (mounted) {
+      setState(() {
+        _post = updated;
+      });
+      widget.onPostUpdated?.call(updated);
+    }
+
+    final success = await BusinessNetworkService.toggleSave(_post.id, originalIsSaved);
     
     if (success && mounted) {
-      setState(() {
-        _post = _post.copyWith(
-          isSaved: !_post.isSaved,
-        );
-      });
-
       widget.onSaveChanged?.call(_post.id, _post.isSaved);
       
       ScaffoldMessenger.of(context).showSnackBar(
@@ -310,6 +318,12 @@ class _PostCardState extends State<PostCard> {
           duration: const Duration(seconds: 2),
         ),
       );
+    } else if (!success && mounted) {
+      final rolledBack = _post.copyWith(isSaved: originalIsSaved);
+      setState(() {
+        _post = rolledBack;
+      });
+      widget.onPostUpdated?.call(rolledBack);
     }
   }
 
@@ -611,7 +625,6 @@ class _PostCardState extends State<PostCard> {
                       UrlLauncherUtils.launchExternalUrl(url);
                     },
                   ),
-                  FirstLinkPreview(text: _post.content),
                   if (_post.content.length > 160)
                     TextButton(
                       onPressed: () {
@@ -631,6 +644,7 @@ class _PostCardState extends State<PostCard> {
                         ),
                       ),
                     ),
+                  FirstLinkPreview(text: _post.content),
                 ],
               ),
             ),

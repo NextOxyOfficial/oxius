@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import '../models/business_network_models.dart';
 import 'api_service.dart';
+import 'auth_service.dart';
 
 class BusinessNetworkService {
   static String get _baseUrl => '${ApiService.baseUrl}/bn';
@@ -54,10 +55,20 @@ class BusinessNetworkService {
       
       // First try without auth to avoid token issues
       final basicHeaders = {'Content-Type': 'application/json'};
+      final headers = await ApiService.getHeaders();
+      final hasAuthHeader = headers.keys.any((k) => k.toLowerCase() == 'authorization');
+
       var response = await http.get(
         Uri.parse(url),
-        headers: basicHeaders,
+        headers: hasAuthHeader ? headers : basicHeaders,
       );
+
+      if (hasAuthHeader && (response.statusCode == 401 || response.statusCode == 403)) {
+        response = await http.get(
+          Uri.parse(url),
+          headers: basicHeaders,
+        );
+      }
       
       print('=== Business Network API Debug ===');
       print('URL: $url');
@@ -69,7 +80,27 @@ class BusinessNetworkService {
         print('Decoded data: $data');
         final results = data['results'] as List;
         print('Results count: ${results.length}');
-        final posts = results.map((e) => BusinessNetworkPost.fromJson(e)).toList();
+
+        final currentUserIdStr = AuthService.currentUser?.id;
+        final currentUserId = int.tryParse((currentUserIdStr ?? '').toString());
+
+        final posts = results.map((e) {
+          final raw = e is Map<String, dynamic>
+              ? e
+              : (e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{});
+
+          var post = BusinessNetworkPost.fromJson(raw);
+
+          final hasIsLikedField = raw.containsKey('is_liked') || raw.containsKey('isLiked');
+          if (!hasIsLikedField && currentUserId != null) {
+            final inferredLiked = post.postLikes.any((l) => l.user == currentUserId);
+            if (inferredLiked != post.isLiked) {
+              post = post.copyWith(isLiked: inferredLiked);
+            }
+          }
+
+          return post;
+        }).toList();
         print('Parsed ${posts.length} posts successfully');
         
         return {

@@ -136,7 +136,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       shareText += _post.content;
       
       // Add post link
-      shareText += '\n\nView on Business Network: ${AppConfig.mediaBaseUrl}/bn/posts/${_post.id}/';
+      shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
       
       // Share the content
       await Share.share(

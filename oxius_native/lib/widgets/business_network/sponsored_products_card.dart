@@ -59,24 +59,47 @@ class SponsoredProductsCard extends StatelessWidget {
           ),
 
           // Products grid - Using existing ProductCard widget
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isMobile ? 2 : 3,
-              // Responsive aspect ratio: increased to prevent overflow
-              childAspectRatio: isSmallScreen ? 0.52 : isMobile ? 0.56 : 0.58,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-            ),
-            itemCount: displayProducts.length,
-            itemBuilder: (context, index) {
-              final product = displayProducts[index];
-              return ProductCard(
-                product: product,
-                isLoading: false,
-                onBuyNow: () {
-                  _navigateToCheckout(context, product);
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = isMobile ? 2 : 3;
+              const crossAxisSpacing = 4.0;
+              const mainAxisSpacing = 2.0;
+
+              final isLargeScreen = screenWidth > 600;
+              final detailsHeight = isSmallScreen
+                  ? 108.0
+                  : isLargeScreen
+                      ? 132.0
+                      : 116.0;
+
+              final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
+              final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
+              final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
+
+              // ProductCard uses a square image (height == width) + fixed-ish details block.
+              // Keep cell height aligned with that to avoid blank space on different devices.
+              final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.60;
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  // Responsive aspect ratio: increased to prevent overflow
+                  childAspectRatio: childAspectRatio,
+                  crossAxisSpacing: crossAxisSpacing,
+                  mainAxisSpacing: mainAxisSpacing,
+                ),
+                itemCount: displayProducts.length,
+                itemBuilder: (context, index) {
+                  final product = displayProducts[index];
+                  return ProductCard(
+                    product: product,
+                    isLoading: false,
+                    onBuyNow: () {
+                      _navigateToCheckout(context, product);
+                    },
+                  );
                 },
               );
             },

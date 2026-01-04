@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -117,18 +118,23 @@ class FirestoreCallSignalingService {
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchIncomingCalls() async* {
+    dev.log('[FirestoreSignaling] watchIncomingCalls starting...');
+    
     final ok = await FirebaseCallAuthService.instance.ensureSignedIn();
     if (!ok) {
+      dev.log('[FirestoreSignaling] watchIncomingCalls: Firebase auth failed');
       yield* Stream.empty();
       return;
     }
 
     final uid = FirebaseCallAuthService.instance.uid;
     if (uid == null || uid.isEmpty) {
+      dev.log('[FirestoreSignaling] watchIncomingCalls: UID is null or empty');
       yield* Stream.empty();
       return;
     }
 
+    dev.log('[FirestoreSignaling] watchIncomingCalls: Listening for calls where calleeId=$uid and state=calling');
     yield* _calls
         .where('calleeId', isEqualTo: uid)
         .where('state', isEqualTo: AdsyCallDoc.stateToString(AdsyCallState.calling))

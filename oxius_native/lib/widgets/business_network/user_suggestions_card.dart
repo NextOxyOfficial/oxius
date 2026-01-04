@@ -247,55 +247,73 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
   }
 
   Widget _buildLoadingState(bool isMobile) {
-    return GridView.count(
-      crossAxisCount: isMobile ? 2 : 3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 4,
-      crossAxisSpacing: 4,
-      childAspectRatio: isMobile ? 0.72 : 0.68,
-      children: List.generate(
-        isMobile ? 2 : 3,
-        (index) => Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.grey.shade200),
-            borderRadius: BorderRadius.circular(12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = isMobile ? 2 : 3;
+        const crossAxisSpacing = 4.0;
+        const mainAxisSpacing = 4.0;
+
+        final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
+        final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
+        final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
+
+        // Square image (height == width) + details section
+        final detailsHeight = isMobile ? 104.0 : 118.0;
+        final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.72;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: childAspectRatio,
+            crossAxisSpacing: crossAxisSpacing,
+            mainAxisSpacing: mainAxisSpacing,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: isMobile ? 96 : 144,
-                height: isMobile ? 96 : 144,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+          itemCount: isMobile ? 2 : 3,
+          itemBuilder: (context, index) {
+            return Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(height: 12),
-              Container(
-                height: 16,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(4),
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: isMobile ? 96 : 144,
+                    height: isMobile ? 96 : 144,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    height: 16,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 12,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Container(
-                height: 12,
-                width: 80,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -321,15 +339,49 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
   }
 
   Widget _buildSuggestionsList(bool isMobile) {
-    return GridView.count(
-      crossAxisCount: isMobile ? 2 : 3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 4,
-      crossAxisSpacing: 4,
-      // Increased aspect ratio to reduce card height
-      childAspectRatio: isMobile ? 0.75 : 0.62,
-      children: _displayedSuggestions.map((user) => _buildUserCard(user, isMobile)).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = isMobile ? 2 : 3;
+        const crossAxisSpacing = 4.0;
+        const mainAxisSpacing = 4.0;
+
+        final hasAnyProfession = _displayedSuggestions.any((u) {
+          final v = (u['profession'] ?? '').toString().trim();
+          return v.isNotEmpty;
+        });
+        final hasAnyMutual = _displayedSuggestions.any((u) {
+          final n = int.tryParse((u['mutual_connections'] ?? 0).toString()) ?? 0;
+          return n > 0;
+        });
+
+        final baseDetails = isMobile ? 74.0 : 78.0;
+        final professionExtra = hasAnyProfession ? (isMobile ? 14.0 : 14.0) : 0.0;
+        final mutualExtra = hasAnyMutual ? (isMobile ? 21.0 : 21.0) : 0.0;
+        final detailsHeight = baseDetails + professionExtra + mutualExtra;
+
+        final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
+        final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
+        final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
+
+        // Square image (height == width) + fixed-ish details block
+        final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : (isMobile ? 0.72 : 0.66);
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: childAspectRatio,
+            crossAxisSpacing: crossAxisSpacing,
+            mainAxisSpacing: mainAxisSpacing,
+          ),
+          itemCount: _displayedSuggestions.length,
+          itemBuilder: (context, index) {
+            final user = _displayedSuggestions[index];
+            return _buildUserCard(user, isMobile);
+          },
+        );
+      },
     );
   }
 
@@ -382,31 +434,34 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             ],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             children: [
               // Profile image - full width
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        width: double.infinity,
-                        height: isMobile ? 130 : 170,
-                        fit: BoxFit.cover,
-                        headers: const {
-                          'User-Agent': 'Mozilla/5.0 (compatible; Flutter/3.0)',
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return _buildPlaceholderImage(isMobile);
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          print('❌ Image load error for: $imageUrl');
-                          print('❌ Error: $error');
-                          return _buildPlaceholderImage(isMobile);
-                        },
-                      )
-                    : _buildPlaceholderImage(isMobile),
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          headers: const {
+                            'User-Agent': 'Mozilla/5.0 (compatible; Flutter/3.0)',
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return _buildPlaceholderImage(isMobile);
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            print('❌ Image load error for: $imageUrl');
+                            print('❌ Error: $error');
+                            return _buildPlaceholderImage(isMobile);
+                          },
+                        )
+                      : _buildPlaceholderImage(isMobile),
+                ),
               ),
 
               const SizedBox(height: 6),
@@ -463,7 +518,9 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                 ),
               ],
 
-              const SizedBox(height: 8),
+              const Spacer(),
+
+              const SizedBox(height: 6),
 
               // Follow button
               SizedBox(
@@ -515,7 +572,7 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
   Widget _buildPlaceholderImage(bool isMobile) {
     return Container(
       width: double.infinity,
-      height: isMobile ? 130 : 170,
+      height: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -525,7 +582,6 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             Colors.blue.shade50,
           ],
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: Icon(
         Icons.person_rounded,
