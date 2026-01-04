@@ -15,6 +15,8 @@ import '../screens/business_network/profile_screen.dart';
 import '../screens/business_network/post_detail_screen.dart';
 import '../screens/inbox_screen.dart';
 import '../screens/workspace/order_detail_screen.dart';
+import '../features/adsyconnect_call/services/native_call_service.dart';
+import '../features/adsyconnect_call/models/adsy_call.dart';
 
 void _log(String message) {
   if (kDebugMode) {
@@ -30,6 +32,36 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   );
   _log('📱 Background message received: ${message.messageId}');
   _log('📦 Data: ${message.data}');
+  
+  // Handle incoming call in background
+  await _handleIncomingCallFromPush(message.data);
+}
+
+/// Handle incoming call from push notification (works in background/killed state)
+Future<void> _handleIncomingCallFromPush(Map<String, dynamic> data) async {
+  final type = data['type']?.toString();
+  if (type != 'incoming_call') return;
+  
+  final callId = data['call_id']?.toString();
+  final callerId = data['caller_id']?.toString();
+  final callerName = data['caller_name']?.toString() ?? 'Unknown';
+  final callType = data['call_type']?.toString() ?? 'audio';
+  final callerAvatar = data['caller_avatar']?.toString();
+  
+  if (callId == null || callerId == null) {
+    _log('❌ Invalid incoming call data: missing callId or callerId');
+    return;
+  }
+  
+  _log('📞 Showing native incoming call UI for: $callerName');
+  
+  await NativeCallService.instance.showIncomingCall(
+    callId: callId,
+    callerId: callerId,
+    callerName: callerName,
+    type: callType == 'video' ? AdsyCallType.video : AdsyCallType.audio,
+    callerAvatar: callerAvatar,
+  );
 }
 
 class FCMService {

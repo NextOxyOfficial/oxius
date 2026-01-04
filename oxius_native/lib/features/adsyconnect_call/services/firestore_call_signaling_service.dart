@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as dev;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
 
+import '../../../services/api_service.dart';
+import '../../../services/auth_service.dart';
 import '../models/adsy_call.dart';
 import 'firebase_call_auth_service.dart';
 
@@ -25,6 +29,8 @@ class FirestoreCallSignalingService {
     final callerId = FirebaseCallAuthService.instance.uid;
     if (callerId == null || callerId.isEmpty) return null;
 
+    dev.log('[FirestoreSignaling] createCall: callerId=$callerId, calleeId=$calleeId, type=$type');
+
     final now = FieldValue.serverTimestamp();
     final doc = await _calls.add({
       'callerId': callerId,
@@ -35,7 +41,49 @@ class FirestoreCallSignalingService {
       'updatedAt': now,
     });
 
+    dev.log('[FirestoreSignaling] createCall: created doc.id=${doc.id}');
+    
+    // Send FCM push notification to callee for background/killed app support
+    _sendCallNotification(calleeId: calleeId, callId: doc.id, type: type);
+    
     return doc.id;
+  }
+
+  /// Send FCM push notification to callee via backend
+  Future<void> _sendCallNotification({
+    required String calleeId,
+    required String callId,
+    required AdsyCallType type,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) {
+        dev.log('[FirestoreSignaling] Cannot send call notification: no auth token');
+        return;
+      }
+
+      final resp = await http.post(
+        Uri.parse('${ApiService.baseUrl}/adsyconnect/send-call-notification/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'callee_id': calleeId,
+          'call_id': callId,
+          'call_type': AdsyCallDoc.typeToString(type),
+        }),
+      );
+
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body);
+        dev.log('[FirestoreSignaling] Call notification sent: ${data['sent_to']}/${data['total_tokens']} devices');
+      } else {
+        dev.log('[FirestoreSignaling] Failed to send call notification: ${resp.statusCode} - ${resp.body}');
+      }
+    } catch (e, st) {
+      dev.log('[FirestoreSignaling] Error sending call notification: $e\n$st');
+    }
   }
 
   Future<void> updateCallState(String callId, AdsyCallState state) async {

@@ -4,10 +4,9 @@ import 'url_launcher_utils.dart';
 
 class MentionParser {
   // Regex to match @mentions in text
-  // Matches @Name or @First Last (any case, stops at double space or punctuation)
+  // Matches @FirstName or @First Last (max 2 capitalized words, stops at space before lowercase or punctuation)
   static final RegExp _mentionRegex = RegExp(
-    r'@([A-Za-z][A-Za-z0-9_]*(?:\s+[A-Za-z][A-Za-z0-9_]*)*)(?=\s{2,}|[.!?,:;]|\s+[^A-Za-z]|$)',
-    multiLine: true,
+    r'@([A-Z][a-zA-Z0-9_]*(?:\s[A-Z][a-zA-Z0-9_]*)?)',
   );
 
   static final RegExp _urlRegex = RegExp(
@@ -42,12 +41,13 @@ class MentionParser {
       // Add mention as a styled chip
       final mentionName = match.group(1) ?? '';
       spans.add(WidgetSpan(
-        alignment: PlaceholderAlignment.middle,
+        alignment: PlaceholderAlignment.baseline,
+        baseline: TextBaseline.alphabetic,
         child: GestureDetector(
           onTap: () => onMentionTap?.call(mentionName),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1.5),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -67,7 +67,7 @@ class MentionParser {
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.blue.shade700,
-                height: 1.2,
+                height: 1.0,
               ),
             ),
           ),
@@ -124,12 +124,13 @@ class MentionParser {
       if (mentionMatch != null) {
         final mentionName = mentionMatch.group(1) ?? '';
         spans.add(WidgetSpan(
-          alignment: PlaceholderAlignment.middle,
+          alignment: PlaceholderAlignment.baseline,
+          baseline: TextBaseline.alphabetic,
           child: GestureDetector(
             onTap: () => onMentionTap?.call(mentionName),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1.5),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -149,7 +150,7 @@ class MentionParser {
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.blue.shade700,
-                  height: 1.2,
+                  height: 1.0,
                 ),
               ),
             ),

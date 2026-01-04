@@ -42,6 +42,82 @@ def firebase_custom_token(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_call_notification(request):
+    """Send FCM push notification for incoming call"""
+    try:
+        import os
+        from django.conf import settings
+        import firebase_admin
+        from firebase_admin import credentials, messaging
+        from notifications.models import FCMToken
+
+        if not firebase_admin._apps:
+            cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+
+        callee_id = request.data.get('callee_id')
+        call_id = request.data.get('call_id')
+        call_type = request.data.get('call_type', 'audio')
+
+        if not callee_id or not call_id:
+            return Response({'error': 'callee_id and call_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get callee's FCM token
+        try:
+            callee = User.objects.get(id=callee_id)
+            fcm_tokens = FCMToken.objects.filter(user=callee)
+        except User.DoesNotExist:
+            return Response({'error': 'Callee not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not fcm_tokens.exists():
+            return Response({'error': 'Callee has no FCM token'}, status=status.HTTP_404_NOT_FOUND)
+
+        caller = request.user
+        caller_name = caller.get_full_name() or caller.username
+        caller_avatar = caller.profile_image.url if hasattr(caller, 'profile_image') and caller.profile_image else None
+
+        # Send FCM to all callee's devices
+        success_count = 0
+        for fcm_token in fcm_tokens:
+            try:
+                message = messaging.Message(
+                    data={
+                        'type': 'incoming_call',
+                        'call_id': str(call_id),
+                        'caller_id': str(caller.id),
+                        'caller_name': caller_name,
+                        'call_type': call_type,
+                        'caller_avatar': caller_avatar or '',
+                    },
+                    android=messaging.AndroidConfig(
+                        priority='high',
+                        ttl=30,
+                    ),
+                    apns=messaging.APNSConfig(
+                        headers={'apns-priority': '10'},
+                        payload=messaging.APNSPayload(
+                            aps=messaging.Aps(content_available=True),
+                        ),
+                    ),
+                    token=fcm_token.token,
+                )
+                messaging.send(message)
+                success_count += 1
+            except Exception as e:
+                print(f'Failed to send FCM to token {fcm_token.token[:20]}...: {e}')
+
+        return Response({
+            'success': True,
+            'sent_to': success_count,
+            'total_tokens': fcm_tokens.count(),
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class ChatRoomViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing chat rooms

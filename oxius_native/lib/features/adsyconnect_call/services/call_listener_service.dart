@@ -21,6 +21,9 @@ class CallListenerService {
 
   bool _isStarting = false;
 
+  int _retryCount = 0;
+  static const int _maxRetries = 3;
+
   Future<void> start() async {
     if (_sub != null || _isStarting) {
       dev.log('[CallListener] Already started or starting');
@@ -30,16 +33,35 @@ class CallListenerService {
     _isStarting = true;
     dev.log('[CallListener] Starting incoming call listener...');
     
-    // First ensure Firebase Auth is signed in
-    final authOk = await FirebaseCallAuthService.instance.ensureSignedIn();
+    // First ensure Firebase Auth is signed in with retry logic
+    bool authOk = false;
+    for (int i = 0; i <= _maxRetries; i++) {
+      authOk = await FirebaseCallAuthService.instance.ensureSignedIn();
+      if (authOk) break;
+      if (i < _maxRetries) {
+        dev.log('[CallListener] Firebase Auth failed, retrying in 2s... (attempt ${i + 1}/$_maxRetries)');
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
+    
     if (!authOk) {
-      dev.log('[CallListener] ERROR: Firebase Auth failed - ${FirebaseCallAuthService.instance.lastError}');
+      dev.log('[CallListener] ERROR: Firebase Auth failed after $_maxRetries retries - ${FirebaseCallAuthService.instance.lastError}');
       _isStarting = false;
+      _retryCount++;
+      // Schedule a retry after 10 seconds if not too many retries
+      if (_retryCount <= 3) {
+        dev.log('[CallListener] Will retry start() in 10 seconds...');
+        Future.delayed(const Duration(seconds: 10), () {
+          if (_sub == null) start();
+        });
+      }
       return;
     }
     
+    _retryCount = 0; // Reset on success
     final uid = FirebaseCallAuthService.instance.uid;
-    dev.log('[CallListener] Firebase Auth OK, uid=$uid');
+    dev.log('[CallListener] Firebase Auth OK, listening for calls where calleeId=$uid');
+    dev.log('[CallListener] NOTE: Caller must send this exact uid as calleeId for recipient to receive the call');
     
     _sub = FirestoreCallSignalingService.instance.watchIncomingCalls().listen(
       (snap) {
