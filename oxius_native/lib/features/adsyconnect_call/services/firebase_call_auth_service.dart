@@ -74,6 +74,8 @@ class FirebaseCallAuthService {
         return false;
       }
 
+      dev.log('[FirebaseCallAuth] Received custom token (len=${customToken.length})');
+
       dev.log('[FirebaseCallAuth] Signing in with custom token...');
       await fb.FirebaseAuth.instance.signInWithCustomToken(customToken);
       
@@ -85,6 +87,10 @@ class FirebaseCallAuthService {
         dev.log('[FirebaseCallAuth] ERROR: $_lastError');
       }
       return signedIn;
+    } on fb.FirebaseAuthException catch (e, st) {
+      _lastError = 'FirebaseAuthException: ${e.code}${e.message == null ? '' : ' - ${e.message}'}';
+      dev.log('[FirebaseCallAuth] AUTH EXCEPTION: code=${e.code} message=${e.message}\n$st');
+      return false;
     } catch (e, st) {
       _lastError = 'Exception during Firebase auth: $e';
       dev.log('[FirebaseCallAuth] EXCEPTION: $e\n$st');

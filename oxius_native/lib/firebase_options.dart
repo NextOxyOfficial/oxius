@@ -47,8 +47,8 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD8VY8UHWTyqJ0VQjRPJfipovo8PxjMUiM',
-    appId: '1:866607241594:web:YOUR_WEB_APP_ID',
+    apiKey: 'AIzaSyA37bqGS56Q1XLX8FZdZYCxsURup2zy6SU',
+    appId: '1:866607241594:web:461a92e8b199c0e3a79ec3',
     messagingSenderId: '866607241594',
     projectId: 'adsyclub',
     authDomain: 'adsyclub.firebaseapp.com',

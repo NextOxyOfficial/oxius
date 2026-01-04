@@ -1,9 +1,12 @@
+import 'dart:developer' as dev;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../models/adsy_call.dart';
+import '../services/firebase_call_auth_service.dart';
 import '../services/firestore_call_signaling_service.dart';
 import '../services/webrtc_call_session.dart';
 
@@ -33,6 +36,7 @@ class _AdsyCallScreenState extends State<AdsyCallScreen> {
   bool _isLoading = true;
   bool _accepted = false;
   bool _didAutoClose = false;
+  String? _error;
 
   @override
   void initState() {
@@ -53,39 +57,56 @@ class _AdsyCallScreenState extends State<AdsyCallScreen> {
         final permOk = await _ensurePermissions();
         if (!permOk) {
           if (!mounted) return;
-          setState(() => _isLoading = false);
-          Navigator.pop(context);
+          setState(() {
+            _isLoading = false;
+            _error = 'Microphone/Camera permission denied. Please allow permission and try again.';
+          });
           return;
         }
 
         final callee = widget.otherUserId;
         if (callee == null || callee.isEmpty) {
-          setState(() => _isLoading = false);
+          setState(() {
+            _isLoading = false;
+            _error = 'Invalid callee id';
+          });
           return;
         }
 
-        final newCallId = await FirestoreCallSignalingService.instance.createCall(
-          calleeId: callee,
-          type: widget.type,
-        );
+        final existingCallId = _callId;
+        final callId = existingCallId ??
+            await FirestoreCallSignalingService.instance.createCall(
+              calleeId: callee,
+              type: widget.type,
+            );
 
         if (!mounted) return;
-        if (newCallId == null) {
-          setState(() => _isLoading = false);
-          Navigator.pop(context);
+        if (callId == null) {
+          setState(() {
+            _isLoading = false;
+            _error = FirebaseCallAuthService.instance.lastError ?? 'Failed to create call';
+          });
           return;
         }
 
-        _callId = newCallId;
+        _callId = callId;
 
         final session = WebRtcCallSession(
-          callId: newCallId,
+          callId: callId,
           isCaller: true,
           type: widget.type,
         );
         _session = session;
-        await session.initialize();
-        await session.startAsCaller();
+        try {
+          await session.initialize();
+          await session.startAsCaller();
+        } catch (e, st) {
+          dev.log('[AdsyCallScreen] WebRTC init/start error: $e\n$st');
+          try {
+            await FirestoreCallSignalingService.instance.updateCallState(callId, AdsyCallState.ended);
+          } catch (_) {}
+          rethrow;
+        }
 
         if (!mounted) return;
         setState(() {
@@ -95,7 +116,10 @@ class _AdsyCallScreenState extends State<AdsyCallScreen> {
       } else {
         final callId = _callId;
         if (callId == null || callId.isEmpty) {
-          setState(() => _isLoading = false);
+          setState(() {
+            _isLoading = false;
+            _error = 'Missing call id';
+          });
           return;
         }
 
@@ -104,10 +128,28 @@ class _AdsyCallScreenState extends State<AdsyCallScreen> {
           _isLoading = false;
         });
       }
-    } catch (_) {
+    } catch (e, st) {
+      dev.log('[AdsyCallScreen] Bootstrap error: $e\n$st');
+      final callId = _callId;
+      if (widget.isCaller && callId != null && callId.isNotEmpty) {
+        try {
+          await FirestoreCallSignalingService.instance.updateCallState(callId, AdsyCallState.ended);
+        } catch (_) {}
+      }
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        _error = e.toString();
+      });
     }
+  }
+
+  Future<void> _retry() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    await _bootstrap();
   }
 
   Future<bool> _ensurePermissions() async {
@@ -173,12 +215,63 @@ class _AdsyCallScreenState extends State<AdsyCallScreen> {
   Widget build(BuildContext context) {
     final session = _session;
     final name = widget.otherUserName ?? widget.otherUserId ?? 'User';
+    final error = _error;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
+            : error != null
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Call failed',
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            error,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.35),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 120,
+                                height: 44,
+                                child: OutlinedButton(
+                                  onPressed: _retry,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    side: BorderSide(color: Colors.white.withOpacity(0.25)),
+                                  ),
+                                  child: const Text('Retry'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                width: 120,
+                                height: 44,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    if (mounted) Navigator.pop(context);
+                                  },
+                                  child: const Text('Close'),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  )
             : StreamBuilder<AdsyCallDoc?>(
                 stream: _callId == null
                     ? Stream.empty()

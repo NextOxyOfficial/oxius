@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as dev;
 
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 
@@ -67,17 +68,7 @@ class WebRtcCallSession {
       );
     };
 
-    _localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
-      'video': type == AdsyCallType.video
-          ? {
-              'facingMode': 'user',
-              'width': {'ideal': 640},
-              'height': {'ideal': 480},
-              'frameRate': {'ideal': 30},
-            }
-          : false,
-    });
+    _localStream = await _getLocalMediaStream();
 
     localRenderer.srcObject = _localStream;
 
@@ -107,6 +98,102 @@ class WebRtcCallSession {
         _pc?.addCandidate(cand);
       }
     });
+  }
+
+  Future<MediaStream> _getLocalMediaStream() async {
+    // Helpful diagnostics: list devices on web/desktop.
+    try {
+      final devices = await navigator.mediaDevices.enumerateDevices();
+      dev.log(
+        '[WebRtc] enumerateDevices: ${devices.map((d) => '${d.kind}:${d.label.isEmpty ? '(no-label)' : d.label}').join(' | ')}',
+      );
+    } catch (e) {
+      dev.log('[WebRtc] enumerateDevices failed: $e');
+    }
+
+    final preferred = {
+      'audio': true,
+      'video': type == AdsyCallType.video
+          ? {
+              'facingMode': 'user',
+              'width': {'ideal': 640},
+              'height': {'ideal': 480},
+              'frameRate': {'ideal': 30},
+            }
+          : false,
+    };
+
+    try {
+      dev.log('[WebRtc] getUserMedia(preferred) ...');
+      return await navigator.mediaDevices.getUserMedia(preferred);
+    } catch (e) {
+      dev.log('[WebRtc] getUserMedia(preferred) failed: $e');
+      final msg = _friendlyGetUserMediaError(e);
+      if (_isPermissionDeniedError(e)) {
+        throw Exception(msg);
+      }
+      if (type != AdsyCallType.video) {
+        throw Exception(msg);
+      }
+    }
+
+    // Fallback 1: request any available camera without strict facingMode/size.
+    try {
+      dev.log('[WebRtc] getUserMedia(relaxed video=true) ...');
+      return await navigator.mediaDevices.getUserMedia({
+        'audio': true,
+        'video': true,
+      });
+    } catch (e) {
+      dev.log('[WebRtc] getUserMedia(relaxed) failed: $e');
+      if (_isPermissionDeniedError(e)) {
+        throw Exception(_friendlyGetUserMediaError(e));
+      }
+    }
+
+    // Fallback 2: continue as audio-only (some environments have no camera device).
+    try {
+      dev.log('[WebRtc] getUserMedia(audio-only fallback) ...');
+      _cameraEnabled = false;
+      return await navigator.mediaDevices.getUserMedia({
+        'audio': true,
+        'video': false,
+      });
+    } catch (e) {
+      dev.log('[WebRtc] getUserMedia(audio-only) failed: $e');
+      throw Exception(_friendlyGetUserMediaError(e));
+    }
+  }
+
+  bool _isPermissionDeniedError(Object e) {
+    final s = e.toString().toLowerCase();
+    return s.contains('notallowederror') ||
+        s.contains('permission denied') ||
+        s.contains('permissiondeniederror') ||
+        s.contains('denied');
+  }
+
+  String _friendlyGetUserMediaError(Object e) {
+    final raw = e.toString();
+    final s = raw.toLowerCase();
+
+    if (s.contains('notallowederror') || s.contains('permission denied') || s.contains('permissiondeniederror')) {
+      return 'Microphone/Camera access is blocked. Please allow permission in your browser site settings (lock icon) and try again.';
+    }
+
+    if (s.contains('notfounderror') || s.contains('requested device not found') || s.contains('devices not found')) {
+      return 'No microphone/camera was found on this device. Please connect a microphone/camera, then tap Retry.';
+    }
+
+    if (s.contains('notreadableerror') || s.contains('could not start') || s.contains('trackstarterror')) {
+      return 'Unable to access microphone/camera. Another app may be using it. Close other apps and tap Retry.';
+    }
+
+    if (s.contains('overconstrainederror') || s.contains('constraint')) {
+      return 'Your device does not support the requested camera settings. Please try again.';
+    }
+
+    return 'Unable to access microphone/camera. Please check browser permissions and device availability, then tap Retry.\n\nDetails: $raw';
   }
 
   Future<void> startAsCaller() async {
