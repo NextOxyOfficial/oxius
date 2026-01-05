@@ -22,13 +22,13 @@ class SponsoredProductsCard extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
             child: Row(
               children: [
                 Container(
@@ -62,15 +62,17 @@ class SponsoredProductsCard extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               final crossAxisCount = isMobile ? 2 : 3;
-              const crossAxisSpacing = 4.0;
-              const mainAxisSpacing = 2.0;
+              const crossAxisSpacing = 8.0;
+              const mainAxisSpacing = 8.0;
 
               final isLargeScreen = screenWidth > 600;
+              // Increased details height to accommodate all elements including Buy Now button
+              // Button: 36-44px, Price: ~20px, Title: ~16px, Store: ~24px, Spacing: ~20px
               final detailsHeight = isSmallScreen
-                  ? 108.0
+                  ? 130.0
                   : isLargeScreen
-                      ? 132.0
-                      : 116.0;
+                      ? 155.0
+                      : 140.0;
 
               final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
               final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
@@ -78,7 +80,7 @@ class SponsoredProductsCard extends StatelessWidget {
 
               // ProductCard uses a square image (height == width) + fixed-ish details block.
               // Keep cell height aligned with that to avoid blank space on different devices.
-              final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.60;
+              final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.55;
 
               return GridView.builder(
                 shrinkWrap: true,

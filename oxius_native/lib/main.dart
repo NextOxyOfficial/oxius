@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+// import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart'; // Temporarily disabled
 import 'firebase_options.dart';
 import 'config/app_config.dart';
 import 'services/fcm_service.dart';
@@ -98,8 +98,8 @@ void main() async {
       print('No existing session found');
     }
     
-    // Setup CallKit event listeners
-    _setupCallKitListeners();
+    // Setup CallKit event listeners (disabled temporarily)
+    // _setupCallKitListeners();
     
     runApp(MyApp(userState: userState));
   } catch (e, stackTrace) {
@@ -325,117 +325,5 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Setup CallKit event listeners for handling call actions
-void _setupCallKitListeners() {
-  FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
-    if (event == null) return;
-    
-    print('[CallKit] Event: ${event.event}, body: ${event.body}');
-    
-    switch (event.event) {
-      case Event.actionCallIncoming:
-        // Incoming call received
-        print('[CallKit] Incoming call received');
-        break;
-      case Event.actionCallStart:
-        // Outgoing call started
-        print('[CallKit] Outgoing call started');
-        break;
-      case Event.actionCallAccept:
-        // User accepted the call
-        print('[CallKit] Call accepted');
-        _handleCallAccepted(event.body);
-        break;
-      case Event.actionCallDecline:
-        // User declined the call
-        print('[CallKit] Call declined');
-        _handleCallDeclined(event.body);
-        break;
-      case Event.actionCallEnded:
-        // Call ended
-        print('[CallKit] Call ended');
-        break;
-      case Event.actionCallTimeout:
-        // Call timed out (no answer)
-        print('[CallKit] Call timeout');
-        _handleCallTimeout(event.body);
-        break;
-      case Event.actionCallCallback:
-        // User pressed callback on missed call
-        print('[CallKit] Callback requested');
-        break;
-      case Event.actionCallToggleHold:
-        print('[CallKit] Toggle hold');
-        break;
-      case Event.actionCallToggleMute:
-        print('[CallKit] Toggle mute');
-        break;
-      case Event.actionCallToggleDmtf:
-        print('[CallKit] Toggle DTMF');
-        break;
-      case Event.actionCallToggleGroup:
-        print('[CallKit] Toggle group');
-        break;
-      case Event.actionCallToggleAudioSession:
-        print('[CallKit] Toggle audio session');
-        break;
-      case Event.actionDidUpdateDevicePushTokenVoip:
-        print('[CallKit] VoIP token updated');
-        break;
-      case Event.actionCallCustom:
-        print('[CallKit] Custom action');
-        break;
-    }
-  });
-}
-
-void _handleCallAccepted(Map<String, dynamic>? body) {
-  if (body == null) return;
-  
-  final extra = body['extra'] as Map<String, dynamic>?;
-  final callId = extra?['callId']?.toString() ?? body['id']?.toString();
-  final callerId = extra?['callerId']?.toString();
-  final callerName = extra?['callerName']?.toString() ?? 'Unknown';
-  final callType = extra?['callType']?.toString() ?? 'audio';
-  
-  if (callId == null) return;
-  
-  print('[CallKit] Navigating to call screen: callId=$callId, caller=$callerName');
-  
-  // Navigate to call screen
-  final nav = FCMService.navigatorKey.currentState;
-  if (nav != null) {
-    nav.pushNamed('/call', arguments: {
-      'callId': callId,
-      'callerId': callerId,
-      'callerName': callerName,
-      'callType': callType,
-      'isCaller': false,
-    });
-  }
-}
-
-void _handleCallDeclined(Map<String, dynamic>? body) {
-  if (body == null) return;
-  
-  final extra = body['extra'] as Map<String, dynamic>?;
-  final callId = extra?['callId']?.toString() ?? body['id']?.toString();
-  
-  if (callId == null) return;
-  
-  print('[CallKit] Call declined: $callId');
-  // Update Firestore call state to ended
-  // FirestoreCallSignalingService.instance.updateCallState(callId, AdsyCallState.ended);
-}
-
-void _handleCallTimeout(Map<String, dynamic>? body) {
-  if (body == null) return;
-  
-  final extra = body['extra'] as Map<String, dynamic>?;
-  final callId = extra?['callId']?.toString() ?? body['id']?.toString();
-  
-  if (callId == null) return;
-  
-  print('[CallKit] Call timeout: $callId');
-  // Update Firestore call state to ended
-}
+// CallKit listeners temporarily disabled - using Firestore-based call listening instead
+// Native call UI (lock screen, background) will be added later when Java 17 toolchain is configured

@@ -67,10 +67,12 @@ class _PostCommentInputState extends State<PostCommentInput> {
     try {
       print('📝 Submitting comment: $plainText');
       
-      // The flutter_mentions widget shows mentions with special character
-      // We need to preserve the full name and add double space after for parsing
-      // Match @Name (including spaces in name) until we hit double space or regular text
-      final formattedText = plainText.replaceAllMapped(
+      // Convert non-breaking spaces back to regular spaces
+      // The display names use \u00A0 to keep full names as single tokens
+      final normalizedText = plainText.replaceAll('\u00A0', ' ');
+      
+      // Add double space after mentions for parsing by mention_parser.dart
+      final formattedText = normalizedText.replaceAllMapped(
         RegExp(r'@([A-Za-z][A-Za-z\s]+?)(?=\s{2,}|[.!?,;:]|\s+[^A-Z]|$)'),
         (match) {
           final name = match.group(1)?.trim() ?? '';
@@ -98,7 +100,8 @@ class _PostCommentInputState extends State<PostCommentInput> {
       final users = await UserSearchService.searchUsers(query);
       return users.map((user) => {
         'id': user.id.toString(),
-        'display': user.name,
+        // Replace spaces with non-breaking space (U+00A0) to keep full name as single token
+        'display': user.name.replaceAll(' ', '\u00A0'),
         'full_name': user.name,
         'photo': user.image ?? user.avatar,
       }).toList();
@@ -365,7 +368,8 @@ class _PostCommentInputState extends State<PostCommentInput> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    data['display'] ?? '',
+                                    // Show full_name (with regular spaces) in suggestion list
+                                    data['full_name'] ?? data['display'] ?? '',
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,

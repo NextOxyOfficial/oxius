@@ -802,8 +802,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Widget _buildImageGallery(Map<String, dynamic> product) {
+    // Get the AppBar height to add as top padding
+    final appBarHeight = kToolbarHeight + MediaQuery.of(context).padding.top;
+    
     return Container(
       color: const Color(0xFFF9FAFB),
+      padding: EdgeInsets.only(top: appBarHeight),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth.clamp(0.0, double.infinity);
@@ -1399,7 +1403,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   Widget _buildSimilarProducts() {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1412,31 +1416,52 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             ),
           ),
           const SizedBox(height: 12),
-          GridView.builder(
-            controller: _similarProductsScrollController,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.6,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemCount: _similarProducts.length,
-            itemBuilder: (context, index) {
-              return ProductCard(
-                product: _similarProducts[index],
-                isLoading: false,
-                onBuyNow: () => _handleBuyNowForProduct(_similarProducts[index]),
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProductDetailsScreen(
-                        product: _similarProducts[index],
-                      ),
-                    ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              final isSmallScreen = screenWidth < 360;
+              final isLargeScreen = screenWidth > 600;
+              
+              // Calculate responsive details height based on screen size
+              final detailsHeight = isSmallScreen ? 120.0 : isLargeScreen ? 140.0 : 132.0;
+              
+              const crossAxisCount = 2;
+              const crossAxisSpacing = 6.0;
+              const mainAxisSpacing = 6.0;
+              final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
+              final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
+              final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
+              
+              // ProductCard uses square image + details block
+              final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.55;
+              
+              return GridView.builder(
+                controller: _similarProductsScrollController,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: childAspectRatio,
+                  crossAxisSpacing: crossAxisSpacing,
+                  mainAxisSpacing: mainAxisSpacing,
+                ),
+                itemCount: _similarProducts.length,
+                itemBuilder: (context, index) {
+                  return ProductCard(
+                    product: _similarProducts[index],
+                    isLoading: false,
+                    onBuyNow: () => _handleBuyNowForProduct(_similarProducts[index]),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProductDetailsScreen(
+                            product: _similarProducts[index],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               );
@@ -1485,51 +1510,64 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             ),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 260,
-            child: _isLoadingStoreProducts
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
-                    ),
-                  )
-                : _storeProducts.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No other products',
-                          style: GoogleFonts.roboto(
-                            fontSize: 13,
-                            color: const Color(0xFF9CA3AF),
-                          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              final isSmallScreen = screenWidth < 360;
+              final isLargeScreen = screenWidth > 600;
+              
+              // Calculate responsive height based on screen size
+              // Card width (140) + details height
+              final detailsHeight = isSmallScreen ? 120.0 : isLargeScreen ? 140.0 : 130.0;
+              final cardHeight = 140.0 + detailsHeight;
+              
+              return SizedBox(
+                height: cardHeight,
+                child: _isLoadingStoreProducts
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
                         ),
                       )
-                    : ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _storeProducts.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) {
-                          return SizedBox(
-                            width: 140,
-                            child: ProductCard(
-                              product: _storeProducts[index],
-                              isLoading: false,
-                              onBuyNow: () => _handleBuyNowForProduct(_storeProducts[index]),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailsScreen(
-                                      product: _storeProducts[index],
-                                    ),
-                                  ),
-                                );
-                              },
+                    : _storeProducts.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No other products',
+                              style: GoogleFonts.roboto(
+                                fontSize: 13,
+                                color: const Color(0xFF9CA3AF),
+                              ),
                             ),
-                          );
-                        },
-                      ),
+                          )
+                        : ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: _storeProducts.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (context, index) {
+                              return SizedBox(
+                                width: 140,
+                                child: ProductCard(
+                                  product: _storeProducts[index],
+                                  isLoading: false,
+                                  onBuyNow: () => _handleBuyNowForProduct(_storeProducts[index]),
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ProductDetailsScreen(
+                                          product: _storeProducts[index],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+              );
+            },
           ),
         ],
       ),

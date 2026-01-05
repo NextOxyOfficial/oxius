@@ -78,17 +78,23 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   bool _isLoadingChatroomStatus = false;
   int _statusPollCounter = 0;
   bool _isUserNearBottom = true;
+  bool _isOtherUserOnline = false;
+  String? _lastSeenTime;
+  Timer? _onlineStatusTimer;
 
   @override
   void initState() {
     super.initState();
     // Set this chat as active to prevent push notifications
     ActiveChatTracker.setActiveChat(widget.chatroomId);
+    _isOtherUserOnline = widget.isOnline;
     _loadChatroomStatus();
     _loadMessages();
+    _loadOnlineStatus();
     _messageController.addListener(_onTypingChanged);
     _scrollController.addListener(_onScroll);
     _startMessagePolling();
+    _startOnlineStatusPolling();
   }
 
   bool _parseBool(dynamic value) {
@@ -143,6 +149,46 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       if (mounted) {
         setState(() => _isLoadingChatroomStatus = false);
       }
+    }
+  }
+
+  Future<void> _loadOnlineStatus() async {
+    try {
+      final status = await AdsyConnectService.getOnlineStatus(widget.userId);
+      if (!mounted) return;
+      
+      if (status != null) {
+        setState(() {
+          _isOtherUserOnline = status['is_online'] == true;
+          _lastSeenTime = status['last_seen']?.toString();
+        });
+      }
+    } catch (e) {
+      // Silently fail - online status is not critical
+    }
+  }
+
+  void _startOnlineStatusPolling() {
+    _onlineStatusTimer?.cancel();
+    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      _loadOnlineStatus();
+    });
+  }
+
+  String _formatLastSeen(String? lastSeen) {
+    if (lastSeen == null) return 'Offline';
+    try {
+      final dt = DateTime.parse(lastSeen);
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      
+      if (diff.inMinutes < 1) return 'Just now';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+      if (diff.inHours < 24) return '${diff.inHours}h ago';
+      if (diff.inDays < 7) return '${diff.inDays}d ago';
+      return 'Long time ago';
+    } catch (_) {
+      return 'Offline';
     }
   }
 
@@ -235,6 +281,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     _audioPlayer.dispose();
     _recordTimer?.cancel();
     _messagePollingTimer?.cancel();
+    _onlineStatusTimer?.cancel();
     super.dispose();
   }
 
@@ -2018,17 +2065,43 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                       ],
                     ],
                   ),
-                  // Only show profession if it exists and is not empty
-                  if (widget.profession != null && widget.profession!.isNotEmpty)
-                    Text(
-                      widget.profession!,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.9),
+                  // Online status indicator
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isOtherUserOnline 
+                              ? const Color(0xFF10B981) // Green for online
+                              : Colors.grey.shade400,   // Grey for offline
+                          boxShadow: _isOtherUserOnline
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFF10B981).withOpacity(0.5),
+                                    blurRadius: 4,
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                              : null,
+                        ),
                       ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _isOtherUserOnline 
+                            ? 'Online' 
+                            : _formatLastSeen(_lastSeenTime),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: _isOtherUserOnline 
+                              ? const Color(0xFF10B981)
+                              : Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

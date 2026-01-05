@@ -107,7 +107,7 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
             child: Column(
               children: [
                 Container(
-                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  margin: const EdgeInsets.symmetric(vertical: 0),
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
@@ -116,7 +116,7 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 2, 12, 10),
+                  padding: const EdgeInsets.fromLTRB(12, 0, 2, 2),
                   child: Row(
                     children: [
                       Text(
@@ -703,7 +703,7 @@ class _ShortVideoPage extends StatefulWidget {
   State<_ShortVideoPage> createState() => _ShortVideoPageState();
 }
 
-class _ShortVideoPageState extends State<_ShortVideoPage> {
+class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObserver {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
@@ -714,6 +714,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
   int _viewsCount = 0;
   late BusinessNetworkPost _post;
   bool _isLiking = false;
+  bool _wasPlayingBeforePause = false;
 
   Timer? _viewTimer;
   bool _viewCounted = false;
@@ -721,10 +722,26 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _post = widget.post;
     _commentsCount = widget.post.commentsCount;
     _viewsCount = widget.media.views;
     _init();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      // App went to background or another screen pushed - pause video
+      _wasPlayingBeforePause = _controller?.value.isPlaying ?? false;
+      _controller?.pause();
+    } else if (state == AppLifecycleState.resumed) {
+      // App came back to foreground - resume if was playing and still active
+      if (_wasPlayingBeforePause && widget.isActive && mounted) {
+        _controller?.play();
+      }
+    }
   }
 
   @override
@@ -843,6 +860,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _viewTimer?.cancel();
     _disposeController();
     super.dispose();
@@ -997,13 +1015,14 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
   }
 
   Future<void> _openCommentsSheet() async {
-    final c = _controller;
-    c?.pause();
-    if (mounted) {
-      setState(() {
-        _showPlayHint = true;
-      });
-    }
+    // Don't pause video - let it play while comments are open
+    // final c = _controller;
+    // c?.pause();
+    // if (mounted) {
+    //   setState(() {
+    //     _showPlayHint = true;
+    //   });
+    // }
 
     await showModalBottomSheet<void>(
       context: context,
@@ -1026,13 +1045,14 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
       },
     );
 
-    if (!mounted) return;
-    if (widget.isActive) {
-      _controller?.play();
-      setState(() {
-        _showPlayHint = false;
-      });
-    }
+    // No need to resume since we didn't pause
+    // if (!mounted) return;
+    // if (widget.isActive) {
+    //   _controller?.play();
+    //   setState(() {
+    //     _showPlayHint = false;
+    //   });
+    // }
   }
 
   Future<void> _openGiftSheet() async {
@@ -1271,7 +1291,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
 
         Positioned(
           right: 12,
-          bottom: 80,
+          bottom: 96,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1311,13 +1331,15 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
         Positioned(
           left: 12,
           right: 80,
-          bottom: 34,
+          bottom: 50,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
             GestureDetector(
               onTap: () {
+                // Pause video before navigating
+                _controller?.pause();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1325,7 +1347,12 @@ class _ShortVideoPageState extends State<_ShortVideoPage> {
                       userId: post.user.uuid ?? post.user.id.toString(),
                     ),
                   ),
-                );
+                ).then((_) {
+                  // Resume video when returning if still active
+                  if (mounted && widget.isActive) {
+                    _controller?.play();
+                  }
+                });
               },
               child: RichText(
                 maxLines: 1,

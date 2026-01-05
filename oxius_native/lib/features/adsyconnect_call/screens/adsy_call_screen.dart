@@ -54,6 +54,8 @@ class _AdsyCallScreenState extends State<AdsyCallScreen> {
   Future<void> _bootstrap() async {
     try {
       if (widget.isCaller) {
+        dev.log('[AdsyCallScreen] Starting as CALLER to ${widget.otherUserId}');
+        
         final permOk = await _ensurePermissions();
         if (!permOk) {
           if (!mounted) return;
@@ -73,12 +75,14 @@ class _AdsyCallScreenState extends State<AdsyCallScreen> {
           return;
         }
 
+        dev.log('[AdsyCallScreen] Creating call to calleeId=$callee');
         final existingCallId = _callId;
         final callId = existingCallId ??
             await FirestoreCallSignalingService.instance.createCall(
               calleeId: callee,
               type: widget.type,
             );
+        dev.log('[AdsyCallScreen] Call created: callId=$callId');
 
         if (!mounted) return;
         if (callId == null) {

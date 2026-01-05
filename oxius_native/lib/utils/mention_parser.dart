@@ -46,8 +46,8 @@ class MentionParser {
         child: GestureDetector(
           onTap: () => onMentionTap?.call(mentionName),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1.5),
+            margin: const EdgeInsets.only(left: 1, right: 0),
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [

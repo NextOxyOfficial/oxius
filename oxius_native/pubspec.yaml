@@ -91,7 +91,7 @@ dependencies:
   flutter_local_notifications: ^19.5.0
 
   flutter_webrtc: ^0.12.0
-  flutter_callkit_incoming: ^2.0.4+1
+  # flutter_callkit_incoming: ^2.0.4+1  # Temporarily disabled due to Java 17 toolchain issue
 
   flutter_portal: any
   flutter_cache_manager: any

@@ -443,8 +443,8 @@ class AdsyConnectService {
     }
   }
 
-  // Get online status for users
-  static Future<List<dynamic>> getOnlineStatus(List<String> userIds) async {
+  // Get online status for users (multiple)
+  static Future<List<dynamic>> getOnlineStatusList(List<String> userIds) async {
     try {
       final headers = await _getHeaders();
       final queryParams = userIds.map((id) => 'user_ids[]=$id').join('&');
@@ -461,6 +461,20 @@ class AdsyConnectService {
     } catch (e) {
       print('Error getting online status: $e');
       return [];
+    }
+  }
+
+  // Get online status for single user
+  static Future<Map<String, dynamic>?> getOnlineStatus(String userId) async {
+    try {
+      final results = await getOnlineStatusList([userId]);
+      if (results.isNotEmpty && results.first is Map) {
+        return Map<String, dynamic>.from(results.first as Map);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting online status for user $userId: $e');
+      return null;
     }
   }
 

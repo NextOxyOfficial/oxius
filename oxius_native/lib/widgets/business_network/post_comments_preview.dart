@@ -150,8 +150,8 @@ class _PostCommentsPreviewState extends State<PostCommentsPreview> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(8),
@@ -927,6 +927,7 @@ class _CommentItemState extends State<_CommentItem> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 4),
                 // Reply indicator
                 if (widget.isReply && widget.replyToUserName != null) ...[                  
                   Row(

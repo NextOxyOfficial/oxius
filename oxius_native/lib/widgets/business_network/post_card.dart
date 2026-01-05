@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_search_service.dart';
 import '../../config/app_config.dart';
 import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
+import '../../screens/business_network/profile_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/url_launcher_utils.dart';
+import '../../utils/mention_parser.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import 'post_header.dart';
@@ -83,6 +87,25 @@ class _PostCardState extends State<PostCard> {
     if (_isSelfPost()) return false;
     
     return true;
+  }
+
+  Future<void> _handleMentionTap(String mentionName) async {
+    // Search for user by name and navigate to their profile
+    try {
+      final users = await UserSearchService.searchUsers(mentionName);
+      if (users.isNotEmpty && mounted) {
+        final user = users.first;
+        final userId = user.id.toString();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProfileScreen(userId: userId),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error navigating to mentioned user: $e');
+    }
   }
 
   Future<void> _addComment(String content) async {
@@ -596,14 +619,29 @@ class _PostCardState extends State<PostCard> {
               media: _post.media,
               onMediaTap: _handleMediaTap,
             ),
-          // Post Title
+          // Post Title with mention support and long press copy
           if (_post.title.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: GestureDetector(
                 onTap: _handleViewAllComments,
-                child: Text(
-                  _post.title,
+                onLongPress: () {
+                  Clipboard.setData(ClipboardData(text: _post.title));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Title copied to clipboard'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
+                child: Text.rich(
+                  TextSpan(
+                    children: MentionParser.parseTextWithMentions(
+                      _post.title,
+                      context,
+                      onMentionTap: _handleMentionTap,
+                    ),
+                  ),
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w400,
@@ -612,18 +650,37 @@ class _PostCardState extends State<PostCard> {
                 ),
               ),
             ),
-          // Post Content
+          // Post Content with long press copy
           if (_post.content.trim().isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Html(
-                    data: _showFullContent ? _post.content : (_post.content.length > 160 ? '${_post.content.substring(0, 160)}...' : _post.content),
-                    onLinkTap: (url, attributes, element) {
-                      UrlLauncherUtils.launchExternalUrl(url);
+                  GestureDetector(
+                    onLongPress: () {
+                      Clipboard.setData(ClipboardData(text: _post.content));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Content copied to clipboard'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
                     },
+                    child: Text.rich(
+                      TextSpan(
+                        children: MentionParser.parseTextWithMentions(
+                          _showFullContent ? _post.content : (_post.content.length > 160 ? '${_post.content.substring(0, 160)}...' : _post.content),
+                          context,
+                          onMentionTap: _handleMentionTap,
+                        ),
+                      ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade800,
+                        height: 1.4,
+                      ),
+                    ),
                   ),
                   if (_post.content.length > 160)
                     TextButton(

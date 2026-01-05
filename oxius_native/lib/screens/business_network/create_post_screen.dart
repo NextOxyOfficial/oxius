@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_mentions/flutter_mentions.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:video_player/video_player.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_search_service.dart';
 import '../../utils/image_compressor.dart';
 import '../../widgets/link_preview_card.dart';
+import '../../config/app_config.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -16,10 +20,11 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
   final TextEditingController _hashtagController = TextEditingController();
+  final GlobalKey<FlutterMentionsState> _titleMentionKey = GlobalKey<FlutterMentionsState>();
+  final GlobalKey<FlutterMentionsState> _contentMentionKey = GlobalKey<FlutterMentionsState>();
   final ImagePicker _picker = ImagePicker();
+  List<Map<String, dynamic>> _mentionUserData = [];
   
   List<String> _selectedImages = [];
   List<Map<String, dynamic>> _selectedVideos = []; // {path, name}
@@ -35,9 +40,37 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   static const int _maxVideoDurationSeconds = 120; // 2 minutes
 
   @override
+  void initState() {
+    super.initState();
+    _loadInitialUsers();
+  }
+
+  Future<void> _loadInitialUsers() async {
+    final users = await _searchUsers('');
+    if (mounted) {
+      setState(() {
+        _mentionUserData = users;
+      });
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
+    try {
+      final users = await UserSearchService.searchUsers(query);
+      return users.map((user) => {
+        'id': user.id.toString(),
+        'display': user.name.replaceAll(' ', '\u00A0'),
+        'full_name': user.name,
+        'photo': user.image ?? user.avatar,
+      }).toList();
+    } catch (e) {
+      print('Error searching users: $e');
+      return [];
+    }
+  }
+
+  @override
   void dispose() {
-    _titleController.dispose();
-    _contentController.dispose();
     _hashtagController.dispose();
     super.dispose();
   }
@@ -334,9 +367,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future<void> _createPost() async {
+    // Get title and content from FlutterMentions and convert non-breaking spaces back to regular spaces
+    final rawTitle = _titleMentionKey.currentState?.controller?.text ?? '';
+    final titleText = rawTitle.replaceAll('\u00A0', ' ').trim();
+    final rawContent = _contentMentionKey.currentState?.controller?.text ?? '';
+    final contentText = rawContent.replaceAll('\u00A0', ' ').trim();
+    
     // Check if at least one field has content
-    final hasTitle = _titleController.text.trim().isNotEmpty;
-    final hasContent = _contentController.text.trim().isNotEmpty;
+    final hasTitle = titleText.isNotEmpty;
+    final hasContent = contentText.isNotEmpty;
     final hasImages = _selectedImages.isNotEmpty;
     final hasVideos = _selectedVideos.isNotEmpty;
     final hasTags = _hashtags.isNotEmpty;
@@ -359,8 +398,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           : null;
       
       final post = await BusinessNetworkService.createPost(
-        title: hasTitle ? _titleController.text.trim() : null,
-        content: hasContent ? _contentController.text.trim() : null,
+        title: hasTitle ? titleText : null,
+        content: hasContent ? contentText : null,
         images: hasImages ? _selectedImages : null,
         videoPaths: videoPathList,
         tags: hasTags ? _hashtags : null,
@@ -405,7 +444,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     final currentUser = AuthService.currentUser;
     
-    return Scaffold(
+    return Portal(
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -590,9 +630,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             
             const SizedBox(height: 24),
 
-            // Title Input
-            TextField(
-              controller: _titleController,
+            // Title Input with Mentions
+            FlutterMentions(
+              key: _titleMentionKey,
+              suggestionPosition: SuggestionPosition.Bottom,
+              maxLines: 5,
+              minLines: 1,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -611,21 +654,87 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
               ),
-              maxLines: null,
+              onSearchChanged: (trigger, value) async {
+                if (trigger == '@') {
+                  final users = await _searchUsers(value);
+                  if (mounted) {
+                    setState(() {
+                      _mentionUserData = users;
+                    });
+                  }
+                }
+              },
+              mentions: [
+                Mention(
+                  trigger: '@',
+                  style: TextStyle(
+                    color: Colors.blue.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  data: _mentionUserData,
+                  matchAll: false,
+                  disableMarkup: false,
+                  suggestionBuilder: (data) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey.shade100,
+                            ),
+                            child: ClipOval(
+                              child: () {
+                                final avatarUrl = AppConfig.getAbsoluteUrl(data['photo']);
+                                if (avatarUrl.isNotEmpty) {
+                                  return Image.network(
+                                    avatarUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(Icons.person, color: Colors.grey.shade400, size: 20);
+                                    },
+                                  );
+                                }
+                                return Icon(Icons.person, color: Colors.grey.shade400, size: 20);
+                              }(),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              data['full_name'] ?? data['display'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
             
             const SizedBox(height: 12),
 
-            // Content Input
-            TextField(
-              controller: _contentController,
+            // Content Input with Mentions
+            FlutterMentions(
+              key: _contentMentionKey,
+              suggestionPosition: SuggestionPosition.Bottom,
+              maxLines: 10,
+              minLines: 3,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade800,
                 height: 1.5,
               ),
               decoration: InputDecoration(
-                hintText: 'Share more details...',
+                hintText: 'Share more details... Use @ to mention someone',
                 hintStyle: TextStyle(
                   fontSize: 16,
                   color: Colors.grey.shade400,
@@ -633,17 +742,77 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
               ),
-              maxLines: null,
-              minLines: 3,
+              onSearchChanged: (trigger, value) async {
+                if (trigger == '@') {
+                  final users = await _searchUsers(value);
+                  if (mounted) {
+                    setState(() {
+                      _mentionUserData = users;
+                    });
+                  }
+                }
+              },
+              mentions: [
+                Mention(
+                  trigger: '@',
+                  style: TextStyle(
+                    color: Colors.blue.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  data: _mentionUserData,
+                  matchAll: false,
+                  disableMarkup: false,
+                  suggestionBuilder: (data) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey.shade100,
+                            ),
+                            child: ClipOval(
+                              child: () {
+                                final avatarUrl = AppConfig.getAbsoluteUrl(data['photo']);
+                                if (avatarUrl.isNotEmpty) {
+                                  return Image.network(
+                                    avatarUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(Icons.person, color: Colors.grey.shade400, size: 20);
+                                    },
+                                  );
+                                }
+                                return Icon(Icons.person, color: Colors.grey.shade400, size: 20);
+                              }(),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              data['full_name'] ?? data['display'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
 
-            AnimatedBuilder(
-              animation: Listenable.merge([
-                _titleController,
-                _contentController,
-              ]),
-              builder: (context, _) {
-                final text = '${_titleController.text}\n${_contentController.text}';
+            Builder(
+              builder: (context) {
+                final titleText = _titleMentionKey.currentState?.controller?.text ?? '';
+                final contentText = _contentMentionKey.currentState?.controller?.text ?? '';
+                final text = '$titleText\n$contentText';
                 return FirstLinkPreview(
                   text: text,
                   margin: const EdgeInsets.only(top: 12),
@@ -1028,6 +1197,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }
