@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Oxius Native</string>
+	<string>AdsyClub</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>oxius_native</string>
+	<string>AdsyClub</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -45,11 +45,39 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+		<string>voip</string>
+	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to upload images for your sale posts</string>
+	<string>AdsyClub needs access to your photo library to upload images for posts, products, and profile pictures.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>AdsyClub needs permission to save images to your photo library.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>We need access to your camera to take photos for your sale posts</string>
+	<string>AdsyClub needs access to your camera to take photos for posts, products, and video calls.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone for video recording</string>
+	<string>AdsyClub needs access to your microphone for voice messages and video calls.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>AdsyClub needs your location to show nearby products and services.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>AdsyClub can use your contacts to help you connect with friends.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>AdsyClub uses Face ID for secure authentication.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>AdsyClub uses this to provide personalized content and ads.</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>tel</string>
+		<string>mailto</string>
+	</array>
 </dict>
 </plist>

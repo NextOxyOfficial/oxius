@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:vibration/vibration.dart';
 import '../services/agora_call_service.dart';
+import '../services/adsyconnect_service.dart';
 
 class CallScreen extends StatefulWidget {
   final String channelName;
@@ -9,6 +13,7 @@ class CallScreen extends StatefulWidget {
   final String? calleeAvatar;
   final bool isIncoming;
   final String callType; // 'video' or 'audio'
+  final bool isReturning;
 
   const CallScreen({
     super.key,
@@ -18,6 +23,7 @@ class CallScreen extends StatefulWidget {
     this.calleeAvatar,
     this.isIncoming = false,
     this.callType = 'video',
+    this.isReturning = false,
   });
 
   @override
@@ -35,11 +41,103 @@ class _CallScreenState extends State<CallScreen> {
   late int _localUid;
   RtcEngine? _engine;
 
+  StreamSubscription<Map<String, dynamic>>? _callStatusSub;
+  Timer? _durationTimer;
+  DateTime? _callStartedAt;
+  Duration _callDuration = Duration.zero;
+  String? _statusOverlay;
+  bool _isClosing = false;
+  bool _isMinimizing = false;
+
   @override
   void initState() {
     super.initState();
     _localUid = AgoraCallService.generateUid();
+    
+    if (widget.isReturning) {
+      _localUserJoined = true;
+      _callAccepted = true;
+      _isConnecting = false;
+      _engine = AgoraCallService.engine;
+      _listenForCallStatus();
+      _startCallTimer();
+      return;
+    }
+    
+    AgoraCallService.setInCall(true);
+    AgoraCallService.setActiveCallInfo(
+      channelName: widget.channelName,
+      peerId: widget.calleeId,
+      peerName: widget.calleeName,
+      peerAvatar: widget.calleeAvatar,
+      callType: widget.callType,
+      isIncoming: widget.isIncoming,
+    );
+    _listenForCallStatus();
+    if (widget.isIncoming) {
+      _startIncomingAlert();
+    }
     _initAgora();
+  }
+
+  void _listenForCallStatus() {
+    _callStatusSub = AgoraCallService.callStatusStream.listen((data) {
+      final type = data['type']?.toString();
+      if (type != 'call_status') return;
+
+      final channel = data['channel_name']?.toString();
+      if (channel == null || channel != widget.channelName) return;
+
+      final status = data['status']?.toString();
+      if (status == null) return;
+
+      if (!mounted) return;
+
+      if (status == 'rejected') {
+        _showOverlayAndClose('Call declined');
+        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'rejected');
+      } else if (status == 'busy') {
+        _showOverlayAndClose('User busy');
+        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'busy');
+      } else if (status == 'cancelled') {
+        _showOverlayAndClose('Call cancelled');
+        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'cancelled');
+      } else if (status == 'ended') {
+        _showOverlayAndClose('Call ended');
+        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'ended');
+      }
+    });
+  }
+
+  Future<void> _startIncomingAlert() async {
+    try {
+      FlutterRingtonePlayer().playRingtone(looping: true);
+    } catch (_) {
+      // Ignore
+    }
+
+    try {
+      final hasVibrator = await Vibration.hasVibrator() ?? false;
+      if (hasVibrator) {
+        Vibration.vibrate(pattern: [0, 800, 600, 800], repeat: 0);
+      }
+    } catch (_) {
+      // Ignore
+    }
+  }
+
+  Future<void> _stopIncomingAlert() async {
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {
+      // Ignore
+    }
+
+    try {
+      Vibration.cancel();
+    } catch (_) {
+      // Ignore
+    }
   }
 
   Future<void> _initAgora() async {
@@ -61,6 +159,7 @@ class _CallScreenState extends State<CallScreen> {
               _remoteUid = remoteUid;
               _callAccepted = true;
             });
+            _startCallTimer();
           },
           onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
             print('Remote user left: $remoteUid');
@@ -68,14 +167,15 @@ class _CallScreenState extends State<CallScreen> {
               _remoteUid = null;
             });
             // End call when remote user leaves
-            _endCall();
+            _showOverlayAndClose('Call ended');
+            _endCall(notifyPeer: false, allowLog: true);
           },
           onError: (ErrorCodeType err, String msg) {
             print('Agora error: $err - $msg');
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Call error: $err - $msg'),
+                  content: Text(_friendlyError(err)),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -99,14 +199,9 @@ class _CallScreenState extends State<CallScreen> {
         );
 
         if (!notified && mounted) {
-          final details = AgoraCallService.lastNotificationError;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                details != null
-                    ? 'Failed to notify recipient: $details'
-                    : 'Failed to notify recipient',
-              ),
+            const SnackBar(
+              content: Text('Could not reach the recipient. Please try again.'),
               backgroundColor: Colors.red,
             ),
           );
@@ -116,7 +211,10 @@ class _CallScreenState extends State<CallScreen> {
       print('Error initializing Agora: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to initialize call: $e')),
+          const SnackBar(
+            content: Text('Unable to start call. Please check your connection.'),
+            backgroundColor: Colors.red,
+          ),
         );
         Navigator.pop(context);
       }
@@ -137,10 +235,9 @@ class _CallScreenState extends State<CallScreen> {
 
     if (!success && mounted) {
       setState(() => _isConnecting = false);
-      final details = AgoraCallService.lastError;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(details != null ? 'Failed to join call: $details' : 'Failed to join call'),
+        const SnackBar(
+          content: Text('Could not join the call. Please try again.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -149,19 +246,120 @@ class _CallScreenState extends State<CallScreen> {
   }
 
   void _acceptCall() {
+    _stopIncomingAlert();
     setState(() => _callAccepted = true);
     _joinChannel();
   }
 
   void _rejectCall() {
-    Navigator.pop(context);
+    _stopIncomingAlert();
+    AgoraCallService.sendCallStatus(
+      receiverId: widget.calleeId,
+      channelName: widget.channelName,
+      status: 'rejected',
+      callType: widget.callType,
+    );
+    _endCall(notifyPeer: false, allowLog: false);
   }
 
-  Future<void> _endCall() async {
+  Future<void> _endCall({required bool notifyPeer, required bool allowLog, String? outcomeOverride}) async {
+    if (_isClosing) return;
+    _isClosing = true;
+
+    _durationTimer?.cancel();
+    _durationTimer = null;
+
+    await _stopIncomingAlert();
+
+    final localOutcome = outcomeOverride ?? ((_callStartedAt != null) ? 'ended' : 'cancelled');
+
+    if (notifyPeer) {
+      AgoraCallService.sendCallStatus(
+        receiverId: widget.calleeId,
+        channelName: widget.channelName,
+        status: localOutcome,
+        callType: widget.callType,
+      );
+    }
+
+    if (allowLog) {
+      await _sendCallLog(localOutcome);
+    }
+
     await AgoraCallService.leaveChannel();
+    AgoraCallService.setInCall(false);
+    if (mounted && _statusOverlay != null) {
+      await Future.delayed(const Duration(milliseconds: 900));
+    }
     if (mounted) {
       Navigator.pop(context);
     }
+  }
+
+  void _startCallTimer() {
+    if (_callStartedAt != null) return;
+    _callStartedAt = DateTime.now();
+    _callDuration = Duration.zero;
+    _durationTimer?.cancel();
+    _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || _callStartedAt == null) return;
+      setState(() {
+        _callDuration = DateTime.now().difference(_callStartedAt!);
+      });
+    });
+  }
+
+  String _formatDuration(Duration d) {
+    final totalSeconds = d.inSeconds;
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+
+    String two(int n) => n.toString().padLeft(2, '0');
+    if (hours > 0) {
+      return '${two(hours)}:${two(minutes)}:${two(seconds)}';
+    }
+    return '${two(minutes)}:${two(seconds)}';
+  }
+
+  Future<void> _sendCallLog(String outcome) async {
+    if (widget.isIncoming) return;
+
+    final label = widget.callType == 'video' ? 'Video call' : 'Audio call';
+
+    try {
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(widget.calleeId);
+      final chatroomId = chatroom['id']?.toString();
+      if (chatroomId == null || chatroomId.isEmpty) return;
+
+      String text;
+      if (outcome == 'ended' && _callStartedAt != null && _callDuration.inSeconds >= 1) {
+        text = '📞 $label • ${_formatDuration(_callDuration)}';
+      } else if (outcome == 'busy') {
+        text = '📞 $label • Busy';
+      } else if (outcome == 'rejected') {
+        text = '📞 $label • Declined';
+      } else if (outcome == 'cancelled') {
+        text = '📞 $label • Cancelled';
+      } else {
+        text = '📞 $label • ${outcome[0].toUpperCase()}${outcome.substring(1)}';
+      }
+
+      await AdsyConnectService.sendTextMessage(
+        chatroomId: chatroomId,
+        receiverId: widget.calleeId,
+        content: text,
+      );
+    } catch (_) {
+      // Ignore
+    }
+  }
+
+  void _showOverlayAndClose(String text) {
+    if (!mounted) return;
+    setState(() {
+      _statusOverlay = text;
+    });
   }
 
   void _toggleMute() {
@@ -183,17 +381,59 @@ class _CallScreenState extends State<CallScreen> {
     AgoraCallService.toggleSpeaker(_isSpeakerOn);
   }
 
+  String _friendlyError(ErrorCodeType err) {
+    switch (err) {
+      case ErrorCodeType.errNotInitialized:
+        return 'Call service not ready. Please try again.';
+      case ErrorCodeType.errInvalidToken:
+      case ErrorCodeType.errTokenExpired:
+        return 'Session expired. Please restart the app.';
+      case ErrorCodeType.errConnectionLost:
+      case ErrorCodeType.errConnectionInterrupted:
+        return 'Connection lost. Please check your internet.';
+      case ErrorCodeType.errJoinChannelRejected:
+        return 'Could not join the call. Please try again.';
+      case ErrorCodeType.errLeaveChannelRejected:
+        return 'Could not leave the call properly.';
+      case ErrorCodeType.errInvalidChannelName:
+        return 'Invalid call session. Please try again.';
+      case ErrorCodeType.errNoServerResources:
+        return 'Server busy. Please try again later.';
+      default:
+        return 'Something went wrong. Please try again.';
+    }
+  }
+
   @override
   void dispose() {
-    AgoraCallService.leaveChannel();
+    _callStatusSub?.cancel();
+    _callStatusSub = null;
+    _durationTimer?.cancel();
+    _durationTimer = null;
+    if (!_isMinimizing) {
+      _stopIncomingAlert();
+      AgoraCallService.setInCall(false);
+      AgoraCallService.leaveChannel();
+    }
     super.dispose();
+  }
+
+  void _minimizeCall() {
+    _isMinimizing = true;
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _minimizeCall();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
         child: Stack(
           children: [
             // Remote video (full screen)
@@ -234,11 +474,65 @@ class _CallScreenState extends State<CallScreen> {
             if (widget.isIncoming && !_callAccepted)
               _buildIncomingCallUI(),
 
+            if (_callAccepted && _callStartedAt != null)
+              Positioned(
+                top: 18,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.35),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    ),
+                    child: Text(
+                      _formatDuration(_callDuration),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            if (_statusOverlay != null)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Container(
+                    color: Colors.black.withOpacity(0.35),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF111827),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                        ),
+                        child: Text(
+                          _statusOverlay!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
             // Call controls
             if (_callAccepted || !widget.isIncoming)
               _buildCallControls(),
           ],
         ),
+      ),
       ),
     );
   }
@@ -290,11 +584,13 @@ class _CallScreenState extends State<CallScreen> {
             const SizedBox(height: 12),
             // Status
             Text(
-              _isConnecting
-                  ? 'Connecting...'
-                  : _remoteUid == null
-                      ? 'Calling...'
-                      : 'Connected',
+              _statusOverlay != null
+                  ? _statusOverlay!
+                  : _isConnecting
+                      ? 'Connecting...'
+                      : _remoteUid == null
+                          ? 'Calling...'
+                          : (_callStartedAt != null ? _formatDuration(_callDuration) : 'Connected'),
               style: TextStyle(
                 color: Colors.white.withOpacity(0.7),
                 fontSize: 16,
@@ -480,7 +776,7 @@ class _CallScreenState extends State<CallScreen> {
               const SizedBox(width: 40),
               // End call
               GestureDetector(
-                onTap: _endCall,
+                onTap: () => _endCall(notifyPeer: true, allowLog: true),
                 child: Container(
                   width: 70,
                   height: 70,

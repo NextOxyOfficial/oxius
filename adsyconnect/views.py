@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import (
     ChatRoom, Message, MessageReport, 
-    BlockedUser, TypingStatus, OnlineStatus
+    BlockedUser, TypingStatus, OnlineStatus, ActiveChatSession
 )
 from .serializers import (
     ChatRoomSerializer, MessageSerializer, MessageCreateSerializer,
@@ -48,6 +48,7 @@ def send_call_notification(request):
     """Send FCM push notification for incoming call"""
     try:
         import os
+        import datetime
         from django.conf import settings
         import firebase_admin
         from firebase_admin import credentials, messaging
@@ -106,7 +107,7 @@ def send_call_notification(request):
                     },
                     android=messaging.AndroidConfig(
                         priority='high',
-                        ttl=30,
+                        ttl=datetime.timedelta(seconds=30),
                     ),
                     apns=messaging.APNSConfig(
                         headers={'apns-priority': '10'},
@@ -127,6 +128,95 @@ def send_call_notification(request):
                 {
                     'success': False,
                     'error': 'Failed to send incoming call push to any device',
+                    'details': last_send_error,
+                    'total_tokens': fcm_tokens.count(),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response({
+            'success': True,
+            'sent_to': success_count,
+            'total_tokens': fcm_tokens.count(),
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_call_status(request):
+    """Send FCM data message for call status (busy/rejected/cancelled/ended)"""
+    try:
+        import os
+        import datetime
+        from django.conf import settings
+        import firebase_admin
+        from firebase_admin import credentials, messaging
+        from base.models import FCMToken
+
+        if not firebase_admin._apps:
+            cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+
+        receiver_id = request.data.get('receiver_id')
+        channel_name = request.data.get('channel_name')
+        call_type = request.data.get('call_type', 'audio')
+        status_value = request.data.get('status')
+
+        if not receiver_id or not channel_name or not status_value:
+            return Response(
+                {'error': 'receiver_id, channel_name and status are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            receiver = User.objects.get(id=receiver_id)
+            fcm_tokens = FCMToken.objects.filter(user=receiver, is_active=True)
+        except User.DoesNotExist:
+            return Response({'error': 'Receiver not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not fcm_tokens.exists():
+            return Response({'error': 'Receiver has no FCM token'}, status=status.HTTP_404_NOT_FOUND)
+
+        sender = request.user
+
+        success_count = 0
+        last_send_error = None
+        for fcm_token in fcm_tokens:
+            try:
+                message = messaging.Message(
+                    data={
+                        'type': 'call_status',
+                        'channel_name': str(channel_name),
+                        'call_type': str(call_type),
+                        'status': str(status_value),
+                        'sender_id': str(sender.id),
+                    },
+                    android=messaging.AndroidConfig(
+                        priority='high',
+                        ttl=datetime.timedelta(seconds=30),
+                    ),
+                    apns=messaging.APNSConfig(
+                        headers={'apns-priority': '10'},
+                        payload=messaging.APNSPayload(
+                            aps=messaging.Aps(content_available=True),
+                        ),
+                    ),
+                    token=fcm_token.token,
+                )
+                messaging.send(message)
+                success_count += 1
+            except Exception as e:
+                last_send_error = str(e)
+                print(f'Failed to send call status to token {fcm_token.token[:20]}...: {e}')
+
+        if success_count == 0:
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Failed to send call status to any device',
                     'details': last_send_error,
                     'total_tokens': fcm_tokens.count(),
                 },
@@ -313,20 +403,25 @@ class MessageViewSet(viewsets.ModelViewSet):
         chatroom.last_message_preview = message.get_preview()
         chatroom.save()
         
-        # Send push notification to receiver
+        # Send push notification to receiver (only if they're not in this chat)
         try:
-            from base.fcm_service import send_message_notification
+            is_receiver_in_chat = ActiveChatSession.is_user_in_chat(message.receiver, chatroom)
             
-            sender_name = request.user.get_full_name() or request.user.username or request.user.email
-            print(f'📤 Attempting to send chat notification to {message.receiver.email}')
-            send_message_notification(
-                recipient_user=message.receiver,
-                sender_user=request.user,
-                sender_name=sender_name,
-                message_text=message.get_preview(),
-                chat_id=str(chatroom.id)
-            )
-            print(f'✅ Chat notification sent to {message.receiver.email}')
+            if is_receiver_in_chat:
+                print(f'📍 Skipping push notification - receiver is in this chat')
+            else:
+                from base.fcm_service import send_message_notification
+                
+                sender_name = request.user.get_full_name() or request.user.username or request.user.email
+                print(f'📤 Attempting to send chat notification to {message.receiver.email}')
+                send_message_notification(
+                    recipient_user=message.receiver,
+                    sender_user=request.user,
+                    sender_name=sender_name,
+                    message_text=message.get_preview(),
+                    chat_id=str(chatroom.id)
+                )
+                print(f'✅ Chat notification sent to {message.receiver.email}')
         except Exception as e:
             print(f'❌ Error sending chat notification: {e}')
             import traceback
@@ -478,6 +573,16 @@ class OnlineStatusViewSet(viewsets.ReadOnlyModelViewSet):
         user_ids = self.request.query_params.getlist('user_ids[]')
         
         if user_ids:
+            # Create OnlineStatus records for users who don't have one
+            for user_id in user_ids:
+                try:
+                    OnlineStatus.objects.get_or_create(
+                        user_id=user_id,
+                        defaults={'is_online': False, 'last_seen': timezone.now()}
+                    )
+                except Exception:
+                    pass
+            
             return OnlineStatus.objects.filter(
                 user_id__in=user_ids
             ).select_related('user')
@@ -537,3 +642,57 @@ class TypingStatusViewSet(viewsets.ModelViewSet):
         typing_status.save()
         
         return Response({'status': 'typing status updated'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def set_active_chat(request):
+    """Set user's active chat session - prevents push notifications when in chat"""
+    chatroom_id = request.data.get('chatroom_id')
+    
+    if not chatroom_id:
+        ActiveChatSession.clear_active_chat(request.user)
+        OnlineStatus.objects.update_or_create(
+            user=request.user,
+            defaults={'is_online': True, 'last_seen': timezone.now()}
+        )
+        return Response({'status': 'active chat cleared'})
+    
+    try:
+        chatroom = ChatRoom.objects.get(id=chatroom_id)
+        if chatroom.user1 != request.user and chatroom.user2 != request.user:
+            return Response(
+                {'error': 'You are not a participant of this chat'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        ActiveChatSession.set_active_chat(request.user, chatroom)
+        OnlineStatus.objects.update_or_create(
+            user=request.user,
+            defaults={'is_online': True, 'last_seen': timezone.now()}
+        )
+        return Response({'status': 'active chat set', 'chatroom_id': str(chatroom_id)})
+    except ChatRoom.DoesNotExist:
+        return Response(
+            {'error': 'Chatroom not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def clear_active_chat(request):
+    """Clear user's active chat session"""
+    ActiveChatSession.clear_active_chat(request.user)
+    return Response({'status': 'active chat cleared'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def heartbeat(request):
+    """Update user's online status - call periodically to stay online"""
+    OnlineStatus.objects.update_or_create(
+        user=request.user,
+        defaults={'is_online': True, 'last_seen': timezone.now()}
+    )
+    return Response({'status': 'online', 'timestamp': timezone.now().isoformat()})

@@ -514,4 +514,43 @@ class AdsyConnectService {
       return [];
     }
   }
+
+  static Future<void> setActiveChat(String? chatroomId) async {
+    try {
+      final headers = await _getHeaders();
+      await http.post(
+        Uri.parse('$baseUrl/set-active-chat/'),
+        headers: headers,
+        body: jsonEncode({'chatroom_id': chatroomId}),
+      );
+      print('📍 Active chat set on server: $chatroomId');
+    } catch (e) {
+      print('Error setting active chat: $e');
+    }
+  }
+
+  static Future<void> clearActiveChat() async {
+    try {
+      final headers = await _getHeaders();
+      await http.post(
+        Uri.parse('$baseUrl/clear-active-chat/'),
+        headers: headers,
+      );
+      print('📍 Active chat cleared on server');
+    } catch (e) {
+      print('Error clearing active chat: $e');
+    }
+  }
+
+  static Future<void> sendHeartbeat() async {
+    try {
+      final headers = await _getHeaders();
+      await http.post(
+        Uri.parse('$baseUrl/heartbeat/'),
+        headers: headers,
+      );
+    } catch (e) {
+      print('Error sending heartbeat: $e');
+    }
+  }
 }

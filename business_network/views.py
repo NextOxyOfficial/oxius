@@ -290,7 +290,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
             BusinessNetworkPost.objects.annotate(
                 # Simplified priority with fewer database operations
                 priority=Case(
-                    When(author=user, created_at__gte=recent_threshold, then=Value(1)),
+                    When(author=user, then=Value(1)),  # Own posts always highest priority
                     When(author_id__in=users_following, then=Value(2)),
                     When(author_id__in=users_followers, then=Value(3)),
                     default=Value(4),

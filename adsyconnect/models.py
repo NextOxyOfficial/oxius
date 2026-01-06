@@ -344,3 +344,55 @@ class OnlineStatus(models.Model):
         """Update last seen timestamp"""
         self.last_seen = timezone.now()
         self.save(update_fields=['last_seen'])
+
+
+class ActiveChatSession(models.Model):
+    """
+    Tracks which chat a user is currently viewing.
+    Used to prevent push notifications when user is already in the chat.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='active_chat_session',
+        primary_key=True
+    )
+    chatroom = models.ForeignKey(
+        ChatRoom,
+        on_delete=models.CASCADE,
+        related_name='active_sessions',
+        null=True,
+        blank=True
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'adsyconnect_active_chat_session'
+    
+    def __str__(self):
+        if self.chatroom:
+            return f"{self.user.username} active in chat {self.chatroom.id}"
+        return f"{self.user.username} not in any chat"
+    
+    @classmethod
+    def set_active_chat(cls, user, chatroom):
+        """Set user's active chat"""
+        session, _ = cls.objects.update_or_create(
+            user=user,
+            defaults={'chatroom': chatroom}
+        )
+        return session
+    
+    @classmethod
+    def clear_active_chat(cls, user):
+        """Clear user's active chat"""
+        cls.objects.filter(user=user).update(chatroom=None)
+    
+    @classmethod
+    def is_user_in_chat(cls, user, chatroom):
+        """Check if user is currently viewing a specific chat"""
+        try:
+            session = cls.objects.get(user=user)
+            return session.chatroom_id == chatroom.id if session.chatroom else False
+        except cls.DoesNotExist:
+            return False

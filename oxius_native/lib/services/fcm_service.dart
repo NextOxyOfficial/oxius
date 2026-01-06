@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
 import 'business_network_service.dart';
+import 'agora_call_service.dart';
 import '../firebase_options.dart';
 import '../screens/business_network/profile_screen.dart';
 import '../screens/business_network/post_detail_screen.dart';
@@ -208,7 +209,7 @@ class FCMService {
 
     // Incoming call: open call screen immediately in foreground
     final type = message.data['type']?.toString();
-    if (type == 'incoming_call' || type == 'call') {
+    if (type == 'incoming_call' || type == 'call' || type == 'call_status') {
       _navigateBasedOnData(Map<String, dynamic>.from(message.data));
       return;
     }
@@ -461,6 +462,17 @@ class FCMService {
       final callType = data['call_type']?.toString() ?? 'video';
       
       if (channelName != null && callerId != null) {
+        if (AgoraCallService.isInCall) {
+          _log('   → Already in call. Auto-reply busy to caller: $callerId');
+          AgoraCallService.sendCallStatus(
+            receiverId: callerId,
+            channelName: channelName,
+            status: 'busy',
+            callType: callType,
+          );
+          return;
+        }
+
         _log('   → Incoming call from: $callerName, channel: $channelName');
         navigator.push(
           MaterialPageRoute(
@@ -475,6 +487,12 @@ class FCMService {
           ),
         );
       }
+    }
+    // ============================================
+    // CALL STATUS (busy/rejected/cancelled/ended)
+    // ============================================
+    else if (type == 'call_status') {
+      AgoraCallService.emitCallStatus(data);
     }
     // ============================================
     // ADSYCONNECT MESSAGES

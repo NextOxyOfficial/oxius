@@ -43,8 +43,10 @@ import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
+import 'services/online_status_service.dart';
 import 'models/cart_item.dart';
 import 'screens/call_screen.dart';
+import 'widgets/ongoing_call_bar.dart';
 
 void main() async {
   try {
@@ -90,6 +92,7 @@ void main() async {
     if (userState.isAuthenticated) {
       print('Session restored successfully for user: ${userState.userName}');
       await FCMService.syncTokenWithBackend();
+      OnlineStatusService.start();
     } else {
       print('No existing session found');
     }
@@ -168,6 +171,14 @@ class MyApp extends StatelessWidget {
             title: 'AdsyClub Native',
             navigatorKey: FCMService.navigatorKey,
             debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              return Column(
+                children: [
+                  const OngoingCallBar(),
+                  Expanded(child: child ?? const SizedBox.shrink()),
+                ],
+              );
+            },
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
               useMaterial3: true,
@@ -307,6 +318,7 @@ class MyApp extends StatelessWidget {
                   calleeAvatar: args?['calleeAvatar'] ?? args?['callerAvatar'],
                   isIncoming: args?['isIncoming'] ?? false,
                   callType: args?['callType'] ?? 'video',
+                  isReturning: args?['isReturning'] ?? false,
                 ),
               );
             }

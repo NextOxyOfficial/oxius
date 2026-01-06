@@ -81,12 +81,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   bool _isOtherUserOnline = false;
   String? _lastSeenTime;
   Timer? _onlineStatusTimer;
+  Map<String, dynamic>? _replyingToMessage;
 
   @override
   void initState() {
     super.initState();
-    // Set this chat as active to prevent push notifications
     ActiveChatTracker.setActiveChat(widget.chatroomId);
+    AdsyConnectService.setActiveChat(widget.chatroomId);
     _isOtherUserOnline = widget.isOnline;
     _loadChatroomStatus();
     _loadMessages();
@@ -272,8 +273,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   @override
   void dispose() {
-    // Clear active chat when leaving
     ActiveChatTracker.clearActiveChat();
+    AdsyConnectService.clearActiveChat();
     _messageController.dispose();
     _scrollController.dispose();
     _messageFocusNode.dispose();
@@ -624,17 +625,29 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     if (_messageController.text.trim().isEmpty) return;
 
     final messageText = _messageController.text.trim();
+    final replyTo = _replyingToMessage;
     _messageController.clear();
     
-    setState(() => _isSendingMessage = true);
+    setState(() {
+      _isSendingMessage = true;
+      _replyingToMessage = null;
+    });
 
     try {
       print('🔵 Sending message: $messageText');
       
+      String contentToSend = messageText;
+      if (replyTo != null) {
+        final replyToId = replyTo['id']?.toString() ?? '';
+        final replyToText = _getReplyPreviewText(replyTo);
+        final replyToSender = replyTo['isMe'] == true ? 'You' : widget.userName;
+        contentToSend = '↩️ $replyToSender: $replyToText\n\n$messageText';
+      }
+      
       final sentMessage = await AdsyConnectService.sendTextMessage(
         chatroomId: widget.chatroomId,
         receiverId: widget.userId,
-        content: messageText,
+        content: contentToSend,
       );
       
       print('🟢 Message sent: ${sentMessage['id']}');
@@ -1918,10 +1931,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       ),
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-        onPressed: () => Navigator.pop(context),
+      leadingWidth: 40,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 4),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+          onPressed: () => Navigator.pop(context),
+          padding: EdgeInsets.zero,
+        ),
       ),
+      titleSpacing: 0,
       title: GestureDetector(
         onTap: () {
           // Navigate to business network profile
@@ -2032,23 +2051,66 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                   // Name with badges
                   Row(
                     children: [
-                      Flexible(
-                        child: Text(
-                          widget.userName,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.3,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black26,
-                                offset: Offset(0, 1),
-                                blurRadius: 2,
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final textPainter = TextPainter(
+                              text: TextSpan(
+                                text: widget.userName,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
-                            ],
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              textDirection: TextDirection.ltr,
+                            )..layout();
+                            
+                            final badgeWidth = (widget.isVerified ? 19.0 : 0.0) + (widget.isPro ? 35.0 : 0.0);
+                            final availableWidth = constraints.maxWidth - badgeWidth;
+                            final needsScroll = textPainter.width > availableWidth;
+                            
+                            if (needsScroll) {
+                              return SizedBox(
+                                height: 20,
+                                child: _MarqueeText(
+                                  text: widget.userName,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: -0.3,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black26,
+                                        offset: Offset(0, 1),
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            
+                            return Text(
+                              widget.userName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black26,
+                                    offset: Offset(0, 1),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          },
                         ),
                       ),
                       // Verified badge
@@ -2254,16 +2316,57 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     );
   }
 
+  void _setReplyingTo(Map<String, dynamic> message) {
+    setState(() {
+      _replyingToMessage = message;
+    });
+    _messageFocusNode.requestFocus();
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyingToMessage = null;
+    });
+  }
+
+  String _getReplyPreviewText(Map<String, dynamic> message) {
+    final type = message['type']?.toString() ?? 'text';
+    switch (type) {
+      case 'image':
+        return '📷 Photo';
+      case 'video':
+        return '🎬 Video';
+      case 'voice':
+        return '🎤 Voice message';
+      case 'document':
+        return '📄 ${message['file_name'] ?? message['fileName'] ?? 'Document'}';
+      default:
+        final text = (message['message'] ?? message['content'] ?? '').toString();
+        if (text.startsWith('📞')) return text;
+        return text.length > 50 ? '${text.substring(0, 50)}...' : text;
+    }
+  }
+
   Widget _buildMessageBubble(Map<String, dynamic> message, bool showAvatar) {
     final isMe = message['isMe'] as bool;
+    final isDeleted = _isMessageDeleted(message);
     
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: 4,
-        left: isMe ? 48 : 0,
-        right: isMe ? 0 : 48,
-      ),
-      child: Row(
+    return GestureDetector(
+      onHorizontalDragEnd: isDeleted ? null : (details) {
+        if (details.primaryVelocity != null) {
+          if ((isMe && details.primaryVelocity! < -200) || 
+              (!isMe && details.primaryVelocity! > 200)) {
+            _setReplyingTo(message);
+          }
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: 4,
+          left: isMe ? 48 : 0,
+          right: isMe ? 0 : 48,
+        ),
+        child: Row(
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -2378,27 +2481,30 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                                     ? _buildVideoContent(message, isMe)
                                     : message['type'] == 'document'
                                         ? _buildDocumentContent(message, isMe)
-                                        : Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              FirstLinkPreview(
-                                                text: (message['message'] ?? '').toString(),
-                                                margin: const EdgeInsets.only(bottom: 6),
+                                        : (message['type'] == 'text' &&
+                                                (message['message'] ?? '').toString().startsWith('📞'))
+                                            ? _buildCallLogContent(message, isMe)
+                                            : Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  FirstLinkPreview(
+                                                    text: (message['message'] ?? '').toString(),
+                                                    margin: const EdgeInsets.only(bottom: 6),
+                                                  ),
+                                                  LinkifyText(
+                                                    (message['message'] ?? '').toString(),
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      color: isMe ? Colors.white : const Color(0xFF1F2937),
+                                                      height: 1.3,
+                                                    ),
+                                                    linkStyle: TextStyle(
+                                                      color: isMe ? Colors.white : const Color(0xFF2563EB),
+                                                      decoration: TextDecoration.none,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
-                                              LinkifyText(
-                                                (message['message'] ?? '').toString(),
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  color: isMe ? Colors.white : const Color(0xFF1F2937),
-                                                  height: 1.3,
-                                                ),
-                                                linkStyle: TextStyle(
-                                                  color: isMe ? Colors.white : const Color(0xFF2563EB),
-                                                  decoration: TextDecoration.none,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -2434,6 +2540,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -2500,6 +2607,105 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCallLogContent(Map<String, dynamic> message, bool isMe) {
+    final raw = (message['message'] ?? '').toString();
+    final cleaned = raw.replaceFirst('📞', '').trim();
+
+    String title = cleaned;
+    String detail = '';
+
+    if (cleaned.contains('•')) {
+      final parts = cleaned.split('•');
+      title = parts.first.trim();
+      detail = parts.length > 1 ? parts.sublist(1).join('•').trim() : '';
+    }
+
+    final lowerDetail = detail.toLowerCase();
+    final isDuration = RegExp(r'^\d{2}:\d{2}(:\d{2})?$').hasMatch(detail);
+
+    Color accent;
+    IconData icon;
+    if (title.toLowerCase().contains('video')) {
+      icon = Icons.videocam_rounded;
+    } else if (title.toLowerCase().contains('audio')) {
+      icon = Icons.call_rounded;
+    } else {
+      icon = Icons.phone_rounded;
+    }
+
+    if (isDuration) {
+      accent = const Color(0xFF10B981);
+    } else if (lowerDetail.contains('busy') || lowerDetail.contains('rejected')) {
+      accent = const Color(0xFFF59E0B);
+    } else if (lowerDetail.contains('cancel')) {
+      accent = const Color(0xFF9CA3AF);
+    } else {
+      accent = const Color(0xFF3B82F6);
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: isMe ? Colors.white.withOpacity(0.18) : accent.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            icon,
+            size: 18,
+            color: isMe ? Colors.white : accent,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title.isEmpty ? 'Call' : title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.1,
+                  color: isMe ? Colors.white : const Color(0xFF111827),
+                ),
+              ),
+              if (detail.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isMe ? Colors.white.withOpacity(0.18) : accent.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: isMe ? Colors.white.withOpacity(0.20) : accent.withOpacity(0.25),
+                    ),
+                  ),
+                  child: Text(
+                    detail,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isMe ? Colors.white.withOpacity(0.95) : accent,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -3111,6 +3317,65 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               ],
             ),
           ),
+        // Reply Preview
+        if (_replyingToMessage != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F4F6),
+              border: Border(
+                top: BorderSide(
+                  color: const Color(0xFFE5E7EB).withOpacity(0.5),
+                  width: 1,
+                ),
+                left: const BorderSide(
+                  color: Color(0xFF3B82F6),
+                  width: 3,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _replyingToMessage!['isMe'] == true ? 'You' : widget.userName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3B82F6),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _getReplyPreviewText(_replyingToMessage!),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _cancelReply,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         // Message Input Container
         Container(
           padding: const EdgeInsets.all(8),
@@ -3322,5 +3587,88 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     } else {
       return 'Just now';
     }
+  }
+}
+
+class _MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+
+  const _MarqueeText({
+    required this.text,
+    required this.style,
+  });
+
+  @override
+  State<_MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<_MarqueeText> with SingleTickerProviderStateMixin {
+  late ScrollController _scrollController;
+  Timer? _scrollTimer;
+  bool _isScrollingForward = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAutoScroll();
+    });
+  }
+
+  void _startAutoScroll() {
+    _scrollTimer?.cancel();
+    _scrollTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+      if (!mounted || !_scrollController.hasClients) return;
+      
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.offset;
+      
+      if (maxScroll <= 0) return;
+      
+      if (_isScrollingForward) {
+        if (currentScroll >= maxScroll) {
+          _isScrollingForward = false;
+          _scrollTimer?.cancel();
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) _startAutoScroll();
+          });
+        } else {
+          _scrollController.jumpTo(currentScroll + 0.5);
+        }
+      } else {
+        if (currentScroll <= 0) {
+          _isScrollingForward = true;
+          _scrollTimer?.cancel();
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) _startAutoScroll();
+          });
+        } else {
+          _scrollController.jumpTo(currentScroll - 0.5);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollTimer?.cancel();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      child: Text(
+        widget.text,
+        style: widget.style,
+        maxLines: 1,
+      ),
+    );
   }
 }

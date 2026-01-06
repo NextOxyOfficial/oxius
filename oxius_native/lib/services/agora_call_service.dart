@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:math';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -12,11 +13,62 @@ class AgoraCallService {
   
   static RtcEngine? _engine;
   static bool _isInitialized = false;
+  static bool _isInCall = false;
   static String? _lastError;
   static String? get lastError => _lastError;
 
+  static Map<String, dynamic>? _activeCallInfo;
+  static Map<String, dynamic>? get activeCallInfo => _activeCallInfo;
+
+  static final StreamController<bool> _callStateController =
+      StreamController<bool>.broadcast();
+  static Stream<bool> get callStateStream => _callStateController.stream;
+
   static String? _lastNotificationError;
   static String? get lastNotificationError => _lastNotificationError;
+
+  static final StreamController<Map<String, dynamic>> _callStatusController =
+      StreamController<Map<String, dynamic>>.broadcast();
+
+  static Stream<Map<String, dynamic>> get callStatusStream => _callStatusController.stream;
+
+  static bool get isInCall => _isInCall;
+
+  static void setInCall(bool value) {
+    _isInCall = value;
+    if (!value) {
+      _activeCallInfo = null;
+    }
+    try {
+      _callStateController.add(value);
+    } catch (_) {}
+  }
+
+  static void setActiveCallInfo({
+    required String channelName,
+    required String peerId,
+    required String peerName,
+    String? peerAvatar,
+    required String callType,
+    required bool isIncoming,
+  }) {
+    _activeCallInfo = {
+      'channelName': channelName,
+      'peerId': peerId,
+      'peerName': peerName,
+      'peerAvatar': peerAvatar,
+      'callType': callType,
+      'isIncoming': isIncoming,
+    };
+  }
+
+  static void emitCallStatus(Map<String, dynamic> data) {
+    try {
+      _callStatusController.add(data);
+    } catch (_) {
+      // Ignore
+    }
+  }
   
   /// Initialize Agora RTC Engine
   static Future<RtcEngine> initEngine() async {
@@ -207,6 +259,40 @@ class AgoraCallService {
     } catch (e) {
       _lastNotificationError = e.toString();
       print('Error sending call notification: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> sendCallStatus({
+    required String receiverId,
+    required String channelName,
+    required String status,
+    required String callType,
+  }) async {
+    try {
+      _lastNotificationError = null;
+      final headers = await ApiService.getHeaders();
+
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/adsyconnect/send-call-status/'),
+        headers: headers,
+        body: json.encode({
+          'receiver_id': receiverId,
+          'channel_name': channelName,
+          'status': status,
+          'call_type': callType,
+        }),
+      );
+
+      final ok = response.statusCode == 200 || response.statusCode == 201;
+      if (!ok) {
+        _lastNotificationError = '${response.statusCode} ${response.body}';
+        print('Call status send failed: ${response.statusCode} ${response.body}');
+      }
+      return ok;
+    } catch (e) {
+      _lastNotificationError = e.toString();
+      print('Error sending call status: $e');
       return false;
     }
   }
