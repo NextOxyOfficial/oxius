@@ -87,6 +87,7 @@ def send_call_notification(request):
 
         # Send FCM to all callee's devices
         success_count = 0
+        last_send_error = None
         for fcm_token in fcm_tokens:
             try:
                 message = messaging.Message(
@@ -118,7 +119,19 @@ def send_call_notification(request):
                 messaging.send(message)
                 success_count += 1
             except Exception as e:
+                last_send_error = str(e)
                 print(f'Failed to send FCM to token {fcm_token.token[:20]}...: {e}')
+
+        if success_count == 0:
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Failed to send incoming call push to any device',
+                    'details': last_send_error,
+                    'total_tokens': fcm_tokens.count(),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return Response({
             'success': True,
