@@ -69,7 +69,7 @@ def send_call_notification(request):
         # Get callee's FCM token
         try:
             callee = User.objects.get(id=callee_id)
-            fcm_tokens = FCMToken.objects.filter(user=callee)
+            fcm_tokens = FCMToken.objects.filter(user=callee, is_active=True)
         except User.DoesNotExist:
             return Response({'error': 'Callee not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -90,6 +90,10 @@ def send_call_notification(request):
         for fcm_token in fcm_tokens:
             try:
                 message = messaging.Message(
+                    notification=messaging.Notification(
+                        title=f"Incoming {call_type} call",
+                        body=f"{caller_name} is calling you",
+                    ),
                     data={
                         'type': 'incoming_call',
                         'channel_name': str(channel_name),

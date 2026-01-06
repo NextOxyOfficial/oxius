@@ -206,6 +206,13 @@ class FCMService {
     _log('Body: ${message.notification?.body}');
     _log('Data: ${message.data}');
 
+    // Incoming call: open call screen immediately in foreground
+    final type = message.data['type']?.toString();
+    if (type == 'incoming_call' || type == 'call') {
+      _navigateBasedOnData(Map<String, dynamic>.from(message.data));
+      return;
+    }
+
     // Show local notification
     _showLocalNotification(message);
   }
