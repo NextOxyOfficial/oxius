@@ -18,8 +18,8 @@ import '../widgets/link_preview_card.dart';
 import '../widgets/linkify_text.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
-import '../features/adsyconnect_call/models/adsy_call.dart';
-import '../features/adsyconnect_call/screens/adsy_call_screen.dart';
+import '../services/agora_call_service.dart';
+import 'call_screen.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -1711,6 +1711,35 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     );
   }
 
+  void _startCall(String callType) {
+    final currentUser = AuthService.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please login to make calls')),
+      );
+      return;
+    }
+    
+    final channelName = AgoraCallService.generateChannelName(
+      currentUser.id,
+      widget.userId,
+    );
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CallScreen(
+          channelName: channelName,
+          calleeId: widget.userId,
+          calleeName: widget.userName,
+          calleeAvatar: widget.userAvatar,
+          isIncoming: false,
+          callType: callType,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2110,35 +2139,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       ),
       actions: [
         IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AdsyCallScreen(
-                  isCaller: true,
-                  otherUserId: widget.userId,
-                  otherUserName: widget.userName,
-                  type: AdsyCallType.audio,
-                ),
-              ),
-            );
-          },
+          onPressed: () => _startCall('audio'),
           icon: const Icon(Icons.call_rounded, color: Colors.white, size: 20),
         ),
         IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AdsyCallScreen(
-                  isCaller: true,
-                  otherUserId: widget.userId,
-                  otherUserName: widget.userName,
-                  type: AdsyCallType.video,
-                ),
-              ),
-            );
-          },
+          onPressed: () => _startCall('video'),
           icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
         ),
         PopupMenuButton<String>(

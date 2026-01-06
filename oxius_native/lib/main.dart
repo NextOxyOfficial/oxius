@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
-// import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart'; // Temporarily disabled
 import 'firebase_options.dart';
 import 'config/app_config.dart';
 import 'services/fcm_service.dart';
@@ -45,9 +44,7 @@ import 'pages/register_page.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
 import 'models/cart_item.dart';
-import 'features/adsyconnect_call/services/call_listener_service.dart';
-import 'features/adsyconnect_call/screens/adsy_call_screen.dart';
-import 'features/adsyconnect_call/models/adsy_call.dart';
+import 'screens/call_screen.dart';
 
 void main() async {
   try {
@@ -93,13 +90,9 @@ void main() async {
     if (userState.isAuthenticated) {
       print('Session restored successfully for user: ${userState.userName}');
       await FCMService.syncTokenWithBackend();
-      CallListenerService.instance.start();
     } else {
       print('No existing session found');
     }
-    
-    // Setup CallKit event listeners (disabled temporarily)
-    // _setupCallKitListeners();
     
     runApp(MyApp(userState: userState));
   } catch (e, stackTrace) {
@@ -307,12 +300,13 @@ class MyApp extends StatelessWidget {
             } else if (settings.name == '/call') {
               final args = settings.arguments as Map<String, dynamic>?;
               return MaterialPageRoute(
-                builder: (context) => AdsyCallScreen(
-                  isCaller: args?['isCaller'] ?? false,
-                  callId: args?['callId'],
-                  otherUserId: args?['callerId'] ?? args?['calleeId'],
-                  otherUserName: args?['callerName'] ?? args?['calleeName'] ?? 'Unknown',
-                  type: args?['callType'] == 'video' ? AdsyCallType.video : AdsyCallType.audio,
+                builder: (context) => CallScreen(
+                  channelName: args?['channelName'] ?? '',
+                  calleeId: args?['calleeId'] ?? args?['callerId'] ?? '',
+                  calleeName: args?['calleeName'] ?? args?['callerName'] ?? 'Unknown',
+                  calleeAvatar: args?['calleeAvatar'] ?? args?['callerAvatar'],
+                  isIncoming: args?['isIncoming'] ?? false,
+                  callType: args?['callType'] ?? 'video',
                 ),
               );
             }
@@ -324,6 +318,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-// CallKit listeners temporarily disabled - using Firestore-based call listening instead
-// Native call UI (lock screen, background) will be added later when Java 17 toolchain is configured

@@ -5,6 +5,7 @@
 import FlutterMacOS
 import Foundation
 
+import agora_rtc_engine
 import app_badge_plus
 import audio_session
 import cloud_firestore
@@ -18,7 +19,7 @@ import flutter_image_compress_macos
 import flutter_inappwebview_macos
 import flutter_local_notifications
 import flutter_secure_storage_macos
-import flutter_webrtc
+import iris_method_channel
 import just_audio
 import mobile_scanner
 import package_info_plus
@@ -32,6 +33,7 @@ import video_player_avfoundation
 import wakelock_plus
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+  AgoraRtcNgPlugin.register(with: registry.registrar(forPlugin: "AgoraRtcNgPlugin"))
   AppBadgePlusPlugin.register(with: registry.registrar(forPlugin: "AppBadgePlusPlugin"))
   AudioSessionPlugin.register(with: registry.registrar(forPlugin: "AudioSessionPlugin"))
   FLTFirebaseFirestorePlugin.register(with: registry.registrar(forPlugin: "FLTFirebaseFirestorePlugin"))
@@ -45,7 +47,7 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   InAppWebViewFlutterPlugin.register(with: registry.registrar(forPlugin: "InAppWebViewFlutterPlugin"))
   FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
   FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
-  FlutterWebRTCPlugin.register(with: registry.registrar(forPlugin: "FlutterWebRTCPlugin"))
+  IrisMethodChannelPlugin.register(with: registry.registrar(forPlugin: "IrisMethodChannelPlugin"))
   JustAudioPlugin.register(with: registry.registrar(forPlugin: "JustAudioPlugin"))
   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
   FPPPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FPPPackageInfoPlusPlugin"))

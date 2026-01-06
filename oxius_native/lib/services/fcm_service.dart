@@ -15,8 +15,7 @@ import '../screens/business_network/profile_screen.dart';
 import '../screens/business_network/post_detail_screen.dart';
 import '../screens/inbox_screen.dart';
 import '../screens/workspace/order_detail_screen.dart';
-// import '../features/adsyconnect_call/services/native_call_service.dart'; // Temporarily disabled
-// import '../features/adsyconnect_call/models/adsy_call.dart'; // Temporarily disabled
+import '../screens/call_screen.dart';
 
 void _log(String message) {
   if (kDebugMode) {
@@ -442,6 +441,32 @@ class FCMService {
       if (postId != null) {
         _log('   → Navigating to post: $postId');
         _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
+      }
+    }
+    // ============================================
+    // INCOMING CALL (Agora)
+    // ============================================
+    else if (type == 'incoming_call' || type == 'call') {
+      final channelName = data['channel_name']?.toString();
+      final callerId = data['caller_id']?.toString();
+      final callerName = data['caller_name']?.toString() ?? 'Unknown';
+      final callerAvatar = data['caller_avatar']?.toString();
+      final callType = data['call_type']?.toString() ?? 'video';
+      
+      if (channelName != null && callerId != null) {
+        _log('   → Incoming call from: $callerName, channel: $channelName');
+        navigator.push(
+          MaterialPageRoute(
+            builder: (context) => CallScreen(
+              channelName: channelName,
+              calleeId: callerId,
+              calleeName: callerName,
+              calleeAvatar: callerAvatar,
+              isIncoming: true,
+              callType: callType,
+            ),
+          ),
+        );
       }
     }
     // ============================================

@@ -51,7 +51,7 @@ def send_call_notification(request):
         from django.conf import settings
         import firebase_admin
         from firebase_admin import credentials, messaging
-        from notifications.models import FCMToken
+        from base.models import FCMToken
 
         if not firebase_admin._apps:
             cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
@@ -59,11 +59,12 @@ def send_call_notification(request):
             firebase_admin.initialize_app(cred)
 
         callee_id = request.data.get('callee_id')
+        channel_name = request.data.get('channel_name')
         call_id = request.data.get('call_id')
         call_type = request.data.get('call_type', 'audio')
 
-        if not callee_id or not call_id:
-            return Response({'error': 'callee_id and call_id are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not callee_id or not channel_name:
+            return Response({'error': 'callee_id and channel_name are required'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Get callee's FCM token
         try:
@@ -77,7 +78,12 @@ def send_call_notification(request):
 
         caller = request.user
         caller_name = caller.get_full_name() or caller.username
-        caller_avatar = caller.profile_image.url if hasattr(caller, 'profile_image') and caller.profile_image else None
+
+        caller_avatar = None
+        if hasattr(caller, 'profile_image') and caller.profile_image:
+            caller_avatar = caller.profile_image.url
+        elif hasattr(caller, 'image') and caller.image:
+            caller_avatar = caller.image.url
 
         # Send FCM to all callee's devices
         success_count = 0
@@ -86,7 +92,8 @@ def send_call_notification(request):
                 message = messaging.Message(
                     data={
                         'type': 'incoming_call',
-                        'call_id': str(call_id),
+                        'channel_name': str(channel_name),
+                        **({'call_id': str(call_id)} if call_id else {}),
                         'caller_id': str(caller.id),
                         'caller_name': caller_name,
                         'call_type': call_type,
