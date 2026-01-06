@@ -288,14 +288,6 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
         queryset = (
             BusinessNetworkPost.objects.annotate(
-                # Simplified priority with fewer database operations
-                priority=Case(
-                    When(author=user, then=Value(1)),  # Own posts always highest priority
-                    When(author_id__in=users_following, then=Value(2)),
-                    When(author_id__in=users_followers, then=Value(3)),
-                    default=Value(4),
-                    output_field=IntegerField(),
-                ),
                 # Pre-calculate counts to avoid N+1 queries
                 like_count=Count("post_likes", distinct=True),
                 comment_count=Count("post_comments", distinct=True),
@@ -311,7 +303,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 "post_likes__user",
                 "post_comments__author",
             )
-            .order_by("priority", "-created_at")
+            .order_by("-created_at")  # Chronological order like Facebook
         )
 
         return queryset
