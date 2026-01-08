@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/agora_call_service.dart';
+import '../services/fcm_service.dart';
 import '../screens/call_screen.dart';
 
 class OngoingCallBar extends StatefulWidget {
@@ -68,7 +69,11 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
     final info = AgoraCallService.activeCallInfo;
     if (info == null) return;
 
-    Navigator.of(context).push(
+    // Use the global navigator key to ensure navigation works from the app builder context
+    final navigator = FCMService.navigatorKey.currentState;
+    if (navigator == null) return;
+
+    navigator.push(
       MaterialPageRoute(
         builder: (_) => CallScreen(
           channelName: info['channelName'] ?? '',
@@ -92,7 +97,8 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isInCall) return const SizedBox.shrink();
+    // Hide if not in call or if call screen is currently visible
+    if (!_isInCall || AgoraCallService.isCallScreenVisible) return const SizedBox.shrink();
 
     final info = AgoraCallService.activeCallInfo;
     final peerName = info?['peerName'] ?? 'Ongoing call';
@@ -137,6 +143,7 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                         color: Colors.white,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.none,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -146,6 +153,7 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.85),
                         fontSize: 12,
+                        decoration: TextDecoration.none,
                       ),
                     ),
                   ],
@@ -163,6 +171,7 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.none,
                   ),
                 ),
               ),

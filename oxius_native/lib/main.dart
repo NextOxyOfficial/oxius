@@ -38,6 +38,7 @@ import 'screens/refer_friend_screen.dart';
 import 'screens/terms_and_conditions_screen.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/elearning_screen.dart';
+import 'screens/food_zone_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
@@ -143,6 +144,7 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'AdsyClub Native',
             navigatorKey: FCMService.navigatorKey,
+            navigatorObservers: [FCMService.routeObserver],
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
@@ -170,6 +172,7 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             title: 'AdsyClub Native',
             navigatorKey: FCMService.navigatorKey,
+            navigatorObservers: [FCMService.routeObserver],
             debugShowCheckedModeBanner: false,
             builder: (context, child) {
               return Column(
@@ -225,6 +228,7 @@ class MyApp extends StatelessWidget {
             '/refer-a-friend': (context) => const ReferFriendScreen(),
             '/terms-and-conditions': (context) => const TermsAndConditionsScreen(),
             '/privacy-policy': (context) => const PrivacyPolicyScreen(),
+            '/food-zone': (context) => const FoodZoneScreen(),
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/classified-category') {

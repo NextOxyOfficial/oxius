@@ -1771,11 +1771,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             ],
           ),
         ),
-        child: Column(
-        children: [
-          // Messages List
-          Expanded(
-            child: _isLoadingMessages
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                // Messages List
+                Expanded(
+                  child: _isLoadingMessages
                 ? ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: 8,
@@ -1906,10 +1908,45 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                         },
                       ),
           ),
-          // Message Input
-          _buildMessageInput(),
-        ],
-      ),
+                // Message Input
+                _buildMessageInput(),
+              ],
+            ),
+            // Quick scroll to bottom arrow
+            if (!_isUserNearBottom)
+              Positioned(
+                bottom: 80,
+                right: 16,
+                child: AnimatedOpacity(
+                  opacity: _isUserNearBottom ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: GestureDetector(
+                    onTap: _scrollToBottom,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

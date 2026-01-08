@@ -715,6 +715,53 @@ class ClassifiedPostPagination(PageNumberPagination):
     max_page_size = 100
 
 
+class GetFoodZonePosts(generics.ListAPIView):
+    """
+    API endpoint to fetch classified posts from categories marked as Food Zone.
+    Returns posts from all categories where is_food_zone=True.
+    """
+    serializer_class = ClassifiedPostSerializer
+    pagination_class = ClassifiedPostPagination
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = (
+            ClassifiedCategoryPost.objects.filter(
+                service_status="approved",
+                category__is_food_zone=True  # Only posts from food zone categories
+            )
+            .select_related("category")
+            .prefetch_related("medias")
+            .order_by("-created_at")
+        )
+
+        # Support search
+        search_query = self.request.query_params.get("search")
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) | Q(instructions__icontains=search_query)
+            )
+
+        # Filter by specific category within food zone
+        category_id = self.request.query_params.get("category")
+        if category_id:
+            queryset = queryset.filter(category__id=category_id)
+
+        return queryset
+
+
+class GetFoodZoneCategories(generics.ListAPIView):
+    """
+    API endpoint to fetch all categories marked as Food Zone.
+    """
+    serializer_class = ClassifiedServicesSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
+
+    def get_queryset(self):
+        return ClassifiedCategory.objects.filter(is_food_zone=True).order_by("title")
+
+
 class GetClassifiedPosts(generics.ListAPIView):
     serializer_class = ClassifiedPostSerializer
     pagination_class = ClassifiedPostPagination
@@ -724,9 +771,6 @@ class GetClassifiedPosts(generics.ListAPIView):
         queryset = (
             ClassifiedCategoryPost.objects.filter(service_status="approved")
             .select_related("category")
-            .defer(
-                "user"  # Tell Django not to load the user field
-            )
             .order_by("-created_at")
         )
 
@@ -737,6 +781,11 @@ class GetClassifiedPosts(generics.ListAPIView):
         category_id = self.request.query_params.get("category")
         if category_id:
             queryset = queryset.filter(category__id=category_id)
+
+        # Filter by user if provided
+        user_id = self.request.query_params.get("user")
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
 
         # Apply search filter
         if search_query:

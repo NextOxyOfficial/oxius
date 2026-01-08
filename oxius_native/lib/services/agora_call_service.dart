@@ -14,8 +14,14 @@ class AgoraCallService {
   static RtcEngine? _engine;
   static bool _isInitialized = false;
   static bool _isInCall = false;
+  static bool _isCallScreenVisible = false;
   static String? _lastError;
   static String? get lastError => _lastError;
+  static bool get isCallScreenVisible => _isCallScreenVisible;
+  
+  static void setCallScreenVisible(bool value) {
+    _isCallScreenVisible = value;
+  }
 
   static Map<String, dynamic>? _activeCallInfo;
   static Map<String, dynamic>? get activeCallInfo => _activeCallInfo;

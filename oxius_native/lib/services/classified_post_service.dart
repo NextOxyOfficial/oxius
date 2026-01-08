@@ -499,6 +499,65 @@ class ClassifiedPostService {
       return null;
     }
   }
+
+  /// Fetch posts by a specific user
+  Future<List<ClassifiedPost>> fetchPostsByUser({
+    required String userId,
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+  }) async {
+    try {
+      final queryParams = <String, String>{
+        'user': userId,
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      };
+
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+
+      final uri = Uri.parse('$baseUrl/classified-posts/').replace(
+        queryParameters: queryParams,
+      );
+
+      print('👤 Fetching posts by user $userId from: $uri');
+
+      final response = await client.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('📡 Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        List<dynamic> results;
+        if (data is Map && data.containsKey('results')) {
+          results = data['results'] as List<dynamic>;
+        } else if (data is List) {
+          results = data;
+        } else {
+          return [];
+        }
+
+        final posts = results
+            .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
+            .where((post) => post.serviceStatus.toLowerCase() == 'approved')
+            .toList();
+
+        print('✅ Fetched ${posts.length} posts by user');
+        return posts;
+      }
+
+      return [];
+    } catch (e) {
+      print('❌ Error fetching posts by user: $e');
+      return [];
+    }
+  }
 }
 
 class ClassifiedPostsResponse {

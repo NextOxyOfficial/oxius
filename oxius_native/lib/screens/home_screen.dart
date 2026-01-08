@@ -6,6 +6,7 @@ import '../widgets/mobile_drawer.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/sale_category.dart';
 import '../widgets/classified_services_section.dart';
+import '../widgets/food_zone/food_zone_section.dart';
 import '../widgets/eshop_section.dart';
 import '../widgets/micro_gigs_section.dart';
 import '../widgets/mobile_sticky_nav.dart';
@@ -426,8 +427,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // 2. Sale Category - eShop product categories
                   const SaleCategory(),
                   
-                  // 3. Search Form - TODO: Implement search functionality for classified ads
-                  // This is a placeholder for the search form section from Vue
+                  // 3. Food Zone Section - FoodPanda style food listings
+                  FoodZoneSection(baseUrl: ApiService.baseUrl),
                   
                   // 4. Classified Services - Service categories
                   Container(

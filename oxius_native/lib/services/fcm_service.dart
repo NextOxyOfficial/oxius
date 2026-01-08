@@ -3,6 +3,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:flutter_callkit_incoming/entities/entities.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -24,6 +27,17 @@ void _log(String message) {
   }
 }
 
+class _CallkitLifecycleObserver extends WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // When user taps the CallKit notification, Android may resume the app without
+      // triggering FCM onMessageOpenedApp. Check active calls and navigate.
+      FCMService._tryNavigateToActiveCallkitCall();
+    }
+  }
+}
+
 // Top-level function for background messages
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -33,22 +47,111 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   _log('📱 Background message received: ${message.messageId}');
   _log('📦 Data: ${message.data}');
   
-  // Handle incoming call in background (native call UI temporarily disabled)
-  // await _handleIncomingCallFromPush(message.data);
+  // Handle incoming call in background - show high priority notification
+  final type = message.data['type']?.toString();
+  if (type == 'incoming_call' || type == 'call') {
+    await _showBackgroundCallNotification(message.data);
+  }
+}
+
+/// Show native incoming call screen when app is in background/killed (WhatsApp-style)
+Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
+  // Check if call is too old (more than 30 seconds)
+  final timestampStr = data['timestamp']?.toString();
+  if (timestampStr != null) {
+    try {
+      final callTimestamp = int.parse(timestampStr);
+      final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+      final timeDifference = currentTimestamp - callTimestamp;
+      
+      // If call is older than 30 seconds, ignore it
+      if (timeDifference > 30000) {
+        _log('🚫 Ignoring old call notification (${timeDifference}ms old)');
+        return;
+      }
+    } catch (e) {
+      _log('⚠️ Error parsing call timestamp: $e');
+    }
+  }
+  
+  final callerName = data['caller_name']?.toString() ?? 'Unknown';
+  final callerId = data['caller_id']?.toString() ?? '';
+  final callerAvatar = data['caller_avatar']?.toString();
+  final callType = data['call_type']?.toString() ?? 'video';
+  final channelName = data['channel_name']?.toString() ?? '';
+  
+  final uuid = const Uuid().v4();
+  
+  final params = CallKitParams(
+    id: uuid,
+    nameCaller: callerName,
+    appName: 'AdsyClub',
+    avatar: callerAvatar,
+    handle: callType == 'video' ? 'Video Call' : 'Voice Call',
+    type: callType == 'video' ? 1 : 0, // 0 = audio, 1 = video
+    duration: 60000, // 60 seconds ring timeout
+    textAccept: 'Accept',
+    textDecline: 'Decline',
+    extra: {
+      'caller_id': callerId,
+      'channel_name': channelName,
+      'call_type': callType,
+      'caller_name': callerName,
+      'caller_avatar': callerAvatar ?? '',
+    },
+    headers: <String, dynamic>{'platform': 'android'},
+    android: const AndroidParams(
+      isCustomNotification: true,
+      isShowLogo: false,
+      ringtonePath: 'system_ringtone_default',
+      backgroundColor: '#0955fa',
+      backgroundUrl: '',
+      actionColor: '#4CAF50',
+      textColor: '#ffffff',
+      incomingCallNotificationChannelName: 'Incoming Calls',
+      isShowCallID: false,
+    ),
+    ios: const IOSParams(
+      iconName: 'CallKitLogo',
+      handleType: 'generic',
+      supportsVideo: true,
+      maximumCallGroups: 2,
+      maximumCallsPerCallGroup: 1,
+      audioSessionMode: 'default',
+      audioSessionActive: true,
+      audioSessionPreferredSampleRate: 44100.0,
+      audioSessionPreferredIOBufferDuration: 0.005,
+      supportsDTMF: true,
+      supportsHolding: true,
+      supportsGrouping: false,
+      supportsUngrouping: false,
+      ringtonePath: 'default',
+    ),
+  );
+  
+  await FlutterCallkitIncoming.showCallkitIncoming(params);
 }
 
 class FCMService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  static final FlutterLocalNotificationsPlugin _localNotifications = 
-      FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  static String? _fcmToken;
+  static final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+  
+  // Track active calls to prevent duplicates
+  static final Set<String> _activeCallIds = <String>{};
+  static final Map<String, int> _callTimestamps = <String, int>{};
+  
+  // Track accepted CallKit UUIDs to prevent actionCallEnded from sending 'ended' status
+  static final Set<String> _acceptedCallkitUuids = <String>{};
   
   static const String _fcmTokenKey = 'adsyclub_fcm_token';
   static const String _lastUploadedKey = 'adsyclub_fcm_token_last_uploaded';
-  static String? _fcmToken;
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   static Map<String, dynamic>? _pendingNavigationData;
   static Timer? _pendingNavigationTimer;
   static int _pendingNavigationAttempts = 0;
+  static bool _lifecycleObserverInstalled = false;
 
   static Future<void> _persistFcmToken(String token) async {
     try {
@@ -94,6 +197,11 @@ class FCMService {
       _log('🔥 Initializing FCM Service...');
       _log('=' * 60);
 
+      if (!_lifecycleObserverInstalled) {
+        WidgetsBinding.instance.addObserver(_CallkitLifecycleObserver());
+        _lifecycleObserverInstalled = true;
+      }
+
       // Request notification permissions with more aggressive settings
       NotificationSettings settings = await _firebaseMessaging.requestPermission(
         alert: true,
@@ -117,6 +225,9 @@ class FCMService {
 
       // Initialize local notifications
       await _initializeLocalNotifications();
+      
+      // Initialize CallKit for incoming calls
+      await _initializeCallKit();
 
       // Get FCM token
       _fcmToken = await _firebaseMessaging.getToken();
@@ -161,9 +272,59 @@ class FCMService {
         _handleNotificationTap(initialMessage);
       }
 
+      // If app was opened via CallKit notification shade tap, FCM callbacks may not fire.
+      // Detect any active CallKit calls and navigate to the call screen.
+      await _tryNavigateToActiveCallkitCall();
+
       _log('✅ FCM Service initialized successfully');
     } catch (e) {
       _log('❌ Error initializing FCM: $e');
+    }
+  }
+
+  static Future<void> _tryNavigateToActiveCallkitCall() async {
+    if (AgoraCallService.isCallScreenVisible) return;
+
+    try {
+      final calls = await FlutterCallkitIncoming.activeCalls();
+      if (calls is! List || calls.isEmpty) return;
+
+      final dynamic last = calls.last;
+      if (last is! Map) return;
+
+      final map = Map<String, dynamic>.from(last);
+
+      Map<String, dynamic>? extra;
+      final rawExtra = map['extra'];
+      if (rawExtra is Map) {
+        extra = Map<String, dynamic>.from(rawExtra);
+      } else if (rawExtra is String && rawExtra.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(rawExtra);
+          if (decoded is Map) {
+            extra = Map<String, dynamic>.from(decoded);
+          }
+        } catch (_) {
+          // Ignore
+        }
+      }
+
+      final callerId = extra?['caller_id']?.toString();
+      final channelName = extra?['channel_name']?.toString();
+      if (callerId == null || channelName == null) return;
+
+      final callData = {
+        'type': 'incoming_call',
+        'caller_id': callerId,
+        'channel_name': channelName,
+        'call_type': extra?['call_type']?.toString() ?? 'video',
+        'caller_name': extra?['caller_name']?.toString() ?? 'Unknown',
+        'caller_avatar': extra?['caller_avatar']?.toString() ?? '',
+      };
+
+      _navigateBasedOnData(callData);
+    } catch (e) {
+      _log('⚠️ Failed to read CallKit active calls: $e');
     }
   }
 
@@ -195,9 +356,374 @@ class FCMService {
       enableVibration: true,
     );
 
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+    // Create high-priority call notification channel with ringtone
+    const AndroidNotificationChannel callChannel = AndroidNotificationChannel(
+      'oxius_calls', // id
+      'Incoming Calls', // name
+      description: 'Notifications for incoming voice and video calls',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      showBadge: true,
+    );
+
+    final androidPlugin = _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    
+    await androidPlugin?.createNotificationChannel(channel);
+    await androidPlugin?.createNotificationChannel(callChannel);
+  }
+
+  /// Initialize CallKit for native incoming call UI
+  static Future<void> _initializeCallKit() async {
+    try {
+      // Listen for CallKit events
+      FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
+        if (event == null) return;
+        _log('📞 CallKit Event: ${event.event}');
+        
+        switch (event.event) {
+          case Event.actionCallIncoming:
+            _cacheCallIncoming(event);
+            break;
+          case Event.actionCallAccept:
+            _handleCallAccepted(event);
+            break;
+          case Event.actionCallDecline:
+            _handleCallDeclined(event);
+            break;
+          case Event.actionCallEnded:
+            _handleCallEnded(event);
+            break;
+          case Event.actionCallTimeout:
+            _handleCallTimeout(event);
+            break;
+          default:
+            break;
+        }
+      });
+      
+      _log('✅ CallKit initialized');
+    } catch (e) {
+      _log('❌ Error initializing CallKit: $e');
+    }
+  }
+
+  static void _cacheCallIncoming(CallEvent event) {
+    // Do not auto-navigate here. This event can fire when the incoming CallKit UI is displayed.
+    // Navigation should happen on accept or when the user taps the notification and app resumes.
+    _pendingNavigationData ??= _extractCallDataFromCallEvent(event);
+  }
+
+  static Map<String, dynamic>? _extractCallDataFromCallEvent(CallEvent event) {
+    final extra = event.body['extra'] as Map<String, dynamic>?;
+    if (extra == null) return null;
+
+    final callerId = extra['caller_id']?.toString();
+    final channelName = extra['channel_name']?.toString();
+    if (callerId == null || channelName == null) return null;
+
+    return {
+      'type': 'incoming_call',
+      'caller_id': callerId,
+      'channel_name': channelName,
+      'call_type': extra['call_type']?.toString() ?? 'video',
+      'caller_name': extra['caller_name']?.toString() ?? 'Unknown',
+      'caller_avatar': extra['caller_avatar']?.toString() ?? '',
+    };
+  }
+
+  /// Handle call accepted from CallKit
+  static void _handleCallAccepted(CallEvent event) {
+    final extra = event.body['extra'] as Map<String, dynamic>?;
+    if (extra == null) return;
+    
+    final callerId = extra['caller_id']?.toString();
+    final channelName = extra['channel_name']?.toString();
+    final callType = extra['call_type']?.toString() ?? 'video';
+    final callerName = extra['caller_name']?.toString() ?? 'Unknown';
+    final callerAvatar = extra['caller_avatar']?.toString();
+    final callkitUuid = event.body['id']?.toString() ?? '';
+    
+    if (callerId == null || channelName == null) return;
+    
+    // Mark this CallKit UUID as accepted so actionCallEnded won't send 'ended' status
+    if (callkitUuid.isNotEmpty) {
+      _acceptedCallkitUuids.add(callkitUuid);
+    }
+    
+    // Use setCallConnected to mark call as connected (stops ringtone, updates call history on iOS)
+    // Then end the CallKit UI - this is the correct flow for accepted calls
+    FlutterCallkitIncoming.setCallConnected(callkitUuid);
+    FlutterCallkitIncoming.endCall(callkitUuid);
+    
+    // Navigate to call screen - use pending navigation if navigator not ready (app cold start)
+    // Use special type 'accepted_call' so _navigateBasedOnDataNow navigates directly to CallScreen
+    final callData = {
+      'type': 'accepted_call', // Special type to bypass showIncomingCall and go directly to CallScreen
+      'caller_id': callerId,
+      'channel_name': channelName,
+      'call_type': callType,
+      'caller_name': callerName,
+      'caller_avatar': callerAvatar ?? '',
+    };
+    
+    final navigator = navigatorKey.currentState;
+    if (navigator != null) {
+      _navigateToCallScreenDirectly(navigator, callData);
+    } else {
+      // App not fully initialized yet - store for pending navigation
+      _log('📞 Navigator not ready, storing pending call navigation');
+      _pendingNavigationData = callData;
+      _schedulePendingNavigation();
+    }
+  }
+
+  /// Handle call declined from CallKit
+  static void _handleCallDeclined(CallEvent event) {
+    final extra = event.body['extra'] as Map<String, dynamic>?;
+    if (extra == null) return;
+    
+    final callerId = extra['caller_id']?.toString();
+    final channelName = extra['channel_name']?.toString();
+    final callType = extra['call_type']?.toString() ?? 'video';
+    
+    if (callerId == null || channelName == null) return;
+    
+    // Send rejected status to caller
+    AgoraCallService.sendCallStatus(
+      receiverId: callerId,
+      channelName: channelName,
+      status: 'rejected',
+      callType: callType,
+    );
+    
+    // End the CallKit UI
+    FlutterCallkitIncoming.endCall(event.body['id'] ?? '');
+  }
+
+  /// Handle call ended from CallKit
+  static void _handleCallEnded(CallEvent event) {
+    final callkitUuid = event.body['id']?.toString() ?? '';
+    
+    // If this call was accepted, don't send 'ended' status - the CallScreen will handle it
+    final wasAccepted = _acceptedCallkitUuids.remove(callkitUuid);
+    
+    final extra = event.body['extra'] as Map<String, dynamic>?;
+    if (extra != null) {
+      final callerId = extra['caller_id']?.toString();
+      final channelName = extra['channel_name']?.toString();
+      final callType = extra['call_type']?.toString() ?? 'video';
+      
+      if (callerId != null && channelName != null) {
+        // Remove from active calls tracking
+        final callId = '${callerId}_${channelName}';
+        _activeCallIds.remove(callId);
+        _callTimestamps.remove(callId);
+        
+        // Only send ended status if the call was NOT accepted
+        // If accepted, the CallScreen handles sending the proper status when call ends
+        if (!wasAccepted) {
+          _log('📞 CallKit ended (not accepted) - sending ended status to caller');
+          AgoraCallService.sendCallStatus(
+            receiverId: callerId,
+            channelName: channelName,
+            status: 'ended',
+            callType: callType,
+          );
+        } else {
+          _log('📞 CallKit ended (was accepted) - CallScreen will handle status');
+        }
+      }
+    }
+    
+    // Ensure CallKit UI is dismissed
+    if (callkitUuid.isNotEmpty) {
+      FlutterCallkitIncoming.endCall(callkitUuid);
+    }
+  }
+
+  /// Handle call timeout from CallKit
+  static void _handleCallTimeout(CallEvent event) {
+    final extra = event.body['extra'] as Map<String, dynamic>?;
+    if (extra == null) return;
+    
+    final callerId = extra['caller_id']?.toString();
+    final channelName = extra['channel_name']?.toString();
+    final callType = extra['call_type']?.toString() ?? 'video';
+    
+    if (callerId == null || channelName == null) return;
+    
+    // Remove from active calls tracking
+    final callId = '${callerId}_${channelName}';
+    _activeCallIds.remove(callId);
+    _callTimestamps.remove(callId);
+    
+    // Send missed call status
+    AgoraCallService.sendCallStatus(
+      receiverId: callerId,
+      channelName: channelName,
+      status: 'cancelled',
+      callType: callType,
+    );
+    
+    FlutterCallkitIncoming.endCall(event.body['id'] ?? '');
+  }
+
+  /// Show native incoming call screen (for foreground calls too)
+  static Future<void> showIncomingCall({
+    required String callerId,
+    required String callerName,
+    String? callerAvatar,
+    required String channelName,
+    required String callType,
+    int? timestamp,
+  }) async {
+    // Don't show CallKit if already in a call or CallScreen is visible
+    if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
+      _log('🚫 Ignoring incoming call - already in call or CallScreen visible');
+      // Auto-reply busy
+      AgoraCallService.sendCallStatus(
+        receiverId: callerId,
+        channelName: channelName,
+        status: 'busy',
+        callType: callType,
+      );
+      return;
+    }
+    
+    // Check if call is too old (more than 30 seconds)
+    if (timestamp != null) {
+      final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+      final timeDifference = currentTimestamp - timestamp;
+      
+      if (timeDifference > 30000) {
+        _log('🚫 Ignoring old foreground call (${timeDifference}ms old)');
+        return;
+      }
+    }
+    
+    // Create unique call identifier
+    final callId = '${callerId}_${channelName}';
+    
+    // Check if this call is already active
+    if (_activeCallIds.contains(callId)) {
+      _log('🚫 Ignoring duplicate call: $callId');
+      return;
+    }
+    
+    // Add to active calls tracking
+    _activeCallIds.add(callId);
+    if (timestamp != null) {
+      _callTimestamps[callId] = timestamp;
+    }
+    
+    final uuid = const Uuid().v4();
+    
+    final params = CallKitParams(
+      id: uuid,
+      nameCaller: callerName,
+      appName: 'AdsyClub',
+      avatar: callerAvatar,
+      handle: callType == 'video' ? 'Video Call' : 'Voice Call',
+      type: callType == 'video' ? 1 : 0,
+      duration: 60000,
+      textAccept: 'Accept',
+      textDecline: 'Decline',
+      extra: {
+        'caller_id': callerId,
+        'channel_name': channelName,
+        'call_type': callType,
+        'caller_name': callerName,
+        'caller_avatar': callerAvatar ?? '',
+      },
+      headers: <String, dynamic>{'platform': 'android'},
+      android: const AndroidParams(
+        isCustomNotification: true,
+        isShowLogo: false,
+        ringtonePath: 'system_ringtone_default',
+        backgroundColor: '#0955fa',
+        actionColor: '#4CAF50',
+        textColor: '#ffffff',
+        incomingCallNotificationChannelName: 'Incoming Calls',
+        isShowCallID: false,
+      ),
+      ios: const IOSParams(
+        iconName: 'CallKitLogo',
+        handleType: 'generic',
+        supportsVideo: true,
+        maximumCallGroups: 2,
+        maximumCallsPerCallGroup: 1,
+        ringtonePath: 'default',
+      ),
+    );
+    
+    await FlutterCallkitIncoming.showCallkitIncoming(params);
+  }
+
+  /// End all active calls
+  static Future<void> endAllCalls() async {
+    await FlutterCallkitIncoming.endAllCalls();
+    // Clear all tracking
+    _activeCallIds.clear();
+    _callTimestamps.clear();
+    _acceptedCallkitUuids.clear();
+  }
+
+  /// Navigate directly to CallScreen for accepted calls (bypasses showIncomingCall)
+  static void _navigateToCallScreenDirectly(NavigatorState navigator, Map<String, dynamic> data) {
+    final channelName = data['channel_name']?.toString();
+    final callerId = data['caller_id']?.toString();
+    final callerName = data['caller_name']?.toString() ?? 'Unknown';
+    final callerAvatar = data['caller_avatar']?.toString();
+    final callType = data['call_type']?.toString() ?? 'video';
+    
+    if (channelName == null || callerId == null) {
+      _log('⚠️ Cannot navigate to CallScreen: missing channelName or callerId');
+      return;
+    }
+    
+    // Prevent duplicate CallScreen pushes
+    if (AgoraCallService.isCallScreenVisible) {
+      _log('📞 CallScreen already visible, skipping navigation');
+      return;
+    }
+    
+    _log('📞 Navigating directly to CallScreen (accepted call)');
+    navigator.push(
+      MaterialPageRoute(
+        builder: (context) => CallScreen(
+          channelName: channelName,
+          calleeId: callerId,
+          calleeName: callerName,
+          calleeAvatar: callerAvatar,
+          isIncoming: true,
+          callType: callType,
+          autoAccept: true, // Already accepted from CallKit, skip accept UI
+        ),
+      ),
+    );
+  }
+
+  /// Clean up old call timestamps (older than 2 minutes)
+  static void cleanupOldCalls() {
+    final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+    final expiredCallIds = <String>[];
+    
+    _callTimestamps.forEach((callId, timestamp) {
+      final timeDifference = currentTimestamp - timestamp;
+      // Remove calls older than 2 minutes
+      if (timeDifference > 120000) {
+        expiredCallIds.add(callId);
+      }
+    });
+    
+    for (final callId in expiredCallIds) {
+      _activeCallIds.remove(callId);
+      _callTimestamps.remove(callId);
+      _log('🧹 Cleaned up expired call: $callId');
+    }
   }
 
   /// Handle foreground messages
@@ -206,6 +732,9 @@ class FCMService {
     _log('Title: ${message.notification?.title}');
     _log('Body: ${message.notification?.body}');
     _log('Data: ${message.data}');
+
+    // Clean up old calls before processing new ones
+    cleanupOldCalls();
 
     // Incoming call: open call screen immediately in foreground
     final type = message.data['type']?.toString();
@@ -222,6 +751,13 @@ class FCMService {
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     final notification = message.notification;
     final data = message.data;
+    final type = data['type']?.toString();
+
+    // Check if this is an incoming call notification
+    if (type == 'incoming_call' || type == 'call') {
+      await _showCallNotification(message);
+      return;
+    }
 
     if (notification != null) {
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
@@ -247,6 +783,84 @@ class FCMService {
         payload: jsonEncode(data),
       );
     }
+  }
+
+  /// Show native incoming call screen for foreground calls
+  static Future<void> _showCallNotification(RemoteMessage message) async {
+    final data = message.data;
+    final callerName = data['caller_name']?.toString() ?? 'Unknown';
+    final callerId = data['caller_id']?.toString() ?? '';
+    final callerAvatar = data['caller_avatar']?.toString();
+    final callType = data['call_type']?.toString() ?? 'video';
+    final channelName = data['channel_name']?.toString() ?? '';
+    
+    // Parse timestamp if available
+    int? timestamp;
+    final timestampStr = data['timestamp']?.toString();
+    if (timestampStr != null) {
+      try {
+        timestamp = int.parse(timestampStr);
+      } catch (e) {
+        _log('⚠️ Error parsing foreground call timestamp: $e');
+      }
+    }
+    
+    // Show native CallKit incoming call screen
+    await showIncomingCall(
+      callerId: callerId,
+      callerName: callerName,
+      callerAvatar: callerAvatar,
+      channelName: channelName,
+      callType: callType,
+      timestamp: timestamp,
+    );
+  }
+
+  /// Legacy call notification (kept for fallback)
+  static Future<void> _showLegacyCallNotification(RemoteMessage message) async {
+    final data = message.data;
+    final callerName = data['caller_name']?.toString() ?? 'Unknown';
+    final callType = data['call_type']?.toString() ?? 'video';
+    final callTypeLabel = callType == 'video' ? 'Video' : 'Voice';
+
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'oxius_calls',
+      'Incoming Calls',
+      channelDescription: 'Notifications for incoming voice and video calls',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      enableVibration: true,
+      icon: '@mipmap/ic_launcher',
+      fullScreenIntent: true,
+      category: AndroidNotificationCategory.call,
+      visibility: NotificationVisibility.public,
+      ongoing: true,
+      autoCancel: false,
+      timeoutAfter: 60000, // 60 seconds timeout
+      styleInformation: BigTextStyleInformation(
+        'Tap to answer the call',
+        contentTitle: '$callTypeLabel call from $callerName',
+        summaryText: 'Incoming $callTypeLabel Call',
+      ),
+    );
+
+    final NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _localNotifications.show(
+      999, // Fixed ID for call notifications so we can cancel it
+      'Incoming $callTypeLabel Call',
+      '$callerName is calling...',
+      notificationDetails,
+      payload: jsonEncode(data),
+    );
+  }
+
+  /// Cancel call notification
+  static Future<void> cancelCallNotification() async {
+    await _localNotifications.cancel(999);
   }
 
   /// Handle notification tap
@@ -452,6 +1066,12 @@ class FCMService {
       }
     }
     // ============================================
+    // ACCEPTED CALL (from CallKit accept - navigate directly to CallScreen)
+    // ============================================
+    else if (type == 'accepted_call') {
+      _navigateToCallScreenDirectly(navigator, data);
+    }
+    // ============================================
     // INCOMING CALL (Agora)
     // ============================================
     else if (type == 'incoming_call' || type == 'call') {
@@ -474,17 +1094,14 @@ class FCMService {
         }
 
         _log('   → Incoming call from: $callerName, channel: $channelName');
-        navigator.push(
-          MaterialPageRoute(
-            builder: (context) => CallScreen(
-              channelName: channelName,
-              calleeId: callerId,
-              calleeName: callerName,
-              calleeAvatar: callerAvatar,
-              isIncoming: true,
-              callType: callType,
-            ),
-          ),
+        // Show CallKit notification instead of opening CallScreen directly
+        // This ensures proper ringtone and native call UI
+        showIncomingCall(
+          callerId: callerId,
+          callerName: callerName,
+          callerAvatar: callerAvatar,
+          channelName: channelName,
+          callType: callType,
         );
       }
     }

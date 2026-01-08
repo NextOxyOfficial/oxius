@@ -87,15 +87,19 @@ def send_call_notification(request):
             caller_avatar = caller.image.url
 
         # Send FCM to all callee's devices
+        # IMPORTANT: Use data-only message (no notification payload) so the app's
+        # background handler always runs and can show CallKit with native ringtone.
+        # If notification payload is included, Android system tray handles it and
+        # the background handler may not run when app is killed/background.
+        import time
+        timestamp = int(time.time() * 1000)  # milliseconds for call age validation
+        
         success_count = 0
         last_send_error = None
         for fcm_token in fcm_tokens:
             try:
                 message = messaging.Message(
-                    notification=messaging.Notification(
-                        title=f"Incoming {call_type} call",
-                        body=f"{caller_name} is calling you",
-                    ),
+                    # NO notification payload - data-only for proper background handling
                     data={
                         'type': 'incoming_call',
                         'channel_name': str(channel_name),
@@ -104,6 +108,7 @@ def send_call_notification(request):
                         'caller_name': caller_name,
                         'call_type': call_type,
                         'caller_avatar': caller_avatar or '',
+                        'timestamp': str(timestamp),
                     },
                     android=messaging.AndroidConfig(
                         priority='high',

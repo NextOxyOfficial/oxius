@@ -53,6 +53,9 @@ urlpatterns = [
         name="classified-category-detail",
     ),
     path("classified-categories-all/", GetClassifiedCategoriesAll.as_view()),
+    # Food Zone endpoints
+    path("food-zone/posts/", GetFoodZonePosts.as_view(), name="food-zone-posts"),
+    path("food-zone/categories/", GetFoodZoneCategories.as_view(), name="food-zone-categories"),
     path("classified-categories/<str:cid>/", classifiedCategoryPosts),
     path(
         "classified-categories/post/<str:slug>/",

@@ -179,7 +179,7 @@ class ClassifiedServicesSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ClassifiedCategory
-        fields = ['id', 'user', 'title', 'slug', 'business_type', 'image', 'is_featured', 'search_keywords', 'created_at', 'updated_at']
+        fields = ['id', 'user', 'title', 'slug', 'business_type', 'image', 'is_featured', 'is_food_zone', 'search_keywords', 'created_at', 'updated_at']
         read_only_fields = ["slug"]
     
     def get_image(self, obj):

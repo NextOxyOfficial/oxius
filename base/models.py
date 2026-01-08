@@ -273,6 +273,10 @@ class ClassifiedCategory(models.Model):
     business_type = models.CharField(max_length=256, default="shop")
     image = models.ImageField(upload_to="images/", blank=True, null=True)
     is_featured = models.BooleanField(default=False)
+    is_food_zone = models.BooleanField(
+        default=False,
+        help_text="Check this to include posts from this category in Food Zone section",
+    )
     search_keywords = models.TextField(
         blank=True,
         null=True,

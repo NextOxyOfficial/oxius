@@ -537,8 +537,9 @@ admin.site.register(Store, StoreAdmin)
 
 
 class ClassifiedCategoryAdmin(admin.ModelAdmin):
-    list_display = ("title", "created_at", "updated_at")
+    list_display = ("title", "is_food_zone", "is_featured", "created_at", "updated_at")
     search_fields = ("title", "search_keywords")
+    list_filter = ("is_food_zone", "is_featured")
     fields = (
         "user",
         "title",
@@ -546,6 +547,7 @@ class ClassifiedCategoryAdmin(admin.ModelAdmin):
         "business_type",
         "image",
         "is_featured",
+        "is_food_zone",
         "search_keywords",
     )
 

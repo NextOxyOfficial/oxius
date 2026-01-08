@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:vibration/vibration.dart';
 import '../services/agora_call_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../services/fcm_service.dart';
 
 class CallScreen extends StatefulWidget {
   final String channelName;
@@ -14,6 +13,7 @@ class CallScreen extends StatefulWidget {
   final bool isIncoming;
   final String callType; // 'video' or 'audio'
   final bool isReturning;
+  final bool autoAccept; // When true, skip accept UI and join immediately
 
   const CallScreen({
     super.key,
@@ -24,18 +24,20 @@ class CallScreen extends StatefulWidget {
     this.isIncoming = false,
     this.callType = 'video',
     this.isReturning = false,
+    this.autoAccept = false,
   });
 
   @override
   State<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreenState extends State<CallScreen> {
+class _CallScreenState extends State<CallScreen> with RouteAware {
+  ModalRoute<dynamic>? _route;
   int? _remoteUid;
   bool _localUserJoined = false;
   bool _isMuted = false;
   bool _isCameraOff = false;
-  bool _isSpeakerOn = true;
+  bool _isSpeakerOn = false;
   bool _isConnecting = true;
   bool _callAccepted = false;
   late int _localUid;
@@ -50,9 +52,23 @@ class _CallScreenState extends State<CallScreen> {
   bool _isMinimizing = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute && route != _route) {
+      if (_route != null) {
+        FCMService.routeObserver.unsubscribe(this);
+      }
+      _route = route;
+      FCMService.routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
   void initState() {
     super.initState();
     _localUid = AgoraCallService.generateUid();
+    AgoraCallService.setCallScreenVisible(true);
     
     if (widget.isReturning) {
       _localUserJoined = true;
@@ -74,10 +90,35 @@ class _CallScreenState extends State<CallScreen> {
       isIncoming: widget.isIncoming,
     );
     _listenForCallStatus();
-    if (widget.isIncoming) {
+    
+    // If autoAccept is true (accepted from CallKit), skip ringtone and accept UI
+    if (widget.autoAccept) {
+      _callAccepted = true;
+    } else if (widget.isIncoming) {
+      // Only play ringtone if NOT auto-accepted (user needs to accept manually)
       _startIncomingAlert();
     }
     _initAgora();
+  }
+
+  @override
+  void didPush() {
+    AgoraCallService.setCallScreenVisible(true);
+  }
+
+  @override
+  void didPopNext() {
+    AgoraCallService.setCallScreenVisible(true);
+  }
+
+  @override
+  void didPushNext() {
+    AgoraCallService.setCallScreenVisible(false);
+  }
+
+  @override
+  void didPop() {
+    AgoraCallService.setCallScreenVisible(false);
   }
 
   void _listenForCallStatus() {
@@ -109,35 +150,14 @@ class _CallScreenState extends State<CallScreen> {
     });
   }
 
+  // Ringtone and vibration are now handled by CallKit natively
+  // These methods are kept for backward compatibility but do nothing
   Future<void> _startIncomingAlert() async {
-    try {
-      FlutterRingtonePlayer().playRingtone(looping: true);
-    } catch (_) {
-      // Ignore
-    }
-
-    try {
-      final hasVibrator = await Vibration.hasVibrator() ?? false;
-      if (hasVibrator) {
-        Vibration.vibrate(pattern: [0, 800, 600, 800], repeat: 0);
-      }
-    } catch (_) {
-      // Ignore
-    }
+    // CallKit handles ringtone natively - no custom ringtone needed
   }
 
   Future<void> _stopIncomingAlert() async {
-    try {
-      FlutterRingtonePlayer().stop();
-    } catch (_) {
-      // Ignore
-    }
-
-    try {
-      Vibration.cancel();
-    } catch (_) {
-      // Ignore
-    }
+    // CallKit handles stopping ringtone natively
   }
 
   Future<void> _initAgora() async {
@@ -184,11 +204,14 @@ class _CallScreenState extends State<CallScreen> {
         ),
       );
 
-      // If incoming call, wait for accept. If outgoing, join immediately
-      if (widget.isIncoming) {
+      // If incoming call, wait for accept (unless autoAccept). If outgoing, join immediately
+      if (widget.isIncoming && !widget.autoAccept) {
         setState(() {
           _isConnecting = false;
         });
+      } else if (widget.isIncoming && widget.autoAccept) {
+        // Auto-accepted from CallKit - join channel immediately
+        await _joinChannel();
       } else {
         await _joinChannel();
         // Send notification to callee
@@ -247,14 +270,17 @@ class _CallScreenState extends State<CallScreen> {
 
   void _acceptCall() {
     _stopIncomingAlert();
+    FCMService.cancelCallNotification(); // Cancel the notification
     setState(() => _callAccepted = true);
     _joinChannel();
   }
 
   void _rejectCall() {
     _stopIncomingAlert();
+    FCMService.cancelCallNotification(); // Cancel the notification
+    // For incoming calls, calleeId is actually the caller who should be notified
     AgoraCallService.sendCallStatus(
-      receiverId: widget.calleeId,
+      receiverId: widget.calleeId, // This is the caller for incoming calls
       channelName: widget.channelName,
       status: 'rejected',
       callType: widget.callType,
@@ -274,8 +300,11 @@ class _CallScreenState extends State<CallScreen> {
     final localOutcome = outcomeOverride ?? ((_callStartedAt != null) ? 'ended' : 'cancelled');
 
     if (notifyPeer) {
+      // For incoming calls, notify the caller (calleeId is actually the caller)
+      // For outgoing calls, notify the callee (calleeId is the actual callee)
+      final receiverId = widget.isIncoming ? widget.calleeId : widget.calleeId;
       AgoraCallService.sendCallStatus(
-        receiverId: widget.calleeId,
+        receiverId: receiverId,
         channelName: widget.channelName,
         status: localOutcome,
         callType: widget.callType,
@@ -406,12 +435,30 @@ class _CallScreenState extends State<CallScreen> {
 
   @override
   void dispose() {
+    _isClosing = true;
+
+    try {
+      FCMService.routeObserver.unsubscribe(this);
+    } catch (_) {
+      // Ignore
+    }
+
     _callStatusSub?.cancel();
     _callStatusSub = null;
     _durationTimer?.cancel();
     _durationTimer = null;
+    AgoraCallService.setCallScreenVisible(false);
     if (!_isMinimizing) {
       _stopIncomingAlert();
+      // If call was active and we're disposing without proper end, notify peer
+      if (AgoraCallService.isInCall && _callStartedAt != null) {
+        AgoraCallService.sendCallStatus(
+          receiverId: widget.calleeId,
+          channelName: widget.channelName,
+          status: 'ended',
+          callType: widget.callType,
+        );
+      }
       AgoraCallService.setInCall(false);
       AgoraCallService.leaveChannel();
     }
@@ -420,6 +467,7 @@ class _CallScreenState extends State<CallScreen> {
 
   void _minimizeCall() {
     _isMinimizing = true;
+    AgoraCallService.setCallScreenVisible(false);
     Navigator.of(context).pop();
   }
 
@@ -588,9 +636,9 @@ class _CallScreenState extends State<CallScreen> {
                   ? _statusOverlay!
                   : _isConnecting
                       ? 'Connecting...'
-                      : _remoteUid == null
-                          ? 'Calling...'
-                          : (_callStartedAt != null ? _formatDuration(_callDuration) : 'Connected'),
+                      : _callAccepted && _callStartedAt != null
+                          ? _formatDuration(_callDuration)
+                          : 'Ringing...',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.7),
                 fontSize: 16,
@@ -737,11 +785,11 @@ class _CallScreenState extends State<CallScreen> {
       right: 0,
       child: Column(
         children: [
-          // Secondary controls
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (widget.callType == 'video') ...[
+          // Secondary controls (Video only)
+          if (widget.callType == 'video')
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 _buildControlButton(
                   icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
                   onTap: _toggleCamera,
@@ -752,29 +800,21 @@ class _CallScreenState extends State<CallScreen> {
                   icon: Icons.cameraswitch,
                   onTap: _switchCamera,
                 ),
-                const SizedBox(width: 20),
               ],
-              _buildControlButton(
-                icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_off,
-                onTap: _toggleSpeaker,
-                isActive: _isSpeakerOn,
-              ),
-            ],
-          ),
+            ),
           const SizedBox(height: 30),
-          // Main controls
+          // Main controls - Mute (Left), End Call (Middle), Speaker (Right)
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Mute
+              // Mute (Left)
               _buildControlButton(
                 icon: _isMuted ? Icons.mic_off : Icons.mic,
                 onTap: _toggleMute,
                 isActive: !_isMuted,
                 size: 60,
               ),
-              const SizedBox(width: 40),
-              // End call
+              // End call (Middle)
               GestureDetector(
                 onTap: () => _endCall(notifyPeer: true, allowLog: true),
                 child: Container(
@@ -797,6 +837,13 @@ class _CallScreenState extends State<CallScreen> {
                     size: 32,
                   ),
                 ),
+              ),
+              // Speaker (Right)
+              _buildControlButton(
+                icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_off,
+                onTap: _toggleSpeaker,
+                isActive: _isSpeakerOn,
+                size: 60,
               ),
             ],
           ),
