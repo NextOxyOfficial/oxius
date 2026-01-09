@@ -455,7 +455,7 @@ class _ReplyInputState extends State<_ReplyInput> {
       final users = await UserSearchService.searchUsers(query);
       return users.map((user) => {
         'id': user.id.toString(),
-        'display': user.name,
+        'display': user.name.replaceAll(' ', '\u00A0'),
         'full_name': user.name,
         'photo': user.image ?? user.avatar,
       }).toList();
@@ -467,20 +467,15 @@ class _ReplyInputState extends State<_ReplyInput> {
 
   void _handleSubmit() {
     if (_isSubmitting) return;
-    
-    final plainText = _mentionKey.currentState?.controller?.text ?? '';
+
+    final controller = _mentionKey.currentState?.controller;
+    final plainText = controller?.text ?? '';
     if (plainText.trim().isEmpty) return;
 
     setState(() => _isSubmitting = true);
 
-    // Format mentions with double space after name for parsing
-    final formattedText = plainText.replaceAllMapped(
-      RegExp(r'@([A-Za-z][A-Za-z\s]+?)(?=\s{2,}|[.!?,;:]|\s+[^A-Z]|$)'),
-      (match) {
-        final name = match.group(1)?.trim() ?? '';
-        return '@$name  ';
-      },
-    ).trim();
+    final markup = controller?.markupText ?? '';
+    final formattedText = MentionParser.markupToDelimitedText(markup).trim();
 
     widget.onSubmit(formattedText);
     _mentionKey.currentState?.controller?.clear();
@@ -701,7 +696,10 @@ class _CommentItemState extends State<_CommentItem> {
       final users = await UserSearchService.searchUsers(query);
       return users.map((user) => {
         'id': user.id.toString(),
-        'display': (user.username != null && user.username!.trim().isNotEmpty) ? user.username!.trim() : user.name,
+        'display': ((user.username != null && user.username!.trim().isNotEmpty)
+                ? user.username!.trim()
+                : user.name)
+            .replaceAll(' ', '\u00A0'),
         'full_name': user.name,
         'photo': user.image ?? user.avatar,
       }).toList();
@@ -1113,11 +1111,14 @@ class _CommentItemState extends State<_CommentItem> {
                           ElevatedButton(
                             onPressed: () async {
                               // Get text from FlutterMentions and format for storage
-                              final plainText = _editMentionKey.currentState?.controller?.text ?? '';
+                              final controller = _editMentionKey.currentState?.controller;
+                              final plainText = controller?.text ?? '';
+                              final markup = controller?.markupText ?? '';
+                              final formattedText = MentionParser.markupToDelimitedText(markup).trim();
                               
                               final updatedComment = await BusinessNetworkService.updateComment(
                                 commentId: widget.comment.id,
-                                content: plainText.trim(),
+                                content: formattedText.isNotEmpty ? formattedText : plainText.trim(),
                               );
                               if (!mounted) return;
                               

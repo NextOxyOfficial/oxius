@@ -26,7 +26,7 @@
             <!-- App Icon -->
             <div class="relative shrink-0 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner">
               <NuxtImg 
-                src="/icon.png" 
+                src="/favicon.png" 
                 alt="Adsy App" 
                 class="w-7 h-7 rounded-lg"
                 loading="lazy"

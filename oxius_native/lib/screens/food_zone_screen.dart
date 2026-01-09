@@ -7,6 +7,7 @@ import '../services/food_zone_service.dart';
 import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import '../widgets/geo_selector_dialog.dart';
+import '../widgets/geo_location_breadcrumb.dart';
 import 'classified_post_details_screen.dart';
 
 class FoodZoneScreen extends StatefulWidget {
@@ -114,6 +115,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
           pageSize: 20,
           categoryId: _selectedCategoryId,
           search: _searchQuery.isNotEmpty ? _searchQuery : null,
+          location: _location,
         ),
         _foodZoneService.fetchFoodZoneCategories(),
       ]);
@@ -141,6 +143,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
         pageSize: 20,
         categoryId: _selectedCategoryId,
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
+        location: _location,
       );
       
       setState(() {
@@ -169,6 +172,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
         pageSize: 20,
         categoryId: categoryId,
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
+        location: _location,
       );
       
       setState(() {
@@ -335,59 +339,16 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
   }
 
   Widget _buildLocationBreadcrumb() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFCE4EC),
-        border: Border(
-          bottom: BorderSide(
-            color: const Color(0xFFE91E63).withOpacity(0.2),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.location_on_rounded,
-            color: Color(0xFFE91E63),
-            size: 16,
-          ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Text(
-              _location!.displayLocation,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFC2185B),
-                letterSpacing: -0.1,
-              ),
-            ),
-          ),
-          InkWell(
-            onTap: _showLocationSelector,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.edit_rounded, size: 14, color: Color(0xFFE91E63)),
-                  SizedBox(width: 3),
-                  Text(
-                    'Change',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFE91E63),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    if (_location == null) return const SizedBox.shrink();
+
+    return GeoLocationBreadcrumb(
+      location: _location!,
+      onChange: _showLocationSelector,
+      backgroundColor: const Color(0xFFFCE4EC),
+      borderColor: const Color(0xFFE91E63).withOpacity(0.2),
+      iconColor: const Color(0xFFE91E63),
+      textColor: const Color(0xFFC2185B),
+      actionColor: const Color(0xFFE91E63),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/classified_post.dart';
+import '../models/geo_location.dart';
 
 class FoodZoneCategory {
   final String id;
@@ -43,6 +44,7 @@ class FoodZoneService {
     int pageSize = 20,
     String? search,
     String? categoryId,
+    GeoLocation? location,
   }) async {
     try {
       final queryParams = <String, String>{
@@ -56,6 +58,22 @@ class FoodZoneService {
 
       if (categoryId != null && categoryId.isNotEmpty) {
         queryParams['category'] = categoryId;
+      }
+
+      if (location != null) {
+        queryParams['country'] = location.country;
+
+        if (!location.allOverBangladesh) {
+          if (location.state != null && location.state!.isNotEmpty) {
+            queryParams['state'] = location.state!;
+          }
+          if (location.city != null && location.city!.isNotEmpty) {
+            queryParams['city'] = location.city!;
+          }
+          if (location.upazila != null && location.upazila!.isNotEmpty) {
+            queryParams['upazila'] = location.upazila!;
+          }
+        }
       }
 
       final uri = Uri.parse('$baseUrl/food-zone/posts/').replace(

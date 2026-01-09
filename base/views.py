@@ -735,6 +735,21 @@ class GetFoodZonePosts(generics.ListAPIView):
             .order_by("-created_at")
         )
 
+        # Optional location filters
+        country = self.request.query_params.get("country")
+        state = self.request.query_params.get("state")
+        city = self.request.query_params.get("city")
+        upazila = self.request.query_params.get("upazila")
+
+        if country:
+            queryset = queryset.filter(country__iexact=country)
+        if state:
+            queryset = queryset.filter(state__iexact=state)
+        if city:
+            queryset = queryset.filter(city__iexact=city)
+        if upazila:
+            queryset = queryset.filter(upazila__iexact=upazila)
+
         # Support search
         search_query = self.request.query_params.get("search")
         if search_query:

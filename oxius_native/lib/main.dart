@@ -42,6 +42,7 @@ import 'screens/food_zone_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
+import 'services/deep_link_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
 import 'services/online_status_service.dart';
@@ -89,6 +90,8 @@ void main() async {
     print('Initializing authentication session...');
     final userState = UserStateService();
     await userState.initialize();
+
+    await DeepLinkService.instance.init();
     
     if (userState.isAuthenticated) {
       print('Session restored successfully for user: ${userState.userName}');

@@ -8,6 +8,7 @@ import 'package:video_player/video_player.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
+import '../../utils/mention_parser.dart';
 import '../../utils/image_compressor.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../config/app_config.dart';
@@ -367,15 +368,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   }
 
   Future<void> _createPost() async {
-    // Get title and content from FlutterMentions and convert non-breaking spaces back to regular spaces
-    final rawTitle = _titleMentionKey.currentState?.controller?.text ?? '';
-    final titleText = rawTitle.replaceAll('\u00A0', ' ').trim();
-    final rawContent = _contentMentionKey.currentState?.controller?.text ?? '';
-    final contentText = rawContent.replaceAll('\u00A0', ' ').trim();
+    final titleController = _titleMentionKey.currentState?.controller;
+    final contentController = _contentMentionKey.currentState?.controller;
+
+    final rawTitle = titleController?.text ?? '';
+    final rawContent = contentController?.text ?? '';
+
+    final titleMarkup = titleController?.markupText ?? '';
+    final contentMarkup = contentController?.markupText ?? '';
+
+    final titleText = MentionParser.markupToDelimitedText(titleMarkup).trim();
+    final contentText = MentionParser.markupToDelimitedText(contentMarkup).trim();
     
     // Check if at least one field has content
-    final hasTitle = titleText.isNotEmpty;
-    final hasContent = contentText.isNotEmpty;
+    final hasTitle = titleText.isNotEmpty || rawTitle.trim().isNotEmpty;
+    final hasContent = contentText.isNotEmpty || rawContent.trim().isNotEmpty;
     final hasImages = _selectedImages.isNotEmpty;
     final hasVideos = _selectedVideos.isNotEmpty;
     final hasTags = _hashtags.isNotEmpty;
@@ -398,8 +405,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           : null;
       
       final post = await BusinessNetworkService.createPost(
-        title: hasTitle ? titleText : null,
-        content: hasContent ? contentText : null,
+        title: hasTitle ? (titleText.isNotEmpty ? titleText : rawTitle.replaceAll('\u00A0', ' ').trim()) : null,
+        content: hasContent ? (contentText.isNotEmpty ? contentText : rawContent.replaceAll('\u00A0', ' ').trim()) : null,
         images: hasImages ? _selectedImages : null,
         videoPaths: videoPathList,
         tags: hasTags ? _hashtags : null,

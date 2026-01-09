@@ -6,12 +6,41 @@
         class="relative w-full overflow-hidden min-h-[300px] max-h-[520px] sm:max-h-[540px] flex items-center justify-center"
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
-      ><!-- Main image with click handler for advancing to next image -->        <img
+      >
+        <!-- Video with thumbnail and play button -->
+        <div
+          v-if="isVideo(post.post_media[activeIndex])"
+          class="relative w-full h-full flex items-center justify-center cursor-pointer"
+          @click="$emit('open-media', post, post.post_media[activeIndex])"
+        >
+          <img
+            :src="getVideoThumbnail(post.post_media[activeIndex])"
+            alt="Video thumbnail"
+            class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain"
+          />
+          <!-- Play button overlay -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20">
+              <UIcon name="i-heroicons-play-solid" class="w-8 h-8 text-white ml-1" />
+            </div>
+          </div>
+          <!-- Video badge -->
+          <div class="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md flex items-center gap-1.5">
+            <UIcon name="i-heroicons-video-camera" class="w-4 h-4 text-white" />
+            <span class="text-xs font-medium text-white">Video</span>
+          </div>
+        </div>
+
+        <!-- Regular image -->
+        <img
+          v-else
           :src="post.post_media[activeIndex].image"
           alt="Media"
           class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain cursor-pointer"
           @click="$emit('open-media', post, post.post_media[activeIndex])"
-        /><!-- Image counter indicator with interaction hint -->
+        />
+
+        <!-- Image counter indicator with interaction hint -->
         <div class="absolute bottom-3.5 right-3.5 px-3 py-1.5 bg-black/25 backdrop-blur-md rounded-full text-white text-xs font-semibold flex items-center space-x-2 shadow-sm border border-white/10">
           <div class="relative w-3 h-3">
             <div class="absolute inset-0 bg-blue-500 rounded-full"></div>
@@ -140,12 +169,21 @@
             }"
             @click="setActiveMedia(mediaIndex); $emit('open-media', post, post.post_media[mediaIndex])"
           >
-            <div class="h-full w-full overflow-hidden rounded-md">
+            <div class="h-full w-full overflow-hidden rounded-md relative">
               <img
-                :src="media.image"
+                :src="isVideo(media) ? getVideoThumbnail(media) : media.image"
                 :alt="`Media ${mediaIndex + 1}`"
                 class="h-full w-full object-cover"
               />
+              <!-- Video play icon overlay on thumbnail -->
+              <div
+                v-if="isVideo(media)"
+                class="absolute inset-0 flex items-center justify-center bg-black/20"
+              >
+                <div class="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center">
+                  <UIcon name="i-heroicons-play-solid" class="w-4 h-4 text-white ml-0.5" />
+                </div>
+              </div>
             </div>
 
             <!-- Active thumbnail indicator -->
@@ -214,6 +252,37 @@ defineEmits(["open-media"]);
 
 // References and state
 const activeIndex = ref(0);
+
+// Check if media is a video
+const isVideo = (media) => {
+  if (!media) return false;
+  const type = (media.type || '').toLowerCase();
+  if (type === 'video') return true;
+  
+  const urls = `${media.video || ''} ${media.url || ''} ${media.image || ''}`.toLowerCase();
+  return urls.includes('.mp4') || urls.includes('.mov') || urls.includes('.webm') || urls.includes('.mkv') || urls.includes('.avi') || urls.includes('.m4v');
+};
+
+// Get the best thumbnail URL for a video
+const getVideoThumbnail = (media) => {
+  if (!media) return '';
+  
+  // Try thumbnail field first
+  if (media.thumbnail) return media.thumbnail;
+  
+  // Try other thumbnail fields
+  if (media.thumbnail_url) return media.thumbnail_url;
+  if (media.poster) return media.poster;
+  if (media.preview) return media.preview;
+  
+  // If image doesn't look like a video file, use it as thumbnail
+  const img = (media.image || '').toLowerCase();
+  const isVideoFile = img.includes('.mp4') || img.includes('.mov') || img.includes('.webm') || img.includes('.mkv') || img.includes('.avi') || img.includes('.m4v');
+  if (media.image && !isVideoFile) return media.image;
+  
+  // Fallback to a placeholder or empty
+  return media.image || '';
+};
 const thumbnailsContainer = ref(null);
 const mediaContainer = ref(null);
 const isMobile = ref(false);

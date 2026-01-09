@@ -12,6 +12,7 @@ import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import '../utils/url_launcher_utils.dart';
 import '../widgets/geo_selector_dialog.dart';
+import '../widgets/geo_location_breadcrumb.dart';
 import '../widgets/skeleton_loader.dart';
 import 'classified_post_details_screen.dart';
 
@@ -598,59 +599,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   }
 
   Widget _buildLocationBreadcrumb() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFECFDF5),
-        border: Border(
-          bottom: BorderSide(
-            color: const Color(0xFF10B981).withOpacity(0.2),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.location_on_rounded,
-            color: Color(0xFF10B981),
-            size: 16,
-          ),
-          const SizedBox(width: 5),
-          Expanded(
-            child: Text(
-              _location!.displayLocation,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF065F46),
-                letterSpacing: -0.1,
-              ),
-            ),
-          ),
-          InkWell(
-            onTap: _showLocationSelector,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.edit_rounded, size: 14, color: Color(0xFF10B981)),
-                  SizedBox(width: 3),
-                  Text(
-                    'Change',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF10B981),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    if (_location == null) return const SizedBox.shrink();
+
+    return GeoLocationBreadcrumb(
+      location: _location!,
+      onChange: _showLocationSelector,
+      backgroundColor: const Color(0xFFECFDF5),
+      borderColor: const Color(0xFF10B981).withOpacity(0.2),
+      iconColor: const Color(0xFF10B981),
+      textColor: const Color(0xFF065F46),
+      actionColor: const Color(0xFF10B981),
     );
   }
 

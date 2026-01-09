@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "REPLACE_TEAM_ID.com.oxius.native.oxiusNative",
+        "paths": [
+          "/business-network/*",
+          "/classified-details/*",
+          "/sale/*",
+          "/food-zone/*"
+        ]
+      }
+    ]
+  }
+}

@@ -48,22 +48,50 @@
                 Title <span class="text-red-500">*</span>
               </label>
               <div class="relative">
-                <input
-                  v-model="form.title"
-                  type="text"
-                  placeholder="Enter your post title..."
-                  class="w-full pl-10 pr-16 py-3 border border-gray-200 rounded-lg focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
-                  required
-                  maxlength="255"
-                />
+                <div
+                  ref="titleInputRef"
+                  contenteditable="true"
+                  class="w-full pl-10 pr-16 py-3 border border-gray-200 rounded-lg focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all outline-none text-gray-800"
+                  :data-placeholder="'Enter your post title... (Type @ to mention users)'"
+                  @input="handleTitleInput"
+                  @keydown="handleMentionKeydown($event, 'title')"
+                  @keyup="handleMentionKeyup($event, 'title')"
+                ></div>
                 <Type
                   class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
                 />
                 <span
                   class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500"
                 >
-                  {{ form.title.length }}/255
+                  {{ titleCharCount }}/255
                 </span>
+
+                <div
+                  v-if="showMentions && activeMentionTarget === 'title'"
+                  class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-56 overflow-y-auto z-50"
+                >
+                  <button
+                    v-for="u in mentionSuggestions"
+                    :key="u.id"
+                    type="button"
+                    class="w-full px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-left"
+                    @click.prevent="selectMention(u)"
+                  >
+                    <img
+                      :src="u.image || '/static/frontend/images/placeholder.jpg'"
+                      class="w-7 h-7 rounded-full object-cover"
+                      alt=""
+                    />
+                    <div class="flex-1">
+                      <div class="text-sm font-medium text-gray-800">
+                        {{ u.name || u.username || 'Unknown' }}
+                      </div>
+                      <div v-if="u.username" class="text-xs text-gray-500">
+                        @{{ u.username }}
+                      </div>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -78,10 +106,44 @@
               <div
                 class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
               >
-                <CommonEditor
-                  :content="form.content"
-                  @updateContent="updateContent"
-                />
+                <div class="relative">
+                  <div
+                    ref="contentInputRef"
+                    contenteditable="true"
+                    class="min-h-[140px] max-h-[360px] overflow-y-auto px-3 py-3 outline-none text-gray-800"
+                    :data-placeholder="'Write something... (Type @ to mention users)'"
+                    @input="handleContentInput"
+                    @keydown="handleMentionKeydown($event, 'content')"
+                    @keyup="handleMentionKeyup($event, 'content')"
+                  ></div>
+
+                  <div
+                    v-if="showMentions && activeMentionTarget === 'content'"
+                    class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-56 overflow-y-auto z-50"
+                  >
+                    <button
+                      v-for="u in mentionSuggestions"
+                      :key="u.id"
+                      type="button"
+                      class="w-full px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-left"
+                      @click.prevent="selectMention(u)"
+                    >
+                      <img
+                        :src="u.image || '/static/frontend/images/placeholder.jpg'"
+                        class="w-7 h-7 rounded-full object-cover"
+                        alt=""
+                      />
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-800">
+                          {{ u.name || u.username || 'Unknown' }}
+                        </div>
+                        <div v-if="u.username" class="text-xs text-gray-500">
+                          @{{ u.username }}
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -534,6 +596,17 @@ const hashtagSuggestions = ref([]);
 const popularHashtags = ref([]);
 const selectedSuggestionIndex = ref(-1);
 
+const titleInputRef = ref(null);
+const contentInputRef = ref(null);
+
+const showMentions = ref(false);
+const mentionSuggestions = ref([]);
+const mentionSearchText = ref('');
+const mentionInputPosition = ref(null);
+const activeMentionIndex = ref(0);
+const activeMentionTarget = ref(null);
+const isSearchingMentions = ref(false);
+
 // Success modal state
 const showSuccessModal = ref(false);
 const autoCloseCountdown = ref(0);
@@ -575,6 +648,8 @@ const submitButtonText = computed(() =>
   isEditMode.value ? "Update Post" : "Publish Post"
 );
 
+const titleCharCount = computed(() => (form.value.title || "").length);
+
 const successMessage = computed(() =>
   isEditMode.value ? "Post updated successfully!" : "Post published!"
 );
@@ -603,6 +678,15 @@ watch(
 
       // Open the modal
       openCreatePostModal();
+
+      nextTick(() => {
+        if (titleInputRef.value) {
+          titleInputRef.value.innerText = form.value.title || "";
+        }
+        if (contentInputRef.value) {
+          contentInputRef.value.innerText = form.value.content || "";
+        }
+      });
     }
   },
   { immediate: true }
@@ -683,6 +767,20 @@ const resetForm = () => {
   createPostCategories.value = [];
   categoryInput.value = "";
   formError.value = "";
+
+  showMentions.value = false;
+  mentionSuggestions.value = [];
+  mentionSearchText.value = "";
+  mentionInputPosition.value = null;
+  activeMentionIndex.value = 0;
+  activeMentionTarget.value = null;
+
+  if (titleInputRef.value) {
+    titleInputRef.value.innerHTML = "";
+  }
+  if (contentInputRef.value) {
+    contentInputRef.value.innerHTML = "";
+  }
 };
 
 const triggerFileInput = () => {
@@ -738,8 +836,21 @@ const startAutoCloseTimer = () => {
 };
 
 const handleEmojiClick = (emoji) => {
-  form.value.content += emoji;
   showEmojiPicker.value = false;
+
+  if (contentInputRef.value) {
+    contentInputRef.value.focus();
+    try {
+      document.execCommand("insertText", false, emoji);
+    } catch (e) {
+      contentInputRef.value.innerText =
+        (contentInputRef.value.innerText || "") + emoji;
+    }
+    handleContentInput({ target: contentInputRef.value });
+    return;
+  }
+
+  form.value.content += emoji;
 };
 
 // Enhanced file upload handling with progress tracking
@@ -1295,6 +1406,294 @@ function updateContent(p) {
   form.value.content = p;
 }
 
+const _MENTION_DELIM = "\u0007";
+
+const _getTextBeforeCursor = (element, range) => {
+  const tempRange = document.createRange();
+  tempRange.selectNodeContents(element);
+  tempRange.setEnd(range.startContainer, range.startOffset);
+  return tempRange.toString();
+};
+
+const _syncFormFromInputs = () => {
+  const extract = (root, isTitle = false) => {
+    if (!root) return "";
+
+    let out = "";
+    let justEmittedMention = false;
+
+    const extractNode = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        let t = node.textContent || "";
+        if (justEmittedMention) {
+          t = t.replace(/^[ \t\u00A0]+/, "");
+        }
+        justEmittedMention = false;
+        return t;
+      }
+
+      if (
+        node.classList &&
+        node.classList.contains("mention-chip-inline")
+      ) {
+        const mentionName = node.getAttribute("data-mention-name") || "";
+        justEmittedMention = true;
+        return mentionName ? `@${mentionName}${_MENTION_DELIM}` : "";
+      }
+
+      if (node.nodeName === "BR") {
+        justEmittedMention = false;
+        return isTitle ? " " : "\n";
+      }
+
+      if (node.nodeName === "DIV" || node.nodeName === "P") {
+        let t = "";
+        for (const child of node.childNodes) {
+          t += extractNode(child);
+        }
+        if (!isTitle && node.nextSibling) t += "\n";
+        return t;
+      }
+
+      if (node.childNodes && node.childNodes.length > 0) {
+        let t = "";
+        for (const child of node.childNodes) {
+          t += extractNode(child);
+        }
+        return t;
+      }
+
+      justEmittedMention = false;
+      return "";
+    };
+
+    for (const node of root.childNodes) {
+      out += extractNode(node);
+    }
+
+    out = out.replace(/\r\n/g, "\n");
+    out = out.replace(/\u00A0/g, " ");
+    out = out.replace(/[ \t]+\n/g, "\n");
+    out = out.replace(/\n[ \t]+/g, "\n");
+    out = out.replace(/[ \t]{2,}/g, " ");
+    out = out.replace(/\n{3,}/g, "\n\n");
+    out = out.replaceAll(_MENTION_DELIM, "  ");
+    out = out.trim();
+
+    if (isTitle) {
+      out = out.replace(/\s+/g, " ").trim();
+    }
+
+    return out;
+  };
+
+  form.value.title = extract(titleInputRef.value, true);
+  form.value.content = extract(contentInputRef.value, false);
+};
+
+const _searchMentions = async (query) => {
+  isSearchingMentions.value = true;
+  try {
+    const q = (query || "").trim();
+    const apiUrl = q
+      ? `/bn/user-search/?q=${encodeURIComponent(q)}`
+      : `/bn/user-search/`;
+    const { data } = await get(apiUrl);
+    if (data && data.results) {
+      mentionSuggestions.value = data.results.slice(0, 10);
+    } else if (Array.isArray(data)) {
+      mentionSuggestions.value = data.slice(0, 10);
+    } else {
+      mentionSuggestions.value = [];
+    }
+    activeMentionIndex.value = 0;
+  } catch (e) {
+    mentionSuggestions.value = [];
+  } finally {
+    isSearchingMentions.value = false;
+  }
+};
+
+const _detectAndShowMentions = (element, target) => {
+  if (!element || !process.client) return;
+
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return;
+
+  const range = selection.getRangeAt(0);
+  const textBeforeCursor = _getTextBeforeCursor(element, range);
+  const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+  if (lastAtIndex === -1) {
+    if (activeMentionTarget.value === target) {
+      showMentions.value = false;
+    }
+    return;
+  }
+
+  const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+  const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : " ";
+  const isValidMentionPosition =
+    lastAtIndex === 0 ||
+    charBeforeAt === " " ||
+    charBeforeAt === "\n" ||
+    charBeforeAt === "\r" ||
+    charBeforeAt === "\t";
+
+  const isActiveMention =
+    isValidMentionPosition &&
+    !textAfterAt.includes(" ") &&
+    !textAfterAt.includes("\n") &&
+    !textAfterAt.includes("\r");
+
+  if (!isActiveMention) {
+    if (activeMentionTarget.value === target) {
+      showMentions.value = false;
+    }
+    return;
+  }
+
+  mentionSearchText.value = textAfterAt;
+  activeMentionTarget.value = target;
+  showMentions.value = true;
+  _searchMentions(textAfterAt);
+
+  const currentNode = range.startContainer;
+  if (currentNode && currentNode.nodeType === Node.TEXT_NODE) {
+    const textContent = currentNode.textContent || "";
+    const cursorOffset = range.startOffset;
+    const beforeInNode = textContent.substring(0, cursorOffset);
+    const nodeAtIndex = beforeInNode.lastIndexOf("@");
+    if (nodeAtIndex !== -1) {
+      const newRange = document.createRange();
+      newRange.setStart(currentNode, nodeAtIndex);
+      newRange.setEnd(currentNode, cursorOffset);
+      mentionInputPosition.value = {
+        range: newRange,
+        textNode: currentNode,
+      };
+      return;
+    }
+  }
+
+  mentionInputPosition.value = {
+    range: range.cloneRange(),
+  };
+};
+
+const _insertMentionChip = (selectedUser) => {
+  if (!mentionInputPosition.value) return;
+
+  const userName =
+    selectedUser.name ||
+    `${selectedUser.first_name || ""} ${selectedUser.last_name || ""}`.trim() ||
+    selectedUser.username ||
+    "Unknown User";
+
+  const mentionChip = document.createElement("span");
+  mentionChip.contentEditable = false;
+  mentionChip.className =
+    "mention-chip-inline inline-flex items-center px-2 py-0.5 mx-1 bg-gradient-to-r from-blue-500/15 to-purple-500/15 border border-blue-200/60 rounded-full text-xs font-medium cursor-pointer hover:from-blue-500/30 hover:to-purple-500/30";
+  mentionChip.setAttribute("data-mention-id", selectedUser.id);
+  mentionChip.setAttribute("data-mention-name", userName);
+  mentionChip.innerHTML = `
+    <span class="text-blue-700 whitespace-nowrap">
+      <span class="text-blue-500 font-semibold">@</span>${userName}
+    </span>
+    <button class="ml-1 text-blue-600 hover:text-red-500 text-xs">×</button>
+  `;
+
+  const removeButton = mentionChip.querySelector("button");
+  if (removeButton) {
+    removeButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      mentionChip.remove();
+      _syncFormFromInputs();
+    });
+  }
+
+  const range = mentionInputPosition.value.range;
+  if (!range) return;
+
+  range.deleteContents();
+  range.insertNode(mentionChip);
+
+  const spacer = document.createTextNode(" ");
+  if (mentionChip.parentNode) {
+    mentionChip.parentNode.insertBefore(spacer, mentionChip.nextSibling);
+  }
+
+  const selection = window.getSelection();
+  const newRange = document.createRange();
+  newRange.setStart(spacer, 1);
+  newRange.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(newRange);
+
+  showMentions.value = false;
+  mentionSuggestions.value = [];
+  mentionInputPosition.value = null;
+  mentionSearchText.value = "";
+  activeMentionIndex.value = 0;
+
+  _syncFormFromInputs();
+};
+
+const handleTitleInput = (event) => {
+  _syncFormFromInputs();
+  _detectAndShowMentions(event.target, "title");
+};
+
+const handleContentInput = (event) => {
+  _syncFormFromInputs();
+  _detectAndShowMentions(event.target, "content");
+};
+
+const handleMentionKeydown = (event, target) => {
+  if (
+    !showMentions.value ||
+    activeMentionTarget.value !== target ||
+    mentionSuggestions.value.length === 0
+  ) {
+    return;
+  }
+
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    activeMentionIndex.value =
+      (activeMentionIndex.value + 1) % mentionSuggestions.value.length;
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    activeMentionIndex.value =
+      activeMentionIndex.value <= 0
+        ? mentionSuggestions.value.length - 1
+        : activeMentionIndex.value - 1;
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    const selectedUser = mentionSuggestions.value[activeMentionIndex.value];
+    if (selectedUser) {
+      _insertMentionChip(selectedUser);
+    }
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    showMentions.value = false;
+    mentionSuggestions.value = [];
+    mentionInputPosition.value = null;
+  }
+};
+
+const handleMentionKeyup = (event, target) => {
+  const el = target === "title" ? titleInputRef.value : contentInputRef.value;
+  if (el) {
+    _detectAndShowMentions(el, target);
+  }
+};
+
+const selectMention = (u) => {
+  if (!u) return;
+  _insertMentionChip(u);
+};
+
 // Hashtag autocomplete functions
 async function searchHashtags() {
   if (!categoryInput.value.trim()) {
@@ -1376,6 +1775,13 @@ async function handleCreatePost() {
   isSubmitting.value = true;
 
   try {
+    _syncFormFromInputs();
+
+    if (!form.value.title || !form.value.title.trim()) {
+      formError.value = "Title is required";
+      return;
+    }
+
     let response;
 
     if (isEditMode.value) {

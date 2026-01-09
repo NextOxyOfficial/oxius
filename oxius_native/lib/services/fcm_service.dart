@@ -266,15 +266,22 @@ class FCMService {
       // Handle notification tap when app is in background
       FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
-      // Check if app was opened from a notification
-      RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
-      if (initialMessage != null) {
-        _handleNotificationTap(initialMessage);
-      }
-
       // If app was opened via CallKit notification shade tap, FCM callbacks may not fire.
       // Detect any active CallKit calls and navigate to the call screen.
+      // Do this BEFORE processing FCM initial message to prioritize accepted calls
       await _tryNavigateToActiveCallkitCall();
+
+      // Check if app was opened from a notification
+      // Skip if we already have an accepted_call pending (from CallKit accept)
+      RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
+      if (initialMessage != null) {
+        final pendingType = _pendingNavigationData?['type']?.toString();
+        if (pendingType == 'accepted_call') {
+          _log('📞 Skipping FCM initial message - accepted_call pending');
+        } else {
+          _handleNotificationTap(initialMessage);
+        }
+      }
 
       _log('✅ FCM Service initialized successfully');
     } catch (e) {
@@ -284,6 +291,12 @@ class FCMService {
 
   static Future<void> _tryNavigateToActiveCallkitCall() async {
     if (AgoraCallService.isCallScreenVisible) return;
+    
+    // Don't overwrite pending accepted_call navigation
+    if (_pendingNavigationData != null && _pendingNavigationData!['type'] == 'accepted_call') {
+      _log('📞 Skipping _tryNavigateToActiveCallkitCall - accepted_call pending');
+      return;
+    }
 
     try {
       final calls = await FlutterCallkitIncoming.activeCalls();
@@ -293,6 +306,10 @@ class FCMService {
       if (last is! Map) return;
 
       final map = Map<String, dynamic>.from(last);
+      
+      // Check if this call was already accepted
+      final callkitUuid = map['id']?.toString() ?? '';
+      final wasAccepted = callkitUuid.isNotEmpty && _acceptedCallkitUuids.contains(callkitUuid);
 
       Map<String, dynamic>? extra;
       final rawExtra = map['extra'];
@@ -314,7 +331,8 @@ class FCMService {
       if (callerId == null || channelName == null) return;
 
       final callData = {
-        'type': 'incoming_call',
+        // If call was accepted, use 'accepted_call' type to go directly to CallScreen
+        'type': wasAccepted ? 'accepted_call' : 'incoming_call',
         'caller_id': callerId,
         'channel_name': channelName,
         'call_type': extra?['call_type']?.toString() ?? 'video',
@@ -413,6 +431,11 @@ class FCMService {
   static void _cacheCallIncoming(CallEvent event) {
     // Do not auto-navigate here. This event can fire when the incoming CallKit UI is displayed.
     // Navigation should happen on accept or when the user taps the notification and app resumes.
+    // Don't overwrite accepted_call with incoming_call
+    if (_pendingNavigationData?['type'] == 'accepted_call') {
+      _log('📞 Skipping _cacheCallIncoming - accepted_call already pending');
+      return;
+    }
     _pendingNavigationData ??= _extractCallDataFromCallEvent(event);
   }
 
@@ -894,6 +917,13 @@ class FCMService {
     final navigator = navigatorKey.currentState;
     if (navigator == null) {
       _log('⚠️ Navigator is not ready yet. Queuing navigation.');
+      // Don't overwrite accepted_call with lower priority navigation
+      final existingType = _pendingNavigationData?['type']?.toString();
+      final newType = data['type']?.toString();
+      if (existingType == 'accepted_call' && newType != 'accepted_call') {
+        _log('📞 Keeping existing accepted_call pending, ignoring $newType');
+        return;
+      }
       _pendingNavigationData = Map<String, dynamic>.from(data);
       _schedulePendingNavigation();
       return;

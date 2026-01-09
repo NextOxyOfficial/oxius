@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
+import '../../utils/mention_parser.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import 'diamond_gift_bottom_sheet.dart';
 import '../../config/app_config.dart';
@@ -58,30 +59,18 @@ class _PostCommentInputState extends State<PostCommentInput> {
   }
 
   Future<void> _handleSubmit() async {
-    // Use plain text instead of markup - it shows the display names
-    final plainText = _mentionKey.currentState?.controller?.text ?? '';
+    final controller = _mentionKey.currentState?.controller;
+    final plainText = controller?.text ?? '';
     if (plainText.trim().isEmpty || _isSubmitting) return;
 
     setState(() => _isSubmitting = true);
 
     try {
-      print('📝 Submitting comment: $plainText');
-      
-      // Convert non-breaking spaces back to regular spaces
-      // The display names use \u00A0 to keep full names as single tokens
-      final normalizedText = plainText.replaceAll('\u00A0', ' ');
-      
-      // Add double space after mentions for parsing by mention_parser.dart
-      final formattedText = normalizedText.replaceAllMapped(
-        RegExp(r'@([A-Za-z][A-Za-z\s]+?)(?=\s{2,}|[.!?,;:]|\s+[^A-Z]|$)'),
-        (match) {
-          final name = match.group(1)?.trim() ?? '';
-          return '@$name  ';
-        },
-      ).trim();
-      
-      print('✅ Formatted text: $formattedText');
-      
+      final markup = controller?.markupText ?? '';
+      // Convert markup -> deterministic "@Full Name  " format.
+      // This keeps multi-word names inside the mention span.
+      final formattedText = MentionParser.markupToDelimitedText(markup).trim();
+
       await widget.onSubmit(formattedText);
       _mentionKey.currentState?.controller?.clear();
       setState(() {

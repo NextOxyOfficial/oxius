@@ -79,5 +79,14 @@
 		<string>tel</string>
 		<string>mailto</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>adsyclub</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
