@@ -420,8 +420,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -446,7 +446,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                   chat['userName'][0].toUpperCase(),
                                   style: const TextStyle(
                                     color: Color(0xFF3B82F6),
-                                    fontSize: 16,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -458,7 +458,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                               chat['userName'][0].toUpperCase(),
                               style: const TextStyle(
                                 color: Color(0xFF3B82F6),
-                                fontSize: 16,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

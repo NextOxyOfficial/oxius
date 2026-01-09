@@ -201,7 +201,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   void _onScroll() {
     if (_scrollController.hasClients) {
-      _isUserNearBottom = _scrollController.position.pixels < 100;
+      // Show scroll-to-bottom button when user scrolls more than 400 pixels up
+      final shouldShowButton = _scrollController.position.pixels > 400;
+      if (shouldShowButton != !_isUserNearBottom) {
+        setState(() {
+          _isUserNearBottom = !shouldShowButton;
+        });
+      }
     }
     // Load more messages when scrolled to top (older messages)
     if (_scrollController.position.maxScrollExtent > 0 &&

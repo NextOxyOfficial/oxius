@@ -307,15 +307,23 @@ class MentionParser {
         continue;
       }
 
-      final nextMention = _mentionRegex.firstMatch(text.substring(index));
-      final nextUrl = _urlRegex.firstMatch(text.substring(index));
+      final substring = text.substring(index);
+      final nextMentionDelimited = _mentionRegexDelimited.firstMatch(substring);
+      final nextMentionFallback = _mentionRegexCapitalizedFallback.firstMatch(substring);
+      final nextUrl = _urlRegex.firstMatch(substring);
 
       int nextIndex = text.length;
-      if (nextMention != null) {
-        nextIndex = (index + nextMention.start) < nextIndex ? (index + nextMention.start) : nextIndex;
+      if (nextMentionDelimited != null) {
+        final pos = index + nextMentionDelimited.start;
+        if (pos < nextIndex) nextIndex = pos;
+      }
+      if (nextMentionFallback != null) {
+        final pos = index + nextMentionFallback.start;
+        if (pos < nextIndex) nextIndex = pos;
       }
       if (nextUrl != null) {
-        nextIndex = (index + nextUrl.start) < nextIndex ? (index + nextUrl.start) : nextIndex;
+        final pos = index + nextUrl.start;
+        if (pos < nextIndex) nextIndex = pos;
       }
 
       spans.add(TextSpan(
