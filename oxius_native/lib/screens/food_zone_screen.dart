@@ -2,8 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../models/classified_post.dart';
+import '../models/geo_location.dart';
 import '../services/food_zone_service.dart';
+import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
+import '../widgets/geo_selector_dialog.dart';
 import 'classified_post_details_screen.dart';
 
 class FoodZoneScreen extends StatefulWidget {
@@ -15,8 +18,10 @@ class FoodZoneScreen extends StatefulWidget {
 
 class _FoodZoneScreenState extends State<FoodZoneScreen> {
   late FoodZoneService _foodZoneService;
+  late GeoLocationService _geoService;
   List<ClassifiedPost> _posts = [];
   List<FoodZoneCategory> _categories = [];
+  GeoLocation? _location;
   bool _isLoading = true;
   bool _isLoadingMore = false;
   String? _selectedCategoryId;
@@ -31,9 +36,39 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
   void initState() {
     super.initState();
     _foodZoneService = FoodZoneService(baseUrl: ApiService.baseUrl);
-    _loadData();
+    _geoService = GeoLocationService(baseUrl: ApiService.baseUrl);
+    _initialize();
     _scrollController.addListener(_onScroll);
     _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _initialize() async {
+    _location = await _geoService.getSavedLocation();
+    if (_location == null && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showLocationSelector();
+      });
+    } else {
+      _loadData();
+    }
+  }
+
+  void _showLocationSelector() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      builder: (context) => GeoSelectorDialog(
+        initialLocation: _location,
+        onLocationSelected: (location) async {
+          await _geoService.saveLocation(location);
+          setState(() => _location = location);
+          _loadData();
+        },
+      ),
+    );
   }
 
   @override
@@ -257,6 +292,9 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
             ),
           ),
           
+          // Location breadcrumb
+          if (_location != null) _buildLocationBreadcrumb(),
+          
           // Posts List
           Expanded(
             child: _isLoading
@@ -290,6 +328,63 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                           },
                         ),
                       ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationBreadcrumb() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFCE4EC),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFE91E63).withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.location_on_rounded,
+            color: Color(0xFFE91E63),
+            size: 16,
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              _location!.displayLocation,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFC2185B),
+                letterSpacing: -0.1,
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: _showLocationSelector,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit_rounded, size: 14, color: Color(0xFFE91E63)),
+                  SizedBox(width: 3),
+                  Text(
+                    'Change',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFE91E63),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

@@ -368,6 +368,27 @@ class AdsyConnectService {
     }
   }
 
+  // Edit message
+  static Future<Map<String, dynamic>> editMessage(String messageId, String newContent) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        Uri.parse('$baseUrl/messages/$messageId/'),
+        headers: headers,
+        body: jsonEncode({'content': newContent}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to edit message: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error editing message: $e');
+      rethrow;
+    }
+  }
+
   // Block user
   static Future<void> blockUser(String chatroomId) async {
     try {

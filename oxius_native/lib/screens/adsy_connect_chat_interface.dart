@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
@@ -82,6 +83,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   String? _lastSeenTime;
   Timer? _onlineStatusTimer;
   Map<String, dynamic>? _replyingToMessage;
+  
+  // Swipe to reply animation state
+  String? _swipingMessageId;
+  double _swipeOffset = 0.0;
+  static const double _swipeThreshold = 60.0;
 
   @override
   void initState() {
@@ -858,7 +864,283 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   void _showMessageOptions(Map<String, dynamic> message) {
-    _deleteMessage(message);
+    final messageType = message['type']?.toString() ?? 'text';
+    final canEdit = messageType == 'text' && !_isMessageDeleted(message);
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Edit option (only for text messages)
+              if (canEdit)
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.edit_rounded,
+                      color: Color(0xFF3B82F6),
+                      size: 20,
+                    ),
+                  ),
+                  title: const Text(
+                    'Edit Message',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showEditMessageDialog(message);
+                  },
+                ),
+              // Delete option
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Color(0xFFEF4444),
+                    size: 20,
+                  ),
+                ),
+                title: const Text(
+                  'Delete Message',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFEF4444),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deleteMessage(message);
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditMessageDialog(Map<String, dynamic> message) {
+    final currentText = (message['message'] ?? message['content'] ?? '').toString();
+    final editController = TextEditingController(text: currentText);
+    
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          width: 320,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.edit_rounded,
+                      color: Color(0xFF3B82F6),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Edit Message',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Text field
+              TextField(
+                controller: editController,
+                maxLines: 4,
+                minLines: 2,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Enter your message...',
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  filled: true,
+                  fillColor: Colors.grey.shade50,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade200),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF3B82F6)),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final newText = editController.text.trim();
+                        if (newText.isEmpty || newText == currentText) {
+                          Navigator.pop(context);
+                          return;
+                        }
+                        
+                        Navigator.pop(context);
+                        
+                        // Update UI immediately
+                        if (mounted) {
+                          setState(() {
+                            final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
+                            if (index != -1) {
+                              _messages[index] = {
+                                ..._messages[index],
+                                'message': newText,
+                                'content': newText,
+                                'isEdited': true,
+                              };
+                              _messages = List.from(_addSmartTimestamps(_messages));
+                            }
+                          });
+                        }
+                        
+                        // Call backend to update
+                        try {
+                          await AdsyConnectService.editMessage(
+                            message['id'].toString(),
+                            newText,
+                          );
+                          
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Message edited'),
+                                backgroundColor: Color(0xFF10B981),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          print('Error editing message: $e');
+                          // Revert on error
+                          if (mounted) {
+                            setState(() {
+                              final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
+                              if (index != -1) {
+                                _messages[index] = {
+                                  ..._messages[index],
+                                  'message': currentText,
+                                  'content': currentText,
+                                  'isEdited': message['isEdited'] ?? false,
+                                };
+                                _messages = List.from(_addSmartTimestamps(_messages));
+                              }
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Failed to edit message'),
+                                backgroundColor: Color(0xFFEF4444),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B82F6),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _deleteMessage(Map<String, dynamic> message) {
@@ -2387,23 +2669,96 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   Widget _buildMessageBubble(Map<String, dynamic> message, bool showAvatar) {
     final isMe = message['isMe'] as bool;
     final isDeleted = _isMessageDeleted(message);
+    final messageId = message['id']?.toString() ?? '';
+    final isCurrentlySwiping = _swipingMessageId == messageId;
+    final swipeOffset = isCurrentlySwiping ? _swipeOffset : 0.0;
+    final swipeProgress = (swipeOffset.abs() / _swipeThreshold).clamp(0.0, 1.0);
     
     return GestureDetector(
-      onHorizontalDragEnd: isDeleted ? null : (details) {
-        if (details.primaryVelocity != null) {
-          if ((isMe && details.primaryVelocity! < -200) || 
-              (!isMe && details.primaryVelocity! > 200)) {
-            _setReplyingTo(message);
+      onHorizontalDragStart: isDeleted ? null : (details) {
+        setState(() {
+          _swipingMessageId = messageId;
+          _swipeOffset = 0.0;
+        });
+      },
+      onHorizontalDragUpdate: isDeleted ? null : (details) {
+        setState(() {
+          if (isMe) {
+            // My messages swipe left (negative)
+            _swipeOffset = (_swipeOffset + details.delta.dx).clamp(-_swipeThreshold * 1.2, 0.0);
+          } else {
+            // Other's messages swipe right (positive)
+            _swipeOffset = (_swipeOffset + details.delta.dx).clamp(0.0, _swipeThreshold * 1.2);
           }
+        });
+        
+        // Haptic feedback when threshold reached
+        if (swipeOffset.abs() >= _swipeThreshold && _swipeOffset.abs() < _swipeThreshold) {
+          HapticFeedback.lightImpact();
         }
       },
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: 4,
-          left: isMe ? 48 : 0,
-          right: isMe ? 0 : 48,
-        ),
-        child: Row(
+      onHorizontalDragEnd: isDeleted ? null : (details) {
+        if (_swipeOffset.abs() >= _swipeThreshold) {
+          HapticFeedback.mediumImpact();
+          _setReplyingTo(message);
+        }
+        setState(() {
+          _swipingMessageId = null;
+          _swipeOffset = 0.0;
+        });
+      },
+      onHorizontalDragCancel: () {
+        setState(() {
+          _swipingMessageId = null;
+          _swipeOffset = 0.0;
+        });
+      },
+      child: Stack(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        children: [
+          // Reply icon that appears during swipe
+          if (isCurrentlySwiping && swipeProgress > 0.1)
+            Positioned(
+              left: isMe ? null : 8,
+              right: isMe ? 8 : null,
+              child: AnimatedOpacity(
+                opacity: swipeProgress,
+                duration: const Duration(milliseconds: 50),
+                child: AnimatedScale(
+                  scale: 0.5 + (swipeProgress * 0.5),
+                  duration: const Duration(milliseconds: 50),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: swipeProgress >= 1.0 
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF10B981).withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.reply_rounded,
+                      size: 20,
+                      color: swipeProgress >= 1.0 
+                          ? Colors.white 
+                          : const Color(0xFF10B981),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          // Message bubble with transform
+          AnimatedContainer(
+            duration: Duration(milliseconds: isCurrentlySwiping ? 0 : 200),
+            curve: Curves.easeOutCubic,
+            transform: Matrix4.translationValues(swipeOffset, 0, 0),
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: 4,
+                left: isMe ? 48 : 0,
+                right: isMe ? 0 : 48,
+              ),
+              child: Row(
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -2577,7 +2932,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             ),
           ),
         ],
-      ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
