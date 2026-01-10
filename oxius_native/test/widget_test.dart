@@ -12,23 +12,14 @@ import 'package:oxius_native/main.dart';
 import 'package:oxius_native/services/user_state_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('App boot smoke test', (WidgetTester tester) async {
     // Create a mock user state service for testing
     final userState = UserStateService();
     
     // Build our app and trigger a frame.
     await tester.pumpWidget(MyApp(userState: userState));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // MyApp shows a loading UI while user state initializes.
+    expect(find.byType(CircularProgressIndicator), findsWidgets);
   });
 }

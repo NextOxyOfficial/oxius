@@ -153,6 +153,30 @@ class FCMService {
   static int _pendingNavigationAttempts = 0;
   static bool _lifecycleObserverInstalled = false;
 
+  static Map<String, dynamic>? _parseCallkitExtra(dynamic rawExtra) {
+    if (rawExtra == null) return null;
+    if (rawExtra is Map<String, dynamic>) {
+      return rawExtra;
+    }
+    if (rawExtra is Map) {
+      return Map<String, dynamic>.from(rawExtra);
+    }
+    if (rawExtra is String && rawExtra.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawExtra);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+        if (decoded is Map) {
+          return Map<String, dynamic>.from(decoded);
+        }
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
+  }
+
   static Future<void> _persistFcmToken(String token) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -328,7 +352,10 @@ class FCMService {
 
       final callerId = extra?['caller_id']?.toString();
       final channelName = extra?['channel_name']?.toString();
-      if (callerId == null || channelName == null) return;
+      if (callerId == null || channelName == null) {
+      _log('📞 CallKit actionCallAccept missing callerId/channelName: callerId=$callerId channelName=$channelName');
+      return;
+    }
 
       final callData = {
         // If call was accepted, use 'accepted_call' type to go directly to CallScreen
@@ -440,7 +467,7 @@ class FCMService {
   }
 
   static Map<String, dynamic>? _extractCallDataFromCallEvent(CallEvent event) {
-    final extra = event.body['extra'] as Map<String, dynamic>?;
+    final extra = _parseCallkitExtra(event.body['extra']);
     if (extra == null) return null;
 
     final callerId = extra['caller_id']?.toString();
@@ -459,8 +486,13 @@ class FCMService {
 
   /// Handle call accepted from CallKit
   static void _handleCallAccepted(CallEvent event) {
-    final extra = event.body['extra'] as Map<String, dynamic>?;
-    if (extra == null) return;
+    _log('📞 CallKit actionCallAccept body: ${event.body}');
+
+    final extra = _parseCallkitExtra(event.body['extra']);
+    if (extra == null) {
+      _log('📞 CallKit actionCallAccept missing/invalid extra: ${event.body['extra']}');
+      return;
+    }
     
     final callerId = extra['caller_id']?.toString();
     final channelName = extra['channel_name']?.toString();
@@ -494,6 +526,7 @@ class FCMService {
     
     final navigator = navigatorKey.currentState;
     if (navigator != null) {
+      _log('📞 Navigating to CallScreen immediately (accepted_call)');
       _navigateToCallScreenDirectly(navigator, callData);
     } else {
       // App not fully initialized yet - store for pending navigation
@@ -505,7 +538,7 @@ class FCMService {
 
   /// Handle call declined from CallKit
   static void _handleCallDeclined(CallEvent event) {
-    final extra = event.body['extra'] as Map<String, dynamic>?;
+    final extra = _parseCallkitExtra(event.body['extra']);
     if (extra == null) return;
     
     final callerId = extra['caller_id']?.toString();
@@ -533,7 +566,7 @@ class FCMService {
     // If this call was accepted, don't send 'ended' status - the CallScreen will handle it
     final wasAccepted = _acceptedCallkitUuids.remove(callkitUuid);
     
-    final extra = event.body['extra'] as Map<String, dynamic>?;
+    final extra = _parseCallkitExtra(event.body['extra']);
     if (extra != null) {
       final callerId = extra['caller_id']?.toString();
       final channelName = extra['channel_name']?.toString();
@@ -569,7 +602,7 @@ class FCMService {
 
   /// Handle call timeout from CallKit
   static void _handleCallTimeout(CallEvent event) {
-    final extra = event.body['extra'] as Map<String, dynamic>?;
+    final extra = _parseCallkitExtra(event.body['extra']);
     if (extra == null) return;
     
     final callerId = extra['caller_id']?.toString();

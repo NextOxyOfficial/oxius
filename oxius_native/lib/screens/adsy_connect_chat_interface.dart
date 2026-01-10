@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
@@ -50,8 +51,11 @@ class AdsyConnectChatInterface extends StatefulWidget {
 
 class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   final TextEditingController _messageController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
   final FocusNode _messageFocusNode = FocusNode();
+  final FocusNode _searchFocusNode = FocusNode();
   final AudioRecorder _audioRecorder = AudioRecorder();
   final AudioPlayer _audioPlayer = AudioPlayer();
   final ImagePicker _imagePicker = ImagePicker();
@@ -83,6 +87,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   String? _lastSeenTime;
   Timer? _onlineStatusTimer;
   Map<String, dynamic>? _replyingToMessage;
+
+  bool _isSearchMode = false;
+  bool _suppressSearchListener = false;
+  String _searchQuery = '';
+  List<int> _searchMatchIndexes = [];
+  Set<String> _searchMatchedMessageIds = <String>{};
+  int _currentSearchMatchPosition = 0;
+  String? _currentSearchMessageId;
   
   // Swipe to reply animation state
   String? _swipingMessageId;
@@ -99,7 +111,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     _loadMessages();
     _loadOnlineStatus();
     _messageController.addListener(_onTypingChanged);
-    _scrollController.addListener(_onScroll);
+    _searchController.addListener(_onSearchChanged);
+    _itemPositionsListener.itemPositions.addListener(_onItemPositionsChanged);
     _startMessagePolling();
     _startOnlineStatusPolling();
   }
@@ -115,107 +128,27 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     return false;
   }
 
-  Future<void> _loadChatroomStatus() async {
-    if (_isLoadingChatroomStatus) return;
-    setState(() => _isLoadingChatroomStatus = true);
+  void _onItemPositionsChanged() {
+    final positions = _itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
 
-    try {
-      final data = await AdsyConnectService.getChatRoomDetails(widget.chatroomId);
-      if (!mounted) return;
-
-      if (data == null) {
-        setState(() => _isLoadingChatroomStatus = false);
-        return;
-      }
-
-      final currentUserId = AuthService.currentUser?.id;
-
-      final isBlocked = _parseBool(data['is_blocked'] ?? data['blocked'] ?? data['isBlocked']);
-      bool blockedByMe = _parseBool(data['blocked_by_me'] ?? data['is_blocked_by_me'] ?? data['blockedByMe']);
-
-      final blockedBy = data['blocked_by'];
-      if (!blockedByMe && currentUserId != null && blockedBy != null) {
-        if (blockedBy is Map) {
-          final id = blockedBy['id']?.toString() ?? blockedBy['user_id']?.toString();
-          if (id != null && id == currentUserId) {
-            blockedByMe = true;
-          }
-        } else {
-          if (blockedBy.toString() == currentUserId) {
-            blockedByMe = true;
-          }
-        }
-      }
-
+    final bottomVisible = positions.any((p) => p.index == 0 && p.itemTrailingEdge > 0);
+    if (bottomVisible != _isUserNearBottom && mounted) {
       setState(() {
-        _isChatBlocked = isBlocked || blockedByMe;
-        _blockedByMe = blockedByMe;
-        _isLoadingChatroomStatus = false;
+        _isUserNearBottom = bottomVisible;
       });
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingChatroomStatus = false);
-      }
     }
-  }
 
-  Future<void> _loadOnlineStatus() async {
-    try {
-      final status = await AdsyConnectService.getOnlineStatus(widget.userId);
-      if (!mounted) return;
-      
-      if (status != null) {
-        setState(() {
-          _isOtherUserOnline = status['is_online'] == true;
-          _lastSeenTime = status['last_seen']?.toString();
-        });
-      }
-    } catch (e) {
-      // Silently fail - online status is not critical
+    if (_messages.isEmpty) return;
+    if (_isLoadingMoreMessages || !_hasMoreMessages) return;
+
+    int maxIndex = 0;
+    for (final p in positions) {
+      if (p.index > maxIndex) maxIndex = p.index;
     }
-  }
 
-  void _startOnlineStatusPolling() {
-    _onlineStatusTimer?.cancel();
-    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      _loadOnlineStatus();
-    });
-  }
-
-  String _formatLastSeen(String? lastSeen) {
-    if (lastSeen == null) return 'Offline';
-    try {
-      final dt = DateTime.parse(lastSeen);
-      final now = DateTime.now();
-      final diff = now.difference(dt);
-      
-      if (diff.inMinutes < 1) return 'Just now';
-      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return '${diff.inHours}h ago';
-      if (diff.inDays < 7) return '${diff.inDays}d ago';
-      return 'Long time ago';
-    } catch (_) {
-      return 'Offline';
-    }
-  }
-
-  void _onScroll() {
-    if (_scrollController.hasClients) {
-      // Show scroll-to-bottom button when user scrolls more than 400 pixels up
-      final shouldShowButton = _scrollController.position.pixels > 400;
-      if (shouldShowButton != !_isUserNearBottom) {
-        setState(() {
-          _isUserNearBottom = !shouldShowButton;
-        });
-      }
-    }
-    // Load more messages when scrolled to top (older messages)
-    if (_scrollController.position.maxScrollExtent > 0 &&
-        _scrollController.position.pixels > 0 &&
-        _scrollController.position.pixels >=
-            (_scrollController.position.maxScrollExtent - 100) &&
-        !_isLoadingMoreMessages &&
-        _hasMoreMessages) {
+    final topMostMessageBuilderIndex = _messages.length - 1;
+    if (maxIndex >= topMostMessageBuilderIndex) {
       _loadOlderMessages();
     }
   }
@@ -223,11 +156,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   Future<void> _loadOlderMessages() async {
     if (_isLoadingMoreMessages || !_hasMoreMessages) return;
 
-    double? previousPixels;
-    double? previousMaxScrollExtent;
-    if (_scrollController.hasClients) {
-      previousPixels = _scrollController.position.pixels;
-      previousMaxScrollExtent = _scrollController.position.maxScrollExtent;
+    String? anchorMessageId;
+    final positions = _itemPositionsListener.itemPositions.value;
+    if (positions.isNotEmpty && _messages.isNotEmpty) {
+      int maxIndex = 0;
+      for (final p in positions) {
+        if (p.index > maxIndex) maxIndex = p.index;
+      }
+
+      final anchorBuilderIndex = maxIndex.clamp(0, _messages.length - 1);
+      final anchorMessageIndex = _messages.length - 1 - anchorBuilderIndex;
+      if (anchorMessageIndex >= 0 && anchorMessageIndex < _messages.length) {
+        anchorMessageId = _messages[anchorMessageIndex]['id']?.toString();
+      }
     }
 
     setState(() {
@@ -256,19 +197,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
           _isLoadingMoreMessages = false;
         });
 
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || !_scrollController.hasClients) return;
-          if (previousPixels == null || previousMaxScrollExtent == null) return;
-
-          final newMaxScrollExtent = _scrollController.position.maxScrollExtent;
-          final delta = newMaxScrollExtent - previousMaxScrollExtent;
-          final target = previousPixels + delta;
-
-          final min = _scrollController.position.minScrollExtent;
-          final max = _scrollController.position.maxScrollExtent;
-          final clampedTarget = target < min ? min : (target > max ? max : target);
-          _scrollController.jumpTo(clampedTarget);
-        });
+        if (anchorMessageId != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            final idx = _messages.indexWhere(
+              (m) => (m['id']?.toString() ?? '') == anchorMessageId,
+            );
+            if (idx == -1) return;
+            final targetBuilderIndex = _messages.length - 1 - idx;
+            if (_itemScrollController.isAttached) {
+              _itemScrollController.jumpTo(index: targetBuilderIndex);
+            }
+          });
+        }
       } else {
         setState(() {
           _hasMoreMessages = false;
@@ -288,8 +229,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     ActiveChatTracker.clearActiveChat();
     AdsyConnectService.clearActiveChat();
     _messageController.dispose();
-    _scrollController.dispose();
+    _searchController.dispose();
+    _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
     _messageFocusNode.dispose();
+    _searchFocusNode.dispose();
     _audioRecorder.dispose();
     _audioPlayer.dispose();
     _recordTimer?.cancel();
@@ -371,6 +314,246 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     }
   }
 
+  void _onSearchChanged() {
+    if (_suppressSearchListener) return;
+    final q = _searchController.text;
+    if (q == _searchQuery) return;
+
+    setState(() {
+      _searchQuery = q;
+      _recomputeSearchMatches(keepCurrent: false);
+    });
+
+    if (_searchMatchIndexes.isNotEmpty) {
+      _scrollToSearchMatchPosition(_currentSearchMatchPosition);
+    }
+  }
+
+  String _messageSearchText(Map<String, dynamic> message) {
+    final base = (message['message'] ?? message['content'] ?? '').toString();
+    final preview = (message['replyPreview'] ?? '').toString();
+    final fileName = (message['fileName'] ?? message['file_name'] ?? '').toString();
+    final combined = '$base $preview $fileName'.trim();
+    return combined;
+  }
+
+  void _recomputeSearchMatches({required bool keepCurrent}) {
+    final q = _searchQuery.trim().toLowerCase();
+    _searchMatchIndexes = [];
+    _searchMatchedMessageIds = <String>{};
+
+    if (q.isEmpty) {
+      _currentSearchMatchPosition = 0;
+      _currentSearchMessageId = null;
+      return;
+    }
+
+    for (int i = 0; i < _messages.length; i++) {
+      final m = _messages[i];
+      if (_isMessageDeleted(m)) continue;
+      final hay = _messageSearchText(m).toLowerCase();
+      if (!hay.contains(q)) continue;
+      _searchMatchIndexes.add(i);
+      final id = m['id']?.toString() ?? '';
+      if (id.isNotEmpty) _searchMatchedMessageIds.add(id);
+    }
+
+    if (_searchMatchIndexes.isEmpty) {
+      _currentSearchMatchPosition = 0;
+      _currentSearchMessageId = null;
+      return;
+    }
+
+    if (keepCurrent && _currentSearchMessageId != null) {
+      final pos = _searchMatchIndexes.indexWhere((idx) {
+        final id = _messages[idx]['id']?.toString() ?? '';
+        return id == _currentSearchMessageId;
+      });
+      if (pos != -1) {
+        _currentSearchMatchPosition = pos;
+        return;
+      }
+    }
+
+    _currentSearchMatchPosition = 0;
+    final idx = _searchMatchIndexes.first;
+    _currentSearchMessageId = _messages[idx]['id']?.toString();
+  }
+
+  void _openSearch() {
+    if (_isSearchMode) return;
+    setState(() {
+      _isSearchMode = true;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      FocusScope.of(context).requestFocus(_searchFocusNode);
+    });
+  }
+
+  void _closeSearch() {
+    if (!_isSearchMode) return;
+    _suppressSearchListener = true;
+    _searchController.clear();
+    _suppressSearchListener = false;
+
+    setState(() {
+      _isSearchMode = false;
+      _searchQuery = '';
+      _searchMatchIndexes = [];
+      _searchMatchedMessageIds = <String>{};
+      _currentSearchMatchPosition = 0;
+      _currentSearchMessageId = null;
+    });
+  }
+
+  void _scrollToSearchMatchPosition(int position) {
+    if (_searchMatchIndexes.isEmpty) return;
+    if (!_itemScrollController.isAttached) return;
+
+    final pos = position.clamp(0, _searchMatchIndexes.length - 1);
+    final msgListIndex = _searchMatchIndexes[pos];
+    if (msgListIndex < 0 || msgListIndex >= _messages.length) return;
+
+    setState(() {
+      _currentSearchMatchPosition = pos;
+      _currentSearchMessageId = _messages[msgListIndex]['id']?.toString();
+    });
+
+    final targetBuilderIndex = _messages.length - 1 - msgListIndex;
+    _itemScrollController.scrollTo(
+      index: targetBuilderIndex,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+      alignment: 0.15,
+    );
+  }
+
+  void _goToNextSearchMatch() {
+    if (_searchMatchIndexes.isEmpty) return;
+    final next = (_currentSearchMatchPosition + 1) % _searchMatchIndexes.length;
+    _scrollToSearchMatchPosition(next);
+  }
+
+  void _goToPrevSearchMatch() {
+    if (_searchMatchIndexes.isEmpty) return;
+    final prev = (_currentSearchMatchPosition - 1 + _searchMatchIndexes.length) %
+        _searchMatchIndexes.length;
+    _scrollToSearchMatchPosition(prev);
+  }
+
+  Future<void> _loadChatroomStatus() async {
+    if (_isLoadingChatroomStatus) return;
+    if (!mounted) return;
+
+    setState(() {
+      _isLoadingChatroomStatus = true;
+    });
+
+    try {
+      final details = await AdsyConnectService.getChatRoomDetails(widget.chatroomId);
+      if (!mounted) return;
+
+      if (details == null) {
+        setState(() {
+          _isLoadingChatroomStatus = false;
+        });
+        return;
+      }
+
+      Map<String, dynamic>? blockStatus;
+      final rawBlockStatus = details['block_status'] ?? details['blockStatus'];
+      if (rawBlockStatus is Map<String, dynamic>) {
+        blockStatus = rawBlockStatus;
+      } else if (rawBlockStatus is Map) {
+        blockStatus = Map<String, dynamic>.from(rawBlockStatus);
+      }
+
+      final blockedValue =
+          blockStatus?['is_blocked'] ??
+          blockStatus?['isBlocked'] ??
+          details['is_blocked'] ??
+          details['isBlocked'] ??
+          details['blocked'] ??
+          details['is_chat_blocked'] ??
+          details['isChatBlocked'];
+
+      final blockedByMeValue =
+          blockStatus?['blocked_by_me'] ??
+          blockStatus?['blockedByMe'] ??
+          blockStatus?['is_blocked_by_me'] ??
+          details['blocked_by_me'] ??
+          details['blockedByMe'] ??
+          details['is_blocked_by_me'] ??
+          details['isBlockedByMe'];
+
+      final isBlocked = _parseBool(blockedValue);
+      final blockedByMe = _parseBool(blockedByMeValue);
+
+      setState(() {
+        _isChatBlocked = isBlocked;
+        _blockedByMe = blockedByMe;
+        _isLoadingChatroomStatus = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingChatroomStatus = false;
+      });
+    }
+  }
+
+  Future<void> _loadOnlineStatus() async {
+    try {
+      final status = await AdsyConnectService.getOnlineStatus(widget.userId);
+      if (!mounted) return;
+      if (status == null) return;
+
+      final isOnline = _parseBool(status['is_online'] ?? status['isOnline']);
+      final lastSeen = (status['last_seen'] ??
+              status['last_seen_at'] ??
+              status['lastSeen'] ??
+              status['lastSeenAt'])
+          ?.toString();
+
+      setState(() {
+        _isOtherUserOnline = isOnline;
+        _lastSeenTime = lastSeen;
+      });
+    } catch (_) {}
+  }
+
+  void _startOnlineStatusPolling() {
+    _onlineStatusTimer?.cancel();
+    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) {
+        _loadOnlineStatus();
+      }
+    });
+  }
+
+  String _formatLastSeen(String? lastSeen) {
+    final raw = (lastSeen ?? '').trim();
+    if (raw.isEmpty) return 'Offline';
+
+    DateTime? time;
+    try {
+      time = DateTime.parse(raw).toLocal();
+    } catch (_) {
+      return 'Last seen $raw';
+    }
+
+    final now = DateTime.now();
+    final diff = now.difference(time);
+    if (diff.inSeconds < 30) return 'Last seen just now';
+    if (diff.inMinutes < 1) return 'Last seen ${diff.inSeconds}s ago';
+    if (diff.inHours < 1) return 'Last seen ${diff.inMinutes}m ago';
+    if (diff.inDays < 1) return 'Last seen ${diff.inHours}h ago';
+    if (diff.inDays < 7) return 'Last seen ${diff.inDays}d ago';
+    return 'Last seen ${time.day}/${time.month}/${time.year}';
+  }
+
   void _startMessagePolling() {
     // Poll for new messages and status updates every 2 seconds for real-time feel
     _messagePollingTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
@@ -429,6 +612,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         for (final m in newMessages) {
           _upsertMessage(m);
         }
+        if (_searchQuery.trim().isNotEmpty) {
+          _recomputeSearchMatches(keepCurrent: true);
+        }
         _lastMessageId = newMessages.last['id'];
 
         // Auto-scroll to bottom if user is near bottom
@@ -478,6 +664,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               _lastMessageId = parsedMessages.last['id'];
             }
           }
+
+          if (_searchQuery.trim().isNotEmpty) {
+            _recomputeSearchMatches(keepCurrent: true);
+          }
           _isLoadingMessages = false;
           _hasMoreMessages = messages.length >= 20;
           if (loadMore) _currentPage++;
@@ -515,10 +705,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       // is_read means the recipient has opened and viewed the message
       final isSeen = msg['is_read'] == true;
       
+      final rawText = msg['display_content']?.toString() ?? msg['content']?.toString() ?? '';
+      final replyMeta = _tryParseReplyFromText(rawText);
+
       return {
         'id': msg['id']?.toString() ?? '',
         'senderId': senderId,
-        'message': msg['display_content']?.toString() ?? msg['content']?.toString() ?? '',
+        'message': replyMeta?['messageText']?.toString() ?? rawText,
+        'replyToId': replyMeta?['replyToId']?.toString(),
+        'replyToSender': replyMeta?['replyToSender']?.toString(),
+        'replyPreview': replyMeta?['replyPreview']?.toString(),
         'timestamp': msg['created_at'] != null 
             ? DateTime.parse(msg['created_at']) 
             : DateTime.now(),
@@ -586,29 +782,43 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      // Use addPostFrameCallback to ensure ListView is fully built
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients && mounted) {
-          _scrollController.animateTo(
-            _scrollController.position.minScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    } else {
-      // If controller not ready, try again after a delay
-      Future.delayed(const Duration(milliseconds: 200), () {
-        if (mounted && _scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.minScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+    if (!_itemScrollController.isAttached) return;
+    _itemScrollController.scrollTo(
+      index: 0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _scrollToMessageId(String messageId) {
+    final id = messageId.trim();
+    if (id.isEmpty) return;
+    if (!_itemScrollController.isAttached) return;
+    if (_messages.isEmpty) return;
+
+    final idx = _messages.indexWhere(
+      (m) => (m['id']?.toString() ?? '') == id,
+    );
+
+    if (idx == -1) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Original message is not loaded yet'),
+          backgroundColor: Color(0xFF374151),
+          duration: Duration(milliseconds: 1200),
+        ),
+      );
+      return;
     }
+
+    final targetBuilderIndex = _messages.length - 1 - idx;
+    _itemScrollController.scrollTo(
+      index: targetBuilderIndex,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+      alignment: 0.15,
+    );
   }
 
   void _upsertMessage(Map<String, dynamic> message) {
@@ -653,7 +863,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         final replyToId = replyTo['id']?.toString() ?? '';
         final replyToText = _getReplyPreviewText(replyTo);
         final replyToSender = replyTo['isMe'] == true ? 'You' : widget.userName;
-        contentToSend = '↩️ $replyToSender: $replyToText\n\n$messageText';
+        final idPart = replyToId.isNotEmpty ? '($replyToId) ' : '';
+        contentToSend = '↩️ $idPart$replyToSender: $replyToText\n\n$messageText';
       }
       
       final sentMessage = await AdsyConnectService.sendTextMessage(
@@ -701,11 +912,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     // Check if message has been seen by recipient
     // is_read means the recipient has opened and viewed the message
     final isSeen = msg['is_read'] == true;
+
+    final rawText = msg['display_content']?.toString() ?? msg['content']?.toString() ?? '';
+    final replyMeta = _tryParseReplyFromText(rawText);
     
     return {
       'id': msg['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
       'senderId': 'me',
-      'message': msg['display_content']?.toString() ?? msg['content']?.toString() ?? '',
+      'message': replyMeta?['messageText']?.toString() ?? rawText,
+      'replyToId': replyMeta?['replyToId']?.toString(),
+      'replyToSender': replyMeta?['replyToSender']?.toString(),
+      'replyPreview': replyMeta?['replyPreview']?.toString(),
       'timestamp': msg['created_at'] != null 
           ? DateTime.parse(msg['created_at']) 
           : DateTime.now(),
@@ -2108,8 +2325,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                   )
                 : _messages.isEmpty
                     ? _buildEmptyState()
-                    : ListView.builder(
-                        controller: _scrollController,
+                    : ScrollablePositionedList.builder(
+                        itemScrollController: _itemScrollController,
+                        itemPositionsListener: _itemPositionsListener,
                         reverse: true,
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         itemCount: _messages.length + (_isLoadingMoreMessages || !_hasMoreMessages ? 1 : 0),
@@ -2261,22 +2479,49 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
         padding: const EdgeInsets.only(left: 4),
         child: IconButton(
           icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (_isSearchMode) {
+              _closeSearch();
+              return;
+            }
+            Navigator.pop(context);
+          },
           padding: EdgeInsets.zero,
         ),
       ),
       titleSpacing: 0,
-      title: GestureDetector(
-        onTap: () {
-          // Navigate to business network profile
-          Navigator.pushNamed(
-            context,
-            '/business-network/profile',
-            arguments: {'userId': widget.userId},
-          );
-        },
-        child: Row(
-          children: [
+      title: _isSearchMode
+          ? TextField(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: 'Search messages',
+                hintStyle: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                border: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.only(right: 8, top: 12, bottom: 12),
+              ),
+            )
+          : GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(
+                  context,
+                  '/business-network/profile',
+                  arguments: {'userId': widget.userId},
+                );
+              },
+              child: Row(
+                children: [
             // User Avatar with online indicator and glow
             Stack(
               children: [
@@ -2521,83 +2766,118 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+                ],
+              ),
+            ),
       actions: [
-        IconButton(
-          onPressed: () => _startCall('audio'),
-          icon: const Icon(Icons.call_rounded, color: Colors.white, size: 20),
-        ),
-        IconButton(
-          onPressed: () => _startCall('video'),
-          icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
-        ),
-        PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
-          offset: const Offset(0, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        if (_isSearchMode) ...[
+          if (_searchQuery.trim().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Center(
+                child: Text(
+                  _searchMatchIndexes.isEmpty
+                      ? '0/0'
+                      : '${_currentSearchMatchPosition + 1}/${_searchMatchIndexes.length}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          IconButton(
+            onPressed: _searchMatchIndexes.isEmpty ? null : _goToPrevSearchMatch,
+            icon: const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white, size: 22),
           ),
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'view_profile',
-              child: Row(
-                children: [
-                  const Icon(Icons.person_rounded, size: 18, color: Color(0xFF3B82F6)),
-                  const SizedBox(width: 12),
-                  Text(
-                    'View ABN Profile',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade800,
-                    ),
-                  ),
-                ],
-              ),
+          IconButton(
+            onPressed: _searchMatchIndexes.isEmpty ? null : _goToNextSearchMatch,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 22),
+          ),
+          IconButton(
+            onPressed: _closeSearch,
+            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 20),
+          ),
+        ] else ...[
+          IconButton(
+            onPressed: () => _startCall('audio'),
+            icon: const Icon(Icons.call_rounded, color: Colors.white, size: 20),
+          ),
+          IconButton(
+            onPressed: () => _startCall('video'),
+            icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
+          ),
+          IconButton(
+            onPressed: _openSearch,
+            icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
+            offset: const Offset(0, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            PopupMenuItem(
-              value: _blockedByMe ? 'unblock' : 'block',
-              child: Row(
-                children: [
-                  Icon(
-                    _blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
-                    size: 18,
-                    color: _blockedByMe ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    _blockedByMe ? 'Unblock' : 'Block',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade800,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'view_profile',
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_rounded, size: 18, color: Color(0xFF3B82F6)),
+                    const SizedBox(width: 12),
+                    Text(
+                      'View ABN Profile',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade800,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            PopupMenuItem(
-              value: 'report',
-              child: Row(
-                children: [
-                  const Icon(Icons.flag_rounded, size: 18, color: Color(0xFFEF4444)),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Report',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade800,
+              PopupMenuItem(
+                value: _blockedByMe ? 'unblock' : 'block',
+                child: Row(
+                  children: [
+                    Icon(
+                      _blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
+                      size: 18,
+                      color: _blockedByMe ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Text(
+                      _blockedByMe ? 'Unblock' : 'Block',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-          onSelected: (value) => _handleMenuAction(value),
-        ),
+              PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    const Icon(Icons.flag_rounded, size: 18, color: Color(0xFFEF4444)),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Report',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            onSelected: (value) => _handleMenuAction(value),
+          ),
+        ],
       ],
     );
   }
@@ -2660,7 +2940,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       case 'image':
         return '📷 Photo';
       case 'video':
-        return '🎬 Video';
+        return '🎥 Video';
       case 'voice':
         return '🎤 Voice message';
       case 'document':
@@ -2672,6 +2952,111 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     }
   }
 
+  Map<String, String>? _tryParseReplyFromText(String rawText) {
+    final text = rawText.trim();
+    if (!text.startsWith('↩️')) return null;
+
+    final parts = text.split('\n\n');
+    if (parts.length < 2) return null;
+
+    final header = parts.first.trim();
+    String rest = header.replaceFirst('↩️', '').trim();
+
+    String replyToId = '';
+    if (rest.startsWith('(')) {
+      final end = rest.indexOf(')');
+      if (end > 1) {
+        replyToId = rest.substring(1, end).trim();
+        rest = rest.substring(end + 1).trim();
+      }
+    }
+
+    final colonIndex = rest.indexOf(':');
+    if (colonIndex == -1) return null;
+
+    final sender = rest.substring(0, colonIndex).trim();
+    final preview = rest.substring(colonIndex + 1).trim();
+    final messageText = parts.sublist(1).join('\n\n').trimLeft();
+
+    return {
+      'replyToId': replyToId,
+      'replyToSender': sender,
+      'replyPreview': preview,
+      'messageText': messageText,
+    };
+  }
+
+  Widget? _buildReplyQuoteCard(Map<String, dynamic> message, bool isMe) {
+    final preview = message['replyPreview']?.toString() ?? '';
+    if (preview.isEmpty) return null;
+    final sender = message['replyToSender']?.toString() ?? '';
+    final replyToId = message['replyToId']?.toString() ?? '';
+
+    final accent = isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF3B82F6);
+    final bg = isMe ? Colors.white.withOpacity(0.18) : const Color(0xFF3B82F6).withOpacity(0.08);
+    final border = isMe ? Colors.white.withOpacity(0.22) : const Color(0xFF3B82F6).withOpacity(0.18);
+    final titleColor = isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF111827);
+    final previewColor = isMe ? Colors.white.withOpacity(0.85) : const Color(0xFF4B5563);
+
+    return GestureDetector(
+      onTap: replyToId.isNotEmpty ? () => _scrollToMessageId(replyToId) : null,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              width: 3,
+              height: 32,
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    sender.isEmpty ? 'Reply' : sender,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    preview,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: previewColor,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildMessageBubble(Map<String, dynamic> message, bool showAvatar) {
     final isMe = message['isMe'] as bool;
     final isDeleted = _isMessageDeleted(message);
@@ -2679,6 +3064,25 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     final isCurrentlySwiping = _swipingMessageId == messageId;
     final swipeOffset = isCurrentlySwiping ? _swipeOffset : 0.0;
     final swipeProgress = (swipeOffset.abs() / _swipeThreshold).clamp(0.0, 1.0);
+    final quoteCard = _buildReplyQuoteCard(message, isMe);
+
+    final isSearchHit = _isSearchMode &&
+        _searchQuery.trim().isNotEmpty &&
+        messageId.isNotEmpty &&
+        _searchMatchedMessageIds.contains(messageId);
+    final isCurrentSearchHit = isSearchHit && _currentSearchMessageId == messageId;
+
+    Widget wrapWithQuoteCard(Widget content) {
+      if (quoteCard == null) return content;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          quoteCard,
+          content,
+        ],
+      );
+    }
     
     return GestureDetector(
       onHorizontalDragStart: isDeleted ? null : (details) {
@@ -2782,35 +3186,34 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                   ],
                 ),
               ),
-              child: widget.userAvatar != null
-                  ? ClipOval(
-                      child: Image.network(
-                        AppConfig.getAbsoluteUrl(widget.userAvatar),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Text(
-                              widget.userName[0].toUpperCase(),
-                              style: const TextStyle(
-                                color: Color(0xFF3B82F6),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        widget.userName[0].toUpperCase(),
-                        style: const TextStyle(
-                          color: Color(0xFF3B82F6),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+              child: () {
+                final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
+
+                Widget fallback() {
+                  return Center(
+                    child: Text(
+                      widget.userName[0].toUpperCase(),
+                      style: const TextStyle(
+                        color: Color(0xFF3B82F6),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
+                  );
+                }
+
+                if (avatarUrl.isEmpty) return fallback();
+
+                return ClipOval(
+                  child: Image.network(
+                    avatarUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return fallback();
+                    },
+                  ),
+                );
+              }(),
             )
           else if (!isMe)
             const SizedBox(width: 34),
@@ -2835,6 +3238,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                       color: isMe || message['type'] == 'image' || message['type'] == 'video' 
                           ? null 
                           : Colors.white,
+                      border: isSearchHit
+                          ? Border.all(
+                              color: isCurrentSearchHit
+                                  ? const Color(0xFFF59E0B)
+                                  : const Color(0xFFFBBF24).withOpacity(0.65),
+                              width: isCurrentSearchHit ? 2 : 1,
+                            )
+                          : null,
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(12),
                         topRight: const Radius.circular(12),
@@ -2872,36 +3283,39 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                             ],
                           )
                         : message['type'] == 'voice'
-                            ? _buildVoiceMessageContent(message, isMe)
+                            ? wrapWithQuoteCard(_buildVoiceMessageContent(message, isMe))
                             : message['type'] == 'image'
-                                ? _buildImageContent(message)
+                                ? wrapWithQuoteCard(_buildImageContent(message))
                                 : message['type'] == 'video'
-                                    ? _buildVideoContent(message, isMe)
+                                    ? wrapWithQuoteCard(_buildVideoContent(message, isMe))
                                     : message['type'] == 'document'
-                                        ? _buildDocumentContent(message, isMe)
+                                        ? wrapWithQuoteCard(_buildDocumentContent(message, isMe))
                                         : (message['type'] == 'text' &&
                                                 (message['message'] ?? '').toString().startsWith('📞'))
-                                            ? _buildCallLogContent(message, isMe)
-                                            : Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  FirstLinkPreview(
-                                                    text: (message['message'] ?? '').toString(),
-                                                    margin: const EdgeInsets.only(bottom: 6),
-                                                  ),
-                                                  LinkifyText(
-                                                    (message['message'] ?? '').toString(),
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: isMe ? Colors.white : const Color(0xFF1F2937),
-                                                      height: 1.3,
+                                            ? wrapWithQuoteCard(_buildCallLogContent(message, isMe))
+                                            : wrapWithQuoteCard(
+                                                Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    FirstLinkPreview(
+                                                      text: (message['message'] ?? '').toString(),
+                                                      margin: const EdgeInsets.only(bottom: 6),
                                                     ),
-                                                    linkStyle: TextStyle(
-                                                      color: isMe ? Colors.white : const Color(0xFF2563EB),
-                                                      decoration: TextDecoration.none,
+                                                    LinkifyText(
+                                                      (message['message'] ?? '').toString(),
+                                                      style: TextStyle(
+                                                        fontSize: 15,
+                                                        color: isMe ? Colors.white : const Color(0xFF1F2937),
+                                                        height: 1.3,
+                                                      ),
+                                                      linkStyle: TextStyle(
+                                                        color: isMe ? Colors.white : const Color(0xFF2563EB),
+                                                        decoration: TextDecoration.none,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
                                               ),
                   ),
                 ),

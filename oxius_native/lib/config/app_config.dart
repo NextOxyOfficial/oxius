@@ -46,6 +46,11 @@ class AppConfig {
   static String getAbsoluteUrl(String? url) {
     final value = (url ?? '').trim();
     if (value.isEmpty) return '';
+
+    final lower = value.toLowerCase();
+    if (lower == 'null' || lower == 'none' || lower == 'n/a' || lower == 'na' || lower == 'undefined') {
+      return '';
+    }
     if (value.startsWith('https://')) return value;
     if (value.startsWith('http://')) {
       // On Android, cleartext HTTP is often blocked. Also, some CDNs redirect http->https,

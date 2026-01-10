@@ -56,5 +56,8 @@
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
+## flutter_callkit_incoming
+-keep class com.hiennv.flutter_callkit_incoming.** { *; }
+
 ## Keep all plugin classes
 -keep class io.flutter.plugins.** { *; }

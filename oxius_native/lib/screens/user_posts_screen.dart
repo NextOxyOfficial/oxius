@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../config/app_config.dart';
 import '../models/classified_post.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
@@ -294,22 +295,42 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
         title: Row(
           children: [
             // User Avatar
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
-              backgroundImage: widget.userAvatar != null
-                  ? CachedNetworkImageProvider(widget.userAvatar!)
-                  : null,
-              child: widget.userAvatar == null
-                  ? Text(
-                      widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : 'U',
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF10B981).withOpacity(0.1),
+              ),
+              child: () {
+                final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
+
+                Widget fallback() {
+                  final initial = widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : 'U';
+                  return Center(
+                    child: Text(
+                      initial,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF10B981),
                       ),
-                    )
-                  : null,
+                    ),
+                  );
+                }
+
+                if (avatarUrl.isEmpty) return fallback();
+
+                return ClipOval(
+                  child: Image.network(
+                    avatarUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return fallback();
+                    },
+                  ),
+                );
+              }(),
             ),
             const SizedBox(width: 10),
             Expanded(

@@ -1775,22 +1775,42 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           // Profile header with name and posted date
           Row(
             children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: const Color(0xFF10B981).withOpacity(0.1),
-                backgroundImage: user.profilePicture != null
-                    ? CachedNetworkImageProvider(user.profilePicture!)
-                    : null,
-                child: user.profilePicture == null
-                    ? Text(
-                        user.displayName[0].toUpperCase(),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF10B981).withOpacity(0.1),
+                ),
+                child: () {
+                  final avatarUrl = AppConfig.getAbsoluteUrl(user.profilePicture);
+
+                  Widget fallback() {
+                    final initial = user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U';
+                    return Center(
+                      child: Text(
+                        initial,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF10B981),
                         ),
-                      )
-                    : null,
+                      ),
+                    );
+                  }
+
+                  if (avatarUrl.isEmpty) return fallback();
+
+                  return ClipOval(
+                    child: Image.network(
+                      avatarUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return fallback();
+                      },
+                    ),
+                  );
+                }(),
               ),
               const SizedBox(width: 10),
               Expanded(
