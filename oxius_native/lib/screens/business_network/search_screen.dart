@@ -457,7 +457,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   return _buildLoadMoreButton();
                 }
                 return PostCard(
-                  key: ValueKey('post_${_posts[index].id}_${_posts[index].isLiked}_${_posts[index].isSaved}'),
+                  key: ValueKey('post_${_posts[index].id}'),
                   post: _posts[index],
                   onPostUpdated: (updatedPost) {
                     setState(() {
@@ -500,7 +500,7 @@ class _SearchScreenState extends State<SearchScreen> {
               final index = entry.key;
               final post = entry.value;
               return PostCard(
-                key: ValueKey('post_${post.id}_${post.isLiked}_${post.isSaved}'),
+                key: ValueKey('post_${post.id}'),
                 post: post,
                 onPostUpdated: (updatedPost) {
                   setState(() {

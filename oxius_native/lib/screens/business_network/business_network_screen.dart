@@ -459,7 +459,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       if (currentIndex == index) {
         final post = visiblePosts[i];
         return PostCard(
-          key: ValueKey('post_${post.id}_${post.isLiked}_${post.isSaved}'),
+          key: ValueKey('post_${post.id}'),
           post: post,
           onPostUpdated: _handlePostUpdated,
           onCommentAdded: (comment) => _handleCommentAddedByPostId(post.id, comment),

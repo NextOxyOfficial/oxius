@@ -49,7 +49,8 @@ class AdsyConnectChatInterface extends StatefulWidget {
   State<AdsyConnectChatInterface> createState() => _AdsyConnectChatInterfaceState();
 }
 
-class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
+class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
+    with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -104,6 +105,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     ActiveChatTracker.setActiveChat(widget.chatroomId);
     AdsyConnectService.setActiveChat(widget.chatroomId);
     _isOtherUserOnline = widget.isOnline;
@@ -126,6 +128,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       return v == 'true' || v == '1' || v == 'yes';
     }
     return false;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadOnlineStatus();
+      _loadChatroomStatus();
+    }
   }
 
   void _onItemPositionsChanged() {
@@ -238,6 +248,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
     _recordTimer?.cancel();
     _messagePollingTimer?.cancel();
     _onlineStatusTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -513,8 +524,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
       final isOnline = _parseBool(status['is_online'] ?? status['isOnline']);
       final lastSeen = (status['last_seen'] ??
               status['last_seen_at'] ??
+              status['last_seen_time'] ??
               status['lastSeen'] ??
-              status['lastSeenAt'])
+              status['lastSeenAt'] ??
+              status['lastSeenTime'] ??
+              status['updated_at'] ??
+              status['updatedAt'])
           ?.toString();
 
       setState(() {
@@ -1982,6 +1997,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
 
   void _handleMenuAction(String action) {
     switch (action) {
+      case 'search':
+        _openSearch();
+        break;
       case 'view_profile':
         // Navigate to user's ABN profile
         Navigator.pushNamed(
@@ -2526,8 +2544,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             Stack(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
@@ -2588,7 +2606,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
                     }(),
                   ),
                 ),
-                if (widget.isOnline)
+                if (_isOtherUserOnline)
                   Positioned(
                     bottom: 2,
                     right: 2,
@@ -2808,10 +2826,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
             onPressed: () => _startCall('video'),
             icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
           ),
-          IconButton(
-            onPressed: _openSearch,
-            icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
-          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
             offset: const Offset(0, 50),
@@ -2819,6 +2833,23 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface> {
               borderRadius: BorderRadius.circular(12),
             ),
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'search',
+                child: Row(
+                  children: [
+                    const Icon(Icons.search_rounded, size: 18, color: Color(0xFF3B82F6)),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Search messages',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: 'view_profile',
                 child: Row(

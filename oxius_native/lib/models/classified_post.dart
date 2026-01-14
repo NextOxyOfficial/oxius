@@ -46,6 +46,23 @@ class ClassifiedPost {
   });
 
   factory ClassifiedPost.fromJson(Map<String, dynamic> json) {
+    final dynamic rawUser =
+        json['user'] ??
+        json['seller'] ??
+        json['owner'] ??
+        json['provider'] ??
+        json['created_by'] ??
+        json['createdBy'] ??
+        json['user_details'] ??
+        json['userDetails'];
+
+    UserDetails? user;
+    if (rawUser is Map<String, dynamic>) {
+      user = UserDetails.fromJson(rawUser);
+    } else if (rawUser is Map) {
+      user = UserDetails.fromJson(Map<String, dynamic>.from(rawUser));
+    }
+
     return ClassifiedPost(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
@@ -67,9 +84,7 @@ class ClassifiedPost {
       categoryDetails: json['category_details'] != null 
           ? CategoryDetails.fromJson(json['category_details'] as Map<String, dynamic>) 
           : null,
-      user: json['user'] != null 
-          ? UserDetails.fromJson(json['user'] as Map<String, dynamic>) 
-          : null,
+      user: user,
       medias: json['medias'] != null
           ? (json['medias'] as List).map((m) => MediaItem.fromJson(m as Map<String, dynamic>)).toList()
           : null,
@@ -189,6 +204,46 @@ class UserDetails {
   });
 
   factory UserDetails.fromJson(Map<String, dynamic> json) {
+    final dynamic rawProfilePicture =
+        json['profile_picture'] ??
+        json['profilePicture'] ??
+        json['profile_photo'] ??
+        json['profilePhoto'] ??
+        json['avatar'] ??
+        json['image'];
+
+    String? profilePicture;
+    if (rawProfilePicture is String) {
+      profilePicture = rawProfilePicture;
+    } else if (rawProfilePicture is List && rawProfilePicture.isNotEmpty) {
+      final first = rawProfilePicture.first;
+      if (first is String) {
+        profilePicture = first;
+      } else if (first is Map) {
+        final map = Map<String, dynamic>.from(first);
+        profilePicture = (map['url'] ??
+                map['image'] ??
+                map['path'] ??
+                map['file'] ??
+                map['src'] ??
+                map['location'])
+            ?.toString();
+      } else {
+        profilePicture = first?.toString();
+      }
+    } else if (rawProfilePicture is Map) {
+      final map = Map<String, dynamic>.from(rawProfilePicture);
+      profilePicture = (map['url'] ??
+              map['image'] ??
+              map['path'] ??
+              map['file'] ??
+              map['src'] ??
+              map['location'])
+          ?.toString();
+    } else if (rawProfilePicture != null) {
+      profilePicture = rawProfilePicture.toString();
+    }
+
     return UserDetails(
       id: json['id']?.toString(),
       firstName: json['first_name']?.toString(),
@@ -196,7 +251,7 @@ class UserDetails {
       username: json['username']?.toString(),
       email: json['email']?.toString(),
       phone: json['phone']?.toString(),
-      profilePicture: json['profile_picture']?.toString(),
+      profilePicture: profilePicture,
       about: json['about']?.toString(),
       faceLink: json['face_link']?.toString(),
       instagramLink: json['instagram_link']?.toString(),

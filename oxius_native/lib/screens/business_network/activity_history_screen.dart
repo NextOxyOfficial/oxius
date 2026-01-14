@@ -360,7 +360,7 @@ class _SavedPostsTab extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: PostCard(
-                key: ValueKey('post_${posts[index].id}_${posts[index].isLiked}_${posts[index].isSaved}'),
+                key: ValueKey('post_${posts[index].id}'),
                 post: posts[index],
                 onPostUpdated: (updatedPost) {
                   // Activity history is read-only, no need to update

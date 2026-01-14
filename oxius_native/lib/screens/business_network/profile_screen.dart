@@ -1440,7 +1440,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       itemCount: _userPosts.length,
       itemBuilder: (context, index) {
         return PostCard(
-          key: ValueKey('post_${_userPosts[index].id}_${_userPosts[index].isLiked}_${_userPosts[index].isSaved}'),
+          key: ValueKey('post_${_userPosts[index].id}'),
           post: _userPosts[index],
           onPostUpdated: (updatedPost) {
             setState(() {
@@ -1886,7 +1886,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       itemCount: _savedPosts.length,
       itemBuilder: (context, index) {
         return PostCard(
-          key: ValueKey('post_${_savedPosts[index].id}_${_savedPosts[index].isLiked}_${_savedPosts[index].isSaved}'),
+          key: ValueKey('post_${_savedPosts[index].id}'),
           post: _savedPosts[index],
           onPostUpdated: (updatedPost) {
             setState(() {

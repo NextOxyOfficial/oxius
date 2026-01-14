@@ -3,6 +3,8 @@ import 'dart:async';
 import 'adsy_connect_chat_interface.dart';
 import '../services/adsyconnect_service.dart';
 import '../widgets/chat_list_skeleton.dart';
+import '../config/app_config.dart';
+import '../utils/network_error_handler.dart';
 
 class AdsyConnectScreen extends StatefulWidget {
   const AdsyConnectScreen({super.key});
@@ -18,14 +20,90 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   int _currentPage = 1;
   bool _hasMore = true;
   Timer? _pollingTimer;
+  Timer? _onlineStatusTimer;
+
+  final TextEditingController _chatSearchController = TextEditingController();
+  String _chatSearchQuery = '';
 
   static const int _pageSize = 20;
+
+  bool _parseBool(dynamic value) {
+    if (value == null) return false;
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final v = value.toLowerCase().trim();
+      return v == 'true' || v == '1' || v == 'yes';
+    }
+    return false;
+  }
 
   @override
   void initState() {
     super.initState();
     _loadChats();
     _startRealTimePolling();
+    _startOnlineStatusPolling();
+    _chatSearchController.addListener(_onChatSearchChanged);
+  }
+
+  void _onChatSearchChanged() {
+    final next = _chatSearchController.text;
+    if (next == _chatSearchQuery) return;
+    if (!mounted) return;
+    setState(() {
+      _chatSearchQuery = next;
+    });
+  }
+
+  void _startOnlineStatusPolling() {
+    _onlineStatusTimer?.cancel();
+    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      _refreshOnlineStatuses();
+    });
+  }
+
+  Future<void> _refreshOnlineStatuses() async {
+    try {
+      if (!mounted) return;
+      if (_chatConversations.isEmpty) return;
+
+      final userIds = _chatConversations
+          .map((c) => (c['userId'] ?? '').toString())
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      if (userIds.isEmpty) return;
+
+      final statuses = await AdsyConnectService.getOnlineStatusList(userIds);
+      if (!mounted) return;
+      if (statuses.isEmpty) return;
+
+      final Map<String, Map<String, dynamic>> statusByUserId = {};
+      for (final item in statuses) {
+        if (item is Map) {
+          final map = Map<String, dynamic>.from(item);
+          final id = (map['user_id'] ?? map['userId'] ?? map['id'])?.toString();
+          if (id != null && id.isNotEmpty) {
+            statusByUserId[id] = map;
+          }
+        }
+      }
+
+      if (statusByUserId.isEmpty) return;
+
+      setState(() {
+        for (var i = 0; i < _chatConversations.length; i++) {
+          final uid = (_chatConversations[i]['userId'] ?? '').toString();
+          final status = statusByUserId[uid];
+          if (status == null) continue;
+
+          final isOnline = _parseBool(status['is_online'] ?? status['isOnline']);
+          _chatConversations[i]['isOnline'] = isOnline;
+        }
+      });
+    } catch (_) {}
   }
 
   void _startRealTimePolling() {
@@ -50,7 +128,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           for (var newChat in newChats) {
             final index = _chatConversations.indexWhere((c) => c['id'] == newChat['id']);
             if (index != -1) {
+              final existingOnline = _chatConversations[index]['isOnline'];
               _chatConversations[index] = newChat;
+              if (existingOnline != null) {
+                _chatConversations[index]['isOnline'] = existingOnline;
+              }
             } else {
               // New chat arrived, add it to the top
               _chatConversations.insert(0, newChat);
@@ -67,7 +149,20 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   @override
   void dispose() {
     _pollingTimer?.cancel();
+    _onlineStatusTimer?.cancel();
+    _chatSearchController.dispose();
     super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _filteredChats {
+    final q = _chatSearchQuery.trim().toLowerCase();
+    if (q.isEmpty) return _chatConversations;
+
+    return _chatConversations.where((chat) {
+      final name = (chat['userName'] ?? '').toString().toLowerCase();
+      final msg = (chat['lastMessage'] ?? '').toString().toLowerCase();
+      return name.contains(q) || msg.contains(q);
+    }).toList();
   }
 
   Future<void> _loadChats({bool loadMore = false}) async {
@@ -115,6 +210,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           _isLoadingMore = false;
           _hasMore = chatRooms.length >= _pageSize;
         });
+
+        if (!loadMore) {
+          _refreshOnlineStatuses();
+        }
       }
     } catch (e) {
       print('🔴 Error loading chats: $e');
@@ -122,15 +221,17 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         setState(() {
           _isLoadingChats = false;
           _isLoadingMore = false;
-          if (!loadMore) {
-            _chatConversations = [];
-          }
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load chats: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
+
+        final customMessage = NetworkErrorHandler.isNetworkError(e)
+            ? null
+            : (loadMore ? 'Failed to load more chats' : 'Failed to load chats');
+
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          customMessage: customMessage,
+          onRetry: () => _loadChats(loadMore: loadMore),
         );
       }
     }
@@ -178,7 +279,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                 ? DateTime.parse(lastMessage['created_at'])
                 : DateTime.parse(room['last_message_at'] ?? DateTime.now().toIso8601String()),
             'unreadCount': room['unread_count'] ?? 0,
-            'isOnline': otherUser['is_online'] ?? false,
+            'isOnline': _parseBool(otherUser['is_online'] ?? otherUser['isOnline']),
             'isTyping': false,
             'isVerified': otherUser['is_verified'] ?? false,
           };
@@ -290,79 +391,121 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       );
     }
 
+    final chatsToShow = _filteredChats;
+    final isFiltering = _chatSearchQuery.trim().isNotEmpty;
+
     return Stack(
       children: [
-        RefreshIndicator(
-          onRefresh: _refreshChats,
-          color: const Color(0xFF3B82F6),
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (ScrollNotification scrollInfo) {
-              if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
-                _loadMoreChats();
-              }
-              return false;
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              itemCount: _chatConversations.length + 1,
-              itemBuilder: (context, index) {
-                if (index == _chatConversations.length) {
-                  // Show loading skeleton or end message
-                  if (_isLoadingMore) {
-                    return const ChatListSkeleton(itemCount: 3);
-                  } else if (!_hasMore && _chatConversations.isNotEmpty) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6).withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check_circle_rounded,
-                              color: Color(0xFF3B82F6),
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'All chats loaded',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF6B7280),
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'You\'re all caught up!',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }
-                final chat = _chatConversations[index];
-                return _buildChatItem(chat);
-              },
+        Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                ),
+                child: TextField(
+                  controller: _chatSearchController,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 20),
+                    hintText: 'Search chats',
+                    hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                ),
+              ),
             ),
-          ),
+            Expanded(
+              child: chatsToShow.isEmpty && isFiltering
+                  ? Center(
+                      child: Text(
+                        'No results found',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _refreshChats,
+                      color: const Color(0xFF3B82F6),
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (ScrollNotification scrollInfo) {
+                          if (!isFiltering &&
+                              scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                            _loadMoreChats();
+                          }
+                          return false;
+                        },
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          itemCount: chatsToShow.length + (isFiltering ? 0 : 1),
+                          itemBuilder: (context, index) {
+                            if (!isFiltering && index == chatsToShow.length) {
+                              if (_isLoadingMore) {
+                                return const ChatListSkeleton(itemCount: 3);
+                              } else if (!_hasMore && chatsToShow.isNotEmpty) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.check_circle_rounded,
+                                          color: Color(0xFF3B82F6),
+                                          size: 28,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'All chats loaded',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF6B7280),
+                                                letterSpacing: -0.2,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'You\'re all caught up!',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            }
+
+                            final chat = chatsToShow[index];
+                            return _buildChatItem(chat);
+                          },
+                        ),
+                      ),
+                    ),
+            ),
+          ],
         ),
         // Floating Action Button for New Chat
         Positioned(
@@ -420,8 +563,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 58,
+                  height: 58,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
@@ -436,9 +579,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     ),
                   ),
                   child: ClipOval(
-                    child: chat['userAvatar'] != null
+                    child: chat['userAvatar'] != null &&
+                            AppConfig.getAbsoluteUrl(chat['userAvatar']).isNotEmpty
                         ? Image.network(
-                            chat['userAvatar'],
+                            AppConfig.getAbsoluteUrl(chat['userAvatar']),
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Center(
@@ -446,7 +590,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                   chat['userName'][0].toUpperCase(),
                                   style: const TextStyle(
                                     color: Color(0xFF3B82F6),
-                                    fontSize: 20,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -458,7 +602,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                               chat['userName'][0].toUpperCase(),
                               style: const TextStyle(
                                 color: Color(0xFF3B82F6),
-                                fontSize: 20,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

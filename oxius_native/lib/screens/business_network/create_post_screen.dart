@@ -10,6 +10,7 @@ import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
 import '../../utils/mention_parser.dart';
 import '../../utils/image_compressor.dart';
+import '../../utils/network_error_handler.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../config/app_config.dart';
 
@@ -433,11 +434,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+        final customMessage = NetworkErrorHandler.isNetworkError(e)
+            ? null
+            : 'Failed to create post';
+
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          customMessage: customMessage,
+          onRetry: _createPost,
         );
       }
     } finally {

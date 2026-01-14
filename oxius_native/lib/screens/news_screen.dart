@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/news_models.dart';
 import '../services/news_service.dart';
+import '../utils/network_error_handler.dart';
 import '../widgets/news/hero_banner.dart';
 import '../widgets/news/trending_carousel.dart';
 import '../widgets/news/news_card.dart';
@@ -20,7 +21,7 @@ class _NewsScreenState extends State<NewsScreen> {
   List<TipSuggestion> _tips = [];
   bool _loading = true;
   bool _loadingMore = false;
-  String? _error;
+  Object? _error;
   int _currentPage = 1;
   bool _hasMore = true;
   bool _isGridLayout = true;
@@ -63,7 +64,7 @@ class _NewsScreenState extends State<NewsScreen> {
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = e;
         _loading = false;
       });
     }
@@ -180,7 +181,24 @@ class _NewsScreenState extends State<NewsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Error: $_error'),
+                      Icon(
+                        NetworkErrorHandler.getErrorIcon(_error),
+                        size: 44,
+                        color: Colors.grey.shade500,
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          NetworkErrorHandler.getErrorMessage(_error),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadInitialData,
