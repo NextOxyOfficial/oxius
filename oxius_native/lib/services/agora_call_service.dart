@@ -13,6 +13,7 @@ class AgoraCallService {
   
   static RtcEngine? _engine;
   static bool _isInitialized = false;
+  static bool _isVideoEnabled = false;
   static bool _isInCall = false;
   static bool _isCallScreenVisible = false;
   static String? _lastError;
@@ -77,32 +78,70 @@ class AgoraCallService {
   }
   
   /// Initialize Agora RTC Engine
-  static Future<RtcEngine> initEngine() async {
+  static Future<RtcEngine> initEngine({required String callType}) async {
+    final wantsVideo = callType == 'video';
+
     if (_engine != null && _isInitialized) {
+      if (wantsVideo != _isVideoEnabled) {
+        if (wantsVideo) {
+          await _engine!.enableVideo();
+          await _engine!.setVideoEncoderConfiguration(
+            const VideoEncoderConfiguration(
+              dimensions: VideoDimensions(width: 640, height: 480),
+              frameRate: 15,
+              bitrate: 0,
+            ),
+          );
+        } else {
+          await _engine!.disableVideo();
+        }
+        _isVideoEnabled = wantsVideo;
+      }
       return _engine!;
     }
-    
-    // Request permissions
-    await [Permission.microphone, Permission.camera].request();
-    
+
+    _lastError = null;
+
+    final micStatus = await Permission.microphone.request();
+    if (!micStatus.isGranted) {
+      _lastError = 'Microphone permission denied';
+      throw StateError(_lastError!);
+    }
+
+    if (wantsVideo) {
+      final camStatus = await Permission.camera.request();
+      if (!camStatus.isGranted) {
+        _lastError = 'Camera permission denied';
+        throw StateError(_lastError!);
+      }
+    }
+
     _engine = createAgoraRtcEngine();
-    await _engine!.initialize(RtcEngineContext(
-      appId: appId,
-      channelProfile: ChannelProfileType.channelProfileCommunication,
-    ));
-    
-    await _engine!.enableVideo();
-    await _engine!.enableAudio();
-    await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
-    await _engine!.setVideoEncoderConfiguration(
-      const VideoEncoderConfiguration(
-        dimensions: VideoDimensions(width: 640, height: 480),
-        frameRate: 15,
-        bitrate: 0,
+    await _engine!.initialize(
+      RtcEngineContext(
+        appId: appId,
+        channelProfile: ChannelProfileType.channelProfileCommunication,
       ),
     );
-    
+
+    await _engine!.enableAudio();
+    if (wantsVideo) {
+      await _engine!.enableVideo();
+      await _engine!.setVideoEncoderConfiguration(
+        const VideoEncoderConfiguration(
+          dimensions: VideoDimensions(width: 640, height: 480),
+          frameRate: 15,
+          bitrate: 0,
+        ),
+      );
+    } else {
+      await _engine!.disableVideo();
+    }
+
+    await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+
     _isInitialized = true;
+    _isVideoEnabled = wantsVideo;
     return _engine!;
   }
   
@@ -154,6 +193,7 @@ class AgoraCallService {
     required String channelName,
     required int uid,
     String? token,
+    required String callType,
   }) async {
     try {
       _lastError = null;
@@ -167,16 +207,17 @@ class AgoraCallService {
       print('Agora: Joining channel: $channelName with uid: $uid');
       print('Agora: Token: ${token != null ? "provided" : "null (using App ID only mode)"}');
       
-      final engine = await initEngine();
+      final wantsVideo = callType == 'video';
+      final engine = await initEngine(callType: callType);
       
       await engine.joinChannel(
         token: token ?? '',
         channelId: channelName,
         uid: uid,
-        options: const ChannelMediaOptions(
-          autoSubscribeVideo: true,
+        options: ChannelMediaOptions(
+          autoSubscribeVideo: wantsVideo,
           autoSubscribeAudio: true,
-          publishCameraTrack: true,
+          publishCameraTrack: wantsVideo,
           publishMicrophoneTrack: true,
           clientRoleType: ClientRoleType.clientRoleBroadcaster,
         ),

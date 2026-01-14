@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
 import '../services/fcm_service.dart';
+import '../utils/network_error_handler.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/terms_and_conditions_screen.dart';
 
@@ -69,9 +70,17 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _errorMessage = 'Invalid email or password';
-        });
+        // Use NetworkErrorHandler for friendly offline/network error messages
+        if (NetworkErrorHandler.isNetworkError(e)) {
+          setState(() {
+            _errorMessage = NetworkErrorHandler.getErrorMessage(e);
+          });
+        } else {
+          // Authentication error (wrong credentials, etc.)
+          setState(() {
+            _errorMessage = 'Invalid email or password';
+          });
+        }
       }
     } finally {
       if (mounted) {

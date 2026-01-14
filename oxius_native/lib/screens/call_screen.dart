@@ -162,7 +162,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware {
 
   Future<void> _initAgora() async {
     try {
-      _engine = await AgoraCallService.initEngine();
+      _engine = await AgoraCallService.initEngine(callType: widget.callType);
       
       _engine!.registerEventHandler(
         RtcEngineEventHandler(
@@ -213,7 +213,6 @@ class _CallScreenState extends State<CallScreen> with RouteAware {
         // Auto-accepted from CallKit - join channel immediately
         await _joinChannel();
       } else {
-        await _joinChannel();
         // Send notification to callee
         final notified = await AgoraCallService.sendCallNotification(
           calleeId: widget.calleeId,
@@ -229,13 +228,18 @@ class _CallScreenState extends State<CallScreen> with RouteAware {
             ),
           );
         }
+
+        await _joinChannel();
       }
     } catch (e) {
       print('Error initializing Agora: $e');
       if (mounted) {
+        final msg = e.toString().toLowerCase().contains('permission')
+            ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.'
+            : 'Unable to start call. Please check your connection.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Unable to start call. Please check your connection.'),
+          SnackBar(
+            content: Text(msg),
             backgroundColor: Colors.red,
           ),
         );
@@ -254,6 +258,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware {
       channelName: widget.channelName,
       uid: _localUid,
       token: token,
+      callType: widget.callType,
     );
 
     if (!success && mounted) {

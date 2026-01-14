@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import '../services/auth_service.dart';
 import '../services/geo_service.dart';
 import '../services/user_state_service.dart';
+import '../utils/network_error_handler.dart';
 
 class RegisterPage extends StatefulWidget {
   final String? referralCode;
@@ -396,7 +397,10 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+          // Use NetworkErrorHandler for friendly offline/network error messages
+          _errorMessage = NetworkErrorHandler.isNetworkError(e)
+              ? NetworkErrorHandler.getErrorMessage(e)
+              : e.toString().replaceFirst('Exception: ', '');
           _isLoading = false;
         });
       }
