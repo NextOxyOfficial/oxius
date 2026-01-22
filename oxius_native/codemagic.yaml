@@ -32,9 +32,16 @@ workflows:
         script: |
           flutter pub get
       
+      - name: Clean CocoaPods cache
+        script: |
+          cd ios
+          rm -rf Pods Podfile.lock
+          pod cache clean --all
+      
       - name: Install CocoaPods dependencies
         script: |
-          cd ios && pod install --repo-update
+          cd ios
+          pod install --repo-update --verbose
       
       - name: Set up Firebase configuration
         script: |
@@ -48,8 +55,8 @@ workflows:
       - name: Build iOS IPA
         script: |
           flutter build ipa --release \
-            --build-name=8.0.3 \
-            --build-number=$((${PROJECT_BUILD_NUMBER:-1})) \
+            --build-name=8.0.8 \
+            --build-number=$((${PROJECT_BUILD_NUMBER:-39})) \
             --export-options-plist=/Users/builder/export_options.plist
     
     artifacts:
@@ -116,9 +123,16 @@ workflows:
         script: |
           flutter pub get
       
+      - name: Clean CocoaPods cache
+        script: |
+          cd ios
+          rm -rf Pods Podfile.lock
+          pod cache clean --all
+      
       - name: Install CocoaPods dependencies
         script: |
-          cd ios && pod install --repo-update
+          cd ios
+          pod install --repo-update --verbose
       
       - name: Set up Firebase configuration
         script: |
@@ -127,8 +141,8 @@ workflows:
       - name: Build iOS IPA
         script: |
           flutter build ipa --release \
-            --build-name=8.0.3 \
-            --build-number=$((${PROJECT_BUILD_NUMBER:-1})) \
+            --build-name=8.0.8 \
+            --build-number=$((${PROJECT_BUILD_NUMBER:-39})) \
             --export-options-plist=/Users/builder/export_options.plist
     
     artifacts:

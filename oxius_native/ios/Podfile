@@ -33,8 +33,9 @@ target 'Runner' do
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   
-  # Firebase pods - let Flutter plugins manage Firebase versions automatically
-  # Removed manual Firebase pod declarations to avoid version conflicts
+  # Force compatible versions for mobile_scanner compatibility
+  pod 'GoogleDataTransport', '9.4.1'
+  pod 'GoogleMLKit/BarcodeScanning', '6.0.0'
 end
 
 target 'RunnerTests' do
