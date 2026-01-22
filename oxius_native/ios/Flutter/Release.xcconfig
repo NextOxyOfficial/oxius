@@ -1,1 +1,7 @@
 #include "Generated.xcconfig"
+
+// Force strip -G flags from Flutter framework
+OTHER_CFLAGS = $(filter-out -G%, $(OTHER_CFLAGS))
+OTHER_CPLUSPLUSFLAGS = $(filter-out -G%, $(OTHER_CPLUSPLUSFLAGS))
+OTHER_LDFLAGS = $(filter-out -G%, $(OTHER_LDFLAGS))
+OTHER_SWIFT_FLAGS = $(filter-out -G%, $(OTHER_SWIFT_FLAGS))
