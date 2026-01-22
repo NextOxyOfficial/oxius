@@ -39,6 +39,42 @@ target 'RunnerTests' do
 end
 
 post_install do |installer|
+  sanitize_g_flags = lambda do |value|
+    if value.is_a?(String)
+      updated = value.gsub(/(^|\s)["']?-G\d*["']?(?=\s|$)/, '\\1')
+      updated = updated.gsub(/[ ]{2,}/, ' ').strip
+      return updated
+    end
+
+    return value unless value.is_a?(Array)
+
+    value
+      .map do |f|
+        next f unless f.is_a?(String)
+        f.gsub(/(^|\s)["']?-G\d*["']?(?=\s|$)/, '\\1').gsub(/[ ]{2,}/, ' ').strip
+      end
+      .reject { |f| f.is_a?(String) && f.strip.empty? }
+  end
+
+  sanitize_build_settings = lambda do |target, config|
+    flag_key_prefixes = ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_LDFLAGS', 'OTHER_SWIFT_FLAGS']
+
+    config.build_settings.keys.each do |key|
+      key_str = key.to_s
+      next unless flag_key_prefixes.any? { |prefix| key_str.start_with?(prefix) }
+
+      old_value = config.build_settings[key]
+      next unless old_value.is_a?(String) || old_value.is_a?(Array)
+      next unless old_value.to_s.include?('-G')
+
+      new_value = sanitize_g_flags.call(old_value)
+      if old_value != new_value
+        puts "[pods] Removed -G from #{target.name} (#{config.name}) #{key_str}"
+      end
+      config.build_settings[key] = new_value
+    end
+  end
+
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
@@ -61,37 +97,25 @@ post_install do |installer|
       
       # Privacy manifest requirements (iOS 17+)
       config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-      
-      # Fix for unsupported compiler flags (remove -G flag)
-      sanitize_flags = lambda do |value|
-        if value.is_a?(String)
-          updated = value.gsub(/(^|\s)-G\d*(?=\s|$)/, '\\1')
-          updated = updated.gsub(/[ ]{2,}/, ' ').strip
-          return updated
-        end
 
-        return value unless value.is_a?(Array)
-
-        value
-          .map do |f|
-            next f unless f.is_a?(String)
-            f.gsub(/(^|\s)-G\d*(?=\s|$)/, '\\1').gsub(/[ ]{2,}/, ' ').strip
-          end
-          .reject do |f|
-            f.is_a?(String) && f.strip.empty?
-          end
-      end
-
-      flag_key_prefixes = ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_LDFLAGS', 'OTHER_SWIFT_FLAGS']
-      config.build_settings.keys.each do |key|
-        key_str = key.to_s
-        next unless flag_key_prefixes.any? { |prefix| key_str.start_with?(prefix) }
-        config.build_settings[key] = sanitize_flags.call(config.build_settings[key])
-      end
+      sanitize_build_settings.call(target, config)
 
       # Enable modules
       config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
     end
+  end
+
+  installer.aggregate_targets.each do |aggregate_target|
+    user_project = aggregate_target.user_project
+    next unless user_project
+
+    user_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        sanitize_build_settings.call(target, config)
+      end
+    end
+
+    user_project.save
   end
 
   xcconfig_glob = File.join(installer.sandbox.root.to_s, 'Target Support Files', '**', '*.xcconfig')
@@ -100,10 +124,13 @@ post_install do |installer|
       contents = File.read(xcconfig_path)
       next unless contents.include?('-G')
 
-      updated = contents.gsub(/(^|[\s"'])-G\d*(?=\s|$|[\s"'])/, '\\1')
+      updated = contents.gsub(/(^|[\s"'=])-[Gg]\d*(?=\s|$|[\s"'])/, '\\1')
       updated = updated.gsub(/[ ]{2,}/, ' ')
 
-      File.write(xcconfig_path, updated) if updated != contents
+      if updated != contents
+        puts "[pods] Removed -G from xcconfig: #{File.basename(xcconfig_path)}"
+        File.write(xcconfig_path, updated)
+      end
     rescue
       next
     end
