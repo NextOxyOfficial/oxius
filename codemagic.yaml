@@ -15,6 +15,13 @@ workflows:
           cd oxius_native
           flutter pub get
 
+      - name: Set up Firebase (GoogleService-Info.plist)
+        script: |
+          cd oxius_native
+          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
+            echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > ios/Runner/GoogleService-Info.plist
+          fi
+
       - name: Install CocoaPods
         script: |
           cd oxius_native/ios
@@ -46,6 +53,13 @@ workflows:
         script: |
           cd oxius_native
           flutter pub get
+
+      - name: Set up Firebase (GoogleService-Info.plist)
+        script: |
+          cd oxius_native
+          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
+            echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > ios/Runner/GoogleService-Info.plist
+          fi
 
       - name: Install CocoaPods
         script: |
