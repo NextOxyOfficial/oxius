@@ -467,6 +467,9 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				OTHER_CFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_CPLUSPLUSFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_LDFLAGS = "$(filter-out -G%, $(inherited))";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -532,6 +535,9 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
+				OTHER_CFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_CPLUSPLUSFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_LDFLAGS = "$(filter-out -G%, $(inherited))";
 			};
 			name = Release;
 		};
@@ -555,6 +561,9 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+				OTHER_CFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_CPLUSPLUSFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_LDFLAGS = "$(filter-out -G%, $(inherited))";
 			};
 			name = Debug;
 		};
@@ -577,6 +586,9 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
+				OTHER_CFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_CPLUSPLUSFLAGS = "$(filter-out -G%, $(inherited))";
+				OTHER_LDFLAGS = "$(filter-out -G%, $(inherited))";
 			};
 			name = Release;
 		};
