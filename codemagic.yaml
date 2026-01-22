@@ -36,10 +36,24 @@ workflows:
           grep -R --line-number -- "-G" "Pods/Target Support Files" || true
           grep -R --line-number -- "-G" Pods.xcodeproj || true
 
+      - name: Force eliminate -G flags from all configs
+        script: |
+          cd oxius_native/ios
+          echo "Force sanitizing all xcconfig files..."
+          find . -name "*.xcconfig" -exec sed -i '' 's/-G[0-9]*//g' {} \;
+          find . -name "*.pbxproj" -exec sed -i '' 's/-G[0-9]*//g' {} \;
+          echo "Setting compiler flag overrides..."
+          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
+
       - name: Build iOS (debug, no codesign)
         script: |
           cd oxius_native
           unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
+          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
           flutter build ios --debug --no-codesign -v
 
     artifacts:
@@ -83,10 +97,24 @@ workflows:
           grep -R --line-number -- "-G" "Pods/Target Support Files" || true
           grep -R --line-number -- "-G" Pods.xcodeproj || true
 
+      - name: Force eliminate -G flags from all configs
+        script: |
+          cd oxius_native/ios
+          echo "Force sanitizing all xcconfig files..."
+          find . -name "*.xcconfig" -exec sed -i '' 's/-G[0-9]*//g' {} \;
+          find . -name "*.pbxproj" -exec sed -i '' 's/-G[0-9]*//g' {} \;
+          echo "Setting compiler flag overrides..."
+          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
+
       - name: Build iOS IPA (release)
         script: |
           cd oxius_native
           unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
+          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
+          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
           flutter build ipa --release
 
     artifacts:
