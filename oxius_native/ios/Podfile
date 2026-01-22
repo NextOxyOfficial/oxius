@@ -63,12 +63,51 @@ post_install do |installer|
       config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
       
       # Fix for unsupported compiler flags (remove -G flag)
-      cflags = config.build_settings['OTHER_CFLAGS'] || ['$(inherited)']
-      cflags = cflags.reject { |flag| flag == '-G' }
-      config.build_settings['OTHER_CFLAGS'] = cflags
-      
+      sanitize_flags = lambda do |value|
+        original_is_string = value.is_a?(String)
+
+        flags =
+          if value.is_a?(Array)
+            value
+          elsif value.is_a?(String)
+            value.split(' ')
+          else
+            []
+          end
+
+        sanitized = flags
+          .flat_map { |f| f.is_a?(String) ? f.split(' ') : [f] }
+          .reject do |f|
+            next false unless f.is_a?(String)
+            normalized = f.strip.gsub(/\A['"]+|['"]+\z/, '')
+            normalized.match?(/\A-G\d*\z/)
+          end
+
+        original_is_string ? sanitized.join(' ') : sanitized
+      end
+
+      ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_LDFLAGS', 'OTHER_SWIFT_FLAGS'].each do |key|
+        next unless config.build_settings.key?(key)
+        config.build_settings[key] = sanitize_flags.call(config.build_settings[key])
+      end
+
       # Enable modules
       config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+    end
+  end
+
+  xcconfig_glob = File.join(installer.sandbox.root.to_s, 'Target Support Files', '**', '*.xcconfig')
+  Dir.glob(xcconfig_glob).each do |xcconfig_path|
+    begin
+      contents = File.read(xcconfig_path)
+      next unless contents.include?('-G')
+
+      updated = contents.gsub(/(^|[\s"'])-G\d*(?=\s|$|[\s"'])/, '\\1')
+      updated = updated.gsub(/[ ]{2,}/, ' ')
+
+      File.write(xcconfig_path, updated) if updated != contents
+    rescue
+      next
     end
   end
 end

@@ -1,0 +1,31 @@
+workflows:
+  ios-production:
+    name: iOS Production (oxius_native)
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      - name: Flutter pub get
+        script: |
+          cd oxius_native
+          flutter pub get
+
+      - name: Install CocoaPods
+        script: |
+          cd oxius_native/ios
+          rm -rf Pods Podfile.lock
+          pod cache clean --all
+          pod install --repo-update --verbose
+
+      - name: Build iOS IPA
+        script: |
+          cd oxius_native
+          flutter build ipa --release
+
+    artifacts:
+      - oxius_native/build/ios/ipa/*.ipa
