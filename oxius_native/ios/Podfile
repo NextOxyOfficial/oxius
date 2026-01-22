@@ -124,7 +124,7 @@ post_install do |installer|
       contents = File.read(xcconfig_path)
       next unless contents.include?('-G')
 
-      updated = contents.gsub(/(^|[\s"'=])-[Gg]\d*(?=\s|$|[\s"'])/, '\\1')
+      updated = contents.gsub(/(^|[\s"'=])-G\d*(?=\s|$|[\s"'])/, '\\1')
       updated = updated.gsub(/[ ]{2,}/, ' ')
 
       if updated != contents

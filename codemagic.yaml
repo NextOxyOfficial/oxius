@@ -29,10 +29,18 @@ workflows:
           pod cache clean --all
           pod install --repo-update --verbose
 
+      - name: Verify no -G flags remain in Pods configs
+        script: |
+          cd oxius_native/ios
+          echo "Searching for '-G' in Pods configs..."
+          grep -R --line-number -- "-G" "Pods/Target Support Files" || true
+          grep -R --line-number -- "-G" Pods.xcodeproj || true
+
       - name: Build iOS (debug, no codesign)
         script: |
           cd oxius_native
-          flutter build ios --debug --no-codesign
+          unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
+          flutter build ios --debug --no-codesign -v
 
     artifacts:
       - oxius_native/build/ios/iphoneos/*.app
@@ -68,9 +76,17 @@ workflows:
           pod cache clean --all
           pod install --repo-update --verbose
 
+      - name: Verify no -G flags remain in Pods configs
+        script: |
+          cd oxius_native/ios
+          echo "Searching for '-G' in Pods configs..."
+          grep -R --line-number -- "-G" "Pods/Target Support Files" || true
+          grep -R --line-number -- "-G" Pods.xcodeproj || true
+
       - name: Build iOS IPA (release)
         script: |
           cd oxius_native
+          unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
           flutter build ipa --release
 
     artifacts:
