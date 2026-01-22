@@ -32,10 +32,6 @@ target 'Runner' do
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  
-  # Force compatible versions for mobile_scanner compatibility
-  pod 'GoogleDataTransport', '9.4.1'
-  pod 'GoogleMLKit/BarcodeScanning', '6.0.0'
 end
 
 target 'RunnerTests' do
