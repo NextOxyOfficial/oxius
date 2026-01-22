@@ -64,30 +64,28 @@ post_install do |installer|
       
       # Fix for unsupported compiler flags (remove -G flag)
       sanitize_flags = lambda do |value|
-        original_is_string = value.is_a?(String)
+        if value.is_a?(String)
+          updated = value.gsub(/(^|\s)-G\d*(?=\s|$)/, '\\1')
+          updated = updated.gsub(/[ ]{2,}/, ' ').strip
+          return updated
+        end
 
-        flags =
-          if value.is_a?(Array)
-            value
-          elsif value.is_a?(String)
-            value.split(' ')
-          else
-            []
+        return value unless value.is_a?(Array)
+
+        value
+          .map do |f|
+            next f unless f.is_a?(String)
+            f.gsub(/(^|\s)-G\d*(?=\s|$)/, '\\1').gsub(/[ ]{2,}/, ' ').strip
           end
-
-        sanitized = flags
-          .flat_map { |f| f.is_a?(String) ? f.split(' ') : [f] }
           .reject do |f|
-            next false unless f.is_a?(String)
-            normalized = f.strip.gsub(/\A['"]+|['"]+\z/, '')
-            normalized.match?(/\A-G\d*\z/)
+            f.is_a?(String) && f.strip.empty?
           end
-
-        original_is_string ? sanitized.join(' ') : sanitized
       end
 
-      ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_LDFLAGS', 'OTHER_SWIFT_FLAGS'].each do |key|
-        next unless config.build_settings.key?(key)
+      flag_key_prefixes = ['OTHER_CFLAGS', 'OTHER_CPLUSPLUSFLAGS', 'OTHER_LDFLAGS', 'OTHER_SWIFT_FLAGS']
+      config.build_settings.keys.each do |key|
+        key_str = key.to_s
+        next unless flag_key_prefixes.any? { |prefix| key_str.start_with?(prefix) }
         config.build_settings[key] = sanitize_flags.call(config.build_settings[key])
       end
 
