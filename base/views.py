@@ -4751,7 +4751,8 @@ def assetlinks_json(request):
                 "namespace": "android_app",
                 "package_name": "com.oxius.app",
                 "sha256_cert_fingerprints": [
-                    "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:98:A9:74:F6:09:B2:E0:11"
+                    "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:98:A9:74:F6:09:B2:E0:11",
+                    "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:9B:A9:74:F6:09:B2:E0:11"
                 ]
             }
         }
