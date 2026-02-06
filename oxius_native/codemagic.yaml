@@ -13,12 +13,12 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.adsyclub.app
+        bundle_identifier: com.oxius.app
       groups:
         - firebase_credentials
       vars:
         APP_ID: "YOUR_APP_STORE_APP_ID"  # Replace with your App Store App ID
-        BUNDLE_ID: "com.adsyclub.app"
+        BUNDLE_ID: "com.oxius.app"
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -94,11 +94,11 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.adsyclub.app
+        bundle_identifier: com.oxius.app
       groups:
         - firebase_credentials
       vars:
-        BUNDLE_ID: "com.adsyclub.app"
+        BUNDLE_ID: "com.oxius.app"
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -169,7 +169,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: development
-        bundle_identifier: com.adsyclub.app
+        bundle_identifier: com.oxius.app
       groups:
         - firebase_credentials
       flutter: stable

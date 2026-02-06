@@ -50,11 +50,8 @@ post_install do |installer|
       # Disable bitcode
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       
-      # Exclude arm64 for simulator builds (M1 Mac compatibility)
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-      
-      # Fix for Xcode 14+ code signing
-      config.build_settings['CODE_SIGN_IDENTITY'] = ''
+      # Let Codemagic handle code signing identity
+      # config.build_settings['CODE_SIGN_IDENTITY'] is managed by xcode-project use-profiles
       
       # Suppress warnings
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'

@@ -20,7 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include, re_path
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from base.views import index
+from base.views import index, assetlinks_json
 
 # First set up the media files
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
@@ -53,6 +53,8 @@ urlpatterns = urlpatterns + [
     path("api/referral-rewards/", include("referral_rewards.urls")),
     # Raise Up crowdfunding system URLs
     path("api/raise-up/", include("raise_up.urls")),
+    # Android App Links - Digital Asset Links verification
+    path(".well-known/assetlinks.json", assetlinks_json, name="assetlinks"),
     # for frontend
     path("", index, name="index"),
     path("<str:param>", index, name="index2"),

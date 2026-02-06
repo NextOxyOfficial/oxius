@@ -5,6 +5,8 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
+      groups:
+        - firebase_credentials
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -19,42 +21,30 @@ workflows:
         script: |
           cd oxius_native
           if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
-            echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > ios/Runner/GoogleService-Info.plist
+            echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > ios/Runner/GoogleService-Info.plist
+            echo "GoogleService-Info.plist created successfully"
+          else
+            echo "WARNING: GOOGLE_SERVICE_INFO_PLIST env var not set!"
+            exit 1
           fi
 
       - name: Install CocoaPods
         script: |
           cd oxius_native/ios
           rm -rf Pods Podfile.lock
-          pod cache clean --all
-          pod install --repo-update --verbose
-
-      - name: Verify no -G flags remain in Pods configs
-        script: |
-          cd oxius_native/ios
-          echo "Searching for '-G' in Pods configs..."
-          grep -R --line-number -- "-G" "Pods/Target Support Files" || true
-          grep -R --line-number -- "-G" Pods.xcodeproj || true
+          pod install --repo-update
 
       - name: Force eliminate -G flags from all configs
         script: |
           cd oxius_native/ios
           echo "Force sanitizing all xcconfig files..."
-          find . -name "*.xcconfig" -exec sed -i '' 's/-G[0-9]*//g' {} \;
-          find . -name "*.pbxproj" -exec sed -i '' 's/-G[0-9]*//g' {} \;
-          echo "Setting compiler flag overrides..."
-          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
+          find . -name "*.xcconfig" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
+          find . -name "*.pbxproj" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
 
       - name: Build iOS (debug, no codesign)
         script: |
           cd oxius_native
-          unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
-          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
-          flutter build ios --debug --no-codesign -v
+          flutter build ios --debug --no-codesign
 
     artifacts:
       - oxius_native/build/ios/iphoneos/*.app
@@ -65,12 +55,25 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m2
 
+    integrations:
+      app_store_connect: Oxius App Store Connect
+
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.oxius.app
+      groups:
+        - firebase_credentials
       flutter: stable
       xcode: latest
       cocoapods: default
 
     scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          cd oxius_native
+          xcode-project use-profiles
+
       - name: Flutter pub get
         script: |
           cd oxius_native
@@ -80,42 +83,44 @@ workflows:
         script: |
           cd oxius_native
           if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
-            echo $GOOGLE_SERVICE_INFO_PLIST | base64 --decode > ios/Runner/GoogleService-Info.plist
+            echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > ios/Runner/GoogleService-Info.plist
+            echo "GoogleService-Info.plist created successfully"
+          else
+            echo "WARNING: GOOGLE_SERVICE_INFO_PLIST env var not set!"
+            exit 1
           fi
 
       - name: Install CocoaPods
         script: |
           cd oxius_native/ios
           rm -rf Pods Podfile.lock
-          pod cache clean --all
-          pod install --repo-update --verbose
-
-      - name: Verify no -G flags remain in Pods configs
-        script: |
-          cd oxius_native/ios
-          echo "Searching for '-G' in Pods configs..."
-          grep -R --line-number -- "-G" "Pods/Target Support Files" || true
-          grep -R --line-number -- "-G" Pods.xcodeproj || true
+          pod install --repo-update
 
       - name: Force eliminate -G flags from all configs
         script: |
           cd oxius_native/ios
           echo "Force sanitizing all xcconfig files..."
-          find . -name "*.xcconfig" -exec sed -i '' 's/-G[0-9]*//g' {} \;
-          find . -name "*.pbxproj" -exec sed -i '' 's/-G[0-9]*//g' {} \;
-          echo "Setting compiler flag overrides..."
-          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
+          find . -name "*.xcconfig" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
+          find . -name "*.pbxproj" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
 
       - name: Build iOS IPA (release)
         script: |
           cd oxius_native
-          unset CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
-          export OTHER_CFLAGS="$(echo $OTHER_CFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_CPLUSPLUSFLAGS="$(echo $OTHER_CPLUSPLUSFLAGS | sed 's/-G[0-9]*//g')"
-          export OTHER_LDFLAGS="$(echo $OTHER_LDFLAGS | sed 's/-G[0-9]*//g')"
-          flutter build ipa --release
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
 
     artifacts:
       - oxius_native/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false

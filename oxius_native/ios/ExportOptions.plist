@@ -16,8 +16,8 @@
     <string>upload</string>
     <key>provisioningProfiles</key>
     <dict>
-        <key>com.adsyclub.app</key>
-        <string>AdsyClub App Store Profile</string>
+        <key>com.oxius.app</key>
+        <string>Oxius App Store Profile</string>
     </dict>
 </dict>
 </plist>
