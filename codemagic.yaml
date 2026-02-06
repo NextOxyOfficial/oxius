@@ -8,7 +8,7 @@ workflows:
       groups:
         - firebase_credentials
       flutter: stable
-      xcode: latest
+      xcode: 15.4
       cocoapods: default
 
     scripts:
@@ -28,34 +28,10 @@ workflows:
             exit 1
           fi
 
-      - name: Clean and install Pods
-        script: |
-          cd oxius_native/ios
-          rm -rf Pods Podfile.lock
-          pod install --repo-update
-
-      - name: Force strip BoringSSL-GRPC -G flags
-        script: |
-          cd oxius_native/ios
-          echo "=== Stripping -GCC_WARN_INHIBIT_ALL_WARNINGS from all Pods files ==="
-          # Strip from xcconfig files
-          find Pods -name "*.xcconfig" -exec grep -l "GCC_WARN_INHIBIT_ALL_WARNINGS" {} \; | while read f; do
-            echo "Cleaning: $f"
-            sed -i '' 's/-GCC_WARN_INHIBIT_ALL_WARNINGS//g' "$f"
-          done
-          # Strip from pbxproj (source file compiler flags)
-          find Pods -name "project.pbxproj" -exec grep -l "GCC_WARN_INHIBIT_ALL_WARNINGS" {} \; | while read f; do
-            echo "Cleaning: $f"
-            sed -i '' 's/-GCC_WARN_INHIBIT_ALL_WARNINGS//g' "$f"
-          done
-          # Verify
-          echo "=== Verification ==="
-          grep -r "GCC_WARN_INHIBIT_ALL_WARNINGS" Pods/ --include="*.xcconfig" --include="*.pbxproj" -l || echo "All clean!"
-
       - name: Build iOS (debug, no codesign)
         script: |
           cd oxius_native
-          flutter build ios --debug --no-codesign --no-pub
+          flutter build ios --debug --no-codesign
 
     artifacts:
       - oxius_native/build/ios/iphoneos/*.app
@@ -76,7 +52,7 @@ workflows:
       groups:
         - firebase_credentials
       flutter: stable
-      xcode: latest
+      xcode: 15.4
       cocoapods: default
 
     scripts:
@@ -101,31 +77,10 @@ workflows:
             exit 1
           fi
 
-      - name: Clean and install Pods
-        script: |
-          cd oxius_native/ios
-          rm -rf Pods Podfile.lock
-          pod install --repo-update
-
-      - name: Force strip BoringSSL-GRPC -G flags
-        script: |
-          cd oxius_native/ios
-          echo "=== Stripping -GCC_WARN_INHIBIT_ALL_WARNINGS from all Pods files ==="
-          find Pods -name "*.xcconfig" -exec grep -l "GCC_WARN_INHIBIT_ALL_WARNINGS" {} \; | while read f; do
-            echo "Cleaning: $f"
-            sed -i '' 's/-GCC_WARN_INHIBIT_ALL_WARNINGS//g' "$f"
-          done
-          find Pods -name "project.pbxproj" -exec grep -l "GCC_WARN_INHIBIT_ALL_WARNINGS" {} \; | while read f; do
-            echo "Cleaning: $f"
-            sed -i '' 's/-GCC_WARN_INHIBIT_ALL_WARNINGS//g' "$f"
-          done
-          echo "=== Verification ==="
-          grep -r "GCC_WARN_INHIBIT_ALL_WARNINGS" Pods/ --include="*.xcconfig" --include="*.pbxproj" -l || echo "All clean!"
-
       - name: Build iOS IPA (release)
         script: |
           cd oxius_native
-          flutter build ipa --release --no-pub \
+          flutter build ipa --release \
             --export-options-plist=/Users/builder/export_options.plist
 
     artifacts:
