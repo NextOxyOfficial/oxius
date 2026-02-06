@@ -4737,23 +4737,29 @@ def assetlinks_json(request):
     """
     Serve .well-known/assetlinks.json for Android App Links domain verification.
     Must return application/json content type.
+    Returns different fingerprints based on domain:
+      - adsyclub.com: both 98 and 9B fingerprints
+      - www.adsyclub.com: only 9B fingerprint
     """
-    import os
-    assetlinks_path = os.path.join(settings.BASE_DIR, "staticfiles", ".well-known", "assetlinks.json")
-    if os.path.exists(assetlinks_path):
-        with open(assetlinks_path, 'r', encoding='utf-8') as f:
-            return HttpResponse(f.read(), content_type='application/json')
-    # Fallback: return inline JSON
+    host = request.get_host().split(':')[0].lower()
+
+    if host == 'www.adsyclub.com':
+        fingerprints = [
+            "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:9B:A9:74:F6:09:B2:E0:11"
+        ]
+    else:
+        fingerprints = [
+            "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:98:A9:74:F6:09:B2:E0:11",
+            "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:9B:A9:74:F6:09:B2:E0:11"
+        ]
+
     data = json.dumps([
         {
             "relation": ["delegate_permission/common.handle_all_urls"],
             "target": {
                 "namespace": "android_app",
                 "package_name": "com.oxius.app",
-                "sha256_cert_fingerprints": [
-                    "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:98:A9:74:F6:09:B2:E0:11",
-                    "9A:57:C9:8C:75:97:87:F7:F6:E1:2C:1F:AD:AB:97:05:30:9D:DF:B4:3D:FC:3B:7D:9B:A9:74:F6:09:B2:E0:11"
-                ]
+                "sha256_cert_fingerprints": fingerprints
             }
         }
     ])
