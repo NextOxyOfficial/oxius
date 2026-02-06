@@ -39,59 +39,66 @@ target 'RunnerTests' do
 end
 
 post_install do |installer|
-  # Fix for BoringSSL-GRPC -G flag issue (Xcode 16+ / Apple Silicon)
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
     target.build_configurations.each do |config|
-      # iOS deployment target
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-      
-      # Disable bitcode
       config.build_settings['ENABLE_BITCODE'] = 'NO'
-      
-      # Let Codemagic handle code signing identity
-      # config.build_settings['CODE_SIGN_IDENTITY'] is managed by xcode-project use-profiles
-      
-      # Suppress warnings
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
-      
-      # Privacy manifest requirements (iOS 17+)
       config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-      
-      # Enable modules
       config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
       
-      # CRITICAL: Remove -G flag from all compiler flags (BoringSSL-GRPC fix for Xcode 16+)
-      xcconfig_path = config.base_configuration_reference&.real_path
-      if xcconfig_path && File.exist?(xcconfig_path)
-        xcconfig = File.read(xcconfig_path)
-        new_xcconfig = xcconfig.gsub(/ -G[^ "]*/, '')
-        if xcconfig != new_xcconfig
-          File.open(xcconfig_path, 'w') { |f| f.write(new_xcconfig) }
-          puts "[Podfile] Removed -G flag from #{File.basename(xcconfig_path)}"
-        end
-      end
-      
-      # Also sanitize build settings directly
+      # Strip -G flags from build settings
       %w[OTHER_CFLAGS OTHER_CPLUSPLUSFLAGS OTHER_LDFLAGS OTHER_SWIFT_FLAGS].each do |key|
         if config.build_settings[key].is_a?(String)
-          config.build_settings[key] = config.build_settings[key].gsub(/ -G[^ "]*/, '')
+          config.build_settings[key] = config.build_settings[key].gsub(/-G[^ "]*/, '')
         elsif config.build_settings[key].is_a?(Array)
-          config.build_settings[key] = config.build_settings[key].reject { |f| f =~ /^-G/ }
+          config.build_settings[key] = config.build_settings[key].reject { |f| f.start_with?('-G') }
+        end
+      end
+    end
+    
+    # CRITICAL FIX: Remove -GCC_WARN_INHIBIT_ALL_WARNINGS from BoringSSL-GRPC
+    # source file compiler flags in build phases (Xcode 16+ compatibility)
+    if target.name == 'BoringSSL-GRPC'
+      target.source_build_phase.files.each do |file|
+        if file.settings && file.settings['COMPILER_FLAGS']
+          flags = file.settings['COMPILER_FLAGS']
+          cleaned = flags.gsub(/-GCC_WARN_INHIBIT_ALL_WARNINGS/, '')
+          cleaned = cleaned.gsub(/-G\b/, '')
+          cleaned = cleaned.strip
+          if cleaned != flags
+            file.settings['COMPILER_FLAGS'] = cleaned
+            puts "[Podfile] Cleaned BoringSSL-GRPC compiler flags: '#{flags}' -> '#{cleaned}'"
+          end
         end
       end
     end
   end
   
-  # Also fix xcconfig files in Pods/Target Support Files
+  # Strip -G flags from all xcconfig files
   Dir.glob(File.join(installer.sandbox.root.to_s, 'Target Support Files', '**', '*.xcconfig')).each do |xcconfig_path|
     xcconfig = File.read(xcconfig_path)
-    new_xcconfig = xcconfig.gsub(/ -G[^ "]*/, '')
+    new_xcconfig = xcconfig.gsub(/-GCC_WARN_INHIBIT_ALL_WARNINGS/, '')
+    new_xcconfig = new_xcconfig.gsub(/ -G\b/, '')
     if xcconfig != new_xcconfig
       File.open(xcconfig_path, 'w') { |f| f.write(new_xcconfig) }
-      puts "[Podfile] Removed -G flag from #{File.basename(xcconfig_path)}"
+      puts "[Podfile] Cleaned #{File.basename(xcconfig_path)}"
+    end
+  end
+  
+  # Also patch the BoringSSL-GRPC podspec directly if it exists
+  boring_podspec = File.join(installer.sandbox.root.to_s, 'BoringSSL-GRPC', 'src', 'include')
+  boring_xcconfig_files = Dir.glob(File.join(installer.sandbox.root.to_s, 'Target Support Files', 'BoringSSL-GRPC', '*.xcconfig'))
+  boring_xcconfig_files.each do |path|
+    content = File.read(path)
+    new_content = content.gsub(/-GCC_WARN_INHIBIT_ALL_WARNINGS/, '')
+    new_content = new_content.gsub(/ -G\b/, '')
+    if content != new_content
+      File.open(path, 'w') { |f| f.write(new_content) }
+      puts "[Podfile] Patched BoringSSL-GRPC xcconfig: #{File.basename(path)}"
     end
   end
 end
