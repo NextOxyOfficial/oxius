@@ -63,11 +63,11 @@ post_install do |installer|
       # Enable modules
       config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
       
-      # CRITICAL: Remove -G flag from all compiler flags (BoringSSL-GRPC fix)
+      # CRITICAL: Remove -G flag from all compiler flags (BoringSSL-GRPC fix for Xcode 16+)
       xcconfig_path = config.base_configuration_reference&.real_path
       if xcconfig_path && File.exist?(xcconfig_path)
         xcconfig = File.read(xcconfig_path)
-        new_xcconfig = xcconfig.gsub(/\s-G\b/, '')
+        new_xcconfig = xcconfig.gsub(/ -G[^ "]*/, '')
         if xcconfig != new_xcconfig
           File.open(xcconfig_path, 'w') { |f| f.write(new_xcconfig) }
           puts "[Podfile] Removed -G flag from #{File.basename(xcconfig_path)}"
@@ -77,9 +77,9 @@ post_install do |installer|
       # Also sanitize build settings directly
       %w[OTHER_CFLAGS OTHER_CPLUSPLUSFLAGS OTHER_LDFLAGS OTHER_SWIFT_FLAGS].each do |key|
         if config.build_settings[key].is_a?(String)
-          config.build_settings[key] = config.build_settings[key].gsub(/\s-G\b/, '')
+          config.build_settings[key] = config.build_settings[key].gsub(/ -G[^ "]*/, '')
         elsif config.build_settings[key].is_a?(Array)
-          config.build_settings[key] = config.build_settings[key].map { |f| f.gsub(/\s-G\b/, '') }
+          config.build_settings[key] = config.build_settings[key].reject { |f| f =~ /^-G/ }
         end
       end
     end
@@ -88,7 +88,7 @@ post_install do |installer|
   # Also fix xcconfig files in Pods/Target Support Files
   Dir.glob(File.join(installer.sandbox.root.to_s, 'Target Support Files', '**', '*.xcconfig')).each do |xcconfig_path|
     xcconfig = File.read(xcconfig_path)
-    new_xcconfig = xcconfig.gsub(/\s-G\b/, '')
+    new_xcconfig = xcconfig.gsub(/ -G[^ "]*/, '')
     if xcconfig != new_xcconfig
       File.open(xcconfig_path, 'w') { |f| f.write(new_xcconfig) }
       puts "[Podfile] Removed -G flag from #{File.basename(xcconfig_path)}"

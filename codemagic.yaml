@@ -37,9 +37,11 @@ workflows:
       - name: Force eliminate -G flags from all configs
         script: |
           cd oxius_native/ios
-          echo "Force sanitizing all xcconfig files..."
-          find . -name "*.xcconfig" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
-          find . -name "*.pbxproj" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
+          echo "Force sanitizing all xcconfig and pbxproj files..."
+          find . -name "*.xcconfig" -exec sed -i '' 's/ -G[^ "]*//g' {} \;
+          find . -name "*.pbxproj" -exec sed -i '' 's/ -G[^ "]*//g' {} \;
+          echo "Verifying no -G flags remain..."
+          grep -r ' -G' Pods/Target\ Support\ Files/ --include='*.xcconfig' || echo "No -G flags found - clean!"
 
       - name: Build iOS (debug, no codesign)
         script: |
@@ -99,9 +101,11 @@ workflows:
       - name: Force eliminate -G flags from all configs
         script: |
           cd oxius_native/ios
-          echo "Force sanitizing all xcconfig files..."
-          find . -name "*.xcconfig" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
-          find . -name "*.pbxproj" -exec sed -i '' 's/ -G[0-9]*//g' {} \;
+          echo "Force sanitizing all xcconfig and pbxproj files..."
+          find . -name "*.xcconfig" -exec sed -i '' 's/ -G[^ "]*//g' {} \;
+          find . -name "*.pbxproj" -exec sed -i '' 's/ -G[^ "]*//g' {} \;
+          echo "Verifying no -G flags remain..."
+          grep -r ' -G' Pods/Target\ Support\ Files/ --include='*.xcconfig' || echo "No -G flags found - clean!"
 
       - name: Build iOS IPA (release)
         script: |
