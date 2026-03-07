@@ -67,7 +67,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - your-email@example.com  # Replace with your email
+          - your-email@example.com  # TODO: Replace with your actual email
         notify:
           success: true
           failure: true
@@ -75,13 +75,13 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        submit_to_app_store: false
+        submit_to_app_store: false  # Change to true for automatic App Store submission
         
-        # Optional: Automatically submit for review
+        # Optional: Automatically submit for review (uncomment when ready)
         # submit_to_app_store: true
         # cancel_previous_submissions: true
-        # release_type: SCHEDULED
-        # earliest_release_date: 2024-01-01T00:00:00+00:00
+        # release_type: MANUAL  # or SCHEDULED for scheduled release
+        # earliest_release_date: 2024-03-15T00:00:00+00:00
 
   ios-testflight:
     name: iOS TestFlight Build
