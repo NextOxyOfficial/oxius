@@ -81,8 +81,80 @@ class AppFonts {
     );
   }
 
+  /// Returns a TextStyle using Inter-like styling.
+  /// Falls back to system font since Inter is not bundled.
+  static TextStyle inter({
+    double? fontSize,
+    FontWeight? fontWeight,
+    FontStyle? fontStyle,
+    Color? color,
+    double? letterSpacing,
+    double? wordSpacing,
+    double? height,
+    TextDecoration? decoration,
+    Color? decorationColor,
+    TextDecorationStyle? decorationStyle,
+    Paint? foreground,
+    Paint? background,
+    List<Shadow>? shadows,
+    TextBaseline? textBaseline,
+  }) {
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      color: color,
+      letterSpacing: letterSpacing,
+      wordSpacing: wordSpacing,
+      height: height,
+      decoration: decoration,
+      decorationColor: decorationColor,
+      decorationStyle: decorationStyle,
+      foreground: foreground,
+      background: background,
+      shadows: shadows,
+      textBaseline: textBaseline,
+    );
+  }
+
+  /// Returns a TextStyle using monospace font.
+  static TextStyle robotoMono({
+    double? fontSize,
+    FontWeight? fontWeight,
+    FontStyle? fontStyle,
+    Color? color,
+    double? letterSpacing,
+    double? wordSpacing,
+    double? height,
+    TextDecoration? decoration,
+    Color? decorationColor,
+    TextDecorationStyle? decorationStyle,
+    Paint? foreground,
+    Paint? background,
+    List<Shadow>? shadows,
+    TextBaseline? textBaseline,
+  }) {
+    return TextStyle(
+      fontFamily: 'monospace',
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      fontStyle: fontStyle,
+      color: color,
+      letterSpacing: letterSpacing,
+      wordSpacing: wordSpacing,
+      height: height,
+      decoration: decoration,
+      decorationColor: decorationColor,
+      decorationStyle: decorationStyle,
+      foreground: foreground,
+      background: background,
+      shadows: shadows,
+      textBaseline: textBaseline,
+    );
+  }
+
   /// Returns a complete TextTheme using Roboto - replacement for
-  /// AppFonts.robotoTextTheme()
+  /// GoogleFonts.robotoTextTheme()
   static TextTheme robotoTextTheme([TextTheme? textTheme]) {
     final base = textTheme ?? const TextTheme();
     return base.apply(fontFamily: 'Roboto');

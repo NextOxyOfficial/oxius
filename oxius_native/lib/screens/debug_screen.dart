@@ -148,7 +148,7 @@ class _DebugScreenState extends State<DebugScreen> {
                   ),
                   child: Text(
                     _apiStatus!,
-                    style: GoogleFonts.robotoMono(fontSize: 12),
+                    style: AppFonts.robotoMono(fontSize: 12),
                   ),
                 ),
               ],
@@ -357,7 +357,7 @@ class _DebugScreenState extends State<DebugScreen> {
                   Flexible(
                     child: Text(
                       value,
-                      style: GoogleFonts.robotoMono(
+                      style: AppFonts.robotoMono(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),

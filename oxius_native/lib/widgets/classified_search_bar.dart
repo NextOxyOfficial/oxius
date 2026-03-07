@@ -396,7 +396,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Categories',
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
                                     color: Colors.grey.shade800,
@@ -424,7 +424,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                 const SizedBox(width: 8),
                                 Text(
                                   'Services',
-                                  style: GoogleFonts.inter(
+                                  style: AppFonts.inter(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
                                     color: Colors.grey.shade800,
@@ -441,7 +441,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                     ),
                                     child: Text(
                                       '${_searchedPosts.length}',
-                                      style: GoogleFonts.inter(
+                                      style: AppFonts.inter(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
                                         color: const Color(0xFF10B981),
@@ -473,7 +473,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                     const SizedBox(width: 10),
                                     Text(
                                       'Loading more...',
-                                      style: GoogleFonts.inter(
+                                      style: AppFonts.inter(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.grey.shade600,
@@ -501,7 +501,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                     const SizedBox(width: 6),
                                     Text(
                                       'All results loaded',
-                                      style: GoogleFonts.inter(
+                                      style: AppFonts.inter(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.grey.shade500,
@@ -533,7 +533,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                   const SizedBox(height: 12),
                                   Text(
                                     'No results found',
-                                    style: GoogleFonts.inter(
+                                    style: AppFonts.inter(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey.shade700,
@@ -542,7 +542,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                   const SizedBox(height: 4),
                                   Text(
                                     'Try different keywords',
-                                    style: GoogleFonts.inter(
+                                    style: AppFonts.inter(
                                       fontSize: 12,
                                       color: Colors.grey.shade500,
                                     ),
@@ -634,7 +634,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
             Expanded(
               child: Text(
                 category.title,
-                style: GoogleFonts.inter(
+                style: AppFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF111827),
@@ -693,7 +693,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                 children: [
                   Text(
                     post['title'] ?? '',
-                    style: GoogleFonts.inter(
+                    style: AppFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF111827),
@@ -705,7 +705,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                     const SizedBox(height: 3),
                     Text(
                       post['category_name'],
-                      style: GoogleFonts.inter(
+                      style: AppFonts.inter(
                         fontSize: 11,
                         color: Colors.grey.shade600,
                       ),
@@ -800,7 +800,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                 focusNode: _focusNode,
                 onChanged: _onChanged,
                 textInputAction: TextInputAction.search,
-                style: GoogleFonts.inter(
+                style: AppFonts.inter(
                   fontSize: isMobile ? 15 : 16,
                   height: 1.4,
                   fontWeight: FontWeight.w500,
@@ -836,7 +836,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                       )
                     : null,
                 hintText: placeholder,
-                hintStyle: GoogleFonts.inter(
+                hintStyle: AppFonts.inter(
                   color: Colors.grey.shade400,
                   fontSize: isMobile ? 15 : 16,
                   fontWeight: FontWeight.w400,
