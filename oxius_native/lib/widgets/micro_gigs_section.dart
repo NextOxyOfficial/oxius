@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
 import '../services/translation_service.dart';
@@ -307,7 +307,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 const SizedBox(width: 8),
                 Text(
                   '${_translationService.t('micro_gigs', fallback: 'Micro Gigs')}',
-                  style: GoogleFonts.poppins(
+                  style: AppFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.grey.shade900,
@@ -322,7 +322,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                   child: Text(
                     _translationService.t('quick_earn', fallback: 'Quick Earn'),
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF10B981),
@@ -392,7 +392,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           children: [
             Text(
               _translationService.t('mobile_recharge', fallback: 'Mobile Recharge'),
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: isMobile ? 16 : 18,
                 fontWeight: FontWeight.w500,
                 color: Colors.grey.shade800,
@@ -524,7 +524,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         ListTile(
           title: Text(
             _translationService.t('all_category', fallback: 'All Categories'),
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -547,7 +547,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               return ListTile(
                 title: Text(
                   category['category'] ?? '',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
@@ -560,7 +560,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                   child: Text(
                     '${category['active']}',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.green.shade700,
@@ -595,7 +595,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             const SizedBox(height: 16),
             Text(
               _translationService.t('no_gigs_available', fallback: 'No gigs available'),
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 16,
                 color: Colors.grey.shade600,
               ),
@@ -620,7 +620,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             children: [
               Text(
                 _translationService.t('available_gigs', fallback: 'Available Gigs'),
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -727,7 +727,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade900,
@@ -747,11 +747,11 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                             const SizedBox(width: 3),
                             Text(
                               '$filledQty/',
-                              style: GoogleFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
+                              style: AppFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
                             ),
                             Text(
                               '$requiredQty',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 12,
                                 color: Colors.green.shade600,
                                 fontWeight: FontWeight.w600,
@@ -766,7 +766,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                             const SizedBox(width: 3),
                             Text(
                               _formatDate(createdAt),
-                              style: GoogleFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
+                              style: AppFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
                             ),
                           ],
                         ),
@@ -776,11 +776,11 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                             children: [
                               Text(
                                 'Posted By: ',
-                                style: GoogleFonts.roboto(fontSize: 14),
+                                style: AppFonts.roboto(fontSize: 14),
                               ),
                               Text(
                                 '${userName.substring(0, userName.length > 6 ? 6 : userName.length)}***',
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 14,
                                   color: Colors.green.shade600,
                                   fontWeight: FontWeight.w600,
@@ -808,7 +808,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                       ),
                       child: Text(
                         '৳$price',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -839,7 +839,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        textStyle: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
+                        textStyle: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                       child: const Text('Earn Now'),
                     ),
@@ -863,7 +863,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                   child: Text(
                     '৳$price',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -893,7 +893,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    textStyle: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
+                    textStyle: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   child: const Text('Earn Now'),
                 ),
@@ -926,7 +926,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           // Page info text at top
           Text(
             'Page $_currentPage of $_totalPages',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: Colors.grey.shade700,
@@ -970,7 +970,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           // Results Info
           Text(
             'Showing ${(_currentPage - 1) * _itemsPerPage + 1}-${(_currentPage * _itemsPerPage).clamp(0, _totalCount)} of $_totalCount gigs',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 12,
               color: Colors.grey.shade600,
             ),
@@ -1014,7 +1014,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               if (isIconLeft) const SizedBox(width: 4),
               Text(
                 label,
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade400,
@@ -1054,7 +1054,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           child: Center(
             child: Text(
               '$page',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive ? Colors.white : Colors.grey.shade700,

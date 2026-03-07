@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/contact_service.dart';
 
 class ContactUsScreen extends StatefulWidget {
@@ -134,7 +134,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         ),
         title: Text(
           'Contact Us',
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.2,
@@ -169,7 +169,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 children: [
                   Text(
                     'Get in Touch',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
@@ -179,7 +179,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   const SizedBox(height: 6),
                   Text(
                     'Have questions? We\'d love to hear from you.',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 13,
                       height: 1.5,
                       color: Colors.grey.shade600,
@@ -238,7 +238,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                   children: [
                     Text(
                       'Send us a Message',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.1,
@@ -250,12 +250,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     // Name
                     TextFormField(
                       controller: _nameController,
-                      style: GoogleFonts.roboto(fontSize: 14),
+                      style: AppFonts.roboto(fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Your Name',
-                        labelStyle: GoogleFonts.roboto(fontSize: 13),
+                        labelStyle: AppFonts.roboto(fontSize: 13),
                         hintText: 'Enter your full name',
-                        hintStyle: GoogleFonts.roboto(fontSize: 13),
+                        hintStyle: AppFonts.roboto(fontSize: 13),
                         prefixIcon: const Icon(Icons.person_outline_rounded, size: 18),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -276,12 +276,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: GoogleFonts.roboto(fontSize: 14),
+                      style: AppFonts.roboto(fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Email Address',
-                        labelStyle: GoogleFonts.roboto(fontSize: 13),
+                        labelStyle: AppFonts.roboto(fontSize: 13),
                         hintText: 'your@email.com',
-                        hintStyle: GoogleFonts.roboto(fontSize: 13),
+                        hintStyle: AppFonts.roboto(fontSize: 13),
                         prefixIcon: const Icon(Icons.email_outlined, size: 18),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -305,12 +305,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      style: GoogleFonts.roboto(fontSize: 14),
+                      style: AppFonts.roboto(fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
-                        labelStyle: GoogleFonts.roboto(fontSize: 13),
+                        labelStyle: AppFonts.roboto(fontSize: 13),
                         hintText: '+880 1234 567890',
-                        hintStyle: GoogleFonts.roboto(fontSize: 13),
+                        hintStyle: AppFonts.roboto(fontSize: 13),
                         prefixIcon: const Icon(Icons.phone_outlined, size: 18),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -330,12 +330,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     // Subject
                     TextFormField(
                       controller: _subjectController,
-                      style: GoogleFonts.roboto(fontSize: 14),
+                      style: AppFonts.roboto(fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Subject',
-                        labelStyle: GoogleFonts.roboto(fontSize: 13),
+                        labelStyle: AppFonts.roboto(fontSize: 13),
                         hintText: 'What is this about?',
-                        hintStyle: GoogleFonts.roboto(fontSize: 13),
+                        hintStyle: AppFonts.roboto(fontSize: 13),
                         prefixIcon: const Icon(Icons.subject_outlined, size: 18),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -356,12 +356,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     TextFormField(
                       controller: _messageController,
                       maxLines: 4,
-                      style: GoogleFonts.roboto(fontSize: 14),
+                      style: AppFonts.roboto(fontSize: 14),
                       decoration: InputDecoration(
                         labelText: 'Message',
-                        labelStyle: GoogleFonts.roboto(fontSize: 13),
+                        labelStyle: AppFonts.roboto(fontSize: 13),
                         hintText: 'Write your message here...',
-                        hintStyle: GoogleFonts.roboto(fontSize: 13),
+                        hintStyle: AppFonts.roboto(fontSize: 13),
                         alignLabelWithHint: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -409,7 +409,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                                   const SizedBox(width: 6),
                                   Text(
                                     'Send Message',
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: -0.1,
@@ -456,7 +456,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                       children: [
                         Text(
                           'Support Hours',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.1,
@@ -466,7 +466,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                         const SizedBox(height: 3),
                         Text(
                           _contactInfo?.supportHours ?? '24/7 Support Available',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 11,
                             height: 1.4,
                             color: Colors.grey.shade700,
@@ -514,7 +514,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           const SizedBox(height: 6),
           Text(
             title,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.1,
@@ -524,7 +524,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           const SizedBox(height: 3),
           Text(
             value,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 10,
               color: Colors.grey.shade700,
             ),

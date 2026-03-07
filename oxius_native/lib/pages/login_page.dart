@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/user_state_service.dart';
 import '../services/fcm_service.dart';
@@ -170,7 +170,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                     children: [
                       Text(
                         'Welcome Back',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.2,
@@ -181,7 +181,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       const SizedBox(height: 4),
                       Text(
                         'Sign in to continue',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           color: Colors.grey.shade600,
                         ),
@@ -207,7 +207,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                               Expanded(
                                 child: Text(
                                   _errorMessage,
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 11,
                                     color: const Color(0xFF991B1B),
                                   ),
@@ -220,7 +220,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       // Email
                       Text(
                         'Email',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.grey.shade700,
@@ -230,10 +230,10 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: GoogleFonts.roboto(fontSize: 13),
+                        style: AppFonts.roboto(fontSize: 13),
                         decoration: InputDecoration(
                           hintText: 'Enter your email',
-                          hintStyle: GoogleFonts.roboto(color: Colors.grey.shade400, fontSize: 13),
+                          hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 13),
                           prefixIcon: Icon(Icons.email_outlined, color: Colors.grey.shade400, size: 18),
                           filled: true,
                           fillColor: Colors.grey.shade50,
@@ -265,7 +265,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       // Password
                       Text(
                         'Password',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: Colors.grey.shade700,
@@ -275,10 +275,10 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
-                        style: GoogleFonts.roboto(fontSize: 13),
+                        style: AppFonts.roboto(fontSize: 13),
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
-                          hintStyle: GoogleFonts.roboto(color: Colors.grey.shade400, fontSize: 13),
+                          hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 13),
                           prefixIcon: Icon(Icons.lock_outline_rounded, color: Colors.grey.shade400, size: 18),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -324,7 +324,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                           ),
                           child: Text(
                             'Forgot password?',
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 12,
                               color: const Color(0xFF10B981),
                               fontWeight: FontWeight.w600,
@@ -357,7 +357,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                                 )
                               : Text(
                                   'Sign In',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0.3,
@@ -376,7 +376,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               'OR',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 11,
                                 color: Colors.grey.shade500,
                                 fontWeight: FontWeight.w500,
@@ -396,7 +396,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                           style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6)),
                           child: RichText(
                             text: TextSpan(
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 color: Colors.grey.shade700,
                                 fontSize: 13,
                               ),
@@ -426,7 +426,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                 children: [
                   Text(
                     '© 2025 AdsyClub. All rights reserved.',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 10,
                       color: Colors.grey.shade600,
                     ),
@@ -447,7 +447,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                         style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2)),
                         child: Text(
                           'Privacy',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 10,
                             color: Colors.grey.shade600,
                             decoration: TextDecoration.underline,
@@ -467,7 +467,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                         style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2)),
                         child: Text(
                           'Terms',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 10,
                             color: Colors.grey.shade600,
                             decoration: TextDecoration.underline,

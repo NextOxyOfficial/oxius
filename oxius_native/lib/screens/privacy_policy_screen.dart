@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -32,7 +32,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                     ),
                     Text(
                       'Privacy Policy',
-                      style: GoogleFonts.poppins(
+                      style: AppFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -99,7 +99,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                             ),
                             child: Text(
                               'Last Updated: May 23, 2025',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 12,
                                 color: Colors.blue.shade700,
                                 fontWeight: FontWeight.w600,
@@ -176,7 +176,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   'Your privacy is important to us. We are committed to protecting your personal information and being transparent about our data practices at Adsy Club.',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 12,
                                     color: Colors.grey.shade700,
                                     height: 1.5,
@@ -208,7 +208,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.poppins(
+            style: AppFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Colors.grey.shade800,
@@ -217,7 +217,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             content,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 14,
               color: Colors.grey.shade600,
               height: 1.6,

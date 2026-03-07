@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../../services/translation_service.dart';
 import '../../services/mobile_recharge_service.dart';
 import '../../screens/mobile_recharge/mobile_recharge_screen.dart';
@@ -114,7 +114,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
                     children: [
                       Text(
                         t('mobile_recharge'),
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF111827),
@@ -138,7 +138,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
                                 const SizedBox(width: 6),
                                 Text(
                                   'Loading operators...',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 10,
                                     color: Colors.grey.shade500,
                                   ),
@@ -148,7 +148,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
                           : _operators.isEmpty
                               ? Text(
                                   'No operators available',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 10,
                                     color: Colors.grey.shade500,
                                   ),
@@ -182,7 +182,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
                                                     return Center(
                                                       child: Text(
                                                         shortName,
-                                                        style: GoogleFonts.roboto(
+                                                        style: AppFonts.roboto(
                                                           fontSize: 9,
                                                           fontWeight: FontWeight.w700,
                                                           color: Colors.white,
@@ -211,7 +211,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
                                             : Center(
                                                 child: Text(
                                                   shortName,
-                                                  style: GoogleFonts.roboto(
+                                                  style: AppFonts.roboto(
                                                     fontSize: 9,
                                                     fontWeight: FontWeight.w700,
                                                     color: Colors.white,

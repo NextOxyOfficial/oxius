@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 
 class TermsAndConditionsScreen extends StatelessWidget {
   const TermsAndConditionsScreen({super.key});
@@ -32,7 +32,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                     ),
                     Text(
                       'Terms & Conditions',
-                      style: GoogleFonts.poppins(
+                      style: AppFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -99,7 +99,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                             ),
                             child: Text(
                               'Last Updated: May 23, 2025',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 12,
                                 color: Colors.green.shade700,
                                 fontWeight: FontWeight.w600,
@@ -176,7 +176,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   'By using Adsy Club, you acknowledge that you have read and understood these terms and conditions.',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 12,
                                     color: Colors.grey.shade700,
                                     height: 1.5,
@@ -208,7 +208,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.poppins(
+            style: AppFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Colors.grey.shade800,
@@ -217,7 +217,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             content,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 14,
               color: Colors.grey.shade600,
               height: 1.6,

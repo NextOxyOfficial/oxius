@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
 
@@ -148,7 +148,7 @@ class _ProductCardState extends State<ProductCard> {
                                 const SizedBox(width: 4),
                                 Text(
                                   '$discount% OFF',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: textSize - 1,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
@@ -177,7 +177,7 @@ class _ProductCardState extends State<ProductCard> {
                                 const SizedBox(width: 4),
                                 Text(
                                   'FREE DELIVERY',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
@@ -245,14 +245,14 @@ class _ProductCardState extends State<ProductCard> {
                               children: [
                                 TextSpan(
                                   text: '৳',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: textSize - 1,
                                     color: Colors.grey.shade500,
                                   ),
                                 ),
                                 TextSpan(
                                   text: _formatPrice(sale ?? regular),
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: priceTextSize,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.grey.shade800,
@@ -268,14 +268,14 @@ class _ProductCardState extends State<ProductCard> {
                                 children: [
                                   TextSpan(
                                     text: '৳',
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: 10,
                                       color: Colors.grey.shade400,
                                     ),
                                   ),
                                   TextSpan(
                                     text: _formatPrice(regular),
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: 12,
                                       color: Colors.grey.shade400,
                                       decoration: TextDecoration.lineThrough,
@@ -295,7 +295,7 @@ class _ProductCardState extends State<ProductCard> {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: textSize,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey.shade800,
@@ -341,7 +341,7 @@ class _ProductCardState extends State<ProductCard> {
                               _getStoreName(p),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.grey.shade600,
@@ -394,7 +394,7 @@ class _ProductCardState extends State<ProductCard> {
                                   Flexible(
                                     child: Text(
                                       'Buy Now',
-                                      style: GoogleFonts.roboto(
+                                      style: AppFonts.roboto(
                                         fontSize: textSize,
                                         fontWeight: FontWeight.w600,
                                       ),

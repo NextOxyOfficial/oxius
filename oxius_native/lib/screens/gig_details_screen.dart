@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
@@ -203,7 +203,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
       appBar: AppBar(
         title: Text(
           'Gig Details',
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontWeight: FontWeight.w600,
             fontSize: 16,
             letterSpacing: -0.2,
@@ -258,7 +258,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
             const SizedBox(height: 24),
             Text(
               'Loading gig details...',
-              style: GoogleFonts.poppins(
+              style: AppFonts.poppins(
                 fontSize: 16,
                 color: Colors.grey.shade700,
                 fontWeight: FontWeight.w500,
@@ -299,7 +299,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               const SizedBox(height: 16),
               Text(
                 'Error',
-                style: GoogleFonts.poppins(
+                style: AppFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: Colors.red.shade700,
@@ -309,7 +309,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   color: Colors.grey.shade600,
                 ),
@@ -401,7 +401,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1F2937),
@@ -436,7 +436,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     const SizedBox(width: 4),
                     Text(
                       'Earn: ',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF6B7280),
@@ -444,7 +444,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     ),
                     Text(
                       '৳$price',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF10B981),
@@ -477,7 +477,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       const SizedBox(width: 4),
                       Text(
                         'Submitted',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Colors.orange.shade700,
@@ -530,7 +530,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               const SizedBox(width: 6),
               Text(
                 'Instructions',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1F2937),
@@ -607,7 +607,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               const SizedBox(width: 6),
               Text(
                 'Reference Media',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1F2937),
@@ -742,7 +742,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   children: [
                     Text(
                       'Action URL',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF92400E),
@@ -751,7 +751,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     const SizedBox(height: 2),
                     Text(
                       actionLink,
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 11,
                         color: const Color(0xFF78350F),
                         fontWeight: FontWeight.w500,
@@ -810,7 +810,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               const SizedBox(width: 6),
               Text(
                 'Upload Your Work',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1F2937),
@@ -826,7 +826,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               // Submit Details
               Text(
                 'Submit Details *',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF374151),
@@ -836,10 +836,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               TextField(
                 controller: _submitDetailsController,
                 maxLines: 4,
-                style: GoogleFonts.roboto(fontSize: 13),
+                style: AppFonts.roboto(fontSize: 13),
                 decoration: InputDecoration(
                   hintText: 'Describe how you completed this task...',
-                  hintStyle: GoogleFonts.roboto(
+                  hintStyle: AppFonts.roboto(
                     color: Colors.grey.shade400,
                     fontSize: 12,
                   ),
@@ -861,7 +861,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   errorText: _showValidationErrors && _submitDetailsController.text.trim().isEmpty
                       ? 'Please enter your work details'
                       : null,
-                  errorStyle: GoogleFonts.roboto(fontSize: 11),
+                  errorStyle: AppFonts.roboto(fontSize: 11),
                 ),
               ),
               const SizedBox(height: 12),
@@ -869,7 +869,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               // Upload Images
               Text(
                 'Upload Proof Images',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF374151),
@@ -953,7 +953,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                           const SizedBox(height: 2),
                           Text(
                             'Add',
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF10B981),
@@ -1002,7 +1002,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                               children: [
                                 Text(
                                   'I accept ',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 11,
                                     color: const Color(0xFF374151),
                                   ),
@@ -1018,7 +1018,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                   },
                                   child: Text(
                                     'Terms & Condition',
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: 11,
                                       color: const Color(0xFF3B82F6),
                                       fontWeight: FontWeight.w600,
@@ -1028,7 +1028,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                 ),
                                 Text(
                                   ', ',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 11,
                                     color: const Color(0xFF374151),
                                   ),
@@ -1044,7 +1044,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                   },
                                   child: Text(
                                     'Privacy Policy',
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: 11,
                                       color: const Color(0xFF3B82F6),
                                       fontWeight: FontWeight.w600,
@@ -1054,7 +1054,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                 ),
                                 Text(
                                   '.',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 11,
                                     color: const Color(0xFF374151),
                                   ),
@@ -1074,7 +1074,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             const SizedBox(width: 3),
                             Text(
                               'Please accept Terms & Conditions',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 10,
                                 color: Colors.red.shade700,
                                 fontWeight: FontWeight.w500,
@@ -1106,7 +1106,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             padding: const EdgeInsets.only(top: 10),
                             child: Text(
                               'I am aware that fake and fraud submission may lead to account ban!',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 11,
                                 color: Colors.red.shade700,
                                 fontWeight: FontWeight.w600,
@@ -1125,7 +1125,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             const SizedBox(width: 3),
                             Text(
                               'Please acknowledge the warning',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 10,
                                 color: Colors.red.shade700,
                                 fontWeight: FontWeight.w500,
@@ -1177,7 +1177,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             const SizedBox(width: 6),
                             Text(
                               _hasSubmitted ? 'Already Submitted' : 'Submit Work',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: -0.1,

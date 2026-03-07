@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
@@ -204,7 +204,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
               children: [
                 Text(
                   _translationService.t('my_services', fallback: 'My Services'),
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: isMobile ? 18 : 20,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF111827),
@@ -216,7 +216,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                 const SizedBox(height: 2),
                 Text(
                   'Browse and post services',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
                     color: Colors.grey.shade600,
@@ -266,7 +266,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                   _isExpanded
                       ? _translationService.t('see_less', fallback: 'See Less')
                       : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF06B6D4),
@@ -319,7 +319,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                   const SizedBox(width: 4),
                   Text(
                     'Post Free Service',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF10B981),
@@ -348,7 +348,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
               const SizedBox(height: 12),
               Text(
                 'Loading services...',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 13,
                   color: Colors.grey.shade600,
                 ),
@@ -443,7 +443,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                             title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF111827),
@@ -454,7 +454,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                           if (price != null && price.isNotEmpty)
                             Text(
                               price,
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFF10B981),
@@ -474,7 +474,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                                   (p['location'] ?? p['area'] ?? p['city'] ?? 'Not specified').toString(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
                                   ),

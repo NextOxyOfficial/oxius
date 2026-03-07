@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -311,7 +311,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                       Expanded(
                         child: Text(
                           'Share Your Referral Link',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF1F2937),
@@ -337,7 +337,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                         Expanded(
                           child: Text(
                             link,
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF111827),
@@ -360,7 +360,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                             icon: const Icon(Icons.copy_rounded, size: 16, color: Colors.white),
                             label: Text(
                               'Copy',
-                              style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                              style: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
                             ),
                           ),
                         ),
@@ -387,13 +387,13 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   Center(
                     child: Text(
                       'Scan to open referral link',
-                      style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+                      style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
                     'Share on Social Media',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1F2937),
@@ -438,7 +438,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               const SizedBox(height: 4),
               Text(
                 label,
-                style: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+                style: AppFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -517,7 +517,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         ),
         title: Text(
           'Refer & Earn',
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.2,
@@ -561,7 +561,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   ),
                   child: Text(
                     'Invite Friends & Earn Together',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -571,7 +571,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 const SizedBox(height: 12),
                 Text(
                   'Earn Up to 20%',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
@@ -581,7 +581,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 ),
                 Text(
                   'Commission',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: Colors.white.withOpacity(0.9),
@@ -590,7 +590,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 const SizedBox(height: 10),
                 Text(
                   'Share your unique link with friends, and earn rewards with different commission rates: 5% on gig completions, 20% on subscriptions and sponsorships!',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 12,
                     height: 1.4,
                     color: Colors.white.withOpacity(0.9),
@@ -612,7 +612,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                         ),
                         child: Text(
                           'Sign Up & Start Earning',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             letterSpacing: -0.1,
@@ -640,7 +640,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               children: [
                 Text(
                   'How It Works',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.2,
@@ -721,7 +721,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               children: [
                 Text(
                   'Your Referral Code',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Colors.grey.shade600,
@@ -737,7 +737,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   ),
                   child: Text(
                     _referralCode ?? 'Loading...',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
@@ -760,7 +760,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                         icon: const Icon(Icons.copy_rounded, size: 16),
                         label: Text(
                           'Copy Link',
-                          style: GoogleFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -776,7 +776,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                         icon: const Icon(Icons.share_rounded, size: 16, color: Color(0xFF10B981)),
                         label: Text(
                           'Share',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF10B981),
@@ -806,7 +806,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 children: [
                   Text(
                     'Your Earnings',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.1,
@@ -850,7 +850,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 children: [
                   Text(
                     'Commission Breakdown',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.1,
@@ -900,7 +900,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   controller: _tabController,
                   labelColor: const Color(0xFF10B981),
                   unselectedLabelColor: Colors.grey.shade600,
-                  labelStyle: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
+                  labelStyle: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
                   indicatorColor: const Color(0xFF10B981),
                   indicatorSize: TabBarIndicatorSize.tab,
                   tabs: [
@@ -944,7 +944,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             child: Center(
               child: Text(
                 '$number',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF10B981),
@@ -959,7 +959,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.1,
@@ -969,7 +969,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 11,
                     color: Colors.grey.shade600,
                   ),
@@ -994,7 +994,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         children: [
           Text(
             value,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.2,
@@ -1004,7 +1004,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           const SizedBox(height: 4),
           Text(
             label,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 10,
               color: Colors.grey.shade600,
             ),
@@ -1027,7 +1027,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         children: [
           Text(
             value,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: color,
@@ -1036,7 +1036,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 10,
               color: Colors.grey.shade700,
             ),
@@ -1074,7 +1074,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1F2937),
@@ -1083,7 +1083,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 const SizedBox(height: 2),
                 Text(
                   '$count transaction(s) • $rate',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 10,
                     color: Colors.grey.shade600,
                   ),
@@ -1094,7 +1094,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           const SizedBox(width: 10),
           Text(
             '৳ ${amount.toStringAsFixed(0)}',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 12,
               fontWeight: FontWeight.w800,
               color: const Color(0xFF10B981),
@@ -1114,7 +1114,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       return Center(
         child: Text(
           _commissionError!,
-          style: GoogleFonts.roboto(fontSize: 12, color: Colors.red),
+          style: AppFonts.roboto(fontSize: 12, color: Colors.red),
         ),
       );
     }
@@ -1128,7 +1128,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             const SizedBox(height: 8),
             Text(
               'No earnings yet',
-              style: GoogleFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
+              style: AppFonts.roboto(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -1164,7 +1164,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   children: [
                     Text(
                       transaction.referredUser?.name ?? 'Unknown User',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF1F2937),
@@ -1172,7 +1172,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                     ),
                     Text(
                       '${transaction.type} (${transaction.commissionRate})',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 10,
                         color: Colors.grey.shade600,
                       ),
@@ -1185,7 +1185,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 children: [
                   Text(
                     '৳ ${transaction.amount.toStringAsFixed(0)}',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF10B981),
@@ -1193,7 +1193,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   ),
                   Text(
                     _formatDate(transaction.date),
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 9,
                       color: Colors.grey.shade500,
                     ),
@@ -1223,7 +1223,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             const SizedBox(height: 8),
             Text(
               'Login to view referrals & bonus',
-              style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+              style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -1244,7 +1244,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             const SizedBox(height: 8),
             Text(
               'No referred users or bonus yet',
-              style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+              style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
             ),
           ],
         ),
@@ -1299,7 +1299,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               Expanded(
                 child: Text(
                   claims.program?.name ?? 'Referral Reward',
-                  style: GoogleFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                  style: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
                 ),
               ),
               if (_eligibleReferrerClaimsCount > 0)
@@ -1315,7 +1315,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                     ),
                     child: _isClaimingReward
                         ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0EA5E9)))
-                        : Text('Claim All ($_eligibleReferrerClaimsCount)', style: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF0EA5E9))),
+                        : Text('Claim All ($_eligibleReferrerClaimsCount)', style: AppFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF0EA5E9))),
                   ),
                 ),
             ],
@@ -1333,12 +1333,12 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(6)),
-                    child: Text('+${referrerClaims.length - 3} more', style: GoogleFonts.roboto(fontSize: 9, color: Colors.white)),
+                    child: Text('+${referrerClaims.length - 3} more', style: AppFonts.roboto(fontSize: 9, color: Colors.white)),
                   ),
               ],
             )
           else
-            Text('Refer friends to earn rewards!', style: GoogleFonts.roboto(fontSize: 10, color: Colors.white.withOpacity(0.9))),
+            Text('Refer friends to earn rewards!', style: AppFonts.roboto(fontSize: 10, color: Colors.white.withOpacity(0.9))),
         ],
       ),
     );
@@ -1366,7 +1366,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             const SizedBox(width: 4),
             Text(
               '৳${claim.rewardAmount.toStringAsFixed(0)}',
-              style: GoogleFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+              style: AppFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
             ),
           ],
         ),
@@ -1382,7 +1382,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           children: [
             Text(
               'Referred Users (${_referredUsers.length})',
-              style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+              style: AppFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
             ),
           ],
         ),
@@ -1422,13 +1422,13 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                     children: [
                       Text(
                         user.displayName,
-                        style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
+                        style: AppFonts.roboto(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         _formatDate(user.joinedDate),
-                        style: GoogleFonts.roboto(fontSize: 9, color: Colors.grey.shade500),
+                        style: AppFonts.roboto(fontSize: 9, color: Colors.grey.shade500),
                       ),
                     ],
                   ),
@@ -1452,7 +1452,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         borderRadius: BorderRadius.circular(14),
       ),
       child: Center(
-        child: Text(initial, style: GoogleFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
+        child: Text(initial, style: AppFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
       ),
     );
   }
@@ -1469,7 +1469,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           ),
           child: Text(
             user.isActive ? 'Active' : 'Inactive',
-            style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w600, color: user.isActive ? Colors.green : Colors.grey),
+            style: AppFonts.roboto(fontSize: 8, fontWeight: FontWeight.w600, color: user.isActive ? Colors.green : Colors.grey),
           ),
         ),
         const SizedBox(width: 6),
@@ -1478,7 +1478,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               ? Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                  child: Text('Claimed', style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.green)),
+                  child: Text('Claimed', style: AppFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.green)),
                 )
               : claim.isEligible
                   ? SizedBox(
@@ -1491,16 +1491,16 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                           elevation: 0,
                         ),
-                        child: Text('৳${claim.rewardAmount.toStringAsFixed(0)}', style: GoogleFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
+                        child: Text('৳${claim.rewardAmount.toStringAsFixed(0)}', style: AppFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
                       ),
                     )
                   : Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: Text('Incompleted', style: GoogleFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.amber.shade700)),
+                      child: Text('Incompleted', style: AppFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.amber.shade700)),
                     )
         else
-          Text('-', style: GoogleFonts.roboto(fontSize: 10, color: Colors.grey.shade400)),
+          Text('-', style: AppFonts.roboto(fontSize: 10, color: Colors.grey.shade400)),
       ],
     );
   }

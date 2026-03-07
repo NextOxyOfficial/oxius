@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../services/translation_service.dart';
 import '../services/classified_category_service.dart';

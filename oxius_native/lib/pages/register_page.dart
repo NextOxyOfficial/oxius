@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/auth_service.dart';
@@ -376,7 +376,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Expanded(
                     child: Text(
                       'Welcome to AdsyClub! 🎉',
-                      style: GoogleFonts.roboto(),
+                      style: AppFonts.roboto(),
                     ),
                   ),
                 ],
@@ -448,9 +448,9 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Icon(Icons.person_add_rounded, size: 32, color: Colors.purple.shade600),
           ),
           const SizedBox(height: 16),
-          Text('Create Account', style: GoogleFonts.roboto(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+          Text('Create Account', style: AppFonts.roboto(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
           const SizedBox(height: 8),
-          Text('Join our community today', style: GoogleFonts.roboto(fontSize: 14, color: Colors.white.withOpacity(0.9))),
+          Text('Join our community today', style: AppFonts.roboto(fontSize: 14, color: Colors.white.withOpacity(0.9))),
         ],
       ),
     );
@@ -477,10 +477,10 @@ class _RegisterPageState extends State<RegisterPage> {
           width: 32,
           height: 32,
           decoration: BoxDecoration(color: isActive ? Colors.white : Colors.white.withOpacity(0.3), shape: BoxShape.circle),
-          child: Center(child: Text('$step', style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600, color: isActive ? Colors.purple.shade600 : Colors.white))),
+          child: Center(child: Text('$step', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600, color: isActive ? Colors.purple.shade600 : Colors.white))),
         ),
         const SizedBox(height: 4),
-        Text(label, style: GoogleFonts.roboto(fontSize: 10, color: Colors.white.withOpacity(0.8))),
+        Text(label, style: AppFonts.roboto(fontSize: 10, color: Colors.white.withOpacity(0.8))),
       ],
     );
   }
@@ -510,7 +510,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 20),
                   const SizedBox(width: 12),
-                  Expanded(child: Text(_errorMessage!, style: GoogleFonts.roboto(color: const Color(0xFF991B1B), fontSize: 13))),
+                  Expanded(child: Text(_errorMessage!, style: AppFonts.roboto(color: const Color(0xFF991B1B), fontSize: 13))),
                 ],
               ),
             ),
@@ -527,9 +527,9 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildStep1() {
     return Column(
       children: [
-        Text('Profile Photo', style: GoogleFonts.roboto(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Profile Photo', style: AppFonts.roboto(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 8),
-        Text('Upload your profile picture (optional)', style: GoogleFonts.roboto(fontSize: 13, color: Colors.grey.shade600)),
+        Text('Upload your profile picture (optional)', style: AppFonts.roboto(fontSize: 13, color: Colors.grey.shade600)),
         const SizedBox(height: 24),
         GestureDetector(
           onTap: _pickImage,
@@ -602,11 +602,11 @@ class _RegisterPageState extends State<RegisterPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextButton(onPressed: _skipStep, child: Text('Skip', style: GoogleFonts.roboto(fontSize: 14, color: Colors.grey.shade600))),
+            TextButton(onPressed: _skipStep, child: Text('Skip', style: AppFonts.roboto(fontSize: 14, color: Colors.grey.shade600))),
             ElevatedButton(
               onPressed: _nextStep,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              child: Row(children: [Text('Continue', style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600)), const SizedBox(width: 8), const Icon(Icons.arrow_forward, size: 18)]),
+              child: Row(children: [Text('Continue', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600)), const SizedBox(width: 8), const Icon(Icons.arrow_forward, size: 18)]),
             ),
           ],
         ),
@@ -618,7 +618,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Personal Information', style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Personal Information', style: AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -647,11 +647,11 @@ class _RegisterPageState extends State<RegisterPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextButton.icon(onPressed: _prevStep, icon: const Icon(Icons.arrow_back, size: 18), label: Text('Back', style: GoogleFonts.roboto(fontSize: 14)), style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700)),
+            TextButton.icon(onPressed: _prevStep, icon: const Icon(Icons.arrow_back, size: 18), label: Text('Back', style: AppFonts.roboto(fontSize: 14)), style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700)),
             ElevatedButton(
               onPressed: _nextStep,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              child: Row(children: [Text('Continue', style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600)), const SizedBox(width: 8), const Icon(Icons.arrow_forward, size: 18)]),
+              child: Row(children: [Text('Continue', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600)), const SizedBox(width: 8), const Icon(Icons.arrow_forward, size: 18)]),
             ),
           ],
         ),
@@ -663,7 +663,7 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Address Information', style: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
+        Text('Address Information', style: AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
         const SizedBox(height: 16),
         _buildDropdown('Region/State', _regions, _selectedRegion, (value) {
           setState(() => _selectedRegion = value);
@@ -686,13 +686,13 @@ class _RegisterPageState extends State<RegisterPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextButton.icon(onPressed: _prevStep, icon: const Icon(Icons.arrow_back, size: 18), label: Text('Back', style: GoogleFonts.roboto(fontSize: 14)), style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700)),
+            TextButton.icon(onPressed: _prevStep, icon: const Icon(Icons.arrow_back, size: 18), label: Text('Back', style: AppFonts.roboto(fontSize: 14)), style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700)),
             ElevatedButton(
               onPressed: _isLoading ? null : _handleSubmit,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), disabledBackgroundColor: Colors.grey.shade300),
               child: _isLoading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                  : Row(children: [const Icon(Icons.check_circle, size: 20), const SizedBox(width: 8), Text('Complete', style: GoogleFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600))]),
+                  : Row(children: [const Icon(Icons.check_circle, size: 20), const SizedBox(width: 8), Text('Complete', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600))]),
             ),
           ],
         ),
@@ -700,7 +700,7 @@ class _RegisterPageState extends State<RegisterPage> {
         Center(
           child: TextButton(
             onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
-            child: Text('Already have an account? Sign In', style: GoogleFonts.roboto(fontSize: 13, color: Colors.purple.shade600, fontWeight: FontWeight.w600)),
+            child: Text('Already have an account? Sign In', style: AppFonts.roboto(fontSize: 13, color: Colors.purple.shade600, fontWeight: FontWeight.w600)),
           ),
         ),
       ],
@@ -716,10 +716,10 @@ class _RegisterPageState extends State<RegisterPage> {
           obscureText: isPassword && !_showPassword,
           keyboardType: keyboardType,
           maxLines: maxLines,
-          style: GoogleFonts.roboto(fontSize: 14),
+          style: AppFonts.roboto(fontSize: 14),
           decoration: InputDecoration(
             hintText: label,
-            hintStyle: GoogleFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
+            hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
             prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
             suffixIcon: isPassword
                 ? IconButton(icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey.shade400, size: 20), onPressed: () => setState(() => _showPassword = !_showPassword))
@@ -733,7 +733,7 @@ class _RegisterPageState extends State<RegisterPage> {
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
-        if (error != null) Padding(padding: const EdgeInsets.only(top: 4, left: 12), child: Text(error, style: GoogleFonts.roboto(fontSize: 12, color: Colors.red.shade600))),
+        if (error != null) Padding(padding: const EdgeInsets.only(top: 4, left: 12), child: Text(error, style: AppFonts.roboto(fontSize: 12, color: Colors.red.shade600))),
       ],
     );
   }
@@ -746,7 +746,7 @@ class _RegisterPageState extends State<RegisterPage> {
           value: _gender.isEmpty ? null : _gender,
           decoration: InputDecoration(
             hintText: 'Gender',
-            hintStyle: GoogleFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
+            hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
             prefixIcon: Icon(Icons.wc_outlined, color: Colors.grey.shade400, size: 20),
             filled: true,
             fillColor: Colors.grey.shade50,
@@ -755,10 +755,10 @@ class _RegisterPageState extends State<RegisterPage> {
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.purple.shade500, width: 2)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
-          items: ['Male', 'Female', 'Others'].map((gender) => DropdownMenuItem(value: gender, child: Text(gender, style: GoogleFonts.roboto(fontSize: 14)))).toList(),
+          items: ['Male', 'Female', 'Others'].map((gender) => DropdownMenuItem(value: gender, child: Text(gender, style: AppFonts.roboto(fontSize: 14)))).toList(),
           onChanged: (value) => setState(() => _gender = value ?? ''),
         ),
-        if (_errors['gender'] != null) Padding(padding: const EdgeInsets.only(top: 4, left: 12), child: Text(_errors['gender']!, style: GoogleFonts.roboto(fontSize: 12, color: Colors.red.shade600))),
+        if (_errors['gender'] != null) Padding(padding: const EdgeInsets.only(top: 4, left: 12), child: Text(_errors['gender']!, style: AppFonts.roboto(fontSize: 12, color: Colors.red.shade600))),
       ],
     );
   }
@@ -768,7 +768,7 @@ class _RegisterPageState extends State<RegisterPage> {
       value: value,
       decoration: InputDecoration(
         hintText: label,
-        hintStyle: GoogleFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
+        hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
         prefixIcon: Icon(Icons.location_on_outlined, color: Colors.grey.shade400, size: 20),
         filled: true,
         fillColor: Colors.grey.shade50,
@@ -777,7 +777,7 @@ class _RegisterPageState extends State<RegisterPage> {
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.purple.shade500, width: 2)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      items: items.map<DropdownMenuItem<String>>((item) => DropdownMenuItem<String>(value: item['name_eng'] as String, child: Text(item['name_eng'] as String, style: GoogleFonts.roboto(fontSize: 14)))).toList(),
+      items: items.map<DropdownMenuItem<String>>((item) => DropdownMenuItem<String>(value: item['name_eng'] as String, child: Text(item['name_eng'] as String, style: AppFonts.roboto(fontSize: 14)))).toList(),
       onChanged: onChanged,
     );
   }

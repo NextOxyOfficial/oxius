@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 
 class FaqScreen extends StatelessWidget {
   const FaqScreen({super.key});
@@ -17,7 +17,7 @@ class FaqScreen extends StatelessWidget {
         ),
         title: Text(
           'Frequently Asked Questions',
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.2,
@@ -31,7 +31,7 @@ class FaqScreen extends StatelessWidget {
         children: [
           Text(
             'Common Questions',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1F2937),
@@ -109,7 +109,7 @@ class FaqScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   'Still have questions?',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1F2937),
@@ -118,7 +118,7 @@ class FaqScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Contact our support team for personalized assistance',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 14,
                     color: Colors.grey.shade600,
                   ),
@@ -139,7 +139,7 @@ class FaqScreen extends StatelessWidget {
                   icon: const Icon(Icons.email_outlined, size: 18),
                   label: Text(
                     'Contact Us',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -168,7 +168,7 @@ class FaqScreen extends StatelessWidget {
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         title: Text(
           question,
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 15,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1F2937),
@@ -177,7 +177,7 @@ class FaqScreen extends StatelessWidget {
         children: [
           Text(
             answer,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 14,
               height: 1.6,
               color: Colors.grey.shade700,

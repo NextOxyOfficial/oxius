@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -17,7 +17,7 @@ class AboutScreen extends StatelessWidget {
         ),
         title: Text(
           'About Us',
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.2,
@@ -39,7 +39,7 @@ class AboutScreen extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) {
                   return Text(
                     'AdsyClub',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF10B981),
@@ -53,7 +53,7 @@ class AboutScreen extends StatelessWidget {
             // About Text
             Text(
               'Welcome to AdsyClub',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1F2937),
@@ -62,7 +62,7 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Social Business Network',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 13,
                 color: const Color(0xFF10B981),
                 fontWeight: FontWeight.w600,
@@ -71,7 +71,7 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               'Adsy Club is a social business network dedicated to connecting individuals and businesses through an innovative platform. Our mission is to create a vibrant ecosystem where you can earn money, build meaningful connections, and find the services you need—all in one place.',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 14,
                 height: 1.6,
                 color: Colors.grey.shade700,
@@ -129,7 +129,7 @@ class AboutScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Our Future',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1F2937),
@@ -138,7 +138,7 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     'As Adsy Club continues to grow, we aim to enhance our services further by incorporating advanced features and technologies. Our future goals include improving user experience through personalized recommendations, expanding our reach across Bangladesh, and continually enhancing the opportunities for our users to connect and prosper.',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 14,
                       height: 1.6,
                       color: Colors.grey.shade700,
@@ -147,7 +147,7 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     'We\'re committed to evolving alongside Bangladesh\'s digital transformation and playing a key role in creating a more connected and prosperous business ecosystem.',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 14,
                       height: 1.6,
                       color: Colors.grey.shade700,
@@ -171,7 +171,7 @@ class AboutScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Contact Us',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1F2937),
@@ -189,7 +189,7 @@ class AboutScreen extends StatelessWidget {
             Center(
               child: Text(
                 'Version 1.0.0',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 12,
                   color: Colors.grey.shade500,
                 ),
@@ -215,7 +215,7 @@ class AboutScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1F2937),
@@ -236,7 +236,7 @@ class AboutScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item,
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 14,
                       color: Colors.grey.shade700,
                     ),
@@ -259,7 +259,7 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             text,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 14,
               color: Colors.grey.shade700,
             ),

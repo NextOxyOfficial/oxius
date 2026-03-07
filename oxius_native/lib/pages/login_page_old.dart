@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 
@@ -142,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                             children: [
                               Text(
                                 _ts.t('welcome_back', fallback: 'Welcome Back'),
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey.shade800,
@@ -151,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                               const SizedBox(height: 8),
                               Text(
                                 _ts.t('login_subtitle', fallback: 'Sign in to your account'),
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 16,
                                   color: Colors.grey.shade600,
                                 ),
@@ -356,7 +356,7 @@ class _LoginPageState extends State<LoginPage> {
                                       const SizedBox(width: 8),
                                       Text(
                                         _ts.t('sign_in', fallback: 'Sign In'),
-                                        style: GoogleFonts.roboto(
+                                        style: AppFonts.roboto(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white,

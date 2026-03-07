@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../screens/settings_screen.dart';
 
@@ -74,7 +74,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     const SizedBox(width: 12),
                     Text(
                       _translationService.t('language', fallback: 'Language'),
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade800,
@@ -90,7 +90,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                 ),
                 title: Text(
                   language['native_name'] ?? language['name'] ?? language['code'],
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: _translationService.currentLanguage == language['code'] 
@@ -148,7 +148,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     const SizedBox(width: 8),
                     Text(
                       _translationService.t('language', fallback: 'Language'),
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey.shade700,
@@ -182,7 +182,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                                 children: [
                                   Text(
                                     _translationService.currentLanguage.toUpperCase(),
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: const Color(0xFF10B981),
@@ -219,7 +219,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: Text(
                 _translationService.t('menu', fallback: 'Menu'),
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.grey.shade800,
@@ -371,7 +371,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                 children: [
                   Text(
                     _translationService.t('follow_us', fallback: 'Follow Us'),
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey.shade600,
@@ -443,7 +443,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
               Expanded(
                 child: Text(
                   title,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: iconColor,
@@ -462,7 +462,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   ),
                   child: Text(
                     badge,
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,

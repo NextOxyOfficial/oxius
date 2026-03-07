@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import 'package:http/http.dart' as http;
@@ -82,7 +82,7 @@ class _DebugScreenState extends State<DebugScreen> {
       appBar: AppBar(
         title: Text(
           'Debug Information',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          style: AppFonts.poppins(fontWeight: FontWeight.w600),
         ),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
@@ -314,7 +314,7 @@ class _DebugScreenState extends State<DebugScreen> {
                 const SizedBox(width: 12),
                 Text(
                   title,
-                  style: GoogleFonts.poppins(
+                  style: AppFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: color,
@@ -345,7 +345,7 @@ class _DebugScreenState extends State<DebugScreen> {
           children: [
             Text(
               label,
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 14,
                 color: Colors.grey.shade700,
               ),

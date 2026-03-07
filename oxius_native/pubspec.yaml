@@ -51,7 +51,6 @@ dependencies:
   # UI and Images
   cached_network_image: ^3.3.0
   shimmer: ^3.0.0
-  google_fonts: 6.2.1
   flutter_svg: ^2.0.9
   image_picker: ^1.0.4
   image_cropper: ^8.0.2

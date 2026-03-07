@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/scroll_direction_service.dart';
 
 class MobileNavigationBar extends StatefulWidget {
@@ -234,7 +234,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                 const SizedBox(height: 4),
                 Text(
                   label,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 10,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isHighlighted

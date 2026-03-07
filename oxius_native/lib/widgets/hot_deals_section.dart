@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
 
 class HotDealsSection extends StatefulWidget {
@@ -131,7 +131,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     const SizedBox(width: 6),
                     Text(
                       'Special Deals',
-                      style: GoogleFonts.poppins(
+                      style: AppFonts.poppins(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -146,7 +146,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                       ),
                       child: Text(
                         'Limited Time',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 9,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -290,7 +290,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                         ),
                         child: Text(
                           badge,
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 8,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -307,7 +307,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
                 child: Text(
                   name,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                     color: Colors.grey.shade800,

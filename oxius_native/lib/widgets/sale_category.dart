@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/sale_service.dart';
 import '../services/category_icon_mapping.dart';
@@ -347,7 +347,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                   children: [
                     Text(
                       _translationService.t('sale_listing', fallback: 'Buy & Sell'),
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: screenWidth * 0.042,
                         fontWeight: FontWeight.w700,
                         color: Colors.grey.shade900,
@@ -358,7 +358,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     SizedBox(height: 2),
                     Text(
                       _translationService.t('buy_and_sell_products', fallback: 'Buy & sell amazing products'),
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: screenWidth * 0.028,
                         color: Colors.grey.shade600,
                       ),
@@ -479,7 +479,7 @@ class _SaleCategoryState extends State<SaleCategory> {
           Flexible(
             child: Text(
               label,
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: fontSize,
                 fontWeight: FontWeight.w500,
                 color: isHighlighted 
@@ -582,7 +582,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     const SizedBox(height: 4),
                     Text(
                       category['name'] ?? category['category'] ?? 'Category',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                         color: isSelected 
@@ -621,7 +621,7 @@ class _SaleCategoryState extends State<SaleCategory> {
             children: [
               Text(
                 getSelectedCategoryName(),
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey.shade800,
@@ -643,7 +643,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                   children: [
                     Text(
                       _translationService.t('view_all', fallback: 'View All'),
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF10B981),
                       ),
@@ -750,7 +750,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                           ),
                           child: Text(
                             _formatPrice(product['price'], product['negotiable'] == true),
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -771,7 +771,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                         // Title
                         Text(
                           product['title'] ?? '',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.grey.shade800,
@@ -795,7 +795,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                             Expanded(
                               child: Text(
                                 _formatLocation(product),
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 10,
                                   color: Colors.grey.shade600,
                                   height: 1.2,
@@ -822,7 +822,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                                 ),
                                 child: Text(
                                   product['condition'] ?? '',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 9,
                                     color: Colors.grey.shade600,
                                     fontWeight: FontWeight.w500,
@@ -832,7 +832,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                             const Spacer(),
                             Text(
                               _relativeDate(product['created_at']),
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 9,
                                 color: Colors.grey.shade500,
                               ),
@@ -905,7 +905,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                     children: [
                       Text(
                         product['title'] ?? '',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -915,7 +915,7 @@ class _SaleCategoryState extends State<SaleCategory> {
                       const Spacer(),
                       Text(
                         _formatPrice(product['price'], product['negotiable'] == true),
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF10B981),
@@ -996,7 +996,7 @@ class _SaleCategoryState extends State<SaleCategory> {
           const SizedBox(height: 16),
           Text(
             _translationService.t('no_listings_found', fallback: 'No listings found'),
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: Colors.grey.shade600,
@@ -1005,7 +1005,7 @@ class _SaleCategoryState extends State<SaleCategory> {
           const SizedBox(height: 8),
           Text(
             _translationService.t('no_items_currently_listed', fallback: 'No items currently listed in this category'),
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 12,
               color: Colors.grey.shade500,
             ),

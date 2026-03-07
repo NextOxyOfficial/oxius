@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'dart:convert';
@@ -507,7 +507,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 Expanded(
                   child: Text(
                     title,
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.2,
@@ -597,7 +597,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           // Title
           Text(
             title,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF1F2937),
@@ -611,7 +611,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             children: [
               Text(
                 '\u09f3${_formatPrice(sale ?? regular)}',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF059669),
@@ -622,7 +622,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 const SizedBox(width: 8),
                 Text(
                   '\u09f3${_formatPrice(regular)}',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     color: const Color(0xFF9CA3AF),
                     decoration: TextDecoration.lineThrough,
@@ -637,7 +637,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   ),
                   child: Text(
                     '-$discount%',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF059669),
@@ -658,7 +658,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   const SizedBox(width: 4),
                   Text(
                     stock > 0 ? 'In Stock' : 'Out of Stock',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: stock > 0 ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
@@ -676,7 +676,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 const SizedBox(width: 4),
                 Text(
                   'Free Delivery',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF6B7280),
@@ -689,7 +689,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             const SizedBox(height: 10),
             Text(
               shortDescription,
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 12,
                 color: const Color(0xFF6B7280),
                 height: 1.5,
@@ -746,7 +746,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                       ),
                       child: Text(
                         '$_quantity',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1F2937),
@@ -786,7 +786,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     ),
                     child: Text(
                       'Buy Now',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -868,7 +868,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                       ),
                       child: Text(
                         '${_selectedImageIndex + 1}/$_imageCount',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
@@ -924,7 +924,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     Flexible(
                       child: Text(
                         storeName,
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1F2937),
@@ -946,7 +946,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 const SizedBox(height: 2),
                 Text(
                   'View store',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 12,
                     color: const Color(0xFF6B7280),
                   ),
@@ -982,7 +982,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               children: [
                 Text(
                   'Visit',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1016,11 +1016,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               unselectedLabelColor: const Color(0xFF9CA3AF),
               indicatorColor: const Color(0xFF059669),
               indicatorWeight: 2,
-              labelStyle: GoogleFonts.roboto(
+              labelStyle: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
-              unselectedLabelStyle: GoogleFonts.roboto(
+              unselectedLabelStyle: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -1058,7 +1058,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         )
                       : Text(
                           'No description available',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 13,
                             color: const Color(0xFF9CA3AF),
                           ),
@@ -1101,7 +1101,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   const SizedBox(width: 8),
                   Text(
                     'Free delivery available',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF10B981),
@@ -1126,14 +1126,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         children: [
           Text(
             label,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 13,
               color: const Color(0xFF6B7280),
             ),
           ),
           Text(
             value,
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF1F2937),
@@ -1158,7 +1158,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           const SizedBox(height: 12),
           Text(
             'No reviews yet',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: const Color(0xFF6B7280),
@@ -1167,7 +1167,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           const SizedBox(height: 4),
           Text(
             'Be the first to review',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 12,
               color: const Color(0xFF9CA3AF),
             ),
@@ -1180,7 +1180,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             ),
             child: Text(
               'Write a review',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -1210,7 +1210,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               const SizedBox(width: 8),
               Text(
                 'Cannot Review',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1219,7 +1219,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           ),
           content: Text(
             'You cannot write a review for your own product.',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 13,
               color: Colors.grey.shade700,
             ),
@@ -1229,7 +1229,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'OK',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   color: const Color(0xFF10B981),
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
@@ -1260,7 +1260,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               Expanded(
                 child: Text(
                   'Write a Review',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1277,7 +1277,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 children: [
                   Text(
                     'Your Rating',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: Colors.grey.shade700,
@@ -1309,7 +1309,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     maxLength: 200,
                     decoration: InputDecoration(
                       labelText: 'Review Title (Optional)',
-                      labelStyle: GoogleFonts.roboto(fontSize: 12),
+                      labelStyle: AppFonts.roboto(fontSize: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
@@ -1317,10 +1317,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         horizontal: 10,
                         vertical: 8,
                       ),
-                      counterStyle: GoogleFonts.roboto(fontSize: 10),
+                      counterStyle: AppFonts.roboto(fontSize: 10),
                       isDense: true,
                     ),
-                    style: GoogleFonts.roboto(fontSize: 13),
+                    style: AppFonts.roboto(fontSize: 13),
                   ),
                   const SizedBox(height: 8),
                   TextField(
@@ -1333,18 +1333,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     },
                     decoration: InputDecoration(
                       labelText: 'Your Review',
-                      labelStyle: GoogleFonts.roboto(fontSize: 12),
+                      labelStyle: AppFonts.roboto(fontSize: 12),
                       hintText: 'Share your experience...',
-                      hintStyle: GoogleFonts.roboto(fontSize: 12),
+                      hintStyle: AppFonts.roboto(fontSize: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
                       contentPadding: const EdgeInsets.all(10),
-                      counterStyle: GoogleFonts.roboto(fontSize: 10),
+                      counterStyle: AppFonts.roboto(fontSize: 10),
                       isDense: true,
                     ),
                     maxLines: 3,
-                    style: GoogleFonts.roboto(fontSize: 13),
+                    style: AppFonts.roboto(fontSize: 13),
                   ),
                 ],
               ),
@@ -1355,7 +1355,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   color: Colors.grey.shade600,
                   fontSize: 13,
                 ),
@@ -1370,7 +1370,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         SnackBar(
                           content: Text(
                             'Thank you for your review!',
-                            style: GoogleFonts.roboto(fontSize: 13),
+                            style: AppFonts.roboto(fontSize: 13),
                           ),
                           backgroundColor: const Color(0xFF10B981),
                         ),
@@ -1388,7 +1388,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               ),
               child: Text(
                 'Submit',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontWeight: FontWeight.w600,
                   fontSize: 13,
                 ),
@@ -1409,7 +1409,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         children: [
           Text(
             'You may also like',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF1F2937),
@@ -1502,7 +1502,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'More from $storeName',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1F2937),
@@ -1534,7 +1534,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         ? Center(
                             child: Text(
                               'No other products',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 13,
                                 color: const Color(0xFF9CA3AF),
                               ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
 
@@ -311,7 +311,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                           Expanded(
                             child: Text(
                               'Recent Posts', // Changed from Recent Ads to Recent Posts
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.grey.shade800,
@@ -406,7 +406,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
             const SizedBox(height: 8),
             Text(
               'Unable to load ads',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 14,
                 color: Colors.grey.shade600,
               ),
@@ -479,7 +479,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                       ),
                       child: Text(
                         '\u09f3${_formatPrice(ad['price'])}',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -500,7 +500,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                     // Title
                     Text(
                       _formatTitle(ad),
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.grey.shade800,
@@ -525,7 +525,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         Expanded(
                           child: Text(
                             _formatLocation(ad),
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 10,
                               color: Colors.grey.shade600,
                               height: 1.2,
@@ -552,7 +552,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         Flexible(
                           child: Text(
                             _formatDate(ad['created_at']?.toString()),
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 10,
                               color: Colors.grey.shade600,
                               height: 1.2,
@@ -589,7 +589,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
               const SizedBox(height: 4),
               Text(
                 'Ad unavailable',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 10,
                   color: Colors.grey.shade500,
                 ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
 
 class HotArrivalsSection extends StatefulWidget {
@@ -145,7 +145,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                 const SizedBox(width: 10),
                 Text(
                   'New & Hot Arrivals',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1F2937),
@@ -183,7 +183,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           else ...[
                             Text(
                               'View All',
-                              style: GoogleFonts.roboto(
+                              style: AppFonts.roboto(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: const Color(0xFF059669),
@@ -347,7 +347,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           ),
                           child: Text(
                             badge.toUpperCase(),
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 8,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
@@ -370,7 +370,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           ),
                           child: Text(
                             '$productCount items',
-                            style: GoogleFonts.roboto(
+                            style: AppFonts.roboto(
                               fontSize: 8,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -389,7 +389,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                   alignment: Alignment.center,
                   child: Text(
                     name,
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF374151),

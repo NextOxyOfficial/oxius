@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
@@ -453,7 +453,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       autofocus: true,
                       decoration: InputDecoration(
                         hintText: 'Search products...',
-                        hintStyle: GoogleFonts.roboto(fontSize: 14, color: Colors.grey.shade500),
+                        hintStyle: AppFonts.roboto(fontSize: 14, color: Colors.grey.shade500),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
                           borderSide: BorderSide.none,
@@ -575,7 +575,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                                       Flexible(
                                         child: Text(
                                           _storeData?['store_name'] ?? widget.storeName ?? 'Store',
-                                          style: GoogleFonts.poppins(
+                                          style: AppFonts.poppins(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.black87,
@@ -592,7 +592,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       _storeData!['store_description'],
-                                      style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+                                      style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -600,7 +600,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       _storeData!['description'],
-                                      style: GoogleFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+                                      style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
                                       maxLines: 3,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -642,7 +642,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                                 const SizedBox(height: 3),
                                 Text(
                                   'Message',
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 9,
                                     color: Colors.grey.shade600,
                                   ),
@@ -668,7 +668,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 children: [
                   Text(
                     'Products',
-                    style: GoogleFonts.poppins(
+                    style: AppFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -683,7 +683,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     ),
                     child: Text(
                       '${_products.length}',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF10B981),
@@ -737,7 +737,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   children: [
                     Icon(Icons.inventory_outlined, size: 64, color: Colors.grey.shade300),
                     const SizedBox(height: 16),
-                    Text('No products available', style: GoogleFonts.roboto(fontSize: 14, color: Colors.grey.shade600)),
+                    Text('No products available', style: AppFonts.roboto(fontSize: 14, color: Colors.grey.shade600)),
                   ],
                 ),
               ),
@@ -787,7 +787,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         const SizedBox(height: 3),
         Text(
           value,
-          style: GoogleFonts.poppins(
+          style: AppFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -795,7 +795,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         ),
         Text(
           label,
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 9,
             color: Colors.grey.shade600,
           ),
@@ -814,7 +814,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
           children: [
             Text(
               value,
-              style: GoogleFonts.poppins(
+              style: AppFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -823,7 +823,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             const SizedBox(width: 3),
             Text(
               subtext,
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 8,
                 color: Colors.grey.shade500,
               ),
@@ -832,7 +832,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         ),
         Text(
           label,
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 9,
             color: Colors.grey.shade600,
           ),
@@ -852,7 +852,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         backgroundColor: Colors.white,
         selectedColor: const Color(0xFF10B981).withOpacity(0.2),
         checkmarkColor: const Color(0xFF10B981),
-        labelStyle: GoogleFonts.roboto(
+        labelStyle: AppFonts.roboto(
           fontSize: 13,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
           color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade700,

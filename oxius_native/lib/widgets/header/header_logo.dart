@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../config/app_config.dart';
@@ -115,7 +115,7 @@ class _HeaderLogoState extends State<HeaderLogo> {
         fit: BoxFit.scaleDown,
         child: Text(
           text,
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 12,
             fontWeight: FontWeight.bold,
             color: Colors.white,

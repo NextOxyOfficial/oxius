@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'dart:async';
 
 class SearchWidget extends StatefulWidget {
@@ -70,7 +70,7 @@ class _SearchWidgetState extends State<SearchWidget> {
               hintText: _searchFocusNode.hasFocus 
                   ? 'What are you looking for?' 
                   : _placeholders[_currentPlaceholderIndex],
-              hintStyle: GoogleFonts.roboto(
+              hintStyle: AppFonts.roboto(
                 color: Colors.grey.shade600,
                 fontSize: 16,
               ),
@@ -108,7 +108,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                 vertical: 14,
               ),
             ),
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 16,
               color: Colors.black87,
             ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/user_state_service.dart';
 import '../services/order_service.dart';
 import '../models/cart_item.dart';
@@ -329,7 +329,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 children: [
                   Text(
                     'Checkout',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -339,7 +339,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   const SizedBox(height: 4),
                   Text(
                     'Review and complete your order',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 13,
                       color: Colors.white.withOpacity(0.9),
                       fontWeight: FontWeight.w400,
@@ -388,7 +388,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         const SizedBox(width: 6),
         Text(
           label,
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             color: Colors.white,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
             fontSize: 11,
@@ -435,7 +435,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               const SizedBox(width: 8),
               Text(
                 'Order Items',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1F2937),
@@ -450,7 +450,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 ),
                 child: Text(
                   '${widget.cartItems.length} ${widget.cartItems.length == 1 ? 'item' : 'items'}',
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF3B82F6),
@@ -511,7 +511,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               children: [
                 Text(
                   product.name,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                     color: const Color(0xFF1F2937),
@@ -524,7 +524,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   children: [
                     Text(
                       '৳',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         color: const Color(0xFF3B82F6),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -532,7 +532,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     ),
                     Text(
                       '${price.toStringAsFixed(0)}',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         color: const Color(0xFF3B82F6),
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
@@ -542,7 +542,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       const SizedBox(width: 6),
                       Text(
                         '৳${product.regularPrice.toStringAsFixed(0)}',
-                        style: GoogleFonts.roboto(
+                        style: AppFonts.roboto(
                           fontSize: 12,
                           color: const Color(0xFF9CA3AF),
                           decoration: TextDecoration.lineThrough,
@@ -582,7 +582,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                         ),
                         child: Text(
                           '${item.quantity}',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                             color: const Color(0xFF1F2937),
@@ -639,7 +639,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               const SizedBox(width: 8),
               Text(
                 'Delivery Information',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1F2937),
@@ -650,10 +650,10 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           const SizedBox(height: 12),
           TextFormField(
             controller: _nameController,
-            style: GoogleFonts.roboto(fontSize: 14),
+            style: AppFonts.roboto(fontSize: 14),
             decoration: InputDecoration(
               labelText: 'Full Name',
-              labelStyle: GoogleFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
+              labelStyle: AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -680,10 +680,10 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           const SizedBox(height: 10),
           TextFormField(
             controller: _phoneController,
-            style: GoogleFonts.roboto(fontSize: 14),
+            style: AppFonts.roboto(fontSize: 14),
             decoration: InputDecoration(
               labelText: 'Phone Number',
-              labelStyle: GoogleFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
+              labelStyle: AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -714,10 +714,10 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           const SizedBox(height: 10),
           TextFormField(
             controller: _addressController,
-            style: GoogleFonts.roboto(fontSize: 14),
+            style: AppFonts.roboto(fontSize: 14),
             decoration: InputDecoration(
               labelText: 'Delivery Address',
-              labelStyle: GoogleFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
+              labelStyle: AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -777,7 +777,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               const SizedBox(width: 8),
               Text(
                 'Delivery Method',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1F2937),
@@ -859,7 +859,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: isSelected ? const Color(0xFF1F2937) : const Color(0xFF4B5563),
@@ -868,7 +868,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF6B7280),
                       ),
@@ -878,7 +878,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               Text(
                 price,
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F2937),
@@ -919,7 +919,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               const SizedBox(width: 8),
               Text(
                 'Payment Method',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1F2937),
@@ -1000,7 +1000,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: isSelected ? const Color(0xFF1F2937) : const Color(0xFF4B5563),
@@ -1009,7 +1009,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF6B7280),
                       ),
@@ -1047,7 +1047,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               const SizedBox(width: 8),
               Text(
                 'Order Summary',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -1077,7 +1077,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             children: [
               Text(
                 'Total Amount',
-                style: GoogleFonts.roboto(
+                style: AppFonts.roboto(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -1088,7 +1088,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 children: [
                   Text(
                     '৳',
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -1096,7 +1096,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   ),
                   Text(
                     _total.toStringAsFixed(0),
-                    style: GoogleFonts.roboto(
+                    style: AppFonts.roboto(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -1118,7 +1118,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       children: [
         Text(
           label,
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 13,
             color: Colors.white.withOpacity(0.9),
             fontWeight: FontWeight.w400,
@@ -1126,7 +1126,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         ),
         Text(
           value,
-          style: GoogleFonts.roboto(
+          style: AppFonts.roboto(
             fontSize: 14,
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -1175,7 +1175,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     const SizedBox(width: 8),
                     Text(
                       'Complete Order',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.3,
@@ -1412,7 +1412,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     // Title
                     Text(
                       'Order Successful!',
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1F2937),
@@ -1425,7 +1425,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                     Text(
                       'Thank you for your purchase! Your order #$_orderNumber has been successfully placed.',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.roboto(
+                      style: AppFonts.roboto(
                         fontSize: 12,
                         color: const Color(0xFF6B7280),
                         height: 1.4,
@@ -1452,7 +1452,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                             children: [
                               Text(
                                 'Order Total:',
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 12,
                                   color: const Color(0xFF4B5563),
                                   fontWeight: FontWeight.w500,
@@ -1460,7 +1460,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                               ),
                               Text(
                                 '৳${_total.toStringAsFixed(0)}',
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFF1F2937),
@@ -1477,7 +1477,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                             children: [
                               Text(
                                 'Estimated Delivery:',
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 12,
                                   color: const Color(0xFF4B5563),
                                   fontWeight: FontWeight.w500,
@@ -1488,7 +1488,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                                 child: Text(
                                   _estimatedDelivery,
                                   textAlign: TextAlign.right,
-                                  style: GoogleFonts.roboto(
+                                  style: AppFonts.roboto(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: const Color(0xFF1F2937),
@@ -1521,7 +1521,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                         ),
                         child: Text(
                           'Continue Shopping',
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 0.2,

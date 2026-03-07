@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
 import '../screens/eshop_screen.dart';
@@ -240,7 +240,7 @@ class _EshopSectionState extends State<EshopSection> {
                       ).createShader(bounds),
                       child: Text(
                         _translationService.t('eshop', fallback: 'eShop'),
-                        style: GoogleFonts.poppins(
+                        style: AppFonts.poppins(
                           fontSize: isMobile ? 20 : 24,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -317,7 +317,7 @@ class _EshopSectionState extends State<EshopSection> {
                   const SizedBox(width: 8),
                   Text(
                     _translationService.t('browse_eshop', fallback: 'Browse eShop'),
-                    style: GoogleFonts.poppins(
+                    style: AppFonts.poppins(
                       fontSize: isMobile ? 12 : 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -358,7 +358,7 @@ class _EshopSectionState extends State<EshopSection> {
             const SizedBox(height: 16),
             Text(
               _translationService.t('no_products_found', fallback: 'No products found'),
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 16,
                 color: Colors.grey.shade600,
               ),
@@ -644,7 +644,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                               const SizedBox(width: 4),
                               Text(
                                 '$discount% OFF',
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
@@ -673,7 +673,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                               const SizedBox(width: 4),
                               Text(
                                 'FREE DELIVERY',
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
@@ -731,14 +731,14 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                 children: [
                                   TextSpan(
                                     text: '৳',
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: textSize - 1,
                                       color: Colors.grey.shade500,
                                     ),
                                   ),
                                   TextSpan(
                                     text: _formatPrice(sale ?? regular),
-                                    style: GoogleFonts.roboto(
+                                    style: AppFonts.roboto(
                                       fontSize: priceTextSize,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.grey.shade800,
@@ -754,14 +754,14 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                   children: [
                                     TextSpan(
                                       text: '৳',
-                                      style: GoogleFonts.roboto(
+                                      style: AppFonts.roboto(
                                         fontSize: 10,
                                         color: Colors.grey.shade400,
                                       ),
                                     ),
                                     TextSpan(
                                       text: _formatPrice(regular),
-                                      style: GoogleFonts.roboto(
+                                      style: AppFonts.roboto(
                                         fontSize: 12,
                                         color: Colors.grey.shade400,
                                         decoration: TextDecoration.lineThrough,
@@ -781,7 +781,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.roboto(
+                          style: AppFonts.roboto(
                             fontSize: titleTextSize,
                             fontWeight: FontWeight.w500,
                             color: Colors.grey.shade800,
@@ -827,7 +827,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                 _getStoreName(p),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.roboto(
+                                style: AppFonts.roboto(
                                   fontSize: storeTextSize,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.grey.shade600,
@@ -867,7 +867,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                     const SizedBox(width: 8),
                                     Text(
                                       'Processing...',
-                                      style: GoogleFonts.roboto(
+                                      style: AppFonts.roboto(
                                         fontSize: textSize,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -881,7 +881,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                     const SizedBox(width: 8),
                                     Text(
                                       'Buy Now',
-                                      style: GoogleFonts.roboto(
+                                      style: AppFonts.roboto(
                                         fontSize: textSize,
                                         fontWeight: FontWeight.w500,
                                       ),

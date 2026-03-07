@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../screens/eshop_screen.dart';
@@ -211,7 +211,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Earn Money • Connect • Find Services',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 10,
               color: Colors.grey.shade500,
               fontWeight: FontWeight.w500,
@@ -257,7 +257,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
                 ),
                 child: Text(
                   link['title']!,
-                  style: GoogleFonts.roboto(
+                  style: AppFonts.roboto(
                     fontSize: 10,
                     color: const Color(0xFF374151),
                     fontWeight: FontWeight.w500,
@@ -290,7 +290,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
             const SizedBox(width: 4),
             Text(
               'Secure Payments',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 9,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey.shade500,
@@ -347,7 +347,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
       ),
       child: Text(
         text,
-        style: GoogleFonts.roboto(
+        style: AppFonts.roboto(
           fontSize: 9,
           fontWeight: FontWeight.w700,
           color: color,
@@ -367,7 +367,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
               'Terms & Conditions',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 11,
                 color: Colors.grey.shade500,
                 fontWeight: FontWeight.w500,
@@ -383,7 +383,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
               'Privacy Policy',
-              style: GoogleFonts.roboto(
+              style: AppFonts.roboto(
                 fontSize: 11,
                 color: Colors.grey.shade500,
                 fontWeight: FontWeight.w500,
@@ -460,7 +460,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           ),
           child: Text(
             logoData?['text'] ?? 'AdsyClub',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -481,7 +481,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           
           Text(
             'Developed with ❤️ by Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
-            style: GoogleFonts.roboto(
+            style: AppFonts.roboto(
               fontSize: 11,
               color: Colors.grey.shade400,
               fontWeight: FontWeight.w500,
