@@ -1,13 +1,19 @@
 <template>  <Teleport to="body">
     <div
       v-if="activeMedia"
+      ref="modalContainer"
       class="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-start overflow-auto scrollbar-custom"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
-      @click="$emit('close-media')"
+      @scroll="handleScroll"
+      @click="closeModal"
     >      
-    <!-- Fixed header with X button that stays visible while scrolling -->      
-    <div class="sticky top-14 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3">
+    <!-- Fixed header with X button that hides on open and shows on scroll up -->      
+    <div 
+      ref="headerRef"
+      class="fixed top-0 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3 transition-transform duration-300"
+      :class="showHeader ? 'translate-y-0' : '-translate-y-full'"
+    >
         <div class="text-white font-medium flex items-center">
           <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-gray-800/80 rounded-full text-sm">
             {{ activeMediaIndex + 1 }} / {{ activePost.post_media.length }}
@@ -26,7 +32,7 @@
         <!-- X button that's always visible -->
         <button
           class="p-2.5 bg-gray-800/80 hover:bg-gray-700 rounded-full shadow-lg transition-all duration-200 border border-gray-700 scale-in"
-          @click.stop="$emit('close-media')"
+          @click.stop="closeModal"
           aria-label="Close viewer"
         >
           <X class="h-5 w-5 text-white" />
@@ -447,6 +453,13 @@ const showDeleteConfirm = ref(false);
 const activeMenuIndex = ref(null);
 const mediaToDelete = ref(null);
 
+// Header visibility state
+const showHeader = ref(false);
+const headerRef = ref(null);
+const modalContainer = ref(null);
+const lastScrollY = ref(0);
+const scrollDirection = ref('down');
+
 // Computed property to check if current user is the post owner
 const isCurrentUserPostOwner = computed(() => {
   if (!props.user || !props.activePost?.author) {
@@ -465,16 +478,22 @@ const showMediaMenuForItem = (index) => {
   }
 };
 
-// Scroll to the active media when opening the viewer
+// Scroll to the active media when opening the viewer and reset header state
 watch(() => props.activeMedia, (newVal) => {
-  if (newVal && props.activePost && props.activePost.post_media.length > 1) {
-    // Use nextTick to ensure DOM is updated
-    nextTick(() => {
-      const element = document.getElementById(`media-item-${props.activeMediaIndex}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    });
+  if (newVal) {
+    // Reset header state when modal opens - start hidden
+    showHeader.value = false;
+    lastScrollY.value = 0;
+    
+    if (props.activePost && props.activePost.post_media.length > 1) {
+      // Use nextTick to ensure DOM is updated
+      nextTick(() => {
+        const element = document.getElementById(`media-item-${props.activeMediaIndex}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
   }
 });
 
@@ -483,8 +502,31 @@ const handleKeyDown = (event) => {
   if (!props.activeMedia) return;
   
   if (event.key === 'Escape') {
-    emit('close-media');
+    closeModal();
   }
+};
+
+// Handle scroll to show/hide header
+const handleScroll = (event) => {
+  const currentScrollY = event.target.scrollTop;
+  
+  // Determine scroll direction
+  if (currentScrollY > lastScrollY.value) {
+    scrollDirection.value = 'down';
+    showHeader.value = false; // Hide header when scrolling down
+  } else if (currentScrollY < lastScrollY.value) {
+    scrollDirection.value = 'up';
+    showHeader.value = true; // Show header when scrolling up
+  }
+  
+  lastScrollY.value = currentScrollY;
+};
+
+// Close modal function
+const closeModal = () => {
+  // Reset header state when closing
+  showHeader.value = false;
+  emit('close-media');
 };
 
 // Register and clean up event listeners
@@ -516,7 +558,7 @@ const handleTouchEnd = (event) => {
   if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 100) {
     // Right swipe to close (mimics common mobile pattern)
     if (diffX > 0) {
-      emit('close-media');
+      closeModal();
     }
   }
 };

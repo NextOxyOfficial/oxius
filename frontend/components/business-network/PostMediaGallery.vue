@@ -28,9 +28,9 @@
           <button
             @click.stop="toggleMute"
             class="absolute bottom-14 right-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20 hover:bg-black/80 transition-all z-10"
-            :title="isMuted ? 'Unmute' : 'Mute'"
+            :title="globalVideoMuted ? 'Unmute' : 'Mute'"
           >
-            <UIcon :name="isMuted ? 'i-heroicons-speaker-x-mark' : 'i-heroicons-speaker-wave'" class="w-4 h-4 text-white" />
+            <UIcon :name="globalVideoMuted ? 'i-heroicons-speaker-x-mark' : 'i-heroicons-speaker-wave'" class="w-4 h-4 text-white" />
           </button>
           <!-- Video badge -->
           <div class="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md flex items-center gap-1.5 z-10">
@@ -271,11 +271,13 @@ defineEmits(["open-media"]);
 const activeIndex = ref(0);
 const videoPlayer = ref(null);
 const videoWrapper = ref(null);
-const isMuted = ref(true);
 const isPlaying = ref(false);
 const showPlayIndicator = ref(false);
 let playIndicatorTimeout = null;
 let observer = null;
+
+// Use global video mute state
+const { globalVideoMuted, toggleGlobalMute } = useGlobalVideoState();
 
 // Check if media is a video
 const isVideo = (media) => {
@@ -322,8 +324,8 @@ const getVideoUrl = (media) => {
 // Toggle mute/unmute without interrupting playback
 const toggleMute = () => {
   if (!videoPlayer.value) return;
-  isMuted.value = !isMuted.value;
-  videoPlayer.value.muted = isMuted.value;
+  const newMutedState = toggleGlobalMute();
+  videoPlayer.value.muted = newMutedState;
 };
 
 // Setup IntersectionObserver for auto-play on scroll
@@ -335,6 +337,8 @@ const setupVideoObserver = () => {
       entries.forEach((entry) => {
         if (!videoPlayer.value) return;
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          // Ensure video respects global mute state when auto-playing
+          videoPlayer.value.muted = globalVideoMuted.value;
           videoPlayer.value.play().then(() => {
             isPlaying.value = true;
           }).catch(() => {});
@@ -535,6 +539,20 @@ watch(
   },
   { deep: true }
 );
+
+// Watch for global mute state changes and sync all videos
+watch(globalVideoMuted, (newMutedState) => {
+  if (videoPlayer.value) {
+    videoPlayer.value.muted = newMutedState;
+  }
+});
+
+// Initialize video with global mute state when video player is ready
+watch(videoPlayer, (newVideoPlayer) => {
+  if (newVideoPlayer) {
+    newVideoPlayer.muted = globalVideoMuted.value;
+  }
+});
 </script>
 
 <style scoped>
