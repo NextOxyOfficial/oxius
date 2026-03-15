@@ -7,27 +7,44 @@
         @touchstart="handleTouchStart"
         @touchend="handleTouchEnd"
       >
-        <!-- Video with thumbnail and play button -->
+        <!-- Inline auto-playing video -->
         <div
           v-if="isVideo(post.post_media[activeIndex])"
-          class="relative w-full h-full flex items-center justify-center cursor-pointer"
-          @click="$emit('open-media', post, post.post_media[activeIndex])"
+          ref="videoWrapper"
+          class="relative w-full h-full flex items-center justify-center bg-black"
         >
-          <img
-            :src="getVideoThumbnail(post.post_media[activeIndex])"
-            alt="Video thumbnail"
-            class="w-auto h-auto max-h-[520px] sm:max-h-[540px] max-w-full object-contain"
+          <video
+            ref="videoPlayer"
+            :src="getVideoUrl(post.post_media[activeIndex])"
+            :poster="getVideoThumbnail(post.post_media[activeIndex])"
+            class="w-full max-h-[520px] sm:max-h-[540px] object-contain cursor-pointer"
+            playsinline
+            loop
+            muted
+            preload="metadata"
+            @click="$emit('open-media', post, post.post_media[activeIndex])"
           />
-          <!-- Play button overlay -->
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-16 h-16 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20">
-              <UIcon name="i-heroicons-play-solid" class="w-8 h-8 text-white ml-1" />
-            </div>
-          </div>
+          <!-- Mute/Unmute button -->
+          <button
+            @click.stop="toggleMute"
+            class="absolute bottom-14 right-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-lg border border-white/20 hover:bg-black/80 transition-all z-10"
+            :title="isMuted ? 'Unmute' : 'Mute'"
+          >
+            <UIcon :name="isMuted ? 'i-heroicons-speaker-x-mark' : 'i-heroicons-speaker-wave'" class="w-4 h-4 text-white" />
+          </button>
           <!-- Video badge -->
-          <div class="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md flex items-center gap-1.5">
+          <div class="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md flex items-center gap-1.5 z-10">
             <UIcon name="i-heroicons-video-camera" class="w-4 h-4 text-white" />
             <span class="text-xs font-medium text-white">Video</span>
+          </div>
+          <!-- Play/Pause indicator (shows briefly on state change) -->
+          <div
+            v-if="showPlayIndicator"
+            class="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+          >
+            <div class="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center animate-ping-once">
+              <UIcon :name="isPlaying ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'" class="w-8 h-8 text-white" :class="!isPlaying && 'ml-1'" />
+            </div>
           </div>
         </div>
 
@@ -239,7 +256,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 
 const props = defineProps({
   post: {
@@ -252,6 +269,13 @@ defineEmits(["open-media"]);
 
 // References and state
 const activeIndex = ref(0);
+const videoPlayer = ref(null);
+const videoWrapper = ref(null);
+const isMuted = ref(true);
+const isPlaying = ref(false);
+const showPlayIndicator = ref(false);
+let playIndicatorTimeout = null;
+let observer = null;
 
 // Check if media is a video
 const isVideo = (media) => {
@@ -283,6 +307,49 @@ const getVideoThumbnail = (media) => {
   // Fallback to a placeholder or empty
   return media.image || '';
 };
+// Get the best video source URL
+const getVideoUrl = (media) => {
+  if (!media) return '';
+  if (media.video) return media.video;
+  if (media.url) return media.url;
+  const img = (media.image || '').toLowerCase();
+  if (img.includes('.mp4') || img.includes('.mov') || img.includes('.webm') || img.includes('.mkv') || img.includes('.avi') || img.includes('.m4v')) {
+    return media.image;
+  }
+  return media.video || media.url || media.image || '';
+};
+
+// Toggle mute/unmute without interrupting playback
+const toggleMute = () => {
+  if (!videoPlayer.value) return;
+  isMuted.value = !isMuted.value;
+  videoPlayer.value.muted = isMuted.value;
+};
+
+// Setup IntersectionObserver for auto-play on scroll
+const setupVideoObserver = () => {
+  if (!videoWrapper.value) return;
+  
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!videoPlayer.value) return;
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          videoPlayer.value.play().then(() => {
+            isPlaying.value = true;
+          }).catch(() => {});
+        } else {
+          videoPlayer.value.pause();
+          isPlaying.value = false;
+        }
+      });
+    },
+    { threshold: [0.5] }
+  );
+  
+  observer.observe(videoWrapper.value);
+};
+
 const thumbnailsContainer = ref(null);
 const mediaContainer = ref(null);
 const isMobile = ref(false);
@@ -431,6 +498,32 @@ onMounted(() => {
         thumbnailsContainer.value.scrollWidth >
         thumbnailsContainer.value.clientWidth;
     }
+    // Setup video auto-play observer
+    setupVideoObserver();
+  });
+});
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+  if (playIndicatorTimeout) {
+    clearTimeout(playIndicatorTimeout);
+  }
+});
+
+// Watch for active media changes to re-setup observer and pause old video
+watch(activeIndex, () => {
+  if (videoPlayer.value) {
+    videoPlayer.value.pause();
+    isPlaying.value = false;
+  }
+  if (observer) {
+    observer.disconnect();
+  }
+  nextTick(() => {
+    setupVideoObserver();
   });
 });
 
@@ -553,5 +646,16 @@ watch(
 
 .animate-fade-out {
   animation: fadeOut 2s ease-out forwards;
+}
+
+/* Play/Pause indicator animation */
+@keyframes pingOnce {
+  0% { opacity: 1; transform: scale(1); }
+  70% { opacity: 0.6; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.2); }
+}
+
+.animate-ping-once {
+  animation: pingOnce 0.6s ease-out forwards;
 }
 </style>
