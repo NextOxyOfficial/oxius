@@ -177,30 +177,30 @@ class BusinessNetworkMedia(models.Model):
                 with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
                     tmp_path = tmp.name
 
-                for ss_time in ["0", "00:00:00.500"]:
-                    result = subprocess.run(
-                        [
-                            ffmpeg_bin, "-y",
-                            "-i", video_path,
-                            "-ss", ss_time,
-                            "-vframes", "1",
-                            "-q:v", "2",
-                            tmp_path,
-                        ],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        timeout=30,
-                    )
+                result = subprocess.run(
+                    [
+                        ffmpeg_bin,
+                        "-i", video_path,
+                        "-vf", "select=eq(n\\,0)",
+                        "-vframes", "1",
+                        "-f", "image2",
+                        "-y",
+                        tmp_path,
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=30,
+                )
 
-                    if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
-                        with open(tmp_path, "rb") as f:
-                            thumb_data = f.read()
-                        os.unlink(tmp_path)
+                if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
+                    with open(tmp_path, "rb") as f:
+                        thumb_data = f.read()
+                    os.unlink(tmp_path)
 
-                        thumb_file = ContentFile(thumb_data)
-                        thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
-                        self.thumbnail.save(thumb_file.name, thumb_file, save=True)
-                        return
+                    thumb_file = ContentFile(thumb_data)
+                    thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+                    self.thumbnail.save(thumb_file.name, thumb_file, save=True)
+                    return
 
                 if os.path.exists(tmp_path):
                     os.unlink(tmp_path)

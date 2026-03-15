@@ -3,8 +3,8 @@
     <!-- Mobile: Show app icon only -->
     <div class="md:hidden flex items-center">
       <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
-        <NuxtImg 
-          src="/favicon.png" 
+        <img 
+          src="/static/frontend/favicon.png" 
           alt="AdsyClub" 
           class="w-6 h-6"
           loading="eager"
