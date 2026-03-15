@@ -2,12 +2,12 @@
     <!-- VIDEO FULLSCREEN MODE -->
     <div
       v-if="activeMedia && isVideoMedia"
-      class="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+      class="fixed inset-0 z-[999999999] bg-black flex items-center justify-center"
       @click="closeModal"
     >
       <!-- Close button - always visible on top -->
       <button
-        class="fixed top-4 right-4 z-[10001] p-2.5 bg-black/60 hover:bg-black/80 rounded-full shadow-lg transition-all duration-200 border border-white/20 scale-in"
+        class="fixed top-4 right-4 z-[9999999999] p-2.5 bg-black/60 hover:bg-black/80 rounded-full shadow-lg transition-all duration-200 border border-white/20 scale-in"
         @click.stop="closeModal"
         aria-label="Close viewer"
       >
@@ -30,7 +30,7 @@
     <div
       v-else-if="activeMedia"
       ref="modalContainer"
-      class="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-start overflow-auto scrollbar-custom"
+      class="fixed inset-0 z-[999999999] bg-black/95 flex flex-col items-center justify-start overflow-auto scrollbar-custom"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
       @click="closeModal"
