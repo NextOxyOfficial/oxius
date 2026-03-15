@@ -507,15 +507,45 @@ const showMediaMenuForItem = (index) => {
   }
 };
 
-// Scroll to the active media when opening the viewer
-watch(() => props.activeMedia, (newVal) => {
-  if (newVal && !isVideoMedia.value && props.activePost && props.activePost.post_media.length > 1) {
-    nextTick(() => {
-      const element = document.getElementById(`media-item-${props.activeMediaIndex}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+// Store paused videos to resume later
+const pausedVideos = ref([]);
+
+// Lock body scroll and pause background videos when modal opens
+watch(() => props.activeMedia, (newVal, oldVal) => {
+  if (newVal) {
+    // Lock body scroll
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.top = `-${window.scrollY}px`;
+    
+    // Pause all background videos
+    const allVideos = document.querySelectorAll('video');
+    pausedVideos.value = [];
+    allVideos.forEach(video => {
+      if (!video.paused) {
+        video.pause();
+        pausedVideos.value.push(video);
       }
     });
+    
+    // Scroll to active media for multi-photo posts (non-video)
+    if (!isVideoMedia.value && props.activePost && props.activePost.post_media.length > 1) {
+      nextTick(() => {
+        const element = document.getElementById(`media-item-${props.activeMediaIndex}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+  } else if (oldVal && !newVal) {
+    // Unlock body scroll when modal closes
+    const scrollY = document.body.style.top;
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.top = '';
+    window.scrollTo(0, parseInt(scrollY || '0') * -1);
   }
 });
 
@@ -530,6 +560,14 @@ const handleKeyDown = (event) => {
 
 // Close modal function
 const closeModal = () => {
+  // Unlock body scroll
+  const scrollY = document.body.style.top;
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.top = '';
+  window.scrollTo(0, parseInt(scrollY || '0') * -1);
+  
   emit('close-media');
 };
 
