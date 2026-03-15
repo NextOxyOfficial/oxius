@@ -167,38 +167,45 @@ class BusinessNetworkMedia(models.Model):
 
                 ffmpeg_bin = shutil.which("ffmpeg")
                 if not ffmpeg_bin:
-                    raise Exception("ffmpeg not found on PATH")
+                    for p in ["/snap/bin/ffmpeg", "/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg"]:
+                        if os.path.isfile(p):
+                            ffmpeg_bin = p
+                            break
+                if not ffmpeg_bin:
+                    raise Exception("ffmpeg not found on PATH or known locations")
 
                 with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
                     tmp_path = tmp.name
 
-                subprocess.run(
-                    [
-                        ffmpeg_bin, "-y",
-                        "-i", video_path,
-                        "-ss", "00:00:00.500",
-                        "-vframes", "1",
-                        "-q:v", "2",
-                        tmp_path,
-                    ],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    timeout=30,
-                )
+                for ss_time in ["0", "00:00:00.500"]:
+                    result = subprocess.run(
+                        [
+                            ffmpeg_bin, "-y",
+                            "-i", video_path,
+                            "-ss", ss_time,
+                            "-vframes", "1",
+                            "-q:v", "2",
+                            tmp_path,
+                        ],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        timeout=30,
+                    )
 
-                if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
-                    with open(tmp_path, "rb") as f:
-                        thumb_data = f.read()
-                    os.unlink(tmp_path)
-
-                    thumb_file = ContentFile(thumb_data)
-                    thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
-                    self.thumbnail.save(thumb_file.name, thumb_file, save=True)
-                    return
-                else:
-                    if os.path.exists(tmp_path):
+                    if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
+                        with open(tmp_path, "rb") as f:
+                            thumb_data = f.read()
                         os.unlink(tmp_path)
-                    raise Exception("ffmpeg produced empty output")
+
+                        thumb_file = ContentFile(thumb_data)
+                        thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+                        self.thumbnail.save(thumb_file.name, thumb_file, save=True)
+                        return
+
+                if os.path.exists(tmp_path):
+                    os.unlink(tmp_path)
+                stderr_out = result.stderr.decode("utf-8", errors="replace")[-500:] if result.stderr else "no stderr"
+                raise Exception(f"ffmpeg produced empty output. stderr: {stderr_out}")
             except Exception as e:
                 print(f"ensure_thumbnail ffmpeg failed: {e}")
                 return
