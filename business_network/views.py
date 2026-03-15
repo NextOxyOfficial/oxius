@@ -77,7 +77,9 @@ def base64ToVideoFile(base64_data):
 
 
 def generate_video_thumbnail(video_path):
-    """Generate a thumbnail from the first frame of a video"""
+    """Generate a thumbnail from the first frame of a video.
+    Tries moviepy -> opencv -> ffmpeg (subprocess) in order.
+    """
     import tempfile
     import os
     
@@ -86,55 +88,87 @@ def generate_video_thumbnail(video_path):
         from moviepy.editor import VideoFileClip
         
         clip = VideoFileClip(video_path)
-        # Get frame at 0.5 seconds or first frame
         frame_time = min(0.5, clip.duration / 2) if clip.duration > 0 else 0
         
-        # Create temp file for thumbnail
         with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
             tmp_path = tmp.name
         
         clip.save_frame(tmp_path, t=frame_time)
         clip.close()
         
-        # Read the thumbnail file and create ContentFile
         with open(tmp_path, 'rb') as f:
             thumb_data = f.read()
-        
-        # Clean up temp file
         os.unlink(tmp_path)
         
         thumb_file = ContentFile(thumb_data)
         thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
         return thumb_file
         
-    except ImportError:
-        # moviepy not installed, try opencv
-        try:
-            import cv2
-            
-            cap = cv2.VideoCapture(video_path)
-            # Read first frame
-            ret, frame = cap.read()
-            cap.release()
-            
-            if not ret:
-                return None
-            
-            # Encode frame as JPEG
-            _, buffer = cv2.imencode('.jpg', frame)
-            thumb_data = buffer.tobytes()
-            
+    except Exception as e:
+        print(f"generate_video_thumbnail moviepy failed: {e}")
+
+    try:
+        import cv2
+        
+        cap = cv2.VideoCapture(video_path)
+        ret, frame = cap.read()
+        cap.release()
+        
+        if not ret:
+            raise Exception("cv2 could not read frame")
+        
+        _, buffer = cv2.imencode('.jpg', frame)
+        thumb_data = buffer.tobytes()
+        
+        thumb_file = ContentFile(thumb_data)
+        thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+        return thumb_file
+        
+    except Exception as e:
+        print(f"generate_video_thumbnail opencv failed: {e}")
+
+    try:
+        import subprocess
+        import shutil
+
+        ffmpeg_bin = shutil.which("ffmpeg")
+        if not ffmpeg_bin:
+            raise Exception("ffmpeg not found on PATH")
+
+        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+            tmp_path = tmp.name
+
+        subprocess.run(
+            [
+                ffmpeg_bin, "-y",
+                "-i", video_path,
+                "-ss", "00:00:00.500",
+                "-vframes", "1",
+                "-q:v", "2",
+                tmp_path,
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=30,
+        )
+
+        if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
+            with open(tmp_path, 'rb') as f:
+                thumb_data = f.read()
+            os.unlink(tmp_path)
+
             thumb_file = ContentFile(thumb_data)
             thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
             return thumb_file
-            
-        except ImportError:
-            # Neither moviepy nor opencv available
-            print("Warning: Neither moviepy nor opencv installed. Cannot generate video thumbnails.")
-            return None
+        else:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+            raise Exception("ffmpeg produced empty output")
     except Exception as e:
-        print(f"Error generating video thumbnail: {e}")
-        return None
+        print(f"generate_video_thumbnail ffmpeg failed: {e}")
+
+    print("Warning: All thumbnail generation methods failed for: " + video_path)
+    return None
 
 
 # user search generics view

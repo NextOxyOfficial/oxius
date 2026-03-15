@@ -148,17 +148,59 @@ class BusinessNetworkMedia(models.Model):
                 ret, frame = cap.read()
                 cap.release()
                 if not ret:
-                    return
+                    raise Exception("cv2 could not read frame")
 
                 ok, buffer = cv2.imencode(".jpg", frame)
                 if not ok:
-                    return
+                    raise Exception("cv2 could not encode frame")
 
                 thumb_file = ContentFile(buffer.tobytes())
                 thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
                 self.thumbnail.save(thumb_file.name, thumb_file, save=True)
+                return
             except Exception as e:
                 print(f"ensure_thumbnail opencv failed: {e}")
+
+            try:
+                import subprocess
+                import shutil
+
+                ffmpeg_bin = shutil.which("ffmpeg")
+                if not ffmpeg_bin:
+                    raise Exception("ffmpeg not found on PATH")
+
+                with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                    tmp_path = tmp.name
+
+                subprocess.run(
+                    [
+                        ffmpeg_bin, "-y",
+                        "-i", video_path,
+                        "-ss", "00:00:00.500",
+                        "-vframes", "1",
+                        "-q:v", "2",
+                        tmp_path,
+                    ],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=30,
+                )
+
+                if os.path.exists(tmp_path) and os.path.getsize(tmp_path) > 0:
+                    with open(tmp_path, "rb") as f:
+                        thumb_data = f.read()
+                    os.unlink(tmp_path)
+
+                    thumb_file = ContentFile(thumb_data)
+                    thumb_file.name = f"thumb_{os.path.basename(video_path).rsplit('.', 1)[0]}.jpg"
+                    self.thumbnail.save(thumb_file.name, thumb_file, save=True)
+                    return
+                else:
+                    if os.path.exists(tmp_path):
+                        os.unlink(tmp_path)
+                    raise Exception("ffmpeg produced empty output")
+            except Exception as e:
+                print(f"ensure_thumbnail ffmpeg failed: {e}")
                 return
         except Exception:
             return
