@@ -1,5 +1,7 @@
-// Global video state management for Business Network
-const globalVideoMuted = ref(true); // Start muted by default
+import { ref, readonly } from "vue";
+
+// Global shared state - defined OUTSIDE the composable so it persists across all component instances
+const globalVideoMuted = ref(true);
 
 export const useGlobalVideoState = () => {
   const setGlobalMute = (muted) => {

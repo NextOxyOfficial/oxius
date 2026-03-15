@@ -1,18 +1,43 @@
 <template>  <Teleport to="body">
+    <!-- VIDEO FULLSCREEN MODE -->
     <div
-      v-if="activeMedia"
+      v-if="activeMedia && isVideoMedia"
+      class="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+      @click="closeModal"
+    >
+      <!-- Close button - always visible on top -->
+      <button
+        class="fixed top-4 right-4 z-[10001] p-2.5 bg-black/60 hover:bg-black/80 rounded-full shadow-lg transition-all duration-200 border border-white/20 scale-in"
+        @click.stop="closeModal"
+        aria-label="Close viewer"
+      >
+        <X class="h-5 w-5 text-white" />
+      </button>
+
+      <!-- Fullscreen video -->
+      <div class="w-full h-full flex items-center justify-center" @click.stop>
+        <video
+          :src="activeMedia.url || activeMedia.video || activeMedia.image"
+          controls
+          autoplay
+          playsinline
+          class="w-full h-full object-contain"
+        ></video>
+      </div>
+    </div>
+
+    <!-- IMAGE/PHOTO VIEWER MODE -->
+    <div
+      v-else-if="activeMedia"
       ref="modalContainer"
       class="fixed inset-0 z-[9999] bg-black/95 flex flex-col items-center justify-start overflow-auto scrollbar-custom"
       @touchstart="handleTouchStart"
       @touchend="handleTouchEnd"
-      @scroll="handleScroll"
       @click="closeModal"
     >      
-    <!-- Fixed header with X button that hides on open and shows on scroll up -->      
+    <!-- Fixed header with X button -->      
     <div 
-      ref="headerRef"
-      class="fixed top-0 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3 transition-transform duration-300"
-      :class="showHeader ? 'translate-y-0' : '-translate-y-full'"
+      class="sticky top-0 left-0 w-full z-[10000] bg-gray-900/70 backdrop-blur-md shadow-lg flex justify-between items-center px-4 py-3"
     >
         <div class="text-white font-medium flex items-center">
           <span v-if="activePost && activePost.post_media.length > 1" class="mr-2 px-3 py-1 bg-gray-800/80 rounded-full text-sm">
@@ -29,7 +54,7 @@
           </span>
         </div>
         
-        <!-- X button that's always visible -->
+        <!-- X button -->
         <button
           class="p-2.5 bg-gray-800/80 hover:bg-gray-700 rounded-full shadow-lg transition-all duration-200 border border-gray-700 scale-in"
           @click.stop="closeModal"
@@ -453,12 +478,16 @@ const showDeleteConfirm = ref(false);
 const activeMenuIndex = ref(null);
 const mediaToDelete = ref(null);
 
-// Header visibility state
-const showHeader = ref(false);
-const headerRef = ref(null);
+// Modal refs
 const modalContainer = ref(null);
-const lastScrollY = ref(0);
-const scrollDirection = ref('down');
+
+// Computed: check if active media is a video
+const isVideoMedia = computed(() => {
+  if (!props.activeMedia) return false;
+  if (props.activeMedia.type === 'video') return true;
+  const urls = `${props.activeMedia.video || ''} ${props.activeMedia.url || ''} ${props.activeMedia.image || ''}`.toLowerCase();
+  return urls.includes('.mp4') || urls.includes('.mov') || urls.includes('.webm') || urls.includes('.mkv') || urls.includes('.avi') || urls.includes('.m4v');
+});
 
 // Computed property to check if current user is the post owner
 const isCurrentUserPostOwner = computed(() => {
@@ -478,22 +507,15 @@ const showMediaMenuForItem = (index) => {
   }
 };
 
-// Scroll to the active media when opening the viewer and reset header state
+// Scroll to the active media when opening the viewer
 watch(() => props.activeMedia, (newVal) => {
-  if (newVal) {
-    // Reset header state when modal opens - start hidden
-    showHeader.value = false;
-    lastScrollY.value = 0;
-    
-    if (props.activePost && props.activePost.post_media.length > 1) {
-      // Use nextTick to ensure DOM is updated
-      nextTick(() => {
-        const element = document.getElementById(`media-item-${props.activeMediaIndex}`);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    }
+  if (newVal && !isVideoMedia.value && props.activePost && props.activePost.post_media.length > 1) {
+    nextTick(() => {
+      const element = document.getElementById(`media-item-${props.activeMediaIndex}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 });
 
@@ -506,26 +528,8 @@ const handleKeyDown = (event) => {
   }
 };
 
-// Handle scroll to show/hide header
-const handleScroll = (event) => {
-  const currentScrollY = event.target.scrollTop;
-  
-  // Determine scroll direction
-  if (currentScrollY > lastScrollY.value) {
-    scrollDirection.value = 'down';
-    showHeader.value = false; // Hide header when scrolling down
-  } else if (currentScrollY < lastScrollY.value) {
-    scrollDirection.value = 'up';
-    showHeader.value = true; // Show header when scrolling up
-  }
-  
-  lastScrollY.value = currentScrollY;
-};
-
 // Close modal function
 const closeModal = () => {
-  // Reset header state when closing
-  showHeader.value = false;
   emit('close-media');
 };
 
