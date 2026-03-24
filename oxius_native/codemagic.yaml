@@ -55,8 +55,8 @@ workflows:
       - name: Build iOS IPA
         script: |
           flutter build ipa --release \
-            --build-name=8.0.8 \
-            --build-number=$((${PROJECT_BUILD_NUMBER:-39})) \
+            --build-name=8.0.9 \
+            --build-number=$((${PROJECT_BUILD_NUMBER:-41})) \
             --export-options-plist=/Users/builder/export_options.plist
     
     artifacts:
@@ -75,7 +75,7 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        submit_to_app_store: false  # Change to true for automatic App Store submission
+        submit_to_app_store: true  # Change to true for automatic App Store submission
         
         # Optional: Automatically submit for review (uncomment when ready)
         # submit_to_app_store: true
