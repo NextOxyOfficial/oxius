@@ -67,7 +67,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - your-email@example.com  # TODO: Replace with your actual email
+          - support@adsyclub.com  # TODO: Replace with your actual email
         notify:
           success: true
           failure: true
@@ -152,7 +152,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - your-email@example.com
+          - suppoert@adsyclub.com
         notify:
           success: true
           failure: true
@@ -216,7 +216,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - your-email@example.com
+          - suppoert@adsyclub.com
         notify:
           success: false
           failure: true
