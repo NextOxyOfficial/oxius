@@ -350,7 +350,7 @@
         <div class="flex justify-center mt-8 mb-4">
           <UPagination
             v-model="currentPage"
-            :page-count="totalPages"
+            :page-count="itemsPerPage"
             :total="services.length"
             :ui="{
               wrapper: 'flex items-center gap-1',

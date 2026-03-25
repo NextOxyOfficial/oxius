@@ -15,15 +15,12 @@
             <Loader2
               class="h-5 w-5 text-rose-400 dark:text-rose-300 animate-spin"
             />
-          </div>          <!-- Heart icon with modern styling -->
-          <div v-else class="relative">            <UIcon
-              :name="post.post_likes?.find((like) => like && (like.user === user?.user?.id || like.user === String(user?.user?.id) || like.user === Number(user?.user?.id))) ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
-              :class="[
-                'size-6 transition-colors',
-                post.post_likes?.find((like) => like && (like.user === user?.user?.id || like.user === String(user?.user?.id) || like.user === Number(user?.user?.id)))
-                  ? 'text-rose-500 dark:text-rose-400'
-                  : 'text-gray-600 dark:text-gray-600 group-hover:text-rose-500 dark:group-hover:text-rose-400',
-              ]"
+          </div>          <!-- Like icon matching Flutter app -->
+          <div v-else class="relative">
+            <img
+              :src="isLiked ? '/icons/bn/like.png' : '/icons/bn/unlike.png'"
+              class="w-6 h-6 transition-transform group-hover:scale-110"
+              alt="Like"
             />
           </div>
         </button>
@@ -43,9 +40,10 @@
           @click="$emit('open-comments-modal', post)"
           title="Comment"
         ><div class="relative">
-            <UIcon
-              name="i-heroicons-chat-bubble-oval-left"
-              class="size-6 text-gray-600 dark:text-gray-600 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+            <img
+              src="/icons/bn/comments.png"
+              class="w-6 h-6 transition-transform group-hover:scale-110"
+              alt="Comment"
             />
           </div>
         </button>
@@ -65,9 +63,10 @@
           title="Share"
         >
           <div class="relative">
-            <UIcon
-              name="ion-paper-plane-outline"
-              class="size-5 text-gray-600 dark:text-gray-600 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors"
+            <img
+              src="/icons/bn/share.png"
+              class="w-5 h-5 transition-transform group-hover:scale-110"
+              alt="Share"
             />
           </div>
         </button>
@@ -79,18 +78,10 @@
       @click="$emit('toggle-save', post)"
       title="Save"
     ><div class="relative">
-
-        <UIcon
-          :name="(post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id)) ? 'i-heroicons-bookmark-solid' : 'i-heroicons-bookmark'"
-          :class="[
-            'h-5 w-5 transition-colors',
-            post.isSaved ||
-            savedPosts.some(
-              (i) => i.post === post.id && i.user === user?.user?.id
-            )
-              ? 'text-indigo-600 dark:text-indigo-400'
-              : 'text-gray-600 dark:text-gray-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400',
-          ]"
+        <img
+          :src="(post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id)) ? '/icons/bn/saved.png' : '/icons/bn/save.png'"
+          class="w-5 h-5 transition-transform group-hover:scale-110"
+          alt="Save"
         />
       </div>
     </button>
@@ -123,6 +114,10 @@ defineEmits([
 const { user } = useAuth();
 const { get } = useApi();
 const savedPosts = ref([]);
+
+const isLiked = computed(() => {
+  return post.post_likes?.find((like) => like && (like.user === user.value?.user?.id || like.user === String(user.value?.user?.id) || like.user === Number(user.value?.user?.id)));
+});
 
 /**
  * Format large numbers to compact format (1k, 1.1k, etc.)

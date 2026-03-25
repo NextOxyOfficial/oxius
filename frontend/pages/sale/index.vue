@@ -46,7 +46,7 @@
                     <span class="text-emerald-600 font-bold">{{
                       selectedCategory
                         ? getCateogryPostCount(selectedCategory)
-                        : totalListings
+                        : (totalListingsCount || totalListings)
                     }}</span>
                     ads
                     <span v-if="selectedCategory" class="text-gray-500">
@@ -1179,7 +1179,16 @@ async function loadCategoryPosts() {
     params.append("page_size", "24");
     params.append("sort", "-created_at");
 
-    const response = await get(API_ENDPOINTS.POSTS);
+    // Apply location filtering (same logic as loadPosts)
+    const userLocation = location.value;
+    if (userLocation && !userLocation.allOverBangladesh) {
+      if (userLocation.state) params.append("division", userLocation.state);
+      if (userLocation.city) params.append("district", userLocation.city);
+      if (userLocation.upazila) params.append("area", userLocation.upazila);
+    }
+
+    const apiUrl = `${API_ENDPOINTS.POSTS}?${params.toString()}`;
+    const response = await get(apiUrl);
 
     if (response && response.data) {
       if (response.data.results) {
@@ -1211,10 +1220,19 @@ async function loadRecentListings() {
   try {
     const params = new URLSearchParams();
     params.append("page", "1");
-    params.append("page_size", "5"); // Limit to 5 items for single row display
+    params.append("page_size", "6"); // Limit to 6 items for horizontal scroll
     params.append("sort", "-created_at"); // Always sort by newest
 
-    const response = await get(API_ENDPOINTS.POSTS);
+    // Apply location filtering (same logic as loadPosts)
+    const userLocation = location.value;
+    if (userLocation && !userLocation.allOverBangladesh) {
+      if (userLocation.state) params.append("division", userLocation.state);
+      if (userLocation.city) params.append("district", userLocation.city);
+      if (userLocation.upazila) params.append("area", userLocation.upazila);
+    }
+
+    const apiUrl = `${API_ENDPOINTS.POSTS}?${params.toString()}`;
+    const response = await get(apiUrl);
 
     if (response && response.data) {
       if (response.data.results) {
