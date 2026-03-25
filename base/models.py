@@ -1465,3 +1465,25 @@ class FCMToken(models.Model):
 
     def __str__(self):
         return f'{self.user.email} - {self.device_type}'
+
+
+class EmailSettings(models.Model):
+    """Store email configuration settings"""
+    email_host = models.CharField(max_length=255, default='smtp.gmail.com')
+    email_port = models.IntegerField(default=587)
+    email_use_tls = models.BooleanField(default=True)
+    email_host_user = models.EmailField(blank=True, default='')
+    email_host_password = models.CharField(max_length=255, blank=True, default='')
+    from_email = models.EmailField(blank=True, default='')
+    admin_email = models.EmailField(blank=True, default='')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Email Settings'
+        verbose_name_plural = 'Email Settings'
+        ordering = ['-updated_at']
+    
+    def __str__(self):
+        return f'Email Settings - {self.email_host}'

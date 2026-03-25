@@ -8,6 +8,8 @@ from django.utils.html import format_html, mark_safe
 from .models import *
 # Import notification admin panel
 from .notification_admin import *
+# Import email settings admin
+from .email_admin import *
 
 
 # Custom Admin Site with Dashboard Stats

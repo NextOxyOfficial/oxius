@@ -95,17 +95,60 @@ def _button(text, url):
 </div>"""
 
 
+def _get_email_settings():
+    """Get email settings from database or fallback to settings.py"""
+    try:
+        from .models import EmailSettings
+        email_settings = EmailSettings.objects.filter(is_active=True).first()
+        if email_settings:
+            return {
+                'host': email_settings.email_host,
+                'port': email_settings.email_port,
+                'use_tls': email_settings.email_use_tls,
+                'host_user': email_settings.email_host_user,
+                'host_password': email_settings.email_host_password,
+                'from_email': email_settings.from_email or f"AdsyClub <{email_settings.email_host_user}>",
+                'admin_email': email_settings.admin_email or email_settings.email_host_user,
+            }
+    except Exception as e:
+        logger.warning(f"Could not load email settings from database: {e}")
+    
+    # Fallback to settings.py
+    return {
+        'host': getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+        'port': getattr(settings, 'EMAIL_PORT', 587),
+        'use_tls': getattr(settings, 'EMAIL_USE_TLS', True),
+        'host_user': getattr(settings, 'EMAIL_HOST_USER', ''),
+        'host_password': getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+        'from_email': getattr(settings, 'DEFAULT_FROM_EMAIL', f"AdsyClub <{getattr(settings, 'EMAIL_HOST_USER', '')}>"),
+        'admin_email': getattr(settings, 'ADMIN_EMAIL', ADMIN_EMAIL),
+    }
+
+
 def _send_email(subject, to_email, text_content, html_content):
     """Send email with HTML and plain text fallback"""
     try:
+        email_settings = _get_email_settings()
+        
+        # Configure email backend dynamically
+        connection = get_connection(
+            host=email_settings['host'],
+            port=email_settings['port'],
+            use_tls=email_settings['use_tls'],
+            username=email_settings['host_user'],
+            password=email_settings['host_password'],
+        )
+        
         msg = EmailMultiAlternatives(
             subject=f"[{SITE_NAME}] {subject}",
             body=text_content,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[to_email] if isinstance(to_email, str) else to_email,
+            from_email=email_settings['from_email'],
+            to=[to_email],
+            connection=connection,
         )
         msg.attach_alternative(html_content, "text/html")
-        msg.send(fail_silently=False)
+        msg.send()
+        
         logger.info(f"Email sent: '{subject}' to {to_email}")
         return True
     except Exception as e:
@@ -490,18 +533,46 @@ def send_mobile_recharge_email(user, amount, phone_number):
     subject = "Mobile Recharge Successful"
 
     body = f"""
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
-<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your mobile recharge has been completed successfully.</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your mobile recharge has been processed successfully!</p>
 
 {_info_table(
-    _info_row("Amount", f"৳{amount}") +
-    _info_row("Phone", phone_number) +
+    _info_row("Recharge Amount", f"৳{amount}") +
+    _info_row("Phone Number", phone_number) +
     _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
 )}
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">Thank you for using AdsyClub mobile recharge service.</p>
 """
 
     html = _base_template(subject, body)
-    return _send_email(subject, user.email, f"Mobile recharge of ৳{amount} to {phone_number} successful.", html)
+    return _send_email(subject, user.email, f"Mobile recharge successful: ৳{amount}", html)
+
+
+def send_test_email(to_email=None):
+    """Send a test email to verify SMTP configuration"""
+    if not to_email:
+        email_settings = _get_email_settings()
+        to_email = email_settings['admin_email']
+    
+    subject = "AdsyClub Email Configuration Test"
+    
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">This is a test email to verify your SMTP configuration is working correctly.</p>
+
+{_info_table(
+    _info_row("Test Time", timezone.now().strftime("%B %d, %Y %I:%M %p")) +
+    _info_row("SMTP Host", _get_email_settings()['host']) +
+    _info_row("SMTP Port", str(_get_email_settings()['port'])) +
+    _info_row("TLS Enabled", "Yes" if _get_email_settings()['use_tls'] else "No")
+)}
+
+<p style="color:#10b981;font-size:15px;line-height:1.6;margin:16px 0;">✅ If you receive this email, your SMTP configuration is working perfectly!</p>
+
+<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:16px 0;">This test was sent from the AdsyClub Email Settings admin panel.</p>
+"""
+
+    html = _base_template(subject, body)
+    return _send_email(subject, to_email, "Test email from AdsyClub", html)
 
 
 # ============================================================
@@ -528,7 +599,8 @@ def notify_admin_new_registration(user):
 """
 
     html = _base_template(subject, body)
-    return _send_email(subject, ADMIN_EMAIL, f"New user registered: {name} ({user.email})", html)
+    email_settings = _get_email_settings()
+    return _send_email(subject, email_settings['admin_email'], f"New user registered: {name} ({user.email})", html)
 
 
 def notify_admin_withdrawal_request(user, amount, payment_method, payment_number):
