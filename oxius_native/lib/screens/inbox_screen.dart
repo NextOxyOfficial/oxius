@@ -1682,7 +1682,7 @@ class _NewChatModalState extends State<_NewChatModal> {
 
   Future<void> _searchPeople(String query) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       final headers = <String, String>{
         'Content-Type': 'application/json',

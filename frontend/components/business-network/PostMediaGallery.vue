@@ -32,11 +32,6 @@
           >
             <UIcon :name="globalVideoMuted ? 'i-heroicons-speaker-x-mark' : 'i-heroicons-speaker-wave'" class="w-4 h-4 text-white" />
           </button>
-          <!-- Video badge -->
-          <div class="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-md flex items-center gap-1.5 z-10">
-            <UIcon name="i-heroicons-video-camera" class="w-4 h-4 text-white" />
-            <span class="text-xs font-medium text-white">Video</span>
-          </div>
           <!-- Play/Pause indicator (shows briefly on state change) -->
           <div
             v-if="showPlayIndicator"

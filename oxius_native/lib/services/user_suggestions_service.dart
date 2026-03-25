@@ -8,7 +8,7 @@ class UserSuggestionsService {
   /// Returns users based on mutual connections, similar interests, location, etc.
   static Future<List<Map<String, dynamic>>> getUserSuggestions() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -40,7 +40,7 @@ class UserSuggestionsService {
   /// Follow a user
   static Future<bool> followUser(String userId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.post(
@@ -61,7 +61,7 @@ class UserSuggestionsService {
   /// Unfollow a user
   static Future<bool> unfollowUser(String userId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.delete(

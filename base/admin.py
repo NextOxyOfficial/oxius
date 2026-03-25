@@ -12,8 +12,8 @@ from .notification_admin import *
 
 # Custom Admin Site with Dashboard Stats
 class CustomAdminSite(AdminSite):
-    site_header = "Oxius Admin"
-    site_title = "Oxius Admin Portal"
+    site_header = "AdsyClub Admin"
+    site_title = "AdsyClub Admin Portal"
     index_title = "Dashboard"
     
     def index(self, request, extra_context=None):
@@ -45,8 +45,16 @@ class Store(User):
         verbose_name_plural = "Stores"
 
 
-admin.site.register(DiamondPackages)
-admin.site.register(ProductSlotPackage)
+@admin.register(DiamondPackages)
+class DiamondPackagesAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+    search_fields = ('id',)
+
+
+@admin.register(ProductSlotPackage)
+class ProductSlotPackageAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+    search_fields = ('id',)
 
 
 @admin.register(EshopBanner)
@@ -766,9 +774,19 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
 
 admin.site.register(ClassifiedCategoryPost, ClassifiedCategoryPostAdmin)
 
-admin.site.register(Logo)
-admin.site.register(EshopLogo)
-admin.site.register(AuthenticationBanner)
+@admin.register(Logo)
+class LogoAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(EshopLogo)
+class EshopLogoAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(AuthenticationBanner)
+class AuthenticationBannerAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
 
 
 class AdminNoticeAdmin(admin.ModelAdmin):
@@ -815,7 +833,9 @@ class AdminNoticeAdmin(admin.ModelAdmin):
 
 admin.site.register(AdminNotice, AdminNoticeAdmin)
 
-admin.site.register(ClassifiedCategoryPostMedia)
+@admin.register(ClassifiedCategoryPostMedia)
+class ClassifiedCategoryPostMediaAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
 
 
 class NidAdmin(admin.ModelAdmin):
@@ -965,8 +985,15 @@ class FaqAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Faq, FaqAdmin)
-admin.site.register(ProductCategory)
-admin.site.register(ProductMedia)
+@admin.register(ProductCategory)
+class ProductCategoryAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+    search_fields = ('title',) if hasattr(ProductCategory, 'title') else ()
+
+
+@admin.register(ProductMedia)
+class ProductMediaAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -1189,7 +1216,9 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Subscription, SubscriptionAdmin)
-admin.site.register(OrderItem)
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
 
 
 class OrderItemInline(admin.TabularInline):
@@ -1351,13 +1380,39 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Order, OrderAdmin)
-admin.site.register(BannerImage)
-admin.site.register(ShopBannerImage)
-admin.site.register(ProductBenefit)
-admin.site.register(ProductFAQ)
-admin.site.register(ProductTrustBadge)
-admin.site.register(BNLogo)
-admin.site.register(NewsLogo)
+@admin.register(BannerImage)
+class BannerImageAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(ShopBannerImage)
+class ShopBannerImageAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(ProductBenefit)
+class ProductBenefitAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(ProductFAQ)
+class ProductFAQAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(ProductTrustBadge)
+class ProductTrustBadgeAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(BNLogo)
+class BNLogoAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
+
+
+@admin.register(NewsLogo)
+class NewsLogoAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'id')
 
 
 class DiamondTransactionAdmin(admin.ModelAdmin):
@@ -1455,8 +1510,8 @@ admin.site.register(SearchHistory, SearchHistoryAdmin)
 
 
 # Configure admin site
-admin.site.site_header = "Oxius Admin"
-admin.site.site_title = "Oxius Admin Portal"
+admin.site.site_header = "AdsyClub Admin"
+admin.site.site_title = "AdsyClub Admin Portal"
 admin.site.index_title = "Dashboard"
 
 # Override the default admin index view to include stats

@@ -87,13 +87,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.adsyclub.com",
 ]
 
-# Additional CORS settings for API access
+# CORS settings for API access
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for API access
-
-# Additional CORS settings for API calls
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CORS_ALLOWED_HEADERS = [
     "accept",
     "accept-encoding",
@@ -117,11 +113,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://www.adsyclub.com",
     "https://www.adsyclub.com",
 ]
-
-# CSRF settings for API compatibility
-CSRF_COOKIE_SECURE = False  # Set to True only with HTTPS in production
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_HTTPONLY = False
 
 # CSRF settings for API compatibility
 CSRF_COOKIE_SECURE = False  # Set to True only with HTTPS in production
@@ -312,6 +303,16 @@ SP_PREFIX = "ADSYCLUB_"
 
 # sms settings
 API_SMS = "SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd"
+
+# Email Configuration (SMTP)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "alimulislam50@gmail.com"
+EMAIL_HOST_PASSWORD = ""  # TODO: Add Gmail App Password here
+DEFAULT_FROM_EMAIL = "AdsyClub <alimulislam50@gmail.com>"
+ADMIN_EMAIL = "alimulislam50@gmail.com"
 
 # TinyMCE Configuration
 TINYMCE_DEFAULT_CONFIG = {

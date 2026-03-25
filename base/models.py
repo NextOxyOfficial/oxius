@@ -177,12 +177,28 @@ class NID(models.Model):
             self.user.kyc = True
             self.user.save()
 
+            # Send KYC approved email
+            try:
+                from .email_service import send_kyc_approved_email
+                if self.user.email:
+                    send_kyc_approved_email(self.user)
+            except Exception as e:
+                print(f"Error sending KYC approved email: {e}")
+
         if self.rejected and not self.completed:
             self.pending = False
             self.completed = True
             self.user.kyc_pending = False
             self.user.kyc = False
             self.user.save()
+
+            # Send KYC rejected email
+            try:
+                from .email_service import send_kyc_rejected_email
+                if self.user.email:
+                    send_kyc_rejected_email(self.user)
+            except Exception as e:
+                print(f"Error sending KYC rejected email: {e}")
 
         super(NID, self).save(*args, **kwargs)
 
@@ -733,6 +749,16 @@ class Balance(models.Model):
             except Exception as e:
                 print(f"Error creating transfer notifications: {str(e)}")
 
+            # Send email notifications for transfer
+            try:
+                from .email_service import send_transfer_sent_email, send_transfer_received_email
+                if self.user.email:
+                    send_transfer_sent_email(self.user, self.to_user, self.payable_amount, str(self.id))
+                if self.to_user.email:
+                    send_transfer_received_email(self.to_user, self.user, self.payable_amount, str(self.id))
+            except Exception as e:
+                print(f"Error sending transfer emails: {str(e)}")
+
         if (
             self.transaction_type == "withdraw"
             and not self.completed
@@ -740,6 +766,15 @@ class Balance(models.Model):
         ):
             self.user.balance -= self.payable_amount
             self.user.save()
+
+            # Send withdrawal request email to user + admin
+            try:
+                from .email_service import send_withdraw_email, notify_admin_withdrawal_request
+                if self.user.email:
+                    send_withdraw_email(self.user, self.payable_amount, str(self.id), getattr(self, 'payment_method', ''), getattr(self, 'card_number', ''))
+                notify_admin_withdrawal_request(self.user, self.payable_amount, getattr(self, 'payment_method', ''), getattr(self, 'card_number', ''))
+            except Exception as e:
+                print(f"Error sending withdraw emails: {str(e)}")
         if self.transaction_type == "withdraw" and self.approved:
             self.completed = True
             self.approved = True
@@ -756,6 +791,14 @@ class Balance(models.Model):
                 )
             except Exception as e:
                 print(f"Error creating withdraw notification: {str(e)}")
+
+            # Send withdrawal approved email
+            try:
+                from .email_service import send_withdraw_approved_email
+                if self.user.email:
+                    send_withdraw_approved_email(self.user, self.payable_amount, str(self.id))
+            except Exception as e:
+                print(f"Error sending withdraw approved email: {str(e)}")
         if self.transaction_type == "withdraw" and self.rejected and not self.completed:
             self.completed = True
             self.user.balance += self.amount
@@ -778,6 +821,14 @@ class Balance(models.Model):
                 )
             except Exception as e:
                 print(f"Error creating deposit notification: {str(e)}")
+
+            # Send deposit email
+            try:
+                from .email_service import send_deposit_email
+                if self.user.email:
+                    send_deposit_email(self.user, self.payable_amount, str(self.id), getattr(self, 'payment_method', ''))
+            except Exception as e:
+                print(f"Error sending deposit email: {str(e)}")
 
         if self.approved and not self.completed:
             self.completed = True

@@ -8,7 +8,7 @@ class MindForceService {
   // Fetch all problems
   static Future<List<MindForceProblem>> getProblems() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       final headers = token != null
           ? {
               'Authorization': 'Bearer $token',
@@ -36,7 +36,7 @@ class MindForceService {
   // Fetch categories
   static Future<List<MindForceCategory>> getCategories() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       final headers = token != null
           ? {
               'Authorization': 'Bearer $token',
@@ -71,7 +71,7 @@ class MindForceService {
     List<String> images = const [],
   }) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return null;
 
       final body = <String, dynamic>{
@@ -125,7 +125,7 @@ class MindForceService {
   // Update problem
   static Future<bool> updateProblem(String problemId, Map<String, dynamic> updates) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.patch(
@@ -147,7 +147,7 @@ class MindForceService {
   // Delete problem
   static Future<bool> deleteProblem(String problemId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.delete(
@@ -168,7 +168,7 @@ class MindForceService {
   // Fetch comments for a problem
   static Future<List<MindForceComment>> getComments(String problemId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       final headers = token != null
           ? {
               'Authorization': 'Bearer $token',
@@ -211,7 +211,7 @@ class MindForceService {
     List<String> images = const [],
   }) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return null;
 
       final response = await http.post(
@@ -241,7 +241,7 @@ class MindForceService {
   // Mark comment as solution
   static Future<bool> markCommentAsSolution(String commentId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.patch(
@@ -265,7 +265,7 @@ class MindForceService {
     required String content,
   }) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return null;
 
       final response = await http.patch(
@@ -291,7 +291,7 @@ class MindForceService {
 
   static Future<bool> deleteComment(String commentId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.delete(

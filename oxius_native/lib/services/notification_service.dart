@@ -7,7 +7,7 @@ import 'auth_service.dart';
 class NotificationService {
   static Future<Map<String, dynamic>> getNotifications({int page = 1}) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) {
         return {'notifications': [], 'hasMore': false, 'unreadCount': 0};
       }
@@ -80,7 +80,7 @@ class NotificationService {
 
   static Future<bool> markAsRead(int notificationId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.put(
@@ -101,7 +101,7 @@ class NotificationService {
 
   static Future<bool> markAllAsRead() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return false;
 
       final response = await http.put(
@@ -121,7 +121,7 @@ class NotificationService {
 
   static Future<int> getUnreadCount() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null) return 0;
 
       final response = await http.get(

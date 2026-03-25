@@ -9,7 +9,7 @@ class OrderService {
 
   Future<OrderResponse?> createOrder(CreateOrderRequest orderData) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       final response = await http.post(
         Uri.parse('$_baseUrl/orders/create-with-items/'),
@@ -38,7 +38,7 @@ class OrderService {
 
   Future<List<dynamic>> getOrders() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       final response = await http.get(
         Uri.parse('$_baseUrl/orders/'),
@@ -61,7 +61,7 @@ class OrderService {
 
   Future<Map<String, dynamic>?> getOrderDetails(int orderId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       final response = await http.get(
         Uri.parse('$_baseUrl/orders/$orderId/'),

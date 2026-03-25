@@ -11,7 +11,7 @@ class SubscriptionService {
     required int total,
   }) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       if (token == null) {
         throw Exception('Authentication required');
@@ -49,7 +49,7 @@ class SubscriptionService {
   /// Get current subscription details
   Future<Map<String, dynamic>?> getSubscriptionDetails() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       if (token == null) {
         return null;
@@ -77,7 +77,7 @@ class SubscriptionService {
   /// Cancel subscription
   Future<bool> cancelSubscription() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       if (token == null) {
         throw Exception('Authentication required');

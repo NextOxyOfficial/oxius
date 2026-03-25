@@ -64,7 +64,7 @@ class ContactService {
     required String message,
   }) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       final headers = {
         'Content-Type': 'application/json',
       };

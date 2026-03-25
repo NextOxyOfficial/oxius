@@ -445,6 +445,13 @@ def create_order(request, gig_id):
             'notification_type': 'new_order'
         }
     )
+
+    # Send email notifications for gig order placed
+    try:
+        from base.email_service import send_gig_order_placed_email
+        send_gig_order_placed_email(buyer, gig.user, gig.title, price, order.id)
+    except Exception as e:
+        print(f"Error sending gig order email: {e}")
     
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({
@@ -529,6 +536,13 @@ def complete_order_payment(request, order_id):
             'notification_type': 'payment_released'
         }
     )
+
+    # Send email notifications for gig order completed
+    try:
+        from base.email_service import send_gig_order_completed_email
+        send_gig_order_completed_email(order.buyer, seller, order.gig.title, order.price, order.id)
+    except Exception as e:
+        print(f"Error sending gig completion email: {e}")
     
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({
@@ -957,6 +971,14 @@ def update_order_status(request, order_id, action):
             'notification_type': f'order_{action}'
         }
     )
+
+    # Send email notification for order status change
+    try:
+        from base.email_service import send_gig_order_status_email
+        if recipient.email:
+            send_gig_order_status_email(recipient, order.gig.title, order.id, action_config['to_status'], actor_name)
+    except Exception as e:
+        print(f"Error sending gig order status email: {e}")
     
     serializer = GigOrderSerializer(order, context={'request': request})
     return Response({

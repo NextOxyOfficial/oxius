@@ -170,6 +170,16 @@ def register(request):
             new_user.save()
             ref_by.refer_count += 1
             ref_by.save()
+
+        # Send welcome email to user + admin notification (async, non-blocking)
+        try:
+            from .email_service import send_welcome_email, notify_admin_new_registration
+            if new_user.email:
+                send_welcome_email(new_user)
+            notify_admin_new_registration(new_user)
+        except Exception as e:
+            print(f"Email notification error (non-blocking): {e}")
+
         return Response(
             {"message": "Person registered successfully", "data": serializer.data},
             status=status.HTTP_201_CREATED,
@@ -1960,13 +1970,18 @@ def reset_password_request(request):
 
         # Send OTP
         if method == "email":
-            send_mail(
-                "Password Reset OTP",
-                f"Your OTP for password reset is: {otp}",
-                settings.DEFAULT_FROM_EMAIL,
-                [value],
-                fail_silently=False,
-            )
+            try:
+                from .email_service import send_password_reset_email
+                send_password_reset_email(user, otp)
+            except Exception as e:
+                print(f"Email send error: {e}")
+                send_mail(
+                    "Password Reset OTP",
+                    f"Your OTP for password reset is: {otp}",
+                    settings.DEFAULT_FROM_EMAIL,
+                    [value],
+                    fail_silently=False,
+                )
         else:
             # Implement SMS sending logic here
             pass

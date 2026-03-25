@@ -86,11 +86,22 @@ class ReferralRewardClaim(models.Model):
         
         Balance.objects.create(
             user=self.user, amount=self.reward_amount,
+            payable_amount=self.reward_amount,
             transaction_type="referral_reward", completed=True,
+            approved=True,
             bank_status="completed", description=f"Referral Reward - {self.get_claim_type_display()}"
         )
         
         self.status = 'claimed'
         self.claimed_at = timezone.now()
         self.save()
+
+        # Send referral reward email
+        try:
+            from base.email_service import send_referral_reward_email
+            if self.user.email:
+                send_referral_reward_email(self.user, self.reward_amount, self.claim_type)
+        except Exception as e:
+            print(f"Error sending referral reward email: {e}")
+
         return True, "Reward claimed!"

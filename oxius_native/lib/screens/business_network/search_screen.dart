@@ -112,7 +112,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _loadSearchResults(String query, int page) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       final headers = token != null
           ? {
               'Authorization': 'Bearer $token',
@@ -185,7 +185,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _loadPeopleResults(String query) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       
       final headers = <String, String>{
         'Content-Type': 'application/json',

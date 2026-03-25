@@ -49,7 +49,7 @@ class ReferralService {
   /// Get user's referral code and link
   static Future<Map<String, String>> getReferralInfo() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null || token.isEmpty) {
         throw Exception('User not authenticated');
       }
@@ -72,7 +72,7 @@ class ReferralService {
   /// Get commission history
   static Future<CommissionData> getCommissionHistory() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null || token.isEmpty) {
         throw Exception('User not authenticated');
       }
@@ -100,7 +100,7 @@ class ReferralService {
   /// Get referred users
   static Future<List<ReferredUser>> getReferredUsers() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null || token.isEmpty) {
         throw Exception('User not authenticated');
       }
@@ -158,7 +158,7 @@ class ReferralService {
   /// Get user's reward claims
   static Future<MyClaimsResponse?> getMyClaims() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null || token.isEmpty) {
         throw Exception('User not authenticated');
       }
@@ -186,7 +186,7 @@ class ReferralService {
   /// Check user's progress on reward conditions
   static Future<CheckConditionsResponse?> checkConditions() async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null || token.isEmpty) {
         throw Exception('User not authenticated');
       }
@@ -214,7 +214,7 @@ class ReferralService {
   /// Claim a specific reward
   static Future<ClaimRewardResponse> claimReward(int claimId) async {
     try {
-      final token = await AuthService.getToken();
+      final token = await AuthService.getValidToken();
       if (token == null || token.isEmpty) {
         throw Exception('User not authenticated');
       }
