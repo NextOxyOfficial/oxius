@@ -1,10 +1,12 @@
-<template>  <div
+<template>
+  <div
     class="flex items-center justify-between px-2 border-t border-gray-200/70 dark:border-slate-700/50 mt-2 mb-1 max-w-2xl mx-auto"
   >
     <!-- Left Side Actions: Like, Comment, Share -->
     <div class="flex items-center space-x-4">
       <!-- Like button with counter -->
-      <div class="flex items-center group">        <button
+      <div class="flex items-center group">
+        <button
           class="p-1.5 pt-3 rounded-full transition-colors disabled:opacity-60 relative"
           @click="$emit('toggle-like', post)"
           :disabled="post.isLikeLoading"
@@ -12,85 +14,88 @@
         >
           <!-- Loading state -->
           <div v-if="post.isLikeLoading" class="h-5 w-5">
-            <Loader2
-              class="h-5 w-5 text-rose-400 dark:text-rose-300 animate-spin"
-            />
-          </div>          <!-- Like icon matching Flutter app -->
+            <Loader2 class="h-5 w-5 text-rose-400 dark:text-rose-300 animate-spin" />
+          </div>
+          <!-- Like icon -->
           <div v-else class="relative">
-            <img
-              :src="isLiked ? '/icons/bn/like.png' : '/icons/bn/unlike.png'"
-              class="w-6 h-6 transition-transform group-hover:scale-110"
-              alt="Like"
+            <Heart
+              v-if="isLiked"
+              class="w-6 h-6 text-rose-500 fill-rose-500 transition-transform group-hover:scale-110"
+            />
+            <Heart
+              v-else
+              class="w-6 h-6 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-rose-400"
             />
           </div>
         </button>
-        
-        <!-- Like counter (small) -->
-        <span 
-          @click="$emit('open-likes-modal', post)" 
-          class="text-base font-medium ml-1 text-gray-600 dark:text-gray-600 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
+        <!-- Like counter -->
+        <span
+          @click="$emit('open-likes-modal', post)"
+          class="text-base font-medium ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-rose-600 dark:hover:text-rose-400"
         >
           {{ formatCount(post?.post_likes?.length || 0) }}
         </span>
       </div>
 
       <!-- Comment button with counter -->
-      <div class="flex items-center group">        <button
+      <div class="flex items-center group">
+        <button
           class="p-1.5 pt-3 rounded-full transition-colors"
           @click="$emit('open-comments-modal', post)"
           title="Comment"
-        ><div class="relative">
-            <img
-              src="/icons/bn/comments.png"
-              class="w-6 h-6 transition-transform group-hover:scale-110"
-              alt="Comment"
-            />
-          </div>
+        >
+          <MessageCircle
+            class="w-6 h-6 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-blue-500"
+          />
         </button>
-          <!-- Comment counter (small) -->
-        <span 
-          @click="$emit('open-comments-modal', post)" 
-          class="text-base ml-1 text-gray-600 dark:text-gray-600 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+        <!-- Comment counter -->
+        <span
+          @click="$emit('open-comments-modal', post)"
+          class="text-base ml-1 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
         >
           {{ formatCount(post?.comment_count || 0) }}
         </span>
-      </div>      
-      <!-- Share button (icon only) -->
+      </div>
+
+      <!-- Share button -->
       <div class="flex items-center group">
         <button
-          class="p-1.5 pt-4 rounded-full transition-colors"
+          class="p-1.5 pt-3 rounded-full transition-colors"
           @click="$emit('share-post', post)"
           title="Share"
         >
-          <div class="relative">
-            <img
-              src="/icons/bn/share.png"
-              class="w-5 h-5 transition-transform group-hover:scale-110"
-              alt="Share"
-            />
-          </div>
+          <Share2
+            class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-green-500"
+          />
         </button>
       </div>
     </div>
 
-    <!-- Right Side: Save Button -->    <button
-      class="p-1.5 rounded-full transition-colors"
+    <!-- Right Side: Save Button -->
+    <button
+      class="p-1.5 pt-3 rounded-full transition-colors group"
       @click="$emit('toggle-save', post)"
       title="Save"
-    ><div class="relative">
-        <img
-          :src="(post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id)) ? '/icons/bn/saved.png' : '/icons/bn/save.png'"
-          class="w-5 h-5 transition-transform group-hover:scale-110"
-          alt="Save"
-        />
-      </div>
+    >
+      <Bookmark
+        v-if="post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id)"
+        class="w-5 h-5 text-blue-500 fill-blue-500 transition-transform group-hover:scale-110"
+      />
+      <Bookmark
+        v-else
+        class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-blue-400"
+      />
     </button>
   </div>
 </template>
 
 <script setup>
 import {
-  Loader2
+  Loader2,
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
 } from "lucide-vue-next";
 
 const { post } = defineProps({
