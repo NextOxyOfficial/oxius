@@ -18,13 +18,11 @@
           </div>
           <!-- Like icon -->
           <div v-else class="relative">
-            <Heart
-              v-if="isLiked"
-              class="w-6 h-6 text-rose-500 fill-rose-500 transition-transform group-hover:scale-110"
-            />
-            <Heart
-              v-else
-              class="w-6 h-6 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-rose-400"
+            <img
+              :src="isLiked ? bnIcon('like') : bnIcon('unlike')"
+              class="w-6 h-6 transition-transform group-hover:scale-110"
+              alt="Like"
+              @error="handleIconError($event, isLiked ? 'like' : 'unlike')"
             />
           </div>
         </button>
@@ -44,8 +42,11 @@
           @click="$emit('open-comments-modal', post)"
           title="Comment"
         >
-          <MessageCircle
-            class="w-6 h-6 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-blue-500"
+          <img
+            :src="bnIcon('comments')"
+            class="w-6 h-6 transition-transform group-hover:scale-110"
+            alt="Comment"
+            @error="handleIconError($event, 'comments')"
           />
         </button>
         <!-- Comment counter -->
@@ -64,8 +65,11 @@
           @click="$emit('share-post', post)"
           title="Share"
         >
-          <Share2
-            class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-green-500"
+          <img
+            :src="bnIcon('share')"
+            class="w-5 h-5 transition-transform group-hover:scale-110"
+            alt="Share"
+            @error="handleIconError($event, 'share')"
           />
         </button>
       </div>
@@ -77,13 +81,11 @@
       @click="$emit('toggle-save', post)"
       title="Save"
     >
-      <Bookmark
-        v-if="post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id)"
-        class="w-5 h-5 text-blue-500 fill-blue-500 transition-transform group-hover:scale-110"
-      />
-      <Bookmark
-        v-else
-        class="w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-hover:scale-110 group-hover:text-blue-400"
+      <img
+        :src="post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id) ? bnIcon('saved') : bnIcon('save')"
+        class="w-5 h-5 transition-transform group-hover:scale-110"
+        alt="Save"
+        @error="handleIconError($event, post.isSaved || savedPosts.some((i) => i.post === post.id && i.user === user?.user?.id) ? 'saved' : 'save')"
       />
     </button>
   </div>
@@ -92,10 +94,6 @@
 <script setup>
 import {
   Loader2,
-  Heart,
-  MessageCircle,
-  Share2,
-  Bookmark,
 } from "lucide-vue-next";
 
 const { post } = defineProps({
@@ -123,6 +121,17 @@ const savedPosts = ref([]);
 const isLiked = computed(() => {
   return post.post_likes?.find((like) => like && (like.user === user.value?.user?.id || like.user === String(user.value?.user?.id) || like.user === Number(user.value?.user?.id)));
 });
+
+function bnIcon(name) {
+  return `/static/frontend/icons/bn/${name}.png`;
+}
+
+function handleIconError(event, name) {
+  const fallbackSrc = `/icons/bn/${name}.png`;
+  if (event?.target && event.target.getAttribute("src") !== fallbackSrc) {
+    event.target.src = fallbackSrc;
+  }
+}
 
 /**
  * Format large numbers to compact format (1k, 1.1k, etc.)
