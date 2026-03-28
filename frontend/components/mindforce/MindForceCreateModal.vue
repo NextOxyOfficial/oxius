@@ -110,15 +110,12 @@
                     <FileText class="h-4 w-4 mr-1.5 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
                     Description
                   </label>
-                  <textarea
-                    id="description"
-                    v-model="formData.description"
-                    placeholder="Describe your problem in detail. Include what you've tried so far and what you're trying to achieve."
-                    rows="5"
-                    class="flex w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm ring-offset-background placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-400 dark:focus:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/30 dark:focus-visible:ring-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50 min-h-[120px] transition-all duration-200 shadow-sm hover:shadow-sm focus:shadow-sm resize-none"
-                    @focus="handleInputFocus"
-                    @blur="handleInputBlur"
-                  ></textarea>
+                  <div class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                    <CommonEditor
+                      :content="formData.description"
+                      @updateContent="formData.description = $event"
+                    />
+                  </div>
                 </div>
               </Transition>              
               <!-- Enhanced Photo Upload Section -->

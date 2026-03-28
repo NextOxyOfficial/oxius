@@ -4,7 +4,7 @@ Professional email templates with white/light gray theme.
 All transactional emails for users and admin notifications.
 """
 import logging
-from django.core.mail import send_mail, EmailMultiAlternatives
+from django.core.mail import send_mail, EmailMultiAlternatives, get_connection
 from django.conf import settings
 from django.utils import timezone
 

@@ -154,14 +154,12 @@
                 <label for="gig-description" class="block text-sm font-medium text-gray-700 mb-2">
                   Description *
                 </label>
-                <textarea
-                  id="gig-description"
-                  v-model="newGig.description"
-                  rows="6"
-                  placeholder="Describe your service in detail. What will you deliver? What makes your service unique?"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors resize-none"
-                  required
-                ></textarea>
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                  <CommonEditor
+                    :content="newGig.description"
+                    @updateContent="newGig.description = $event"
+                  />
+                </div>
                 <p class="text-xs text-gray-500 mt-1">Be specific about what you'll deliver</p>
               </div>
 

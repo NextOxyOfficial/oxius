@@ -312,55 +312,41 @@
 
         <!-- Overview -->
         <div>
-          <label class="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <span>Detailed Overview</span>
-            <button @click.prevent="expandOverview = !expandOverview" class="text-xs text-purple-600 dark:text-purple-400 hover:underline">
-              {{ expandOverview ? 'Collapse' : 'Expand' }}
-            </button>
           </label>
-          <UTextarea
-            v-model="form.overview"
-            placeholder="Explain your business model, target market, and growth plans..."
-            :rows="expandOverview ? 10 : 4"
-            :ui="{ rounded: 'rounded-xl' }"
-            autoresize
-          />
+          <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <CommonEditor
+              :content="form.overview"
+              @updateContent="form.overview = $event"
+            />
+          </div>
         </div>
 
         <!-- Use of Funds -->
         <div>
-          <label class="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <span>Use of Funds</span>
-            <button @click.prevent="expandFunds = !expandFunds" class="text-xs text-purple-600 dark:text-purple-400 hover:underline">
-              {{ expandFunds ? 'Collapse' : 'Expand' }}
-            </button>
           </label>
-          <UTextarea
-            v-model="form.useOfFunds"
-            placeholder="How will you use the funding? (One item per line)"
-            :rows="expandFunds ? 8 : 3"
-            :ui="{ rounded: 'rounded-xl' }"
-            autoresize
-          />
-          <p class="mt-1 text-xs text-slate-500">Enter each item on a new line</p>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <CommonEditor
+              :content="form.useOfFunds"
+              @updateContent="form.useOfFunds = $event"
+            />
+          </div>
         </div>
 
         <!-- Milestones -->
         <div>
-          <label class="flex items-center justify-between text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <span>Milestones</span>
-            <button @click.prevent="expandMilestones = !expandMilestones" class="text-xs text-purple-600 dark:text-purple-400 hover:underline">
-              {{ expandMilestones ? 'Collapse' : 'Expand' }}
-            </button>
           </label>
-          <UTextarea
-            v-model="form.milestones"
-            placeholder="Key milestones you plan to achieve (One per line)"
-            :rows="expandMilestones ? 8 : 3"
-            :ui="{ rounded: 'rounded-xl' }"
-            autoresize
-          />
-          <p class="mt-1 text-xs text-slate-500">Enter each milestone on a new line</p>
+          <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+            <CommonEditor
+              :content="form.milestones"
+              @updateContent="form.milestones = $event"
+            />
+          </div>
         </div>
 
         <!-- Submit Button -->
@@ -554,8 +540,9 @@ const uploadFile = async (file, type) => {
 }
 
 const handleSubmit = async () => {
-  // Check KYC verification
-  if (!currentUser.value?.raise_up_profile?.kyc_verified) {
+  // Check KYC verification - check both user.kyc (from auth) and raise_up_profile.kyc_verified
+  const isKycVerified = currentUser.value?.user?.kyc || currentUser.value?.raise_up_profile?.kyc_verified || currentUser.value?.kyc
+  if (!isKycVerified) {
     toast.add({
       title: 'KYC Verification Required',
       description: 'You must complete KYC verification to post on Raise Up',
