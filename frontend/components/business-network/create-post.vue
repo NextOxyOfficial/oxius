@@ -1,195 +1,260 @@
 <template>
-  <!-- Create Post Modal -->
+  <!-- Create Post Modal - Flutter Style -->
   <UModal
     v-model="isCreatePostOpen"
     :ui="{
-      width: 'w-full sm:max-w-3xl',
+      width: 'w-full sm:max-w-2xl',
       height: 'h-auto',
-      container: 'flex flex-col h-auto mt-14 p-2 sm:p-4',
+      container: 'flex flex-col h-auto mt-0 sm:mt-8 p-0 sm:p-4',
       padding: 'p-0',
     }"
-    ><div
-      class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 w-full rounded-xl"
-    >
-      <div>
-        <!-- Main Form -->
-        <form
-          @submit.prevent="handleCreatePost"
-          class="bg-white rounded-xl shadow-sm w-full mx-auto overflow-hidden border border-gray-100"
+  >
+    <div class="bg-white dark:bg-gray-900 w-full rounded-none sm:rounded-2xl overflow-hidden max-h-[100dvh] sm:max-h-[90vh] flex flex-col">
+      <!-- Header Bar (Flutter AppBar style) -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-20">
+        <button
+          type="button"
+          @click="closeModalWithConfirm"
+          class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
         >
-          <!-- Content Section -->
-          <div
-            class="p-2 md:p-4 sm:p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
-          >
-            <!-- Close Button -->
-            <div class="flex justify-end">
-              <button
-                @click="closeModalWithConfirm"
-                class="p-2 hover:bg-gray-200 rounded-full transition-colors"
-              >
-                <X class="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
+          <X class="w-5 h-5 text-gray-700 dark:text-gray-300" />
+        </button>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">{{ modalTitle }}</h2>
+        <button
+          type="button"
+          @click="handleCreatePost"
+          :disabled="isSubmitting"
+          class="px-5 py-2 rounded-full text-sm font-semibold transition-all"
+          :class="isSubmitting ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 text-white shadow-sm'"
+        >
+          <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
+          <span v-else>{{ isEditMode ? 'Update' : 'Post' }}</span>
+        </button>
+      </div>
 
-            <!-- Form feedback alerts -->
-            <div
-              v-if="formError"
-              class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"
-            >
-              <p class="flex items-center gap-2">
-                <AlertCircle class="w-4 h-4" />
-                <span>{{ formError }}</span>
-              </p>
-            </div>
+      <!-- Scrollable Body -->
+      <div class="flex-1 overflow-y-auto">
+        <form @submit.prevent="handleCreatePost" class="p-4 space-y-5">
+          
+          <!-- Error Alert -->
+          <div v-if="formError" class="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-400 text-sm flex items-center gap-2">
+            <AlertCircle class="w-4 h-4 shrink-0" />
+            <span>{{ formError }}</span>
+          </div>
 
-            <!-- Title Input -->
-            <div class="mb-5">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Title <span class="text-red-500">*</span>
-              </label>
-              <div class="relative">
-                <div
-                  ref="titleInputRef"
-                  contenteditable="true"
-                  class="w-full pl-10 pr-16 py-3 border border-gray-200 rounded-lg focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all outline-none text-gray-800"
-                  :data-placeholder="'Enter your post title... (Type @ to mention users)'"
-                  @input="handleTitleInput"
-                  @keydown="handleMentionKeydown($event, 'title')"
-                  @keyup="handleMentionKeyup($event, 'title')"
-                ></div>
-                <Type
-                  class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                />
-                <span
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500"
-                >
-                  {{ titleCharCount }}/255
-                </span>
-
-                <div
-                  v-if="showMentions && activeMentionTarget === 'title'"
-                  class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-56 overflow-y-auto z-50"
-                >
-                  <button
-                    v-for="u in mentionSuggestions"
-                    :key="u.id"
-                    type="button"
-                    class="w-full px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-left"
-                    @click.prevent="selectMention(u)"
-                  >
-                    <img
-                      :src="u.image || '/static/frontend/images/placeholder.jpg'"
-                      class="w-7 h-7 rounded-full object-cover"
-                      alt=""
-                    />
-                    <div class="flex-1">
-                      <div class="text-sm font-medium text-gray-800">
-                        {{ u.name || u.username || 'Unknown' }}
-                      </div>
-                      <div v-if="u.username" class="text-xs text-gray-500">
-                        @{{ u.username }}
-                      </div>
-                    </div>
-                  </button>
-                </div>
+          <!-- User Info + Visibility (Flutter style) -->
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-full border-2 border-gray-200 dark:border-gray-700 overflow-hidden shrink-0">
+              <img
+                v-if="user?.user?.image"
+                :src="user.user.image"
+                class="w-full h-full object-cover"
+                alt="Avatar"
+              />
+              <div v-else class="w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                <UIcon name="i-heroicons-user" class="w-5 h-5 text-gray-400" />
               </div>
             </div>
-
-            <!-- Content Editor -->
-            <div class="mb-5">
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Content
-              </label>
-              <p class="text-sm text-gray-600 mb-3">
-                Share your thoughts, ideas, or updates with the community
-              </p>
-              <div
-                class="border border-gray-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-emerald-100 focus-within:border-emerald-500 transition-all"
-              >
-                <div class="relative">
-                  <div
-                    ref="contentInputRef"
-                    contenteditable="true"
-                    class="min-h-[140px] max-h-[360px] overflow-y-auto px-3 py-3 outline-none text-gray-800"
-                    :data-placeholder="'Write something... (Type @ to mention users)'"
-                    @input="handleContentInput"
-                    @keydown="handleMentionKeydown($event, 'content')"
-                    @keyup="handleMentionKeyup($event, 'content')"
-                  ></div>
-
-                  <div
-                    v-if="showMentions && activeMentionTarget === 'content'"
-                    class="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-56 overflow-y-auto z-50"
-                  >
-                    <button
-                      v-for="u in mentionSuggestions"
-                      :key="u.id"
-                      type="button"
-                      class="w-full px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-left"
-                      @click.prevent="selectMention(u)"
-                    >
-                      <img
-                        :src="u.image || '/static/frontend/images/placeholder.jpg'"
-                        class="w-7 h-7 rounded-full object-cover"
-                        alt=""
-                      />
-                      <div class="flex-1">
-                        <div class="text-sm font-medium text-gray-800">
-                          {{ u.name || u.username || 'Unknown' }}
-                        </div>
-                        <div v-if="u.username" class="text-xs text-gray-500">
-                          @{{ u.username }}
-                        </div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-gray-900 dark:text-white text-[15px] truncate">
+                  {{ user?.user?.name || user?.user?.first_name || user?.user?.username || 'User' }}
+                </span>
+                <UIcon v-if="user?.user?.is_pro" name="i-heroicons-check-badge-solid" class="w-4 h-4 text-blue-500 shrink-0" />
+              </div>
+              <!-- Visibility Selector -->
+              <div class="mt-0.5">
+                <select
+                  v-model="postVisibility"
+                  class="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 border-0 rounded-full px-2.5 py-0.5 focus:ring-1 focus:ring-blue-400 cursor-pointer"
+                >
+                  <option value="public">🌐 Public</option>
+                  <option value="private">🔒 Private</option>
+                </select>
               </div>
             </div>
           </div>
-          <!-- Media Upload Section -->
-          <div
-            class="p-2 md:p-4 sm:p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
-          >
-            <p class="text-sm text-gray-600 mb-4">
-              Add photos to make your post more engaging (optional)
-            </p>
 
-            <div class="flex flex-wrap gap-4 mt-4">
+          <!-- Title Input (Flutter style - large, bold, borderless) -->
+          <div class="relative">
+            <div
+              ref="titleInputRef"
+              contenteditable="true"
+              class="w-full text-xl sm:text-[22px] font-bold text-gray-900 dark:text-white leading-snug tracking-tight outline-none min-h-[36px]"
+              style="word-break: break-word;"
+              :data-placeholder="'What\'s on your mind?'"
+              @input="handleTitleInput"
+              @keydown="handleMentionKeydown($event, 'title')"
+              @keyup="handleMentionKeyup($event, 'title')"
+            ></div>
+            <span class="absolute right-0 -bottom-5 text-[10px] text-gray-400">{{ titleCharCount }}/255</span>
+            <!-- Mention Suggestions for Title -->
+            <div
+              v-if="showMentions && activeMentionTarget === 'title'"
+              class="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-56 overflow-y-auto z-50"
+            >
+              <button
+                v-for="u in mentionSuggestions"
+                :key="u.id"
+                type="button"
+                class="w-full px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 text-left transition-colors"
+                @click.prevent="selectMention(u)"
+              >
+                <img
+                  :src="u.image || '/static/frontend/images/placeholder.jpg'"
+                  class="w-9 h-9 rounded-full object-cover"
+                  alt=""
+                />
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ u.name || u.username || 'Unknown' }}</div>
+                  <div v-if="u.username" class="text-xs text-gray-500 dark:text-gray-400">@{{ u.username }}</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Content Input (Flutter style - medium, borderless) -->
+          <div class="relative mt-3">
+            <div
+              ref="contentInputRef"
+              contenteditable="true"
+              class="w-full text-base text-gray-700 dark:text-gray-300 leading-relaxed outline-none min-h-[80px] max-h-[280px] overflow-y-auto"
+              style="word-break: break-word;"
+              :data-placeholder="'Share more details... Use @ to mention someone'"
+              @input="handleContentInput"
+              @keydown="handleMentionKeydown($event, 'content')"
+              @keyup="handleMentionKeyup($event, 'content')"
+            ></div>
+            <!-- Mention Suggestions for Content -->
+            <div
+              v-if="showMentions && activeMentionTarget === 'content'"
+              class="absolute left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-56 overflow-y-auto z-50"
+            >
+              <button
+                v-for="u in mentionSuggestions"
+                :key="u.id"
+                type="button"
+                class="w-full px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 text-left transition-colors"
+                @click.prevent="selectMention(u)"
+              >
+                <img
+                  :src="u.image || '/static/frontend/images/placeholder.jpg'"
+                  class="w-9 h-9 rounded-full object-cover"
+                  alt=""
+                />
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{{ u.name || u.username || 'Unknown' }}</div>
+                  <div v-if="u.username" class="text-xs text-gray-500 dark:text-gray-400">@{{ u.username }}</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hashtags Section (Flutter style) -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <Hash class="w-[18px] h-[18px] text-gray-500 dark:text-gray-400" />
+              <span class="text-[15px] font-semibold text-gray-700 dark:text-gray-300">Add Hashtags</span>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex-1 relative">
+                <input
+                  v-model="categoryInput"
+                  ref="hashtagInputRef"
+                  type="text"
+                  placeholder="Type a hashtag"
+                  class="w-full pl-9 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-[15px] focus:border-blue-400 focus:ring-1 focus:ring-blue-400/30 transition-all outline-none"
+                  @keydown.enter.prevent="addCategory"
+                  @input="searchHashtags"
+                  @focus="onHashtagInputFocus"
+                />
+                <Hash class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              </div>
+              <button
+                type="button"
+                @click="addCategory"
+                class="px-5 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-[15px] font-semibold transition-colors shrink-0"
+              >
+                Add
+              </button>
+            </div>
+            <!-- Hashtag Suggestions -->
+            <div
+              v-if="showSuggestions && hashtagSuggestions.length > 0"
+              class="mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm max-h-40 overflow-y-auto"
+            >
+              <div
+                v-for="(tag, index) in hashtagSuggestions"
+                :key="tag.id || tag.tag"
+                @click="selectHashtagSuggestion(tag.tag)"
+                class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm flex items-center gap-2 justify-between"
+                :class="{ 'bg-blue-50 dark:bg-blue-900/20': index === selectedSuggestionIndex }"
+              >
+                <div class="flex items-center gap-2">
+                  <Hash class="w-3 h-3 text-gray-400" />
+                  <span>{{ tag.tag }}</span>
+                </div>
+                <span class="text-xs text-gray-500">{{ tag.count }} posts</span>
+              </div>
+            </div>
+            <!-- Selected Hashtags (Flutter chip style) -->
+            <div v-if="createPostCategories.length > 0" class="flex flex-wrap gap-2 mt-4">
+              <span
+                v-for="category in createPostCategories"
+                :key="category"
+                class="inline-flex items-center gap-1 px-3.5 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 text-blue-600 dark:text-blue-400 rounded-full text-sm font-semibold"
+              >
+                <span class="font-bold">#</span>{{ category }}
+                <button type="button" @click="removeCategory(category)" class="ml-1.5 p-0.5 bg-blue-200/50 dark:bg-blue-700/50 rounded-full hover:bg-blue-300/70 transition-colors">
+                  <X class="w-3.5 h-3.5" />
+                </button>
+              </span>
+            </div>
+          </div>
+
+          <!-- Media Section (Flutter style) -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <ImageIcon class="w-[18px] h-[18px] text-gray-500 dark:text-gray-400" />
+              <span class="text-[15px] font-semibold text-gray-700 dark:text-gray-300">Media</span>
+              <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-[10px] font-semibold text-blue-600 dark:text-blue-400">{{ images.length }}/12 photos</span>
+            </div>
+
+            <!-- Upload status -->
+            <div v-if="isUploading" class="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center gap-3">
+              <Loader2 class="w-4 h-4 animate-spin text-blue-500" />
+              <span class="text-sm text-blue-700 dark:text-blue-400">Processing images...</span>
+            </div>
+
+            <!-- Error -->
+            <p v-if="uploadError" class="mb-3 text-red-500 text-sm">{{ uploadError }}</p>
+
+            <!-- Media Grid (Flutter 3-column style) -->
+            <div class="grid grid-cols-3 gap-1.5">
               <!-- Uploaded images -->
               <div
                 v-for="(img, i) in images"
                 :key="i"
-                class="w-32 h-32 rounded-lg overflow-hidden relative border border-gray-200 bg-gray-50 group"
+                class="aspect-square rounded-lg overflow-hidden relative group"
               >
-                <img
-                  :src="img"
-                  :alt="`Uploaded file ${i}`"
-                  class="w-full h-full object-cover transition-transform group-hover:scale-105"
-                />
-                <div
-                  class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all"
-                ></div>
+                <img :src="img" :alt="`Image ${i + 1}`" class="w-full h-full object-cover" />
                 <button
                   type="button"
-                  class="absolute top-2 right-2 bg-white rounded-full w-8 h-8 flex items-center justify-center text-red-500 shadow-sm hover:bg-red-50 hover:scale-110 transition-all"
                   @click="removeMedia(i)"
-                  aria-label="Delete image"
+                  class="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <Trash2 class="w-4 h-4" />
+                  <X class="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <!-- Upload button (show if less than 12 images) -->
+              <!-- Upload button -->
               <div
                 v-if="images.length < 12"
-                class="w-32 h-32 rounded-lg relative border-2 border-dashed border-gray-300 bg-gray-50 hover:border-emerald-500 hover:bg-emerald-50/20 transition-colors flex items-center justify-center cursor-pointer group"
+                class="aspect-square rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 bg-gray-50 dark:bg-gray-800 flex items-center justify-center cursor-pointer transition-colors relative"
                 @dragover.prevent="isDragging = true"
                 @dragleave.prevent="isDragging = false"
                 @drop.prevent="handleFileDrop"
-                :class="{
-                  'border-emerald-500 bg-emerald-50/20': isDragging,
-                }"
+                :class="{ 'border-blue-400 bg-blue-50 dark:bg-blue-900/20': isDragging }"
               >
                 <input
                   type="file"
@@ -199,137 +264,22 @@
                   accept="image/*"
                   multiple
                 />
-                <div
-                  class="flex flex-col items-center gap-2 text-gray-600 text-sm text-center p-2 group-hover:text-emerald-600"
-                >
-                  <Upload class="text-xl text-emerald-500" />
-                  <span>Add Media</span>
-                  <span class="text-xs">{{ images.length }}/12</span>
+                <div class="flex flex-col items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                  <Plus class="w-7 h-7" />
+                  <span class="text-xs font-medium">Add</span>
                 </div>
               </div>
             </div>
 
-            <!-- Upload status -->
-            <p v-if="uploadError" class="mt-3 text-red-500 text-sm">
-              {{ uploadError }}
-            </p>
-            <p
-              v-if="isUploading"
-              class="mt-3 text-emerald-600 text-sm flex items-center"
-            >
-              <Loader2 class="animate-spin mr-1 w-4 h-4" />
-              Uploading media...
-            </p>
-
-            <!-- Clear all images button -->
-            <div v-if="images.length > 0" class="mt-4 flex justify-end">
-              <button
-                type="button"
-                @click="clearAllImages"
-                class="text-sm text-red-600 hover:text-red-700 flex items-center gap-1"
-              >
-                <Trash2 class="w-4 h-4" />
-                Clear all images
+            <!-- Clear all -->
+            <div v-if="images.length > 1" class="mt-3 flex justify-end">
+              <button type="button" @click="clearAllImages" class="text-xs text-red-500 hover:text-red-600 flex items-center gap-1 transition-colors">
+                <Trash2 class="w-3 h-3" />
+                Clear all
               </button>
             </div>
           </div>
-          <!-- Hashtags Section -->
-          <div
-            class="p-2 md:p-4 sm:p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-300"
-          >
-            <p class="text-sm text-gray-600 mb-4">
-              Add hashtags to help people discover your post
-            </p>
 
-            <!-- Hashtag input -->
-            <div class="mb-4">
-              <div class="relative">
-                <input
-                  v-model="categoryInput"
-                  ref="hashtagInputRef"
-                  type="text"
-                  placeholder="Add hashtag..."
-                  class="w-full pl-10 pr-20 py-3 border border-gray-200 rounded-lg focus:border-emerald-500 focus:ring focus:ring-emerald-100 transition-all"
-                  @keydown.enter.prevent="addCategory"
-                  @input="searchHashtags"
-                  @focus="onHashtagInputFocus"
-                />
-                <Hash
-                  class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                />
-                <button
-                  type="button"
-                  @click="addCategory"
-                  class="absolute right-2 top-1/2 transform -translate-y-1/2 px-3 py-1 bg-emerald-600 text-white rounded-md text-sm hover:bg-emerald-700 transition-colors"
-                >
-                  Add
-                </button>
-              </div>
-              <!-- Hashtag suggestions -->
-              <div
-                v-if="showSuggestions && hashtagSuggestions.length > 0"
-                class="mt-2 bg-white border border-gray-200 rounded-lg shadow-sm max-h-40 overflow-y-auto"
-              >
-                <div
-                  v-for="(tag, index) in hashtagSuggestions"
-                  :key="tag.id || tag.tag"
-                  @click="selectHashtagSuggestion(tag.tag)"
-                  class="px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm flex items-center gap-2 justify-between"
-                  :class="{
-                    'bg-emerald-50': index === selectedSuggestionIndex,
-                  }"
-                >
-                  <div class="flex items-center gap-2">
-                    <Hash class="w-3 h-3 text-gray-400" />
-                    <span>{{ tag.tag }}</span>
-                  </div>
-                  <span class="text-xs text-gray-500"
-                    >{{ tag.count }} posts</span
-                  >
-                </div>
-              </div>
-            </div>
-
-            <!-- Selected hashtags -->
-            <div v-if="createPostCategories.length > 0" class="space-y-2">
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="category in createPostCategories"
-                  :key="category"
-                  class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm"
-                >
-                  <Hash class="w-3 h-3" />
-                  {{ category }}
-                  <button
-                    type="button"
-                    @click="removeCategory(category)"
-                    class="ml-1 hover:text-emerald-600"
-                  >
-                    <X class="w-3 h-3" />
-                  </button>
-                </span>
-              </div>
-            </div>
-          </div>
-          <!-- Submit Section -->
-          <div class="p-4 md:pb-8 bg-gray-50">
-            <div class="flex justify-center">
-              <button
-                type="submit"
-                :disabled="isSubmitting"
-                class="min-w-48 px-8 py-3 font-semibold transform hover:-translate-y-1 hover:shadow-sm transition-all duration-300 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <template v-if="isSubmitting">
-                  <Loader2 class="w-4 h-4 animate-spin" />
-                  Publishing...
-                </template>
-                <template v-else>
-                  <Send class="w-4 h-4" />
-                  {{ submitButtonText }}
-                </template>
-              </button>
-            </div>
-          </div>
         </form>
       </div>
     </div>
@@ -591,6 +541,7 @@ const uploadError = ref("");
 const isUploading = ref(false);
 const modalRef = ref(null);
 const isDragging = ref(false);
+const postVisibility = ref('public');
 const showSuggestions = ref(false);
 const hashtagSuggestions = ref([]);
 const popularHashtags = ref([]);
@@ -767,6 +718,7 @@ const resetForm = () => {
   createPostCategories.value = [];
   categoryInput.value = "";
   formError.value = "";
+  postVisibility.value = "public";
 
   showMentions.value = false;
   mentionSuggestions.value = [];
@@ -1810,6 +1762,7 @@ async function handleCreatePost() {
         ...form.value,
         images: images.value,
         tags: createPostCategories.value,
+        visibility: postVisibility.value,
       });
 
       // Emit the event with the complete post data for immediate display
@@ -2199,5 +2152,16 @@ button {
 
 .animate-party-slow {
   animation: party-slow 3s ease-in-out infinite;
+}
+
+/* Flutter-style placeholder for contenteditable */
+[contenteditable=true]:empty:before {
+  content: attr(data-placeholder);
+  color: #d1d5db;
+  pointer-events: none;
+  display: block;
+}
+.dark [contenteditable=true]:empty:before {
+  color: #4b5563;
 }
 </style>
