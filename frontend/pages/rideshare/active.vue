@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+    <div class="min-h-screen py-4 sm:py-8 bg-gradient-to-b from-gray-50 to-gray-100">
       <UContainer class="max-w-7xl">
         <div class="mb-6">
           <h1 class="text-2xl font-semibold text-gray-900">Active Trip</h1>
@@ -43,8 +43,8 @@
               <div class="mt-2 text-lg font-semibold text-gray-900">{{ ride.distance_km }} km</div>
             </div>
             <div class="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
-              <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Socket</div>
-              <div class="mt-2 text-lg font-semibold text-gray-900 capitalize">{{ rideConnectionState }}</div>
+              <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Updates</div>
+              <div class="mt-2 text-lg font-semibold text-gray-900">{{ rideUpdatesStatus }}</div>
             </div>
           </div>
 
@@ -184,6 +184,7 @@ const updatingStatus = ref(false);
 const cancellingRide = ref(false);
 const completionFare = ref("");
 let stopRideSocket = null;
+let rideStatusPoller = null;
 
 const isDriver = computed(() => {
   return ride.value?.assigned_driver?.user?.id === user.value?.user?.id;
@@ -191,6 +192,22 @@ const isDriver = computed(() => {
 
 const canCancelRide = computed(() => {
   return ride.value && !["completed", "cancelled"].includes(ride.value.status);
+});
+
+const rideUpdatesStatus = computed(() => {
+  if (rideConnectionState.value === "connected") {
+    return "Live";
+  }
+  if (["failed", "error", "closed"].includes(rideConnectionState.value)) {
+    return "Polling active";
+  }
+  if (rideConnectionState.value === "reconnecting") {
+    return "Reconnecting";
+  }
+  if (rideConnectionState.value === "connecting") {
+    return "Connecting";
+  }
+  return "Polling active";
 });
 
 const pickupPoint = computed(() => {
@@ -272,8 +289,31 @@ const startRideSocket = () => {
   });
 };
 
-const loadActiveRide = async () => {
-  loadingRide.value = true;
+const stopRideStatusPolling = () => {
+  if (rideStatusPoller) {
+    clearInterval(rideStatusPoller);
+    rideStatusPoller = null;
+  }
+};
+
+const startRideStatusPolling = () => {
+  stopRideStatusPolling();
+  if (!ride.value?.id) {
+    return;
+  }
+
+  rideStatusPoller = setInterval(() => {
+    if (updatingStatus.value || cancellingRide.value) {
+      return;
+    }
+    loadActiveRide(true);
+  }, 5000);
+};
+
+const loadActiveRide = async (silent = false) => {
+  if (!silent) {
+    loadingRide.value = true;
+  }
   pageError.value = "";
   const result = await getActiveRide();
   if (result.success) {
@@ -281,11 +321,16 @@ const loadActiveRide = async () => {
     if (ride.value) {
       completionFare.value = ride.value.final_fare || ride.value.fare_estimate || "";
       startRideSocket();
+      startRideStatusPolling();
+    } else {
+      stopRideStatusPolling();
     }
   } else {
     pageError.value = result.message;
   }
-  loadingRide.value = false;
+  if (!silent) {
+    loadingRide.value = false;
+  }
 };
 
 const cancelCurrentRide = async () => {
@@ -336,5 +381,6 @@ onBeforeUnmount(() => {
   if (stopRideSocket) {
     stopRideSocket();
   }
+  stopRideStatusPolling();
 });
 </script>

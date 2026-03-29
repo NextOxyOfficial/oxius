@@ -81,12 +81,19 @@
                         </div>
                         <button
                           type="button"
-                          class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                          :class="{ 'animate-pulse': locatingPickup }"
+                          class="flex-shrink-0 h-8 rounded-full bg-gray-100 hover:bg-gray-200 inline-flex items-center justify-center gap-1.5 px-3 text-[11px] font-semibold text-gray-700 transition-colors"
+                          :disabled="locatingPickup"
+                          :class="locatingPickup ? 'cursor-wait bg-gray-200 text-gray-600' : ''"
                           @click.stop="useCurrentLocation"
                         >
-                          <UIcon v-if="!searchingPickup" name="i-heroicons-map-pin" class="w-4 h-4 text-gray-600" />
-                          <div v-else class="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                          <template v-if="locatingPickup">
+                            <div class="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                            <span>{{ $t("rideshare_selecting") }}</span>
+                          </template>
+                          <template v-else>
+                            <UIcon name="i-heroicons-map-pin" class="w-4 h-4 text-gray-600" />
+                            <span>{{ $t("rideshare_current_location") }}</span>
+                          </template>
                         </button>
                       </div>
                       <!-- Pickup suggestions dropdown -->
@@ -179,7 +186,7 @@
                 </div>
 
                 <!-- Action buttons -->
-                <div class="grid grid-cols-2 gap-2 pt-1">
+                <div class="pt-1">
                   <UButton
                     color="emerald"
                     block
@@ -189,45 +196,47 @@
                   >
                     {{ $t("rideshare_get_estimate") }}
                   </UButton>
-                  <UButton
-                    color="primary"
-                    variant="soft"
-                    block
-                    :loading="creatingRide"
-                    :disabled="!estimateResult || Boolean(activeRide)"
-                    @click="submitRideRequest"
-                  >
-                    {{ $t("rideshare_confirm_ride") }}
-                  </UButton>
                 </div>
-              </div>
-            </div>
 
-            <!-- Fare Summary -->
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3">
-                <h2 class="text-sm font-bold text-gray-900">{{ $t("rideshare_fare_summary") }}</h2>
-                <UBadge :color="estimateResult ? 'emerald' : 'gray'" variant="soft" size="xs">
-                  {{ estimateResult ? $t("rideshare_ready") : $t("rideshare_waiting") }}
-                </UBadge>
-              </div>
-              <div class="p-4">
-                <div v-if="estimateResult" class="grid grid-cols-3 gap-2">
-                  <div class="rounded-lg bg-gray-50 border border-gray-100 px-3 py-3 text-center">
-                    <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t("rideshare_distance") }}</div>
-                    <div class="mt-1 text-sm font-bold text-gray-900">{{ estimateResult.distance_km }} km</div>
+                <!-- Fare Summary -->
+                <div class="rounded-xl border border-gray-200 overflow-hidden bg-white">
+                  <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3 bg-gray-50/70">
+                    <h2 class="text-sm font-bold text-gray-900">{{ $t("rideshare_fare_summary") }}</h2>
+                    <UBadge :color="estimateResult ? 'emerald' : 'gray'" variant="soft" size="xs">
+                      {{ estimateResult ? $t("rideshare_ready") : $t("rideshare_waiting") }}
+                    </UBadge>
                   </div>
-                  <div class="rounded-lg bg-gray-50 border border-gray-100 px-3 py-3 text-center">
-                    <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t("rideshare_eta") }}</div>
-                    <div class="mt-1 text-sm font-bold text-gray-900">{{ formatEta(estimateResult.eta_seconds) }}</div>
+                  <div class="p-4">
+                    <div v-if="estimateResult" class="space-y-3">
+                      <div class="grid grid-cols-3 gap-2">
+                        <div class="rounded-lg bg-gray-50 border border-gray-100 px-3 py-3 text-center">
+                          <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t("rideshare_distance") }}</div>
+                          <div class="mt-1 text-sm font-bold text-gray-900">{{ estimateResult.distance_km }} km</div>
+                        </div>
+                        <div class="rounded-lg bg-gray-50 border border-gray-100 px-3 py-3 text-center">
+                          <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">{{ $t("rideshare_eta") }}</div>
+                          <div class="mt-1 text-sm font-bold text-gray-900">{{ formatEta(estimateResult.eta_seconds) }}</div>
+                        </div>
+                        <div class="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-3 text-center">
+                          <div class="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold">{{ $t("rideshare_fare") }}</div>
+                          <div class="mt-1 text-sm font-bold text-emerald-800">৳{{ estimateResult.fare }}</div>
+                        </div>
+                      </div>
+                      <UButton
+                        color="gray"
+                        variant="soft"
+                        block
+                        :loading="creatingRide"
+                        :disabled="!estimateResult || Boolean(activeRide)"
+                        @click="submitRideRequest"
+                      >
+                        {{ $t("rideshare_confirm_ride") }}
+                      </UButton>
+                    </div>
+                    <div v-else class="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-5 text-xs text-gray-400 text-center">
+                      {{ $t("rideshare_fare_placeholder") }}
+                    </div>
                   </div>
-                  <div class="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-3 text-center">
-                    <div class="text-[10px] uppercase tracking-wider text-emerald-600 font-semibold">{{ $t("rideshare_fare") }}</div>
-                    <div class="mt-1 text-sm font-bold text-emerald-800">৳{{ estimateResult.fare }}</div>
-                  </div>
-                </div>
-                <div v-else class="rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-5 text-xs text-gray-400 text-center">
-                  {{ $t("rideshare_fare_placeholder") }}
                 </div>
               </div>
             </div>
@@ -434,9 +443,52 @@ const serializeCoordinate = (value) => Number(Number(value || 0).toFixed(6));
 
 const searchCache = new Map();
 const CACHE_TTL = 60000;
+const MIN_SEARCH_LENGTH = 3;
+const SEARCH_DEBOUNCE_MS = 120;
+
+const getSuggestionSearchText = (item) => {
+  return [item?.name, formatAddress(item?.address)]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+};
+
+const getInstantSuggestions = (query) => {
+  const trimmed = query.trim().toLowerCase();
+  if (trimmed.length < MIN_SEARCH_LENGTH) {
+    return [];
+  }
+
+  const matches = [];
+  for (const [cachedQuery, cachedEntry] of searchCache.entries()) {
+    if (!cachedEntry?.data?.length || Date.now() - cachedEntry.ts >= CACHE_TTL) {
+      continue;
+    }
+
+    if (!trimmed.startsWith(cachedQuery) && !cachedQuery.startsWith(trimmed)) {
+      continue;
+    }
+
+    for (const item of cachedEntry.data) {
+      const searchText = getSuggestionSearchText(item);
+      if (!searchText.includes(trimmed)) {
+        continue;
+      }
+      if (matches.some((existing) => existing.latitude === item.latitude && existing.longitude === item.longitude)) {
+        continue;
+      }
+      matches.push(item);
+      if (matches.length >= 5) {
+        return matches;
+      }
+    }
+  }
+
+  return matches;
+};
 
 const runLocationSearch = async (target, query, requestId) => {
-  if (!query || query.trim().length < 2) {
+  if (!query || query.trim().length < MIN_SEARCH_LENGTH) {
     if (target === "pickup") {
       pickupSuggestions.value = [];
       searchingPickup.value = false;
@@ -524,16 +576,20 @@ watch(pickupQuery, (value) => {
     suppressPickupWatch = false;
     return;
   }
-  if (!value || value.trim().length < 2) {
+  if (!value || value.trim().length < MIN_SEARCH_LENGTH) {
     pickupSearchRequestId += 1;
     pickupSuggestions.value = [];
     searchingPickup.value = false;
     return;
   }
+  const instantSuggestions = getInstantSuggestions(value);
+  if (instantSuggestions.length) {
+    pickupSuggestions.value = instantSuggestions;
+  }
   searchingPickup.value = true;
   pickupSearchRequestId += 1;
   const requestId = pickupSearchRequestId;
-  pickupTimer = setTimeout(() => runLocationSearch("pickup", value, requestId), 250);
+  pickupTimer = setTimeout(() => runLocationSearch("pickup", value, requestId), SEARCH_DEBOUNCE_MS);
 });
 
 watch(dropQuery, (value) => {
@@ -543,16 +599,20 @@ watch(dropQuery, (value) => {
     suppressDropWatch = false;
     return;
   }
-  if (!value || value.trim().length < 2) {
+  if (!value || value.trim().length < MIN_SEARCH_LENGTH) {
     dropSearchRequestId += 1;
     dropSuggestions.value = [];
     searchingDrop.value = false;
     return;
   }
+  const instantSuggestions = getInstantSuggestions(value);
+  if (instantSuggestions.length) {
+    dropSuggestions.value = instantSuggestions;
+  }
   searchingDrop.value = true;
   dropSearchRequestId += 1;
   const requestId = dropSearchRequestId;
-  dropTimer = setTimeout(() => runLocationSearch("drop", value, requestId), 250);
+  dropTimer = setTimeout(() => runLocationSearch("drop", value, requestId), SEARCH_DEBOUNCE_MS);
 });
 
 watch(selectedVehicleType, () => {

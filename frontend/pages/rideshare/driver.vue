@@ -1,6 +1,6 @@
 <template>
   <PublicSection>
-    <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+    <div class="min-h-screen py-4 sm:py-8 bg-gradient-to-b from-gray-50 to-gray-100">
       <UContainer class="max-w-7xl">
         <div class="mb-6">
           <h1 class="text-2xl font-semibold text-gray-900">Driver Dashboard</h1>
@@ -30,8 +30,8 @@
               <div class="mt-2 text-lg font-semibold text-emerald-700">৳{{ earningsSummary?.total_earnings || '0.00' }}</div>
             </div>
             <div class="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
-              <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Dispatch Socket</div>
-              <div class="mt-2 text-lg font-semibold text-gray-900 capitalize">{{ dispatchConnectionState }}</div>
+              <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Updates</div>
+              <div class="mt-2 text-lg font-semibold text-gray-900">{{ dispatchUpdatesStatus }}</div>
             </div>
           </div>
 
@@ -176,11 +176,31 @@ const savingProfile = ref(false);
 const togglingOnline = ref(false);
 const acceptingRideId = ref(null);
 let stopDispatchSocket = null;
+let rideRequestPoller = null;
 
 const profileForm = ref({
   license_number: "",
   national_id_number: "",
   service_radius_km: 8,
+});
+
+const dispatchUpdatesStatus = computed(() => {
+  if (!driverProfile.value?.is_online) {
+    return "Offline";
+  }
+  if (dispatchConnectionState.value === "connected") {
+    return "Live";
+  }
+  if (["failed", "error", "closed"].includes(dispatchConnectionState.value)) {
+    return "Polling active";
+  }
+  if (dispatchConnectionState.value === "reconnecting") {
+    return "Reconnecting";
+  }
+  if (dispatchConnectionState.value === "connecting") {
+    return "Connecting";
+  }
+  return "Polling active";
 });
 
 const formatDateTime = (value) => {
@@ -224,6 +244,27 @@ const loadAvailableRequests = async () => {
   loadingRequests.value = false;
 };
 
+const stopRideRequestPolling = () => {
+  if (rideRequestPoller) {
+    clearInterval(rideRequestPoller);
+    rideRequestPoller = null;
+  }
+};
+
+const startRideRequestPolling = () => {
+  stopRideRequestPolling();
+  if (!driverProfile.value?.is_online) {
+    return;
+  }
+
+  rideRequestPoller = setInterval(() => {
+    if (!driverProfile.value?.is_online || loadingRequests.value) {
+      return;
+    }
+    loadAvailableRequests();
+  }, 5000);
+};
+
 const saveProfile = async () => {
   savingProfile.value = true;
   pageError.value = "";
@@ -251,7 +292,11 @@ const toggleOnlineStatus = async () => {
     toast.add({ title: "Availability updated", description: result.message, color: "green" });
     if (driverProfile.value?.is_online) {
       startDispatchSocket();
+    } else if (stopDispatchSocket) {
+      stopDispatchSocket();
+      stopDispatchSocket = null;
     }
+    startRideRequestPolling();
     await loadSummary();
     await loadAvailableRequests();
   } else {
@@ -300,11 +345,13 @@ onMounted(async () => {
   await loadSummary();
   await loadAvailableRequests();
   startDispatchSocket();
+  startRideRequestPolling();
 });
 
 onBeforeUnmount(() => {
   if (stopDispatchSocket) {
     stopDispatchSocket();
   }
+  stopRideRequestPolling();
 });
 </script>

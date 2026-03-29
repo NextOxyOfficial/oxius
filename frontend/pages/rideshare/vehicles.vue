@@ -1,7 +1,7 @@
 <template>
   <PublicSection>
-    <div class="min-h-screen py-8 bg-gradient-to-b from-gray-50 to-gray-100">
-      <UContainer class="max-w-6xl">
+    <div class="min-h-screen py-4 sm:py-8 bg-gradient-to-b from-gray-50 to-gray-100">
+      <UContainer class="max-w-7xl">
         <div class="mb-6">
           <h1 class="text-2xl font-semibold text-gray-900">Vehicle Management</h1>
           <p class="text-sm text-gray-600 mt-2">Add and manage driver vehicles before going online.</p>

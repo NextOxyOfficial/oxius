@@ -25,6 +25,8 @@ from .serializers import (
     VehicleSerializer,
 )
 from .services import (
+    assign_driver_to_ride,
+    attempt_auto_assign_driver,
     DispatchService,
     DriverLocationService,
     FareService,
@@ -143,7 +145,9 @@ class RideCreateView(RideshareApiMixin, APIView):
         )
         ride.status_history.create(status=Ride.STATUS_SEARCHING, actor=request.user, metadata={"routing_source": route["routing_source"]})
         DispatchService.broadcast_ride_request(ride)
+        attempt_auto_assign_driver(ride)
         DispatchService.send_ride_event(ride, "ride_created")
+        ride.refresh_from_db()
         return api_success(RideSerializer(ride, context={"request": request}).data, "Ride requested successfully.", status.HTTP_201_CREATED)
 
 
@@ -218,26 +222,11 @@ class RideAcceptView(RideshareApiMixin, APIView):
         ride = get_object_or_404(Ride.objects.select_for_update().select_related("assigned_driver", "rider"), id=id)
         driver_profile = request.user.driver_profile
 
-        if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
-            return api_error("Ride is no longer available.")
-        if not driver_profile.is_online:
-            return api_error("Go online before accepting rides.")
-        if not driver_profile.is_available:
-            return api_error("You are currently unavailable for new rides.")
+        try:
+            ride = assign_driver_to_ride(ride, driver_profile, actor=request.user, assignment_source="manual")
+        except DjangoValidationError as exc:
+            return api_error(str(exc))
 
-        vehicle = get_driver_default_vehicle(driver_profile)
-        if not vehicle:
-            return api_error("Add an active vehicle before accepting rides.")
-        if vehicle.vehicle_type != ride.requested_vehicle_type:
-            return api_error("Your default vehicle does not match this ride type.")
-
-        ride.assigned_driver = driver_profile
-        ride.vehicle = vehicle
-        ride.save(update_fields=["assigned_driver", "vehicle", "updated_at"])
-        driver_profile.is_available = False
-        driver_profile.save(update_fields=["is_available", "updated_at"])
-        ride.transition_to(Ride.STATUS_ACCEPTED, actor=request.user, metadata={"vehicle_id": str(vehicle.id)})
-        DispatchService.send_ride_event(ride, "ride_accepted")
         return api_success(RideSerializer(ride, context={"request": request}).data, "Ride accepted successfully.")
 
 

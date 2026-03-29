@@ -1,5 +1,6 @@
 from decimal import Decimal, ROUND_HALF_UP
 from math import asin, cos, radians, sin, sqrt
+import logging
 
 import httpx
 from asgiref.sync import async_to_sync
@@ -12,6 +13,9 @@ from channels.layers import get_channel_layer
 from base.models import Balance
 
 from .models import DriverLocation, DriverProfile, FareConfig, Ride, Vehicle
+
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_FARES = {
@@ -204,10 +208,140 @@ class RoutingService:
 
 class LocationService:
     @staticmethod
-    def search_places(query, limit=5):
-        if not query:
+    def _google_components_to_address(components):
+        address = {}
+        for component in components or []:
+            types = set(component.get("types") or [])
+            long_name = component.get("long_name") or ""
+            if "street_number" in types:
+                address["street_number"] = long_name
+            if "route" in types:
+                address["route"] = long_name
+            if "sublocality" in types or "sublocality_level_1" in types:
+                address["suburb"] = long_name
+            if "neighborhood" in types:
+                address["neighbourhood"] = long_name
+            if "locality" in types:
+                address["city"] = long_name
+            if "postal_town" in types:
+                address["town"] = long_name
+            if "administrative_area_level_2" in types:
+                address["county"] = long_name
+            if "administrative_area_level_1" in types:
+                address["state_district"] = long_name
+            if "country" in types:
+                address["country"] = long_name
+            if "postal_code" in types:
+                address["postcode"] = long_name
+
+        route = address.get("route")
+        street_number = address.get("street_number")
+        if route and street_number:
+            address["road"] = f"{street_number} {route}".strip()
+        elif route:
+            address["road"] = route
+        return address
+
+    @staticmethod
+    def _photon_properties_to_address(properties):
+        if not properties:
+            return {}
+
+        return {
+            "road": properties.get("street") or properties.get("name") or "",
+            "suburb": properties.get("district") or properties.get("suburb") or "",
+            "city": properties.get("city") or properties.get("county") or properties.get("state") or "",
+            "state_district": properties.get("state") or "",
+            "country": properties.get("country") or "",
+            "postcode": properties.get("postcode") or "",
+        }
+
+    @classmethod
+    def _search_places_google(cls, query, limit=5):
+        api_key = getattr(settings, "RIDESHARE_GOOGLE_MAPS_API_KEY", "").strip()
+        base_url = getattr(settings, "RIDESHARE_GOOGLE_PLACES_TEXTSEARCH_URL", "").strip()
+        if not api_key or not base_url:
             return []
 
+        params = {
+            "query": query,
+            "key": api_key,
+            "language": getattr(settings, "RIDESHARE_GOOGLE_LANGUAGE", "bn"),
+            "region": getattr(settings, "RIDESHARE_GOOGLE_REGION", "bd"),
+        }
+
+        try:
+            with httpx.Client(timeout=10.0, headers={"User-Agent": "adsyclub-rideshare/1.0"}) as client:
+                response = client.get(base_url, params=params)
+                response.raise_for_status()
+                payload = response.json()
+        except Exception:
+            return []
+
+        if payload.get("status") not in {"OK", "ZERO_RESULTS"}:
+            return []
+
+        results = []
+        for item in (payload.get("results") or [])[:limit]:
+            location = ((item.get("geometry") or {}).get("location") or {})
+            latitude = location.get("lat")
+            longitude = location.get("lng")
+            if latitude is None or longitude is None:
+                continue
+            results.append(
+                {
+                    "name": item.get("formatted_address") or item.get("name") or query,
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "address": cls._google_components_to_address(item.get("address_components") or []),
+                }
+            )
+        return results
+
+    @classmethod
+    def _search_places_photon(cls, query, limit=5):
+        base_url = getattr(settings, "RIDESHARE_PHOTON_URL", "").strip()
+        if not base_url:
+            return []
+
+        params = {
+            "q": query,
+            "limit": limit,
+            "lat": getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LAT", 23.6850),
+            "lon": getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LNG", 90.3563),
+        }
+
+        try:
+            with httpx.Client(timeout=10.0, headers={"User-Agent": "adsyclub-rideshare/1.0"}) as client:
+                response = client.get(base_url, params=params)
+                response.raise_for_status()
+                payload = response.json()
+        except Exception:
+            return []
+
+        results = []
+        for item in (payload.get("features") or [])[:limit]:
+            coordinates = ((item.get("geometry") or {}).get("coordinates") or [])
+            if len(coordinates) < 2:
+                continue
+            properties = item.get("properties") or {}
+            parts = [
+                properties.get("name"),
+                properties.get("city") or properties.get("state") or properties.get("county"),
+                properties.get("country"),
+            ]
+            results.append(
+                {
+                    "name": ", ".join([part for part in parts if part]) or query,
+                    "latitude": coordinates[1],
+                    "longitude": coordinates[0],
+                    "address": cls._photon_properties_to_address(properties),
+                }
+            )
+        return results
+
+    @staticmethod
+    def _search_places_nominatim(query, limit=5):
         nominatim_base_url = getattr(settings, "RIDESHARE_NOMINATIM_URL", "https://nominatim.openstreetmap.org")
         url = f"{nominatim_base_url.rstrip('/')}/search"
         params = {
@@ -238,8 +372,71 @@ class LocationService:
             )
         return results
 
+    @classmethod
+    def search_places(cls, query, limit=5):
+        if not query:
+            return []
+
+        provider = getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "google").strip().lower()
+        providers = [provider]
+        if provider != "google":
+            providers.append("google")
+        if provider != "photon":
+            providers.append("photon")
+        if provider != "nominatim":
+            providers.append("nominatim")
+
+        for current in providers:
+            if current == "google":
+                results = cls._search_places_google(query, limit=limit)
+            elif current == "photon":
+                results = cls._search_places_photon(query, limit=limit)
+            elif current == "nominatim":
+                results = cls._search_places_nominatim(query, limit=limit)
+            else:
+                results = []
+            if results:
+                return results
+        return []
+
+    @classmethod
+    def _reverse_geocode_google(cls, lat, lng):
+        api_key = getattr(settings, "RIDESHARE_GOOGLE_MAPS_API_KEY", "").strip()
+        base_url = getattr(settings, "RIDESHARE_GOOGLE_GEOCODE_URL", "").strip()
+        if not api_key or not base_url:
+            return None
+
+        params = {
+            "latlng": f"{lat},{lng}",
+            "key": api_key,
+            "language": getattr(settings, "RIDESHARE_GOOGLE_LANGUAGE", "bn"),
+            "region": getattr(settings, "RIDESHARE_GOOGLE_REGION", "bd"),
+        }
+
+        try:
+            with httpx.Client(timeout=10.0, headers={"User-Agent": "adsyclub-rideshare/1.0"}) as client:
+                response = client.get(base_url, params=params)
+                response.raise_for_status()
+                payload = response.json()
+        except Exception:
+            return None
+
+        if payload.get("status") not in {"OK", "ZERO_RESULTS"}:
+            return None
+
+        item = (payload.get("results") or [None])[0]
+        if not item:
+            return None
+        location = ((item.get("geometry") or {}).get("location") or {})
+        return {
+            "name": item.get("formatted_address", ""),
+            "latitude": location.get("lat", lat),
+            "longitude": location.get("lng", lng),
+            "address": cls._google_components_to_address(item.get("address_components") or []),
+        }
+
     @staticmethod
-    def reverse_geocode(lat, lng):
+    def _reverse_geocode_nominatim(lat, lng):
         nominatim_base_url = getattr(settings, "RIDESHARE_NOMINATIM_URL", "https://nominatim.openstreetmap.org")
         url = f"{nominatim_base_url.rstrip('/')}/reverse"
         params = {
@@ -264,6 +461,26 @@ class LocationService:
             "longitude": item.get("lon"),
             "address": item.get("address", {}),
         }
+
+    @classmethod
+    def reverse_geocode(cls, lat, lng):
+        provider = getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "google").strip().lower()
+        providers = [provider]
+        if provider != "google":
+            providers.append("google")
+        if provider != "nominatim":
+            providers.append("nominatim")
+
+        for current in providers:
+            if current == "google":
+                result = cls._reverse_geocode_google(lat, lng)
+            elif current == "nominatim":
+                result = cls._reverse_geocode_nominatim(lat, lng)
+            else:
+                result = None
+            if result:
+                return result
+        return None
 
 
 class FareService:
@@ -336,7 +553,11 @@ class DispatchService:
         channel_layer = get_channel_layer()
         if not channel_layer:
             return
-        async_to_sync(channel_layer.group_send)(group_name, payload)
+        try:
+            async_to_sync(channel_layer.group_send)(group_name, payload)
+        except Exception:
+            logger.exception("Rideshare dispatch broadcast failed for group %s", group_name)
+            return
 
     @classmethod
     def broadcast_ride_request(cls, ride):
@@ -414,3 +635,94 @@ class DriverLocationService:
 
 def get_driver_default_vehicle(driver_profile):
     return driver_profile.vehicles.filter(is_active=True, is_default=True).first() or driver_profile.vehicles.filter(is_active=True).first()
+
+
+def assign_driver_to_ride(ride, driver_profile, actor=None, assignment_source="manual"):
+    if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
+        raise ValidationError("Ride is no longer available.")
+    if driver_profile.approval_status != "approved":
+        raise ValidationError("Driver is not approved for dispatch.")
+    if not driver_profile.is_online:
+        raise ValidationError("Driver is offline.")
+    if not driver_profile.is_available:
+        raise ValidationError("Driver is currently unavailable for new rides.")
+
+    vehicle = get_driver_default_vehicle(driver_profile)
+    if not vehicle:
+        raise ValidationError("Add an active vehicle before accepting rides.")
+    if vehicle.vehicle_type != ride.requested_vehicle_type:
+        raise ValidationError("Driver vehicle type does not match this ride.")
+
+    ride.assigned_driver = driver_profile
+    ride.vehicle = vehicle
+    ride.save(update_fields=["assigned_driver", "vehicle", "updated_at"])
+
+    driver_profile.is_available = False
+    driver_profile.save(update_fields=["is_available", "updated_at"])
+
+    status_actor = actor or getattr(driver_profile, "user", None)
+    ride.transition_to(
+        Ride.STATUS_ACCEPTED,
+        actor=status_actor,
+        metadata={"vehicle_id": str(vehicle.id), "assignment_source": assignment_source},
+    )
+    DispatchService.send_ride_event(ride, "ride_accepted", {"assignment_source": assignment_source})
+    return ride
+
+
+def _driver_sort_key_for_ride(driver_profile, ride):
+    if driver_profile.current_latitude is None or driver_profile.current_longitude is None:
+        return (1, float("inf"), 0)
+
+    distance = RoutingService._haversine_distance_km(
+        float(driver_profile.current_latitude),
+        float(driver_profile.current_longitude),
+        float(ride.pickup_latitude),
+        float(ride.pickup_longitude),
+    )
+    return (0, distance, -(driver_profile.last_location_at.timestamp() if driver_profile.last_location_at else 0))
+
+
+def attempt_auto_assign_driver(ride):
+    if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
+        return None
+
+    candidates = list(
+        DriverProfile.objects.filter(
+            approval_status="approved",
+            is_online=True,
+            is_available=True,
+            vehicles__is_active=True,
+            vehicles__vehicle_type=ride.requested_vehicle_type,
+        )
+        .select_related("user")
+        .distinct()
+    )
+
+    if not candidates:
+        return None
+
+    candidates.sort(key=lambda driver_profile: _driver_sort_key_for_ride(driver_profile, ride))
+
+    for driver_profile in candidates:
+        try:
+            service_radius = float(driver_profile.service_radius_km or 0)
+        except (TypeError, ValueError):
+            service_radius = 0
+
+        if driver_profile.current_latitude is not None and driver_profile.current_longitude is not None and service_radius > 0:
+            distance = RoutingService._haversine_distance_km(
+                float(driver_profile.current_latitude),
+                float(driver_profile.current_longitude),
+                float(ride.pickup_latitude),
+                float(ride.pickup_longitude),
+            )
+            if distance > service_radius:
+                continue
+
+        try:
+            return assign_driver_to_ride(ride, driver_profile, actor=driver_profile.user, assignment_source="auto_dispatch")
+        except ValidationError:
+            continue
+
+    return None

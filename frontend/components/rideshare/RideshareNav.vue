@@ -1,11 +1,11 @@
 <template>
-  <div class="bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
-    <div class="flex flex-wrap gap-2">
+  <div class="w-full bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
       <NuxtLink
         v-for="item in items"
         :key="item.label"
         v-bind="item.disabled ? {} : { to: item.to }"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+        class="min-h-[42px] w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all text-center"
         :class="itemClass(item)"
       >
         <UIcon :name="item.icon" class="w-4 h-4" />
@@ -70,13 +70,13 @@ const itemClass = (item) => {
   const isActive = props.current === item.key || (!item.disabled && route.path === item.to);
 
   if (item.disabled) {
-    return "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-100";
+    return "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200";
   }
 
   if (isActive) {
     return "bg-emerald-600 text-white shadow-sm";
   }
 
-  return "bg-gray-50 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border border-gray-100";
+  return "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border border-gray-200";
 };
 </script>
