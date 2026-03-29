@@ -393,6 +393,26 @@
               </NuxtLink>
 
               <NuxtLink
+                to="/rideshare"
+                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                @click="isOpen = false"
+              >
+                <div
+                  class="flex items-center justify-center w-8 h-8 rounded-full bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400"
+                >
+                  <UIcon name="i-heroicons-map" class="w-5 h-5" />
+                </div>
+                <span
+                  class="flex-1 font-medium text-sm text-teal-700 dark:text-teal-300"
+                  >Ride Share</span
+                >
+                <UIcon
+                  name="i-heroicons-chevron-right"
+                  class="w-4 h-4 text-teal-500 dark:text-teal-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
+                />
+              </NuxtLink>
+
+              <NuxtLink
                 to="/food-zone"
                 class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
                 @click="isOpen = false"
@@ -643,6 +663,22 @@
               <div
                 class="absolute bottom-0 left-0 w-full h-0.5 bg-purple-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
                 :class="{ 'scale-x-100': $route.path === '/courses' }"
+              ></div>
+            </NuxtLink>
+
+            <NuxtLink
+              to="/rideshare"
+              class="relative flex items-center gap-2 py-1 px-2 font-medium text-teal-600 hover:text-teal-800 transition-all duration-300"
+              :class="{ active: $route.path.startsWith('/rideshare') }"
+            >
+              <UIcon
+                name="i-heroicons-map"
+                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
+              />
+              <span>Ride Share</span>
+              <div
+                class="absolute bottom-0 left-0 w-full h-0.5 bg-teal-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
+                :class="{ 'scale-x-100': $route.path.startsWith('/rideshare') }"
               ></div>
             </NuxtLink>
 

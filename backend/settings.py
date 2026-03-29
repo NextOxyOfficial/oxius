@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "channels",
     "base",
     "tinymce",
     "rest_framework",
@@ -70,6 +71,7 @@ INSTALLED_APPS = [
     "workspace",  # Workspace gigs system
     "referral_rewards",  # New Year referral reward program
     "raise_up",  # Raise Up crowdfunding system
+    "rideshare",  # Ride share MVP
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
@@ -194,7 +196,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.wsgi.application"
+ASGI_APPLICATION = "backend.asgi.application"
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.getenv("CHANNEL_REDIS_URL", "redis://127.0.0.1:6379/1")],
+        },
+    }
+}
 
 DATABASES = {
     "default": {
@@ -206,7 +217,6 @@ DATABASES = {
         "PORT": "5432",
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -226,7 +236,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -237,7 +246,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -272,6 +280,9 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+RIDESHARE_OSRM_URL = os.getenv("RIDESHARE_OSRM_URL", "http://127.0.0.1:5000")
+RIDESHARE_NOMINATIM_URL = os.getenv("RIDESHARE_NOMINATIM_URL", "https://nominatim.openstreetmap.org")
 
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # You can change this to your Redis URL

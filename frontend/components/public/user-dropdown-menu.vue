@@ -422,6 +422,14 @@ const navigationLinks = computed(() => [
     border: 'border-purple-200 dark:border-purple-800/30',
   },
   {
+    label: 'Ride Share',
+    to: '/rideshare',
+    icon: 'i-heroicons-map',
+    color: 'text-teal-600 dark:text-teal-400',
+    bg: 'from-teal-100 to-teal-50 dark:from-teal-900/30 dark:to-teal-900/10',
+    border: 'border-teal-200 dark:border-teal-800/30',
+  },
+  {
     label: t('ad'),
     to: '/my-classified-services/',
     icon: 'i-heroicons-megaphone',

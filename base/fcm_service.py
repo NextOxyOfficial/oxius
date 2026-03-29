@@ -7,26 +7,30 @@ from django.conf import settings
 FIREBASE_INITIALIZED = False
 FIREBASE_ERROR = None
 
+
+def _safe_print(message):
+    print(message.encode("ascii", errors="ignore").decode("ascii"))
+
 try:
     cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
     
     # Check if file exists
     if not os.path.exists(cred_path):
         FIREBASE_ERROR = f'Firebase credentials file not found at: {cred_path}'
-        print(f'❌ {FIREBASE_ERROR}')
+        _safe_print(f'[ERROR] {FIREBASE_ERROR}')
     else:
         if not firebase_admin._apps:
             cred = credentials.Certificate(cred_path)
             firebase_admin.initialize_app(cred)
             FIREBASE_INITIALIZED = True
-            print(f'✅ Firebase Admin SDK initialized successfully')
-            print(f'   Credentials file: {cred_path}')
+            _safe_print('Firebase Admin SDK initialized successfully')
+            _safe_print(f'Credentials file: {cred_path}')
         else:
             FIREBASE_INITIALIZED = True
-            print('✅ Firebase Admin SDK already initialized')
+            _safe_print('Firebase Admin SDK already initialized')
 except Exception as e:
     FIREBASE_ERROR = str(e)
-    print(f'❌ Error initializing Firebase Admin SDK: {e}')
+    _safe_print(f'[ERROR] Error initializing Firebase Admin SDK: {e}')
     import traceback
     traceback.print_exc()
 
@@ -46,15 +50,15 @@ def send_fcm_notification(fcm_token, title, body, data=None):
     """
     # Check if Firebase is initialized
     if not FIREBASE_INITIALIZED:
-        print(f'❌ Cannot send notification: Firebase Admin SDK not initialized')
+        _safe_print('Cannot send notification: Firebase Admin SDK not initialized')
         if FIREBASE_ERROR:
-            print(f'   Error: {FIREBASE_ERROR}')
+            _safe_print(f'Error: {FIREBASE_ERROR}')
         return False
     
     try:
         # Validate token
         if not fcm_token or not isinstance(fcm_token, str):
-            print(f'❌ Invalid FCM token: {fcm_token}')
+            _safe_print(f'[ERROR] Invalid FCM token: {fcm_token}')
             return False
         
         message = messaging.Message(
@@ -75,18 +79,18 @@ def send_fcm_notification(fcm_token, title, body, data=None):
         )
         
         response = messaging.send(message)
-        print(f'✅ Notification sent successfully: {response}')
+        _safe_print(f'Notification sent successfully: {response}')
         return True
     except messaging.UnregisteredError:
-        print(f'❌ Token is invalid or unregistered: {fcm_token[:50]}...')
+        _safe_print(f'[ERROR] Token is invalid or unregistered: {fcm_token[:50]}...')
         return False
     except messaging.SenderIdMismatchError:
-        print(f'❌ Token does not match Firebase project: {fcm_token[:50]}...')
+        _safe_print(f'[ERROR] Token does not match Firebase project: {fcm_token[:50]}...')
         return False
     except Exception as e:
-        print(f'❌ Error sending notification: {e}')
-        print(f'   Token: {fcm_token[:50]}...')
-        print(f'   Title: {title}')
+        _safe_print(f'[ERROR] Error sending notification: {e}')
+        _safe_print(f'Token: {fcm_token[:50]}...')
+        _safe_print(f'Title: {title}')
         import traceback
         traceback.print_exc()
         return False
@@ -107,9 +111,9 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
     """
     # Check if Firebase is initialized
     if not FIREBASE_INITIALIZED:
-        print(f'❌ Cannot send notification: Firebase Admin SDK not initialized')
+        _safe_print('Cannot send notification: Firebase Admin SDK not initialized')
         if FIREBASE_ERROR:
-            print(f'   Error: {FIREBASE_ERROR}')
+            _safe_print(f'Error: {FIREBASE_ERROR}')
         return None
     
     try:
@@ -117,10 +121,10 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
         valid_tokens = [token for token in fcm_tokens if token and isinstance(token, str)]
         
         if not valid_tokens:
-            print('⚠️ No valid FCM tokens provided')
+            _safe_print('[WARN] No valid FCM tokens provided')
             return None
         
-        print(f'📤 Sending multicast to {len(valid_tokens)} tokens')
+        _safe_print(f'Sending multicast to {len(valid_tokens)} tokens')
         
         # Create individual messages for each token
         messages = []
@@ -150,13 +154,13 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
         success_count = sum(1 for r in response.responses if r.success)
         failure_count = len(response.responses) - success_count
         
-        print(f'✅ Sent {success_count} notifications')
+        _safe_print(f'Sent {success_count} notifications')
         if failure_count > 0:
-            print(f'⚠️ Failed to send {failure_count} notifications')
+            _safe_print(f'[WARN] Failed to send {failure_count} notifications')
             # Log first few failures for debugging
             for idx, resp in enumerate(response.responses[:3]):
                 if not resp.success:
-                    print(f'   Failure {idx+1}: {resp.exception}')
+                    _safe_print(f'Failure {idx+1}: {resp.exception}')
         
         # Create a compatible response object
         class CompatibleResponse:
@@ -167,9 +171,9 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
         
         return CompatibleResponse(response.responses)
     except Exception as e:
-        print(f'❌ Error sending multicast notification: {e}')
-        print(f'   Title: {title}')
-        print(f'   Token count: {len(fcm_tokens)}')
+        _safe_print(f'[ERROR] Error sending multicast notification: {e}')
+        _safe_print(f'Title: {title}')
+        _safe_print(f'Token count: {len(fcm_tokens)}')
         import traceback
         traceback.print_exc()
         return None
@@ -188,10 +192,10 @@ def send_message_notification(recipient_user, sender_user, sender_name, message_
     """
     from .models import FCMToken
     
-    print(f'📨 send_message_notification called')
-    print(f'   Recipient: {recipient_user.email}')
-    print(f'   Sender: {sender_name} (ID: {sender_user.id})')
-    print(f'   Chat ID: {chat_id}')
+    _safe_print('send_message_notification called')
+    _safe_print(f'Recipient: {recipient_user.email}')
+    _safe_print(f'Sender: {sender_name} (ID: {sender_user.id})')
+    _safe_print(f'Chat ID: {chat_id}')
     
     # Get user's active FCM tokens
     fcm_tokens = FCMToken.objects.filter(
@@ -200,10 +204,10 @@ def send_message_notification(recipient_user, sender_user, sender_name, message_
     ).values_list('token', flat=True)
     
     token_count = len(fcm_tokens)
-    print(f'   Found {token_count} active FCM tokens')
+    _safe_print(f'Found {token_count} active FCM tokens')
     
     if not fcm_tokens:
-        print(f'   ⚠️ No FCM tokens found for user: {recipient_user.email}')
+        _safe_print(f'[WARN] No FCM tokens found for user: {recipient_user.email}')
         return
     
     # Truncate long messages
@@ -212,7 +216,7 @@ def send_message_notification(recipient_user, sender_user, sender_name, message_
     # Send notification to each token
     success_count = 0
     for token in fcm_tokens:
-        print(f'   Sending to token: {token[:50]}...')
+        _safe_print(f'Sending to token: {token[:50]}...')
         result = send_fcm_notification(
             fcm_token=token,
             title=f'New message from {sender_name}',

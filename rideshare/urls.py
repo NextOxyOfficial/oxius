@@ -1,0 +1,41 @@
+from django.urls import path
+
+from .views import (
+    ActiveRideView,
+    AvailableRideRequestListView,
+    DriverEarningsSummaryView,
+    DriverLocationUpdateView,
+    DriverProfileView,
+    DriverToggleOnlineView,
+    EstimateRideView,
+    LocationSearchView,
+    ReverseGeocodeView,
+    RideAcceptView,
+    RideCancelView,
+    RideCreateView,
+    RideDetailView,
+    RideListView,
+    RideStatusUpdateView,
+    VehicleDetailView,
+    VehicleListCreateView,
+)
+
+urlpatterns = [
+    path("estimate/", EstimateRideView.as_view(), name="rides-estimate"),
+    path("create/", RideCreateView.as_view(), name="rides-create"),
+    path("", RideListView.as_view(), name="rides-list"),
+    path("active/", ActiveRideView.as_view(), name="rides-active"),
+    path("location/search/", LocationSearchView.as_view(), name="rides-location-search"),
+    path("location/reverse/", ReverseGeocodeView.as_view(), name="rides-location-reverse"),
+    path("drivers/profile/", DriverProfileView.as_view(), name="rides-driver-profile"),
+    path("drivers/toggle-online/", DriverToggleOnlineView.as_view(), name="rides-driver-toggle-online"),
+    path("drivers/location/update/", DriverLocationUpdateView.as_view(), name="rides-driver-location-update"),
+    path("drivers/earnings-summary/", DriverEarningsSummaryView.as_view(), name="rides-driver-earnings-summary"),
+    path("drivers/vehicles/", VehicleListCreateView.as_view(), name="rides-driver-vehicles"),
+    path("drivers/vehicles/<uuid:id>/", VehicleDetailView.as_view(), name="rides-driver-vehicle-detail"),
+    path("driver/available/", AvailableRideRequestListView.as_view(), name="rides-driver-available"),
+    path("<uuid:id>/", RideDetailView.as_view(), name="rides-detail"),
+    path("<uuid:id>/accept/", RideAcceptView.as_view(), name="rides-accept"),
+    path("<uuid:id>/cancel/", RideCancelView.as_view(), name="rides-cancel"),
+    path("<uuid:id>/status/", RideStatusUpdateView.as_view(), name="rides-status-update"),
+]
