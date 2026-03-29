@@ -1,3 +1,5 @@
+from decimal import Decimal, ROUND_HALF_UP
+
 from rest_framework import serializers
 
 from base.models import User
@@ -151,13 +153,28 @@ class RideSerializer(serializers.ModelSerializer):
 
 
 class RideEstimateRequestSerializer(serializers.Serializer):
-    pickup_latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
-    pickup_longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
-    drop_latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
-    drop_longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
-    pickup_address = serializers.CharField(max_length=255, required=False, allow_blank=True)
-    drop_address = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    pickup_latitude = serializers.FloatField()
+    pickup_longitude = serializers.FloatField()
+    drop_latitude = serializers.FloatField()
+    drop_longitude = serializers.FloatField()
+    pickup_address = serializers.CharField(required=False, allow_blank=True)
+    drop_address = serializers.CharField(required=False, allow_blank=True)
     vehicle_type = serializers.ChoiceField(choices=Vehicle.VEHICLE_TYPE_CHOICES, default="bike")
+
+    @staticmethod
+    def _normalize_coordinate(value, minimum, maximum, label):
+        if value < minimum or value > maximum:
+            raise serializers.ValidationError({label: f"{label} must be between {minimum} and {maximum}."})
+        return Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
+
+    def validate(self, attrs):
+        attrs["pickup_latitude"] = self._normalize_coordinate(attrs["pickup_latitude"], -90, 90, "pickup_latitude")
+        attrs["pickup_longitude"] = self._normalize_coordinate(attrs["pickup_longitude"], -180, 180, "pickup_longitude")
+        attrs["drop_latitude"] = self._normalize_coordinate(attrs["drop_latitude"], -90, 90, "drop_latitude")
+        attrs["drop_longitude"] = self._normalize_coordinate(attrs["drop_longitude"], -180, 180, "drop_longitude")
+        attrs["pickup_address"] = (attrs.get("pickup_address") or "")[:255]
+        attrs["drop_address"] = (attrs.get("drop_address") or "")[:255]
+        return attrs
 
 
 class RideCreateSerializer(RideEstimateRequestSerializer):

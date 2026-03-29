@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -64,7 +64,7 @@ class RideshareApiMixin:
 
 
 class EstimateRideView(RideshareApiMixin, APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RideEstimateRequestSerializer(data=request.data)
@@ -418,7 +418,7 @@ class VehicleDetailView(RideshareApiMixin, APIView):
 
 
 class LocationSearchView(RideshareApiMixin, APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         query = request.query_params.get("q", "")
@@ -430,7 +430,7 @@ class LocationSearchView(RideshareApiMixin, APIView):
 
 
 class ReverseGeocodeView(RideshareApiMixin, APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         lat = request.query_params.get("lat")

@@ -48,6 +48,46 @@ def decimal_money(value):
 
 class RoutingService:
     @staticmethod
+    def _decode_polyline(encoded, precision=6):
+        if not encoded:
+            return []
+
+        coordinates = []
+        index = 0
+        lat = 0
+        lng = 0
+        factor = 10 ** precision
+
+        while index < len(encoded):
+            result = 0
+            shift = 0
+            while True:
+                byte = ord(encoded[index]) - 63
+                index += 1
+                result |= (byte & 0x1F) << shift
+                shift += 5
+                if byte < 0x20:
+                    break
+            delta_lat = ~(result >> 1) if result & 1 else result >> 1
+            lat += delta_lat
+
+            result = 0
+            shift = 0
+            while True:
+                byte = ord(encoded[index]) - 63
+                index += 1
+                result |= (byte & 0x1F) << shift
+                shift += 5
+                if byte < 0x20:
+                    break
+            delta_lng = ~(result >> 1) if result & 1 else result >> 1
+            lng += delta_lng
+
+            coordinates.append([lng / factor, lat / factor])
+
+        return coordinates
+
+    @staticmethod
     def _haversine_distance_km(lat1, lng1, lat2, lng2):
         lat1, lng1, lat2, lng2 = map(radians, [lat1, lng1, lat2, lng2])
         dlat = lat2 - lat1
@@ -57,7 +97,47 @@ class RoutingService:
         return 6371 * c
 
     @classmethod
-    def get_route(cls, pickup_lat, pickup_lng, drop_lat, drop_lng):
+    def _get_openstreet_route(cls, pickup_lat, pickup_lng, drop_lat, drop_lng):
+        route_url = getattr(settings, "RIDESHARE_OPENSTREET_ROUTE_URL", "").strip()
+        route_key = getattr(settings, "RIDESHARE_OPENSTREET_ROUTE_KEY", "").strip()
+        if not route_url or not route_key:
+            return None
+
+        params = {
+            "origin": f"{pickup_lat},{pickup_lng}",
+            "destination": f"{drop_lat},{drop_lng}",
+            "mode": "driving",
+            "key": route_key,
+        }
+        headers = {
+            "User-Agent": "adsyclub-rideshare/1.0",
+            "Accept-Encoding": "gzip, deflate",
+        }
+
+        try:
+            with httpx.Client(timeout=10.0, headers=headers) as client:
+                response = client.get(route_url, params=params)
+                response.raise_for_status()
+                payload = response.json()
+        except Exception:
+            return None
+
+        if payload.get("status") != "OK":
+            return None
+
+        coordinates = cls._decode_polyline(payload.get("polyline", ""), precision=6)
+        return {
+            "distance_km": decimal_money(Decimal(str(payload.get("total_distance", 0))) / Decimal("1000")),
+            "duration_seconds": int(payload.get("total_time", 0)),
+            "route_geometry": {
+                "type": "LineString",
+                "coordinates": coordinates,
+            },
+            "routing_source": "openstreet",
+        }
+
+    @classmethod
+    def _get_osrm_route(cls, pickup_lat, pickup_lng, drop_lat, drop_lng):
         osrm_base_url = getattr(settings, "RIDESHARE_OSRM_URL", "http://localhost:5000")
         url = f"{osrm_base_url.rstrip('/')}/route/v1/driving/{pickup_lng},{pickup_lat};{drop_lng},{drop_lat}"
         params = {
@@ -83,7 +163,29 @@ class RoutingService:
                     "routing_source": "osrm",
                 }
         except Exception:
-            pass
+            return None
+
+        return None
+
+    @classmethod
+    def get_route(cls, pickup_lat, pickup_lng, drop_lat, drop_lng):
+        route_provider = getattr(settings, "RIDESHARE_ROUTE_PROVIDER", "openstreet").strip().lower()
+        providers = [route_provider]
+        if route_provider != "openstreet":
+            providers.append("openstreet")
+        if route_provider != "osrm":
+            providers.append("osrm")
+
+        for provider in providers:
+            if provider == "openstreet":
+                route = cls._get_openstreet_route(pickup_lat, pickup_lng, drop_lat, drop_lng)
+            elif provider == "osrm":
+                route = cls._get_osrm_route(pickup_lat, pickup_lng, drop_lat, drop_lng)
+            else:
+                route = None
+
+            if route:
+                return route
 
         distance_km = cls._haversine_distance_km(float(pickup_lat), float(pickup_lng), float(drop_lat), float(drop_lng))
         return {

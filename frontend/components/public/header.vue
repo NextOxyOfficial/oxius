@@ -412,26 +412,6 @@
                 />
               </NuxtLink>
 
-              <NuxtLink
-                to="/food-zone"
-                class="flex items-center py-3 px-4 gap-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
-                @click="isOpen = false"
-              >
-                <div
-                  class="flex items-center justify-center w-8 h-8 rounded-full bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
-                >
-                  <UIcon name="i-heroicons-rectangle-stack" class="w-5 h-5" />
-                </div>
-                <span
-                  class="flex-1 font-medium text-sm text-pink-700 dark:text-pink-300"
-                  >Food Zone</span
-                >
-                <UIcon
-                  name="i-heroicons-chevron-right"
-                  class="w-4 h-4 text-pink-500 dark:text-pink-400 opacity-50 transition-transform group-hover:translate-x-1 group-hover:opacity-100"
-                />
-              </NuxtLink>
-
               <!-- News -->
               <NuxtLink
                 to="/adsy-news"
@@ -615,22 +595,6 @@
               <div
                 class="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
                 :class="{ 'scale-x-100': $route.path === '/business-network' }"
-              ></div>
-            </NuxtLink>
-
-            <NuxtLink
-              to="/food-zone"
-              class="relative flex items-center gap-2 py-1 px-2 font-medium text-pink-600 hover:text-pink-800 transition-all duration-300"
-              :class="{ active: $route.path === '/food-zone' }"
-            >
-              <UIcon
-                name="i-heroicons-rectangle-stack"
-                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
-              />
-              <span>Food Zone</span>
-              <div
-                class="absolute bottom-0 left-0 w-full h-0.5 bg-pink-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
-                :class="{ 'scale-x-100': $route.path === '/food-zone' }"
               ></div>
             </NuxtLink>
 
