@@ -58,12 +58,24 @@ export default defineNuxtConfig({
       optimizeTranslationDirective: false,
     },
   },
+
   googleFonts: {
     families: {
-      "Anek+Bangla": { wght: "200..800" },
+      Inter: {
+        wght: [300, 400, 500, 600, 700, 800],
+        subsets: ['latin'],
+      },
+      "Anek Bangla": {
+        wght: [200, 300, 400, 500, 600, 700, 800],
+        subsets: ['bengali', 'latin'],
+      },
     },
-    display: "swap", // Optional: This is a good practice to improve performance
+    display: 'swap',
+    prefetch: false,
+    preconnect: false,
+    preload: false,
   },
+
   app: {
     buildAssetsDir: "/static/frontend/",
     head: {
