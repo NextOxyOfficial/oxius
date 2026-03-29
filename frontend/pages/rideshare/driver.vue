@@ -176,7 +176,6 @@ const savingProfile = ref(false);
 const togglingOnline = ref(false);
 const acceptingRideId = ref(null);
 let stopDispatchSocket = null;
-let rideRequestPoller = null;
 
 const profileForm = ref({
   license_number: "",
@@ -192,7 +191,7 @@ const dispatchUpdatesStatus = computed(() => {
     return "Live";
   }
   if (["failed", "error", "closed"].includes(dispatchConnectionState.value)) {
-    return "Polling active";
+    return "Disconnected";
   }
   if (dispatchConnectionState.value === "reconnecting") {
     return "Reconnecting";
@@ -200,7 +199,7 @@ const dispatchUpdatesStatus = computed(() => {
   if (dispatchConnectionState.value === "connecting") {
     return "Connecting";
   }
-  return "Polling active";
+  return "Disconnected";
 });
 
 const formatDateTime = (value) => {
@@ -244,27 +243,6 @@ const loadAvailableRequests = async () => {
   loadingRequests.value = false;
 };
 
-const stopRideRequestPolling = () => {
-  if (rideRequestPoller) {
-    clearInterval(rideRequestPoller);
-    rideRequestPoller = null;
-  }
-};
-
-const startRideRequestPolling = () => {
-  stopRideRequestPolling();
-  if (!driverProfile.value?.is_online) {
-    return;
-  }
-
-  rideRequestPoller = setInterval(() => {
-    if (!driverProfile.value?.is_online || loadingRequests.value) {
-      return;
-    }
-    loadAvailableRequests();
-  }, 5000);
-};
-
 const saveProfile = async () => {
   savingProfile.value = true;
   pageError.value = "";
@@ -296,7 +274,6 @@ const toggleOnlineStatus = async () => {
       stopDispatchSocket();
       stopDispatchSocket = null;
     }
-    startRideRequestPolling();
     await loadSummary();
     await loadAvailableRequests();
   } else {
@@ -337,6 +314,9 @@ const startDispatchSocket = () => {
         color: "blue",
       });
     }
+    if (payload?.type === "ride.event" && ["ride_accepted", "ride_cancelled"].includes(payload.event)) {
+      loadAvailableRequests();
+    }
   });
 };
 
@@ -345,13 +325,11 @@ onMounted(async () => {
   await loadSummary();
   await loadAvailableRequests();
   startDispatchSocket();
-  startRideRequestPolling();
 });
 
 onBeforeUnmount(() => {
   if (stopDispatchSocket) {
     stopDispatchSocket();
   }
-  stopRideRequestPolling();
 });
 </script>

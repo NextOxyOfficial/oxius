@@ -24,7 +24,7 @@ export function useRideshareSocket() {
     stateRef,
     lastEventRef,
     onMessage,
-    maxReconnectAttempts = 5,
+    maxReconnectAttempts = Number.POSITIVE_INFINITY,
   }: {
     url: string;
     socketRef: Ref<WebSocket | null>;
@@ -72,7 +72,7 @@ export function useRideshareSocket() {
           return;
         }
 
-        if (reconnectAttempts >= maxReconnectAttempts) {
+        if (Number.isFinite(maxReconnectAttempts) && reconnectAttempts >= maxReconnectAttempts) {
           stateRef.value = "failed";
           return;
         }

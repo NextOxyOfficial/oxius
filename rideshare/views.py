@@ -219,7 +219,7 @@ class RideAcceptView(RideshareApiMixin, APIView):
 
     @transaction.atomic
     def post(self, request, id):
-        ride = get_object_or_404(Ride.objects.select_for_update().select_related("assigned_driver", "rider"), id=id)
+        ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
         driver_profile = request.user.driver_profile
 
         try:
@@ -227,6 +227,7 @@ class RideAcceptView(RideshareApiMixin, APIView):
         except DjangoValidationError as exc:
             return api_error(str(exc))
 
+        ride.refresh_from_db()
         return api_success(RideSerializer(ride, context={"request": request}).data, "Ride accepted successfully.")
 
 
@@ -235,7 +236,7 @@ class RideCancelView(RideshareApiMixin, APIView):
 
     @transaction.atomic
     def post(self, request, id):
-        ride = get_object_or_404(Ride.objects.select_for_update().select_related("assigned_driver__user", "rider"), id=id)
+        ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
         serializer = RideCancelSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         reason = serializer.validated_data.get("reason") or ""
@@ -260,7 +261,7 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
 
     @transaction.atomic
     def post(self, request, id):
-        ride = get_object_or_404(Ride.objects.select_for_update().select_related("assigned_driver__user", "rider"), id=id)
+        ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
         serializer = RideStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         next_status = serializer.validated_data["status"]

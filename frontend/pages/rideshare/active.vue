@@ -184,7 +184,7 @@ const updatingStatus = ref(false);
 const cancellingRide = ref(false);
 const completionFare = ref("");
 let stopRideSocket = null;
-let rideStatusPoller = null;
+let connectedRideId = null;
 
 const isDriver = computed(() => {
   return ride.value?.assigned_driver?.user?.id === user.value?.user?.id;
@@ -199,7 +199,7 @@ const rideUpdatesStatus = computed(() => {
     return "Live";
   }
   if (["failed", "error", "closed"].includes(rideConnectionState.value)) {
-    return "Polling active";
+    return "Disconnected";
   }
   if (rideConnectionState.value === "reconnecting") {
     return "Reconnecting";
@@ -207,7 +207,7 @@ const rideUpdatesStatus = computed(() => {
   if (rideConnectionState.value === "connecting") {
     return "Connecting";
   }
-  return "Polling active";
+  return "Disconnected";
 });
 
 const pickupPoint = computed(() => {
@@ -264,10 +264,15 @@ const startRideSocket = () => {
     return;
   }
 
+  if (connectedRideId === ride.value.id && stopRideSocket) {
+    return;
+  }
+
   if (stopRideSocket) {
     stopRideSocket();
   }
 
+  connectedRideId = ride.value.id;
   stopRideSocket = connectRideSocket(ride.value.id, (payload) => {
     if (payload?.type === "driver.location") {
       ride.value = {
@@ -289,27 +294,6 @@ const startRideSocket = () => {
   });
 };
 
-const stopRideStatusPolling = () => {
-  if (rideStatusPoller) {
-    clearInterval(rideStatusPoller);
-    rideStatusPoller = null;
-  }
-};
-
-const startRideStatusPolling = () => {
-  stopRideStatusPolling();
-  if (!ride.value?.id) {
-    return;
-  }
-
-  rideStatusPoller = setInterval(() => {
-    if (updatingStatus.value || cancellingRide.value) {
-      return;
-    }
-    loadActiveRide(true);
-  }, 5000);
-};
-
 const loadActiveRide = async (silent = false) => {
   if (!silent) {
     loadingRide.value = true;
@@ -321,9 +305,12 @@ const loadActiveRide = async (silent = false) => {
     if (ride.value) {
       completionFare.value = ride.value.final_fare || ride.value.fare_estimate || "";
       startRideSocket();
-      startRideStatusPolling();
     } else {
-      stopRideStatusPolling();
+      connectedRideId = null;
+      if (stopRideSocket) {
+        stopRideSocket();
+        stopRideSocket = null;
+      }
     }
   } else {
     pageError.value = result.message;
@@ -381,6 +368,6 @@ onBeforeUnmount(() => {
   if (stopRideSocket) {
     stopRideSocket();
   }
-  stopRideStatusPolling();
+  connectedRideId = null;
 });
 </script>

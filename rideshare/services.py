@@ -591,6 +591,8 @@ class DispatchService:
         cls._group_send(f"ride_{ride.id}", payload)
         if ride.assigned_driver_id:
             cls._group_send(f"driver_{ride.assigned_driver.user_id}", payload)
+        if event_name in {"ride_accepted", "ride_cancelled"}:
+            cls._group_send("drivers_online", payload)
 
     @classmethod
     def broadcast_driver_location(cls, ride, location):
