@@ -65,7 +65,7 @@ export default defineNuxtConfig({
         wght: [400, 500, 600, 700],
         subsets: ['latin'],
       },
-      "Noto Sans Bengali": {
+      "Hind Siliguri": {
         wght: [400, 500, 600, 700],
         subsets: ['bengali', 'latin'],
       },
