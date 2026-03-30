@@ -210,15 +210,29 @@ const drawFeatures = () => {
 };
 
 const initializeMap = async () => {
-  if (!process.client || !mapElement.value || map) {
+  if (!process.client || map) {
     return;
   }
 
-  leaflet = await import("leaflet");
-  map = leaflet.map(mapElement.value, {
-    zoomControl: true,
-    attributionControl: true,
-  }).setView(defaultCenter, 12);
+  // Wait for DOM to be ready
+  await nextTick();
+  
+  if (!mapElement.value) {
+    console.warn('Map element not found, retrying...');
+    setTimeout(initializeMap, 100);
+    return;
+  }
+
+  try {
+    leaflet = await import("leaflet");
+    map = leaflet.map(mapElement.value, {
+      zoomControl: true,
+      attributionControl: true,
+    }).setView(defaultCenter, 12);
+  } catch (error) {
+    console.error('Failed to initialize map:', error);
+    return;
+  }
 
   // Use CartoDB tile server - more reliable for production
   tileLayer = leaflet.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
@@ -236,7 +250,10 @@ const initializeMap = async () => {
     });
   });
 
-  drawFeatures();
+  // Wait for map to be fully loaded before drawing features
+  map.whenReady(() => {
+    drawFeatures();
+  });
 };
 
 watch(
