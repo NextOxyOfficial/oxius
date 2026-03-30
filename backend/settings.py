@@ -325,6 +325,14 @@ CELERY_BEAT_SCHEDULE = {
         "task": "subscription.tasks.deactivate_expired_subscriptions",
         "schedule": crontab(hour=8, minute=0),  # Run every day at 8:00 AM
     },
+    "cascade-expired-ride-targets": {
+        "task": "rideshare.tasks.cascade_expired_ride_targets",
+        "schedule": timedelta(seconds=30),  # Run every 30 seconds to check 1-minute timeouts
+    },
+    "cancel-expired-rides": {
+        "task": "rideshare.tasks.cancel_expired_rides",
+        "schedule": timedelta(minutes=2),  # Run every 2 minutes to check 15-minute timeouts
+    },
 }
 
 # ShurjoPay Settings

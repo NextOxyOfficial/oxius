@@ -869,7 +869,11 @@ const handlePickupDragged = async ({ latitude, longitude }) => {
 
 const useCurrentLocation = async () => {
   if (!navigator.geolocation) {
-    toast.add({ title: "Location not supported", color: "red" });
+    toast.add({ 
+      title: "Location not supported", 
+      description: "Your device doesn't support geolocation",
+      color: "red" 
+    });
     return;
   }
 
@@ -877,35 +881,109 @@ const useCurrentLocation = async () => {
   const prevTarget = selectionTarget.value;
   selectionTarget.value = "pickup";
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
-      const resolved = await resolveLocationName(latitude, longitude);
-      pickupSearchRequestId += 1;
-      pickupPoint.value = resolved;
-      suppressPickupWatch = true;
-      pickupQuery.value = resolved.name;
-      pickupSuggestions.value = [];
-      searchTarget.value = null;
-      selectionTarget.value = "drop";
-      locatingPickup.value = false;
-
-      if (canEstimate.value) {
-        await requestEstimate();
+  try {
+    // Check permission first (for better mobile support)
+    if (navigator.permissions) {
+      try {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+        if (permission.state === 'denied') {
+          locatingPickup.value = false;
+          selectionTarget.value = prevTarget;
+          toast.add({ 
+            title: "Location permission denied", 
+            description: "Please enable location in your device settings",
+            color: "red" 
+          });
+          return;
+        }
+      } catch (e) {
+        // Permission API not supported, continue with getCurrentPosition
+        console.log('Permission API not supported:', e);
       }
-    },
-    () => {
-      locatingPickup.value = false;
-      selectionTarget.value = prevTarget;
-      toast.add({ title: "Unable to fetch current location", color: "red" });
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
     }
-  );
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const resolved = await resolveLocationName(latitude, longitude);
+          pickupSearchRequestId += 1;
+          pickupPoint.value = resolved;
+          suppressPickupWatch = true;
+          pickupQuery.value = resolved.name;
+          pickupSuggestions.value = [];
+          searchTarget.value = null;
+          selectionTarget.value = "drop";
+          locatingPickup.value = false;
+
+          toast.add({ 
+            title: "Location found", 
+            description: "Current location set as pickup",
+            color: "green" 
+          });
+
+          if (canEstimate.value) {
+            await requestEstimate();
+          }
+        } catch (error) {
+          console.error('Error resolving location:', error);
+          locatingPickup.value = false;
+          selectionTarget.value = prevTarget;
+          toast.add({ 
+            title: "Error getting location", 
+            description: "Could not resolve your location",
+            color: "red" 
+          });
+        }
+      },
+      (error) => {
+        locatingPickup.value = false;
+        selectionTarget.value = prevTarget;
+        
+        let errorMessage = "Unable to fetch current location";
+        let errorDescription = "";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location permission denied";
+            errorDescription = "Please enable location in your device settings";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location unavailable";
+            errorDescription = "Your location information is unavailable";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location timeout";
+            errorDescription = "Request timed out. Please try again";
+            break;
+          default:
+            errorMessage = "Location error";
+            errorDescription = "An unknown error occurred";
+        }
+        
+        toast.add({ 
+          title: errorMessage, 
+          description: errorDescription,
+          color: "red" 
+        });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000, // Increased timeout for mobile
+        maximumAge: 0,
+      }
+    );
+  } catch (error) {
+    console.error('Geolocation error:', error);
+    locatingPickup.value = false;
+    selectionTarget.value = prevTarget;
+    toast.add({ 
+      title: "Location error", 
+      description: "Failed to access location services",
+      color: "red" 
+    });
+  }
 };
 
 const loadNearbyDrivers = async () => {
