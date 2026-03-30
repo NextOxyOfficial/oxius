@@ -153,6 +153,7 @@ SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
 
 MIDDLEWARE = [
+    "base.middleware.BlockConnectMethodMiddleware",  # Block HTTP CONNECT proxy requests
     "django.middleware.security.SecurityMiddleware",
     # Add whitenoise middleware right after security middleware
     "whitenoise.middleware.WhiteNoiseMiddleware",
