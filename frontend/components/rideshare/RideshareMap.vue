@@ -34,6 +34,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  nearbyDrivers: {
+    type: Array,
+    default: () => [],
+  },
   routeGeometry: {
     type: Object,
     default: null,
@@ -68,6 +72,8 @@ const pickupIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height
 const dropIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="40" viewBox="0 0 28 40"><path d="M14 0C6.268 0 0 6.268 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.268 21.732 0 14 0z" fill="#111" stroke="#fff" stroke-width="1.5"/><rect x="8" y="8" width="12" height="12" rx="2" fill="#fff"/></svg>`;
 
 const driverIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#111" stroke="#fff" stroke-width="2"/><path d="M10 20l6-12 6 12H10z" fill="#fff"/></svg>`;
+
+const nearbyDriverIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#10b981" stroke="#fff" stroke-width="2"/><path d="M8 15l4-8 4 8H8z" fill="#fff"/></svg>`;
 
 const getCoordinates = (point) => {
   if (!point) {
@@ -143,6 +149,20 @@ const drawFeatures = () => {
     bounds.push(driverCoordinates);
   }
 
+  // Add nearby drivers
+  if (Array.isArray(props.nearbyDrivers) && props.nearbyDrivers.length > 0) {
+    const nearbyIcon = createIcon(nearbyDriverIconSvg, [24, 24], [12, 12]);
+    props.nearbyDrivers.forEach((driver) => {
+      const coords = getCoordinates(driver);
+      if (coords) {
+        leaflet.marker(coords, {
+          icon: nearbyIcon,
+          zIndexOffset: 700,
+        }).bindTooltip(driver.name || "Available Driver", { direction: "top", offset: [0, -12] }).addTo(featureLayer);
+      }
+    });
+  }
+
   const routeCoordinates = props.routeGeometry?.coordinates;
   if (Array.isArray(routeCoordinates) && routeCoordinates.length) {
     const normalizedRoute = routeCoordinates
@@ -195,7 +215,7 @@ const initializeMap = async () => {
 };
 
 watch(
-  () => [props.pickup, props.drop, props.driverLocation, props.routeGeometry],
+  () => [props.pickup, props.drop, props.driverLocation, props.nearbyDrivers, props.routeGeometry],
   () => {
     drawFeatures();
   },

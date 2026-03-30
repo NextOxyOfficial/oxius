@@ -428,3 +428,43 @@ class ReverseGeocodeView(RideshareApiMixin, APIView):
         if lat is None or lng is None:
             return api_error("lat and lng query parameters are required.")
         return api_success(LocationService.reverse_geocode(lat, lng))
+
+
+class NearbyDriversView(RideshareApiMixin, APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        lat = request.query_params.get("lat")
+        lng = request.query_params.get("lng")
+        vehicle_type = request.query_params.get("vehicle_type", "bike")
+        
+        if lat is None or lng is None:
+            return api_error("lat and lng query parameters are required.")
+        
+        try:
+            latitude = Decimal(str(lat))
+            longitude = Decimal(str(lng))
+        except (ValueError, TypeError):
+            return api_error("Invalid latitude or longitude.")
+        
+        # Get nearby online drivers with the requested vehicle type
+        nearby_drivers = DriverLocationService.get_nearby_drivers(
+            latitude=latitude,
+            longitude=longitude,
+            radius_km=5,
+            vehicle_type=vehicle_type,
+            limit=10
+        )
+        
+        drivers_data = [
+            {
+                "latitude": float(driver.latest_location.latitude),
+                "longitude": float(driver.latest_location.longitude),
+                "name": f"{driver.vehicle_type.title()} Driver",
+                "vehicle_type": driver.vehicle_type,
+            }
+            for driver in nearby_drivers
+            if driver.latest_location
+        ]
+        
+        return api_success(drivers_data)

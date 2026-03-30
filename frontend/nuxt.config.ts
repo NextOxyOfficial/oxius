@@ -62,18 +62,18 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       Inter: {
-        wght: [300, 400, 500, 600, 700, 800],
+        wght: [400, 500, 600, 700],
         subsets: ['latin'],
       },
-      "Anek Bangla": {
-        wght: [200, 300, 400, 500, 600, 700, 800],
+      "Noto Sans Bengali": {
+        wght: [400, 500, 600, 700],
         subsets: ['bengali', 'latin'],
       },
     },
     display: 'swap',
-    prefetch: false,
-    preconnect: false,
-    preload: false,
+    prefetch: true,
+    preconnect: true,
+    preload: true,
   },
 
   app: {
