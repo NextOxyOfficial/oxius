@@ -634,6 +634,37 @@ class DriverLocationService:
             DispatchService.broadcast_driver_location(ride, location)
         return location
 
+    @staticmethod
+    def get_nearby_drivers(latitude, longitude, radius_km=5, vehicle_type=None, limit=10):
+        """Get nearby online drivers within radius"""
+        query = DriverProfile.objects.filter(
+            approval_status="approved",
+            is_online=True,
+            is_available=True,
+            current_latitude__isnull=False,
+            current_longitude__isnull=False,
+        ).select_related("user")
+        
+        if vehicle_type:
+            query = query.filter(vehicles__is_active=True, vehicles__vehicle_type=vehicle_type).distinct()
+        
+        nearby_drivers = []
+        for driver in query[:limit * 3]:
+            if driver.current_latitude and driver.current_longitude:
+                distance = RoutingService._haversine_distance_km(
+                    float(latitude),
+                    float(longitude),
+                    float(driver.current_latitude),
+                    float(driver.current_longitude),
+                )
+                if distance <= radius_km:
+                    driver.distance = distance
+                    driver.vehicle_type = vehicle_type or "bike"
+                    nearby_drivers.append(driver)
+        
+        nearby_drivers.sort(key=lambda d: d.distance)
+        return nearby_drivers[:limit]
+
 
 def get_driver_default_vehicle(driver_profile):
     return driver_profile.vehicles.filter(is_active=True, is_default=True).first() or driver_profile.vehicles.filter(is_active=True).first()
