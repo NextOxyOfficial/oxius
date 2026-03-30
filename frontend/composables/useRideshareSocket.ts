@@ -9,24 +9,28 @@ export function useRideshareSocket() {
   const lastRideEvent = useState<any>("rideshare-last-ride-event", () => null);
   const lastDispatchEvent = useState<any>("rideshare-last-dispatch-event", () => null);
 
-  const buildWebSocketUrl = (path: string) => {
+  const buildWebSocketUrl = async (path: string) => {
     const baseUrl = runtimeConfig.public.baseURL;
     const wsBaseUrl = baseUrl.startsWith("https://")
       ? baseUrl.replace("https://", "wss://")
       : baseUrl.replace("http://", "ws://");
-    const token = useCookie("adsyclub-jwt").value;
+    const { getValidToken } = useAuth();
+    const token = (await getValidToken()) || useCookie("adsyclub-jwt").value;
+    if (!token) {
+      return null;
+    }
     return `${wsBaseUrl}${path}${path.includes("?") ? "&" : "?"}token=${encodeURIComponent(token || "")}`;
   };
 
   const openSocket = ({
-    url,
+    getUrl,
     socketRef,
     stateRef,
     lastEventRef,
     onMessage,
     maxReconnectAttempts = Number.POSITIVE_INFINITY,
   }: {
-    url: string;
+    getUrl: () => Promise<string | null>;
     socketRef: Ref<WebSocket | null>;
     stateRef: Ref<string>;
     lastEventRef: Ref<any>;
@@ -41,8 +45,13 @@ export function useRideshareSocket() {
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let shouldReconnect = true;
 
-    const connect = () => {
+    const connect = async () => {
       stateRef.value = reconnectAttempts > 0 ? "reconnecting" : "connecting";
+      const url = await getUrl();
+      if (!url) {
+        stateRef.value = "failed";
+        return;
+      }
       const socket = new WebSocket(url);
       socketRef.value = socket;
 
@@ -65,10 +74,15 @@ export function useRideshareSocket() {
         stateRef.value = "error";
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
         socketRef.value = null;
         if (!shouldReconnect) {
           stateRef.value = "closed";
+          return;
+        }
+
+        if ([4001, 4003, 4004, 1008].includes(event.code)) {
+          stateRef.value = "failed";
           return;
         }
 
@@ -97,9 +111,8 @@ export function useRideshareSocket() {
   };
 
   const connectRideSocket = (rideId: string, onMessage?: (payload: any) => void) => {
-    const url = buildWebSocketUrl(`/ws/rides/${rideId}/`);
     return openSocket({
-      url,
+      getUrl: () => buildWebSocketUrl(`/ws/rides/${rideId}/`),
       socketRef: rideSocket as Ref<WebSocket | null>,
       stateRef: rideConnectionState as Ref<string>,
       lastEventRef: lastRideEvent as Ref<any>,
@@ -108,9 +121,8 @@ export function useRideshareSocket() {
   };
 
   const connectDriverDispatchSocket = (onMessage?: (payload: any) => void) => {
-    const url = buildWebSocketUrl(`/ws/rides/driver/dispatch/`);
     return openSocket({
-      url,
+      getUrl: () => buildWebSocketUrl(`/ws/rides/driver/dispatch/`),
       socketRef: dispatchSocket as Ref<WebSocket | null>,
       stateRef: dispatchConnectionState as Ref<string>,
       lastEventRef: lastDispatchEvent as Ref<any>,

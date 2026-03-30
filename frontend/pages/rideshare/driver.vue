@@ -183,7 +183,12 @@ const profileForm = ref({
   service_radius_km: 8,
 });
 
+const isApprovedDriver = computed(() => driverProfile.value?.approval_status === "approved");
+
 const dispatchUpdatesStatus = computed(() => {
+  if (!isApprovedDriver.value) {
+    return "Approval Required";
+  }
   if (!driverProfile.value?.is_online) {
     return "Offline";
   }
@@ -226,6 +231,13 @@ const loadProfile = async () => {
 };
 
 const loadSummary = async () => {
+  if (!isApprovedDriver.value) {
+    earningsSummary.value = {
+      total_trips: 0,
+      total_earnings: "0.00",
+    };
+    return;
+  }
   const result = await getDriverEarningsSummary();
   if (result.success) {
     earningsSummary.value = result.data;
@@ -233,6 +245,11 @@ const loadSummary = async () => {
 };
 
 const loadAvailableRequests = async () => {
+  if (!isApprovedDriver.value) {
+    rideRequests.value = [];
+    loadingRequests.value = false;
+    return;
+  }
   loadingRequests.value = true;
   const result = await listAvailableRideRequests();
   if (result.success) {
@@ -301,7 +318,7 @@ const startDispatchSocket = () => {
     stopDispatchSocket();
   }
 
-  if (!driverProfile.value?.is_online) {
+  if (!isApprovedDriver.value || !driverProfile.value?.is_online) {
     return;
   }
 
@@ -322,9 +339,17 @@ const startDispatchSocket = () => {
 
 onMounted(async () => {
   await loadProfile();
-  await loadSummary();
-  await loadAvailableRequests();
-  startDispatchSocket();
+  if (isApprovedDriver.value) {
+    await loadSummary();
+    await loadAvailableRequests();
+    startDispatchSocket();
+  } else {
+    earningsSummary.value = {
+      total_trips: 0,
+      total_earnings: "0.00",
+    };
+    rideRequests.value = [];
+  }
 });
 
 onBeforeUnmount(() => {

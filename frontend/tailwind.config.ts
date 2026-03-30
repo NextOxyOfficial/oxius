@@ -4,7 +4,7 @@ export default <Partial<Config>>{
   theme: {
     extend: {
       fontFamily: {
-        AnekBangla: '"Anek Bangla", serif',
+        AnekBangla: ['"Noto Sans Bengali"', 'Inter', 'sans-serif'],
       },
       aspectRatio: {
         auto: "auto",
