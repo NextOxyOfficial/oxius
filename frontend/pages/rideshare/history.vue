@@ -1,83 +1,67 @@
 <template>
   <PublicSection>
-    <div class="min-h-screen py-4 sm:py-8 bg-gradient-to-b from-gray-50 to-gray-100">
-      <UContainer class="max-w-7xl">
-        <div class="mb-6">
-          <h1 class="text-2xl font-semibold text-gray-900">Ride History</h1>
-          <p class="text-sm text-gray-600 mt-2">Review past rides for rider and driver activity.</p>
+    <div class="min-h-screen py-4 sm:py-6 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      <UContainer class="max-w-7xl space-y-5">
+        <!-- Header -->
+        <div class="relative z-50 flex items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-xs">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+              <UIcon name="i-heroicons-clock" class="h-5 w-5" />
+            </div>
+            <div>
+              <h1 class="text-base font-bold text-slate-800">Ride History</h1>
+              <p class="text-[10px] text-slate-500">Review your past rides</p>
+            </div>
+          </div>
+          <RideshareModeSwitch />
         </div>
 
-        <div class="mb-6">
-          <RideshareNav current="history" />
-        </div>
+        <RideshareNav current="history" />
 
-        <div class="mb-6 flex flex-wrap gap-3">
-          <UButton :color="asDriver ? 'gray' : 'emerald'" :variant="asDriver ? 'soft' : 'solid'" @click="setMode(false)">
-            Rider History
-          </UButton>
-          <UButton :color="asDriver ? 'emerald' : 'gray'" :variant="asDriver ? 'solid' : 'soft'" @click="setMode(true)">
-            Driver History
-          </UButton>
-        </div>
-
-        <div v-if="pageError" class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div v-if="pageError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ pageError }}
         </div>
 
         <div v-if="loadingRides" class="space-y-4">
-          <div v-for="index in 4" :key="index" class="h-24 rounded-xl bg-gray-100 animate-pulse"></div>
+          <div v-for="index in 4" :key="index" class="h-24 rounded-xl bg-slate-100 animate-pulse"></div>
         </div>
 
-        <div v-else-if="!rides.length" class="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-10 text-center shadow-sm">
-          <div class="text-lg font-semibold text-gray-900">No ride history found</div>
-          <div class="text-sm text-gray-500 mt-2">Completed and cancelled rides will appear here.</div>
+        <div v-else-if="!rides.length" class="rounded-2xl border border-dashed border-slate-200 bg-white/90 px-6 py-10 text-center shadow-sm">
+          <div class="flex h-14 w-14 mx-auto items-center justify-center rounded-xl bg-slate-100 text-slate-400 mb-4">
+            <UIcon name="i-heroicons-clock" class="h-7 w-7" />
+          </div>
+          <div class="text-base font-semibold text-slate-700">No ride history found</div>
+          <div class="text-sm text-slate-500 mt-1">Completed and cancelled rides will appear here.</div>
         </div>
 
-        <div v-else class="space-y-4">
-          <div v-for="item in rides" :key="item.id" class="rounded-xl border border-gray-200 bg-white px-5 py-5 shadow-sm">
-            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
-              <div class="space-y-3 flex-1">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h3 class="text-base font-semibold text-gray-900">{{ item.pickup_address }}</h3>
-                  <span class="text-gray-400">→</span>
-                  <div class="text-base font-medium text-gray-700">{{ item.drop_address }}</div>
-                  <UBadge :color="badgeColor(item.status)" variant="soft">{{ item.status.replaceAll('_', ' ') }}</UBadge>
+        <div v-else class="bg-white/90 backdrop-blur-sm border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden divide-y divide-slate-100">
+          <div v-for="item in rides" :key="item.id" class="p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <!-- Route -->
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-sm font-semibold text-slate-800 truncate">{{ item.pickup_address }}</span>
+                  <UIcon name="i-heroicons-arrow-right" class="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
+                  <span class="text-sm text-slate-600 truncate">{{ item.drop_address }}</span>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-                  <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Fare</div>
-                    <div class="mt-1 text-emerald-700 font-semibold">৳{{ item.final_fare || item.fare_estimate }}</div>
-                  </div>
-                  <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Distance</div>
-                    <div class="mt-1 text-gray-900">{{ item.distance_km }} km</div>
-                  </div>
-                  <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">ETA</div>
-                    <div class="mt-1 text-gray-900">{{ formatEta(item.duration_seconds) }}</div>
-                  </div>
-                  <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Requested</div>
-                    <div class="mt-1 text-gray-900">{{ formatDateTime(item.requested_at) }}</div>
-                  </div>
-                  <div>
-                    <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Payment</div>
-                    <div class="mt-1 text-gray-900 capitalize">{{ item.payment_status }}</div>
-                  </div>
+                <!-- Stats Row -->
+                <div class="flex items-center gap-4 text-[11px]">
+                  <span class="font-bold text-indigo-600">৳{{ item.final_fare || item.fare_estimate }}</span>
+                  <span class="text-slate-500">{{ item.distance_km }} km</span>
+                  <span class="text-slate-500">{{ formatEta(item.duration_seconds) }}</span>
+                  <span class="text-slate-400">{{ formatDateTime(item.requested_at) }}</span>
+                  <span v-if="asDriver" class="text-slate-500">Rider: {{ item.rider?.name || 'Unknown' }}</span>
+                  <span v-else class="text-slate-500">Driver: {{ item.assigned_driver?.user?.name || 'Unassigned' }}</span>
                 </div>
               </div>
-
-              <div class="min-w-[220px] rounded-xl bg-gray-50 border border-gray-100 px-4 py-4 text-sm">
-                <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-2">
-                  {{ asDriver ? 'Rider' : 'Driver' }}
-                </div>
-                <div v-if="asDriver" class="text-gray-900">
-                  {{ item.rider?.name || item.rider?.username || 'Unknown rider' }}
-                </div>
-                <div v-else class="text-gray-900">
-                  {{ item.assigned_driver?.user?.name || item.assigned_driver?.user?.username || 'Unassigned' }}
-                </div>
-              </div>
+              <!-- Status Badge -->
+              <span
+                class="flex-shrink-0 inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-semibold capitalize"
+                :class="badgeClass(item.status)"
+              >
+                <UIcon :name="statusIcon(item.status)" class="h-3 w-3" />
+                {{ item.status.replaceAll('_', ' ') }}
+              </span>
             </div>
           </div>
         </div>
@@ -98,14 +82,24 @@ const pageError = ref("");
 const rides = ref([]);
 const asDriver = ref(false);
 
-const badgeColor = (status) => {
+const badgeClass = (status) => {
   if (status === "completed") {
-    return "emerald";
+    return "bg-emerald-100 text-emerald-700";
   }
   if (status === "cancelled") {
-    return "red";
+    return "bg-red-100 text-red-700";
   }
-  return "blue";
+  return "bg-indigo-100 text-indigo-700";
+};
+
+const statusIcon = (status) => {
+  if (status === "completed") {
+    return "i-heroicons-check-circle";
+  }
+  if (status === "cancelled") {
+    return "i-heroicons-x-circle";
+  }
+  return "i-heroicons-clock";
 };
 
 const formatEta = (seconds) => {

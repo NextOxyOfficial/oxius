@@ -75,6 +75,26 @@ const driverIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height
 
 const nearbyDriverIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#374151" stroke="#fff" stroke-width="2"/><path d="M8 15l4-8 4 8H8z" fill="#fff"/></svg>`;
 
+// Vehicle type specific icons for live drivers
+const bikeIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#6366f1" stroke="#fff" stroke-width="2"/><path d="M10 20c0-2.2 1.8-4 4-4h4c2.2 0 4 1.8 4 4" stroke="#fff" stroke-width="2" fill="none"/><circle cx="12" cy="20" r="2" fill="#fff"/><circle cx="20" cy="20" r="2" fill="#fff"/><path d="M14 12h4l2 4h-8l2-4z" fill="#fff"/></svg>`;
+
+const carIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#8b5cf6" stroke="#fff" stroke-width="2"/><rect x="8" y="12" width="16" height="8" rx="2" fill="#fff"/><circle cx="11" cy="20" r="2" fill="#fff" stroke="#8b5cf6"/><circle cx="21" cy="20" r="2" fill="#fff" stroke="#8b5cf6"/><path d="M10 12l2-4h8l2 4" fill="#fff"/></svg>`;
+
+const cngIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#10b981" stroke="#fff" stroke-width="2"/><path d="M8 18h16l-2 4H10l-2-4z" fill="#fff"/><path d="M10 18l2-6h8l2 6" fill="#fff"/><circle cx="12" cy="22" r="2" fill="#fff" stroke="#10b981"/><circle cx="20" cy="22" r="2" fill="#fff" stroke="#10b981"/></svg>`;
+
+const getDriverIcon = (vehicleType) => {
+  switch (vehicleType) {
+    case 'bike':
+      return bikeIconSvg;
+    case 'car':
+      return carIconSvg;
+    case 'cng':
+      return cngIconSvg;
+    default:
+      return nearbyDriverIconSvg;
+  }
+};
+
 const getCoordinates = (point) => {
   if (!point) {
     return null;
@@ -149,16 +169,19 @@ const drawFeatures = () => {
     bounds.push(driverCoordinates);
   }
 
-  // Add nearby drivers
+  // Add nearby drivers with vehicle type icons
   if (Array.isArray(props.nearbyDrivers) && props.nearbyDrivers.length > 0) {
-    const nearbyIcon = createIcon(nearbyDriverIconSvg, [24, 24], [12, 12]);
     props.nearbyDrivers.forEach((driver) => {
       const coords = getCoordinates(driver);
       if (coords) {
+        const vehicleType = driver.vehicle_type || driver.vehicleType || 'bike';
+        const iconSvg = getDriverIcon(vehicleType);
+        const driverIcon = createIcon(iconSvg, [32, 32], [16, 16]);
+        const tooltipText = `${driver.name || 'Driver'} • ${vehicleType.toUpperCase()}`;
         leaflet.marker(coords, {
-          icon: nearbyIcon,
+          icon: driverIcon,
           zIndexOffset: 700,
-        }).bindTooltip(driver.name || "Available Driver", { direction: "top", offset: [0, -12] }).addTo(featureLayer);
+        }).bindTooltip(tooltipText, { direction: "top", offset: [0, -16] }).addTo(featureLayer);
       }
     });
   }

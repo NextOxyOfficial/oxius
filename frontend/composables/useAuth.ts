@@ -317,11 +317,12 @@ export function useAuth() {
   };
   const login = async (email: string, password: string) => {
     try {
+      const normalizedEmail = String(email || '').trim();
       const { data, pending, error } = await useFetch<any>(
         baseURL + "/auth/login/",
         {
           method: "POST",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email: normalizedEmail, password }),
           headers: {
             "Content-Type": "application/json", // Ensure correct header
           },
@@ -329,8 +330,17 @@ export function useAuth() {
       );
 
       if (error.value) {
-        //console.log("Login error:", error.value); // Log the error for debugging
-        return error; // Return false or handle error as needed
+        const payload = error.value?.data || error.value?.response?._data || {};
+        return {
+          loggedIn: false,
+          message:
+            payload?.detail ||
+            payload?.non_field_errors?.[0] ||
+            payload?.email?.[0] ||
+            payload?.password?.[0] ||
+            payload?.error ||
+            "Invalid email or password.",
+        };
       }      if (data.value) {
         user.value = data.value;
         jwt.value = data.value.access;
@@ -355,7 +365,10 @@ export function useAuth() {
         };
       }
     } catch (err) {
-      return false;
+      return {
+        loggedIn: false,
+        message: "Unable to sign in right now. Please try again.",
+      };
     }
   };  // Helper function to get current token (with auto-refresh if needed)
   const getValidToken = async () => {

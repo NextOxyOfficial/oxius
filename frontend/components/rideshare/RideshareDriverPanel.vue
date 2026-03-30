@@ -1,139 +1,202 @@
 <template>
   <div class="space-y-5">
-    <div v-if="driverNotice" class="rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm">
+    <!-- Location Permission Required for Drivers -->
+    <div
+      v-if="!locationGranted && !locationLoading"
+      class="rounded-2xl border-2 border-red-300 bg-gradient-to-r from-red-50 to-orange-50 px-5 py-5 shadow-sm"
+    >
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-600">
+            <UIcon name="i-heroicons-exclamation-triangle" class="h-6 w-6" />
+          </div>
+          <div>
+            <div class="text-base font-bold text-red-800">{{ $t("rideshare_location_mandatory") }}</div>
+            <div class="text-sm text-red-600">{{ $t("rideshare_location_mandatory_driver_desc") }}</div>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-md transition-all hover:from-red-600 hover:to-orange-600"
+          :disabled="locationLoading"
+          @click="requestLocationPermission"
+        >
+          <UIcon name="i-heroicons-map-pin" class="h-5 w-5" />
+          {{ $t("rideshare_enable_location") }}
+        </button>
+      </div>
+    </div>
+
+    <div v-if="driverNotice" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
       {{ driverNotice }}
     </div>
 
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-4">
-      <div class="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
-        <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Approval</div>
-        <div class="mt-2 text-lg font-semibold capitalize text-gray-950">{{ driverProfile?.approval_status || 'pending' }}</div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div class="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm px-4 py-4 shadow-sm">
+        <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <UIcon name="i-heroicons-check-badge" class="h-3.5 w-3.5" />
+          Approval
+        </div>
+        <div class="mt-1.5 text-base font-bold capitalize text-slate-800">{{ driverProfile?.approval_status || 'pending' }}</div>
       </div>
-      <div class="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
-        <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Trips</div>
-        <div class="mt-2 text-lg font-semibold text-gray-950">{{ earningsSummary?.total_trips || 0 }}</div>
+      <div class="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm px-4 py-4 shadow-sm">
+        <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <UIcon name="i-heroicons-truck" class="h-3.5 w-3.5" />
+          Trips
+        </div>
+        <div class="mt-1.5 text-base font-bold text-slate-800">{{ earningsSummary?.total_trips || 0 }}</div>
       </div>
-      <div class="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
-        <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Earnings</div>
-        <div class="mt-2 text-lg font-semibold text-gray-950">৳{{ earningsSummary?.total_earnings || '0.00' }}</div>
+      <div class="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm px-4 py-4 shadow-sm">
+        <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <UIcon name="i-heroicons-banknotes" class="h-3.5 w-3.5" />
+          Earnings
+        </div>
+        <div class="mt-1.5 text-base font-bold text-indigo-600">৳{{ earningsSummary?.total_earnings || '0.00' }}</div>
       </div>
-      <div class="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
-        <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Updates</div>
-        <div class="mt-2 text-lg font-semibold text-gray-950">{{ dispatchUpdatesStatus }}</div>
+      <div class="rounded-xl border border-slate-200/80 bg-white/90 backdrop-blur-sm px-4 py-4 shadow-sm">
+        <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <UIcon name="i-heroicons-signal" class="h-3.5 w-3.5" />
+          Updates
+        </div>
+        <div class="mt-1.5 text-base font-bold text-slate-800">{{ dispatchUpdatesStatus }}</div>
       </div>
     </div>
 
     <div class="grid grid-cols-1 gap-5 xl:grid-cols-5">
+      <!-- Profile Form -->
       <div class="space-y-5 xl:col-span-2">
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div class="border-b border-gray-200 bg-gray-50 px-5 py-4">
-            <h2 class="text-base font-bold text-gray-950">Driver Profile</h2>
-            <p class="mt-0.5 text-xs text-gray-500">Manage your approval-ready driver information.</p>
+        <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-sm">
+          <div class="border-b border-slate-100 bg-slate-50/50 px-5 py-4">
+            <h2 class="text-base font-bold text-slate-800">Driver Profile</h2>
+            <p class="text-xs text-slate-500">Manage your driver information</p>
           </div>
 
-          <form class="space-y-4 p-5" @submit.prevent="saveProfile">
+          <form class="space-y-3 p-4" @submit.prevent="saveProfile">
             <div>
-              <label class="mb-2 block text-sm font-medium text-gray-800">License Number</label>
-              <UInput v-model="profileForm.license_number" placeholder="Driving license number" />
+              <label class="mb-1.5 block text-xs font-medium text-slate-700">License Number</label>
+              <UInput v-model="profileForm.license_number" placeholder="Driving license number" size="sm" />
             </div>
             <div>
-              <label class="mb-2 block text-sm font-medium text-gray-800">National ID Number</label>
-              <UInput v-model="profileForm.national_id_number" placeholder="National ID" />
+              <label class="mb-1.5 block text-xs font-medium text-slate-700">National ID Number</label>
+              <UInput v-model="profileForm.national_id_number" placeholder="National ID" size="sm" />
             </div>
             <div>
-              <label class="mb-2 block text-sm font-medium text-gray-800">Service Radius (km)</label>
-              <UInput v-model="profileForm.service_radius_km" type="number" min="1" step="0.1" />
-            </div>
-            <div class="flex flex-wrap gap-3">
-              <UButton color="gray" :loading="savingProfile" type="submit">Save Profile</UButton>
-              <UButton
-                color="gray"
-                variant="soft"
-                type="button"
-                :loading="togglingOnline"
-                :disabled="!isApprovedDriver"
-                @click="toggleOnlineStatus"
-              >
-                {{ driverProfile?.is_online ? 'Go Offline' : 'Go Online' }}
-              </UButton>
+              <label class="mb-1.5 block text-xs font-medium text-slate-700">Service Radius (km)</label>
+              <UInput v-model="profileForm.service_radius_km" type="number" min="1" step="0.1" size="sm" />
             </div>
             <div class="flex flex-wrap gap-2 pt-1">
-              <UButton to="/rideshare/vehicles" color="gray" variant="soft" size="sm">Manage Vehicles</UButton>
-              <UButton to="/rideshare/active" color="gray" variant="soft" size="sm">Open Active Trip</UButton>
+              <button
+                type="submit"
+                class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:from-indigo-600 hover:to-violet-700 disabled:opacity-50"
+                :disabled="savingProfile"
+              >
+                <span v-if="savingProfile" class="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                Save Profile
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all disabled:opacity-50"
+                :class="driverProfile?.is_online ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'"
+                :disabled="!isApprovedDriver || togglingOnline"
+                @click="toggleOnlineStatus"
+              >
+                <span v-if="togglingOnline" class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></span>
+                {{ driverProfile?.is_online ? 'Go Offline' : 'Go Online' }}
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <NuxtLink to="/rideshare/vehicles" class="rounded-lg bg-slate-100 px-2.5 py-1.5 text-[10px] font-medium text-slate-600 hover:bg-slate-200">Manage Vehicles</NuxtLink>
+              <NuxtLink to="/rideshare/active" class="rounded-lg bg-slate-100 px-2.5 py-1.5 text-[10px] font-medium text-slate-600 hover:bg-slate-200">Active Trip</NuxtLink>
             </div>
           </form>
         </div>
       </div>
 
+      <!-- Ride Requests -->
       <div class="xl:col-span-3">
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div class="flex items-center justify-between gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4">
+        <div class="overflow-hidden rounded-xl border border-slate-200/80 bg-white/80 backdrop-blur-sm shadow-sm">
+          <div class="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50 px-4 py-3">
             <div>
-              <h2 class="text-base font-bold text-gray-950">Available Ride Requests</h2>
-              <p class="mt-1 text-sm text-gray-500">Live searchable ride requests for your driver type.</p>
+              <h2 class="text-sm font-bold text-slate-800">Available Ride Requests</h2>
+              <p class="text-[11px] text-slate-500">Live ride requests for your vehicle type</p>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
-                :class="driverProfile?.is_online ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-500'"
+            <div class="flex items-center gap-1.5">
+              <span class="rounded-md px-2 py-0.5 text-[10px] font-semibold"
+                :class="driverProfile?.is_online ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white' : 'bg-slate-100 text-slate-500'"
               >
                 {{ driverProfile?.is_online ? 'Online' : 'Offline' }}
               </span>
-              <UButton color="gray" variant="soft" :loading="loadingRequests" @click="loadAvailableRequests">
-                Refresh
-              </UButton>
+              <button type="button" class="rounded-lg bg-slate-100 px-2.5 py-1.5 text-[10px] font-medium text-slate-600 hover:bg-slate-200" :disabled="loadingRequests" @click="loadAvailableRequests">
+                {{ loadingRequests ? '...' : 'Refresh' }}
+              </button>
             </div>
           </div>
 
-          <div v-if="!isApprovedDriver" class="p-6">
-            <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center text-sm text-gray-600">
-              Your driver account is still under review. Once approved, live requests and online mode will appear here.
+          <div v-if="!isApprovedDriver" class="p-4">
+            <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+              <div class="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-slate-100 text-slate-400 mb-2">
+                <UIcon name="i-heroicons-clock" class="h-5 w-5" />
+              </div>
+              <div class="text-xs font-medium text-slate-600">Account under review</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Live requests will appear once approved.</div>
             </div>
           </div>
 
-          <div v-else-if="loadingRequests" class="space-y-3 p-6">
-            <div v-for="index in 3" :key="index" class="h-28 animate-pulse rounded-2xl bg-gray-100"></div>
+          <div v-else-if="loadingRequests" class="space-y-2 p-4">
+            <div v-for="index in 3" :key="index" class="h-20 animate-pulse rounded-lg bg-slate-100"></div>
           </div>
 
-          <div v-else-if="!rideRequests.length" class="p-6">
-            <div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
-              No ride requests available right now. Go online and keep this page open for dispatch updates.
+          <div v-else-if="!rideRequests.length" class="p-4">
+            <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+              <div class="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-slate-100 text-slate-400 mb-2">
+                <UIcon name="i-heroicons-map" class="h-5 w-5" />
+              </div>
+              <div class="text-xs font-medium text-slate-600">No ride requests</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Go online to receive dispatch updates.</div>
             </div>
           </div>
 
-          <div v-else class="space-y-4 p-5">
-            <div v-for="ride in rideRequests" :key="ride.id" class="rounded-2xl border border-gray-200 bg-white px-4 py-4">
-              <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div class="space-y-2">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <h3 class="text-base font-semibold text-gray-950">{{ ride.pickup_address }}</h3>
-                    <span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-semibold text-gray-700">
+          <div v-else class="space-y-2 p-3">
+            <div v-for="ride in rideRequests" :key="ride.id" class="rounded-lg border border-slate-200 bg-white px-3 py-3">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div class="space-y-1.5 min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <h3 class="text-xs font-semibold text-slate-800 truncate">{{ ride.pickup_address }}</h3>
+                    <span class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-600 capitalize">
                       {{ ride.requested_vehicle_type }}
                     </span>
                   </div>
-                  <div class="text-sm text-gray-600">To: {{ ride.drop_address }}</div>
-                  <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-                    <div>
-                      <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Fare</div>
-                      <div class="mt-1 font-semibold text-gray-950">৳{{ ride.fare_estimate }}</div>
+                  <div class="text-[11px] text-slate-500 truncate">To: {{ ride.drop_address }}</div>
+                  <div class="grid grid-cols-4 gap-2 text-[10px]">
+                    <div class="rounded bg-slate-50 px-2 py-1">
+                      <div class="text-slate-400 font-medium">Fare</div>
+                      <div class="text-indigo-600 font-bold">৳{{ ride.fare_estimate }}</div>
                     </div>
-                    <div>
-                      <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Distance</div>
-                      <div class="mt-1 text-gray-900">{{ ride.distance_km }} km</div>
+                    <div class="rounded bg-slate-50 px-2 py-1">
+                      <div class="text-slate-400 font-medium">Distance</div>
+                      <div class="text-slate-700 font-semibold">{{ ride.distance_km }} km</div>
                     </div>
-                    <div>
-                      <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Status</div>
-                      <div class="mt-1 capitalize text-gray-900">{{ ride.status.replaceAll('_', ' ') }}</div>
+                    <div class="rounded bg-slate-50 px-2 py-1">
+                      <div class="text-slate-400 font-medium">Status</div>
+                      <div class="text-slate-700 font-semibold capitalize">{{ ride.status.replaceAll('_', ' ') }}</div>
                     </div>
-                    <div>
-                      <div class="text-xs font-semibold uppercase tracking-wide text-gray-500">Requested</div>
-                      <div class="mt-1 text-gray-900">{{ formatDateTime(ride.requested_at) }}</div>
+                    <div class="rounded bg-slate-50 px-2 py-1">
+                      <div class="text-slate-400 font-medium">Time</div>
+                      <div class="text-slate-700 font-semibold">{{ formatDateTime(ride.requested_at) }}</div>
                     </div>
                   </div>
                 </div>
-                <div class="flex gap-2">
-                  <UButton color="gray" :loading="acceptingRideId === ride.id" @click="acceptRequest(ride)">
-                    Accept Ride
-                  </UButton>
+                <div class="flex-shrink-0">
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:from-indigo-600 hover:to-violet-700 disabled:opacity-50"
+                    :disabled="acceptingRideId === ride.id"
+                    @click="acceptRequest(ride)"
+                  >
+                    <span v-if="acceptingRideId === ride.id" class="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                    Accept
+                  </button>
                 </div>
               </div>
             </div>
@@ -169,6 +232,79 @@ const savingProfile = ref(false);
 const togglingOnline = ref(false);
 const acceptingRideId = ref(null);
 let stopDispatchSocket = null;
+
+// Location permission state for drivers
+const locationGranted = ref(false);
+const locationLoading = ref(false);
+let locationWatchId = null;
+
+const checkLocationPermission = async () => {
+  if (!process.client || !navigator.permissions) {
+    return;
+  }
+  try {
+    const result = await navigator.permissions.query({ name: 'geolocation' });
+    locationGranted.value = result.state === 'granted';
+    result.onchange = () => {
+      locationGranted.value = result.state === 'granted';
+      if (result.state === 'granted' && driverProfile.value?.is_online) {
+        startLocationTracking();
+      }
+    };
+  } catch (error) {
+    console.error('Permission check failed:', error);
+  }
+};
+
+const requestLocationPermission = async () => {
+  if (!process.client || !navigator.geolocation) {
+    return;
+  }
+  locationLoading.value = true;
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      locationGranted.value = true;
+      locationLoading.value = false;
+      // Start tracking if driver is online
+      if (driverProfile.value?.is_online) {
+        startLocationTracking();
+      }
+    },
+    () => {
+      locationLoading.value = false;
+      toast.add({ 
+        title: "Location Required", 
+        description: "Please enable location access to use driver features.", 
+        color: "red" 
+      });
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+};
+
+const startLocationTracking = () => {
+  if (!process.client || !navigator.geolocation || locationWatchId) {
+    return;
+  }
+  locationWatchId = navigator.geolocation.watchPosition(
+    (position) => {
+      // Send location to backend
+      // This will be handled by the existing location update mechanism
+      console.log('Driver location updated:', position.coords.latitude, position.coords.longitude);
+    },
+    (error) => {
+      console.error('Location tracking error:', error);
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+  );
+};
+
+const stopLocationTracking = () => {
+  if (locationWatchId && navigator.geolocation) {
+    navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId = null;
+  }
+};
 
 const profileForm = ref({
   license_number: "",
@@ -339,11 +475,15 @@ const startDispatchSocket = () => {
 };
 
 onMounted(async () => {
+  checkLocationPermission();
   await loadProfile();
   if (isApprovedDriver.value) {
     await loadSummary();
     await loadAvailableRequests();
     startDispatchSocket();
+    if (locationGranted.value && driverProfile.value?.is_online) {
+      startLocationTracking();
+    }
   }
 });
 
@@ -351,5 +491,6 @@ onBeforeUnmount(() => {
   if (stopDispatchSocket) {
     stopDispatchSocket();
   }
+  stopLocationTracking();
 });
 </script>

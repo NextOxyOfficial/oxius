@@ -124,6 +124,7 @@ const isLoading = ref(false);
 async function handleLogin() {
   btnDisabled.value = true;
   isLoading.value = true;
+  error.value = "";
   try {
     const res = await login(username.value, password.value);
     if (res.loggedIn) {
@@ -156,13 +157,15 @@ async function handleLogin() {
 
       error.value = "";
     } else {
-      toast.add({ title: res._value.data.error, status: "error" });
-      error.value = res._value.data.error;
+      toast.add({ title: res.message || t("login_error"), color: "red" });
+      error.value = res.message || t("login_error");
     }
   } catch (error) {
     console.error("error:", error);
+  } finally {
+    btnDisabled.value = false;
+    isLoading.value = false;
   }
-  isLoading.value = false;
 }
 </script>
 

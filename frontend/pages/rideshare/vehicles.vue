@@ -1,151 +1,167 @@
 <template>
   <PublicSection>
-    <div class="min-h-screen py-4 sm:py-8 bg-gradient-to-b from-gray-50 to-gray-100">
-      <UContainer class="max-w-7xl">
-        <div class="mb-6">
-          <h1 class="text-2xl font-semibold text-gray-900">Vehicle Management</h1>
-          <p class="text-sm text-gray-600 mt-2">Add and manage driver vehicles before going online.</p>
+    <div class="min-h-screen py-4 sm:py-6 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      <UContainer class="max-w-7xl space-y-5">
+        <!-- Header -->
+        <div class="relative z-50 flex items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-xs">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+              <UIcon name="i-heroicons-truck" class="h-5 w-5" />
+            </div>
+            <div>
+              <h1 class="text-base font-bold text-slate-800">Vehicles</h1>
+              <p class="text-[10px] text-slate-500">Add and manage your vehicles</p>
+            </div>
+          </div>
+          <RideshareModeSwitch />
         </div>
 
-        <div class="mb-6">
-          <RideshareNav current="vehicles" />
-        </div>
+        <RideshareNav current="vehicles" />
 
-        <div v-if="pageError" class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div v-if="pageError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ pageError }}
         </div>
 
-        <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+        <div class="grid grid-cols-1 xl:grid-cols-5 gap-4">
           <div class="xl:col-span-2">
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div class="px-5 py-4 border-b border-gray-100">
-                <h2 class="text-lg font-semibold text-gray-900">{{ editingVehicleId ? 'Edit Vehicle' : 'Add Vehicle' }}</h2>
-                <p class="text-sm text-gray-500 mt-1">Keep one active default vehicle for dispatch matching.</p>
+            <div class="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-xl shadow-sm overflow-hidden">
+              <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                <h2 class="text-sm font-bold text-slate-800">{{ editingVehicleId ? 'Edit Vehicle' : 'Add Vehicle' }}</h2>
+                <p class="text-[11px] text-slate-500 mt-0.5">Keep one active default vehicle for dispatch.</p>
               </div>
 
-              <form class="p-5 space-y-4" @submit.prevent="submitVehicle">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <form class="p-4 space-y-3" @submit.prevent="submitVehicle">
+                <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-sm font-medium text-gray-800 mb-2">Vehicle Type</label>
-                    <USelect v-model="vehicleForm.vehicle_type" :options="vehicleTypeOptions" option-attribute="label" />
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Vehicle Type</label>
+                    <USelect v-model="vehicleForm.vehicle_type" :options="vehicleTypeOptions" option-attribute="label" size="sm" />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-800 mb-2">Seat Capacity</label>
-                    <UInput v-model="vehicleForm.seat_capacity" type="number" min="1" />
-                  </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-800 mb-2">Brand</label>
-                    <UInput v-model="vehicleForm.brand" placeholder="Honda, Toyota..." />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-800 mb-2">Model</label>
-                    <UInput v-model="vehicleForm.model_name" placeholder="Model name" />
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Seat Capacity</label>
+                    <UInput v-model="vehicleForm.seat_capacity" type="number" min="1" size="sm" />
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-sm font-medium text-gray-800 mb-2">Color</label>
-                    <UInput v-model="vehicleForm.color" placeholder="Vehicle color" />
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Brand</label>
+                    <UInput v-model="vehicleForm.brand" placeholder="Honda, Toyota..." size="sm" />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-800 mb-2">Registration Number</label>
-                    <UInput v-model="vehicleForm.registration_number" placeholder="Registration number" />
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Model</label>
+                    <UInput v-model="vehicleForm.model_name" placeholder="Model name" size="sm" />
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <label class="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Color</label>
+                    <UInput v-model="vehicleForm.color" placeholder="Vehicle color" size="sm" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-700 mb-1.5">Registration</label>
+                    <UInput v-model="vehicleForm.registration_number" placeholder="Reg number" size="sm" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <label class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
                     <UCheckbox v-model="vehicleForm.is_active" />
-                    <span>Active for booking</span>
+                    <span>Active</span>
                   </label>
-                  <label class="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+                  <label class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
                     <UCheckbox v-model="vehicleForm.is_default" />
-                    <span>Set as default</span>
+                    <span>Default</span>
                   </label>
                 </div>
 
-                <div class="flex gap-3">
-                  <UButton color="emerald" :loading="savingVehicle" type="submit">
-                    {{ editingVehicleId ? 'Update Vehicle' : 'Save Vehicle' }}
-                  </UButton>
-                  <UButton v-if="editingVehicleId" color="gray" variant="soft" @click="resetForm">
+                <div class="flex gap-2 pt-1">
+                  <button
+                    type="submit"
+                    class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:from-indigo-600 hover:to-violet-700 disabled:opacity-50"
+                    :disabled="savingVehicle"
+                  >
+                    <span v-if="savingVehicle" class="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                    {{ editingVehicleId ? 'Update' : 'Save Vehicle' }}
+                  </button>
+                  <button v-if="editingVehicleId" type="button" class="rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200" @click="resetForm">
                     Cancel
-                  </UButton>
+                  </button>
                 </div>
               </form>
             </div>
           </div>
 
           <div class="xl:col-span-3">
-            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-              <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-4">
+            <div class="bg-white/80 backdrop-blur-sm border border-slate-200/80 rounded-xl shadow-sm overflow-hidden">
+              <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between gap-3">
                 <div>
-                  <h2 class="text-lg font-semibold text-gray-900">Your Vehicles</h2>
-                  <p class="text-sm text-gray-500 mt-1">Manage active and default vehicle selection.</p>
+                  <h2 class="text-sm font-bold text-slate-800">Your Vehicles</h2>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Manage active and default selection.</p>
                 </div>
-                <UBadge :color="vehicles.length ? 'emerald' : 'gray'" variant="soft">
+                <span class="rounded-full px-2 py-0.5 text-[10px] font-semibold" :class="vehicles.length ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'">
                   {{ vehicles.length }} vehicle{{ vehicles.length === 1 ? '' : 's' }}
-                </UBadge>
+                </span>
               </div>
 
-              <div v-if="loadingVehicles" class="p-6 space-y-3">
-                <div v-for="index in 3" :key="index" class="h-20 rounded-xl bg-gray-100 animate-pulse"></div>
+              <div v-if="loadingVehicles" class="p-4 space-y-2">
+                <div v-for="index in 3" :key="index" class="h-16 rounded-lg bg-slate-100 animate-pulse"></div>
               </div>
 
-              <div v-else-if="!vehicles.length" class="p-6">
-                <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
-                  No vehicles added yet. Add your first vehicle to prepare for driver dispatch.
+              <div v-else-if="!vehicles.length" class="p-4">
+                <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                  <div class="flex h-10 w-10 mx-auto items-center justify-center rounded-lg bg-slate-100 text-slate-400 mb-2">
+                    <UIcon name="i-heroicons-truck" class="h-5 w-5" />
+                  </div>
+                  <div class="text-xs font-medium text-slate-600">No vehicles added yet</div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">Add your first vehicle to start.</div>
                 </div>
               </div>
 
-              <div v-else class="p-5 space-y-4">
+              <div v-else class="p-3 space-y-2">
                 <div
                   v-for="vehicle in vehicles"
                   :key="vehicle.id"
-                  class="rounded-xl border px-4 py-4"
-                  :class="vehicle.is_default ? 'border-emerald-200 bg-emerald-50/60' : 'border-gray-200 bg-white'"
+                  class="rounded-lg border px-3 py-3"
+                  :class="vehicle.is_default ? 'border-indigo-200 bg-indigo-50/50' : 'border-slate-200 bg-white'"
                 >
-                  <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                    <div class="space-y-2">
-                      <div class="flex items-center flex-wrap gap-2">
-                        <h3 class="text-base font-semibold text-gray-900">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="space-y-1.5 min-w-0 flex-1">
+                      <div class="flex items-center flex-wrap gap-1.5">
+                        <h3 class="text-xs font-semibold text-slate-800">
                           {{ vehicle.brand || 'Vehicle' }} {{ vehicle.model_name || '' }}
                         </h3>
-                        <UBadge :color="vehicle.is_active ? 'emerald' : 'gray'" variant="soft">
+                        <span class="rounded-full px-1.5 py-0.5 text-[9px] font-semibold" :class="vehicle.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'">
                           {{ vehicle.is_active ? 'Active' : 'Inactive' }}
-                        </UBadge>
-                        <UBadge v-if="vehicle.is_default" color="blue" variant="soft">Default</UBadge>
+                        </span>
+                        <span v-if="vehicle.is_default" class="rounded-full bg-indigo-100 text-indigo-700 px-1.5 py-0.5 text-[9px] font-semibold">Default</span>
                       </div>
-                      <div class="text-sm text-gray-600">{{ vehicle.registration_number }}</div>
-                      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                        <div>
-                          <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Type</div>
-                          <div class="mt-1 text-gray-900">{{ vehicle.vehicle_type }}</div>
+                      <div class="text-[11px] text-slate-500">{{ vehicle.registration_number }}</div>
+                      <div class="grid grid-cols-4 gap-2 text-[10px]">
+                        <div class="rounded bg-slate-50 px-2 py-1">
+                          <div class="text-slate-400 font-medium">Type</div>
+                          <div class="text-slate-700 font-semibold capitalize">{{ vehicle.vehicle_type }}</div>
                         </div>
-                        <div>
-                          <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Seats</div>
-                          <div class="mt-1 text-gray-900">{{ vehicle.seat_capacity }}</div>
+                        <div class="rounded bg-slate-50 px-2 py-1">
+                          <div class="text-slate-400 font-medium">Seats</div>
+                          <div class="text-slate-700 font-semibold">{{ vehicle.seat_capacity }}</div>
                         </div>
-                        <div>
-                          <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Color</div>
-                          <div class="mt-1 text-gray-900">{{ vehicle.color || 'N/A' }}</div>
+                        <div class="rounded bg-slate-50 px-2 py-1">
+                          <div class="text-slate-400 font-medium">Color</div>
+                          <div class="text-slate-700 font-semibold">{{ vehicle.color || 'N/A' }}</div>
                         </div>
-                        <div>
-                          <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Updated</div>
-                          <div class="mt-1 text-gray-900">{{ formatDate(vehicle.updated_at) }}</div>
+                        <div class="rounded bg-slate-50 px-2 py-1">
+                          <div class="text-slate-400 font-medium">Updated</div>
+                          <div class="text-slate-700 font-semibold">{{ formatDate(vehicle.updated_at) }}</div>
                         </div>
                       </div>
                     </div>
 
-                    <div class="flex gap-2">
-                      <UButton color="gray" variant="soft" @click="editVehicle(vehicle)">Edit</UButton>
-                      <UButton color="red" variant="soft" :loading="deletingVehicleId === vehicle.id" @click="removeVehicle(vehicle)">
-                        Delete
-                      </UButton>
+                    <div class="flex gap-1.5 flex-shrink-0">
+                      <button type="button" class="rounded-lg bg-slate-100 px-2.5 py-1.5 text-[10px] font-medium text-slate-600 hover:bg-slate-200" @click="editVehicle(vehicle)">Edit</button>
+                      <button type="button" class="rounded-lg bg-red-50 px-2.5 py-1.5 text-[10px] font-medium text-red-600 hover:bg-red-100" :disabled="deletingVehicleId === vehicle.id" @click="removeVehicle(vehicle)">
+                        {{ deletingVehicleId === vehicle.id ? '...' : 'Delete' }}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -240,7 +256,7 @@ const submitVehicle = async () => {
     toast.add({
       title: editingVehicleId.value ? "Vehicle updated" : "Vehicle added",
       description: result.message,
-      color: "green",
+      color: "gray",
     });
     resetForm();
     await loadVehicles();
@@ -274,7 +290,7 @@ const removeVehicle = async (vehicle) => {
   deletingVehicleId.value = vehicle.id;
   const result = await deleteVehicle(vehicle.id);
   if (result.success) {
-    toast.add({ title: "Vehicle deleted", description: result.message, color: "green" });
+    toast.add({ title: "Vehicle deleted", description: result.message, color: "gray" });
     if (editingVehicleId.value === vehicle.id) {
       resetForm();
     }

@@ -1,6 +1,7 @@
 from cities_light.models import City, Country, Region
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
+from django.db.models import Q
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -368,8 +369,8 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
 
     def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
+        identifier = (attrs.get("email") or "").strip()
+        password = attrs.get("password") or ""
 
         # Authenticate the user by email and password
         # user = authenticate(email=email, password=password)
@@ -380,11 +381,18 @@ class CustomTokenObtainPairSerializer(serializers.Serializer):
         # Get user model
         User = get_user_model()
 
-        # Ensure email-based authentication
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
+        if not identifier or not password:
+            raise serializers.ValidationError("Email and password are required.")
+
+        user = User.objects.filter(
+            Q(email__iexact=identifier) | Q(username__iexact=identifier) | Q(phone=identifier)
+        ).first()
+
+        if not user:
             raise serializers.ValidationError("Invalid email or password.")
+
+        if not user.is_active:
+            raise serializers.ValidationError("Your account is inactive. Please contact support.")
 
         # Check the password
         if not user.check_password(password):

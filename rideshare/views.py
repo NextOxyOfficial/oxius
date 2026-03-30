@@ -27,10 +27,16 @@ from .serializers import (
 from .services import (
     assign_driver_to_ride,
     attempt_auto_assign_driver,
+    check_driver_has_active_ride,
+    check_user_has_active_ride,
     DispatchService,
     DriverLocationService,
     FareService,
+    get_user_active_ride,
     LocationService,
+    NearestDriverDispatch,
+    RideAutoCancel,
+    RideNotificationService,
     RoutingService,
     WalletService,
     get_driver_default_vehicle,
@@ -144,10 +150,22 @@ class RideCreateView(RideshareApiMixin, APIView):
             status=Ride.STATUS_SEARCHING,
         )
         ride.status_history.create(status=Ride.STATUS_SEARCHING, actor=request.user, metadata={"routing_source": route["routing_source"]})
-        DispatchService.broadcast_ride_request(ride)
-        attempt_auto_assign_driver(ride)
-        DispatchService.send_ride_event(ride, "ride_created")
+        
+        # Send push notification to rider
+        RideNotificationService.send_ride_notification(request.user, "searching_driver", ride)
+        
+        # Dispatch to nearest driver (1-minute cascade system)
+        nearest_driver = NearestDriverDispatch.dispatch_to_nearest_driver(ride)
+        
+        DispatchService.send_ride_event(ride, "ride_created", {
+            "targeted_driver_id": str(nearest_driver.id) if nearest_driver else None,
+        })
         ride.refresh_from_db()
+        
+        # If driver was auto-assigned, notify about acceptance
+        if ride.assigned_driver:
+            RideNotificationService.notify_ride_status_change(ride)
+        
         return api_success(RideSerializer(ride, context={"request": request}).data, "Ride requested successfully.", status.HTTP_201_CREATED)
 
 
@@ -206,7 +224,15 @@ class AvailableRideRequestListView(RideshareApiMixin, APIView):
 
     def get(self, request):
         driver_profile = request.user.driver_profile
-        queryset = Ride.objects.filter(status=Ride.STATUS_SEARCHING, assigned_driver__isnull=True)
+        
+        # Only show rides targeted to this driver or rides with no target
+        queryset = Ride.objects.filter(
+            status=Ride.STATUS_SEARCHING,
+            assigned_driver__isnull=True,
+        ).filter(
+            Q(targeted_driver__isnull=True) | Q(targeted_driver=driver_profile)
+        )
+        
         default_vehicle = get_driver_default_vehicle(driver_profile)
         if default_vehicle:
             queryset = queryset.filter(requested_vehicle_type=default_vehicle.vehicle_type)
@@ -222,12 +248,28 @@ class RideAcceptView(RideshareApiMixin, APIView):
         ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
         driver_profile = request.user.driver_profile
 
+        # Check if driver already has an active ride
+        if check_driver_has_active_ride(driver_profile):
+            return api_error("You already have an active ride. Complete it before accepting a new one.")
+
+        # Check if this ride is targeted to a specific driver (and it's not this driver)
+        if ride.targeted_driver_id and ride.targeted_driver_id != driver_profile.id:
+            return api_error("This ride is currently assigned to another driver.")
+
         try:
             ride = assign_driver_to_ride(ride, driver_profile, actor=request.user, assignment_source="manual")
         except DjangoValidationError as exc:
             return api_error(str(exc))
 
+        # Clear targeting after successful acceptance
+        ride.targeted_driver = None
+        ride.targeted_at = None
+        ride.save(update_fields=["targeted_driver", "targeted_at", "updated_at"])
         ride.refresh_from_db()
+        
+        # Send push notification to rider about driver acceptance
+        RideNotificationService.notify_ride_status_change(ride)
+        
         return api_success(RideSerializer(ride, context={"request": request}).data, "Ride accepted successfully.")
 
 
@@ -253,6 +295,10 @@ class RideCancelView(RideshareApiMixin, APIView):
             ride.assigned_driver.is_available = True
             ride.assigned_driver.save(update_fields=["is_available", "updated_at"])
         DispatchService.send_ride_event(ride, "ride_cancelled", {"reason": reason})
+        
+        # Send push notification about cancellation
+        RideNotificationService.notify_ride_status_change(ride)
+        
         return api_success(RideSerializer(ride, context={"request": request}).data, "Ride cancelled successfully.")
 
 
@@ -294,6 +340,10 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
             ride.assigned_driver.save(update_fields=["is_available", "updated_at"])
 
         DispatchService.send_ride_event(ride, "ride_status_updated", {"status": ride.status})
+        
+        # Send push notification about status change
+        RideNotificationService.notify_ride_status_change(ride)
+        
         return api_success(RideSerializer(ride, context={"request": request}).data, "Ride status updated successfully.")
 
 

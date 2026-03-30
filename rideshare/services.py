@@ -1,6 +1,7 @@
 from decimal import Decimal, ROUND_HALF_UP
 from math import asin, cos, radians, sin, sqrt
 import logging
+from datetime import timedelta
 
 import httpx
 from asgiref.sync import async_to_sync
@@ -10,7 +11,8 @@ from django.db import transaction
 from django.utils import timezone
 from channels.layers import get_channel_layer
 
-from base.models import Balance
+from base.models import Balance, FCMToken
+from base.fcm_service import send_fcm_notification
 
 from .models import DriverLocation, DriverProfile, FareConfig, Ride, Vehicle
 
@@ -759,3 +761,388 @@ def attempt_auto_assign_driver(ride):
             continue
 
     return None
+
+
+class RideNotificationService:
+    """Service to handle push notifications for ride events"""
+    
+    NOTIFICATION_MESSAGES = {
+        "requested": ("🚗 Ride Requested", "Your ride request has been submitted. Looking for nearby drivers..."),
+        "searching_driver": ("🔍 Searching Driver", "We're finding the best driver for your trip."),
+        "accepted": ("✅ Driver Assigned", "A driver has accepted your ride and is on the way!"),
+        "driver_arriving": ("🚙 Driver Arriving", "Your driver is arriving at the pickup location."),
+        "in_progress": ("🛣️ Trip Started", "Your trip has started. Enjoy your ride!"),
+        "completed": ("🎉 Trip Completed", "Your trip has been completed. Thank you for riding with us!"),
+        "cancelled": ("❌ Ride Cancelled", "Your ride has been cancelled."),
+        "no_driver_available": ("😔 No Driver Available", "Sorry, no drivers are available near you right now. Please try again later."),
+        "auto_cancelled": ("⏰ Ride Expired", "Your ride was cancelled because no driver accepted within 15 minutes."),
+    }
+    
+    @classmethod
+    def _get_user_fcm_tokens(cls, user):
+        """Get active FCM tokens for a user"""
+        return list(
+            FCMToken.objects.filter(user=user, is_active=True)
+            .values_list("token", flat=True)
+        )
+    
+    @classmethod
+    def send_ride_notification(cls, user, notification_type, ride=None, extra_data=None):
+        """Send push notification to user about ride status"""
+        if notification_type not in cls.NOTIFICATION_MESSAGES:
+            logger.warning(f"Unknown notification type: {notification_type}")
+            return False
+        
+        title, body = cls.NOTIFICATION_MESSAGES[notification_type]
+        
+        # Add ride-specific info to body if available
+        if ride:
+            if notification_type == "accepted" and ride.assigned_driver:
+                driver_name = ride.assigned_driver.user.name or ride.assigned_driver.user.username
+                body = f"{driver_name} has accepted your ride!"
+            elif notification_type == "completed" and ride.final_fare:
+                body = f"Trip completed! Total fare: ৳{ride.final_fare}"
+        
+        tokens = cls._get_user_fcm_tokens(user)
+        if not tokens:
+            logger.info(f"No FCM tokens for user {user.id}")
+            return False
+        
+        data = {
+            "type": "rideshare_update",
+            "notification_type": notification_type,
+        }
+        if ride:
+            data["ride_id"] = str(ride.id)
+            data["status"] = ride.status
+        if extra_data:
+            data.update(extra_data)
+        
+        # Send to all user's devices
+        success = False
+        for token in tokens:
+            if send_fcm_notification(token, title, body, data):
+                success = True
+        
+        return success
+    
+    @classmethod
+    def notify_ride_status_change(cls, ride, old_status=None):
+        """Notify relevant parties about ride status change"""
+        # Notify rider
+        cls.send_ride_notification(ride.rider, ride.status, ride)
+        
+        # Notify driver if assigned
+        if ride.assigned_driver and ride.assigned_driver.user:
+            driver_title = f"🚗 Ride Update"
+            driver_body = f"Ride status: {ride.status.replace('_', ' ').title()}"
+            
+            if ride.status == Ride.STATUS_CANCELLED:
+                driver_title = "❌ Ride Cancelled"
+                driver_body = "The passenger has cancelled the ride."
+            elif ride.status == Ride.STATUS_IN_PROGRESS:
+                driver_title = "🛣️ Trip Started"
+                driver_body = "Trip is now in progress."
+            elif ride.status == Ride.STATUS_COMPLETED:
+                driver_title = "🎉 Trip Completed"
+                driver_body = f"Trip completed! Earned: ৳{ride.final_fare or ride.fare_estimate}"
+            
+            tokens = cls._get_user_fcm_tokens(ride.assigned_driver.user)
+            data = {
+                "type": "rideshare_update",
+                "notification_type": ride.status,
+                "ride_id": str(ride.id),
+                "status": ride.status,
+            }
+            for token in tokens:
+                send_fcm_notification(token, driver_title, driver_body, data)
+    
+    @classmethod
+    def notify_new_ride_request(cls, ride):
+        """Notify online drivers about new ride request"""
+        # Get all online drivers with matching vehicle type
+        drivers = DriverProfile.objects.filter(
+            approval_status="approved",
+            is_online=True,
+            is_available=True,
+            vehicles__is_active=True,
+            vehicles__vehicle_type=ride.requested_vehicle_type,
+        ).select_related("user").distinct()
+        
+        title = "🚗 New Ride Request"
+        body = f"New {ride.requested_vehicle_type} ride: {ride.pickup_address[:30]}... → {ride.drop_address[:30]}... | ৳{ride.fare_estimate}"
+        
+        data = {
+            "type": "new_ride_request",
+            "ride_id": str(ride.id),
+            "pickup_address": ride.pickup_address,
+            "drop_address": ride.drop_address,
+            "fare_estimate": str(ride.fare_estimate),
+            "vehicle_type": ride.requested_vehicle_type,
+        }
+        
+        for driver in drivers:
+            tokens = cls._get_user_fcm_tokens(driver.user)
+            for token in tokens:
+                send_fcm_notification(token, title, body, data)
+
+
+class RideAutoCancel:
+    """Service to handle automatic ride cancellation after timeout"""
+    
+    TIMEOUT_MINUTES = 15
+    
+    @classmethod
+    def check_and_cancel_expired_rides(cls):
+        """Check for rides that have been searching for too long and cancel them"""
+        timeout_threshold = timezone.now() - timedelta(minutes=cls.TIMEOUT_MINUTES)
+        
+        expired_rides = Ride.objects.filter(
+            status=Ride.STATUS_SEARCHING,
+            requested_at__lt=timeout_threshold,
+            assigned_driver__isnull=True,
+        )
+        
+        cancelled_count = 0
+        for ride in expired_rides:
+            try:
+                cls.cancel_expired_ride(ride)
+                cancelled_count += 1
+            except Exception as e:
+                logger.exception(f"Failed to auto-cancel ride {ride.id}: {e}")
+        
+        return cancelled_count
+    
+    @classmethod
+    @transaction.atomic
+    def cancel_expired_ride(cls, ride):
+        """Cancel a single expired ride and notify the passenger"""
+        if ride.status != Ride.STATUS_SEARCHING:
+            return False
+        
+        ride.transition_to(
+            Ride.STATUS_CANCELLED,
+            actor=None,
+            metadata={"cancellation_reason": "auto_cancelled_no_driver", "timeout_minutes": cls.TIMEOUT_MINUTES},
+        )
+        
+        # Send push notification to passenger
+        RideNotificationService.send_ride_notification(
+            ride.rider,
+            "auto_cancelled",
+            ride,
+            {"cancellation_reason": "no_driver_available", "timeout_minutes": str(cls.TIMEOUT_MINUTES)}
+        )
+        
+        # Also send websocket event
+        DispatchService.send_ride_event(ride, "ride_auto_cancelled", {
+            "reason": "no_driver_available",
+            "timeout_minutes": cls.TIMEOUT_MINUTES,
+        })
+        
+        logger.info(f"Auto-cancelled ride {ride.id} after {cls.TIMEOUT_MINUTES} minutes with no driver")
+        return True
+    
+    @classmethod
+    def should_cancel_ride(cls, ride):
+        """Check if a ride should be auto-cancelled"""
+        if ride.status != Ride.STATUS_SEARCHING:
+            return False
+        if ride.assigned_driver_id:
+            return False
+        
+        timeout_threshold = timezone.now() - timedelta(minutes=cls.TIMEOUT_MINUTES)
+        return ride.requested_at < timeout_threshold
+
+
+class NearestDriverDispatch:
+    """Service to dispatch ride requests to nearest driver with 1-minute timeout cascade"""
+    
+    DRIVER_TIMEOUT_SECONDS = 60  # 1 minute per driver
+    
+    @classmethod
+    def get_sorted_drivers_for_ride(cls, ride, exclude_drivers=None):
+        """Get drivers sorted by distance from pickup, excluding already tried drivers"""
+        exclude_ids = set(exclude_drivers or [])
+        
+        candidates = list(
+            DriverProfile.objects.filter(
+                approval_status="approved",
+                is_online=True,
+                is_available=True,
+                vehicles__is_active=True,
+                vehicles__vehicle_type=ride.requested_vehicle_type,
+            )
+            .exclude(id__in=exclude_ids)
+            .select_related("user")
+            .distinct()
+        )
+        
+        if not candidates:
+            return []
+        
+        # Calculate distance and sort
+        drivers_with_distance = []
+        for driver in candidates:
+            if driver.current_latitude is None or driver.current_longitude is None:
+                continue
+            
+            distance = RoutingService._haversine_distance_km(
+                float(driver.current_latitude),
+                float(driver.current_longitude),
+                float(ride.pickup_latitude),
+                float(ride.pickup_longitude),
+            )
+            
+            # Check if within service radius
+            service_radius = float(driver.service_radius_km or 10)
+            if distance <= service_radius:
+                drivers_with_distance.append((driver, distance))
+        
+        # Sort by distance (nearest first)
+        drivers_with_distance.sort(key=lambda x: x[1])
+        return [d[0] for d in drivers_with_distance]
+    
+    @classmethod
+    @transaction.atomic
+    def dispatch_to_nearest_driver(cls, ride):
+        """Dispatch ride to the nearest available driver"""
+        if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
+            return None
+        
+        # Get list of already tried drivers from status history
+        tried_drivers = set(
+            Ride.objects.filter(id=ride.id)
+            .values_list("status_history__metadata__targeted_driver_id", flat=True)
+        )
+        tried_drivers.discard(None)
+        
+        drivers = cls.get_sorted_drivers_for_ride(ride, exclude_drivers=tried_drivers)
+        
+        if not drivers:
+            return None
+        
+        # Target the nearest driver
+        nearest_driver = drivers[0]
+        ride.targeted_driver = nearest_driver
+        ride.targeted_at = timezone.now()
+        ride.dispatch_attempt += 1
+        ride.save(update_fields=["targeted_driver", "targeted_at", "dispatch_attempt", "updated_at"])
+        
+        # Send targeted notification to this driver
+        cls._notify_targeted_driver(ride, nearest_driver)
+        
+        logger.info(f"Dispatched ride {ride.id} to driver {nearest_driver.id} (attempt {ride.dispatch_attempt})")
+        return nearest_driver
+    
+    @classmethod
+    def _notify_targeted_driver(cls, ride, driver):
+        """Send notification to targeted driver"""
+        title = "🚗 New Ride Request For You!"
+        body = f"{ride.pickup_address[:40]}... → {ride.drop_address[:40]}... | ৳{ride.fare_estimate}"
+        
+        data = {
+            "type": "targeted_ride_request",
+            "ride_id": str(ride.id),
+            "pickup_address": ride.pickup_address,
+            "drop_address": ride.drop_address,
+            "fare_estimate": str(ride.fare_estimate),
+            "vehicle_type": ride.requested_vehicle_type,
+            "timeout_seconds": str(cls.DRIVER_TIMEOUT_SECONDS),
+        }
+        
+        tokens = RideNotificationService._get_user_fcm_tokens(driver.user)
+        for token in tokens:
+            send_fcm_notification(token, title, body, data)
+        
+        # Also send websocket event to specific driver
+        DispatchService._group_send(f"driver_{driver.user_id}", {
+            "type": "ride.targeted",
+            "ride_id": str(ride.id),
+            "status": ride.status,
+            "pickup_address": ride.pickup_address,
+            "drop_address": ride.drop_address,
+            "distance_km": str(ride.distance_km),
+            "fare_estimate": str(ride.fare_estimate),
+            "requested_vehicle_type": ride.requested_vehicle_type,
+            "timeout_seconds": cls.DRIVER_TIMEOUT_SECONDS,
+        })
+    
+    @classmethod
+    def check_and_cascade_expired_targets(cls):
+        """Check for rides where targeted driver didn't respond and cascade to next"""
+        timeout_threshold = timezone.now() - timedelta(seconds=cls.DRIVER_TIMEOUT_SECONDS)
+        
+        expired_targets = Ride.objects.filter(
+            status=Ride.STATUS_SEARCHING,
+            assigned_driver__isnull=True,
+            targeted_driver__isnull=False,
+            targeted_at__lt=timeout_threshold,
+        )
+        
+        cascaded_count = 0
+        for ride in expired_targets:
+            try:
+                # Clear current target and try next driver
+                old_target_id = ride.targeted_driver_id
+                ride.targeted_driver = None
+                ride.targeted_at = None
+                ride.save(update_fields=["targeted_driver", "targeted_at", "updated_at"])
+                
+                # Record the timeout in history
+                RideStatusHistory.objects.create(
+                    ride=ride,
+                    status=ride.status,
+                    metadata={"event": "driver_timeout", "targeted_driver_id": str(old_target_id)},
+                )
+                
+                # Try next driver
+                next_driver = cls.dispatch_to_nearest_driver(ride)
+                if next_driver:
+                    cascaded_count += 1
+                else:
+                    logger.info(f"No more drivers available for ride {ride.id}")
+            except Exception as e:
+                logger.exception(f"Failed to cascade ride {ride.id}: {e}")
+        
+        return cascaded_count
+
+
+def check_user_has_active_ride(user):
+    """Check if user (as passenger) has an active ride"""
+    return Ride.objects.filter(
+        rider=user,
+        status__in=[
+            Ride.STATUS_REQUESTED,
+            Ride.STATUS_SEARCHING,
+            Ride.STATUS_ACCEPTED,
+            Ride.STATUS_DRIVER_ARRIVING,
+            Ride.STATUS_IN_PROGRESS,
+        ]
+    ).exists()
+
+
+def check_driver_has_active_ride(driver_profile):
+    """Check if driver has an active ride"""
+    return Ride.objects.filter(
+        assigned_driver=driver_profile,
+        status__in=[
+            Ride.STATUS_ACCEPTED,
+            Ride.STATUS_DRIVER_ARRIVING,
+            Ride.STATUS_IN_PROGRESS,
+        ]
+    ).exists()
+
+
+def get_user_active_ride(user):
+    """Get user's active ride if any"""
+    return Ride.objects.filter(
+        rider=user,
+        status__in=[
+            Ride.STATUS_REQUESTED,
+            Ride.STATUS_SEARCHING,
+            Ride.STATUS_ACCEPTED,
+            Ride.STATUS_DRIVER_ARRIVING,
+            Ride.STATUS_IN_PROGRESS,
+        ]
+    ).first()

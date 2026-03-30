@@ -1,61 +1,191 @@
 <template>
   <div class="space-y-5">
-    <div
-      v-if="activeRide"
-      class="rounded-2xl border border-gray-800 bg-gray-950 px-4 py-3 text-white shadow-sm"
-    >
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-3">
-          <div class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
-            <UIcon name="i-heroicons-arrow-path" class="h-4 w-4 animate-spin text-gray-100" />
-          </div>
-          <div>
-            <div class="text-sm font-semibold">{{ $t("rideshare_active_ride_alert") }}</div>
-            <div class="mt-0.5 text-xs text-gray-300 capitalize">{{ formatStatus(activeRide.status) }}</div>
+    <!-- Active Ride Section (Searching or In Progress) -->
+    <div v-if="activeRide" class="space-y-4">
+      <!-- Ride Status Card -->
+      <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
+        <!-- Header -->
+        <div 
+          class="px-4 py-3"
+          :class="activeRide.status === 'searching_driver' ? 'bg-gradient-to-r from-indigo-500 to-violet-600' : 'bg-gradient-to-r from-emerald-500 to-teal-600'"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
+                  <UIcon 
+                    :name="activeRide.status === 'searching_driver' ? 'i-heroicons-magnifying-glass' : 'i-heroicons-truck'" 
+                    class="h-5 w-5 text-white" 
+                  />
+                </div>
+                <div v-if="activeRide.status === 'searching_driver'" class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-white flex items-center justify-center">
+                  <div class="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                </div>
+              </div>
+              <div>
+                <div class="text-sm font-bold text-white">
+                  {{ activeRide.status === 'searching_driver' ? $t("rideshare_finding_driver") : $t("rideshare_active_ride_alert") }}
+                </div>
+                <div class="text-[11px] text-white/80 capitalize">{{ formatStatus(activeRide.status) }}</div>
+              </div>
+            </div>
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
+              <UIcon 
+                :name="activeRide.requested_vehicle_type === 'bike' ? 'i-heroicons-truck' : activeRide.requested_vehicle_type === 'cng' ? 'i-heroicons-cube' : 'i-heroicons-truck'" 
+                class="h-4 w-4 text-white" 
+              />
+            </div>
           </div>
         </div>
-        <UButton to="/rideshare/active" color="gray" variant="solid" size="sm">
-          {{ $t("rideshare_go_active_trip") }}
-        </UButton>
+        
+        <!-- Content -->
+        <div class="p-4 space-y-3">
+          <!-- Route Info -->
+          <div class="flex items-start gap-2.5">
+            <div class="flex flex-col items-center pt-0.5">
+              <div class="h-2 w-2 rounded-full bg-indigo-500"></div>
+              <div class="w-0.5 h-6 bg-slate-200 my-0.5"></div>
+              <div class="h-2 w-2 rounded-full bg-violet-500"></div>
+            </div>
+            <div class="flex-1 space-y-2 min-w-0">
+              <div>
+                <div class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Pickup</div>
+                <div class="text-xs font-medium text-slate-800 truncate">{{ activeRide.pickup_address }}</div>
+              </div>
+              <div>
+                <div class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Drop</div>
+                <div class="text-xs font-medium text-slate-800 truncate">{{ activeRide.drop_address }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Stats Row -->
+          <div class="flex items-center divide-x divide-slate-200 rounded-lg bg-slate-50 py-2">
+            <div class="flex-1 text-center px-2">
+              <div class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Fare</div>
+              <div class="text-xs font-bold" :class="activeRide.status === 'searching_driver' ? 'text-indigo-600' : 'text-emerald-600'">৳{{ activeRide.fare_estimate }}</div>
+            </div>
+            <div class="flex-1 text-center px-2">
+              <div class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Distance</div>
+              <div class="text-xs font-bold text-slate-800">{{ activeRide.distance_km }} km</div>
+            </div>
+            <div class="flex-1 text-center px-2">
+              <div class="text-[9px] font-semibold uppercase tracking-wide text-slate-400">{{ activeRide.assigned_driver ? 'Driver' : 'Vehicle' }}</div>
+              <div class="text-xs font-bold text-slate-800 capitalize">{{ activeRide.assigned_driver?.user?.name || activeRide.requested_vehicle_type }}</div>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-600 transition-all hover:bg-red-100"
+              :disabled="cancellingRide"
+              @click="cancelActiveRide"
+            >
+              <span v-if="cancellingRide" class="h-3 w-3 animate-spin rounded-full border-2 border-red-600 border-t-transparent"></span>
+              <UIcon v-else name="i-heroicons-x-mark" class="h-3.5 w-3.5" />
+              {{ $t("rideshare_cancel_ride") }}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Live Map -->
+      <div class="rounded-xl border border-slate-200/80 bg-white overflow-hidden shadow-xs">
+        <div class="px-3 py-2 border-b border-slate-100 bg-slate-50/50">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-bold text-slate-700">Live Map</h3>
+            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live
+            </span>
+          </div>
+        </div>
+        <div class="p-1.5">
+          <ClientOnly>
+            <RideshareMap
+              :pickup="activeRidePickupPoint"
+              :drop="activeRideDropPoint"
+              :route-geometry="activeRide.route_geometry"
+              active-selection="pickup"
+              height="280px"
+            />
+            <template #fallback>
+              <div class="h-[280px] rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-center text-xs text-slate-400">
+                Loading map...
+              </div>
+            </template>
+          </ClientOnly>
+        </div>
       </div>
     </div>
 
-    <div v-if="userFacingError" class="rounded-2xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm">
+    <div v-if="userFacingError" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
       {{ userFacingError }}
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+    <!-- Location Permission Required (only show if no active ride) -->
+    <div
+      v-if="!activeRide && !locationGranted && !locationLoading"
+      class="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4 shadow-sm"
+    >
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+            <UIcon name="i-heroicons-map-pin" class="h-5 w-5" />
+          </div>
+          <div>
+            <div class="text-sm font-semibold text-amber-800">{{ $t("rideshare_location_required") }}</div>
+            <div class="text-xs text-amber-600">{{ $t("rideshare_location_required_desc") }}</div>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-amber-600 hover:to-orange-600"
+          :disabled="locationLoading"
+          @click="requestLocationPermission"
+        >
+          <UIcon name="i-heroicons-map-pin" class="h-4 w-4" />
+          {{ $t("rideshare_allow_location") }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Booking Section - Hidden when active ride exists -->
+    <div v-if="!activeRide" class="grid grid-cols-1 xl:grid-cols-5 gap-5">
+      <!-- Booking Form -->
       <div class="order-1 xl:col-span-2 space-y-5">
-        <div class="overflow-visible rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div class="border-b border-gray-200 bg-gray-50 px-4 py-4">
-            <h2 class="text-base font-bold text-gray-950">{{ $t("rideshare_ride_booking") }}</h2>
-            <p class="mt-0.5 text-xs text-gray-500">{{ $t("rideshare_ride_booking_desc") }}</p>
+        <div class="overflow-visible rounded-xl border border-slate-200/80 bg-white shadow-xs">
+          <div class="border-b border-slate-100 bg-slate-50/50 px-5 py-4">
+            <h2 class="text-base font-bold text-slate-800">{{ $t("rideshare_ride_booking") }}</h2>
+            <p class="text-xs text-slate-500">{{ $t("rideshare_ride_booking_desc") }}</p>
           </div>
 
-          <div class="space-y-4 p-4 sm:p-5">
+          <div class="space-y-4 p-5">
             <div class="relative flex gap-3">
-              <div class="flex flex-col items-center pb-3 pt-3">
-                <div class="h-3 w-3 flex-shrink-0 rounded-full border-2 border-gray-900 bg-gray-900"></div>
-                <div class="my-1 w-0.5 flex-1 bg-gray-300"></div>
-                <div class="h-3 w-3 flex-shrink-0 bg-gray-900" style="clip-path: polygon(50% 100%, 0 0, 100% 0);"></div>
+              <div class="flex flex-col items-center py-3">
+                <div class="h-3 w-3 flex-shrink-0 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600"></div>
+                <div class="my-1.5 w-0.5 flex-1 bg-slate-200"></div>
+                <div class="h-3 w-3 flex-shrink-0 bg-gradient-to-br from-indigo-500 to-violet-600" style="clip-path: polygon(50% 100%, 0 0, 100% 0);"></div>
               </div>
 
-              <div class="min-w-0 flex-1 space-y-2">
+              <div class="min-w-0 flex-1 space-y-3">
                 <div ref="pickupSearchRef" class="relative">
                   <div
-                    class="flex cursor-text items-center gap-2 rounded-xl border px-3 py-3 transition-all"
-                    :class="searchTarget === 'pickup' ? 'border-gray-900 bg-white ring-1 ring-gray-900/10' : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white'"
+                    class="flex cursor-text items-center gap-2 rounded-xl border px-4 py-3 transition-all"
+                    :class="searchTarget === 'pickup' ? 'border-indigo-400 bg-white ring-2 ring-indigo-100' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'"
                     @click="focusPickupInput"
                   >
                     <div class="min-w-0 flex-1">
-                      <div class="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <div class="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                         {{ $t("rideshare_pickup_location") }}
                       </div>
                       <input
                         ref="pickupInputEl"
                         v-model="pickupQuery"
                         type="text"
-                        class="w-full bg-transparent text-sm font-medium text-gray-950 outline-none placeholder:font-normal placeholder:text-gray-400"
+                        class="w-full bg-transparent text-sm font-medium text-slate-800 outline-none placeholder:font-normal placeholder:text-slate-400"
                         :placeholder="$t('rideshare_search_pickup')"
                         @focus="onPickupFocus"
                         @input="onPickupInput"
@@ -63,38 +193,36 @@
                     </div>
                     <button
                       type="button"
-                      class="inline-flex h-9 flex-shrink-0 items-center justify-center gap-1.5 rounded-full bg-gray-900 px-3 text-[11px] font-semibold text-white transition-colors hover:bg-gray-800"
+                      class="inline-flex h-8 flex-shrink-0 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 px-3 text-xs font-semibold text-white transition-all hover:from-indigo-600 hover:to-violet-700"
                       :disabled="locatingPickup"
-                      :class="locatingPickup ? 'cursor-wait bg-gray-700 text-gray-100' : ''"
                       @click.stop="useCurrentLocation"
                     >
                       <template v-if="locatingPickup">
                         <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                        <span>{{ $t("rideshare_selecting") }}</span>
                       </template>
                       <template v-else>
-                        <UIcon name="i-heroicons-map-pin" class="h-4 w-4 text-white" />
+                        <UIcon name="i-heroicons-map-pin" class="h-3.5 w-3.5" />
                         <span>{{ $t("rideshare_current_location") }}</span>
                       </template>
                     </button>
                   </div>
                   <div
                     v-if="searchTarget === 'pickup' && pickupSuggestions.length"
-                    class="absolute left-0 right-0 z-30 mt-1 max-h-60 overflow-y-auto overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl"
+                    class="absolute left-0 right-0 z-30 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl"
                   >
                     <button
                       v-for="item in pickupSuggestions"
                       :key="`p-${item.latitude}-${item.longitude}`"
                       type="button"
-                      class="flex w-full items-start gap-2.5 border-b border-gray-50 px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-gray-50"
+                      class="flex w-full items-start gap-2 border-b border-slate-50 px-3 py-2 text-left transition-colors last:border-b-0 hover:bg-slate-50"
                       @click="selectSuggestion('pickup', item)"
                     >
-                      <div class="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100">
-                        <UIcon name="i-heroicons-map-pin" class="h-4 w-4 text-gray-600" />
+                      <div class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
+                        <UIcon name="i-heroicons-map-pin" class="h-3 w-3 text-slate-500" />
                       </div>
                       <div class="min-w-0 flex-1">
-                        <div class="truncate text-sm font-medium text-gray-900">{{ item.name }}</div>
-                        <div class="mt-0.5 truncate text-xs text-gray-400">{{ formatAddress(item.address) }}</div>
+                        <div class="truncate text-xs font-medium text-slate-800">{{ item.name }}</div>
+                        <div class="truncate text-[10px] text-slate-400">{{ formatAddress(item.address) }}</div>
                       </div>
                     </button>
                   </div>
@@ -102,45 +230,45 @@
 
                 <div ref="dropSearchRef" class="relative">
                   <div
-                    class="flex cursor-text items-center gap-2 rounded-xl border px-3 py-3 transition-all"
-                    :class="searchTarget === 'drop' ? 'border-gray-900 bg-white ring-1 ring-gray-900/10' : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white'"
+                    class="flex cursor-text items-center gap-2 rounded-lg border px-3 py-2.5 transition-all"
+                    :class="searchTarget === 'drop' ? 'border-indigo-400 bg-white ring-2 ring-indigo-100' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white'"
                     @click="focusDropInput"
                   >
                     <div class="min-w-0 flex-1">
-                      <div class="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <div class="mb-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-400">
                         {{ $t("rideshare_drop_location") }}
                       </div>
                       <input
                         ref="dropInputEl"
                         v-model="dropQuery"
                         type="text"
-                        class="w-full bg-transparent text-sm font-medium text-gray-950 outline-none placeholder:font-normal placeholder:text-gray-400"
+                        class="w-full bg-transparent text-xs font-medium text-slate-800 outline-none placeholder:font-normal placeholder:text-slate-400"
                         :placeholder="$t('rideshare_search_drop')"
                         @focus="onDropFocus"
                         @input="onDropInput"
                       />
                     </div>
                     <div v-if="searchingDrop" class="flex-shrink-0">
-                      <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent"></div>
+                      <div class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"></div>
                     </div>
                   </div>
                   <div
                     v-if="searchTarget === 'drop' && dropSuggestions.length"
-                    class="absolute left-0 right-0 z-30 mt-1 max-h-60 overflow-y-auto overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl"
+                    class="absolute left-0 right-0 z-30 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl"
                   >
                     <button
                       v-for="item in dropSuggestions"
                       :key="`d-${item.latitude}-${item.longitude}`"
                       type="button"
-                      class="flex w-full items-start gap-2.5 border-b border-gray-50 px-3 py-2.5 text-left transition-colors last:border-b-0 hover:bg-gray-50"
+                      class="flex w-full items-start gap-2 border-b border-slate-50 px-3 py-2 text-left transition-colors last:border-b-0 hover:bg-slate-50"
                       @click="selectSuggestion('drop', item)"
                     >
-                      <div class="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100">
-                        <UIcon name="i-heroicons-map-pin" class="h-4 w-4 text-gray-600" />
+                      <div class="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
+                        <UIcon name="i-heroicons-map-pin" class="h-3 w-3 text-slate-500" />
                       </div>
                       <div class="min-w-0 flex-1">
-                        <div class="truncate text-sm font-medium text-gray-900">{{ item.name }}</div>
-                        <div class="mt-0.5 truncate text-xs text-gray-400">{{ formatAddress(item.address) }}</div>
+                        <div class="truncate text-xs font-medium text-slate-800">{{ item.name }}</div>
+                        <div class="truncate text-[10px] text-slate-400">{{ formatAddress(item.address) }}</div>
                       </div>
                     </button>
                   </div>
@@ -149,46 +277,41 @@
             </div>
 
             <div>
-              <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-600">
+              <label class="mb-1.5 block text-sm font-semibold uppercase tracking-wide text-slate-500">
                 {{ $t("rideshare_vehicle_type") }}
               </label>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-3 gap-1.5">
                 <button
                   v-for="item in vehicleOptions"
                   :key="item.value"
                   type="button"
-                  class="rounded-xl border px-2 py-3 text-center transition-all"
-                  :class="selectedVehicleType === item.value ? 'border-gray-950 bg-gray-950 text-white shadow-sm' : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'"
+                  class="rounded-lg border px-2 py-2 text-center transition-all"
+                  :class="selectedVehicleType === item.value ? 'border-indigo-400 bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'"
                   @click="selectedVehicleType = item.value"
                 >
-                  <div class="text-lg">{{ item.icon }}</div>
-                  <div class="mt-1 text-xs font-semibold">{{ item.label }}</div>
+                  <div class="text-2xl">{{ item.icon }}</div>
+                  <div class="mt-0.5 text-sm font-semibold">{{ item.label }}</div>
                 </button>
-              </div>
-            </div>
-
-            <div class="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600">
-              <div class="font-semibold uppercase tracking-wide text-gray-500">Flow</div>
-              <div class="mt-1">
-                Select pickup, drop, and vehicle. Fare will appear automatically below.
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="order-2 xl:col-span-3 space-y-5">
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
-            <div class="flex items-center gap-2">
-              <UIcon name="i-heroicons-map" class="h-4 w-4 text-gray-700" />
-              <h2 class="text-sm font-bold text-gray-950">{{ $t("rideshare_live_map") }}</h2>
+      <!-- Map & Fare Combined -->
+      <div class="order-2 xl:col-span-3">
+        <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-sm shadow-sm">
+          <!-- Map Header -->
+          <div class="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-2.5">
+            <div class="flex items-center gap-1.5">
+              <UIcon name="i-heroicons-map" class="h-4 w-4 text-indigo-500" />
+              <h2 class="text-sm font-bold text-slate-800">{{ $t("rideshare_live_map") }}</h2>
             </div>
-            <div class="flex items-center gap-2 text-[10px]">
+            <div class="flex items-center gap-1 text-[10px]">
               <button
                 type="button"
-                class="flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-all"
-                :class="selectionTarget === 'pickup' ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                class="flex items-center gap-1 rounded-md px-2.5 py-1 transition-all"
+                :class="selectionTarget === 'pickup' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
                 @click="selectionTarget = 'pickup'"
               >
                 <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
@@ -196,8 +319,8 @@
               </button>
               <button
                 type="button"
-                class="flex items-center gap-1.5 rounded-full px-2.5 py-1 transition-all"
-                :class="selectionTarget === 'drop' ? 'bg-gray-950 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+                class="flex items-center gap-1 rounded-md px-2.5 py-1 transition-all"
+                :class="selectionTarget === 'drop' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
                 @click="selectionTarget = 'drop'"
               >
                 <span class="h-1.5 w-1.5 bg-current" style="clip-path: polygon(50% 100%, 0 0, 100% 0);"></span>
@@ -205,7 +328,9 @@
               </button>
             </div>
           </div>
-          <div class="p-2 sm:p-3">
+
+          <!-- Map -->
+          <div class="p-2">
             <ClientOnly>
               <RideshareMap
                 :pickup="pickupPoint"
@@ -214,101 +339,65 @@
                 :route-geometry="estimateResult?.route_geometry || null"
                 :active-selection="selectionTarget"
                 :loading="estimating || nearbyDriversLoading"
-                height="min(54vh, 420px)"
+                height="min(45vh, 320px)"
                 @map-click="handleMapSelection"
                 @pickup-dragged="handlePickupDragged"
               />
               <template #fallback>
-                <div class="flex h-[320px] items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-400">
-                  <UIcon name="i-heroicons-map" class="mr-2 h-6 w-6" /> Loading map...
+                <div class="flex h-[280px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-400">
+                  <UIcon name="i-heroicons-map" class="mr-1.5 h-5 w-5" /> Loading map...
                 </div>
               </template>
             </ClientOnly>
           </div>
-        </div>
 
-        <div
-          v-if="showFareSection"
-          class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
-        >
-          <div class="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3">
-            <div>
-              <h2 class="text-sm font-bold text-gray-950">{{ $t("rideshare_fare_summary") }}</h2>
-              <p class="mt-0.5 text-[11px] text-gray-500">Automatic estimate based on your route and selected vehicle.</p>
-            </div>
-            <span class="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-              :class="fareBadgeClass"
-            >
-              {{ fareBadgeText }}
-            </span>
-          </div>
-          <div class="space-y-4 p-4">
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-4">
-              <div class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
-                <div class="text-[10px] font-semibold uppercase tracking-wide text-gray-500">Vehicle</div>
-                <div class="mt-1 text-sm font-bold text-gray-950">{{ selectedVehicleLabel }}</div>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
-                <div class="text-[10px] font-semibold uppercase tracking-wide text-gray-500">Distance</div>
-                <div class="mt-1 text-sm font-bold text-gray-950">{{ estimateResult?.distance_km || '--' }} km</div>
-              </div>
-              <div class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
-                <div class="text-[10px] font-semibold uppercase tracking-wide text-gray-500">ETA</div>
-                <div class="mt-1 text-sm font-bold text-gray-950">{{ estimateResult ? formatEta(estimateResult.eta_seconds) : '--' }}</div>
-              </div>
-              <div class="rounded-xl border border-gray-950 bg-gray-950 px-3 py-3 text-white">
-                <div class="text-[10px] font-semibold uppercase tracking-wide text-gray-300">Fare</div>
-                <div class="mt-1 text-sm font-bold">৳{{ estimateResult?.fare || '--' }}</div>
-              </div>
+          <!-- Fare Summary (inside same card) -->
+          <div v-if="showFareSection" class="border-t border-slate-100 p-3">
+            <div v-if="estimating" class="flex items-center justify-center gap-2 py-3 text-xs text-slate-500">
+              <div class="h-4 w-4 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+              <span>Calculating fare...</span>
             </div>
 
-            <div v-if="estimating" class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm text-gray-600">
-              <div class="flex items-center gap-2">
-                <div class="h-4 w-4 animate-spin rounded-full border-2 border-gray-500 border-t-transparent"></div>
-                <span>Connecting route and fare estimate...</span>
-              </div>
-            </div>
-
-            <div v-else-if="estimateResult" class="space-y-3">
-              <div class="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
-                <div class="font-semibold text-gray-950">Ready to confirm</div>
-                <div class="mt-1 text-xs text-gray-500">
-                  {{ pickupPoint?.name }} → {{ dropPoint?.name }}
+            <div v-else-if="estimateResult">
+              <!-- Fare Stats Row -->
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-4 text-[11px]">
+                  <div>
+                    <span class="text-slate-400">Vehicle:</span>
+                    <span class="ml-1 font-semibold text-slate-700">{{ selectedVehicleLabel }}</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400">Distance:</span>
+                    <span class="ml-1 font-semibold text-slate-700">{{ estimateResult.distance_km }} km</span>
+                  </div>
+                  <div>
+                    <span class="text-slate-400">ETA:</span>
+                    <span class="ml-1 font-semibold text-slate-700">{{ formatEta(estimateResult.eta_seconds) }}</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-[10px] text-slate-400">Estimated Fare</div>
+                  <div class="text-lg font-bold text-indigo-600">৳{{ estimateResult.fare }}</div>
                 </div>
               </div>
-              <UButton
-                color="gray"
-                block
-                :loading="creatingRide"
-                :disabled="!estimateResult || Boolean(activeRide)"
+
+              <!-- Confirm Button -->
+              <button
+                type="button"
+                class="w-full rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition-all hover:from-indigo-600 hover:to-violet-700 disabled:opacity-50"
+                :disabled="!estimateResult || Boolean(activeRide) || creatingRide"
                 @click="submitRideRequest"
               >
-                {{ $t("rideshare_confirm_ride") }}
-              </UButton>
+                <span v-if="creatingRide" class="inline-flex items-center gap-2">
+                  <span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  Processing...
+                </span>
+                <span v-else>{{ $t("rideshare_confirm_ride") }} • ৳{{ estimateResult.fare }}</span>
+              </button>
             </div>
 
-            <div v-else class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-center text-xs text-gray-500">
-              Complete both locations to see your fare summary automatically.
-            </div>
-          </div>
-        </div>
-
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-          <div class="border-b border-gray-200 px-4 py-3">
-            <h2 class="text-sm font-bold text-gray-950">{{ $t("rideshare_tips_title") }}</h2>
-          </div>
-          <div class="grid grid-cols-1 gap-3 p-4 text-xs text-gray-500 sm:grid-cols-3">
-            <div class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
-              <div class="mb-1 font-semibold text-gray-800">{{ $t("rideshare_tip1_title") }}</div>
-              <div>{{ $t("rideshare_tip1_desc") }}</div>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
-              <div class="mb-1 font-semibold text-gray-800">{{ $t("rideshare_tip2_title") }}</div>
-              <div>{{ $t("rideshare_tip2_desc") }}</div>
-            </div>
-            <div class="rounded-xl border border-gray-200 bg-gray-50 px-3 py-3">
-              <div class="mb-1 font-semibold text-gray-800">{{ $t("rideshare_tip3_title") }}</div>
-              <div>{{ $t("rideshare_tip3_desc") }}</div>
+            <div v-else class="py-3 text-center text-[11px] text-slate-400">
+              Select pickup & drop locations to see fare estimate
             </div>
           </div>
         </div>
@@ -325,6 +414,7 @@ const {
   estimateRide,
   createRide,
   getActiveRide,
+  cancelRide,
   searchLocations,
   reverseGeocode,
   getNearbyDrivers,
@@ -339,10 +429,47 @@ const dropSuggestions = ref([]);
 const nearbyDrivers = ref([]);
 const nearbyDriversLoading = ref(false);
 const searchTarget = ref(null);
+
+// Location permission state
+const locationGranted = ref(false);
+const locationLoading = ref(false);
+
+const checkLocationPermission = async () => {
+  if (!navigator.permissions) {
+    return;
+  }
+  try {
+    const result = await navigator.permissions.query({ name: 'geolocation' });
+    locationGranted.value = result.state === 'granted';
+    result.onchange = () => {
+      locationGranted.value = result.state === 'granted';
+    };
+  } catch (error) {
+    console.error('Permission check failed:', error);
+  }
+};
+
+const requestLocationPermission = async () => {
+  if (!navigator.geolocation) {
+    return;
+  }
+  locationLoading.value = true;
+  navigator.geolocation.getCurrentPosition(
+    () => {
+      locationGranted.value = true;
+      locationLoading.value = false;
+    },
+    () => {
+      locationLoading.value = false;
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+};
 const selectionTarget = ref("pickup");
 const selectedVehicleType = ref("bike");
 const estimating = ref(false);
 const creatingRide = ref(false);
+const cancellingRide = ref(false);
 const locatingPickup = ref(false);
 const searchingPickup = ref(false);
 const searchingDrop = ref(false);
@@ -380,6 +507,25 @@ const fareBadgeClass = computed(() => {
 const userFacingError = computed(() => {
   if (!rawError.value) return "";
   return "We couldn’t complete that ride action right now. Please review the route and try again.";
+});
+
+// Active ride map points
+const activeRidePickupPoint = computed(() => {
+  if (!activeRide.value) return null;
+  return {
+    latitude: activeRide.value.pickup_latitude,
+    longitude: activeRide.value.pickup_longitude,
+    name: activeRide.value.pickup_address,
+  };
+});
+
+const activeRideDropPoint = computed(() => {
+  if (!activeRide.value) return null;
+  return {
+    latitude: activeRide.value.drop_latitude,
+    longitude: activeRide.value.drop_longitude,
+    name: activeRide.value.drop_address,
+  };
 });
 
 const formatAddress = (address) => {
@@ -847,6 +993,22 @@ const loadActiveRide = async () => {
   }
 };
 
+const cancelActiveRide = async () => {
+  if (!activeRide.value) return;
+  
+  cancellingRide.value = true;
+  const result = await cancelRide(activeRide.value.id, "Cancelled by passenger");
+  
+  if (result.success) {
+    activeRide.value = null;
+    toast.add({ title: "Ride cancelled", description: "Your ride has been cancelled.", color: "gray" });
+  } else {
+    toast.add({ title: "Cancel failed", description: result.message || "Please try again.", color: "red" });
+  }
+  
+  cancellingRide.value = false;
+};
+
 const handleClickOutside = (event) => {
   const clickedInPickup = pickupSearchRef.value && pickupSearchRef.value.contains(event.target);
   const clickedInDrop = dropSearchRef.value && dropSearchRef.value.contains(event.target);
@@ -863,6 +1025,7 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   loadActiveRide();
+  checkLocationPermission();
   document.addEventListener("click", handleClickOutside);
 });
 
