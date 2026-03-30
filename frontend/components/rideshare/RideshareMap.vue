@@ -1,15 +1,15 @@
 <template>
-  <div class="relative w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
-    <div ref="mapElement" :style="{ height }" class="w-full"></div>
+  <div class="relative z-0 w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+    <div ref="mapElement" :style="{ height }" class="w-full relative z-0"></div>
 
-    <div class="absolute top-3 left-3 z-[500]">
+    <div class="absolute top-3 left-3 z-10">
       <div class="rounded-lg bg-white/95 px-3 py-2 shadow-md border border-gray-100 text-xs text-gray-600 flex items-center gap-2">
         <span class="w-2 h-2 rounded-full" :class="activeSelection === 'pickup' ? 'bg-black' : 'bg-black'"></span>
         <span>Tap map to set <span class="font-bold text-gray-900 capitalize">{{ activeSelection }}</span></span>
       </div>
     </div>
 
-    <div v-if="loading" class="absolute inset-0 z-[600] bg-white/65 backdrop-blur-[1px] flex items-center justify-center">
+    <div v-if="loading" class="absolute inset-0 z-20 bg-white/65 backdrop-blur-[1px] flex items-center justify-center">
       <div class="flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm border border-gray-100 text-sm text-gray-700">
         <div class="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></div>
         <span>Loading route...</span>
@@ -73,7 +73,7 @@ const dropIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="
 
 const driverIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#111" stroke="#fff" stroke-width="2"/><path d="M10 20l6-12 6 12H10z" fill="#fff"/></svg>`;
 
-const nearbyDriverIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#10b981" stroke="#fff" stroke-width="2"/><path d="M8 15l4-8 4 8H8z" fill="#fff"/></svg>`;
+const nearbyDriverIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#374151" stroke="#fff" stroke-width="2"/><path d="M8 15l4-8 4 8H8z" fill="#fff"/></svg>`;
 
 const getCoordinates = (point) => {
   if (!point) {
@@ -243,5 +243,13 @@ onBeforeUnmount(() => {
 .rideshare-marker {
   background: transparent !important;
   border: none !important;
+}
+
+.leaflet-container,
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control {
+  z-index: 1 !important;
 }
 </style>

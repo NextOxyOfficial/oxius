@@ -24,7 +24,7 @@
           <div class="text-lg font-semibold text-gray-900">No active trip</div>
           <div class="text-sm text-gray-500 mt-2">Create a new booking or wait for a driver assignment.</div>
           <div class="mt-5">
-            <UButton to="/rideshare" color="emerald">Go to Booking</UButton>
+            <UButton to="/rideshare" color="gray">Go to Booking</UButton>
           </div>
         </div>
 
@@ -36,7 +36,7 @@
             </div>
             <div class="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
               <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Fare</div>
-              <div class="mt-2 text-lg font-semibold text-emerald-700">৳{{ ride.final_fare || ride.fare_estimate }}</div>
+              <div class="mt-2 text-lg font-semibold text-gray-900">৳{{ ride.final_fare || ride.fare_estimate }}</div>
             </div>
             <div class="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
               <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Distance</div>
@@ -78,7 +78,7 @@
                 </div>
                 <div class="p-5 space-y-4">
                   <div v-for="item in ride.status_history || []" :key="item.id" class="flex items-start gap-3">
-                    <div class="w-3 h-3 rounded-full bg-emerald-500 mt-1.5"></div>
+                    <div class="w-3 h-3 rounded-full bg-gray-900 mt-1.5"></div>
                     <div>
                       <div class="text-sm font-medium text-gray-900 capitalize">{{ formatStatus(item.status) }}</div>
                       <div class="text-xs text-gray-500 mt-1">{{ formatDateTime(item.created_at) }}</div>
@@ -123,7 +123,7 @@
                   <div v-if="isDriver" class="space-y-3">
                     <UButton
                       v-if="ride.status === 'accepted'"
-                      color="blue"
+                      color="gray"
                       block
                       :loading="updatingStatus"
                       @click="changeStatus('driver_arriving')"
@@ -132,7 +132,7 @@
                     </UButton>
                     <UButton
                       v-if="ride.status === 'driver_arriving'"
-                      color="emerald"
+                      color="gray"
                       block
                       :loading="updatingStatus"
                       @click="changeStatus('in_progress')"
@@ -141,7 +141,7 @@
                     </UButton>
                     <div v-if="ride.status === 'in_progress'" class="space-y-3">
                       <UInput v-model="completionFare" type="number" min="0" step="0.01" placeholder="Final fare (optional)" />
-                      <UButton color="emerald" block :loading="updatingStatus" @click="changeStatus('completed')">
+                      <UButton color="gray" block :loading="updatingStatus" @click="changeStatus('completed')">
                         Complete Trip
                       </UButton>
                     </div>
@@ -328,7 +328,7 @@ const cancelCurrentRide = async () => {
   cancellingRide.value = true;
   const result = await cancelRide(ride.value.id, "Cancelled from active trip page");
   if (result.success) {
-    toast.add({ title: "Ride cancelled", description: result.message, color: "green" });
+    toast.add({ title: "Ride cancelled", description: result.message, color: "gray" });
     await loadActiveRide();
   } else {
     pageError.value = result.message;
@@ -350,7 +350,7 @@ const changeStatus = async (status) => {
   );
 
   if (result.success) {
-    toast.add({ title: "Status updated", description: result.message, color: "green" });
+    toast.add({ title: "Status updated", description: result.message, color: "gray" });
     await loadActiveRide();
   } else {
     pageError.value = result.message;

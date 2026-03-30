@@ -8,7 +8,7 @@
         </div>
 
         <div class="mb-6">
-          <RideshareNav current="driver" />
+          <RideshareNav current="driver" mode="driver" />
         </div>
 
         <div v-if="pageError" class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -27,7 +27,7 @@
             </div>
             <div class="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
               <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Earnings</div>
-              <div class="mt-2 text-lg font-semibold text-emerald-700">৳{{ earningsSummary?.total_earnings || '0.00' }}</div>
+              <div class="mt-2 text-lg font-semibold text-gray-900">৳{{ earningsSummary?.total_earnings || '0.00' }}</div>
             </div>
             <div class="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
               <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Updates</div>
@@ -56,10 +56,11 @@
                     <UInput v-model="profileForm.service_radius_km" type="number" min="1" step="0.1" />
                   </div>
                   <div class="flex flex-wrap gap-3">
-                    <UButton color="emerald" :loading="savingProfile" type="submit">Save Profile</UButton>
+                    <UButton color="gray" :loading="savingProfile" type="submit">Save Profile</UButton>
                     <UButton
-                      color="primary"
+                      color="gray"
                       variant="soft"
+                      type="button"
                       :loading="togglingOnline"
                       :disabled="driverProfile?.approval_status !== 'approved'"
                       @click="toggleOnlineStatus"
@@ -82,7 +83,7 @@
                     <p class="text-sm text-gray-500 mt-1">Live list of searchable ride requests for this driver type.</p>
                   </div>
                   <div class="flex items-center gap-2">
-                    <UBadge :color="driverProfile?.is_online ? 'emerald' : 'gray'" variant="soft">
+                    <UBadge color="gray" variant="soft">
                       {{ driverProfile?.is_online ? 'Online' : 'Offline' }}
                     </UBadge>
                     <UButton color="gray" variant="soft" :loading="loadingRequests" @click="loadAvailableRequests">
@@ -113,7 +114,7 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                           <div>
                             <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Fare</div>
-                            <div class="mt-1 text-emerald-700 font-semibold">৳{{ ride.fare_estimate }}</div>
+                            <div class="mt-1 text-gray-900 font-semibold">৳{{ ride.fare_estimate }}</div>
                           </div>
                           <div>
                             <div class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Distance</div>
@@ -131,7 +132,7 @@
                       </div>
 
                       <div class="flex gap-2">
-                        <UButton color="emerald" :loading="acceptingRideId === ride.id" @click="acceptRequest(ride)">
+                        <UButton color="gray" :loading="acceptingRideId === ride.id" @click="acceptRequest(ride)">
                           Accept Ride
                         </UButton>
                       </div>
@@ -271,7 +272,7 @@ const saveProfile = async () => {
 
   if (result.success) {
     driverProfile.value = result.data;
-    toast.add({ title: "Profile updated", description: result.message, color: "green" });
+    toast.add({ title: "Profile updated", description: result.message, color: "gray" });
   } else {
     pageError.value = result.message;
     toast.add({ title: "Profile update failed", description: result.message, color: "red" });
@@ -284,7 +285,7 @@ const toggleOnlineStatus = async () => {
   const result = await toggleDriverOnline(!(driverProfile.value?.is_online));
   if (result.success) {
     driverProfile.value = result.data;
-    toast.add({ title: "Availability updated", description: result.message, color: "green" });
+    toast.add({ title: "Availability updated", description: result.message, color: "gray" });
     if (driverProfile.value?.is_online) {
       startDispatchSocket();
     } else if (stopDispatchSocket) {
@@ -304,7 +305,7 @@ const acceptRequest = async (ride) => {
   acceptingRideId.value = ride.id;
   const result = await acceptRide(ride.id);
   if (result.success) {
-    toast.add({ title: "Ride accepted", description: result.message, color: "green" });
+    toast.add({ title: "Ride accepted", description: result.message, color: "gray" });
     await router.push("/rideshare/active");
   } else {
     toast.add({ title: "Accept failed", description: result.message, color: "red" });

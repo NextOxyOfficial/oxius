@@ -131,6 +131,16 @@ export function useRideshare() {
     return request<any>(() => get("/rides/location/reverse/", { params: { lat: latitude, lng: longitude } }));
   };
 
+  const getNearbyDrivers = async (latitude: number, longitude: number, vehicleType = "bike") => {
+    return request<any[]>(() => get("/rides/location/nearby-drivers/", {
+      params: {
+        lat: latitude,
+        lng: longitude,
+        vehicle_type: vehicleType,
+      },
+    }));
+  };
+
   const getDriverProfile = async () => {
     return request<any>(() => get("/rides/drivers/profile/"));
   };
@@ -183,6 +193,7 @@ export function useRideshare() {
     updateRideStatus,
     searchLocations,
     reverseGeocode,
+    getNearbyDrivers,
     getDriverProfile,
     updateDriverProfile,
     toggleDriverOnline,

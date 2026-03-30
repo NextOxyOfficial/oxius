@@ -1,6 +1,6 @@
 <template>
   <div class="w-full bg-white border border-gray-200 rounded-xl p-2 shadow-sm">
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+    <div class="grid gap-2" :class="gridClass">
       <NuxtLink
         v-for="item in items"
         :key="item.label"
@@ -26,15 +26,20 @@ const props = defineProps({
     type: String,
     default: "booking",
   },
+  mode: {
+    type: String,
+    default: null,
+  },
 });
 
-const items = computed(() => [
+const allItems = [
   {
     label: "Book Ride",
     to: "/rideshare",
     icon: "i-heroicons-map",
     key: "booking",
     disabled: false,
+    modes: ["passenger"],
   },
   {
     label: "Vehicles",
@@ -42,6 +47,7 @@ const items = computed(() => [
     icon: "i-heroicons-truck",
     key: "vehicles",
     disabled: false,
+    modes: ["driver"],
   },
   {
     label: "Driver",
@@ -49,6 +55,7 @@ const items = computed(() => [
     icon: "i-heroicons-identification",
     key: "driver",
     disabled: false,
+    modes: ["driver"],
   },
   {
     label: "Active Trip",
@@ -56,6 +63,7 @@ const items = computed(() => [
     icon: "i-heroicons-bolt",
     key: "active",
     disabled: false,
+    modes: ["passenger", "driver"],
   },
   {
     label: "History",
@@ -63,8 +71,24 @@ const items = computed(() => [
     icon: "i-heroicons-clock",
     key: "history",
     disabled: false,
+    modes: ["passenger", "driver"],
   },
-]);
+];
+
+const items = computed(() => {
+  if (!props.mode) {
+    return allItems;
+  }
+  return allItems.filter((item) => item.modes.includes(props.mode));
+});
+
+const gridClass = computed(() => {
+  const count = items.value.length;
+  if (count <= 2) return "grid-cols-2";
+  if (count === 3) return "grid-cols-2 sm:grid-cols-3";
+  if (count === 4) return "grid-cols-2 sm:grid-cols-4";
+  return "grid-cols-2 sm:grid-cols-5";
+});
 
 const itemClass = (item) => {
   const isActive = props.current === item.key || (!item.disabled && route.path === item.to);
@@ -74,7 +98,7 @@ const itemClass = (item) => {
   }
 
   if (isActive) {
-    return "bg-emerald-600 text-white shadow-sm";
+    return "bg-gray-950 text-white shadow-sm border border-gray-950";
   }
 
   return "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border border-gray-200";
