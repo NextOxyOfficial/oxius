@@ -8,6 +8,7 @@ import '../config/app_config.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/elearning_screen.dart';
 import '../screens/news_screen.dart';
+import '../screens/rideshare/rideshare_screen.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -73,6 +74,13 @@ class _HeroBannerState extends State<HeroBanner> {
       'label': _translationService.t('sale_listing', fallback: 'Buy & Sell'),
       'color': const Color(0xFF4F46E5), // Indigo
       'bgColor': const Color(0xFFF0F9FF),
+    },
+    {
+      'icon': Icons.directions_car_rounded,
+      'image': 'assets/images/payment.png',
+      'label': _translationService.t('ride_share', fallback: 'Ride Share'),
+      'color': const Color(0xFF10B981), // Green
+      'bgColor': const Color(0xFFECFDF5),
     },
     {
       'icon': Icons.psychology,
@@ -567,6 +575,9 @@ class _HeroBannerState extends State<HeroBanner> {
               } else if (service['label'] == _translationService.t('sale_listing', fallback: 'Buy & Sell') || 
                   service['label'] == 'Buy & Sell') {
                 Navigator.pushNamed(context, '/sale');
+              } else if (service['label'] == _translationService.t('ride_share', fallback: 'Ride Share') || 
+                  service['label'] == 'Ride Share') {
+                Navigator.pushNamed(context, '/rideshare');
               } else if (service['label'] == _translationService.t('earn_money', fallback: 'Earn Money') || 
                   service['label'] == 'Earn Money') {
                 Navigator.pushNamed(context, '/micro-gigs');

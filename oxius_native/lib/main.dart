@@ -49,6 +49,9 @@ import 'services/online_status_service.dart';
 import 'models/cart_item.dart';
 import 'screens/call_screen.dart';
 import 'widgets/ongoing_call_bar.dart';
+import 'screens/rideshare/rideshare_screen.dart';
+import 'screens/rideshare/rideshare_history_screen.dart';
+import 'screens/rideshare/rideshare_vehicles_screen.dart';
 
 void main() async {
   try {
@@ -232,6 +235,10 @@ class MyApp extends StatelessWidget {
             '/terms-and-conditions': (context) => const TermsAndConditionsScreen(),
             '/privacy-policy': (context) => const PrivacyPolicyScreen(),
             '/food-zone': (context) => const FoodZoneScreen(),
+            '/rideshare': (context) => const RideshareScreen(),
+            '/rideshare/history': (context) => const RideshareHistoryScreen(),
+            '/rideshare/driver-history': (context) => const RideshareHistoryScreen(asDriver: true),
+            '/rideshare/vehicles': (context) => const RideshareVehiclesScreen(),
           },
           onGenerateRoute: (settings) {
             if (settings.name == '/classified-category') {

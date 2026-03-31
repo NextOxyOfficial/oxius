@@ -18,6 +18,31 @@
 
         <RideshareNav current="driver" />
 
+        <!-- Location Permission Required -->
+        <div
+          v-if="!locationGranted && !locationLoading"
+          class="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4 shadow-sm"
+        >
+          <div class="flex items-start gap-3">
+            <div class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <UIcon name="i-heroicons-map-pin" class="h-5 w-5" />
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-amber-800">Location Required</div>
+              <div class="text-xs text-amber-600">Please enable location access to receive ride requests and track your position.</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="mt-3 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-amber-600 hover:to-orange-600"
+            :disabled="locationLoading"
+            @click="requestLocationPermission"
+          >
+            <UIcon name="i-heroicons-map-pin" class="h-4 w-4" />
+            Enable Location
+          </button>
+        </div>
+
         <div v-if="pageError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ pageError }}
         </div>
@@ -184,6 +209,10 @@ const togglingOnline = ref(false);
 const acceptingRideId = ref(null);
 let stopDispatchSocket = null;
 
+// Location permission state
+const locationGranted = ref(false);
+const locationLoading = ref(false);
+
 const profileForm = ref({
   license_number: "",
   national_id_number: "",
@@ -221,6 +250,68 @@ const formatDateTime = (value) => {
     hour: "numeric",
     minute: "2-digit",
   });
+};
+
+const checkLocationPermission = async () => {
+  if (!navigator.permissions) {
+    return;
+  }
+  try {
+    const permission = await navigator.permissions.query({ name: 'geolocation' });
+    locationGranted.value = permission.state === 'granted';
+    permission.addEventListener('change', () => {
+      locationGranted.value = permission.state === 'granted';
+    });
+  } catch (e) {
+    console.log('Permission API not supported:', e);
+  }
+};
+
+const requestLocationPermission = async () => {
+  if (!navigator.geolocation) {
+    return;
+  }
+  locationLoading.value = true;
+  try {
+    const position = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
+      });
+    });
+    locationGranted.value = true;
+    toast.add({ title: "Location enabled", description: "Location access granted", color: "green" });
+  } catch (error) {
+    let errorMessage = "Unable to fetch location";
+    let errorDescription = "";
+    
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        errorMessage = "Location permission denied";
+        errorDescription = "Please enable location in your device settings";
+        break;
+      case error.POSITION_UNAVAILABLE:
+        errorMessage = "Location unavailable";
+        errorDescription = "Your location information is unavailable";
+        break;
+      case error.TIMEOUT:
+        errorMessage = "Location timeout";
+        errorDescription = "Request timed out. Please try again";
+        break;
+      default:
+        errorMessage = "Location error";
+        errorDescription = "An unknown error occurred";
+    }
+    
+    toast.add({ 
+      title: errorMessage, 
+      description: errorDescription,
+      color: "red" 
+    });
+  } finally {
+    locationLoading.value = false;
+  }
 };
 
 const loadProfile = async () => {
@@ -346,6 +437,7 @@ const startDispatchSocket = () => {
 
 onMounted(async () => {
   await loadProfile();
+  await checkLocationPermission();
   if (isApprovedDriver.value) {
     await loadSummary();
     await loadAvailableRequests();
