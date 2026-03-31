@@ -30,6 +30,14 @@ class RidePoint {
   };
 }
 
+String _parseStringId(dynamic value) {
+  if (value == null) return '';
+  if (value is Map<String, dynamic>) {
+    return value['id']?.toString() ?? '';
+  }
+  return value.toString();
+}
+
 class Vehicle {
   final String id;
   final String vehicleType;
@@ -106,7 +114,7 @@ class Vehicle {
 }
 
 class DriverProfile {
-  final int userId;
+  final String userId;
   final String userName;
   final String userPhone;
   final String? userAvatar;
@@ -149,10 +157,10 @@ class DriverProfile {
   factory DriverProfile.fromJson(Map<String, dynamic> json) {
     final user = json['user'] as Map<String, dynamic>? ?? {};
     return DriverProfile(
-      userId: user['id'] ?? json['user_id'] ?? 0,
+      userId: _parseStringId(user['id'] ?? json['user_id']),
       userName: user['name'] ?? user['username'] ?? '',
       userPhone: user['phone'] ?? '',
-      userAvatar: user['avatar'],
+      userAvatar: user['avatar'] ?? user['image'],
       licenseNumber: json['license_number'] ?? '',
       nationalIdNumber: json['national_id_number'] ?? '',
       approvalStatus: json['approval_status'] ?? 'pending',
@@ -194,7 +202,7 @@ class DriverProfile {
 class RideStatusHistory {
   final String id;
   final String status;
-  final int? actorId;
+  final String? actorId;
   final Map<String, dynamic> metadata;
   final DateTime createdAt;
 
@@ -210,7 +218,7 @@ class RideStatusHistory {
     return RideStatusHistory(
       id: json['id']?.toString() ?? '',
       status: json['status'] ?? '',
-      actorId: json['actor'],
+      actorId: _parseStringId(json['actor']).isEmpty ? null : _parseStringId(json['actor']),
       metadata: json['metadata'] as Map<String, dynamic>? ?? {},
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
     );
@@ -219,7 +227,7 @@ class RideStatusHistory {
 
 class Ride {
   final String id;
-  final int riderId;
+  final String riderId;
   final String riderName;
   final String? riderPhone;
   final String? riderAvatar;
@@ -286,10 +294,10 @@ class Ride {
     final rider = json['rider'] as Map<String, dynamic>? ?? {};
     return Ride(
       id: json['id']?.toString() ?? '',
-      riderId: rider['id'] ?? json['rider_id'] ?? 0,
+      riderId: _parseStringId(rider['id'] ?? json['rider_id']),
       riderName: rider['name'] ?? rider['username'] ?? '',
       riderPhone: rider['phone'],
-      riderAvatar: rider['avatar'],
+      riderAvatar: rider['avatar'] ?? rider['image'],
       assignedDriver: json['assigned_driver'] != null 
           ? DriverProfile.fromJson(json['assigned_driver'] as Map<String, dynamic>)
           : null,

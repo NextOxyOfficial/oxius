@@ -1,10 +1,26 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../models/rideshare_models.dart';
+import '../../services/adsyconnect_service.dart';
 import '../../services/rideshare_service.dart';
+import '../../services/auth_service.dart';
+import '../adsy_connect_chat_interface.dart';
 import 'rideshare_map_widget.dart';
+
+// Design tokens
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _emerald = Color(0xFF10B981);
+const _emeraldDark = Color(0xFF059669);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate100 = Color(0xFFF1F5F9);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate300 = Color(0xFFCBD5E1);
+const _slate400 = Color(0xFF94A3B8);
+const _slate500 = Color(0xFF64748B);
+const _slate800 = Color(0xFF1E293B);
 
 class RideshareDriverPanel extends StatefulWidget {
   const RideshareDriverPanel({super.key});
@@ -14,21 +30,36 @@ class RideshareDriverPanel extends StatefulWidget {
 }
 
 class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
-  // State
   DriverProfile? _driverProfile;
   Ride? _activeRide;
   List<Ride> _availableRequests = [];
   DriverEarningsSummary? _earnings;
-  
-  // Loading states
+
   bool _isLoading = true;
   bool _isTogglingOnline = false;
   bool _isAcceptingRide = false;
   bool _isUpdatingStatus = false;
-  
-  // Location tracking
+  bool _isAuthError = false;
+  bool _isSavingProfile = false;
+
+  final _licenseController = TextEditingController();
+  final _nidController = TextEditingController();
+  double _serviceRadius = 8.0;
+
   StreamSubscription<Position>? _locationSubscription;
   Timer? _refreshTimer;
+
+  Ride? _resolveDriverActiveRide(DriverProfile? profile, Ride? ride) {
+    if (profile == null || ride == null) return null;
+    final assignedDriverId = ride.assignedDriver?.userId ?? '';
+    if (assignedDriverId.isEmpty) return null;
+    return assignedDriverId == profile.userId ? ride : null;
+  }
+
+  bool _canChatWithPassenger(Ride ride) {
+    return ride.riderId.isNotEmpty &&
+        (ride.isAccepted || ride.isDriverArriving || ride.isInProgress);
+  }
 
   @override
   void initState() {
@@ -41,68 +72,93 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
   void dispose() {
     _locationSubscription?.cancel();
     _refreshTimer?.cancel();
+    _licenseController.dispose();
+    _nidController.dispose();
     super.dispose();
   }
 
   void _startRefreshTimer() {
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-      if (_driverProfile?.isOnline == true && _activeRide == null) {
+      if (mounted && _driverProfile?.isOnline == true && _activeRide == null) {
         _loadAvailableRequests();
       }
     });
   }
 
   Future<void> _loadDriverData() async {
-    setState(() => _isLoading = true);
-    
+    setState(() { _isLoading = true; _isAuthError = false; });
+    if (!AuthService.isAuthenticated) {
+      if (mounted) setState(() { _isLoading = false; _isAuthError = true; _driverProfile = null; });
+      return;
+    }
     final results = await Future.wait([
       RideshareService.getDriverProfile(),
       RideshareService.getActiveRide(),
       RideshareService.getDriverEarningsSummary(),
     ]);
-    
     final profileResult = results[0] as RideshareApiResult<DriverProfile>;
     final activeRideResult = results[1] as RideshareApiResult<Ride?>;
     final earningsResult = results[2] as RideshareApiResult<DriverEarningsSummary>;
-    
+    final resolvedActiveRide = _resolveDriverActiveRide(
+      profileResult.data,
+      activeRideResult.data,
+    );
+    final msg = profileResult.message.toLowerCase();
+    final authFailed = !profileResult.success &&
+        (msg.contains('unauthorized') || msg.contains('credentials') ||
+         msg.contains('authentication') || msg.contains('not provided'));
     if (mounted) {
       setState(() {
+        _isAuthError = authFailed;
         _driverProfile = profileResult.data;
-        _activeRide = activeRideResult.data;
+        _activeRide = resolvedActiveRide;
         _earnings = earningsResult.data;
         _isLoading = false;
       });
-      
+      if (profileResult.data != null) {
+        _licenseController.text = profileResult.data!.licenseNumber;
+        _nidController.text = profileResult.data!.nationalIdNumber;
+        _serviceRadius = profileResult.data!.serviceRadiusKm;
+      }
       if (_driverProfile?.isOnline == true) {
         _startLocationTracking();
-        if (_activeRide == null) {
-          _loadAvailableRequests();
-        }
+        if (_activeRide == null) _loadAvailableRequests();
       }
     }
   }
 
   Future<void> _loadAvailableRequests() async {
     final result = await RideshareService.listAvailableRideRequests();
-    if (mounted && result.success) {
-      setState(() => _availableRequests = result.data ?? []);
+    if (mounted && result.success) setState(() => _availableRequests = result.data ?? []);
+  }
+
+  Future<void> _saveProfile() async {
+    setState(() => _isSavingProfile = true);
+    final result = await RideshareService.updateDriverProfile(
+      licenseNumber: _licenseController.text.trim(),
+      nationalIdNumber: _nidController.text.trim(),
+      serviceRadiusKm: _serviceRadius,
+    );
+    if (mounted) {
+      setState(() => _isSavingProfile = false);
+      if (result.success && result.data != null) {
+        setState(() => _driverProfile = result.data);
+        _showSuccess('Profile saved');
+      } else {
+        _showError(result.message);
+      }
     }
   }
 
   Future<void> _toggleOnline() async {
     if (_driverProfile == null) return;
-    
     setState(() => _isTogglingOnline = true);
-    
     final newStatus = !_driverProfile!.isOnline;
     final result = await RideshareService.toggleDriverOnline(newStatus);
-    
     if (mounted) {
       setState(() => _isTogglingOnline = false);
-      
       if (result.success && result.data != null) {
         setState(() => _driverProfile = result.data);
-        
         if (newStatus) {
           _startLocationTracking();
           _loadAvailableRequests();
@@ -120,1000 +176,964 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
 
   void _startLocationTracking() async {
     _locationSubscription?.cancel();
-    
     try {
       LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        _showError('Location permission required'); return;
       }
-      
-      if (permission == LocationPermission.denied || 
-          permission == LocationPermission.deniedForever) {
-        _showError('Location permission required for driver mode');
-        return;
-      }
-      
       _locationSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 10, // Update every 10 meters
-        ),
-      ).listen((position) {
-        _updateDriverLocation(position);
-      });
-    } catch (e) {
-      _showError('Failed to start location tracking: $e');
-    }
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 10),
+      ).listen(_updateDriverLocation);
+    } catch (_) { _showError('Failed to start location tracking'); }
   }
 
-  void _stopLocationTracking() {
-    _locationSubscription?.cancel();
-    _locationSubscription = null;
-  }
+  void _stopLocationTracking() { _locationSubscription?.cancel(); _locationSubscription = null; }
 
-  Future<void> _updateDriverLocation(Position position) async {
+  Future<void> _updateDriverLocation(Position p) async {
     await RideshareService.updateDriverLocation(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      rideId: _activeRide?.id,
-      heading: position.heading,
-      speedKph: position.speed * 3.6, // Convert m/s to km/h
-      accuracyMeters: position.accuracy,
+      latitude: p.latitude, longitude: p.longitude, rideId: _activeRide?.id,
+      heading: p.heading, speedKph: p.speed * 3.6, accuracyMeters: p.accuracy,
     );
   }
 
   Future<void> _acceptRide(Ride ride) async {
     setState(() => _isAcceptingRide = true);
-    
     final result = await RideshareService.acceptRide(ride.id);
-    
     if (mounted) {
       setState(() => _isAcceptingRide = false);
-      
       if (result.success && result.data != null) {
-        setState(() {
-          _activeRide = result.data;
-          _availableRequests = [];
-        });
+        setState(() { _activeRide = result.data; _availableRequests = []; });
         _showSuccess('Ride accepted!');
-      } else {
-        _showError(result.message);
-        _loadAvailableRequests(); // Refresh list
-      }
+      } else { _showError(result.message); _loadAvailableRequests(); }
     }
   }
 
   Future<void> _updateRideStatus(String status, {double? finalFare}) async {
     if (_activeRide == null) return;
-    
     setState(() => _isUpdatingStatus = true);
-    
-    final result = await RideshareService.updateRideStatus(
-      _activeRide!.id,
-      status,
-      finalFare: finalFare,
-    );
-    
+    final result = await RideshareService.updateRideStatus(_activeRide!.id, status, finalFare: finalFare);
     if (mounted) {
       setState(() => _isUpdatingStatus = false);
-      
       if (result.success && result.data != null) {
         if (status == 'completed' || status == 'cancelled') {
           setState(() => _activeRide = null);
           _loadAvailableRequests();
-          _loadDriverData(); // Refresh earnings
+          _loadDriverData();
           _showSuccess(status == 'completed' ? 'Ride completed!' : 'Ride cancelled');
-        } else {
-          setState(() => _activeRide = result.data);
-        }
-      } else {
-        _showError(result.message);
-      }
+        } else { setState(() => _activeRide = result.data); }
+      } else { _showError(result.message); }
     }
   }
 
-  void _showError(String message) {
+  void _showError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade600,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg, style: GoogleFonts.inter(fontSize: 13)),
+      backgroundColor: Colors.red.shade600,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.all(12),
+    ));
   }
 
-  void _showSuccess(String message) {
+  void _showSuccess(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg, style: GoogleFonts.inter(fontSize: 13)),
+      backgroundColor: _emerald,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.all(12),
+    ));
   }
+
+  Future<void> _openPassengerChat(Ride ride) async {
+    if (ride.riderId.isEmpty) {
+      _showError('Passenger chat is unavailable');
+      return;
+    }
+
+    var loadingDialogShown = false;
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+      loadingDialogShown = true;
+
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(ride.riderId);
+      final chatroomId = chatroom['id']?.toString();
+      if (chatroomId == null || chatroomId.isEmpty) {
+        throw Exception('Chat room unavailable');
+      }
+
+      if (mounted && loadingDialogShown) {
+        Navigator.of(context, rootNavigator: true).pop();
+        loadingDialogShown = false;
+      }
+      if (!mounted) return;
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, controller) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: AdsyConnectChatInterface(
+              chatroomId: chatroomId,
+              userId: ride.riderId,
+              userName: ride.riderName,
+              userAvatar: ride.riderAvatar,
+              profession: 'Passenger',
+              isOnline: false,
+            ),
+          ),
+        ),
+      );
+    } catch (error) {
+      if (mounted && loadingDialogShown) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+      debugPrint('Rideshare driver chat open failed: $error');
+      _showError('Unable to open chat');
+    }
+  }
+
+  // ── BUILD ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_driverProfile == null) {
-      return _buildNoDriverProfile();
-    }
-
-    if (!_driverProfile!.isApproved) {
-      return _buildPendingApproval();
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        children: [
-          _buildStatusCard(),
-          const SizedBox(height: 12),
-          _buildEarningsCard(),
-          const SizedBox(height: 12),
-          if (_activeRide != null)
-            _buildActiveRideCard()
-          else if (_driverProfile!.isOnline)
-            _buildAvailableRequestsCard(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNoDriverProfile() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
+    if (_isLoading) return const Center(child: CircularProgressIndicator(color: _indigo));
+    if (_isAuthError) return _buildLoginRequired();
+    return RefreshIndicator(
+      color: _indigo,
+      onRefresh: _loadDriverData,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.badge_outlined,
-                size: 48,
-                color: Color(0xFF64748B),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Become a Driver',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Register as a driver to start accepting ride requests and earn money.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                // TODO: Navigate to driver registration
-              },
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Register as Driver'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6366F1),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPendingApproval() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEF3C7),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.hourglass_top_rounded,
-                size: 48,
-                color: Color(0xFFD97706),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Approval Pending',
-              style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Your driver registration is under review. You will be notified once approved.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusCard() {
-    final isOnline = _driverProfile!.isOnline;
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: isOnline
-            ? const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF059669)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: isOnline ? null : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: isOnline ? null : Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isOnline 
-                  ? Colors.white.withOpacity(0.2)
-                  : const Color(0xFFF1F5F9),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
-              size: 24,
-              color: isOnline ? Colors.white : const Color(0xFF64748B),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isOnline ? 'You are Online' : 'You are Offline',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isOnline ? Colors.white : const Color(0xFF1E293B),
-                  ),
-                ),
-                Text(
-                  isOnline 
-                      ? 'Accepting ride requests'
-                      : 'Go online to receive requests',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: isOnline 
-                        ? Colors.white.withOpacity(0.8)
-                        : const Color(0xFF64748B),
-                  ),
-                ),
+            if (_activeRide != null) ...[
+              _buildActiveRideCard(),
+            ] else ...[
+              if (_driverProfile != null) ...[
+                _buildStatsRow(),
+                const SizedBox(height: 12),
+                _buildOnlineToggleCard(),
+                const SizedBox(height: 12),
               ],
-            ),
-          ),
-          GestureDetector(
-            onTap: _isTogglingOnline ? null : _toggleOnline,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 56,
-              height: 32,
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: isOnline 
-                    ? Colors.white.withOpacity(0.3)
-                    : const Color(0xFFE2E8F0),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: AnimatedAlign(
-                duration: const Duration(milliseconds: 200),
-                alignment: isOnline ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: 26,
-                  height: 26,
-                  decoration: BoxDecoration(
-                    color: isOnline ? Colors.white : const Color(0xFF94A3B8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: _isTogglingOnline
-                      ? const Padding(
-                          padding: EdgeInsets.all(5),
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : null,
-                ),
-              ),
-            ),
-          ),
-        ],
+              _buildProfileCard(),
+              const SizedBox(height: 12),
+              if (_driverProfile?.isApproved == true) _buildRideRequestsCard(),
+            ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildEarningsCard() {
+  // ── WIDGETS ────────────────────────────────────────────────────────────────
+
+  Widget _buildLoginRequired() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: const BoxDecoration(color: Color(0xFFFEF3C7), shape: BoxShape.circle),
+              child: const Icon(Icons.lock_outline_rounded, size: 40, color: Color(0xFFD97706)),
+            ),
+            const SizedBox(height: 16),
+            Text('Login Required',
+                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: _slate800)),
+            const SizedBox(height: 6),
+            Text('Please log in to access driver features.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(fontSize: 13, color: _slate500)),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/login').then((_) => _loadDriverData()),
+              icon: const Icon(Icons.login_rounded, size: 18),
+              label: Text('Log In', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+              style: FilledButton.styleFrom(
+                backgroundColor: _indigo,
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 13),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsRow() {
+    final approval = _driverProfile?.approvalStatus ?? 'pending';
+    final isApproved = _driverProfile?.isApproved == true;
+    Color approvalColor;
+    if (approval == 'approved') {
+      approvalColor = _emerald;
+    } else if (approval == 'suspended') {
+      approvalColor = Colors.red.shade500;
+    } else {
+      approvalColor = const Color(0xFFD97706);
+    }
+
+    return Row(children: [
+      _buildStatChip('Status',
+          approval[0].toUpperCase() + approval.substring(1),
+          approvalColor, isApproved ? Icons.verified_rounded : Icons.hourglass_top_rounded),
+      const SizedBox(width: 8),
+      _buildStatChip('Trips', '${_earnings?.totalTrips ?? 0}', _indigo, Icons.directions_car_rounded),
+      const SizedBox(width: 8),
+      _buildStatChip('Earned', '৳${(_earnings?.totalEarnings ?? 0).toStringAsFixed(0)}',
+          _emerald, Icons.account_balance_wallet_rounded),
+    ]);
+  }
+
+  Widget _buildStatChip(String label, String value, Color color, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _slate200),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 4),
+            Text(label, style: GoogleFonts.inter(
+                fontSize: 10, fontWeight: FontWeight.w600, color: _slate400, letterSpacing: 0.3)),
+          ]),
+          const SizedBox(height: 4),
+          Text(value, style: GoogleFonts.inter(
+              fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildOnlineToggleCard() {
+    final isOnline = _driverProfile?.isOnline == true;
+    final isApproved = _driverProfile?.isApproved == true;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: isOnline ? const LinearGradient(
+            colors: [_emerald, _emeraldDark],
+            begin: Alignment.topLeft, end: Alignment.bottomRight) : null,
+        color: isOnline ? null : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: isOnline ? null : Border.all(color: _slate200),
+        boxShadow: [BoxShadow(
+          color: isOnline ? _emerald.withOpacity(0.25) : Colors.black.withOpacity(0.04),
+          blurRadius: 10, offset: const Offset(0, 3),
+        )],
+      ),
+      child: Row(children: [
+        Container(
+          padding: const EdgeInsets.all(9),
+          decoration: BoxDecoration(
+            color: isOnline ? Colors.white.withOpacity(0.2) : _slate100,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(isOnline ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+              size: 20, color: isOnline ? Colors.white : _slate500),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(isOnline ? 'Online — Accepting Rides' : 'Offline',
+              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
+                  color: isOnline ? Colors.white : _slate800)),
+          Text(isOnline ? 'Requests appear below' : 'Go online to receive requests',
+              style: GoogleFonts.inter(fontSize: 11,
+                  color: isOnline ? Colors.white.withOpacity(0.8) : _slate500)),
+        ])),
+        GestureDetector(
+          onTap: (isApproved && !_isTogglingOnline) ? _toggleOnline : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            width: 50, height: 28,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: isOnline ? Colors.white.withOpacity(0.35)
+                  : (isApproved ? _slate300 : _slate200),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: AnimatedAlign(
+              duration: const Duration(milliseconds: 220),
+              alignment: isOnline ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                width: 22, height: 22,
+                decoration: BoxDecoration(
+                    color: isOnline ? Colors.white : _slate400, shape: BoxShape.circle),
+                child: _isTogglingOnline ? Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: isOnline ? _emerald : _slate500),
+                ) : null,
+              ),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildProfileCard() {
+    final isNew = _driverProfile == null;
+    final isPending = _driverProfile?.isPending == true;
+    final isApproved = _driverProfile?.isApproved == true;
+    final isSuspended = _driverProfile?.isSuspended == true;
+
     return Container(
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _slate200),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildEarningItem(
-              icon: Icons.account_balance_wallet_rounded,
-              label: 'Earnings',
-              value: '৳${(_earnings?.totalEarnings ?? 0).toStringAsFixed(0)}',
-              color: const Color(0xFF10B981),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        // Header
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: const BoxDecoration(
+            color: _slate50,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
+            border: Border(bottom: BorderSide(color: _slate200)),
+          ),
+          child: Row(children: [
+            const Icon(Icons.badge_rounded, size: 16, color: _indigo),
+            const SizedBox(width: 8),
+            Text(isNew ? 'Become a Driver' : 'Driver Profile',
+                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+            const Spacer(),
+            if (isSuspended) _buildBadge('Suspended', Colors.red.shade600),
+            if (isPending) _buildBadge('Under Review', const Color(0xFFD97706)),
+            if (isApproved) _buildBadge('Approved', _emerald),
+          ]),
+        ),
+        // Notice banners
+        if (isPending)
+          _buildNoticeBanner(
+            icon: Icons.hourglass_top_rounded,
+            msg: 'Your profile is under review. You\'ll be notified once approved.',
+            bgColor: const Color(0xFFFFFBEB),
+            borderColor: const Color(0xFFFDE68A),
+            iconColor: const Color(0xFFD97706),
+            textColor: const Color(0xFF92400E),
+          ),
+        if (isSuspended)
+          _buildNoticeBanner(
+            icon: Icons.block_rounded,
+            msg: 'Your driver account has been suspended. Contact support.',
+            bgColor: const Color(0xFFFEF2F2),
+            borderColor: const Color(0xFFFECACA),
+            iconColor: Colors.red.shade600,
+            textColor: Colors.red.shade800,
+          ),
+        // Form
+        Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            if (isNew)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text('Fill in your details to register as a driver.',
+                    style: GoogleFonts.inter(fontSize: 12, color: _slate500)),
+              ),
+            _buildField(_licenseController, 'License Number', 'Driving license number',
+                Icons.credit_card_rounded),
+            const SizedBox(height: 10),
+            _buildField(_nidController, 'National ID (NID)', 'National ID number',
+                Icons.perm_identity_rounded),
+            const SizedBox(height: 10),
+            // Service radius
+            Row(children: [
+              const Icon(Icons.radar_rounded, size: 13, color: _slate500),
+              const SizedBox(width: 5),
+              Text('Service Radius',
+                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                    color: _indigo.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+                child: Text('${_serviceRadius.toStringAsFixed(0)} km',
+                    style: GoogleFonts.inter(
+                        fontSize: 11, fontWeight: FontWeight.w700, color: _indigo)),
+              ),
+            ]),
+            SliderTheme(
+              data: SliderThemeData(
+                trackHeight: 3,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
+                activeTrackColor: _indigo,
+                inactiveTrackColor: _slate200,
+                thumbColor: _indigo,
+                overlayColor: _indigo.withOpacity(0.1),
+              ),
+              child: Slider(
+                value: _serviceRadius, min: 1, max: 30, divisions: 29,
+                onChanged: (v) => setState(() => _serviceRadius = v),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: _isSavingProfile ? null : _saveProfile,
+                  icon: _isSavingProfile
+                      ? const SizedBox(width: 14, height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.save_rounded, size: 16),
+                  label: Text(_isSavingProfile ? 'Saving...' : 'Save Profile',
+                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _indigo,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  await Navigator.pushNamed(context, '/rideshare/vehicles');
+                  if (mounted) _loadDriverData();
+                },
+                icon: const Icon(Icons.two_wheeler_rounded, size: 16),
+                label: Text('Vehicles',
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _indigo, side: const BorderSide(color: _indigo),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ]),
+          ]),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildNoticeBanner({
+    required IconData icon,
+    required String msg,
+    required Color bgColor,
+    required Color borderColor,
+    required Color iconColor,
+    required Color textColor,
+  }) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+          color: bgColor, borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: borderColor)),
+      child: Row(children: [
+        Icon(icon, size: 14, color: iconColor),
+        const SizedBox(width: 8),
+        Expanded(child: Text(msg, style: GoogleFonts.inter(fontSize: 11, color: textColor))),
+      ]),
+    );
+  }
+
+  Widget _buildField(TextEditingController ctrl, String label, String hint, IconData icon) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(label, style: GoogleFonts.inter(
+          fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
+      const SizedBox(height: 5),
+      TextField(
+        controller: ctrl,
+        style: GoogleFonts.inter(fontSize: 13, color: _slate800),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+          prefixIcon: Icon(icon, size: 15, color: _slate400),
+          prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+          contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 12),
+          filled: true, fillColor: _slate50,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _indigo, width: 1.5)),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildBadge(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(label,
+          style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+    );
+  }
+
+  Widget _buildRideRequestsCard() {
+    final isOnline = _driverProfile?.isOnline == true;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _slate200),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        // Header
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: const BoxDecoration(
+            color: _slate50,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
+            border: Border(bottom: BorderSide(color: _slate200)),
+          ),
+          child: Row(children: [
+            const Icon(Icons.hail_rounded, size: 16, color: _indigo),
+            const SizedBox(width: 8),
+            Text('Ride Requests',
+                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+            const Spacer(),
+            if (isOnline && _availableRequests.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                    color: _emerald.withOpacity(0.12), borderRadius: BorderRadius.circular(6)),
+                child: Text('${_availableRequests.length}',
+                    style: GoogleFonts.inter(
+                        fontSize: 11, fontWeight: FontWeight.w700, color: _emerald)),
+              ),
+            if (isOnline)
+              GestureDetector(
+                onTap: _loadAvailableRequests,
+                child: Container(
+                  margin: const EdgeInsets.only(left: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                      color: _slate100, borderRadius: BorderRadius.circular(6)),
+                  child: Text('Refresh',
+                      style: GoogleFonts.inter(
+                          fontSize: 10, fontWeight: FontWeight.w600, color: _slate500)),
+                ),
+              ),
+            Container(
+              margin: const EdgeInsets.only(left: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: isOnline ? _emerald.withOpacity(0.12) : _slate100,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(isOnline ? 'Online' : 'Offline',
+                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700,
+                      color: isOnline ? _emerald : _slate500)),
+            ),
+          ]),
+        ),
+        if (!isOnline)
+          _buildEmptyRequests(Icons.wifi_off_rounded, 'You are Offline',
+              'Go online above to receive ride requests.')
+        else if (_availableRequests.isEmpty)
+          _buildEmptyRequests(Icons.search_rounded, 'No Requests Yet',
+              'New ride requests will appear here automatically.')
+        else
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(children: _availableRequests.map(_buildRequestCard).toList()),
+          ),
+      ]),
+    );
+  }
+
+  Widget _buildEmptyRequests(IconData icon, String title, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      child: Column(children: [
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: const BoxDecoration(color: _slate100, shape: BoxShape.circle),
+          child: Icon(icon, size: 28, color: _slate400),
+        ),
+        const SizedBox(height: 12),
+        Text(title, style: GoogleFonts.inter(
+            fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+        const SizedBox(height: 4),
+        Text(subtitle, textAlign: TextAlign.center,
+            style: GoogleFonts.inter(fontSize: 12, color: _slate500)),
+      ]),
+    );
+  }
+
+  Widget _buildRequestCard(Ride ride) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+          color: _slate50, borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _slate200)),
+      child: Column(children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Row(children: [
+              Text(ride.vehicleIcon, style: const TextStyle(fontSize: 18)),
+              const SizedBox(width: 10),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(ride.riderName,
+                    style: GoogleFonts.inter(
+                        fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+                Text('${ride.distanceKm.toStringAsFixed(1)} km • ${ride.etaDisplay}',
+                    style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
+              ])),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: _emerald.withOpacity(0.1), borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _emerald.withOpacity(0.25)),
+                ),
+                child: Text('৳${ride.fareEstimate.toStringAsFixed(0)}',
+                    style: GoogleFonts.inter(
+                        fontSize: 14, fontWeight: FontWeight.w800, color: _emerald)),
+              ),
+            ]),
+            const SizedBox(height: 10),
+            _buildRouteWidget(ride),
+            const SizedBox(height: 10),
+            Row(children: [
+              _buildMini('Fare', '৳${ride.fareEstimate.toStringAsFixed(0)}', _indigo),
+              const SizedBox(width: 6),
+              _buildMini('Distance', '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
+              const SizedBox(width: 6),
+              _buildMini('ETA', ride.etaDisplay, _slate800),
+            ]),
+          ]),
+        ),
+        // Accept button
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _isAcceptingRide ? null : () => _acceptRide(ride),
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              decoration: BoxDecoration(
+                gradient: _isAcceptingRide ? null
+                    : const LinearGradient(colors: [_emerald, _emeraldDark]),
+                color: _isAcceptingRide ? _slate100 : null,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
+                border: const Border(top: BorderSide(color: _slate200)),
+              ),
+              child: Center(
+                child: _isAcceptingRide
+                    ? Row(mainAxisSize: MainAxisSize.min, children: [
+                        const SizedBox(width: 14, height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: _indigo)),
+                        const SizedBox(width: 8),
+                        Text('Accepting...',
+                            style: GoogleFonts.inter(
+                                fontSize: 13, fontWeight: FontWeight.w600, color: _slate500)),
+                      ])
+                    : Row(mainAxisSize: MainAxisSize.min, children: [
+                        const Icon(Icons.check_circle_rounded, size: 16, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Text('Accept Ride',
+                            style: GoogleFonts.inter(
+                                fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
+                      ]),
+              ),
             ),
           ),
-          Container(
-            width: 1,
-            height: 40,
-            color: const Color(0xFFE2E8F0),
-          ),
-          Expanded(
-            child: _buildEarningItem(
-              icon: Icons.directions_car_rounded,
-              label: 'Total Trips',
-              value: '${_earnings?.totalTrips ?? 0}',
-              color: const Color(0xFF6366F1),
-            ),
-          ),
-        ],
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildMini(String label, String value, Color vc) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: _slate200)),
+        child: Column(children: [
+          Text(label, style: GoogleFonts.inter(
+              fontSize: 9, fontWeight: FontWeight.w600, color: _slate400, letterSpacing: 0.2)),
+          const SizedBox(height: 2),
+          Text(value, style: GoogleFonts.inter(
+              fontSize: 12, fontWeight: FontWeight.w700, color: vc)),
+        ]),
       ),
     );
   }
 
-  Widget _buildEarningItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        Icon(icon, size: 24, color: color),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF1E293B),
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            color: const Color(0xFF64748B),
-          ),
-        ),
-      ],
+  Widget _buildRouteWidget(Ride ride) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _slate200)),
+      child: Row(children: [
+        Column(children: [
+          Container(width: 8, height: 8,
+              decoration: const BoxDecoration(color: _indigo, shape: BoxShape.circle)),
+          Container(width: 1.5, height: 14, color: _slate300),
+          Container(width: 8, height: 8,
+              decoration: BoxDecoration(
+                  color: _emerald, borderRadius: BorderRadius.circular(2))),
+        ]),
+        const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(ride.pickupAddress, maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: _slate800)),
+          const SizedBox(height: 6),
+          Text(ride.dropAddress, maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: _slate800)),
+        ])),
+      ]),
     );
   }
+
+  // ── ACTIVE RIDE ────────────────────────────────────────────────────────────
 
   Widget _buildActiveRideCard() {
     final ride = _activeRide!;
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        children: [
-          // Header
+    return Column(children: [
+      Container(
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _slate200)),
+        child: Column(children: [
+          // Gradient header
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(colors: [_indigo, _violet]),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
             ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.directions_car_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Active Ride',
+            child: Row(children: [
+              const Icon(Icons.directions_car_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              Expanded(child: Text('Active Ride',
                   style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    ride.statusDisplay,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                      fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white))),
+              _buildStatusPill(ride.statusDisplay),
+            ]),
           ),
-          
-          // Passenger info
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: const Color(0xFFF1F5F9),
-                      backgroundImage: ride.riderAvatar != null
-                          ? NetworkImage(ride.riderAvatar!)
-                          : null,
-                      child: ride.riderAvatar == null
-                          ? const Icon(Icons.person_rounded, color: Color(0xFF64748B))
-                          : null,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            ride.riderName,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1E293B),
-                            ),
-                          ),
-                          Text(
-                            'Passenger',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: const Color(0xFF64748B),
-                            ),
-                          ),
-                        ],
+            padding: const EdgeInsets.all(14),
+            child: Column(children: [
+              // Passenger row
+              Row(children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: _slate100,
+                  backgroundImage: ride.riderAvatar != null
+                      ? NetworkImage(ride.riderAvatar!) : null,
+                  child: ride.riderAvatar == null
+                      ? const Icon(Icons.person_rounded, size: 20, color: _slate500) : null,
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(ride.riderName,
+                      style: GoogleFonts.inter(
+                          fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+                  Text('Passenger',
+                      style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
+                ])),
+                if (_canChatWithPassenger(ride))
+                  GestureDetector(
+                    onTap: () => _openPassengerChat(ride),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: _emerald.withOpacity(0.1), borderRadius: BorderRadius.circular(9),
+                        border: Border.all(color: _emerald.withOpacity(0.25)),
                       ),
-                    ),
-                    if (ride.riderPhone != null)
-                      IconButton(
-                        onPressed: () {
-                          // TODO: Call passenger
-                        },
-                        icon: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.phone_rounded,
-                            size: 20,
-                            color: Color(0xFF10B981),
-                          ),
+                      child: Image.asset(
+                        'assets/images/chat_icon.png',
+                        width: 18,
+                        height: 18,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.chat_bubble_rounded,
+                          size: 18,
+                          color: _emerald,
                         ),
                       ),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                const Divider(height: 1),
-                const SizedBox(height: 16),
-                
-                // Route info
-                _buildRouteInfo(ride),
-                
-                const SizedBox(height: 16),
-                
-                // Stats
-                Row(
-                  children: [
-                    _buildStatItem('Fare', '৳${ride.fareEstimate.toStringAsFixed(0)}'),
-                    _buildStatDivider(),
-                    _buildStatItem('Distance', '${ride.distanceKm.toStringAsFixed(1)} km'),
-                    _buildStatDivider(),
-                    _buildStatItem('ETA', ride.etaDisplay),
-                  ],
-                ),
-                
-                const SizedBox(height: 16),
-                
-                // Action buttons
-                _buildRideActionButtons(ride),
-              ],
-            ),
+                    ),
+                  ),
+              ]),
+              const SizedBox(height: 12),
+              _buildRouteWidget(ride),
+              const SizedBox(height: 10),
+              Row(children: [
+                _buildMini('Fare', '৳${ride.fareEstimate.toStringAsFixed(0)}', _indigo),
+                const SizedBox(width: 6),
+                _buildMini('Distance', '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
+                const SizedBox(width: 6),
+                _buildMini('ETA', ride.etaDisplay, _slate800),
+              ]),
+              const SizedBox(height: 12),
+              _buildRideActions(ride),
+            ]),
           ),
-          
-          // Map
-          Container(
-            height: 200,
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: RideshareMapWidget(
-              pickupPoint: ride.pickupPoint,
-              dropPoint: ride.dropPoint,
-              routeGeometry: ride.routeGeometry,
-            ),
-          ),
-        ],
+        ]),
       ),
-    );
-  }
-
-  Widget _buildRouteInfo(Ride ride) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: const BoxDecoration(
-                color: Color(0xFF6366F1),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pickup',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF94A3B8),
-                    ),
-                  ),
-                  Text(
-                    ride.pickupAddress,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF1E293B),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
+      const SizedBox(height: 10),
+      Container(
+        height: 200,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14), border: Border.all(color: _slate200)),
+        clipBehavior: Clip.antiAlias,
+        child: RideshareMapWidget(
+          pickupPoint: ride.pickupPoint,
+          dropPoint: ride.dropPoint,
+          routeGeometry: ride.routeGeometry,
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Row(
-            children: [
-              Container(
-                width: 2,
-                height: 20,
-                color: const Color(0xFFE2E8F0),
-              ),
-            ],
-          ),
-        ),
-        Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Drop',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF94A3B8),
-                    ),
-                  ),
-                  Text(
-                    ride.dropAddress,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF1E293B),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatItem(String label, String value) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF94A3B8),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1E293B),
-            ),
-          ),
-        ],
       ),
-    );
+    ]);
   }
 
-  Widget _buildStatDivider() {
+  Widget _buildStatusPill(String label) {
     return Container(
-      width: 1,
-      height: 30,
-      color: const Color(0xFFE2E8F0),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+      child: Text(label,
+          style: GoogleFonts.inter(
+              fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
     );
   }
 
-  Widget _buildRideActionButtons(Ride ride) {
+  Widget _buildRideActions(Ride ride) {
     if (_isUpdatingStatus) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator(color: _indigo, strokeWidth: 2));
     }
-
     switch (ride.status) {
       case 'accepted':
-        return Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => _updateRideStatus('cancelled'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red.shade600,
-                  side: BorderSide(color: Colors.red.shade300),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text('Cancel'),
+        return Row(children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _updateRideStatus('cancelled'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red.shade600,
+                side: BorderSide(color: Colors.red.shade300),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text('Cancel',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 2,
+            child: FilledButton.icon(
+              onPressed: () => _updateRideStatus('driver_arriving'),
+              icon: const Icon(Icons.navigation_rounded, size: 16),
+              label: Text('Start Navigation',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
+              style: FilledButton.styleFrom(
+                backgroundColor: _indigo,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 2,
-              child: ElevatedButton.icon(
-                onPressed: () => _updateRideStatus('driver_arriving'),
-                icon: const Icon(Icons.navigation_rounded, size: 18),
-                label: const Text('Start Navigation'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-        
+          ),
+        ]);
       case 'driver_arriving':
         return SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
+          child: FilledButton.icon(
             onPressed: () => _updateRideStatus('in_progress'),
-            icon: const Icon(Icons.play_arrow_rounded, size: 20),
-            label: const Text('Start Ride'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+            icon: const Icon(Icons.play_arrow_rounded, size: 18),
+            label: Text('Start Ride',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+            style: FilledButton.styleFrom(
+              backgroundColor: _emerald,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
         );
-        
       case 'in_progress':
         return SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () => _showCompleteRideDialog(),
-            icon: const Icon(Icons.check_circle_rounded, size: 20),
-            label: const Text('Complete Ride'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+          child: FilledButton.icon(
+            onPressed: _showCompleteRideDialog,
+            icon: const Icon(Icons.check_circle_rounded, size: 18),
+            label: Text('Complete Ride',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+            style: FilledButton.styleFrom(
+              backgroundColor: _emerald,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
         );
-        
       default:
         return const SizedBox.shrink();
     }
   }
 
   void _showCompleteRideDialog() {
-    final fareController = TextEditingController(
-      text: _activeRide!.fareEstimate.toStringAsFixed(0),
-    );
-    
+    final ctrl = TextEditingController(text: _activeRide!.fareEstimate.toStringAsFixed(0));
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Complete Ride',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Enter the final fare amount:',
-              style: GoogleFonts.inter(fontSize: 14),
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text('Complete Ride',
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text('Enter the final fare:', style: GoogleFonts.inter(fontSize: 13, color: _slate500)),
+          const SizedBox(height: 10),
+          TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.number,
+            style: GoogleFonts.inter(fontSize: 14),
+            decoration: InputDecoration(
+              prefixText: '৳ ',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: fareController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                prefixText: '৳ ',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ]),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: GoogleFonts.inter(color: _slate500))),
+          FilledButton(
             onPressed: () {
-              Navigator.pop(context);
-              final fare = double.tryParse(fareController.text);
-              _updateRideStatus('completed', finalFare: fare);
+              Navigator.pop(ctx);
+              _updateRideStatus('completed', finalFare: double.tryParse(ctrl.text));
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-            ),
-            child: const Text('Complete'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvailableRequestsCard() {
-    if (_availableRequests.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.hourglass_empty_rounded,
-              size: 48,
-              color: Color(0xFF94A3B8),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Waiting for Requests',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'New ride requests will appear here',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 8),
-          child: Text(
-            'Available Requests',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1E293B),
-            ),
-          ),
-        ),
-        ..._availableRequests.map((ride) => _buildRequestCard(ride)),
-      ],
-    );
-  }
-
-  Widget _buildRequestCard(Ride ride) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        children: [
-          // Header with fare
-          Row(
-            children: [
-              Text(
-                ride.vehicleIcon,
-                style: const TextStyle(fontSize: 24),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ride.riderName,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1E293B),
-                      ),
-                    ),
-                    Text(
-                      '${ride.distanceKm.toStringAsFixed(1)} km • ${ride.etaDisplay}',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '৳${ride.fareEstimate.toStringAsFixed(0)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF16A34A),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 12),
-          const Divider(height: 1),
-          const SizedBox(height: 12),
-          
-          // Route
-          _buildRouteInfo(ride),
-          
-          const SizedBox(height: 16),
-          
-          // Accept button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _isAcceptingRide ? null : () => _acceptRide(ride),
-              icon: _isAcceptingRide
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check_rounded, size: 20),
-              label: Text(_isAcceptingRide ? 'Accepting...' : 'Accept Ride'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
+            style: FilledButton.styleFrom(backgroundColor: _emerald,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            child: Text('Complete', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
       ),

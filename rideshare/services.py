@@ -675,6 +675,8 @@ def get_driver_default_vehicle(driver_profile):
 def assign_driver_to_ride(ride, driver_profile, actor=None, assignment_source="manual"):
     if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
         raise ValidationError("Ride is no longer available.")
+    if ride.rider_id == driver_profile.user_id:
+        raise ValidationError("You cannot accept your own ride request.")
     if driver_profile.approval_status != "approved":
         raise ValidationError("Driver is not approved for dispatch.")
     if not driver_profile.is_online:
@@ -730,6 +732,7 @@ def attempt_auto_assign_driver(ride):
             vehicles__is_active=True,
             vehicles__vehicle_type=ride.requested_vehicle_type,
         )
+        .exclude(user=ride.rider)
         .select_related("user")
         .distinct()
     )
@@ -950,6 +953,9 @@ class RideAutoCancel:
             return False
         if ride.assigned_driver_id:
             return False
+
+        if ride.dispatch_attempt >= NearestDriverDispatch.MAX_DRIVER_ATTEMPTS:
+            return True
         
         timeout_threshold = timezone.now() - timedelta(minutes=cls.TIMEOUT_MINUTES)
         return ride.requested_at < timeout_threshold
@@ -959,6 +965,7 @@ class NearestDriverDispatch:
     """Service to dispatch ride requests to nearest driver with 1-minute timeout cascade"""
     
     DRIVER_TIMEOUT_SECONDS = 60  # 1 minute per driver
+    MAX_DRIVER_ATTEMPTS = 15
     
     @classmethod
     def get_sorted_drivers_for_ride(cls, ride, exclude_drivers=None):
@@ -1008,6 +1015,11 @@ class NearestDriverDispatch:
     def dispatch_to_nearest_driver(cls, ride):
         """Dispatch ride to the nearest available driver"""
         if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
+            return None
+        if ride.dispatch_attempt >= cls.MAX_DRIVER_ATTEMPTS:
+            logger.info(
+                f"Ride {ride.id} reached max dispatch attempts ({cls.MAX_DRIVER_ATTEMPTS})"
+            )
             return None
         
         # Get list of already tried drivers from status history
@@ -1101,7 +1113,11 @@ class NearestDriverDispatch:
                 if next_driver:
                     cascaded_count += 1
                 else:
-                    logger.info(f"No more drivers available for ride {ride.id}")
+                    if RideAutoCancel.should_cancel_ride(ride):
+                        RideAutoCancel.cancel_expired_ride(ride)
+                        logger.info(f"Auto-cancelled ride {ride.id} after dispatch cascade ended")
+                    else:
+                        logger.info(f"No more drivers available for ride {ride.id}")
             except Exception as e:
                 logger.exception(f"Failed to cascade ride {ride.id}: {e}")
         

@@ -229,6 +229,8 @@ class AvailableRideRequestListView(RideshareApiMixin, APIView):
         queryset = Ride.objects.filter(
             status=Ride.STATUS_SEARCHING,
             assigned_driver__isnull=True,
+        ).exclude(
+            rider=request.user,
         ).filter(
             Q(targeted_driver__isnull=True) | Q(targeted_driver=driver_profile)
         )
@@ -247,6 +249,9 @@ class RideAcceptView(RideshareApiMixin, APIView):
     def post(self, request, id):
         ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
         driver_profile = request.user.driver_profile
+
+        if ride.rider_id == request.user.id:
+            return api_error("You cannot accept your own ride request.", status.HTTP_403_FORBIDDEN)
 
         # Check if driver already has an active ride
         if check_driver_has_active_ride(driver_profile):

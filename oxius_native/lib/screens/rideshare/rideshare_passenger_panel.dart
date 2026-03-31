@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/rideshare_service.dart';
 import 'rideshare_map_widget.dart';
@@ -56,6 +57,17 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
   Future<void> _loadActiveRide() async {
     setState(() => _isLoadingActiveRide = true);
     final result = await RideshareService.getActiveRide();
+    if (mounted) {
+      setState(() {
+        _activeRide = result.data;
+        _isLoadingActiveRide = false;
+      });
+    }
+  }
+
+  Future<void> _loadActiveRideById(String rideId) async {
+    setState(() => _isLoadingActiveRide = true);
+    final result = await RideshareService.getRide(rideId);
     if (mounted) {
       setState(() {
         _activeRide = result.data;
@@ -224,9 +236,58 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
         setState(() => _activeRide = result.data);
         _showSuccess('Ride requested! Finding driver...');
       } else {
-        _showError(result.message);
+        final msg = result.message.toLowerCase();
+        if (msg.contains('active ride') || msg.contains('already have')) {
+          // Hide booking form with spinner. Use the ride_id from the error
+          // response to fetch the specific ride directly — more reliable than
+          // calling getActiveRide which can sometimes return null.
+          setState(() => _isLoadingActiveRide = true);
+          final rideId = result.errors is Map
+              ? result.errors['ride_id']?.toString()
+              : null;
+          if (rideId != null && rideId.isNotEmpty) {
+            _loadActiveRideById(rideId);
+          } else {
+            _loadActiveRide();
+          }
+        } else {
+          _showError(result.message);
+        }
       }
     }
+  }
+
+  Future<void> _confirmCancelRide() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text('Cancel Ride?',
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Text(
+          'Are you sure you want to cancel this ride? You can book a new one after cancellation.',
+          style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Keep Ride',
+                style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('Yes, Cancel',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) _cancelRide();
   }
 
   Future<void> _cancelRide() async {
@@ -243,7 +304,19 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
       setState(() => _isCancellingRide = false);
       
       if (result.success) {
-        setState(() => _activeRide = null);
+        // Clear active ride AND reset the booking form so user starts fresh
+        setState(() {
+          _activeRide = null;
+          _pickupPoint = null;
+          _dropPoint = null;
+          _estimate = null;
+          _nearbyDrivers = [];
+          _pickupSuggestions = [];
+          _dropSuggestions = [];
+          _activeInput = 'pickup';
+        });
+        _pickupController.clear();
+        _dropController.clear();
         _showSuccess('Ride cancelled');
       } else {
         _showError(result.message);
@@ -272,38 +345,46 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade600,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message, style: GoogleFonts.inter(fontSize: 13)),
+      backgroundColor: Colors.red.shade600,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.all(12),
+    ));
   }
 
   void _showSuccess(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green.shade600,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message, style: GoogleFonts.inter(fontSize: 13)),
+      backgroundColor: const Color(0xFF10B981),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.all(12),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoadingActiveRide) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF6366F1),
+        ),
+      );
     }
 
-    // Show active ride view if there's an active ride
+    // Active ride takes full priority — booking form is completely hidden
     if (_activeRide != null) {
-      return _buildActiveRideView();
+      return RefreshIndicator(
+        color: const Color(0xFF6366F1),
+        onRefresh: _loadActiveRide,
+        child: _buildActiveRideView(),
+      );
     }
 
-    // Show booking form
+    // No active ride — show booking form
     return _buildBookingView();
   }
 
@@ -311,123 +392,150 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
     final ride = _activeRide!;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           // Status Card
           Container(
-            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                // Status indicator
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: ride.isSearching 
-                            ? const Color(0xFFFEF3C7)
-                            : const Color(0xFFDCFCE7),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (ride.isSearching)
-                            const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFFD97706),
-                              ),
-                            )
-                          else
-                            Icon(
-                              Icons.check_circle_rounded,
-                              size: 14,
-                              color: ride.isSearching 
-                                  ? const Color(0xFFD97706)
-                                  : const Color(0xFF16A34A),
-                            ),
-                          const SizedBox(width: 6),
-                          Text(
-                            ride.statusDisplay,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: ride.isSearching 
-                                  ? const Color(0xFFD97706)
-                                  : const Color(0xFF16A34A),
-                            ),
+                // Gradient header with status
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: ride.isSearching
+                          ? [const Color(0xFFF59E0B), const Color(0xFFD97706)]
+                          : ride.isInProgress
+                              ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                              : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  ),
+                  child: Row(
+                    children: [
+                      if (ride.isSearching)
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      ride.vehicleIcon,
-                      style: const TextStyle(fontSize: 24),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                // Route info
-                _buildRouteInfo(ride),
-                
-                const SizedBox(height: 16),
-                
-                // Stats row
-                Row(
-                  children: [
-                    _buildStatItem('Fare', '৳${ride.fareEstimate.toStringAsFixed(0)}'),
-                    _buildStatDivider(),
-                    _buildStatItem('Distance', '${ride.distanceKm.toStringAsFixed(1)} km'),
-                    _buildStatDivider(),
-                    _buildStatItem('ETA', ride.etaDisplay),
-                  ],
-                ),
-                
-                // Driver info (if assigned)
-                if (ride.assignedDriver != null) ...[
-                  const SizedBox(height: 16),
-                  const Divider(height: 1),
-                  const SizedBox(height: 16),
-                  _buildDriverInfo(ride.assignedDriver!),
-                ],
-                
-                const SizedBox(height: 16),
-                
-                // Cancel button
-                if (ride.isSearching || ride.isAccepted || ride.isDriverArriving)
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _isCancellingRide ? null : _cancelRide,
-                      icon: _isCancellingRide
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.close_rounded, size: 18),
-                      label: Text(_isCancellingRide ? 'Cancelling...' : 'Cancel Ride'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red.shade600,
-                        side: BorderSide(color: Colors.red.shade300),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                        )
+                      else
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _passengerStatusLabel(ride),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                    ),
+                      Text(
+                        ride.vehicleIcon,
+                        style: const TextStyle(fontSize: 22),
+                      ),
+                    ],
                   ),
+                ),
+                
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Route info
+                      _buildRouteInfo(ride),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Stats row
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            _buildStatItem('Fare', '৳${ride.fareEstimate.toStringAsFixed(0)}'),
+                            _buildStatDivider(),
+                            _buildStatItem('Distance', '${ride.distanceKm.toStringAsFixed(1)} km'),
+                            _buildStatDivider(),
+                            _buildStatItem('ETA', ride.etaDisplay),
+                          ],
+                        ),
+                      ),
+                      
+                      // Driver info (if assigned)
+                      if (ride.assignedDriver != null) ...[
+                        const SizedBox(height: 16),
+                        const Divider(height: 1),
+                        const SizedBox(height: 16),
+                        _buildDriverInfo(ride.assignedDriver!),
+                      ],
+                      
+                      const SizedBox(height: 16),
+                      
+                      // Cancel button
+                      if (ride.isSearching || ride.isAccepted || ride.isDriverArriving)
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _isCancellingRide ? null : _confirmCancelRide,
+                            icon: _isCancellingRide
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.red,
+                                    ),
+                                  )
+                                : const Icon(Icons.cancel_outlined, size: 18),
+                            label: Text(
+                              _isCancellingRide ? 'Cancelling...' : 'Cancel Ride',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red.shade600,
+                              side: BorderSide(color: Colors.red.shade400),
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -436,10 +544,17 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
           
           // Map
           Container(
-            height: 300,
+            height: 260,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             clipBehavior: Clip.antiAlias,
             child: RideshareMapWidget(
@@ -454,7 +569,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
                       longitude: ride.assignedDriver!.currentLongitude!,
                     )
                   : null,
-              onMapTap: null, // Disable map tap for active ride
+              onMapTap: null,
             ),
           ),
         ],
@@ -462,98 +577,115 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
     );
   }
 
+  String _passengerStatusLabel(Ride ride) {
+    if (ride.isAccepted) {
+      return 'Trip Started';
+    }
+    return ride.statusDisplay;
+  }
+
   Widget _buildRouteInfo(Ride ride) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: const BoxDecoration(
-                color: Color(0xFF6366F1),
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pickup',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF94A3B8),
-                    ),
-                  ),
-                  Text(
-                    ride.pickupAddress,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF1E293B),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Row(
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
               Container(
-                width: 2,
-                height: 20,
-                color: const Color(0xFFE2E8F0),
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF6366F1),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'PICKUP',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF6366F1),
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    Text(
+                      ride.pickupAddress,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1E293B),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-        ),
-        Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1),
-                borderRadius: BorderRadius.circular(2),
-              ),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Row(
+              children: [
+                Container(
+                  width: 2,
+                  height: 18,
+                  color: const Color(0xFFCBD5E1),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
+          ),
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Drop',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF94A3B8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'DROP',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF10B981),
+                        letterSpacing: 0.8,
+                      ),
                     ),
-                  ),
-                  Text(
-                    ride.dropAddress,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF1E293B),
+                    Text(
+                      ride.dropAddress,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1E293B),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -628,110 +760,140 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
             ],
           ),
         ),
-        IconButton(
-          onPressed: () {
-            // TODO: Call driver
-          },
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.phone_rounded,
-              size: 20,
-              color: Color(0xFF10B981),
+        if (driver.userPhone.isNotEmpty)
+          GestureDetector(
+            onTap: () async {
+              final uri = Uri(scheme: 'tel', path: driver.userPhone);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withOpacity(0.25),
+                ),
+              ),
+              child: const Icon(
+                Icons.phone_rounded,
+                size: 20,
+                color: Color(0xFF10B981),
+              ),
             ),
           ),
-        ),
       ],
     );
   }
 
   Widget _buildBookingView() {
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                // Booking form card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+    return RefreshIndicator(
+      color: const Color(0xFF6366F1),
+      onRefresh: _loadActiveRide,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
+        child: Column(
+          children: [
+            // Booking form card
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text(
-                        'Book a Ride',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1E293B),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.route_rounded,
+                          size: 16,
+                          color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Enter pickup and drop locations',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: const Color(0xFF64748B),
-                        ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Book a Ride',
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            'Enter locations to get started',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: const Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      
-                      // Location inputs
-                      _buildLocationInputs(),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Vehicle type selector
-                      _buildVehicleSelector(),
-                      
-                      // Estimate display
-                      if (_estimate != null) ...[
-                        const SizedBox(height: 16),
-                        _buildEstimateCard(),
-                      ],
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Book button
-                      _buildBookButton(),
                     ],
                   ),
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Map
-                Container(
-                  height: 280,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: RideshareMapWidget(
-                    pickupPoint: _pickupPoint,
-                    dropPoint: _dropPoint,
-                    routeGeometry: _estimate?.routeGeometry,
-                    nearbyDrivers: _nearbyDrivers,
-                    activeSelection: _activeInput,
-                    onMapTap: _onMapTap,
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  _buildLocationInputs(),
+                  const SizedBox(height: 16),
+                  _buildVehicleSelector(),
+                  if (_estimate != null || _isEstimating) ...[
+                    const SizedBox(height: 16),
+                    _buildEstimateCard(),
+                  ],
+                  const SizedBox(height: 16),
+                  _buildBookButton(),
+                ],
+              ),
             ),
-          ),
+            const SizedBox(height: 12),
+            Container(
+              height: 260,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: RideshareMapWidget(
+                pickupPoint: _pickupPoint,
+                dropPoint: _dropPoint,
+                routeGeometry: _estimate?.routeGeometry,
+                nearbyDrivers: _nearbyDrivers,
+                activeSelection: _activeInput,
+                onMapTap: _onMapTap,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -1050,10 +1212,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
   Widget _buildEstimateCard() {
     if (_isEstimating) {
       return Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1061,9 +1224,12 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
             const SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Color(0xFF6366F1),
+              ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Text(
               'Calculating fare...',
               style: GoogleFonts.inter(
@@ -1077,10 +1243,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(10),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFF0FDF4), Color(0xFFDCFCE7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFBBF7D0)),
       ),
       child: Row(
@@ -1090,18 +1260,20 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Estimated Fare',
+                  'ESTIMATED FARE',
                   style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
                     color: const Color(0xFF16A34A),
+                    letterSpacing: 0.8,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   '৳${_estimate!.fare.toStringAsFixed(0)}',
                   style: GoogleFonts.inter(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
                     color: const Color(0xFF15803D),
                   ),
                 ),
@@ -1111,19 +1283,55 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                '${_estimate!.distanceKm.toStringAsFixed(1)} km',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E293B),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.straighten_rounded,
+                      size: 12,
+                      color: Color(0xFF16A34A),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${_estimate!.distanceKm.toStringAsFixed(1)} km',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF15803D),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Text(
-                _estimate!.etaDisplay,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: const Color(0xFF64748B),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 12,
+                      color: Color(0xFF16A34A),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _estimate!.etaDisplay,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF15803D),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -1138,34 +1346,65 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
     
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
-        onPressed: canBook && !_isCreatingRide ? _createRide : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6366F1),
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFFE2E8F0),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          elevation: 0,
-        ),
-        child: _isCreatingRide
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
+      child: Container(
+        decoration: canBook
+            ? BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withOpacity(0.35),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               )
-            : Text(
-                canBook ? 'Book Ride' : 'Enter locations to book',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+            : null,
+        child: ElevatedButton(
+          onPressed: canBook && !_isCreatingRide ? _createRide : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: canBook ? Colors.transparent : const Color(0xFFE2E8F0),
+            foregroundColor: canBook ? Colors.white : const Color(0xFF94A3B8),
+            disabledForegroundColor: const Color(0xFF94A3B8),
+            disabledBackgroundColor: const Color(0xFFE2E8F0),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+            shadowColor: Colors.transparent,
+          ),
+          child: _isCreatingRide
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      canBook ? Icons.directions_car_rounded : Icons.edit_location_alt_outlined,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      canBook ? 'Book Ride Now' : 'Enter locations to book',
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+        ),
       ),
     );
   }

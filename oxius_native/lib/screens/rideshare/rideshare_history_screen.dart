@@ -76,83 +76,87 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Colors.red.shade300,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _error!,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: const Color(0xFF64748B),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadRides,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_rides.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.history_rounded,
-                size: 48,
-                color: Color(0xFF94A3B8),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No rides yet',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1E293B),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              widget.asDriver
-                  ? 'Your completed trips will appear here'
-                  : 'Your ride history will appear here',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: const Color(0xFF64748B),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: _loadRides,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: _rides.length,
-        itemBuilder: (context, index) => _buildRideCard(_rides[index]),
-      ),
+      child: _rides.isNotEmpty
+          ? ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(12),
+              itemCount: _rides.length,
+              itemBuilder: (context, index) => _buildRideCard(_rides[index]),
+            )
+          : ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(24),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.62,
+                  child: Center(
+                    child: _error != null
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline_rounded,
+                                size: 48,
+                                color: Colors.red.shade300,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                _error!,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: const Color(0xFF64748B),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _loadRides,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.history_rounded,
+                                  size: 48,
+                                  color: Color(0xFF94A3B8),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No rides yet',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.asDriver
+                                    ? 'Your completed trips will appear here'
+                                    : 'Your ride history will appear here',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 

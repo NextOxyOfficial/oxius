@@ -10,6 +10,52 @@ import 'active_chat_tracker.dart';
 class AdsyConnectService {
   static String get baseUrl => '${ApiService.baseUrl}/adsyconnect';
 
+  static Map<String, dynamic> _normalizeChatroomPayload(dynamic payload) {
+    if (payload is! Map) {
+      throw Exception('Invalid chat room response');
+    }
+
+    final map = Map<String, dynamic>.from(payload as Map);
+    final data = map['data'];
+    if (data is Map && data['id'] != null) {
+      return Map<String, dynamic>.from(data);
+    }
+
+    if (map['id'] != null) {
+      return map;
+    }
+
+    throw Exception('Chat room ID missing from response');
+  }
+
+  static Map<String, dynamic>? _matchChatRoomForUser(
+    List<dynamic> rooms,
+    String userId,
+  ) {
+    for (final room in rooms) {
+      if (room is! Map) continue;
+      final map = Map<String, dynamic>.from(room as Map);
+      final otherUser = map['other_user'];
+      if (otherUser is Map && otherUser['id']?.toString() == userId) {
+        return map;
+      }
+      if (map['user1']?.toString() == userId || map['user2']?.toString() == userId) {
+        return map;
+      }
+    }
+    return null;
+  }
+
+  static Future<Map<String, dynamic>?> findExistingChatRoom(String userId) async {
+    try {
+      final rooms = await getChatRooms(pageSize: 100);
+      return _matchChatRoomForUser(rooms, userId);
+    } catch (e) {
+      print('Error finding existing chat room: $e');
+      return null;
+    }
+  }
+
   // Get headers with auth token
   static Future<Map<String, String>> _getHeaders() async {
     final token = AuthService.accessToken;
@@ -22,6 +68,11 @@ class AdsyConnectService {
   // Get or create chat room with a user
   static Future<Map<String, dynamic>> getOrCreateChatRoom(String userId) async {
     try {
+      final existingChatroom = await findExistingChatRoom(userId);
+      if (existingChatroom != null && existingChatroom['id'] != null) {
+        return existingChatroom;
+      }
+
       final headers = await _getHeaders();
       final response = await http.post(
         Uri.parse('$baseUrl/chatrooms/get_or_create/'),
@@ -30,12 +81,16 @@ class AdsyConnectService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body);
+        return _normalizeChatroomPayload(jsonDecode(response.body));
       } else {
         throw Exception('Failed to get or create chat room: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       print('Error getting or creating chat room: $e');
+      final existingChatroom = await findExistingChatRoom(userId);
+      if (existingChatroom != null && existingChatroom['id'] != null) {
+        return existingChatroom;
+      }
       rethrow;
     }
   }
