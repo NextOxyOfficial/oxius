@@ -1,4 +1,5 @@
-from django.contrib import admin
+from django import forms
+from django.contrib import admin, messages
 from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
@@ -840,6 +841,31 @@ class ClassifiedCategoryPostMediaAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'id')
 
 
+class NIDAdminForm(forms.ModelForm):
+    REVIEW_DECISION_CHOICES = (
+        ("pending", "Pending review"),
+        ("approved", "Approve user"),
+        ("rejected", "Reject user"),
+    )
+
+    review_decision = forms.ChoiceField(
+        choices=REVIEW_DECISION_CHOICES,
+        label="Verification decision",
+        help_text="Choose a single decision. KYC flags are synced automatically.",
+    )
+
+    class Meta:
+        model = NID
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["review_decision"].initial = self.instance.review_status
+        else:
+            self.fields["review_decision"].initial = "pending"
+
+
 class NidAdmin(admin.ModelAdmin):
     """
     Professional NID/KYC verification admin with easy document review and approval.
@@ -852,8 +878,11 @@ class NidAdmin(admin.ModelAdmin):
         "submitted_date",
         "quick_actions",
     )
+    form = NIDAdminForm
     list_filter = ("approved", "rejected", "pending", "completed")
     search_fields = ("user__first_name", "user__last_name", "user__email", "user__phone", "user__nid_number")
+    readonly_fields = ("status_badge", "nid_number_display", "user_kyc_state")
+    actions = ("approve_submissions", "reject_submissions", "mark_submissions_pending")
     list_per_page = 20
     ordering = ["-id"]
     
@@ -862,13 +891,13 @@ class NidAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('👤 User Information', {
-            'fields': ('user',)
+            'fields': ('user', 'nid_number_display', 'user_kyc_state')
         }),
         ('📄 Documents', {
             'fields': ('front', 'back', 'selfie', 'other_document'),
         }),
         ('✅ Verification Status', {
-            'fields': (('approved', 'rejected'), 'pending', 'completed'),
+            'fields': ('review_decision', 'status_badge'),
         }),
     )
     
@@ -891,6 +920,10 @@ class NidAdmin(admin.ModelAdmin):
     user_info.short_description = 'User'
     
     def status_badge(self, obj):
+        if not obj:
+            return format_html(
+                '<span style="background: #f59e0b; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">⏳ PENDING</span>'
+            )
         if obj.approved:
             return format_html(
                 '<span style="background: #10b981; color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;">✓ APPROVED</span>'
@@ -935,6 +968,21 @@ class NidAdmin(admin.ModelAdmin):
             )
         return format_html('<span style="color: #999;">—</span>')
     nid_number_display.short_description = 'NID Number'
+
+    def user_kyc_state(self, obj):
+        if not obj or not obj.user:
+            return format_html('<span style="color: #999;">—</span>')
+        if obj.user.kyc:
+            label = 'Verified'
+            color = '#10b981'
+        elif obj.user.kyc_pending:
+            label = 'Pending Review'
+            color = '#f59e0b'
+        else:
+            label = 'Not Verified'
+            color = '#6b7280'
+        return format_html('<span style="color: {}; font-weight: 600;">{}</span>', color, label)
+    user_kyc_state.short_description = 'User KYC'
     
     def submitted_date(self, obj):
         # NID model doesn't have created_at, so we'll show the ID as reference
@@ -956,6 +1004,42 @@ class NidAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user')
+
+    def save_model(self, request, obj, form, change):
+        decision = form.cleaned_data.get("review_decision", "pending")
+        obj.approved = decision == "approved"
+        obj.rejected = decision == "rejected"
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="Approve selected NID submissions")
+    def approve_submissions(self, request, queryset):
+        updated = 0
+        for submission in queryset.select_related('user'):
+            submission.approved = True
+            submission.rejected = False
+            submission.save()
+            updated += 1
+        self.message_user(request, f"Approved {updated} submission(s).", level=messages.SUCCESS)
+
+    @admin.action(description="Reject selected NID submissions")
+    def reject_submissions(self, request, queryset):
+        updated = 0
+        for submission in queryset.select_related('user'):
+            submission.approved = False
+            submission.rejected = True
+            submission.save()
+            updated += 1
+        self.message_user(request, f"Rejected {updated} submission(s).", level=messages.WARNING)
+
+    @admin.action(description="Move selected NID submissions back to pending")
+    def mark_submissions_pending(self, request, queryset):
+        updated = 0
+        for submission in queryset.select_related('user'):
+            submission.approved = False
+            submission.rejected = False
+            submission.save()
+            updated += 1
+        self.message_user(request, f"Moved {updated} submission(s) to pending.", level=messages.INFO)
     
     class Media:
         css = {
@@ -1255,6 +1339,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "order_info",
         "customer_info",
+        "delivery_address",
         "shops_display",
         "order_total",
         "status_badge",
@@ -1262,10 +1347,13 @@ class OrderAdmin(admin.ModelAdmin):
         "order_date",
     )
     list_filter = ("order_status", "payment_method", "created_at")
-    search_fields = ("order_number", "user__email", "user__first_name", "user__last_name", "user__phone")
-    readonly_fields = ("order_number", "created_at", "updated_at")
+    search_fields = ("order_number", "name", "email", "phone", "address", "user__email", "user__first_name", "user__last_name", "user__phone")
+    readonly_fields = ("order_number", "created_at", "updated_at", "order_summary")
     list_per_page = 25
     ordering = ["-created_at"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user').prefetch_related('items__product__owner')
 
     def order_info(self, obj):
         return format_html(
@@ -1279,16 +1367,23 @@ class OrderAdmin(admin.ModelAdmin):
     
     def customer_info(self, obj):
         if obj.user:
-            name = f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.username
+            name = obj.name or f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.username
             return format_html(
                 '<div style="line-height: 1.4;">'
                 '<strong style="font-size: 13px; color: #374151;">{}</strong><br>'
                 '<span style="font-size: 11px; color: #6b7280;">{}</span>'
                 '</div>',
-                name, obj.user.phone or obj.user.email or '—'
+                name, obj.phone or obj.email or obj.user.phone or obj.user.email or '—'
             )
         return format_html('<span style="color: #9ca3af;">No customer</span>')
     customer_info.short_description = 'Customer'
+
+    def delivery_address(self, obj):
+        if not obj.address:
+            return format_html('<span style="color: #9ca3af;">No address</span>')
+        short_address = obj.address if len(obj.address) <= 48 else f"{obj.address[:48]}..."
+        return format_html('<div style="max-width: 260px; line-height: 1.4; color: #374151; font-size: 12px;">{}</div>', short_address)
+    delivery_address.short_description = 'Delivery Address'
     
     def shops_display(self, obj):
         owners_shops = []
@@ -1360,14 +1455,32 @@ class OrderAdmin(admin.ModelAdmin):
         )
     order_date.short_description = 'Date'
 
+    def order_summary(self, obj):
+        return format_html(
+            '<div style="line-height: 1.5;">'
+            '<strong>{}</strong><br>'
+            '<span style="color: #6b7280; font-size: 12px;">Items: {} | Delivery fee: ৳{}</span>'
+            '</div>',
+            obj.order_number,
+            obj.items.count(),
+            obj.delivery_fee,
+        )
+    order_summary.short_description = 'Order Summary'
+
     fieldsets = (
         (
             "Order Details",
             {
                 "fields": (
+                    "order_summary",
                     "order_number",
+                    "name",
+                    "phone",
+                    "email",
+                    "address",
                     "user",
                     "order_status",
+                    "delivery_fee",
                     "total",
                     "payment_method",
                 )

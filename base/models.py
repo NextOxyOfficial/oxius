@@ -166,41 +166,62 @@ class NID(models.Model):
     def __str__(self):
         return str(self.id)
 
+    @property
+    def review_status(self):
+        if self.approved:
+            return "approved"
+        if self.rejected:
+            return "rejected"
+        return "pending"
+
+    def clean(self):
+        if self.approved and self.rejected:
+            raise ValidationError("NID verification cannot be both approved and rejected.")
+
     def save(self, *args, **kwargs):
-        if not self.completed and not self.approved and not self.rejected:
-            self.user.kyc_pending = True
-            self.user.save()
-        if self.approved and not self.completed:
+        previous = None
+        if self.pk:
+            previous = type(self).objects.filter(pk=self.pk).values("approved", "rejected").first()
+
+        self.clean()
+
+        if self.approved:
             self.pending = False
             self.completed = True
-            self.user.kyc_pending = False
-            self.user.kyc = True
-            self.user.save()
-
-            # Send KYC approved email
-            try:
-                from .email_service import send_kyc_approved_email
-                if self.user.email:
-                    send_kyc_approved_email(self.user)
-            except Exception as e:
-                print(f"Error sending KYC approved email: {e}")
-
-        if self.rejected and not self.completed:
+        elif self.rejected:
             self.pending = False
             self.completed = True
-            self.user.kyc_pending = False
-            self.user.kyc = False
-            self.user.save()
+        else:
+            self.pending = True
+            self.completed = False
 
-            # Send KYC rejected email
-            try:
-                from .email_service import send_kyc_rejected_email
-                if self.user.email:
-                    send_kyc_rejected_email(self.user)
-            except Exception as e:
-                print(f"Error sending KYC rejected email: {e}")
+        if self.user:
+            if self.approved:
+                self.user.kyc_pending = False
+                self.user.kyc = True
+            elif self.rejected:
+                self.user.kyc_pending = False
+                self.user.kyc = False
+            else:
+                self.user.kyc_pending = True
+                self.user.kyc = False
+            self.user.save(update_fields=["kyc_pending", "kyc"])
 
         super(NID, self).save(*args, **kwargs)
+
+        if self.user and self.user.email:
+            if self.approved and not (previous and previous["approved"]):
+                try:
+                    from .email_service import send_kyc_approved_email
+                    send_kyc_approved_email(self.user)
+                except Exception as e:
+                    print(f"Error sending KYC approved email: {e}")
+            elif self.rejected and not (previous and previous["rejected"]):
+                try:
+                    from .email_service import send_kyc_rejected_email
+                    send_kyc_rejected_email(self.user)
+                except Exception as e:
+                    print(f"Error sending KYC rejected email: {e}")
 
 
 class Logo(models.Model):
