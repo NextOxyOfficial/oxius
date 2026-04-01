@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -7,10 +6,6 @@ import 'package:flutter/material.dart';
 class NetworkErrorHandler {
   /// Get user-friendly error message from exception
   static String getErrorMessage(dynamic error) {
-    if (error is SocketException) {
-      return 'No internet connection. Please check your network settings.';
-    }
-    
     if (error is http.ClientException) {
       return 'Connection error. Please check your internet connection.';
     }
@@ -101,7 +96,7 @@ class NetworkErrorHandler {
   
   /// Check if error is network-related
   static bool isNetworkError(dynamic error) {
-    if (error is SocketException || error is http.ClientException) {
+    if (error is http.ClientException) {
       return true;
     }
     

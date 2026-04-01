@@ -95,12 +95,28 @@ class FareConfig(models.Model):
         return f"FareConfig({self.vehicle_type})"
 
 
+class RideshareSettings(models.Model):
+    platform_fee_percent = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("5.00"))
+    driver_response_timeout_seconds = models.PositiveIntegerField(default=60)
+    max_search_window_minutes = models.PositiveIntegerField(default=15)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Rideshare Settings"
+        verbose_name_plural = "Rideshare Settings"
+
+    def __str__(self):
+        return "Rideshare Settings"
+
+
 class Ride(models.Model):
     STATUS_REQUESTED = "requested"
     STATUS_SEARCHING = "searching_driver"
     STATUS_ACCEPTED = "accepted"
     STATUS_DRIVER_ARRIVING = "driver_arriving"
     STATUS_IN_PROGRESS = "in_progress"
+    STATUS_AWAITING_CONFIRMATION = "awaiting_passenger_confirmation"
     STATUS_COMPLETED = "completed"
     STATUS_CANCELLED = "cancelled"
 
@@ -110,6 +126,7 @@ class Ride(models.Model):
         (STATUS_ACCEPTED, "Accepted"),
         (STATUS_DRIVER_ARRIVING, "Driver Arriving"),
         (STATUS_IN_PROGRESS, "In Progress"),
+        (STATUS_AWAITING_CONFIRMATION, "Awaiting Passenger Confirmation"),
         (STATUS_COMPLETED, "Completed"),
         (STATUS_CANCELLED, "Cancelled"),
     ]
@@ -119,7 +136,8 @@ class Ride(models.Model):
         STATUS_SEARCHING: [STATUS_ACCEPTED, STATUS_CANCELLED],
         STATUS_ACCEPTED: [STATUS_DRIVER_ARRIVING, STATUS_CANCELLED],
         STATUS_DRIVER_ARRIVING: [STATUS_IN_PROGRESS, STATUS_CANCELLED],
-        STATUS_IN_PROGRESS: [STATUS_COMPLETED, STATUS_CANCELLED],
+        STATUS_IN_PROGRESS: [STATUS_AWAITING_CONFIRMATION, STATUS_COMPLETED, STATUS_CANCELLED],
+        STATUS_AWAITING_CONFIRMATION: [STATUS_IN_PROGRESS, STATUS_COMPLETED, STATUS_CANCELLED],
         STATUS_COMPLETED: [],
         STATUS_CANCELLED: [],
     }
@@ -140,6 +158,7 @@ class Ride(models.Model):
     requested_vehicle_type = models.CharField(max_length=20, choices=Vehicle.VEHICLE_TYPE_CHOICES, default="bike")
     targeted_at = models.DateTimeField(null=True, blank=True)
     dispatch_attempt = models.PositiveIntegerField(default=0)
+    search_expires_at = models.DateTimeField(null=True, blank=True)
     pickup_latitude = models.DecimalField(max_digits=9, decimal_places=6)
     pickup_longitude = models.DecimalField(max_digits=9, decimal_places=6)
     drop_latitude = models.DecimalField(max_digits=9, decimal_places=6)
@@ -151,9 +170,16 @@ class Ride(models.Model):
     route_geometry = models.JSONField(default=dict, blank=True)
     fare_estimate = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
     final_fare = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default=STATUS_REQUESTED)
+    platform_fee_percent = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))
+    platform_fee_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
+    driver_payout_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
+    status = models.CharField(max_length=40, choices=STATUS_CHOICES, default=STATUS_REQUESTED)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
     cancellation_reason = models.TextField(blank=True, default="")
+    early_completion_requested_at = models.DateTimeField(null=True, blank=True)
+    early_completion_distance_km = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    early_completion_duration_seconds = models.PositiveIntegerField(default=0)
+    early_completion_fare = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     requested_at = models.DateTimeField(auto_now_add=True)
     accepted_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
@@ -182,6 +208,7 @@ class Ride(models.Model):
             self.STATUS_ACCEPTED,
             self.STATUS_DRIVER_ARRIVING,
             self.STATUS_IN_PROGRESS,
+            self.STATUS_AWAITING_CONFIRMATION,
         }
 
     def can_transition_to(self, next_status):
@@ -195,13 +222,13 @@ class Ride(models.Model):
 
         now = timezone.now()
         self.status = next_status
-        if next_status == self.STATUS_ACCEPTED:
+        if next_status == self.STATUS_ACCEPTED and not self.accepted_at:
             self.accepted_at = now
-        elif next_status == self.STATUS_IN_PROGRESS:
+        elif next_status == self.STATUS_IN_PROGRESS and not self.started_at:
             self.started_at = now
-        elif next_status == self.STATUS_COMPLETED:
+        elif next_status == self.STATUS_COMPLETED and not self.completed_at:
             self.completed_at = now
-        elif next_status == self.STATUS_CANCELLED:
+        elif next_status == self.STATUS_CANCELLED and not self.cancelled_at:
             self.cancelled_at = now
 
         self.save(update_fields=[
@@ -219,7 +246,7 @@ class Ride(models.Model):
 class RideStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ride = models.ForeignKey(Ride, on_delete=models.CASCADE, related_name="status_history")
-    status = models.CharField(max_length=30, choices=Ride.STATUS_CHOICES)
+    status = models.CharField(max_length=40, choices=Ride.STATUS_CHOICES)
     actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="ride_status_actions")
     metadata = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -229,6 +256,22 @@ class RideStatusHistory(models.Model):
 
     def __str__(self):
         return f"{self.ride_id}:{self.status}"
+
+
+class RideCancellationReport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ride = models.ForeignKey(Ride, on_delete=models.CASCADE, related_name="cancellation_reports")
+    reporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ride_cancellation_reports")
+    reported_driver = models.ForeignKey(DriverProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="cancellation_reports")
+    details = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("ride", "reporter")
+
+    def __str__(self):
+        return f"RideCancellationReport({self.ride_id}, {self.reporter_id})"
 
 
 class DriverLocation(models.Model):

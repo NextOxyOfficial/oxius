@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from base.models import User
 
-from .models import DriverLocation, DriverProfile, Ride, RideStatusHistory, Vehicle
+from .models import DriverLocation, DriverProfile, Ride, RideCancellationReport, RideStatusHistory, Vehicle
 
 
 class RideUserSerializer(serializers.ModelSerializer):
@@ -84,6 +84,31 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             vehicle = obj.vehicles.filter(is_active=True).first()
         return VehicleSerializer(vehicle).data if vehicle else None
 
+    def validate(self, attrs):
+        instance = getattr(self, "instance", None)
+        immutable_fields = {
+            "license_number": "License number",
+            "national_id_number": "National ID number",
+        }
+
+        for field_name, label in immutable_fields.items():
+            if field_name not in attrs:
+                continue
+
+            incoming_value = (attrs.get(field_name) or "").strip()
+            attrs[field_name] = incoming_value
+
+            if instance is None:
+                continue
+
+            existing_value = (getattr(instance, field_name, "") or "").strip()
+            if existing_value and incoming_value != existing_value:
+                raise serializers.ValidationError({
+                    field_name: f"{label} cannot be changed after it has been submitted.",
+                })
+
+        return attrs
+
 
 class RideStatusHistorySerializer(serializers.ModelSerializer):
     actor = RideUserSerializer(read_only=True)
@@ -110,9 +135,13 @@ class DriverLocationSerializer(serializers.ModelSerializer):
 class RideSerializer(serializers.ModelSerializer):
     rider = RideUserSerializer(read_only=True)
     assigned_driver = DriverProfileSerializer(read_only=True)
+    targeted_driver = DriverProfileSerializer(read_only=True)
     vehicle = VehicleSerializer(read_only=True)
     latest_driver_location = serializers.SerializerMethodField()
     status_history = RideStatusHistorySerializer(many=True, read_only=True)
+    passenger_can_cancel = serializers.SerializerMethodField()
+    driver_can_cancel = serializers.SerializerMethodField()
+    can_report_driver = serializers.SerializerMethodField()
 
     class Meta:
         model = Ride
@@ -120,8 +149,12 @@ class RideSerializer(serializers.ModelSerializer):
             "id",
             "rider",
             "assigned_driver",
+            "targeted_driver",
             "vehicle",
             "requested_vehicle_type",
+            "targeted_at",
+            "dispatch_attempt",
+            "search_expires_at",
             "pickup_latitude",
             "pickup_longitude",
             "drop_latitude",
@@ -133,9 +166,16 @@ class RideSerializer(serializers.ModelSerializer):
             "route_geometry",
             "fare_estimate",
             "final_fare",
+            "platform_fee_percent",
+            "platform_fee_amount",
+            "driver_payout_amount",
             "status",
             "payment_status",
             "cancellation_reason",
+            "early_completion_requested_at",
+            "early_completion_distance_km",
+            "early_completion_duration_seconds",
+            "early_completion_fare",
             "requested_at",
             "accepted_at",
             "started_at",
@@ -144,12 +184,50 @@ class RideSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "latest_driver_location",
+            "passenger_can_cancel",
+            "driver_can_cancel",
+            "can_report_driver",
             "status_history",
         ]
 
     def get_latest_driver_location(self, obj):
         latest = obj.driver_locations.order_by("-recorded_at").first()
         return DriverLocationSerializer(latest).data if latest else None
+
+    def get_passenger_can_cancel(self, obj):
+        return obj.status in [
+            Ride.STATUS_REQUESTED,
+            Ride.STATUS_SEARCHING,
+            Ride.STATUS_ACCEPTED,
+            Ride.STATUS_DRIVER_ARRIVING,
+        ]
+
+    def get_driver_can_cancel(self, obj):
+        return obj.status in [
+            Ride.STATUS_ACCEPTED,
+            Ride.STATUS_DRIVER_ARRIVING,
+            Ride.STATUS_IN_PROGRESS,
+            Ride.STATUS_AWAITING_CONFIRMATION,
+        ]
+
+    def get_can_report_driver(self, obj):
+        if obj.status != Ride.STATUS_CANCELLED or not obj.assigned_driver_id:
+            return False
+
+        cancel_entry = obj.status_history.filter(status=Ride.STATUS_CANCELLED).order_by("-created_at").first()
+        if not cancel_entry:
+            return False
+
+        if cancel_entry.metadata.get("cancelled_by") != "driver":
+            return False
+
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        if request.user.id != obj.rider_id:
+            return False
+
+        return not RideCancellationReport.objects.filter(ride=obj, reporter=request.user).exists()
 
 
 class RideEstimateRequestSerializer(serializers.Serializer):
@@ -188,6 +266,19 @@ class RideCancelSerializer(serializers.Serializer):
 class RideStatusUpdateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=Ride.STATUS_CHOICES)
     final_fare = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+
+class RideEarlyCompleteSerializer(serializers.Serializer):
+    latitude = serializers.FloatField(required=False)
+    longitude = serializers.FloatField(required=False)
+
+
+class RideConfirmEarlyCompletionSerializer(serializers.Serializer):
+    confirm = serializers.BooleanField(default=True)
+
+
+class RideCancellationReportSerializer(serializers.Serializer):
+    details = serializers.CharField(required=False, allow_blank=True, max_length=1000)
 
 
 class DriverToggleOnlineSerializer(serializers.Serializer):

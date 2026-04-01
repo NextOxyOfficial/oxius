@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import DriverLocation, DriverProfile, FareConfig, Ride, RideStatusHistory, Vehicle
+from .models import DriverLocation, DriverProfile, FareConfig, Ride, RideCancellationReport, RideshareSettings, RideStatusHistory, Vehicle
 
 
 @admin.register(DriverProfile)
@@ -23,6 +23,11 @@ class FareConfigAdmin(admin.ModelAdmin):
     list_filter = ("vehicle_type", "is_active")
 
 
+@admin.register(RideshareSettings)
+class RideshareSettingsAdmin(admin.ModelAdmin):
+    list_display = ("platform_fee_percent", "driver_response_timeout_seconds", "max_search_window_minutes", "updated_at")
+
+
 class RideStatusHistoryInline(admin.TabularInline):
     model = RideStatusHistory
     extra = 0
@@ -43,3 +48,10 @@ class DriverLocationAdmin(admin.ModelAdmin):
     list_display = ("driver", "ride", "latitude", "longitude", "recorded_at")
     list_filter = ("recorded_at",)
     search_fields = ("driver__user__username", "ride__id")
+
+
+@admin.register(RideCancellationReport)
+class RideCancellationReportAdmin(admin.ModelAdmin):
+    list_display = ("ride", "reporter", "reported_driver", "created_at")
+    search_fields = ("ride__id", "reporter__username", "reported_driver__user__username")
+    readonly_fields = ("ride", "reporter", "reported_driver", "details", "created_at")

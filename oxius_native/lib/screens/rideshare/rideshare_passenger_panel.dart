@@ -4,7 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/rideshare_models.dart';
+import '../../services/adsyconnect_service.dart';
 import '../../services/rideshare_service.dart';
+import '../../services/rideshare_realtime_service.dart';
+import '../../utils/network_error_handler.dart';
+import '../adsy_connect_chat_interface.dart';
+import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
 
 class RidesharePassengerPanel extends StatefulWidget {
@@ -43,6 +48,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   // Focus
   String _activeInput = 'pickup'; // 'pickup' or 'drop'
   Timer? _searchDebounce;
+  final RideshareRealtimeService _realtimeService = RideshareRealtimeService();
+  StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
+  String _searchStatusMessage = 'Searching for nearby drivers...';
+  bool _isReportingCancellation = false;
 
   @override
   void initState() {
@@ -58,6 +67,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _pickupController.dispose();
     _dropController.dispose();
     _searchDebounce?.cancel();
+    _rideEventSubscription?.cancel();
+    _realtimeService.dispose();
     super.dispose();
   }
 
@@ -166,10 +177,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _isLoadingActiveRide = true);
     final result = await RideshareService.getActiveRide();
     if (mounted) {
-      setState(() {
-        _activeRide = result.data;
-        _isLoadingActiveRide = false;
-      });
+      _applyRideState(result.data, isLoading: false);
     }
   }
 
@@ -177,10 +185,87 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _isLoadingActiveRide = true);
     final result = await RideshareService.getRide(rideId);
     if (mounted) {
+      _applyRideState(result.data, isLoading: false);
+    }
+  }
+
+  void _applyRideState(Ride? ride, {required bool isLoading}) {
+    setState(() {
+      _activeRide = ride;
+      _searchStatusMessage = _deriveSearchStatusMessage(ride);
+      _isLoadingActiveRide = isLoading;
+    });
+    _syncRideRealtimeConnection();
+  }
+
+  String _deriveSearchStatusMessage(Ride? ride) {
+    if (ride == null) {
+      return 'Searching for nearby drivers...';
+    }
+
+    for (final entry in ride.statusHistory.reversed) {
+      final message = entry.metadata['status_text'] ?? entry.metadata['message'];
+      if (message is String && message.trim().isNotEmpty) {
+        return message.trim();
+      }
+    }
+
+    if (ride.isSearching && ride.targetedDriver != null) {
+      return 'Request sent to ${ride.targetedDriver!.userName}';
+    }
+    if (ride.isSearching) {
+      return 'Searching for nearby drivers...';
+    }
+    if (ride.isCancelled && (ride.cancellationReason?.isNotEmpty ?? false)) {
+      return ride.cancellationReason!;
+    }
+    return ride.statusDisplay;
+  }
+
+  void _syncRideRealtimeConnection() {
+    final ride = _activeRide;
+    if (ride == null) {
+      _rideEventSubscription?.cancel();
+      _rideEventSubscription = null;
+      _realtimeService.disconnectRide();
+      return;
+    }
+
+    _rideEventSubscription ??= _realtimeService.rideEvents.listen(_handleRideRealtimeEvent);
+    _realtimeService.connectRide(ride.id);
+  }
+
+  Future<void> _handleRideRealtimeEvent(Map<String, dynamic> event) async {
+    if (!mounted || _activeRide == null) {
+      return;
+    }
+
+    final type = event['type']?.toString() ?? '';
+    final eventName = event['event']?.toString() ?? '';
+    if (type == 'driver.location') {
+      final location = RideDriverLocation.fromJson(event);
       setState(() {
-        _activeRide = result.data;
-        _isLoadingActiveRide = false;
+        _activeRide = _activeRide?.copyWith(latestDriverLocation: location);
       });
+      return;
+    }
+
+    if (eventName == 'search_status_updated') {
+      final message = event['message']?.toString();
+      if (message != null && message.isNotEmpty) {
+        setState(() => _searchStatusMessage = message);
+      }
+    }
+
+    if (type == 'ride.event') {
+      final rideId = event['ride_id']?.toString() ?? '';
+      if (rideId.isEmpty) {
+        return;
+      }
+      await _loadActiveRideById(rideId);
+      if (eventName == 'ride_auto_cancelled') {
+        _showError(event['message']?.toString() ?? 'No drivers available, please try again.');
+      }
     }
   }
 
@@ -446,14 +531,189 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           _pickupSuggestions = [];
           _dropSuggestions = [];
           _activeInput = 'pickup';
+          _searchStatusMessage = 'Searching for nearby drivers...';
         });
         _pickupController.clear();
         _dropController.clear();
+        _realtimeService.disconnectRide();
         _showSuccess('Ride cancelled');
       } else {
         _showError(result.message);
       }
     }
+  }
+
+  bool _canChatWithDriver(Ride ride) {
+    return ride.assignedDriver != null &&
+        (ride.isAccepted ||
+            ride.isDriverArriving ||
+            ride.isInProgress ||
+            ride.isAwaitingPassengerConfirmation);
+  }
+
+  Future<void> _openDriverChat(Ride ride) async {
+    final driver = ride.assignedDriver;
+    if (driver == null || driver.userId.isEmpty) {
+      _showError('Driver chat is unavailable right now.');
+      return;
+    }
+
+    var loadingDialogShown = false;
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+      loadingDialogShown = true;
+
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(driver.userId);
+      final chatroomId = chatroom['id']?.toString();
+      if (chatroomId == null || chatroomId.isEmpty) {
+        throw Exception('Chat room unavailable');
+      }
+
+      if (mounted && loadingDialogShown) {
+        Navigator.of(context, rootNavigator: true).pop();
+        loadingDialogShown = false;
+      }
+
+      if (!mounted) return;
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, controller) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: AdsyConnectChatInterface(
+              chatroomId: chatroomId,
+              userId: driver.userId,
+              userName: driver.userName,
+              userAvatar: driver.userAvatar,
+              profession: 'Driver',
+              isOnline: driver.isOnline,
+            ),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (mounted && loadingDialogShown) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+      _showError('Unable to open driver chat right now.');
+    }
+  }
+
+  void _openBusinessProfile(String userId) {
+    if (userId.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProfileScreen(userId: userId)),
+    );
+  }
+
+  Future<void> _reportDriverCancellation() async {
+    final ride = _activeRide;
+    if (ride == null || !ride.canReportDriver || _isReportingCancellation) {
+      return;
+    }
+
+    final controller = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text(
+          'Report Driver Cancellation',
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          decoration: InputDecoration(
+            hintText: 'Add details for support',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Close', style: GoogleFonts.inter()),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Submit', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    setState(() => _isReportingCancellation = true);
+    final result = await RideshareService.reportDriverCancellation(
+      ride.id,
+      details: controller.text.trim(),
+    );
+    if (!mounted) return;
+
+    setState(() => _isReportingCancellation = false);
+    if (result.success) {
+      setState(() {
+        _activeRide = _activeRide?.copyWith(canReportDriver: false);
+      });
+      _showSuccess('Driver report submitted successfully.');
+    } else {
+      _showError(result.message);
+    }
+  }
+
+  RidePoint? _currentDriverPoint(Ride ride) {
+    if (ride.latestDriverLocation != null) {
+      return RidePoint(
+        name: 'Driver',
+        latitude: ride.latestDriverLocation!.latitude,
+        longitude: ride.latestDriverLocation!.longitude,
+      );
+    }
+    if (ride.assignedDriver?.currentLatitude != null && ride.assignedDriver?.currentLongitude != null) {
+      return RidePoint(
+        name: 'Driver',
+        latitude: ride.assignedDriver!.currentLatitude!,
+        longitude: ride.assignedDriver!.currentLongitude!,
+      );
+    }
+    return null;
+  }
+
+  Future<void> _confirmEarlyCompletion(bool confirm) async {
+    final ride = _activeRide;
+    if (ride == null) return;
+
+    setState(() => _isLoadingActiveRide = true);
+    final result = await RideshareService.confirmEarlyCompletion(ride.id, confirm: confirm);
+    if (!mounted) return;
+
+    if (result.success && result.data != null) {
+      _applyRideState(result.data, isLoading: false);
+      _showSuccess(
+        confirm
+            ? 'Ride completed and payment confirmed.'
+            : 'Ride will continue until you confirm completion.',
+      );
+      return;
+    }
+
+    setState(() => _isLoadingActiveRide = false);
+    _showError(result.message);
   }
 
   void _onMapTap(double latitude, double longitude) async {
@@ -478,7 +738,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   void _showError(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: GoogleFonts.inter(fontSize: 13)),
+      content: Text(NetworkErrorHandler.getErrorMessage(message), style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: Colors.red.shade600,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -524,7 +784,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final ride = _activeRide!;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(4),
       child: Column(
         children: [
           // Status Card
@@ -535,7 +795,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -600,6 +860,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                     children: [
                       // Route info
                       _buildRouteInfo(ride),
+
+                      if (ride.isSearching) ...[
+                        const SizedBox(height: 12),
+                        _buildSearchStatusCard(ride),
+                      ],
                       
                       const SizedBox(height: 16),
                       
@@ -613,7 +878,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                         ),
                         child: Row(
                           children: [
-                            _buildStatItem('Fare', '৳${ride.fareEstimate.toStringAsFixed(0)}'),
+                            _buildStatItem('Fare', '৳${ride.payableFare.toStringAsFixed(0)}'),
                             _buildStatDivider(),
                             _buildStatItem('Distance', '${ride.distanceKm.toStringAsFixed(1)} km'),
                             _buildStatDivider(),
@@ -631,9 +896,47 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                       ],
                       
                       const SizedBox(height: 16),
-                      
-                      // Cancel button
-                      if (ride.isSearching || ride.isAccepted || ride.isDriverArriving)
+
+                      if (ride.isAwaitingPassengerConfirmation)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => _confirmEarlyCompletion(false),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF6366F1),
+                                  side: const BorderSide(color: Color(0xFF6366F1)),
+                                  padding: const EdgeInsets.symmetric(vertical: 13),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Continue Ride',
+                                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () => _confirmEarlyCompletion(true),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: const Color(0xFF10B981),
+                                  padding: const EdgeInsets.symmetric(vertical: 13),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Confirm Payment',
+                                  style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else if (ride.passengerCanCancel)
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
@@ -664,6 +967,34 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                               ),
                             ),
                           ),
+                        )
+                      else if (ride.canReportDriver)
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: _isReportingCancellation ? null : _reportDriverCancellation,
+                            icon: _isReportingCancellation
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(Icons.report_problem_rounded, size: 18),
+                            label: Text(
+                              _isReportingCancellation ? 'Submitting...' : 'Report Driver Cancellation',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFFEA580C),
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -676,13 +1007,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           
           // Map
           Container(
-            height: 260,
+            height: 320,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -693,14 +1024,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               pickupPoint: ride.pickupPoint,
               dropPoint: ride.dropPoint,
               routeGeometry: ride.routeGeometry,
-              driverLocation: ride.assignedDriver != null &&
-                      ride.assignedDriver!.currentLatitude != null
-                  ? RidePoint(
-                      name: 'Driver',
-                      latitude: ride.assignedDriver!.currentLatitude!,
-                      longitude: ride.assignedDriver!.currentLongitude!,
-                    )
-                  : null,
+              driverLocation: _currentDriverPoint(ride),
+              driverHeading: ride.latestDriverLocation?.heading,
+              followDriver: ride.isDriverArriving || ride.isInProgress,
               onMapTap: null,
             ),
           ),
@@ -710,10 +1036,73 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   String _passengerStatusLabel(Ride ride) {
+    if (ride.isSearching) {
+      return 'Finding Driver';
+    }
     if (ride.isAccepted) {
-      return 'Trip Started';
+      return 'Driver Assigned';
     }
     return ride.statusDisplay;
+  }
+
+  Widget _buildSearchStatusCard(Ride ride) {
+    final secondsRemaining = ride.targetedCountdownSeconds();
+    final windowEndsAt = ride.searchExpiresAt;
+    final searchWindowLabel = windowEndsAt == null
+        ? 'Matching in progress'
+        : 'Search window ends in ${windowEndsAt.difference(DateTime.now()).inMinutes.clamp(0, 15)} min';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.radar_rounded, size: 18, color: Color(0xFFD97706)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _searchStatusMessage,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF92400E),
+                  ),
+                ),
+              ),
+              if (ride.targetedDriver != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${secondsRemaining}s',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFD97706),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            searchWindowLabel,
+            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF92400E)),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildRouteInfo(Ride ride) {
@@ -858,40 +1247,65 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   Widget _buildDriverInfo(DriverProfile driver) {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 22,
-          backgroundColor: const Color(0xFFF1F5F9),
-          backgroundImage: driver.userAvatar != null
-              ? NetworkImage(driver.userAvatar!)
-              : null,
-          child: driver.userAvatar == null
-              ? const Icon(Icons.person_rounded, color: Color(0xFF64748B))
-              : null,
+        GestureDetector(
+          onTap: () => _openBusinessProfile(driver.userId),
+          child: CircleAvatar(
+            radius: 22,
+            backgroundColor: const Color(0xFFF1F5F9),
+            backgroundImage: driver.userAvatar != null
+                ? NetworkImage(driver.userAvatar!)
+                : null,
+            child: driver.userAvatar == null
+                ? const Icon(Icons.person_rounded, color: Color(0xFF64748B))
+                : null,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                driver.userName,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1E293B),
-                ),
-              ),
-              if (driver.defaultVehicle != null)
+          child: GestureDetector(
+            onTap: () => _openBusinessProfile(driver.userId),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  '${driver.defaultVehicle!.vehicleIcon} ${driver.defaultVehicle!.registrationNumber}',
+                  driver.userName,
                   style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: const Color(0xFF64748B),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E293B),
                   ),
                 ),
-            ],
+                if (driver.defaultVehicle != null)
+                  Text(
+                    '${driver.defaultVehicle!.vehicleIcon} ${driver.defaultVehicle!.registrationNumber}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF64748B),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
+        if (_activeRide != null && _canChatWithDriver(_activeRide!)) ...[
+          GestureDetector(
+            onTap: () => _openDriverChat(_activeRide!),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
+              ),
+              child: const Icon(
+                Icons.chat_bubble_rounded,
+                size: 18,
+                color: Color(0xFF10B981),
+              ),
+            ),
+          ),
+        ],
         if (driver.userPhone.isNotEmpty)
           GestureDetector(
             onTap: () async {
@@ -903,10 +1317,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: const Color(0xFF10B981).withOpacity(0.25),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.25),
                 ),
               ),
               child: const Icon(
@@ -962,7 +1376,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                   border: Border.all(color: const Color(0xFFFCD34D)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 12,
                       offset: const Offset(0, 3),
                     ),
@@ -1061,7 +1475,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 border: Border.all(color: const Color(0xFFE2E8F0)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -1124,13 +1538,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             ),
             const SizedBox(height: 12),
             Container(
-              height: 260,
+              height: 320,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -1305,7 +1719,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -1541,7 +1955,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -1567,7 +1981,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -1612,7 +2026,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.35),
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

@@ -125,6 +125,9 @@ class DriverDispatchConsumer(AsyncJsonWebsocketConsumer):
     async def ride_request(self, event):
         await self.send_json(event)
 
+    async def ride_targeted(self, event):
+        await self.send_json(event)
+
     async def ride_event(self, event):
         await self.send_json(event)
 

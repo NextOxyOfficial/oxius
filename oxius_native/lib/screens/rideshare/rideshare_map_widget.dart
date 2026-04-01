@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:math' as math;
 import '../../models/rideshare_models.dart';
 
 class RideshareMapWidget extends StatefulWidget {
   final RidePoint? pickupPoint;
   final RidePoint? dropPoint;
   final RidePoint? driverLocation;
+  final double? driverHeading;
   final Map<String, dynamic>? routeGeometry;
   final List<NearbyDriver>? nearbyDrivers;
   final String? activeSelection;
   final Function(double latitude, double longitude)? onMapTap;
+  final bool followDriver;
 
   const RideshareMapWidget({
     super.key,
     this.pickupPoint,
     this.dropPoint,
     this.driverLocation,
+    this.driverHeading,
     this.routeGeometry,
     this.nearbyDrivers,
     this.activeSelection,
     this.onMapTap,
+    this.followDriver = false,
   });
 
   @override
@@ -36,12 +41,26 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   @override
   void didUpdateWidget(RideshareMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
+    final driverChanged =
+        widget.driverLocation?.latitude != oldWidget.driverLocation?.latitude ||
+        widget.driverLocation?.longitude != oldWidget.driverLocation?.longitude;
+
     // Auto-fit bounds when points change
     if (widget.pickupPoint != oldWidget.pickupPoint ||
-        widget.dropPoint != oldWidget.dropPoint) {
+        widget.dropPoint != oldWidget.dropPoint ||
+        (driverChanged && !widget.followDriver)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fitBounds();
+      });
+    }
+
+    if (driverChanged && widget.followDriver && widget.driverLocation != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _mapController.move(
+          LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude),
+          15.5,
+        );
       });
     }
   }
@@ -346,23 +365,27 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   }
 
   Widget _buildDriverMarker() {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF6366F1), width: 3),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: const Text(
-        '🚗',
-        style: TextStyle(fontSize: 20),
+    final heading = widget.driverHeading ?? 0;
+    return Transform.rotate(
+      angle: heading * (math.pi / 180),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFF6366F1), width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: const Text(
+          '🚗',
+          style: TextStyle(fontSize: 20),
+        ),
       ),
     );
   }

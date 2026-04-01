@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/rideshare_models.dart';
 import 'api_service.dart';
+import '../utils/network_error_handler.dart';
 
 class RideshareApiResult<T> {
   final bool success;
@@ -78,7 +79,7 @@ class RideshareService {
     } catch (e) {
       return RideshareApiResult<T>(
         success: false,
-        message: 'Failed to parse response: $e',
+        message: NetworkErrorHandler.getErrorMessage(e),
         errors: e.toString(),
       );
     }
@@ -283,6 +284,79 @@ class RideshareService {
       );
     } catch (e) {
       return RideshareApiResult<Ride>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<Ride>> requestEarlyCompletion(
+    String rideId, {
+    double? latitude,
+    double? longitude,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final body = <String, dynamic>{};
+      if (latitude != null) body['latitude'] = latitude;
+      if (longitude != null) body['longitude'] = longitude;
+      final response = await http.post(
+        Uri.parse('$_baseUrl/$rideId/early-complete/'),
+        headers: headers,
+        body: json.encode(body),
+      );
+      return _parseResponse<Ride>(
+        response,
+        (data) => Ride.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<Ride>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<Ride>> confirmEarlyCompletion(
+    String rideId, {
+    bool confirm = true,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$_baseUrl/$rideId/confirm-early-complete/'),
+        headers: headers,
+        body: json.encode({'confirm': confirm}),
+      );
+      return _parseResponse<Ride>(
+        response,
+        (data) => Ride.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<Ride>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<Map<String, dynamic>>> reportDriverCancellation(
+    String rideId, {
+    String details = '',
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$_baseUrl/$rideId/report-cancellation/'),
+        headers: headers,
+        body: json.encode({'details': details}),
+      );
+      return _parseResponse<Map<String, dynamic>>(
+        response,
+        (data) => data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      return RideshareApiResult<Map<String, dynamic>>(
         success: false,
         message: 'Network error: $e',
       );

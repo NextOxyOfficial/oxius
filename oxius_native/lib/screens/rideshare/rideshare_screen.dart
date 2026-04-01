@@ -21,9 +21,9 @@ class _RideshareScreenState extends State<RideshareScreen> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           _buildModeSwitch(),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Expanded(
             child: _mode == 'passenger'
                 ? const RidesharePassengerPanel()
@@ -152,7 +152,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
 
   Widget _buildModeSwitch() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F5F9),

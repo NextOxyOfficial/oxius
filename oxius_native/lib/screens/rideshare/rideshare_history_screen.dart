@@ -174,7 +174,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: _getStatusColor(ride.status).withOpacity(0.1),
+              color: _getStatusColor(ride.status).withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
             ),
             child: Row(

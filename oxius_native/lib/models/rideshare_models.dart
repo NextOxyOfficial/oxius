@@ -14,20 +14,22 @@ class RidePoint {
   factory RidePoint.fromJson(Map<String, dynamic> json) {
     return RidePoint(
       name: json['name'] ?? json['display_name'] ?? 'Selected location',
-      latitude: double.tryParse(json['latitude']?.toString() ?? '') ?? 
-                double.tryParse(json['lat']?.toString() ?? '') ?? 0.0,
-      longitude: double.tryParse(json['longitude']?.toString() ?? '') ?? 
-                 double.tryParse(json['lon']?.toString() ?? '') ?? 0.0,
+      latitude: double.tryParse(json['latitude']?.toString() ?? '') ??
+          double.tryParse(json['lat']?.toString() ?? '') ??
+          0.0,
+      longitude: double.tryParse(json['longitude']?.toString() ?? '') ??
+          double.tryParse(json['lon']?.toString() ?? '') ??
+          0.0,
       address: json['address'] as Map<String, dynamic>?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'name': name,
-    'latitude': latitude,
-    'longitude': longitude,
-    'address': address,
-  };
+        'name': name,
+        'latitude': latitude,
+        'longitude': longitude,
+        'address': address,
+      };
 }
 
 String _parseStringId(dynamic value) {
@@ -36,6 +38,24 @@ String _parseStringId(dynamic value) {
     return value['id']?.toString() ?? '';
   }
   return value.toString();
+}
+
+List<Vehicle> _parseVehicles(Map<String, dynamic> json) {
+  final parsedVehicles = (json['vehicles'] as List<dynamic>?)
+          ?.map((vehicle) => Vehicle.fromJson(vehicle as Map<String, dynamic>))
+          .toList() ??
+      <Vehicle>[];
+
+  final defaultVehicleJson = json['default_vehicle'];
+  if (defaultVehicleJson is Map<String, dynamic>) {
+    final defaultVehicle = Vehicle.fromJson(defaultVehicleJson);
+    final exists = parsedVehicles.any((vehicle) => vehicle.id == defaultVehicle.id);
+    if (!exists) {
+      parsedVehicles.insert(0, defaultVehicle);
+    }
+  }
+
+  return parsedVehicles;
 }
 
 class Vehicle {
@@ -82,15 +102,15 @@ class Vehicle {
   }
 
   Map<String, dynamic> toJson() => {
-    'vehicle_type': vehicleType,
-    'brand': brand,
-    'model_name': modelName,
-    'color': color,
-    'registration_number': registrationNumber,
-    'seat_capacity': seatCapacity,
-    'is_active': isActive,
-    'is_default': isDefault,
-  };
+        'vehicle_type': vehicleType,
+        'brand': brand,
+        'model_name': modelName,
+        'color': color,
+        'registration_number': registrationNumber,
+        'seat_capacity': seatCapacity,
+        'is_active': isActive,
+        'is_default': isDefault,
+      };
 
   String get displayName {
     if (brand.isNotEmpty && modelName.isNotEmpty) {
@@ -169,14 +189,12 @@ class DriverProfile {
       serviceRadiusKm: double.tryParse(json['service_radius_km']?.toString() ?? '') ?? 8.0,
       currentLatitude: double.tryParse(json['current_latitude']?.toString() ?? ''),
       currentLongitude: double.tryParse(json['current_longitude']?.toString() ?? ''),
-      lastLocationAt: json['last_location_at'] != null 
-          ? DateTime.tryParse(json['last_location_at']) 
+      lastLocationAt: json['last_location_at'] != null
+          ? DateTime.tryParse(json['last_location_at'])
           : null,
       totalTrips: json['total_trips'] ?? 0,
       totalEarnings: double.tryParse(json['total_earnings']?.toString() ?? '') ?? 0.0,
-      vehicles: (json['vehicles'] as List<dynamic>?)
-          ?.map((v) => Vehicle.fromJson(v as Map<String, dynamic>))
-          .toList() ?? [],
+      vehicles: _parseVehicles(json),
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
     );
@@ -188,10 +206,10 @@ class DriverProfile {
 
   Vehicle? get defaultVehicle {
     try {
-      return vehicles.firstWhere((v) => v.isDefault && v.isActive);
+      return vehicles.firstWhere((vehicle) => vehicle.isDefault && vehicle.isActive);
     } catch (_) {
       try {
-        return vehicles.firstWhere((v) => v.isActive);
+        return vehicles.firstWhere((vehicle) => vehicle.isActive);
       } catch (_) {
         return null;
       }
@@ -225,6 +243,38 @@ class RideStatusHistory {
   }
 }
 
+class RideDriverLocation {
+  final String id;
+  final double latitude;
+  final double longitude;
+  final double? heading;
+  final double? speedKph;
+  final double? accuracyMeters;
+  final DateTime recordedAt;
+
+  RideDriverLocation({
+    required this.id,
+    required this.latitude,
+    required this.longitude,
+    this.heading,
+    this.speedKph,
+    this.accuracyMeters,
+    required this.recordedAt,
+  });
+
+  factory RideDriverLocation.fromJson(Map<String, dynamic> json) {
+    return RideDriverLocation(
+      id: json['id']?.toString() ?? '',
+      latitude: double.tryParse(json['latitude']?.toString() ?? '') ?? 0.0,
+      longitude: double.tryParse(json['longitude']?.toString() ?? '') ?? 0.0,
+      heading: double.tryParse(json['heading']?.toString() ?? ''),
+      speedKph: double.tryParse(json['speed_kph']?.toString() ?? ''),
+      accuracyMeters: double.tryParse(json['accuracy_meters']?.toString() ?? ''),
+      recordedAt: DateTime.tryParse(json['recorded_at'] ?? '') ?? DateTime.now(),
+    );
+  }
+}
+
 class Ride {
   final String id;
   final String riderId;
@@ -232,8 +282,12 @@ class Ride {
   final String? riderPhone;
   final String? riderAvatar;
   final DriverProfile? assignedDriver;
+  final DriverProfile? targetedDriver;
   final Vehicle? vehicle;
   final String requestedVehicleType;
+  final DateTime? targetedAt;
+  final int dispatchAttempt;
+  final DateTime? searchExpiresAt;
   final double pickupLatitude;
   final double pickupLongitude;
   final double dropLatitude;
@@ -245,14 +299,25 @@ class Ride {
   final Map<String, dynamic>? routeGeometry;
   final double fareEstimate;
   final double? finalFare;
+  final double platformFeePercent;
+  final double platformFeeAmount;
+  final double driverPayoutAmount;
   final String status;
   final String paymentStatus;
   final String? cancellationReason;
+  final DateTime? earlyCompletionRequestedAt;
+  final double? earlyCompletionDistanceKm;
+  final int earlyCompletionDurationSeconds;
+  final double? earlyCompletionFare;
   final DateTime requestedAt;
   final DateTime? acceptedAt;
   final DateTime? startedAt;
   final DateTime? completedAt;
   final DateTime? cancelledAt;
+  final RideDriverLocation? latestDriverLocation;
+  final bool passengerCanCancel;
+  final bool driverCanCancel;
+  final bool canReportDriver;
   final List<RideStatusHistory> statusHistory;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -264,8 +329,12 @@ class Ride {
     this.riderPhone,
     this.riderAvatar,
     this.assignedDriver,
+    this.targetedDriver,
     this.vehicle,
     required this.requestedVehicleType,
+    this.targetedAt,
+    required this.dispatchAttempt,
+    this.searchExpiresAt,
     required this.pickupLatitude,
     required this.pickupLongitude,
     required this.dropLatitude,
@@ -277,14 +346,25 @@ class Ride {
     this.routeGeometry,
     required this.fareEstimate,
     this.finalFare,
+    required this.platformFeePercent,
+    required this.platformFeeAmount,
+    required this.driverPayoutAmount,
     required this.status,
     required this.paymentStatus,
     this.cancellationReason,
+    this.earlyCompletionRequestedAt,
+    this.earlyCompletionDistanceKm,
+    required this.earlyCompletionDurationSeconds,
+    this.earlyCompletionFare,
     required this.requestedAt,
     this.acceptedAt,
     this.startedAt,
     this.completedAt,
     this.cancelledAt,
+    this.latestDriverLocation,
+    required this.passengerCanCancel,
+    required this.driverCanCancel,
+    required this.canReportDriver,
     required this.statusHistory,
     required this.createdAt,
     required this.updatedAt,
@@ -298,13 +378,19 @@ class Ride {
       riderName: rider['name'] ?? rider['username'] ?? '',
       riderPhone: rider['phone'],
       riderAvatar: rider['avatar'] ?? rider['image'],
-      assignedDriver: json['assigned_driver'] != null 
+      assignedDriver: json['assigned_driver'] != null
           ? DriverProfile.fromJson(json['assigned_driver'] as Map<String, dynamic>)
           : null,
-      vehicle: json['vehicle'] != null 
+      targetedDriver: json['targeted_driver'] != null
+          ? DriverProfile.fromJson(json['targeted_driver'] as Map<String, dynamic>)
+          : null,
+      vehicle: json['vehicle'] != null
           ? Vehicle.fromJson(json['vehicle'] as Map<String, dynamic>)
           : null,
       requestedVehicleType: json['requested_vehicle_type'] ?? 'bike',
+      targetedAt: json['targeted_at'] != null ? DateTime.tryParse(json['targeted_at']) : null,
+      dispatchAttempt: json['dispatch_attempt'] ?? 0,
+      searchExpiresAt: json['search_expires_at'] != null ? DateTime.tryParse(json['search_expires_at']) : null,
       pickupLatitude: double.tryParse(json['pickup_latitude']?.toString() ?? '') ?? 0.0,
       pickupLongitude: double.tryParse(json['pickup_longitude']?.toString() ?? '') ?? 0.0,
       dropLatitude: double.tryParse(json['drop_latitude']?.toString() ?? '') ?? 0.0,
@@ -316,34 +402,52 @@ class Ride {
       routeGeometry: json['route_geometry'] as Map<String, dynamic>?,
       fareEstimate: double.tryParse(json['fare_estimate']?.toString() ?? '') ?? 0.0,
       finalFare: double.tryParse(json['final_fare']?.toString() ?? ''),
+      platformFeePercent: double.tryParse(json['platform_fee_percent']?.toString() ?? '') ?? 0.0,
+      platformFeeAmount: double.tryParse(json['platform_fee_amount']?.toString() ?? '') ?? 0.0,
+      driverPayoutAmount: double.tryParse(json['driver_payout_amount']?.toString() ?? '') ?? 0.0,
       status: json['status'] ?? 'requested',
       paymentStatus: json['payment_status'] ?? 'pending',
       cancellationReason: json['cancellation_reason'],
+      earlyCompletionRequestedAt: json['early_completion_requested_at'] != null
+          ? DateTime.tryParse(json['early_completion_requested_at'])
+          : null,
+      earlyCompletionDistanceKm: double.tryParse(json['early_completion_distance_km']?.toString() ?? ''),
+      earlyCompletionDurationSeconds: json['early_completion_duration_seconds'] ?? 0,
+      earlyCompletionFare: double.tryParse(json['early_completion_fare']?.toString() ?? ''),
       requestedAt: DateTime.tryParse(json['requested_at'] ?? '') ?? DateTime.now(),
       acceptedAt: json['accepted_at'] != null ? DateTime.tryParse(json['accepted_at']) : null,
       startedAt: json['started_at'] != null ? DateTime.tryParse(json['started_at']) : null,
       completedAt: json['completed_at'] != null ? DateTime.tryParse(json['completed_at']) : null,
       cancelledAt: json['cancelled_at'] != null ? DateTime.tryParse(json['cancelled_at']) : null,
+      latestDriverLocation: json['latest_driver_location'] != null
+          ? RideDriverLocation.fromJson(json['latest_driver_location'] as Map<String, dynamic>)
+          : null,
+      passengerCanCancel: json['passenger_can_cancel'] ?? false,
+      driverCanCancel: json['driver_can_cancel'] ?? false,
+      canReportDriver: json['can_report_driver'] ?? false,
       statusHistory: (json['status_history'] as List<dynamic>?)
-          ?.map((h) => RideStatusHistory.fromJson(h as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((history) => RideStatusHistory.fromJson(history as Map<String, dynamic>))
+              .toList() ??
+          [],
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
     );
   }
 
-  bool get isActive => [
-    'requested',
-    'searching_driver',
-    'accepted',
-    'driver_arriving',
-    'in_progress',
-  ].contains(status);
+  bool get isActive => const [
+        'requested',
+        'searching_driver',
+        'accepted',
+        'driver_arriving',
+        'in_progress',
+        'awaiting_passenger_confirmation',
+      ].contains(status);
 
   bool get isSearching => status == 'searching_driver';
   bool get isAccepted => status == 'accepted';
   bool get isDriverArriving => status == 'driver_arriving';
   bool get isInProgress => status == 'in_progress';
+  bool get isAwaitingPassengerConfirmation => status == 'awaiting_passenger_confirmation';
   bool get isCompleted => status == 'completed';
   bool get isCancelled => status == 'cancelled';
 
@@ -359,6 +463,8 @@ class Ride {
         return 'Driver Arriving';
       case 'in_progress':
         return 'In Progress';
+      case 'awaiting_passenger_confirmation':
+        return 'Awaiting Confirmation';
       case 'completed':
         return 'Completed';
       case 'cancelled':
@@ -392,16 +498,104 @@ class Ride {
   }
 
   RidePoint get pickupPoint => RidePoint(
-    name: pickupAddress,
-    latitude: pickupLatitude,
-    longitude: pickupLongitude,
-  );
+        name: pickupAddress,
+        latitude: pickupLatitude,
+        longitude: pickupLongitude,
+      );
 
   RidePoint get dropPoint => RidePoint(
-    name: dropAddress,
-    latitude: dropLatitude,
-    longitude: dropLongitude,
-  );
+        name: dropAddress,
+        latitude: dropLatitude,
+        longitude: dropLongitude,
+      );
+
+  double get payableFare => finalFare ?? earlyCompletionFare ?? fareEstimate;
+
+  int targetedCountdownSeconds({int timeoutSeconds = 60, DateTime? now}) {
+    if (targetedAt == null) return timeoutSeconds;
+    final currentTime = now ?? DateTime.now();
+    final elapsed = currentTime.difference(targetedAt!).inSeconds;
+    final remaining = timeoutSeconds - elapsed;
+    return remaining > 0 ? remaining : 0;
+  }
+
+  Ride copyWith({
+    DriverProfile? assignedDriver,
+    DriverProfile? targetedDriver,
+    Vehicle? vehicle,
+    String? status,
+    String? paymentStatus,
+    String? cancellationReason,
+    double? finalFare,
+    double? platformFeePercent,
+    double? platformFeeAmount,
+    double? driverPayoutAmount,
+    DateTime? targetedAt,
+    int? dispatchAttempt,
+    DateTime? searchExpiresAt,
+    DateTime? acceptedAt,
+    DateTime? startedAt,
+    DateTime? completedAt,
+    DateTime? cancelledAt,
+    RideDriverLocation? latestDriverLocation,
+    DateTime? earlyCompletionRequestedAt,
+    double? earlyCompletionDistanceKm,
+    int? earlyCompletionDurationSeconds,
+    double? earlyCompletionFare,
+    bool? passengerCanCancel,
+    bool? driverCanCancel,
+    bool? canReportDriver,
+    List<RideStatusHistory>? statusHistory,
+  }) {
+    return Ride(
+      id: id,
+      riderId: riderId,
+      riderName: riderName,
+      riderPhone: riderPhone,
+      riderAvatar: riderAvatar,
+      assignedDriver: assignedDriver ?? this.assignedDriver,
+      targetedDriver: targetedDriver ?? this.targetedDriver,
+      vehicle: vehicle ?? this.vehicle,
+      requestedVehicleType: requestedVehicleType,
+      targetedAt: targetedAt ?? this.targetedAt,
+      dispatchAttempt: dispatchAttempt ?? this.dispatchAttempt,
+      searchExpiresAt: searchExpiresAt ?? this.searchExpiresAt,
+      pickupLatitude: pickupLatitude,
+      pickupLongitude: pickupLongitude,
+      dropLatitude: dropLatitude,
+      dropLongitude: dropLongitude,
+      pickupAddress: pickupAddress,
+      dropAddress: dropAddress,
+      distanceKm: distanceKm,
+      durationSeconds: durationSeconds,
+      routeGeometry: routeGeometry,
+      fareEstimate: fareEstimate,
+      finalFare: finalFare ?? this.finalFare,
+      platformFeePercent: platformFeePercent ?? this.platformFeePercent,
+      platformFeeAmount: platformFeeAmount ?? this.platformFeeAmount,
+      driverPayoutAmount: driverPayoutAmount ?? this.driverPayoutAmount,
+      status: status ?? this.status,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      cancellationReason: cancellationReason ?? this.cancellationReason,
+      earlyCompletionRequestedAt: earlyCompletionRequestedAt ?? this.earlyCompletionRequestedAt,
+      earlyCompletionDistanceKm: earlyCompletionDistanceKm ?? this.earlyCompletionDistanceKm,
+      earlyCompletionDurationSeconds:
+          earlyCompletionDurationSeconds ?? this.earlyCompletionDurationSeconds,
+      earlyCompletionFare: earlyCompletionFare ?? this.earlyCompletionFare,
+      requestedAt: requestedAt,
+      acceptedAt: acceptedAt ?? this.acceptedAt,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      cancelledAt: cancelledAt ?? this.cancelledAt,
+      latestDriverLocation: latestDriverLocation ?? this.latestDriverLocation,
+      passengerCanCancel: passengerCanCancel ?? this.passengerCanCancel,
+      driverCanCancel: driverCanCancel ?? this.driverCanCancel,
+      canReportDriver: canReportDriver ?? this.canReportDriver,
+      statusHistory: statusHistory ?? this.statusHistory,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
 }
 
 class RideEstimate {

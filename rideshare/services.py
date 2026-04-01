@@ -7,17 +7,26 @@ import httpx
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import timezone
 from channels.layers import get_channel_layer
 
 from base.models import Balance, FCMToken
 from base.fcm_service import send_fcm_notification
 
-from .models import DriverLocation, DriverProfile, FareConfig, Ride, Vehicle
+from .models import DriverLocation, DriverProfile, FareConfig, Ride, RideshareSettings, RideStatusHistory, Vehicle
 
 
 logger = logging.getLogger(__name__)
+
+BANGLADESH_BOUNDS = {
+    "min_lat": 20.50,
+    "max_lat": 26.80,
+    "min_lng": 88.00,
+    "max_lng": 92.80,
+}
+
+BANGLADESH_COUNTRY_NAMES = {"bangladesh", "bd", "বাংলাদেশ"}
 
 
 DEFAULT_FARES = {
@@ -50,6 +59,27 @@ DEFAULT_FARES = {
 
 def decimal_money(value):
     return Decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+def get_rideshare_settings():
+    settings_obj = RideshareSettings.objects.order_by("-updated_at").first()
+    return settings_obj or RideshareSettings()
+
+
+def get_driver_display_name(driver_profile):
+    if not driver_profile or not getattr(driver_profile, "user", None):
+        return "nearby driver"
+    return driver_profile.user.name or driver_profile.user.username or "nearby driver"
+
+
+def get_driver_response_timeout_seconds():
+    settings_obj = get_rideshare_settings()
+    return max(30, min(int(settings_obj.driver_response_timeout_seconds or 60), 300))
+
+
+def get_max_search_window_minutes():
+    settings_obj = get_rideshare_settings()
+    return max(1, min(int(settings_obj.max_search_window_minutes or 15), 60))
 
 
 class RoutingService:
@@ -209,6 +239,38 @@ class RoutingService:
 
 
 class LocationService:
+    @staticmethod
+    def _is_within_bangladesh(latitude, longitude):
+        try:
+            latitude = float(latitude)
+            longitude = float(longitude)
+        except (TypeError, ValueError):
+            return False
+
+        return (
+            BANGLADESH_BOUNDS["min_lat"] <= latitude <= BANGLADESH_BOUNDS["max_lat"]
+            and BANGLADESH_BOUNDS["min_lng"] <= longitude <= BANGLADESH_BOUNDS["max_lng"]
+        )
+
+    @classmethod
+    def _is_bangladesh_result(cls, item):
+        if not item:
+            return False
+
+        latitude = item.get("latitude")
+        longitude = item.get("longitude")
+        if not cls._is_within_bangladesh(latitude, longitude):
+            return False
+
+        country = ((item.get("address") or {}).get("country") or "").strip().lower()
+        if not country:
+            return True
+        return country in BANGLADESH_COUNTRY_NAMES or "bangladesh" in country
+
+    @classmethod
+    def _filter_bangladesh_results(cls, results):
+        return [item for item in results if cls._is_bangladesh_result(item)]
+
     @staticmethod
     def _google_components_to_address(components):
         address = {}
@@ -397,6 +459,7 @@ class LocationService:
                 results = cls._search_places_nominatim(query, limit=limit)
             else:
                 results = []
+            results = cls._filter_bangladesh_results(results)
             if results:
                 return results
         return []
@@ -480,7 +543,7 @@ class LocationService:
                 result = cls._reverse_geocode_nominatim(lat, lng)
             else:
                 result = None
-            if result:
+            if result and cls._is_bangladesh_result(result):
                 return result
         return None
 
@@ -517,32 +580,56 @@ class FareService:
 class WalletService:
     @staticmethod
     @transaction.atomic
-    def complete_ride_payment(ride):
+    def complete_ride_payment(ride, amount=None):
         if ride.payment_transaction_id:
             return ride.payment_transaction
 
-        amount = ride.final_fare or ride.fare_estimate
+        amount = decimal_money(amount or ride.final_fare or ride.fare_estimate)
         if ride.rider.balance < amount:
             raise ValidationError("Insufficient wallet balance to complete this ride.")
         if not ride.assigned_driver:
             raise ValidationError("Ride has no assigned driver.")
 
+        settings_obj = get_rideshare_settings()
+        platform_fee_percent = decimal_money(ride.platform_fee_percent or settings_obj.platform_fee_percent or Decimal("0.00"))
+        platform_fee_amount = decimal_money((amount * platform_fee_percent) / Decimal("100"))
+        driver_payout_amount = decimal_money(max(amount - platform_fee_amount, Decimal("0.00")))
+
+        rider = ride.rider
+        driver = ride.assigned_driver
+        driver_user = driver.user
+
+        rider.balance -= amount
+        driver_user.balance += driver_payout_amount
+        rider.save(update_fields=["balance"])
+        driver_user.save(update_fields=["balance"])
+
         transaction_record = Balance.objects.create(
-            user=ride.rider,
-            to_user=ride.assigned_driver.user,
-            transaction_type="transfer",
+            user=rider,
+            to_user=driver_user,
+            transaction_type="ride_payment",
             payable_amount=amount,
             amount=amount,
-            received_amount=amount,
+            received_amount=driver_payout_amount,
             description=f"Ride payment for trip {ride.id}",
         )
         ride.payment_transaction = transaction_record
         ride.payment_status = "completed"
         ride.final_fare = amount
-        ride.save(update_fields=["payment_transaction", "payment_status", "final_fare", "updated_at"])
+        ride.platform_fee_percent = platform_fee_percent
+        ride.platform_fee_amount = platform_fee_amount
+        ride.driver_payout_amount = driver_payout_amount
+        ride.save(update_fields=[
+            "payment_transaction",
+            "payment_status",
+            "final_fare",
+            "platform_fee_percent",
+            "platform_fee_amount",
+            "driver_payout_amount",
+            "updated_at",
+        ])
 
-        driver = ride.assigned_driver
-        driver.total_earnings += amount
+        driver.total_earnings += driver_payout_amount
         driver.total_trips += 1
         driver.is_available = True
         driver.save(update_fields=["total_earnings", "total_trips", "is_available", "updated_at"])
@@ -683,6 +770,12 @@ def assign_driver_to_ride(ride, driver_profile, actor=None, assignment_source="m
         raise ValidationError("Driver is offline.")
     if not driver_profile.is_available:
         raise ValidationError("Driver is currently unavailable for new rides.")
+    if ride.targeted_driver_id and ride.targeted_driver_id != driver_profile.id:
+        raise ValidationError("This ride is currently assigned to another driver.")
+    if ride.targeted_driver_id == driver_profile.id and ride.targeted_at:
+        timeout_seconds = get_driver_response_timeout_seconds()
+        if ride.targeted_at < timezone.now() - timedelta(seconds=timeout_seconds):
+            raise ValidationError("This ride request has expired. Wait for the next request.")
 
     vehicle = get_driver_default_vehicle(driver_profile)
     if not vehicle:
@@ -692,7 +785,9 @@ def assign_driver_to_ride(ride, driver_profile, actor=None, assignment_source="m
 
     ride.assigned_driver = driver_profile
     ride.vehicle = vehicle
-    ride.save(update_fields=["assigned_driver", "vehicle", "updated_at"])
+    ride.targeted_driver = None
+    ride.targeted_at = None
+    ride.save(update_fields=["assigned_driver", "vehicle", "targeted_driver", "targeted_at", "updated_at"])
 
     driver_profile.is_available = False
     driver_profile.save(update_fields=["is_available", "updated_at"])
@@ -775,6 +870,7 @@ class RideNotificationService:
         "accepted": ("✅ Driver Assigned", "A driver has accepted your ride and is on the way!"),
         "driver_arriving": ("🚙 Driver Arriving", "Your driver is arriving at the pickup location."),
         "in_progress": ("🛣️ Trip Started", "Your trip has started. Enjoy your ride!"),
+        "awaiting_passenger_confirmation": ("🧾 Confirm Early Completion", "Please review the partial fare and confirm ride completion."),
         "completed": ("🎉 Trip Completed", "Your trip has been completed. Thank you for riding with us!"),
         "cancelled": ("❌ Ride Cancelled", "Your ride has been cancelled."),
         "no_driver_available": ("😔 No Driver Available", "Sorry, no drivers are available near you right now. Please try again later."),
@@ -894,17 +990,20 @@ class RideAutoCancel:
     """Service to handle automatic ride cancellation after timeout"""
     
     TIMEOUT_MINUTES = 15
+
+    @classmethod
+    def _timeout_minutes(cls):
+        return get_max_search_window_minutes()
     
     @classmethod
     def check_and_cancel_expired_rides(cls):
         """Check for rides that have been searching for too long and cancel them"""
-        timeout_threshold = timezone.now() - timedelta(minutes=cls.TIMEOUT_MINUTES)
+        timeout_threshold = timezone.now() - timedelta(minutes=cls._timeout_minutes())
         
         expired_rides = Ride.objects.filter(
             status=Ride.STATUS_SEARCHING,
-            requested_at__lt=timeout_threshold,
             assigned_driver__isnull=True,
-        )
+        ).filter(models.Q(search_expires_at__lt=timezone.now()) | models.Q(requested_at__lt=timeout_threshold))
         
         cancelled_count = 0
         for ride in expired_rides:
@@ -922,11 +1021,20 @@ class RideAutoCancel:
         """Cancel a single expired ride and notify the passenger"""
         if ride.status != Ride.STATUS_SEARCHING:
             return False
+
+        ride.cancellation_reason = "No drivers available, please try again"
+        ride.targeted_driver = None
+        ride.targeted_at = None
+        ride.save(update_fields=["cancellation_reason", "targeted_driver", "targeted_at", "updated_at"])
         
         ride.transition_to(
             Ride.STATUS_CANCELLED,
             actor=None,
-            metadata={"cancellation_reason": "auto_cancelled_no_driver", "timeout_minutes": cls.TIMEOUT_MINUTES},
+            metadata={
+                "cancellation_reason": "auto_cancelled_no_driver",
+                "timeout_minutes": cls._timeout_minutes(),
+                "cancelled_by": "system",
+            },
         )
         
         # Send push notification to passenger
@@ -934,16 +1042,20 @@ class RideAutoCancel:
             ride.rider,
             "auto_cancelled",
             ride,
-            {"cancellation_reason": "no_driver_available", "timeout_minutes": str(cls.TIMEOUT_MINUTES)}
+            {
+                "cancellation_reason": "no_driver_available",
+                "timeout_minutes": str(cls._timeout_minutes()),
+            }
         )
         
         # Also send websocket event
         DispatchService.send_ride_event(ride, "ride_auto_cancelled", {
             "reason": "no_driver_available",
-            "timeout_minutes": cls.TIMEOUT_MINUTES,
+            "timeout_minutes": cls._timeout_minutes(),
+            "message": "No drivers available, please try again",
         })
         
-        logger.info(f"Auto-cancelled ride {ride.id} after {cls.TIMEOUT_MINUTES} minutes with no driver")
+        logger.info(f"Auto-cancelled ride {ride.id} after {cls._timeout_minutes()} minutes with no driver")
         return True
     
     @classmethod
@@ -954,10 +1066,13 @@ class RideAutoCancel:
         if ride.assigned_driver_id:
             return False
 
-        if ride.dispatch_attempt >= NearestDriverDispatch.MAX_DRIVER_ATTEMPTS:
+        if ride.dispatch_attempt >= NearestDriverDispatch.max_driver_attempts():
             return True
-        
-        timeout_threshold = timezone.now() - timedelta(minutes=cls.TIMEOUT_MINUTES)
+
+        if ride.search_expires_at:
+            return timezone.now() >= ride.search_expires_at
+
+        timeout_threshold = timezone.now() - timedelta(minutes=cls._timeout_minutes())
         return ride.requested_at < timeout_threshold
 
 
@@ -966,6 +1081,29 @@ class NearestDriverDispatch:
     
     DRIVER_TIMEOUT_SECONDS = 60  # 1 minute per driver
     MAX_DRIVER_ATTEMPTS = 15
+
+    @classmethod
+    def driver_timeout_seconds(cls):
+        return get_driver_response_timeout_seconds()
+
+    @classmethod
+    def max_driver_attempts(cls):
+        return min(cls.MAX_DRIVER_ATTEMPTS, get_max_search_window_minutes())
+
+    @classmethod
+    def _notify_passenger_search_status(cls, ride, message, extra=None):
+        payload = {
+            "message": message,
+            "dispatch_attempt": ride.dispatch_attempt,
+            "targeted_driver_id": str(ride.targeted_driver_id) if ride.targeted_driver_id else None,
+            "targeted_driver_name": get_driver_display_name(ride.targeted_driver) if ride.targeted_driver_id else None,
+            "targeted_at": ride.targeted_at.isoformat() if ride.targeted_at else None,
+            "driver_response_timeout_seconds": cls.driver_timeout_seconds(),
+            "search_expires_at": ride.search_expires_at.isoformat() if ride.search_expires_at else None,
+        }
+        if extra:
+            payload.update(extra)
+        DispatchService.send_ride_event(ride, "search_status_updated", payload)
     
     @classmethod
     def get_sorted_drivers_for_ride(cls, ride, exclude_drivers=None):
@@ -980,6 +1118,7 @@ class NearestDriverDispatch:
                 vehicles__is_active=True,
                 vehicles__vehicle_type=ride.requested_vehicle_type,
             )
+            .exclude(user=ride.rider)
             .exclude(id__in=exclude_ids)
             .select_related("user")
             .distinct()
@@ -1016,39 +1155,66 @@ class NearestDriverDispatch:
         """Dispatch ride to the nearest available driver"""
         if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
             return None
-        if ride.dispatch_attempt >= cls.MAX_DRIVER_ATTEMPTS:
+        if ride.dispatch_attempt >= cls.max_driver_attempts():
             logger.info(
-                f"Ride {ride.id} reached max dispatch attempts ({cls.MAX_DRIVER_ATTEMPTS})"
+                f"Ride {ride.id} reached max dispatch attempts ({cls.max_driver_attempts()})"
             )
+            return None
+        if ride.search_expires_at and timezone.now() >= ride.search_expires_at:
             return None
         
         # Get list of already tried drivers from status history
         tried_drivers = set(
-            Ride.objects.filter(id=ride.id)
-            .values_list("status_history__metadata__targeted_driver_id", flat=True)
+            ride.status_history.filter(metadata__targeted_driver_id__isnull=False)
+            .values_list("metadata__targeted_driver_id", flat=True)
         )
         tried_drivers.discard(None)
         
         drivers = cls.get_sorted_drivers_for_ride(ride, exclude_drivers=tried_drivers)
         
         if not drivers:
+            cls._notify_passenger_search_status(ride, "Searching for nearby drivers...")
             return None
         
         # Target the nearest driver
         nearest_driver = drivers[0]
+        expires_at = timezone.now() + timedelta(seconds=cls.driver_timeout_seconds())
+        driver_name = get_driver_display_name(nearest_driver)
         ride.targeted_driver = nearest_driver
         ride.targeted_at = timezone.now()
         ride.dispatch_attempt += 1
         ride.save(update_fields=["targeted_driver", "targeted_at", "dispatch_attempt", "updated_at"])
+
+        RideStatusHistory.objects.create(
+            ride=ride,
+            status=ride.status,
+            metadata={
+                "event": "driver_targeted",
+                "targeted_driver_id": str(nearest_driver.id),
+                "targeted_driver_user_id": str(nearest_driver.user_id),
+                "targeted_driver_name": driver_name,
+                "attempt": ride.dispatch_attempt,
+                "expires_at": expires_at.isoformat(),
+                "status_text": f"Request sent to {driver_name}",
+            },
+        )
         
         # Send targeted notification to this driver
-        cls._notify_targeted_driver(ride, nearest_driver)
+        cls._notify_targeted_driver(ride, nearest_driver, expires_at)
+        cls._notify_passenger_search_status(
+            ride,
+            f"Request sent to {driver_name}",
+            {
+                "targeted_driver_user_id": str(nearest_driver.user_id),
+                "expires_at": expires_at.isoformat(),
+            },
+        )
         
         logger.info(f"Dispatched ride {ride.id} to driver {nearest_driver.id} (attempt {ride.dispatch_attempt})")
         return nearest_driver
     
     @classmethod
-    def _notify_targeted_driver(cls, ride, driver):
+    def _notify_targeted_driver(cls, ride, driver, expires_at):
         """Send notification to targeted driver"""
         title = "🚗 New Ride Request For You!"
         body = f"{ride.pickup_address[:40]}... → {ride.drop_address[:40]}... | ৳{ride.fare_estimate}"
@@ -1060,7 +1226,9 @@ class NearestDriverDispatch:
             "drop_address": ride.drop_address,
             "fare_estimate": str(ride.fare_estimate),
             "vehicle_type": ride.requested_vehicle_type,
-            "timeout_seconds": str(cls.DRIVER_TIMEOUT_SECONDS),
+            "timeout_seconds": str(cls.driver_timeout_seconds()),
+            "targeted_at": ride.targeted_at.isoformat() if ride.targeted_at else None,
+            "expires_at": expires_at.isoformat(),
         }
         
         tokens = RideNotificationService._get_user_fcm_tokens(driver.user)
@@ -1072,44 +1240,68 @@ class NearestDriverDispatch:
             "type": "ride.targeted",
             "ride_id": str(ride.id),
             "status": ride.status,
+            "rider_id": str(ride.rider_id),
+            "rider_name": ride.rider.name or ride.rider.username or "Passenger",
             "pickup_address": ride.pickup_address,
             "drop_address": ride.drop_address,
             "distance_km": str(ride.distance_km),
             "fare_estimate": str(ride.fare_estimate),
             "requested_vehicle_type": ride.requested_vehicle_type,
-            "timeout_seconds": cls.DRIVER_TIMEOUT_SECONDS,
+            "timeout_seconds": cls.driver_timeout_seconds(),
+            "targeted_at": ride.targeted_at.isoformat() if ride.targeted_at else None,
+            "expires_at": expires_at.isoformat(),
+            "search_expires_at": ride.search_expires_at.isoformat() if ride.search_expires_at else None,
         })
     
     @classmethod
     def check_and_cascade_expired_targets(cls):
         """Check for rides where targeted driver didn't respond and cascade to next"""
-        timeout_threshold = timezone.now() - timedelta(seconds=cls.DRIVER_TIMEOUT_SECONDS)
+        timeout_threshold = timezone.now() - timedelta(seconds=cls.driver_timeout_seconds())
         
-        expired_targets = Ride.objects.filter(
+        expired_ids = list(Ride.objects.filter(
             status=Ride.STATUS_SEARCHING,
             assigned_driver__isnull=True,
             targeted_driver__isnull=False,
             targeted_at__lt=timeout_threshold,
-        )
+        ).values_list("id", flat=True))
         
         cascaded_count = 0
-        for ride in expired_targets:
+        for ride_id in expired_ids:
             try:
-                # Clear current target and try next driver
-                old_target_id = ride.targeted_driver_id
-                ride.targeted_driver = None
-                ride.targeted_at = None
-                ride.save(update_fields=["targeted_driver", "targeted_at", "updated_at"])
-                
-                # Record the timeout in history
-                RideStatusHistory.objects.create(
-                    ride=ride,
-                    status=ride.status,
-                    metadata={"event": "driver_timeout", "targeted_driver_id": str(old_target_id)},
-                )
-                
-                # Try next driver
-                next_driver = cls.dispatch_to_nearest_driver(ride)
+                with transaction.atomic():
+                    ride = Ride.objects.select_for_update().select_related("targeted_driver__user", "rider").get(id=ride_id)
+                    if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id or not ride.targeted_driver_id:
+                        continue
+                    if not ride.targeted_at or ride.targeted_at >= timeout_threshold:
+                        continue
+
+                    old_target = ride.targeted_driver
+                    old_target_id = ride.targeted_driver_id
+                    old_target_name = get_driver_display_name(old_target)
+                    ride.targeted_driver = None
+                    ride.targeted_at = None
+                    ride.save(update_fields=["targeted_driver", "targeted_at", "updated_at"])
+
+                    RideStatusHistory.objects.create(
+                        ride=ride,
+                        status=ride.status,
+                        metadata={
+                            "event": "driver_timeout",
+                            "targeted_driver_id": str(old_target_id),
+                            "targeted_driver_name": old_target_name,
+                            "status_text": "Driver did not respond, trying another...",
+                        },
+                    )
+                    cls._notify_passenger_search_status(
+                        ride,
+                        "Driver did not respond, trying another...",
+                        {
+                            "timed_out_driver_id": str(old_target_id),
+                            "timed_out_driver_name": old_target_name,
+                        },
+                    )
+
+                    next_driver = cls.dispatch_to_nearest_driver(ride)
                 if next_driver:
                     cascaded_count += 1
                 else:
@@ -1124,6 +1316,114 @@ class NearestDriverDispatch:
         return cascaded_count
 
 
+class EarlyCompletionService:
+    @classmethod
+    def _resolve_completion_point(cls, ride, latitude=None, longitude=None):
+        if latitude is not None and longitude is not None:
+            return Decimal(str(latitude)), Decimal(str(longitude))
+
+        latest_location = ride.driver_locations.order_by("-recorded_at").first()
+        if latest_location:
+            return latest_location.latitude, latest_location.longitude
+
+        if ride.assigned_driver and ride.assigned_driver.current_latitude is not None and ride.assigned_driver.current_longitude is not None:
+            return ride.assigned_driver.current_latitude, ride.assigned_driver.current_longitude
+
+        raise ValidationError("Live driver location is required for early completion.")
+
+    @classmethod
+    @transaction.atomic
+    def request(cls, ride, driver_profile, latitude=None, longitude=None):
+        if ride.status != Ride.STATUS_IN_PROGRESS:
+            raise ValidationError("Early completion is only available after the ride starts.")
+        if ride.assigned_driver_id != driver_profile.id:
+            raise ValidationError("Only the assigned driver can request early completion.")
+
+        completion_latitude, completion_longitude = cls._resolve_completion_point(ride, latitude, longitude)
+        route = RoutingService.get_route(
+            ride.pickup_latitude,
+            ride.pickup_longitude,
+            completion_latitude,
+            completion_longitude,
+        )
+
+        traveled_distance = min(Decimal(str(route["distance_km"])), Decimal(str(ride.distance_km)))
+        if ride.started_at:
+            elapsed_seconds = max(int((timezone.now() - ride.started_at).total_seconds()), 60)
+        else:
+            elapsed_seconds = max(int(route["duration_seconds"] or 0), 60)
+        if ride.duration_seconds:
+            elapsed_seconds = min(elapsed_seconds, int(ride.duration_seconds))
+
+        early_fare = FareService.estimate(ride.requested_vehicle_type, traveled_distance, elapsed_seconds)
+        ride.final_fare = early_fare
+        ride.early_completion_requested_at = timezone.now()
+        ride.early_completion_distance_km = traveled_distance
+        ride.early_completion_duration_seconds = elapsed_seconds
+        ride.early_completion_fare = early_fare
+        ride.save(update_fields=[
+            "final_fare",
+            "early_completion_requested_at",
+            "early_completion_distance_km",
+            "early_completion_duration_seconds",
+            "early_completion_fare",
+            "updated_at",
+        ])
+        ride.transition_to(
+            Ride.STATUS_AWAITING_CONFIRMATION,
+            actor=driver_profile.user,
+            metadata={
+                "event": "early_completion_requested",
+                "distance_km": str(traveled_distance),
+                "duration_seconds": elapsed_seconds,
+                "fare": str(early_fare),
+            },
+        )
+        DispatchService.send_ride_event(ride, "early_completion_requested", {
+            "distance_km": str(traveled_distance),
+            "duration_seconds": elapsed_seconds,
+            "fare": str(early_fare),
+            "message": "Driver requested an early trip completion.",
+        })
+        RideNotificationService.notify_ride_status_change(ride)
+        return ride
+
+    @classmethod
+    @transaction.atomic
+    def confirm(cls, ride, actor, confirm=True):
+        if ride.status != Ride.STATUS_AWAITING_CONFIRMATION:
+            raise ValidationError("This ride is not waiting for early completion confirmation.")
+
+        if not confirm:
+            ride.transition_to(
+                Ride.STATUS_IN_PROGRESS,
+                actor=actor,
+                metadata={"event": "early_completion_rejected"},
+            )
+            DispatchService.send_ride_event(ride, "early_completion_rejected", {
+                "message": "Passenger asked to continue the ride.",
+            })
+            return ride
+
+        payable_amount = ride.early_completion_fare or ride.final_fare or ride.fare_estimate
+        WalletService.complete_ride_payment(ride, amount=payable_amount)
+        ride.transition_to(
+            Ride.STATUS_COMPLETED,
+            actor=actor,
+            metadata={
+                "event": "early_completion_confirmed",
+                "fare": str(payable_amount),
+            },
+        )
+        DispatchService.send_ride_event(ride, "ride_completed", {
+            "fare": str(payable_amount),
+            "platform_fee_amount": str(ride.platform_fee_amount),
+            "driver_payout_amount": str(ride.driver_payout_amount),
+        })
+        RideNotificationService.notify_ride_status_change(ride)
+        return ride
+
+
 def check_user_has_active_ride(user):
     """Check if user (as passenger) has an active ride"""
     return Ride.objects.filter(
@@ -1134,6 +1434,7 @@ def check_user_has_active_ride(user):
             Ride.STATUS_ACCEPTED,
             Ride.STATUS_DRIVER_ARRIVING,
             Ride.STATUS_IN_PROGRESS,
+            Ride.STATUS_AWAITING_CONFIRMATION,
         ]
     ).exists()
 
@@ -1146,6 +1447,7 @@ def check_driver_has_active_ride(driver_profile):
             Ride.STATUS_ACCEPTED,
             Ride.STATUS_DRIVER_ARRIVING,
             Ride.STATUS_IN_PROGRESS,
+            Ride.STATUS_AWAITING_CONFIRMATION,
         ]
     ).exists()
 
@@ -1160,5 +1462,6 @@ def get_user_active_ride(user):
             Ride.STATUS_ACCEPTED,
             Ride.STATUS_DRIVER_ARRIVING,
             Ride.STATUS_IN_PROGRESS,
+            Ride.STATUS_AWAITING_CONFIRMATION,
         ]
     ).first()

@@ -242,193 +242,201 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
 
             final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
-            return Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: _card,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 18,
-                      offset: const Offset(0, 6),
+            return DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: vehicle == null ? 0.82 : 0.88,
+              minChildSize: 0.52,
+              maxChildSize: 0.94,
+              builder: (context, scrollController) {
+                return Padding(
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _card,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Center(
-                            child: Container(
-                              width: 42,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: _line,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            vehicle == null ? 'Add vehicle' : 'Edit vehicle',
-                            style: GoogleFonts.inter(
-                              color: _textPrimary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Keep your vehicle details accurate so ride assignment stays smooth.',
-                            style: GoogleFonts.inter(
-                              color: _textSecondary,
-                              fontSize: 12,
-                              height: 1.45,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          _buildSectionLabel('Vehicle type'),
-                          const SizedBox(height: 6),
-                          DropdownButtonFormField<String>(
-                            value: selectedType,
-                            decoration: _inputDecoration(),
-                            style: GoogleFonts.inter(
-                              color: _textPrimary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            items: const [
-                              DropdownMenuItem(value: 'bike', child: Text('Bike')),
-                              DropdownMenuItem(value: 'car', child: Text('Car')),
-                              DropdownMenuItem(value: 'cng', child: Text('CNG')),
-                            ],
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setSheetState(() => selectedType = value);
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSectionLabel('Brand'),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            controller: brandController,
-                            decoration: _inputDecoration(hint: 'Honda, Toyota, Bajaj'),
-                            style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSectionLabel('Model'),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            controller: modelController,
-                            decoration: _inputDecoration(hint: 'Civic, Discover, Auto'),
-                            style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSectionLabel('Color'),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            controller: colorController,
-                            decoration: _inputDecoration(hint: 'Red, Black, Silver'),
-                            style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSectionLabel('Registration number'),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            controller: regController,
-                            textCapitalization: TextCapitalization.characters,
-                            decoration: _inputDecoration(hint: 'DHAKA METRO-GA-12-3456'),
-                            style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Registration number is required';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildSectionLabel('Seat capacity'),
-                          const SizedBox(height: 6),
-                          TextFormField(
-                            controller: seatController,
-                            keyboardType: TextInputType.number,
-                            decoration: _inputDecoration(hint: '1'),
-                            style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
-                            validator: (value) {
-                              final seats = int.tryParse(value?.trim() ?? '');
-                              if (seats == null || seats < 1) {
-                                return 'Enter a valid seat count';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildToggleTile(
-                            title: 'Set as default vehicle',
-                            subtitle: 'This vehicle will be used first for ride matching.',
-                            value: isDefault,
-                            onChanged: (value) {
-                              setSheetState(() => isDefault = value);
-                            },
-                          ),
-                          if (vehicle != null) ...[
-                            const SizedBox(height: 10),
-                            _buildToggleTile(
-                              title: 'Vehicle active',
-                              subtitle: 'Inactive vehicles will stay hidden from dispatch.',
-                              value: isActive,
-                              onChanged: (value) {
-                                setSheetState(() => isActive = value);
-                              },
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: _primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 13),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                    child: SafeArea(
+                      top: false,
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Center(
+                                child: Container(
+                                  width: 42,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: _line,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
                                 ),
                               ),
-                              onPressed: isSaving ? null : submit,
-                              child: isSaving
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.4,
-                                        valueColor:
-                                            const AlwaysStoppedAnimation<Color>(Colors.white),
-                                      ),
-                                    )
-                                  : Text(
-                                      vehicle == null ? 'Save vehicle' : 'Update vehicle',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                              const SizedBox(height: 14),
+                              Text(
+                                vehicle == null ? 'Add vehicle' : 'Edit vehicle',
+                                style: GoogleFonts.inter(
+                                  color: _textPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Keep your vehicle details accurate so ride assignment stays smooth.',
+                                style: GoogleFonts.inter(
+                                  color: _textSecondary,
+                                  fontSize: 12,
+                                  height: 1.45,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              _buildSectionLabel('Vehicle type'),
+                              const SizedBox(height: 6),
+                              DropdownButtonFormField<String>(
+                                value: selectedType,
+                                decoration: _inputDecoration(),
+                                style: GoogleFonts.inter(
+                                  color: _textPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                items: const [
+                                  DropdownMenuItem(value: 'bike', child: Text('Bike')),
+                                  DropdownMenuItem(value: 'car', child: Text('Car')),
+                                  DropdownMenuItem(value: 'cng', child: Text('CNG')),
+                                ],
+                                onChanged: (value) {
+                                  if (value == null) return;
+                                  setSheetState(() => selectedType = value);
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSectionLabel('Brand'),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: brandController,
+                                decoration: _inputDecoration(hint: 'Honda, Toyota, Bajaj'),
+                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSectionLabel('Model'),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: modelController,
+                                decoration: _inputDecoration(hint: 'Civic, Discover, Auto'),
+                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSectionLabel('Color'),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: colorController,
+                                decoration: _inputDecoration(hint: 'Red, Black, Silver'),
+                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSectionLabel('Registration number'),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: regController,
+                                textCapitalization: TextCapitalization.characters,
+                                decoration: _inputDecoration(hint: 'DHAKA METRO-GA-12-3456'),
+                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Registration number is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              _buildSectionLabel('Seat capacity'),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: seatController,
+                                keyboardType: TextInputType.number,
+                                decoration: _inputDecoration(hint: '1'),
+                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                                validator: (value) {
+                                  final seats = int.tryParse(value?.trim() ?? '');
+                                  if (seats == null || seats < 1) {
+                                    return 'Enter a valid seat count';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 12),
+                              _buildToggleTile(
+                                title: 'Set as default vehicle',
+                                subtitle: 'This vehicle will be used first for ride matching.',
+                                value: isDefault,
+                                onChanged: (value) {
+                                  setSheetState(() => isDefault = value);
+                                },
+                              ),
+                              if (vehicle != null) ...[
+                                const SizedBox(height: 10),
+                                _buildToggleTile(
+                                  title: 'Vehicle active',
+                                  subtitle: 'Inactive vehicles will stay hidden from dispatch.',
+                                  value: isActive,
+                                  onChanged: (value) {
+                                    setSheetState(() => isActive = value);
+                                  },
+                                ),
+                              ],
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                child: FilledButton(
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: _primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 13),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                            ),
+                                  ),
+                                  onPressed: isSaving ? null : submit,
+                                  child: isSaving
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.4,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        )
+                                      : Text(
+                                          vehicle == null ? 'Save vehicle' : 'Update vehicle',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             );
           },
         );
@@ -598,47 +606,54 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.14),
+          color: Colors.white.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
             Container(
-              width: 34,
-              height: 34,
+              width: 30,
+              height: 30,
               decoration: BoxDecoration(
                 color: tint,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(9),
               ),
-              child: Icon(icon, color: accent, size: 18),
+              child: Icon(icon, color: accent, size: 16),
             ),
-            const SizedBox(height: 10),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: const Color(0xFFD6D9FF),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    value,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFD6D9FF),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -654,7 +669,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         );
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [_primary, _secondary],
@@ -664,7 +679,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: _primary.withOpacity(0.18),
+            color: _primary.withValues(alpha: 0.18),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -676,19 +691,19 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
           Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
                   Icons.garage_rounded,
                   color: Colors.white,
-                  size: 22,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,17 +712,17 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       'My Vehicle Garage',
                       style: GoogleFonts.inter(
                         color: Colors.white,
-                        fontSize: 17,
+                        fontSize: 15,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
-                      'Passenger page-er moto compact card layout-e vehicle manage করুন।',
+                      'Manage your listed and active vehicles from one compact garage dashboard.',
                       style: GoogleFonts.inter(
-                        color: Color(0xFFD6E2FF),
-                        fontSize: 12,
-                        height: 1.4,
+                        color: const Color(0xFFD6E2FF),
+                        fontSize: 11,
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -715,7 +730,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             children: [
               _buildStatCard(
@@ -723,9 +738,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                 value: '${_vehicles.length}',
                 icon: Icons.local_taxi_rounded,
                 accent: _primary,
-                tint: Colors.white.withOpacity(0.18),
+                tint: Colors.white.withValues(alpha: 0.18),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               _buildStatCard(
                 label: 'Active now',
                 value: '${_vehicles.where((vehicle) => vehicle.isActive).length}',
@@ -735,18 +750,18 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.12)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.verified_rounded, color: Colors.white, size: 18),
-                const SizedBox(width: 8),
+                const Icon(Icons.verified_rounded, color: Colors.white, size: 16),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     defaultVehicle == null
@@ -754,7 +769,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                         : 'Default vehicle: ${defaultVehicle.displayName}',
                     style: GoogleFonts.inter(
                       color: Colors.white,
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -996,7 +1011,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       onRefresh: _loadVehicles,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
+        padding: const EdgeInsets.fromLTRB(10, 8, 10, 96),
         children: [
           if (_errorMessage != null)
             Container(
@@ -1058,7 +1073,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
             )
           else ...[
           _buildOverview(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -1108,7 +1123,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           if (_vehicles.isEmpty)
             Container(
               padding: const EdgeInsets.all(18),
@@ -1158,23 +1173,6 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       color: _textSecondary,
                       fontSize: 12,
                       height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: _primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () => _showVehicleForm(),
-                    icon: const Icon(Icons.add_rounded),
-                    label: Text(
-                      'Add your first vehicle',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
                     ),
                   ),
                 ],
