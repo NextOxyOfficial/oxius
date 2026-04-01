@@ -77,7 +77,7 @@ class _HeroBannerState extends State<HeroBanner> {
     },
     {
       'icon': Icons.directions_car_rounded,
-      'image': 'assets/images/payment.png',
+      'image': 'assets/images/rideshare.png',
       'label': _translationService.t('ride_share', fallback: 'Ride Share'),
       'color': const Color(0xFF10B981), // Green
       'bgColor': const Color(0xFFECFDF5),
@@ -100,14 +100,6 @@ class _HeroBannerState extends State<HeroBanner> {
       'icon': Icons.medical_services,
       'image': 'assets/images/medicalreport.png',
       'label': _translationService.t('shastho_sheba', fallback: 'Health Service'),
-      'color': Colors.grey,
-      'bgColor': const Color(0xFFF9FAFB),
-      'isComingSoon': true,
-    },
-    {
-      'icon': Icons.payment,
-      'image': 'assets/images/payment.png',
-      'label': _translationService.t('bill_pay', fallback: 'Bill Pay'),
       'color': Colors.grey,
       'bgColor': const Color(0xFFF9FAFB),
       'isComingSoon': true,

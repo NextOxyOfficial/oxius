@@ -20,6 +20,27 @@ class RideshareApiResult<T> {
 class RideshareService {
   static String get _baseUrl => '${ApiService.baseUrl}/rides';
 
+  static double _roundToPrecision(double value, int fractionDigits) {
+    return double.parse(value.toStringAsFixed(fractionDigits));
+  }
+
+  static double? _normalizeMetric(
+    double? value,
+    int fractionDigits, {
+    bool allowNegative = false,
+  }) {
+    if (value == null || value.isNaN || value.isInfinite) {
+      return null;
+    }
+
+    final normalized = _roundToPrecision(value, fractionDigits);
+    if (!allowNegative && normalized < 0) {
+      return null;
+    }
+
+    return normalized;
+  }
+
   static Future<Map<String, String>> _getHeaders() async {
     return await ApiService.getHeaders();
   }
@@ -424,14 +445,19 @@ class RideshareService {
   }) async {
     try {
       final headers = await _getHeaders();
+      final normalizedLatitude = _roundToPrecision(latitude, 6);
+      final normalizedLongitude = _roundToPrecision(longitude, 6);
+      final normalizedHeading = _normalizeMetric(heading, 2);
+      final normalizedSpeed = _normalizeMetric(speedKph, 2);
+      final normalizedAccuracy = _normalizeMetric(accuracyMeters, 2);
       final body = <String, dynamic>{
-        'latitude': latitude,
-        'longitude': longitude,
+        'latitude': normalizedLatitude,
+        'longitude': normalizedLongitude,
       };
-      if (rideId != null) body['ride_id'] = rideId;
-      if (heading != null) body['heading'] = heading;
-      if (speedKph != null) body['speed_kph'] = speedKph;
-      if (accuracyMeters != null) body['accuracy_meters'] = accuracyMeters;
+      if (rideId != null && rideId.isNotEmpty) body['ride_id'] = rideId;
+      if (normalizedHeading != null) body['heading'] = normalizedHeading;
+      if (normalizedSpeed != null) body['speed_kph'] = normalizedSpeed;
+      if (normalizedAccuracy != null) body['accuracy_meters'] = normalizedAccuracy;
       
       final response = await http.post(
         Uri.parse('$_baseUrl/drivers/location/update/'),

@@ -18,7 +18,7 @@ class EshopManagerScreen extends StatefulWidget {
 
 class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTickerProviderStateMixin {
   final TranslationService _translationService = TranslationService();
-  String t(String key) => _translationService.translate(key);
+  String t(String key, {String? fallback}) => _translationService.translate(key, fallback: fallback);
 
   late TabController _tabController;
   bool _isLoading = true;
@@ -241,8 +241,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
           onPressed: () => Navigator.pop(context),
           color: const Color(0xFF374151),
         ),
-        title: const Text(
-          'Shop Manager',
+        title: Text(
+          t('eshop_manager', fallback: 'Shop Manager'),
           style: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,

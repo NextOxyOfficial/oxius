@@ -14,7 +14,8 @@ class RidesharePassengerPanel extends StatefulWidget {
   State<RidesharePassengerPanel> createState() => _RidesharePassengerPanelState();
 }
 
-class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
+class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
+  with WidgetsBindingObserver {
   // Controllers
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _dropController = TextEditingController();
@@ -35,6 +36,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
   bool _isCreatingRide = false;
   bool _isCancellingRide = false;
   bool _isLoadingActiveRide = true;
+  bool _locationGranted = false;
+  bool _isCheckingLocationPermission = true;
+  bool _didAutoFillCurrentLocation = false;
   
   // Focus
   String _activeInput = 'pickup'; // 'pickup' or 'drop'
@@ -43,15 +47,119 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refreshLocationPermissionStatus(autoFillCurrentLocation: true);
     _loadActiveRide();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pickupController.dispose();
     _dropController.dispose();
     _searchDebounce?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshLocationPermissionStatus(
+        autoFillCurrentLocation: _pickupPoint == null && _activeRide == null,
+      );
+    }
+  }
+
+  Future<bool> _refreshLocationPermissionStatus({
+    bool autoFillCurrentLocation = false,
+  }) async {
+    if (mounted) {
+      setState(() => _isCheckingLocationPermission = true);
+    }
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final permission = await Geolocator.checkPermission();
+      final granted = serviceEnabled &&
+          permission != LocationPermission.denied &&
+          permission != LocationPermission.deniedForever;
+
+      if (mounted) {
+        setState(() {
+          _locationGranted = granted;
+          _isCheckingLocationPermission = false;
+        });
+      }
+
+      if (granted &&
+          autoFillCurrentLocation &&
+          !_didAutoFillCurrentLocation &&
+          _pickupPoint == null &&
+          _activeRide == null) {
+        _didAutoFillCurrentLocation = true;
+        await _useCurrentLocation(showSuccessMessage: false);
+      }
+
+      return granted;
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _locationGranted = false;
+          _isCheckingLocationPermission = false;
+        });
+      }
+      return false;
+    }
+  }
+
+  Future<void> _requestLocationPermission() async {
+    if (_isLoadingLocation) return;
+
+    setState(() => _isLoadingLocation = true);
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showError('Location service is off. Please enable GPS to use rideshare.');
+        await Geolocator.openLocationSettings();
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied) {
+        _showError('Location permission is required for rideshare.');
+        return;
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showError('Location permission permanently denied. Please enable it in app settings.');
+        await Geolocator.openAppSettings();
+        return;
+      }
+
+      if (mounted) {
+        setState(() => _locationGranted = true);
+      }
+
+      if (_pickupPoint == null) {
+        _didAutoFillCurrentLocation = true;
+        await _useCurrentLocation(showSuccessMessage: false);
+        _showSuccess('Location enabled. Pickup set from your current location.');
+      }
+    } catch (e) {
+      _showError('Failed to enable location: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+          _isCheckingLocationPermission = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadActiveRide() async {
@@ -76,25 +184,43 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
     }
   }
 
-  Future<void> _useCurrentLocation() async {
+  Future<void> _useCurrentLocation({bool showSuccessMessage = true}) async {
     setState(() => _isLoadingLocation = true);
     
     try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          setState(() => _locationGranted = false);
+        }
+        _showError('Location service is off. Please enable GPS to continue.');
+        return;
+      }
+
       // Check permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
+          if (mounted) {
+            setState(() => _locationGranted = false);
+          }
           _showError('Location permission denied');
-          setState(() => _isLoadingLocation = false);
           return;
         }
       }
       
       if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          setState(() => _locationGranted = false);
+        }
         _showError('Location permission permanently denied. Please enable in settings.');
-        setState(() => _isLoadingLocation = false);
+        await Geolocator.openAppSettings();
         return;
+      }
+
+      if (mounted) {
+        setState(() => _locationGranted = true);
       }
 
       // Get current position
@@ -118,7 +244,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
         });
         _loadNearbyDrivers();
         _requestEstimate();
-        _showSuccess('Location found');
+        if (showSuccessMessage) {
+          _showSuccess('Location found');
+        }
       } else {
         _showError('Could not resolve location');
       }
@@ -215,6 +343,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
   }
 
   Future<void> _createRide() async {
+    if (!_locationGranted) {
+      _showError('Location access is required before booking a ride.');
+      return;
+    }
     if (_pickupPoint == null || _dropPoint == null) return;
     
     setState(() => _isCreatingRide = true);
@@ -789,6 +921,129 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel> {
   }
 
   Widget _buildBookingView() {
+    if (_isCheckingLocationPermission) {
+      return RefreshIndicator(
+        color: const Color(0xFF6366F1),
+        onRefresh: () => _refreshLocationPermissionStatus(
+          autoFillCurrentLocation: _pickupPoint == null,
+        ),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
+          child: const SizedBox(
+            height: 420,
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF6366F1),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (!_locationGranted) {
+      return RefreshIndicator(
+        color: const Color(0xFF6366F1),
+        onRefresh: () => _refreshLocationPermissionStatus(
+          autoFillCurrentLocation: _pickupPoint == null,
+        ),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
+          child: SizedBox(
+            height: 460,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: const Color(0xFFFCD34D)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF7ED),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.location_on_rounded,
+                        color: Color(0xFFEA580C),
+                        size: 30,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Location Sharing Required',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1E293B),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Enable location to book rides and auto-set your pickup like the web rideshare flow.',
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: const Color(0xFF64748B),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: _isLoadingLocation ? null : _requestLocationPermission,
+                        icon: _isLoadingLocation
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.my_location_rounded, size: 18),
+                        label: Text(
+                          _isLoadingLocation ? 'Enabling...' : 'Enable Location',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFFEA580C),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return RefreshIndicator(
       color: const Color(0xFF6366F1),
       onRefresh: _loadActiveRide,

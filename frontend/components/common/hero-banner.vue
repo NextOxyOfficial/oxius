@@ -272,25 +272,26 @@
                   >
                 </div>
 
-                <!-- Bill Pay (Coming Soon) - Disabled appearance -->
-                <div
-                  class="service-btn bg-white/70 text-gray-600 relative opacity-80 cursor-not-allowed"
+                <!-- Ride Share -->
+                <NuxtLink
+                  to="/rideshare"
+                  class="service-btn bg-white hover:bg-emerald-50 text-gray-800"
+                  @click="handleButtonClick('desktop-rideshare')"
                 >
-                  <div class="icon-circle bg-gray-100">
+                  <div class="icon-circle bg-emerald-50">
+                    <div
+                      v-if="loadingButtons.has('desktop-rideshare')"
+                      class="dotted-spinner emerald"
+                    ></div>
                     <img
-                      :src="`/static/frontend/images/payment.png`"
-                      alt="Bill Pay Icon"
-                      class="size-7 opacity-60"
+                      v-else
+                      :src="`/static/frontend/images/rideshare.png`"
+                      alt="Ride Share Icon"
+                      class="size-7"
                     />
                   </div>
-                  <div class="h-12 flex items-center justify-center">
-                    <span>{{ $t("bill_pay") }}</span>
-                  </div>
-                  <span
-                    class="absolute top-1 -right-1 bg-gray-400 text-white text-[8px] px-1 py-0.5 rounded-sm"
-                    >Coming Soon</span
-                  >
-                </div>
+                  <span>{{ $t("ride_share") }}</span>
+                </NuxtLink>
                 <!-- Mobile Recharge -->
                 <NuxtLink
                   to="/mobile-recharge"
@@ -556,27 +557,30 @@
           >
         </div>
 
-        <!-- Bill Pay (Coming Soon) - Disabled appearance -->
-        <div
-          class="mobile-btn bg-white/70 relative opacity-80 cursor-not-allowed"
+        <!-- Ride Share -->
+        <NuxtLink
+          to="/rideshare"
+          class="mobile-btn bg-white"
+          @click="handleButtonClick('mobile-rideshare')"
         >
-          <div class="mobile-icon-circle bg-gray-100">
+          <div class="mobile-icon-circle bg-emerald-50">
+            <div
+              v-if="loadingButtons.has('mobile-rideshare')"
+              class="dotted-spinner mobile emerald"
+            ></div>
             <img
-              :src="`/static/frontend/images/payment.png`"
-              alt="Bill Pay Icon"
-              class="size-7 opacity-60"
+              v-else
+              :src="`/static/frontend/images/rideshare.png`"
+              alt="Ride Share Icon"
+              class="size-7"
             />
           </div>
           <div class="h-10 flex items-center justify-center">
-            <span class="text-sm leading-tight text-gray-600">{{
-              $t("bill_pay")
+            <span class="text-sm font-medium leading-tight text-gray-800">{{
+              $t("ride_share")
             }}</span>
           </div>
-          <span
-            class="absolute top-1 right-1 bg-gray-400 text-white text-[8px] px-0.5 rounded-sm"
-            >Coming Soon</span
-          >
-        </div>
+        </NuxtLink>
         <!-- Mobile Recharge -->
         <NuxtLink
           to="/mobile-recharge"

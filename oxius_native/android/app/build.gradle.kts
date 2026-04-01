@@ -35,6 +35,8 @@ val hasReleaseSigning =
         !keystoreProp("storePassword").isNullOrBlank() &&
         !keystoreProp("storeFile").isNullOrBlank()
 
+val hasReleaseKeystoreFile = hasReleaseSigning && file(keystoreProp("storeFile")!!).exists()
+
 android {
     namespace = "com.oxius.app"
     compileSdk = flutter.compileSdkVersion
@@ -59,30 +61,36 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            if (!hasReleaseSigning) {
-                throw GradleException(
-                    "Release signing is not configured. Please create android/key.properties with storeFile, storePassword, keyAlias, keyPassword."
-                )
+        if (hasReleaseKeystoreFile) {
+            create("release") {
+                keyAlias = keystoreProp("keyAlias")
+                keyPassword = keystoreProp("keyPassword")
+                storeFile = file(keystoreProp("storeFile")!!)
+                storePassword = keystoreProp("storePassword")
             }
-
-            keyAlias = keystoreProp("keyAlias")
-            keyPassword = keystoreProp("keyPassword")
-            storeFile = file(keystoreProp("storeFile")!!)
-            storePassword = keystoreProp("storePassword")
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
-            // Enable minification and obfuscation for Play Console
+            if (!hasReleaseKeystoreFile) {
+                logger.warn("Release keystore not found. Falling back to debug signing for local release artifacts.")
+            }
+
+            signingConfig = if (hasReleaseKeystoreFile) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+
+            // Keep release binaries optimized and resource-trimmed.
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Disable native debug symbol stripping to avoid build issues
+
+            // Store enough native symbols for crash analysis without shipping the full symbol payload.
             ndk {
-                debugSymbolLevel = "FULL"
+                debugSymbolLevel = "SYMBOL_TABLE"
             }
         }
     }

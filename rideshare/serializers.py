@@ -196,8 +196,28 @@ class DriverToggleOnlineSerializer(serializers.Serializer):
 
 class DriverLocationUpdateSerializer(serializers.Serializer):
     ride_id = serializers.UUIDField(required=False)
-    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
-    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
-    heading = serializers.DecimalField(max_digits=6, decimal_places=2, required=False)
-    speed_kph = serializers.DecimalField(max_digits=6, decimal_places=2, required=False)
-    accuracy_meters = serializers.DecimalField(max_digits=6, decimal_places=2, required=False)
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
+    heading = serializers.FloatField(required=False)
+    speed_kph = serializers.FloatField(required=False)
+    accuracy_meters = serializers.FloatField(required=False)
+
+    def validate(self, attrs):
+        attrs["latitude"] = round(float(attrs["latitude"]), 6)
+        attrs["longitude"] = round(float(attrs["longitude"]), 6)
+
+        if not -90 <= attrs["latitude"] <= 90:
+            raise serializers.ValidationError({"latitude": "Latitude must be between -90 and 90."})
+        if not -180 <= attrs["longitude"] <= 180:
+            raise serializers.ValidationError({"longitude": "Longitude must be between -180 and 180."})
+
+        for field_name in ("heading", "speed_kph", "accuracy_meters"):
+            value = attrs.get(field_name)
+            if value is None:
+                continue
+            if value != value or value in (float("inf"), float("-inf")):
+                attrs.pop(field_name, None)
+                continue
+            attrs[field_name] = round(float(value), 2)
+
+        return attrs

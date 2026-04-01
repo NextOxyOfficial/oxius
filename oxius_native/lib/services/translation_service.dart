@@ -9,6 +9,17 @@ class TranslationService extends ChangeNotifier {
   factory TranslationService() => _instance;
   TranslationService._internal();
 
+  static const Map<String, Map<String, String>> _localFallbackTranslations = {
+    'en': {
+      'eshop_manager': 'E-Shop Manager',
+      'shop_manager': 'Shop Manager',
+    },
+    'bn': {
+      'eshop_manager': 'ই-শপ ম্যানেজার',
+      'shop_manager': 'শপ ম্যানেজার',
+    },
+  };
+
   // Use centralized API service base URL
   static String get baseUrl => ApiService.baseUrl;
   
@@ -171,7 +182,17 @@ class TranslationService extends ChangeNotifier {
 
   /// Get translation for a key
   String translate(String key, {String? fallback}) {
-    return _translations[key]?.toString() ?? fallback ?? key;
+    final translatedValue = _translations[key]?.toString();
+    if (translatedValue != null && translatedValue.isNotEmpty) {
+      return translatedValue;
+    }
+
+    final localFallback = _localFallbackTranslations[_currentLanguage]?[key];
+    if (localFallback != null && localFallback.isNotEmpty) {
+      return localFallback;
+    }
+
+    return fallback ?? key;
   }
 
   /// Short form of translate method (similar to Vue.js $t)

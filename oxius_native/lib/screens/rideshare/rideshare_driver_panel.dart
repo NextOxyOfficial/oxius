@@ -29,7 +29,8 @@ class RideshareDriverPanel extends StatefulWidget {
   State<RideshareDriverPanel> createState() => _RideshareDriverPanelState();
 }
 
-class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
+class _RideshareDriverPanelState extends State<RideshareDriverPanel>
+  with WidgetsBindingObserver {
   DriverProfile? _driverProfile;
   Ride? _activeRide;
   List<Ride> _availableRequests = [];
@@ -41,6 +42,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
   bool _isUpdatingStatus = false;
   bool _isAuthError = false;
   bool _isSavingProfile = false;
+  bool _locationGranted = false;
+  bool _isCheckingLocationPermission = true;
+  bool _isRequestingLocationPermission = false;
 
   final _licenseController = TextEditingController();
   final _nidController = TextEditingController();
@@ -64,17 +68,111 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _refreshLocationPermissionStatus();
     _loadDriverData();
     _startRefreshTimer();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _locationSubscription?.cancel();
     _refreshTimer?.cancel();
     _licenseController.dispose();
     _nidController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshLocationPermissionStatus();
+    }
+  }
+
+  Future<bool> _refreshLocationPermissionStatus({bool syncTracking = true}) async {
+    if (mounted) {
+      setState(() => _isCheckingLocationPermission = true);
+    }
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final permission = await Geolocator.checkPermission();
+      final granted = serviceEnabled &&
+          permission != LocationPermission.denied &&
+          permission != LocationPermission.deniedForever;
+
+      if (mounted) {
+        setState(() {
+          _locationGranted = granted;
+          _isCheckingLocationPermission = false;
+        });
+      }
+
+      if (!granted) {
+        _stopLocationTracking();
+      } else if (syncTracking && _driverProfile?.isOnline == true) {
+        await _startLocationTracking();
+      }
+
+      return granted;
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _locationGranted = false;
+          _isCheckingLocationPermission = false;
+        });
+      }
+      _stopLocationTracking();
+      return false;
+    }
+  }
+
+  Future<bool> _requestLocationPermission() async {
+    if (_isRequestingLocationPermission) return false;
+
+    setState(() => _isRequestingLocationPermission = true);
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showError('Location service is off. Please enable GPS before going online.');
+        await Geolocator.openLocationSettings();
+        return false;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied) {
+        _showError('Location permission is required to use driver mode.');
+        return false;
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        _showError('Location permission permanently denied. Please enable it in app settings.');
+        await Geolocator.openAppSettings();
+        return false;
+      }
+
+      if (mounted) {
+        setState(() => _locationGranted = true);
+      }
+      return true;
+    } catch (e) {
+      _showError('Failed to enable location: $e');
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRequestingLocationPermission = false;
+          _isCheckingLocationPermission = false;
+        });
+      }
+    }
   }
 
   void _startRefreshTimer() {
@@ -121,7 +219,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
         _serviceRadius = profileResult.data!.serviceRadiusKm;
       }
       if (_driverProfile?.isOnline == true) {
-        _startLocationTracking();
+        await _startLocationTracking();
         if (_activeRide == null) _loadAvailableRequests();
       }
     }
@@ -154,13 +252,24 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
     if (_driverProfile == null) return;
     setState(() => _isTogglingOnline = true);
     final newStatus = !_driverProfile!.isOnline;
+
+    if (newStatus) {
+      final granted = await _requestLocationPermission();
+      if (!granted) {
+        if (mounted) {
+          setState(() => _isTogglingOnline = false);
+        }
+        return;
+      }
+    }
+
     final result = await RideshareService.toggleDriverOnline(newStatus);
     if (mounted) {
       setState(() => _isTogglingOnline = false);
       if (result.success && result.data != null) {
         setState(() => _driverProfile = result.data);
         if (newStatus) {
-          _startLocationTracking();
+          await _startLocationTracking();
           _loadAvailableRequests();
           _showSuccess('You are now online');
         } else {
@@ -174,13 +283,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
     }
   }
 
-  void _startLocationTracking() async {
+  Future<void> _startLocationTracking() async {
     _locationSubscription?.cancel();
     try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-        _showError('Location permission required'); return;
+      final granted = await _refreshLocationPermissionStatus(syncTracking: false);
+      if (!granted) {
+        _showError('Location permission required');
+        return;
       }
       _locationSubscription = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 10),
@@ -319,13 +428,20 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
     if (_isAuthError) return _buildLoginRequired();
     return RefreshIndicator(
       color: _indigo,
-      onRefresh: _loadDriverData,
+      onRefresh: () async {
+        await _refreshLocationPermissionStatus();
+        await _loadDriverData();
+      },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (!_locationGranted) ...[
+              _buildLocationRequiredCard(),
+              const SizedBox(height: 12),
+            ],
             if (_activeRide != null) ...[
               _buildActiveRideCard(),
             ] else ...[
@@ -407,6 +523,88 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
     ]);
   }
 
+  Widget _buildLocationRequiredCard() {
+    final isBusy = _isCheckingLocationPermission || _isRequestingLocationPermission;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFEF2F2), Color(0xFFFFF7ED)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFCA5A5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.location_disabled_rounded,
+              color: Color(0xFFDC2626),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Location Sharing Mandatory',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF991B1B),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Enable location to go online, receive ride requests, and share live driver updates.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: const Color(0xFF7F1D1D),
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          FilledButton.icon(
+            onPressed: isBusy ? null : _requestLocationPermission,
+            icon: isBusy
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.my_location_rounded, size: 16),
+            label: Text(
+              isBusy ? 'Checking' : 'Enable',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+            ),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatChip(String label, String value, Color color, IconData icon) {
     return Expanded(
       child: Container(
@@ -464,12 +662,19 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel> {
           Text(isOnline ? 'Online — Accepting Rides' : 'Offline',
               style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
                   color: isOnline ? Colors.white : _slate800)),
-          Text(isOnline ? 'Requests appear below' : 'Go online to receive requests',
+            Text(
+              !_locationGranted
+                ? 'Enable location to receive ride requests'
+                : isOnline
+                  ? 'Requests appear below'
+                  : 'Go online to receive requests',
               style: GoogleFonts.inter(fontSize: 11,
                   color: isOnline ? Colors.white.withOpacity(0.8) : _slate500)),
         ])),
         GestureDetector(
-          onTap: (isApproved && !_isTogglingOnline) ? _toggleOnline : null,
+            onTap: (isApproved && !_isTogglingOnline && !_isCheckingLocationPermission)
+              ? _toggleOnline
+              : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             width: 50, height: 28,

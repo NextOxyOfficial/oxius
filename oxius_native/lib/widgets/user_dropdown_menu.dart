@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/translation_service.dart';
 
 class UserDropdownMenu extends StatefulWidget {
   final User? user;
@@ -27,6 +28,8 @@ class UserDropdownMenu extends StatefulWidget {
 
 class _UserDropdownMenuState extends State<UserDropdownMenu>
     with TickerProviderStateMixin {
+  final TranslationService _translationService = TranslationService();
+
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
@@ -416,6 +419,11 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
   }
 
   Widget _buildNavigationSection() {
+    final eshopManagerLabel = _translationService.t(
+      'eshop_manager',
+      fallback: 'eShop Manager',
+    );
+
     final navigationItems = [
       {
         'label': 'Business Network',
@@ -437,7 +445,7 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
         'badge': 'FREE',
       },
       {
-        'label': 'eShop Manager',
+        'label': eshopManagerLabel,
         'icon': Icons.shopping_bag,
         'color': const Color(0xFF2563EB),
         'route': '/shop-manager',

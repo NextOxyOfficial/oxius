@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/translation_service.dart';
 
 class EshopManagerScreen extends StatelessWidget {
   const EshopManagerScreen({super.key});
@@ -19,6 +20,8 @@ class EshopManagerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final translationService = TranslationService();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
@@ -28,8 +31,8 @@ class EshopManagerScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'eShop Manager',
+        title: Text(
+          translationService.t('eshop_manager', fallback: 'eShop Manager'),
           style: TextStyle(
             color: Color(0xFF1F2937),
             fontWeight: FontWeight.w700,

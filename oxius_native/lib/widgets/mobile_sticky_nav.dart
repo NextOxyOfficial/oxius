@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/notification_service.dart';
+import '../services/translation_service.dart';
 import '../screens/eshop_manager_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/news_screen.dart';
@@ -21,6 +22,7 @@ class MobileStickyNav extends StatefulWidget {
 
 class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProviderStateMixin {
   final UserStateService _userStateService = UserStateService();
+  final TranslationService _translationService = TranslationService();
   int unreadCount = 0;
   bool _isVisible = true;
   late AnimationController _animationController;
@@ -230,6 +232,11 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
   }
 
   Widget _buildGuestNavigation(BuildContext context) {
+    final eshopManagerLabel = _translationService.t(
+      'eshop_manager',
+      fallback: 'eShop Manager',
+    );
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -250,7 +257,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
         ),
         _buildNavItem(
           icon: Icons.shopping_bag_rounded,
-          label: 'eShop Manager',
+          label: eshopManagerLabel,
           isActive: widget.currentRoute == 'eShop Manager',
           onTap: () => _handleNavigation(context, 'eShop Manager'),
           hasNotification: false,

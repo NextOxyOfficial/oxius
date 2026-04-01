@@ -560,6 +560,35 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
     }
   }
 
+  Color _vehicleColorValue(String colorName) {
+    switch (colorName.trim().toLowerCase()) {
+      case 'black':
+        return const Color(0xFF111827);
+      case 'white':
+        return const Color(0xFFF8FAFC);
+      case 'gray':
+      case 'grey':
+      case 'silver':
+        return const Color(0xFF94A3B8);
+      case 'red':
+        return const Color(0xFFEF4444);
+      case 'blue':
+        return const Color(0xFF3B82F6);
+      case 'green':
+        return const Color(0xFF10B981);
+      case 'yellow':
+        return const Color(0xFFF59E0B);
+      case 'orange':
+        return const Color(0xFFF97316);
+      case 'purple':
+        return const Color(0xFF8B5CF6);
+      case 'brown':
+        return const Color(0xFF92400E);
+      default:
+        return _textMuted;
+    }
+  }
+
   Widget _buildStatCard({
     required String label,
     required String value,
@@ -837,41 +866,28 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
           Wrap(
-            spacing: 8,
+            spacing: 14,
             runSpacing: 8,
             children: [
-              _infoChip(Icons.category_rounded, _vehicleTypeLabel(vehicle.vehicleType)),
-              _infoChip(Icons.event_seat_rounded, '${vehicle.seatCapacity} seats'),
+              _buildMetaText(
+                icon: _vehicleIcon(vehicle.vehicleType),
+                label: _vehicleTypeLabel(vehicle.vehicleType),
+              ),
+              _buildMetaText(
+                icon: Icons.event_seat_rounded,
+                label: '${vehicle.seatCapacity} seats',
+              ),
               if (vehicle.color.trim().isNotEmpty)
-                _infoChip(Icons.palette_outlined, vehicle.color.trim()),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isActive ? _successSoft : _dangerSoft,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: isActive ? _success.withOpacity(0.18) : _danger.withOpacity(0.16),
-                  ),
+                _buildMetaText(
+                  icon: Icons.circle,
+                  label: vehicle.color.trim(),
+                  iconColor: _vehicleColorValue(vehicle.color),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isActive ? Icons.check_circle_rounded : Icons.pause_circle_rounded,
-                      size: 16,
-                      color: isActive ? _success : _danger,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isActive ? 'Active' : 'Inactive',
-                      style: GoogleFonts.inter(
-                        color: isActive ? _success : _danger,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
+              _buildMetaText(
+                icon: isActive ? Icons.check_circle_rounded : Icons.pause_circle_rounded,
+                label: isActive ? 'Active' : 'Inactive',
+                iconColor: isActive ? _success : _danger,
+                textColor: isActive ? _success : _danger,
               ),
             ],
           ),
@@ -945,29 +961,26 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
     );
   }
 
-  Widget _infoChip(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: _surfaceSoft,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: _line),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: _primary),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: _textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-            ),
+  Widget _buildMetaText({
+    required IconData icon,
+    required String label,
+    Color? iconColor,
+    Color? textColor,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: iconColor ?? _primary),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: textColor ?? _textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
