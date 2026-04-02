@@ -135,6 +135,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     return remaining > 0 ? remaining : 0;
   }
 
+  double _mapViewportHeight(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final safeHeight = screenHeight - MediaQuery.of(context).padding.vertical;
+    final preferredHeight = safeHeight * 0.78;
+    return preferredHeight < 420 ? 420 : preferredHeight;
+  }
+
   String _currentTargetedDriverName(Ride ride) {
     final eventName = (_targetedDriverNameFromEvent ?? '').trim();
     if (eventName.isNotEmpty) {
@@ -1274,7 +1281,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           
           // Map
           Container(
-            height: 320,
+            height: _mapViewportHeight(context),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -1836,7 +1843,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             ),
             const SizedBox(height: 12),
             Container(
-              height: 320,
+              height: _mapViewportHeight(context),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE2E8F0)),

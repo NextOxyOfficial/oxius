@@ -95,6 +95,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   bool get _nidLocked =>
       (_driverProfile?.nationalIdNumber.trim().isNotEmpty ?? false);
 
+  double _mapViewportHeight(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final safeHeight = screenHeight - MediaQuery.of(context).padding.vertical;
+    final preferredHeight = safeHeight * 0.78;
+    return preferredHeight < 420 ? 420 : preferredHeight;
+  }
+
   void _initializeProfileExpansion(DriverProfile? profile) {
     if (_profileExpansionInitialized) return;
     _isProfileExpanded = !_hasSubmittedIdentity(profile);
@@ -1320,7 +1327,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             Row(children: [
               const Icon(Icons.radar_rounded, size: 13, color: _slate500),
               const SizedBox(width: 5),
-              Text('Service Radius',
+              Text('Minimum Service Radius',
                   style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
               const Spacer(),
               Container(
@@ -1984,7 +1991,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       ),
       const SizedBox(height: 10),
       Container(
-        height: 280,
+        height: _mapViewportHeight(context),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14), border: Border.all(color: _slate200)),
         clipBehavior: Clip.antiAlias,
