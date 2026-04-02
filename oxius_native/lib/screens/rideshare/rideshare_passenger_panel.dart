@@ -50,13 +50,19 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   Timer? _searchDebounce;
   final RideshareRealtimeService _realtimeService = RideshareRealtimeService();
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
+  Timer? _statusRefreshTimer;
   String _searchStatusMessage = 'Searching for nearby drivers...';
+  int _driverResponseTimeoutSeconds = 60;
+  int _dispatchAttempt = 0;
+  int _maxDispatchAttempts = 15;
+  DateTime? _targetedAtFromEvent;
   bool _isReportingCancellation = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _startStatusRefreshTimer();
     _refreshLocationPermissionStatus(autoFillCurrentLocation: true);
     _loadActiveRide();
   }
@@ -67,9 +73,62 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _pickupController.dispose();
     _dropController.dispose();
     _searchDebounce?.cancel();
+    _statusRefreshTimer?.cancel();
     _rideEventSubscription?.cancel();
     _realtimeService.dispose();
     super.dispose();
+  }
+
+  void _startStatusRefreshTimer() {
+    _statusRefreshTimer?.cancel();
+    _statusRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || _activeRide == null) return;
+      if (_activeRide!.isSearching) {
+        setState(() {});
+      }
+    });
+  }
+
+  int _parseInt(dynamic value, int fallback) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
+  int _deriveMaxDispatchAttempts(Ride ride) {
+    final windowEndsAt = ride.searchExpiresAt;
+    if (windowEndsAt == null) return 15;
+    final minutes = windowEndsAt.difference(ride.requestedAt).inMinutes;
+    if (minutes <= 0) return 15;
+    return minutes > 15 ? 15 : minutes;
+  }
+
+  String _formatDuration(int totalSeconds) {
+    final safeSeconds = totalSeconds < 0 ? 0 : totalSeconds;
+    final minutes = safeSeconds ~/ 60;
+    final seconds = safeSeconds % 60;
+    final mm = minutes.toString().padLeft(2, '0');
+    final ss = seconds.toString().padLeft(2, '0');
+    return '$mm:$ss';
+  }
+
+  int _searchWindowRemainingSeconds(Ride ride, {DateTime? now}) {
+    final windowEndsAt = ride.searchExpiresAt;
+    if (windowEndsAt == null) return 0;
+    final currentTime = now ?? DateTime.now();
+    final remaining = windowEndsAt.difference(currentTime).inSeconds;
+    return remaining > 0 ? remaining : 0;
+  }
+
+  int _targetedRemainingSeconds(Ride ride, {DateTime? now}) {
+    if (ride.targetedDriver == null) return 0;
+
+    final targetedAt = _targetedAtFromEvent ?? ride.targetedAt;
+    if (targetedAt == null) return _driverResponseTimeoutSeconds;
+
+    final currentTime = now ?? DateTime.now();
+    final elapsed = currentTime.difference(targetedAt).inSeconds;
+    final remaining = _driverResponseTimeoutSeconds - elapsed;
+    return remaining > 0 ? remaining : 0;
   }
 
   @override
@@ -193,6 +252,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() {
       _activeRide = ride;
       _searchStatusMessage = _deriveSearchStatusMessage(ride);
+      _dispatchAttempt = ride?.dispatchAttempt ?? 0;
+      _maxDispatchAttempts = ride != null ? _deriveMaxDispatchAttempts(ride) : 15;
+      _targetedAtFromEvent = ride?.targetedAt;
       _isLoadingActiveRide = isLoading;
     });
     _syncRideRealtimeConnection();
@@ -252,9 +314,24 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     if (eventName == 'search_status_updated') {
       final message = event['message']?.toString();
-      if (message != null && message.isNotEmpty) {
-        setState(() => _searchStatusMessage = message);
-      }
+      final timeoutSeconds = _parseInt(
+        event['driver_response_timeout_seconds'],
+        _driverResponseTimeoutSeconds,
+      );
+      final dispatchAttempt = _parseInt(event['dispatch_attempt'], _dispatchAttempt);
+      final targetedAt = DateTime.tryParse(event['targeted_at']?.toString() ?? '');
+      final targetedDriverId = event['targeted_driver_id']?.toString();
+
+      setState(() {
+        if (message != null && message.isNotEmpty) {
+          _searchStatusMessage = message;
+        }
+        _driverResponseTimeoutSeconds = timeoutSeconds;
+        _dispatchAttempt = dispatchAttempt;
+        _targetedAtFromEvent = (targetedDriverId == null || targetedDriverId.isEmpty)
+            ? null
+            : targetedAt;
+      });
     }
 
     if (type == 'ride.event') {
@@ -450,7 +527,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       setState(() => _isCreatingRide = false);
       
       if (result.success && result.data != null) {
-        setState(() => _activeRide = result.data);
+        _applyRideState(result.data, isLoading: false);
         _showSuccess('Ride requested! Finding driver...');
       } else {
         final msg = result.message.toLowerCase();
@@ -532,6 +609,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           _dropSuggestions = [];
           _activeInput = 'pickup';
           _searchStatusMessage = 'Searching for nearby drivers...';
+          _targetedAtFromEvent = null;
+          _dispatchAttempt = 0;
+          _maxDispatchAttempts = 15;
         });
         _pickupController.clear();
         _dropController.clear();
@@ -936,7 +1016,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                             ),
                           ],
                         )
-                      else if (ride.passengerCanCancel)
+                      else if (ride.passengerCanCancel &&
+                          !ride.isInProgress &&
+                          !ride.isAwaitingPassengerConfirmation &&
+                          !ride.isCompleted &&
+                          !ride.isCancelled)
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
@@ -1046,11 +1130,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   Widget _buildSearchStatusCard(Ride ride) {
-    final secondsRemaining = ride.targetedCountdownSeconds();
-    final windowEndsAt = ride.searchExpiresAt;
-    final searchWindowLabel = windowEndsAt == null
-        ? 'Matching in progress'
-        : 'Search window ends in ${windowEndsAt.difference(DateTime.now()).inMinutes.clamp(0, 15)} min';
+    final now = DateTime.now();
+    final secondsRemaining = _targetedRemainingSeconds(ride, now: now);
+    final searchWindowRemaining = _searchWindowRemainingSeconds(ride, now: now);
+    final attemptsLabel = _dispatchAttempt > 0
+      ? 'Attempt $_dispatchAttempt/${_maxDispatchAttempts > 0 ? _maxDispatchAttempts : 15}'
+      : 'Preparing driver match';
+    final searchWindowLabel = ride.searchExpiresAt == null
+      ? attemptsLabel
+      : '$attemptsLabel • Search window: ${_formatDuration(searchWindowRemaining)}';
 
     return Container(
       width: double.infinity,
@@ -1085,7 +1173,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    '${secondsRemaining}s',
+                    '${_formatDuration(secondsRemaining)}',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
