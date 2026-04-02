@@ -2013,7 +2013,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     double? lng = _driverProfile?.currentLongitude;
     try {
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        desiredAccuracy: LocationAccuracy.high,
       ).timeout(const Duration(seconds: 5));
       lat = pos.latitude;
       lng = pos.longitude;

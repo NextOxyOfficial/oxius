@@ -514,6 +514,9 @@ class RideshareService {
         success: false,
         message: 'Network error: $e',
       );
+    }
+  }
+
   static Future<RideshareApiResult<DriverProfile>> applyAsDriver({
     String? licenseNumber,
     String? nationalIdNumber,
