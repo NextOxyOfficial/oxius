@@ -44,6 +44,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   bool _isLoading = true;
   bool _isTogglingOnline = false;
   bool _isAcceptingRide = false;
+  final Set<String> _skippingRideIds = <String>{};
   bool _isUpdatingStatus = false;
   bool _isAuthError = false;
   bool _isSavingProfile = false;
@@ -64,6 +65,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   StreamSubscription<Map<String, dynamic>>? _dispatchEventSubscription;
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
+
+  // Live passenger location received via WebSocket
+  RidePoint? _passengerLocation;
 
   Ride? _resolveDriverActiveRide(DriverProfile? profile, Ride? ride) {
     if (profile == null || ride == null) return null;
@@ -273,10 +277,39 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   void _startCountdownTimer() {
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted && (_availableRequests.isNotEmpty || _activeRide != null)) {
+      if (!mounted || (_availableRequests.isEmpty && _activeRide == null)) {
+        return;
+      }
+
+      final hadExpiredRequests = _removeExpiredTargetedRequests();
+      if (!hadExpiredRequests && mounted) {
         setState(() {});
       }
     });
+  }
+
+  bool _isRequestExpired(Ride ride) {
+    return ride.targetedDriver != null &&
+        ride.targetedCountdownSeconds() <= 0;
+  }
+
+  bool _removeExpiredTargetedRequests() {
+    final before = _availableRequests.length;
+    final filtered = _availableRequests
+        .where((ride) => !_isRequestExpired(ride))
+        .toList();
+
+    if (filtered.length == before) {
+      return false;
+    }
+
+    setState(() {
+      _availableRequests = filtered;
+      _skippingRideIds.removeWhere(
+        (rideId) => !_availableRequests.any((ride) => ride.id == rideId),
+      );
+    });
+    return true;
   }
 
   Future<void> _loadDriverData() async {
@@ -301,6 +334,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final authFailed = !profileResult.success &&
         (msg.contains('unauthorized') || msg.contains('credentials') ||
          msg.contains('authentication') || msg.contains('not provided'));
+    // 404 = no driver profile yet (not an error, user hasn't applied)
+    final noProfile = !profileResult.success &&
+        (msg.contains('no driver profile') || msg.contains('not found'));
     if (mounted) {
       setState(() {
         _isAuthError = authFailed;
@@ -366,6 +402,23 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (!mounted || _activeRide == null) return;
 
     final type = event['type']?.toString() ?? '';
+
+    // Handle live passenger location updates
+    if (type == 'passenger.location') {
+      final lat = double.tryParse(event['latitude']?.toString() ?? '');
+      final lng = double.tryParse(event['longitude']?.toString() ?? '');
+      if (lat != null && lng != null) {
+        setState(() {
+          _passengerLocation = RidePoint(
+            name: 'Passenger',
+            latitude: lat,
+            longitude: lng,
+          );
+        });
+      }
+      return;
+    }
+
     if (type != 'ride.event') {
       return;
     }
@@ -379,6 +432,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
       if (_activeRide?.isCompleted == true || _activeRide?.isCancelled == true) {
+        setState(() => _passengerLocation = null);
         _showSuccess(_activeRide!.isCompleted ? 'Ride completed!' : 'Ride cancelled');
       }
       _syncRealtimeConnections();
@@ -398,16 +452,33 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _loadAvailableRequests() async {
     final result = await RideshareService.listAvailableRideRequests();
-    if (mounted && result.success) setState(() => _availableRequests = result.data ?? []);
+    if (!mounted || !result.success) return;
+
+    final requests = (result.data ?? [])
+        .where((ride) => !_isRequestExpired(ride))
+        .toList();
+    setState(() => _availableRequests = requests);
   }
 
   Future<void> _saveProfile() async {
     setState(() => _isSavingProfile = true);
-    final result = await RideshareService.updateDriverProfile(
-      licenseNumber: _licenseController.text.trim(),
-      nationalIdNumber: _nidController.text.trim(),
-      serviceRadiusKm: _serviceRadius,
-    );
+
+    final isNewApplication = _driverProfile == null;
+    final RideshareApiResult<DriverProfile> result;
+
+    if (isNewApplication) {
+      result = await RideshareService.applyAsDriver(
+        licenseNumber: _licenseController.text.trim(),
+        nationalIdNumber: _nidController.text.trim(),
+      );
+    } else {
+      result = await RideshareService.updateDriverProfile(
+        licenseNumber: _licenseController.text.trim(),
+        nationalIdNumber: _nidController.text.trim(),
+        serviceRadiusKm: _serviceRadius,
+      );
+    }
+
     if (mounted) {
       setState(() => _isSavingProfile = false);
       if (result.success && result.data != null) {
@@ -419,7 +490,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _isProfileExpanded = !_hasSubmittedIdentity(result.data);
           _profileExpansionInitialized = true;
         });
-        _showSuccess('Profile saved');
+        _showSuccess(isNewApplication
+            ? 'Application submitted! Wait for admin approval.'
+            : 'Profile saved');
       } else {
         _showError(result.message);
       }
@@ -497,6 +570,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   Future<void> _acceptRide(Ride ride) async {
+    if (_isRequestExpired(ride)) {
+      setState(() {
+        _availableRequests.removeWhere((request) => request.id == ride.id);
+      });
+      _showError('This ride request has expired.');
+      return;
+    }
+
     setState(() => _isAcceptingRide = true);
     final result = await RideshareService.acceptRide(ride.id);
     if (mounted) {
@@ -510,6 +591,35 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
+  Future<void> _skipRide(Ride ride) async {
+    if (_skippingRideIds.contains(ride.id)) return;
+
+    setState(() {
+      _skippingRideIds.add(ride.id);
+      _availableRequests.removeWhere((request) => request.id == ride.id);
+    });
+
+    if (ride.targetedDriver == null) {
+      if (!mounted) return;
+      setState(() => _skippingRideIds.remove(ride.id));
+      _showSuccess('Ride skipped.');
+      return;
+    }
+
+    final result = await RideshareService.skipRideRequest(ride.id);
+    if (!mounted) return;
+
+    setState(() => _skippingRideIds.remove(ride.id));
+
+    if (result.success) {
+      _showSuccess('Ride skipped. Looking for another request...');
+    } else {
+      _showError(result.message);
+    }
+
+    _loadAvailableRequests();
+  }
+
   Future<void> _updateRideStatus(String status, {double? finalFare}) async {
     if (_activeRide == null) return;
     setState(() => _isUpdatingStatus = true);
@@ -518,7 +628,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       setState(() => _isUpdatingStatus = false);
       if (result.success && result.data != null) {
         if (status == 'completed' || status == 'cancelled') {
-          setState(() => _activeRide = null);
+          setState(() {
+            _activeRide = null;
+            _passengerLocation = null;
+          });
           _loadAvailableRequests();
           _loadDriverData();
           _syncRealtimeConnections();
@@ -1033,7 +1146,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
-                  'Fill in your identity details once. After submission, license and NID stay locked.',
+                  _driverProfile == null
+                      ? 'Submit your identity details to apply as a driver. Admin will review and approve your application.'
+                      : 'Fill in your identity details once. After submission, license and NID stay locked.',
                   style: GoogleFonts.inter(fontSize: 12, color: _slate500),
                 ),
               ),
@@ -1100,7 +1215,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         )
                       : const Icon(Icons.save_rounded, size: 16),
                   label: Text(
-                    _isSavingProfile ? 'Saving...' : 'Save Profile',
+                    _isSavingProfile
+                        ? 'Saving...'
+                        : _driverProfile == null
+                            ? 'Apply as Driver'
+                            : 'Save Profile',
                     style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                   style: FilledButton.styleFrom(
@@ -1370,6 +1489,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Widget _buildRequestCard(Ride ride) {
     final countdown = ride.targetedCountdownSeconds();
+    final isTargeted = ride.targetedDriver != null;
+    final isExpired = _isRequestExpired(ride);
+    final isSkipping = _skippingRideIds.contains(ride.id);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -1389,21 +1511,23 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 Text('${ride.distanceKm.toStringAsFixed(1)} km • ${ride.etaDisplay}',
                     style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
               ])),
-              if (ride.targetedDriver != null)
+              if (isTargeted)
                 Container(
                   margin: const EdgeInsets.only(right: 8),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
+                    color: isExpired ? _slate100 : const Color(0xFFFFFBEB),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    border: Border.all(
+                      color: isExpired ? _slate300 : const Color(0xFFFDE68A),
+                    ),
                   ),
                   child: Text(
-                    '${countdown}s',
+                    isExpired ? 'Expired' : '${countdown}s',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFFD97706),
+                      color: isExpired ? _slate500 : const Color(0xFFD97706),
                     ),
                   ),
                 ),
@@ -1430,41 +1554,105 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             ]),
           ]),
         ),
-        // Accept button
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: _isAcceptingRide ? null : () => _acceptRide(ride),
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 11),
-              decoration: BoxDecoration(
-                gradient: _isAcceptingRide ? null
-                    : const LinearGradient(colors: [_emerald, _emeraldDark]),
-                color: _isAcceptingRide ? _slate100 : null,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
-                border: const Border(top: BorderSide(color: _slate200)),
-              ),
-              child: Center(
-                child: _isAcceptingRide
-                    ? Row(mainAxisSize: MainAxisSize.min, children: [
-                        const SizedBox(width: 14, height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: _indigo)),
-                        const SizedBox(width: 8),
-                        Text('Accepting...',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, fontWeight: FontWeight.w600, color: _slate500)),
-                      ])
-                    : Row(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Icons.check_circle_rounded, size: 16, color: Colors.white),
-                        const SizedBox(width: 6),
-                        Text('Accept Ride',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
-                      ]),
+        Container(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: _slate200)),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(11)),
+          ),
+          child: Row(children: [
+            SizedBox(
+              width: 108,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isSkipping || _isAcceptingRide ? null : () => _skipRide(ride),
+                  borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(11)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    decoration: BoxDecoration(
+                      color: isSkipping ? _slate100 : Colors.white,
+                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(11)),
+                      border: const Border(right: BorderSide(color: _slate200)),
+                    ),
+                    child: Center(
+                      child: isSkipping
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: _indigo),
+                            )
+                          : Text(
+                              'Skip',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _slate500,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+            Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _isAcceptingRide || isSkipping || isExpired
+                      ? null
+                      : () => _acceptRide(ride),
+                  borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    decoration: BoxDecoration(
+                      gradient: _isAcceptingRide || isSkipping || isExpired
+                          ? null
+                          : const LinearGradient(colors: [_emerald, _emeraldDark]),
+                      color: (_isAcceptingRide || isSkipping || isExpired)
+                          ? _slate100
+                          : null,
+                      borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
+                    ),
+                    child: Center(
+                      child: _isAcceptingRide
+                          ? Row(mainAxisSize: MainAxisSize.min, children: [
+                              const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: _indigo),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Accepting...',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _slate500,
+                                ),
+                              ),
+                            ])
+                          : Row(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(
+                                isExpired ? Icons.schedule_rounded : Icons.check_circle_rounded,
+                                size: 16,
+                                color: isExpired ? _slate500 : Colors.white,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isExpired ? 'Expired' : 'Accept Ride',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: isExpired ? _slate500 : Colors.white,
+                                ),
+                              ),
+                            ]),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ]),
         ),
       ]),
     );
@@ -1618,6 +1806,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           pickupPoint: ride.pickupPoint,
           dropPoint: ride.dropPoint,
           routeGeometry: ride.routeGeometry,
+          passengerLocation: _passengerLocation,
+          passengerName: ride.riderName.isNotEmpty ? ride.riderName : null,
+          passengerAvatar: ride.riderAvatar,
         ),
       ),
     ]);
@@ -1785,15 +1976,63 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _requestEarlyCompletion() async {
     final ride = _activeRide;
-    if (ride == null) return;
+    if (ride == null || _isUpdatingStatus) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text('Early Complete?',
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Text(
+          'This will calculate a partial fare based on the distance traveled so far and send a confirmation request to the passenger.',
+          style: GoogleFonts.inter(fontSize: 13, color: _slate500),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: GoogleFonts.inter(color: _slate500)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEA580C),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('Confirm', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isUpdatingStatus = true);
+
+    // Get live GPS coordinates for accurate distance calculation
+    double? lat = _driverProfile?.currentLatitude;
+    double? lng = _driverProfile?.currentLongitude;
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      ).timeout(const Duration(seconds: 5));
+      lat = pos.latitude;
+      lng = pos.longitude;
+    } catch (_) {
+      // Fallback: use last known position or profile coordinates
+      try {
+        final last = await Geolocator.getLastKnownPosition();
+        if (last != null) { lat = last.latitude; lng = last.longitude; }
+      } catch (_) {}
+    }
 
     final result = await RideshareService.requestEarlyCompletion(
       ride.id,
-      latitude: _driverProfile?.currentLatitude,
-      longitude: _driverProfile?.currentLongitude,
+      latitude: lat,
+      longitude: lng,
     );
     if (!mounted) return;
 
+    setState(() => _isUpdatingStatus = false);
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
       _syncRealtimeConnections();

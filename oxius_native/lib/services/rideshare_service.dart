@@ -242,6 +242,34 @@ class RideshareService {
     }
   }
 
+  static Future<RideshareApiResult<void>> skipRideRequest(String rideId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$_baseUrl/$rideId/skip/'),
+        headers: headers,
+        body: json.encode({}),
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return RideshareApiResult<void>(
+          success: true,
+          message: 'Ride skipped successfully',
+        );
+      }
+
+      final data = json.decode(response.body);
+      return RideshareApiResult<void>(
+        success: false,
+        message: data['message'] ?? 'Failed to skip ride',
+      );
+    } catch (e) {
+      return RideshareApiResult<void>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
   static Future<RideshareApiResult<Ride>> cancelRide(String rideId, {String reason = ''}) async {
     try {
       final headers = await _getHeaders();
@@ -474,6 +502,29 @@ class RideshareService {
       
       final response = await http.put(
         Uri.parse('$_baseUrl/drivers/profile/'),
+        headers: headers,
+        body: json.encode(body),
+      );
+      return _parseResponse<DriverProfile>(
+        response,
+        (data) => DriverProfile.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<DriverProfile>(
+        success: false,
+        message: 'Network error: $e',
+      );
+  static Future<RideshareApiResult<DriverProfile>> applyAsDriver({
+    String? licenseNumber,
+    String? nationalIdNumber,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final body = <String, dynamic>{};
+      if (licenseNumber != null) body['license_number'] = licenseNumber;
+      if (nationalIdNumber != null) body['national_id_number'] = nationalIdNumber;
+      final response = await http.post(
+        Uri.parse('$_baseUrl/drivers/apply/'),
         headers: headers,
         body: json.encode(body),
       );

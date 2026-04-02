@@ -34,6 +34,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
   List<Vehicle> _vehicles = const [];
+  DriverProfile? _driverProfile;
 
   @override
   void initState() {
@@ -55,17 +56,52 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       _errorMessage = null;
     });
 
-    final result = await RideshareService.listVehicles();
+    final vehicleFuture = RideshareService.listVehicles();
+    final profileFuture = RideshareService.getDriverProfile();
+    final vehicleResult = await vehicleFuture;
+    final profileResult = await profileFuture;
     if (!mounted) return;
 
     setState(() {
       _isLoading = false;
-      if (result.success) {
-        _vehicles = result.data ?? const [];
+      _driverProfile = profileResult.data;
+      if (vehicleResult.success) {
+        _vehicles = vehicleResult.data ?? const [];
       } else {
-        _errorMessage = result.message;
+        _errorMessage = vehicleResult.message;
       }
     });
+  }
+
+  void _handleAddVehicle() {
+    if (_driverProfile == null || !_driverProfile!.isApproved) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: Text(
+            'KYC Approval Required',
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
+          ),
+          content: Text(
+            'Your KYC must be approved before you can add a vehicle. Please complete your driver registration and wait for admin approval.',
+            style: GoogleFonts.inter(fontSize: 13, color: _textSecondary, height: 1.5),
+          ),
+          actions: [
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: FilledButton.styleFrom(
+                backgroundColor: _primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text('OK', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    _showVehicleForm();
   }
 
   void _showMessage(String message, {bool isError = false}) {
@@ -88,6 +124,33 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
           borderRadius: BorderRadius.circular(10),
         ),
         margin: const EdgeInsets.all(12),
+      ),
+    );
+  }
+
+  void _showContactSupportDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text(
+          'Contact Support',
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
+        ),
+        content: Text(
+          'Vehicle information cannot be edited directly. Please contact our support center to make changes to your vehicle details.',
+          style: GoogleFonts.inter(fontSize: 13, color: _textSecondary, height: 1.5),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: FilledButton.styleFrom(
+              backgroundColor: _primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('OK', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }
@@ -912,7 +975,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               Expanded(
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: _textPrimary,
+                    foregroundColor: _textSecondary,
                     side: const BorderSide(color: _line),
                     backgroundColor: _surfaceSoft,
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -920,10 +983,10 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: _isSubmitting ? null : () => _showVehicleForm(vehicle: vehicle),
-                  icon: const Icon(Icons.edit_rounded, size: 18),
+                  onPressed: () => _showContactSupportDialog(),
+                  icon: const Icon(Icons.support_agent_rounded, size: 18),
                   label: Text(
-                    'Edit',
+                    'Edit via Support',
                     style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
                   ),
                 ),
@@ -1234,9 +1297,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       body: _buildBody(),
       floatingActionButton: FloatingActionButton.extended(
         elevation: 0,
-        backgroundColor: _primary,
+        backgroundColor: _driverProfile?.isApproved == true ? _primary : _textMuted,
         foregroundColor: Colors.white,
-        onPressed: _isSubmitting ? null : () => _showVehicleForm(),
+        onPressed: _isSubmitting ? null : () => _handleAddVehicle(),
         icon: const Icon(Icons.add_rounded),
         label: Text(
           'Add Vehicle',

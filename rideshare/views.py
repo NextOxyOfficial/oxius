@@ -57,7 +57,9 @@ logger = logging.getLogger(__name__)
 
 
 def api_success(data=None, message="Success", status_code=status.HTTP_200_OK):
-    return Response({"success": True, "message": message, "data": data}, status=status_code)
+    return Response(
+        {"success": True, "message": message, "data": data}, status=status_code
+    )
 
 
 def api_error(message, status_code=status.HTTP_400_BAD_REQUEST, errors=None):
@@ -83,17 +85,26 @@ class RideshareApiMixin:
         if isinstance(exc, Http404):
             return api_error("Resource not found.", status.HTTP_404_NOT_FOUND)
         if isinstance(exc, PermissionDenied):
-            return api_error(str(exc) or "Permission denied.", status.HTTP_403_FORBIDDEN)
+            return api_error(
+                str(exc) or "Permission denied.", status.HTTP_403_FORBIDDEN
+            )
         if isinstance(exc, ValidationError):
-            return api_error("Validation failed.", status.HTTP_400_BAD_REQUEST, exc.detail)
+            return api_error(
+                "Validation failed.", status.HTTP_400_BAD_REQUEST, exc.detail
+            )
         if isinstance(exc, DjangoValidationError):
             message = exc.message_dict if hasattr(exc, "message_dict") else exc.messages
             return api_error("Validation failed.", status.HTTP_400_BAD_REQUEST, message)
         if isinstance(exc, APIException):
             detail = getattr(exc, "detail", None)
-            return api_error(str(detail) if detail else "Request failed.", exc.status_code)
+            return api_error(
+                str(detail) if detail else "Request failed.", exc.status_code
+            )
         logger.exception("Unhandled rideshare API error", exc_info=exc)
-        return api_error("Something went wrong. Please try again later.", status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return api_error(
+            "Something went wrong. Please try again later.",
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 class EstimateRideView(RideshareApiMixin, APIView):
@@ -110,7 +121,9 @@ class EstimateRideView(RideshareApiMixin, APIView):
             data["drop_latitude"],
             data["drop_longitude"],
         )
-        fare = FareService.estimate(data["vehicle_type"], route["distance_km"], route["duration_seconds"])
+        fare = FareService.estimate(
+            data["vehicle_type"], route["distance_km"], route["duration_seconds"]
+        )
 
         response = {
             "vehicle_type": data["vehicle_type"],
@@ -146,7 +159,10 @@ class RideCreateView(RideshareApiMixin, APIView):
             ],
         ).first()
         if existing_active_ride:
-            return api_error("You already have an active ride.", errors={"ride_id": str(existing_active_ride.id)})
+            return api_error(
+                "You already have an active ride.",
+                errors={"ride_id": str(existing_active_ride.id)},
+            )
 
         route = RoutingService.get_route(
             data["pickup_latitude"],
@@ -154,9 +170,13 @@ class RideCreateView(RideshareApiMixin, APIView):
             data["drop_latitude"],
             data["drop_longitude"],
         )
-        fare = FareService.estimate(data["vehicle_type"], route["distance_km"], route["duration_seconds"])
+        fare = FareService.estimate(
+            data["vehicle_type"], route["distance_km"], route["duration_seconds"]
+        )
         settings_obj = get_rideshare_settings()
-        search_expires_at = timezone.now() + timedelta(minutes=get_max_search_window_minutes())
+        search_expires_at = timezone.now() + timedelta(
+            minutes=get_max_search_window_minutes()
+        )
 
         if request.user.balance < fare:
             return api_error("Insufficient wallet balance for this ride estimate.")
@@ -179,31 +199,51 @@ class RideCreateView(RideshareApiMixin, APIView):
             search_expires_at=search_expires_at,
             status=Ride.STATUS_SEARCHING,
         )
-        ride.status_history.create(status=Ride.STATUS_SEARCHING, actor=request.user, metadata={"routing_source": route["routing_source"]})
+        ride.status_history.create(
+            status=Ride.STATUS_SEARCHING,
+            actor=request.user,
+            metadata={"routing_source": route["routing_source"]},
+        )
 
-        DispatchService.send_ride_event(ride, "search_status_updated", {
-            "message": "Searching for nearby drivers...",
-            "dispatch_attempt": ride.dispatch_attempt,
-            "driver_response_timeout_seconds": get_driver_response_timeout_seconds(),
-            "search_expires_at": search_expires_at.isoformat(),
-        })
-        
+        DispatchService.send_ride_event(
+            ride,
+            "search_status_updated",
+            {
+                "message": "Searching for nearby drivers...",
+                "dispatch_attempt": ride.dispatch_attempt,
+                "driver_response_timeout_seconds": get_driver_response_timeout_seconds(),
+                "search_expires_at": search_expires_at.isoformat(),
+            },
+        )
+
         # Send push notification to rider
-        RideNotificationService.send_ride_notification(request.user, "searching_driver", ride)
-        
+        RideNotificationService.send_ride_notification(
+            request.user, "searching_driver", ride
+        )
+
         # Dispatch to nearest driver (1-minute cascade system)
         nearest_driver = NearestDriverDispatch.dispatch_to_nearest_driver(ride)
-        
-        DispatchService.send_ride_event(ride, "ride_created", {
-            "targeted_driver_id": str(nearest_driver.id) if nearest_driver else None,
-        })
+
+        DispatchService.send_ride_event(
+            ride,
+            "ride_created",
+            {
+                "targeted_driver_id": (
+                    str(nearest_driver.id) if nearest_driver else None
+                ),
+            },
+        )
         ride.refresh_from_db()
-        
+
         # If driver was auto-assigned, notify about acceptance
         if ride.assigned_driver:
             RideNotificationService.notify_ride_status_change(ride)
-        
-        return api_success(RideSerializer(ride, context={"request": request}).data, "Ride requested successfully.", status.HTTP_201_CREATED)
+
+        return api_success(
+            RideSerializer(ride, context={"request": request}).data,
+            "Ride requested successfully.",
+            status.HTTP_201_CREATED,
+        )
 
 
 class RideListView(RideshareApiMixin, APIView):
@@ -211,12 +251,16 @@ class RideListView(RideshareApiMixin, APIView):
 
     def get_queryset(self, request):
         as_driver = request.query_params.get("as_driver") in ["1", "true", "True"]
-        queryset = Ride.objects.select_related("rider", "assigned_driver__user", "targeted_driver__user", "vehicle").prefetch_related("status_history", "driver_locations")
+        queryset = Ride.objects.select_related(
+            "rider", "assigned_driver__user", "targeted_driver__user", "vehicle"
+        ).prefetch_related("status_history", "driver_locations")
         if request.user.is_superuser:
             return queryset
         if as_driver:
             return queryset.filter(assigned_driver__user=request.user)
-        return queryset.filter(Q(rider=request.user) | Q(assigned_driver__user=request.user))
+        return queryset.filter(
+            Q(rider=request.user) | Q(assigned_driver__user=request.user)
+        )
 
     def get(self, request):
         queryset = self.get_queryset(request)
@@ -228,17 +272,25 @@ class ActiveRideView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        ride = Ride.objects.select_related("rider", "assigned_driver__user", "targeted_driver__user", "vehicle").prefetch_related("status_history", "driver_locations").filter(
-            Q(rider=request.user) | Q(assigned_driver__user=request.user),
-            status__in=[
-                Ride.STATUS_REQUESTED,
-                Ride.STATUS_SEARCHING,
-                Ride.STATUS_ACCEPTED,
-                Ride.STATUS_DRIVER_ARRIVING,
-                Ride.STATUS_IN_PROGRESS,
-                Ride.STATUS_AWAITING_CONFIRMATION,
-            ],
-        ).order_by("-created_at").first()
+        ride = (
+            Ride.objects.select_related(
+                "rider", "assigned_driver__user", "targeted_driver__user", "vehicle"
+            )
+            .prefetch_related("status_history", "driver_locations")
+            .filter(
+                Q(rider=request.user) | Q(assigned_driver__user=request.user),
+                status__in=[
+                    Ride.STATUS_REQUESTED,
+                    Ride.STATUS_SEARCHING,
+                    Ride.STATUS_ACCEPTED,
+                    Ride.STATUS_DRIVER_ARRIVING,
+                    Ride.STATUS_IN_PROGRESS,
+                    Ride.STATUS_AWAITING_CONFIRMATION,
+                ],
+            )
+            .order_by("-created_at")
+            .first()
+        )
         if not ride:
             return api_success(None, "No active ride found.")
         return api_success(RideSerializer(ride, context={"request": request}).data)
@@ -249,11 +301,20 @@ class RideDetailView(RideshareApiMixin, APIView):
 
     def get(self, request, id):
         ride = get_object_or_404(
-            Ride.objects.select_related("rider", "assigned_driver__user", "targeted_driver__user", "vehicle").prefetch_related("status_history", "driver_locations"),
+            Ride.objects.select_related(
+                "rider", "assigned_driver__user", "targeted_driver__user", "vehicle"
+            ).prefetch_related("status_history", "driver_locations"),
             id=id,
         )
-        if not request.user.is_superuser and ride.rider_id != request.user.id and getattr(ride.assigned_driver, "user_id", None) != request.user.id:
-            return api_error("You do not have permission to access this ride.", status.HTTP_403_FORBIDDEN)
+        if (
+            not request.user.is_superuser
+            and ride.rider_id != request.user.id
+            and getattr(ride.assigned_driver, "user_id", None) != request.user.id
+        ):
+            return api_error(
+                "You do not have permission to access this ride.",
+                status.HTTP_403_FORBIDDEN,
+            )
         return api_success(RideSerializer(ride, context={"request": request}).data)
 
 
@@ -262,22 +323,28 @@ class AvailableRideRequestListView(RideshareApiMixin, APIView):
 
     def get(self, request):
         driver_profile = request.user.driver_profile
-        
+
         # Only show rides targeted to this driver or rides with no target
-        queryset = Ride.objects.filter(
-            status=Ride.STATUS_SEARCHING,
-            assigned_driver__isnull=True,
-        ).exclude(
-            rider=request.user,
-        ).filter(
-            Q(targeted_driver__isnull=True) | Q(targeted_driver=driver_profile)
+        queryset = (
+            Ride.objects.filter(
+                status=Ride.STATUS_SEARCHING,
+                assigned_driver__isnull=True,
+            )
+            .exclude(
+                rider=request.user,
+            )
+            .filter(Q(targeted_driver__isnull=True) | Q(targeted_driver=driver_profile))
         )
-        
+
         default_vehicle = get_driver_default_vehicle(driver_profile)
         if default_vehicle:
-            queryset = queryset.filter(requested_vehicle_type=default_vehicle.vehicle_type)
+            queryset = queryset.filter(
+                requested_vehicle_type=default_vehicle.vehicle_type
+            )
         rides = queryset.select_related("rider").order_by("-created_at")[:20]
-        return api_success(RideSerializer(rides, many=True, context={"request": request}).data)
+        return api_success(
+            RideSerializer(rides, many=True, context={"request": request}).data
+        )
 
 
 class RideAcceptView(RideshareApiMixin, APIView):
@@ -285,31 +352,114 @@ class RideAcceptView(RideshareApiMixin, APIView):
 
     @transaction.atomic
     def post(self, request, id):
-        ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
+        ride = get_object_or_404(
+            Ride.objects.select_for_update().select_related("rider"), id=id
+        )
         driver_profile = request.user.driver_profile
 
         if ride.rider_id == request.user.id:
-            return api_error("You cannot accept your own ride request.", status.HTTP_403_FORBIDDEN)
+            return api_error(
+                "You cannot accept your own ride request.", status.HTTP_403_FORBIDDEN
+            )
 
         # Check if driver already has an active ride
         if check_driver_has_active_ride(driver_profile):
-            return api_error("You already have an active ride. Complete it before accepting a new one.")
+            return api_error(
+                "You already have an active ride. Complete it before accepting a new one."
+            )
 
         # Check if this ride is targeted to a specific driver (and it's not this driver)
         if ride.targeted_driver_id and ride.targeted_driver_id != driver_profile.id:
             return api_error("This ride is currently assigned to another driver.")
 
         try:
-            ride = assign_driver_to_ride(ride, driver_profile, actor=request.user, assignment_source="manual")
+            ride = assign_driver_to_ride(
+                ride, driver_profile, actor=request.user, assignment_source="manual"
+            )
         except DjangoValidationError as exc:
             return api_error(str(exc))
 
         ride.refresh_from_db()
-        
+
         # Send push notification to rider about driver acceptance
         RideNotificationService.notify_ride_status_change(ride)
-        
-        return api_success(RideSerializer(ride, context={"request": request}).data, "Ride accepted successfully.")
+
+        return api_success(
+            RideSerializer(ride, context={"request": request}).data,
+            "Ride accepted successfully.",
+        )
+
+
+class RideSkipView(RideshareApiMixin, APIView):
+    permission_classes = [IsAuthenticated, IsApprovedDriver]
+
+    @transaction.atomic
+    def post(self, request, id):
+        ride = get_object_or_404(
+            Ride.objects.select_for_update().select_related(
+                "rider", "targeted_driver__user"
+            ),
+            id=id,
+        )
+        driver_profile = request.user.driver_profile
+
+        if ride.status != Ride.STATUS_SEARCHING or ride.assigned_driver_id:
+            return api_error("Ride is no longer available.")
+        if ride.rider_id == request.user.id:
+            return api_error(
+                "You cannot skip your own ride request.", status.HTTP_403_FORBIDDEN
+            )
+        if ride.targeted_driver_id and ride.targeted_driver_id != driver_profile.id:
+            return api_error(
+                "This ride is currently assigned to another driver.",
+                status.HTTP_403_FORBIDDEN,
+            )
+        if not ride.targeted_driver_id:
+            return api_success(None, "Ride skipped.")
+
+        timeout_seconds = get_driver_response_timeout_seconds()
+        if ride.targeted_at and ride.targeted_at < timezone.now() - timedelta(
+            seconds=timeout_seconds
+        ):
+            return api_error("This ride request has expired.")
+
+        old_target_id = ride.targeted_driver_id
+        old_target_name = (
+            ride.targeted_driver.user.name
+            or ride.targeted_driver.user.username
+            or "Driver"
+        )
+
+        ride.targeted_driver = None
+        ride.targeted_at = None
+        ride.save(update_fields=["targeted_driver", "targeted_at", "updated_at"])
+
+        ride.status_history.create(
+            status=ride.status,
+            actor=request.user,
+            metadata={
+                "event": "driver_skipped",
+                "targeted_driver_id": str(old_target_id),
+                "targeted_driver_name": old_target_name,
+                "status_text": "Driver skipped, trying another...",
+            },
+        )
+
+        DispatchService.send_ride_event(
+            ride,
+            "search_status_updated",
+            {
+                "message": "Driver skipped, trying another...",
+                "skipped_driver_id": str(old_target_id),
+                "skipped_driver_name": old_target_name,
+            },
+        )
+
+        next_driver = NearestDriverDispatch.dispatch_to_nearest_driver(ride)
+        if not next_driver and RideAutoCancel.should_cancel_ride(ride):
+            RideAutoCancel.cancel_expired_ride(ride)
+
+        return api_success(None, "Ride skipped.")
 
 
 class RideCancelView(RideshareApiMixin, APIView):
@@ -317,7 +467,9 @@ class RideCancelView(RideshareApiMixin, APIView):
 
     @transaction.atomic
     def post(self, request, id):
-        ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
+        ride = get_object_or_404(
+            Ride.objects.select_for_update().select_related("rider"), id=id
+        )
         serializer = RideCancelSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         reason = serializer.validated_data.get("reason") or ""
@@ -326,14 +478,26 @@ class RideCancelView(RideshareApiMixin, APIView):
         is_rider = ride.rider_id == request.user.id
 
         if not request.user.is_superuser and not is_rider and not is_driver:
-            return api_error("You do not have permission to cancel this ride.", status.HTTP_403_FORBIDDEN)
+            return api_error(
+                "You do not have permission to cancel this ride.",
+                status.HTTP_403_FORBIDDEN,
+            )
         if ride.status in [Ride.STATUS_COMPLETED, Ride.STATUS_CANCELLED]:
             return api_error("This ride can no longer be cancelled.")
-        if is_rider and ride.status in [Ride.STATUS_IN_PROGRESS, Ride.STATUS_AWAITING_CONFIRMATION]:
+        if is_rider and ride.status in [
+            Ride.STATUS_IN_PROGRESS,
+            Ride.STATUS_AWAITING_CONFIRMATION,
+        ]:
             return api_error("You cannot cancel a ride after it has started.")
 
-        cancelled_by = "admin" if request.user.is_superuser else "driver" if is_driver else "rider"
-        cancellation_reason = reason or ("Cancelled by driver" if cancelled_by == "driver" else "Cancelled by passenger")
+        cancelled_by = (
+            "admin" if request.user.is_superuser else "driver" if is_driver else "rider"
+        )
+        cancellation_reason = reason or (
+            "Cancelled by driver"
+            if cancelled_by == "driver"
+            else "Cancelled by passenger"
+        )
 
         ride.cancellation_reason = cancellation_reason
         ride.save(update_fields=["cancellation_reason", "updated_at"])
@@ -348,15 +512,22 @@ class RideCancelView(RideshareApiMixin, APIView):
         if ride.assigned_driver_id:
             ride.assigned_driver.is_available = True
             ride.assigned_driver.save(update_fields=["is_available", "updated_at"])
-        DispatchService.send_ride_event(ride, "ride_cancelled", {
-            "reason": cancellation_reason,
-            "cancelled_by": cancelled_by,
-        })
-        
+        DispatchService.send_ride_event(
+            ride,
+            "ride_cancelled",
+            {
+                "reason": cancellation_reason,
+                "cancelled_by": cancelled_by,
+            },
+        )
+
         # Send push notification about cancellation
         RideNotificationService.notify_ride_status_change(ride)
-        
-        return api_success(RideSerializer(ride, context={"request": request}).data, "Ride cancelled successfully.")
+
+        return api_success(
+            RideSerializer(ride, context={"request": request}).data,
+            "Ride cancelled successfully.",
+        )
 
 
 class RideStatusUpdateView(RideshareApiMixin, APIView):
@@ -364,7 +535,9 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
 
     @transaction.atomic
     def post(self, request, id):
-        ride = get_object_or_404(Ride.objects.select_for_update().select_related("rider"), id=id)
+        ride = get_object_or_404(
+            Ride.objects.select_for_update().select_related("rider"), id=id
+        )
         serializer = RideStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         next_status = serializer.validated_data["status"]
@@ -372,23 +545,47 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
         is_driver = getattr(ride.assigned_driver, "user_id", None) == request.user.id
         is_rider = ride.rider_id == request.user.id
         if not request.user.is_superuser and not is_driver and not is_rider:
-            return api_error("You do not have permission to update this ride.", status.HTTP_403_FORBIDDEN)
+            return api_error(
+                "You do not have permission to update this ride.",
+                status.HTTP_403_FORBIDDEN,
+            )
 
-        if next_status in [Ride.STATUS_ACCEPTED, Ride.STATUS_CANCELLED, Ride.STATUS_SEARCHING, Ride.STATUS_REQUESTED]:
-            return api_error("Use the dedicated accept or cancel endpoints for this action.")
+        if next_status in [
+            Ride.STATUS_ACCEPTED,
+            Ride.STATUS_CANCELLED,
+            Ride.STATUS_SEARCHING,
+            Ride.STATUS_REQUESTED,
+        ]:
+            return api_error(
+                "Use the dedicated accept or cancel endpoints for this action."
+            )
 
-        if next_status in [Ride.STATUS_DRIVER_ARRIVING, Ride.STATUS_IN_PROGRESS, Ride.STATUS_COMPLETED] and not (is_driver or request.user.is_superuser):
-            return api_error("Only the assigned driver can set this status.", status.HTTP_403_FORBIDDEN)
+        if next_status in [
+            Ride.STATUS_DRIVER_ARRIVING,
+            Ride.STATUS_IN_PROGRESS,
+            Ride.STATUS_COMPLETED,
+        ] and not (is_driver or request.user.is_superuser):
+            return api_error(
+                "Only the assigned driver can set this status.",
+                status.HTTP_403_FORBIDDEN,
+            )
 
         if next_status == Ride.STATUS_AWAITING_CONFIRMATION:
-            return api_error("Use the dedicated early completion endpoint for this action.")
+            return api_error(
+                "Use the dedicated early completion endpoint for this action."
+            )
 
         if next_status == Ride.STATUS_COMPLETED:
             if ride.status == Ride.STATUS_AWAITING_CONFIRMATION:
-                return api_error("Passenger confirmation is required before completing this early-finished ride.")
+                return api_error(
+                    "Passenger confirmation is required before completing this early-finished ride."
+                )
 
             payable_amount = ride.fare_estimate
-            if request.user.is_superuser and serializer.validated_data.get("final_fare") is not None:
+            if (
+                request.user.is_superuser
+                and serializer.validated_data.get("final_fare") is not None
+            ):
                 payable_amount = serializer.validated_data["final_fare"]
 
             ride.final_fare = payable_amount
@@ -402,23 +599,31 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
             ride.transition_to(next_status, actor=request.user)
         except DjangoValidationError as exc:
             return api_error(str(exc))
-        if ride.assigned_driver_id and next_status in [Ride.STATUS_COMPLETED, Ride.STATUS_CANCELLED]:
+        if ride.assigned_driver_id and next_status in [
+            Ride.STATUS_COMPLETED,
+            Ride.STATUS_CANCELLED,
+        ]:
             ride.assigned_driver.is_available = True
             ride.assigned_driver.save(update_fields=["is_available", "updated_at"])
 
         event_payload = {"status": ride.status}
         if next_status == Ride.STATUS_COMPLETED:
-            event_payload.update({
-                "final_fare": str(ride.final_fare),
-                "platform_fee_amount": str(ride.platform_fee_amount),
-                "driver_payout_amount": str(ride.driver_payout_amount),
-            })
+            event_payload.update(
+                {
+                    "final_fare": str(ride.final_fare),
+                    "platform_fee_amount": str(ride.platform_fee_amount),
+                    "driver_payout_amount": str(ride.driver_payout_amount),
+                }
+            )
         DispatchService.send_ride_event(ride, "ride_status_updated", event_payload)
-        
+
         # Send push notification about status change
         RideNotificationService.notify_ride_status_change(ride)
-        
-        return api_success(RideSerializer(ride, context={"request": request}).data, "Ride status updated successfully.")
+
+        return api_success(
+            RideSerializer(ride, context={"request": request}).data,
+            "Ride status updated successfully.",
+        )
 
 
 class RideEarlyCompleteView(RideshareApiMixin, APIView):
@@ -427,7 +632,9 @@ class RideEarlyCompleteView(RideshareApiMixin, APIView):
     @transaction.atomic
     def post(self, request, id):
         ride = get_object_or_404(
-            Ride.objects.select_for_update().select_related("rider", "assigned_driver__user").prefetch_related("driver_locations"),
+            Ride.objects.select_for_update()
+            .select_related("rider", "assigned_driver__user")
+            .prefetch_related("driver_locations"),
             id=id,
         )
         serializer = RideEarlyCompleteSerializer(data=request.data)
@@ -455,22 +662,35 @@ class RideConfirmEarlyCompletionView(RideshareApiMixin, APIView):
     @transaction.atomic
     def post(self, request, id):
         ride = get_object_or_404(
-            Ride.objects.select_for_update().select_related("rider", "assigned_driver__user").prefetch_related("driver_locations"),
+            Ride.objects.select_for_update()
+            .select_related("rider", "assigned_driver__user")
+            .prefetch_related("driver_locations"),
             id=id,
         )
         if not request.user.is_superuser and ride.rider_id != request.user.id:
-            return api_error("Only the passenger can confirm this early completion.", status.HTTP_403_FORBIDDEN)
+            return api_error(
+                "Only the passenger can confirm this early completion.",
+                status.HTTP_403_FORBIDDEN,
+            )
 
         serializer = RideConfirmEarlyCompletionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         try:
-            ride = EarlyCompletionService.confirm(ride, request.user, confirm=serializer.validated_data["confirm"])
+            ride = EarlyCompletionService.confirm(
+                ride, request.user, confirm=serializer.validated_data["confirm"]
+            )
         except DjangoValidationError as exc:
             return api_error(str(exc))
 
-        message = "Ride completed successfully." if serializer.validated_data["confirm"] else "Ride will continue until the passenger is ready to finish."
-        return api_success(RideSerializer(ride, context={"request": request}).data, message)
+        message = (
+            "Ride completed successfully."
+            if serializer.validated_data["confirm"]
+            else "Ride will continue until the passenger is ready to finish."
+        )
+        return api_success(
+            RideSerializer(ride, context={"request": request}).data, message
+        )
 
 
 class RideCancellationReportView(RideshareApiMixin, APIView):
@@ -478,15 +698,26 @@ class RideCancellationReportView(RideshareApiMixin, APIView):
 
     @transaction.atomic
     def post(self, request, id):
-        ride = get_object_or_404(Ride.objects.select_related("assigned_driver__user", "rider"), id=id)
+        ride = get_object_or_404(
+            Ride.objects.select_related("assigned_driver__user", "rider"), id=id
+        )
         if ride.rider_id != request.user.id:
-            return api_error("Only the passenger can report a cancelled ride.", status.HTTP_403_FORBIDDEN)
+            return api_error(
+                "Only the passenger can report a cancelled ride.",
+                status.HTTP_403_FORBIDDEN,
+            )
         if ride.status != Ride.STATUS_CANCELLED:
             return api_error("This ride has not been cancelled.")
 
-        cancel_entry = ride.status_history.filter(status=Ride.STATUS_CANCELLED).order_by("-created_at").first()
+        cancel_entry = (
+            ride.status_history.filter(status=Ride.STATUS_CANCELLED)
+            .order_by("-created_at")
+            .first()
+        )
         if not cancel_entry or cancel_entry.metadata.get("cancelled_by") != "driver":
-            return api_error("Driver reporting is only available when the driver cancels the ride.")
+            return api_error(
+                "Driver reporting is only available when the driver cancels the ride."
+            )
 
         serializer = RideCancellationReportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -500,26 +731,89 @@ class RideCancellationReportView(RideshareApiMixin, APIView):
         if not created:
             return api_error("You have already reported this cancellation.")
 
-        DispatchService.send_ride_event(ride, "driver_cancellation_reported", {
-            "reporter_id": str(request.user.id),
-        })
-        return api_success({"id": str(report.id)}, "Driver report submitted successfully.", status.HTTP_201_CREATED)
+        DispatchService.send_ride_event(
+            ride,
+            "driver_cancellation_reported",
+            {
+                "reporter_id": str(request.user.id),
+            },
+        )
+        return api_success(
+            {"id": str(report.id)},
+            "Driver report submitted successfully.",
+            status.HTTP_201_CREATED,
+        )
 
 
 class DriverProfileView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
-        return api_success(DriverProfileSerializer(driver_profile, context={"request": request}).data)
+        try:
+            driver_profile = DriverProfile.objects.get(user=request.user)
+        except DriverProfile.DoesNotExist:
+            return api_error(
+                "No driver profile found. Please apply to become a driver first.",
+                status.HTTP_404_NOT_FOUND,
+            )
+        return api_success(
+            DriverProfileSerializer(driver_profile, context={"request": request}).data
+        )
 
     def put(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
-        serializer = DriverProfileSerializer(driver_profile, data=request.data, partial=True, context={"request": request})
+        try:
+            driver_profile = DriverProfile.objects.get(user=request.user)
+        except DriverProfile.DoesNotExist:
+            return api_error(
+                "No driver profile found. Please apply to become a driver first.",
+                status.HTTP_404_NOT_FOUND,
+            )
+        serializer = DriverProfileSerializer(
+            driver_profile,
+            data=request.data,
+            partial=True,
+            context={"request": request},
+        )
         if not serializer.is_valid():
-            return api_error(first_error_message(serializer.errors), status.HTTP_400_BAD_REQUEST, serializer.errors)
+            return api_error(
+                first_error_message(serializer.errors),
+                status.HTTP_400_BAD_REQUEST,
+                serializer.errors,
+            )
         serializer.save()
         return api_success(serializer.data, "Driver profile updated successfully.")
+
+
+class DriverApplyView(RideshareApiMixin, APIView):
+    """Explicit driver registration — creates a new pending DriverProfile."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if DriverProfile.objects.filter(user=request.user).exists():
+            driver_profile = DriverProfile.objects.get(user=request.user)
+            return api_success(
+                DriverProfileSerializer(
+                    driver_profile, context={"request": request}
+                ).data,
+                "You already have a driver profile.",
+            )
+
+        serializer = DriverProfileSerializer(
+            data=request.data, partial=True, context={"request": request}
+        )
+        if not serializer.is_valid():
+            return api_error(
+                first_error_message(serializer.errors),
+                status.HTTP_400_BAD_REQUEST,
+                serializer.errors,
+            )
+        driver_profile = serializer.save(user=request.user, approval_status="pending")
+        return api_success(
+            DriverProfileSerializer(driver_profile, context={"request": request}).data,
+            "Driver application submitted! Please wait for admin approval.",
+            status.HTTP_201_CREATED,
+        )
 
 
 class DriverToggleOnlineView(RideshareApiMixin, APIView):
@@ -537,7 +831,10 @@ class DriverToggleOnlineView(RideshareApiMixin, APIView):
         driver_profile.is_online = is_online
         driver_profile.is_available = is_online
         driver_profile.save(update_fields=["is_online", "is_available", "updated_at"])
-        return api_success(DriverProfileSerializer(driver_profile, context={"request": request}).data, "Driver availability updated successfully.")
+        return api_success(
+            DriverProfileSerializer(driver_profile, context={"request": request}).data,
+            "Driver availability updated successfully.",
+        )
 
 
 class DriverLocationUpdateView(RideshareApiMixin, APIView):
@@ -550,7 +847,9 @@ class DriverLocationUpdateView(RideshareApiMixin, APIView):
         driver_profile = request.user.driver_profile
         ride = None
         if data.get("ride_id"):
-            ride = get_object_or_404(Ride, id=data["ride_id"], assigned_driver=driver_profile)
+            ride = get_object_or_404(
+                Ride, id=data["ride_id"], assigned_driver=driver_profile
+            )
 
         location = DriverLocationService.update_location(
             driver_profile=driver_profile,
@@ -561,10 +860,13 @@ class DriverLocationUpdateView(RideshareApiMixin, APIView):
             speed_kph=data.get("speed_kph"),
             accuracy_meters=data.get("accuracy_meters"),
         )
-        return api_success({
-            "id": str(location.id),
-            "recorded_at": location.recorded_at.isoformat(),
-        }, "Driver location updated successfully.")
+        return api_success(
+            {
+                "id": str(location.id),
+                "recorded_at": location.recorded_at.isoformat(),
+            },
+            "Driver location updated successfully.",
+        )
 
 
 class DriverEarningsSummaryView(RideshareApiMixin, APIView):
@@ -572,7 +874,9 @@ class DriverEarningsSummaryView(RideshareApiMixin, APIView):
 
     def get(self, request):
         driver_profile = request.user.driver_profile
-        completed_rides = Ride.objects.filter(assigned_driver=driver_profile, status=Ride.STATUS_COMPLETED)
+        completed_rides = Ride.objects.filter(
+            assigned_driver=driver_profile, status=Ride.STATUS_COMPLETED
+        )
         earnings = completed_rides.aggregate(total=Sum("final_fare"))
         summary = {
             "total_trips": completed_rides.count(),
@@ -587,31 +891,49 @@ class VehicleListCreateView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
         vehicles = driver_profile.vehicles.all().order_by("-is_default", "-updated_at")
         return api_success(VehicleSerializer(vehicles, many=True).data)
 
     def post(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
+        if driver_profile.approval_status != "approved":
+            return api_error(
+                "Your KYC must be approved before you can add a vehicle.",
+                status.HTTP_403_FORBIDDEN,
+            )
         serializer = VehicleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(driver=driver_profile)
-        return api_success(serializer.data, "Vehicle added successfully.", status.HTTP_201_CREATED)
+        return api_success(
+            serializer.data, "Vehicle added successfully.", status.HTTP_201_CREATED
+        )
 
 
 class VehicleDetailView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
+    # Only allow toggling is_default / is_active; block all other field edits.
+    ALLOWED_PATCH_FIELDS = {"is_default", "is_active"}
+
     def patch(self, request, id):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
         vehicle = get_object_or_404(Vehicle, id=id, driver=driver_profile)
+
+        blocked_fields = set(request.data.keys()) - self.ALLOWED_PATCH_FIELDS
+        if blocked_fields:
+            return api_error(
+                "Vehicle details cannot be edited. Please contact support to make changes.",
+                status.HTTP_403_FORBIDDEN,
+            )
+
         serializer = VehicleSerializer(vehicle, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return api_success(serializer.data, "Vehicle updated successfully.")
 
     def delete(self, request, id):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
         vehicle = get_object_or_404(Vehicle, id=id, driver=driver_profile)
         vehicle.delete()
         return api_success(None, "Vehicle deleted successfully.")
@@ -647,25 +969,25 @@ class NearbyDriversView(RideshareApiMixin, APIView):
         lat = request.query_params.get("lat")
         lng = request.query_params.get("lng")
         vehicle_type = request.query_params.get("vehicle_type", "bike")
-        
+
         if lat is None or lng is None:
             return api_error("lat and lng query parameters are required.")
-        
+
         try:
             latitude = Decimal(str(lat))
             longitude = Decimal(str(lng))
         except (ValueError, TypeError):
             return api_error("Invalid latitude or longitude.")
-        
+
         # Get nearby online drivers with the requested vehicle type
         nearby_drivers = DriverLocationService.get_nearby_drivers(
             latitude=latitude,
             longitude=longitude,
             radius_km=5,
             vehicle_type=vehicle_type,
-            limit=10
+            limit=10,
         )
-        
+
         drivers_data = [
             {
                 "latitude": float(driver.current_latitude),
@@ -675,7 +997,8 @@ class NearbyDriversView(RideshareApiMixin, APIView):
                 "distance": round(float(getattr(driver, "distance", 0.0)), 2),
             }
             for driver in nearby_drivers
-            if driver.current_latitude is not None and driver.current_longitude is not None
+            if driver.current_latitude is not None
+            and driver.current_longitude is not None
         ]
-        
+
         return api_success(drivers_data)
