@@ -144,6 +144,7 @@ class DriverProfile {
   final bool isOnline;
   final bool isAvailable;
   final double serviceRadiusKm;
+  final double maxRideDistanceKm;
   final double? currentLatitude;
   final double? currentLongitude;
   final DateTime? lastLocationAt;
@@ -164,6 +165,7 @@ class DriverProfile {
     required this.isOnline,
     required this.isAvailable,
     required this.serviceRadiusKm,
+    required this.maxRideDistanceKm,
     this.currentLatitude,
     this.currentLongitude,
     this.lastLocationAt,
@@ -187,6 +189,7 @@ class DriverProfile {
       isOnline: json['is_online'] ?? false,
       isAvailable: json['is_available'] ?? false,
       serviceRadiusKm: double.tryParse(json['service_radius_km']?.toString() ?? '') ?? 8.0,
+      maxRideDistanceKm: double.tryParse(json['max_ride_distance_km']?.toString() ?? '') ?? 0.0,
       currentLatitude: double.tryParse(json['current_latitude']?.toString() ?? ''),
       currentLongitude: double.tryParse(json['current_longitude']?.toString() ?? ''),
       lastLocationAt: json['last_location_at'] != null

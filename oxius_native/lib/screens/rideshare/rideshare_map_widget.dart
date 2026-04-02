@@ -162,6 +162,12 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     return _defaultCenter;
   }
 
+  // Bangladesh bounding box
+  static final LatLngBounds _bangladeshBounds = LatLngBounds(
+    const LatLng(20.50, 88.00),
+    const LatLng(26.80, 92.80),
+  );
+
   @override
   Widget build(BuildContext context) {
     return FlutterMap(
@@ -169,6 +175,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       options: MapOptions(
         initialCenter: _getInitialCenter(),
         initialZoom: 13,
+        cameraConstraint: CameraConstraint.contain(bounds: _bangladeshBounds),
+        minZoom: 6,
         onTap: widget.onMapTap != null
             ? (tapPosition, point) {
                 widget.onMapTap!(point.latitude, point.longitude);

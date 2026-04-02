@@ -492,6 +492,7 @@ class RideshareService {
     String? licenseNumber,
     String? nationalIdNumber,
     double? serviceRadiusKm,
+    double? maxRideDistanceKm,
   }) async {
     try {
       final headers = await _getHeaders();
@@ -499,6 +500,7 @@ class RideshareService {
       if (licenseNumber != null) body['license_number'] = licenseNumber;
       if (nationalIdNumber != null) body['national_id_number'] = nationalIdNumber;
       if (serviceRadiusKm != null) body['service_radius_km'] = serviceRadiusKm;
+      if (maxRideDistanceKm != null) body['max_ride_distance_km'] = maxRideDistanceKm;
       
       final response = await http.put(
         Uri.parse('$_baseUrl/drivers/profile/'),

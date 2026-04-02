@@ -56,6 +56,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   int _dispatchAttempt = 0;
   int _maxDispatchAttempts = 15;
   DateTime? _targetedAtFromEvent;
+  bool _noDriversInRange = false;
   bool _isReportingCancellation = false;
   StreamSubscription<Position>? _passengerLocationSubscription;
 
@@ -354,11 +355,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       final dispatchAttempt = _parseInt(event['dispatch_attempt'], _dispatchAttempt);
       final targetedAt = DateTime.tryParse(event['targeted_at']?.toString() ?? '');
       final targetedDriverId = event['targeted_driver_id']?.toString();
+      final noDrivers = event['no_drivers_in_range'] == true;
 
       setState(() {
         if (message != null && message.isNotEmpty) {
           _searchStatusMessage = message;
         }
+        _noDriversInRange = noDrivers;
         _driverResponseTimeoutSeconds = timeoutSeconds;
         _dispatchAttempt = dispatchAttempt;
         _targetedAtFromEvent = (targetedDriverId == null || targetedDriverId.isEmpty)
@@ -642,6 +645,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           _dropSuggestions = [];
           _activeInput = 'pickup';
           _searchStatusMessage = 'Searching for nearby drivers...';
+          _noDriversInRange = false;
           _targetedAtFromEvent = null;
           _dispatchAttempt = 0;
           _maxDispatchAttempts = 15;
@@ -1194,7 +1198,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         children: [
           Row(
             children: [
-              const Icon(Icons.radar_rounded, size: 18, color: Color(0xFFD97706)),
+              Icon(
+                _noDriversInRange ? Icons.location_off_rounded : Icons.radar_rounded,
+                size: 18,
+                color: _noDriversInRange ? const Color(0xFFDC2626) : const Color(0xFFD97706),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -1202,7 +1210,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF92400E),
+                    color: _noDriversInRange ? const Color(0xFFDC2626) : const Color(0xFF92400E),
                   ),
                 ),
               ),
@@ -1225,6 +1233,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             ],
           ),
           const SizedBox(height: 6),
+          if (_noDriversInRange) ...[
+            Text(
+              'আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।',
+              style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFFDC2626), height: 1.4),
+            ),
+            const SizedBox(height: 4),
+          ],
           Text(
             searchWindowLabel,
             style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF92400E)),

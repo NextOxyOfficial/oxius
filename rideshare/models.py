@@ -21,15 +21,34 @@ class DriverProfile(models.Model):
     )
     license_number = models.CharField(max_length=100, blank=True, default="")
     national_id_number = models.CharField(max_length=100, blank=True, default="")
-    approval_status = models.CharField(max_length=20, choices=APPROVAL_STATUS_CHOICES, default="pending")
+    approval_status = models.CharField(
+        max_length=20, choices=APPROVAL_STATUS_CHOICES, default="pending"
+    )
     is_online = models.BooleanField(default=False)
     is_available = models.BooleanField(default=False)
-    service_radius_km = models.DecimalField(max_digits=6, decimal_places=2, default=Decimal("8.00"))
-    current_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    current_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    service_radius_km = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=Decimal("8.00"),
+        help_text="How far away (km) the driver will accept pickup requests from.",
+    )
+    max_ride_distance_km = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Maximum ride distance (km) the driver is willing to drive. 0 = no limit.",
+    )
+    current_latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True
+    )
+    current_longitude = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True
+    )
     last_location_at = models.DateTimeField(null=True, blank=True)
     total_trips = models.PositiveIntegerField(default=0)
-    total_earnings = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
+    total_earnings = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -48,8 +67,12 @@ class Vehicle(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    driver = models.ForeignKey(DriverProfile, on_delete=models.CASCADE, related_name="vehicles")
-    vehicle_type = models.CharField(max_length=20, choices=VEHICLE_TYPE_CHOICES, default="bike")
+    driver = models.ForeignKey(
+        DriverProfile, on_delete=models.CASCADE, related_name="vehicles"
+    )
+    vehicle_type = models.CharField(
+        max_length=20, choices=VEHICLE_TYPE_CHOICES, default="bike"
+    )
     brand = models.CharField(max_length=100, blank=True, default="")
     model_name = models.CharField(max_length=100, blank=True, default="")
     color = models.CharField(max_length=50, blank=True, default="")
@@ -69,21 +92,43 @@ class Vehicle(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.is_default:
-            Vehicle.objects.filter(driver=self.driver).exclude(id=self.id).update(is_default=False)
-        elif not Vehicle.objects.filter(driver=self.driver, is_default=True).exclude(id=self.id).exists():
+            Vehicle.objects.filter(driver=self.driver).exclude(id=self.id).update(
+                is_default=False
+            )
+        elif (
+            not Vehicle.objects.filter(driver=self.driver, is_default=True)
+            .exclude(id=self.id)
+            .exists()
+        ):
             Vehicle.objects.filter(id=self.id).update(is_default=True)
             self.is_default = True
 
 
 class FareConfig(models.Model):
-    vehicle_type = models.CharField(max_length=20, choices=Vehicle.VEHICLE_TYPE_CHOICES, unique=True)
-    base_fare = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("40.00"))
-    per_km_rate = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("18.00"))
-    per_minute_rate = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("2.00"))
-    minimum_fare = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("60.00"))
-    booking_fee = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("10.00"))
-    cancellation_fee = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("20.00"))
-    surge_multiplier = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("1.00"))
+    vehicle_type = models.CharField(
+        max_length=20, choices=Vehicle.VEHICLE_TYPE_CHOICES, unique=True
+    )
+    base_fare = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("25.00")
+    )
+    per_km_rate = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("12.00")
+    )
+    per_minute_rate = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("1.50")
+    )
+    minimum_fare = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("40.00")
+    )
+    booking_fee = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("5.00")
+    )
+    cancellation_fee = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("15.00")
+    )
+    surge_multiplier = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("1.00")
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -95,10 +140,50 @@ class FareConfig(models.Model):
         return f"FareConfig({self.vehicle_type})"
 
 
+class FareDistanceTier(models.Model):
+    """Distance-based tiered per-km pricing.
+    Example: 0-5km @12tk, 5-100km @10tk, 100-200km @8tk
+    """
+
+    fare_config = models.ForeignKey(
+        FareConfig, on_delete=models.CASCADE, related_name="distance_tiers"
+    )
+    min_km = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="Tier starts at this distance (km). Inclusive.",
+    )
+    max_km = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="Tier ends at this distance (km). Exclusive. Use 9999 for unlimited.",
+    )
+    per_km_rate = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        help_text="Per-km rate for this tier (৳).",
+    )
+
+    class Meta:
+        ordering = ["fare_config", "min_km"]
+        unique_together = [("fare_config", "min_km")]
+
+    def __str__(self):
+        return f"{self.fare_config.vehicle_type}: {self.min_km}-{self.max_km} km @ ৳{self.per_km_rate}/km"
+
+
 class RideshareSettings(models.Model):
-    platform_fee_percent = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("5.00"))
+    platform_fee_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("5.00")
+    )
     driver_response_timeout_seconds = models.PositiveIntegerField(default=60)
     max_search_window_minutes = models.PositiveIntegerField(default=15)
+    max_passenger_search_radius_km = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=Decimal("15.00"),
+        help_text="Maximum distance (km) from pickup to search for drivers. Prevents rural ultra-long matches.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -136,8 +221,16 @@ class Ride(models.Model):
         STATUS_SEARCHING: [STATUS_ACCEPTED, STATUS_CANCELLED],
         STATUS_ACCEPTED: [STATUS_DRIVER_ARRIVING, STATUS_CANCELLED],
         STATUS_DRIVER_ARRIVING: [STATUS_IN_PROGRESS, STATUS_CANCELLED],
-        STATUS_IN_PROGRESS: [STATUS_AWAITING_CONFIRMATION, STATUS_COMPLETED, STATUS_CANCELLED],
-        STATUS_AWAITING_CONFIRMATION: [STATUS_IN_PROGRESS, STATUS_COMPLETED, STATUS_CANCELLED],
+        STATUS_IN_PROGRESS: [
+            STATUS_AWAITING_CONFIRMATION,
+            STATUS_COMPLETED,
+            STATUS_CANCELLED,
+        ],
+        STATUS_AWAITING_CONFIRMATION: [
+            STATUS_IN_PROGRESS,
+            STATUS_COMPLETED,
+            STATUS_CANCELLED,
+        ],
         STATUS_COMPLETED: [],
         STATUS_CANCELLED: [],
     }
@@ -150,12 +243,38 @@ class Ride(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    rider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="rides_requested")
-    assigned_driver = models.ForeignKey(DriverProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="rides_assigned")
-    targeted_driver = models.ForeignKey(DriverProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="rides_targeted")
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, blank=True, related_name="rides")
-    payment_transaction = models.ForeignKey("base.Balance", on_delete=models.SET_NULL, null=True, blank=True, related_name="rides")
-    requested_vehicle_type = models.CharField(max_length=20, choices=Vehicle.VEHICLE_TYPE_CHOICES, default="bike")
+    rider = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="rides_requested",
+    )
+    assigned_driver = models.ForeignKey(
+        DriverProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rides_assigned",
+    )
+    targeted_driver = models.ForeignKey(
+        DriverProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rides_targeted",
+    )
+    vehicle = models.ForeignKey(
+        Vehicle, on_delete=models.SET_NULL, null=True, blank=True, related_name="rides"
+    )
+    payment_transaction = models.ForeignKey(
+        "base.Balance",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rides",
+    )
+    requested_vehicle_type = models.CharField(
+        max_length=20, choices=Vehicle.VEHICLE_TYPE_CHOICES, default="bike"
+    )
     targeted_at = models.DateTimeField(null=True, blank=True)
     dispatch_attempt = models.PositiveIntegerField(default=0)
     search_expires_at = models.DateTimeField(null=True, blank=True)
@@ -165,21 +284,41 @@ class Ride(models.Model):
     drop_longitude = models.DecimalField(max_digits=9, decimal_places=6)
     pickup_address = models.CharField(max_length=255)
     drop_address = models.CharField(max_length=255)
-    distance_km = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("0.00"))
+    distance_km = models.DecimalField(
+        max_digits=8, decimal_places=2, default=Decimal("0.00")
+    )
     duration_seconds = models.PositiveIntegerField(default=0)
     route_geometry = models.JSONField(default=dict, blank=True)
-    fare_estimate = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
-    final_fare = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    platform_fee_percent = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))
-    platform_fee_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
-    driver_payout_amount = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal("0.00"))
-    status = models.CharField(max_length=40, choices=STATUS_CHOICES, default=STATUS_REQUESTED)
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
+    fare_estimate = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
+    final_fare = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    platform_fee_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("0.00")
+    )
+    platform_fee_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
+    driver_payout_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
+    status = models.CharField(
+        max_length=40, choices=STATUS_CHOICES, default=STATUS_REQUESTED
+    )
+    payment_status = models.CharField(
+        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
+    )
     cancellation_reason = models.TextField(blank=True, default="")
     early_completion_requested_at = models.DateTimeField(null=True, blank=True)
-    early_completion_distance_km = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    early_completion_distance_km = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
+    )
     early_completion_duration_seconds = models.PositiveIntegerField(default=0)
-    early_completion_fare = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    early_completion_fare = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     requested_at = models.DateTimeField(auto_now_add=True)
     accepted_at = models.DateTimeField(null=True, blank=True)
     started_at = models.DateTimeField(null=True, blank=True)
@@ -218,7 +357,9 @@ class Ride(models.Model):
         if next_status == self.status:
             return self
         if not self.can_transition_to(next_status):
-            raise ValidationError(f"Invalid ride status transition from {self.status} to {next_status}")
+            raise ValidationError(
+                f"Invalid ride status transition from {self.status} to {next_status}"
+            )
 
         now = timezone.now()
         self.status = next_status
@@ -231,23 +372,35 @@ class Ride(models.Model):
         elif next_status == self.STATUS_CANCELLED and not self.cancelled_at:
             self.cancelled_at = now
 
-        self.save(update_fields=[
-            "status",
-            "accepted_at",
-            "started_at",
-            "completed_at",
-            "cancelled_at",
-            "updated_at",
-        ])
-        RideStatusHistory.objects.create(ride=self, status=next_status, actor=actor, metadata=metadata or {})
+        self.save(
+            update_fields=[
+                "status",
+                "accepted_at",
+                "started_at",
+                "completed_at",
+                "cancelled_at",
+                "updated_at",
+            ]
+        )
+        RideStatusHistory.objects.create(
+            ride=self, status=next_status, actor=actor, metadata=metadata or {}
+        )
         return self
 
 
 class RideStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    ride = models.ForeignKey(Ride, on_delete=models.CASCADE, related_name="status_history")
+    ride = models.ForeignKey(
+        Ride, on_delete=models.CASCADE, related_name="status_history"
+    )
     status = models.CharField(max_length=40, choices=Ride.STATUS_CHOICES)
-    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="ride_status_actions")
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ride_status_actions",
+    )
     metadata = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -260,9 +413,21 @@ class RideStatusHistory(models.Model):
 
 class RideCancellationReport(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    ride = models.ForeignKey(Ride, on_delete=models.CASCADE, related_name="cancellation_reports")
-    reporter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="ride_cancellation_reports")
-    reported_driver = models.ForeignKey(DriverProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name="cancellation_reports")
+    ride = models.ForeignKey(
+        Ride, on_delete=models.CASCADE, related_name="cancellation_reports"
+    )
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="ride_cancellation_reports",
+    )
+    reported_driver = models.ForeignKey(
+        DriverProfile,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="cancellation_reports",
+    )
     details = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -276,13 +441,25 @@ class RideCancellationReport(models.Model):
 
 class DriverLocation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    driver = models.ForeignKey(DriverProfile, on_delete=models.CASCADE, related_name="locations")
-    ride = models.ForeignKey(Ride, on_delete=models.SET_NULL, null=True, blank=True, related_name="driver_locations")
+    driver = models.ForeignKey(
+        DriverProfile, on_delete=models.CASCADE, related_name="locations"
+    )
+    ride = models.ForeignKey(
+        Ride,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="driver_locations",
+    )
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     heading = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    speed_kph = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
-    accuracy_meters = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    speed_kph = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True
+    )
+    accuracy_meters = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True
+    )
     recorded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

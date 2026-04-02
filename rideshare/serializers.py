@@ -4,7 +4,14 @@ from rest_framework import serializers
 
 from base.models import User
 
-from .models import DriverLocation, DriverProfile, Ride, RideCancellationReport, RideStatusHistory, Vehicle
+from .models import (
+    DriverLocation,
+    DriverProfile,
+    Ride,
+    RideCancellationReport,
+    RideStatusHistory,
+    Vehicle,
+)
 
 
 class RideUserSerializer(serializers.ModelSerializer):
@@ -56,6 +63,7 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             "is_online",
             "is_available",
             "service_radius_km",
+            "max_ride_distance_km",
             "current_latitude",
             "current_longitude",
             "last_location_at",
@@ -103,9 +111,11 @@ class DriverProfileSerializer(serializers.ModelSerializer):
 
             existing_value = (getattr(instance, field_name, "") or "").strip()
             if existing_value and incoming_value != existing_value:
-                raise serializers.ValidationError({
-                    field_name: f"{label} cannot be changed after it has been submitted.",
-                })
+                raise serializers.ValidationError(
+                    {
+                        field_name: f"{label} cannot be changed after it has been submitted.",
+                    }
+                )
 
         return attrs
 
@@ -214,7 +224,11 @@ class RideSerializer(serializers.ModelSerializer):
         if obj.status != Ride.STATUS_CANCELLED or not obj.assigned_driver_id:
             return False
 
-        cancel_entry = obj.status_history.filter(status=Ride.STATUS_CANCELLED).order_by("-created_at").first()
+        cancel_entry = (
+            obj.status_history.filter(status=Ride.STATUS_CANCELLED)
+            .order_by("-created_at")
+            .first()
+        )
         if not cancel_entry:
             return False
 
@@ -227,7 +241,9 @@ class RideSerializer(serializers.ModelSerializer):
         if request.user.id != obj.rider_id:
             return False
 
-        return not RideCancellationReport.objects.filter(ride=obj, reporter=request.user).exists()
+        return not RideCancellationReport.objects.filter(
+            ride=obj, reporter=request.user
+        ).exists()
 
 
 class RideEstimateRequestSerializer(serializers.Serializer):
@@ -237,19 +253,31 @@ class RideEstimateRequestSerializer(serializers.Serializer):
     drop_longitude = serializers.FloatField()
     pickup_address = serializers.CharField(required=False, allow_blank=True)
     drop_address = serializers.CharField(required=False, allow_blank=True)
-    vehicle_type = serializers.ChoiceField(choices=Vehicle.VEHICLE_TYPE_CHOICES, default="bike")
+    vehicle_type = serializers.ChoiceField(
+        choices=Vehicle.VEHICLE_TYPE_CHOICES, default="bike"
+    )
 
     @staticmethod
     def _normalize_coordinate(value, minimum, maximum, label):
         if value < minimum or value > maximum:
-            raise serializers.ValidationError({label: f"{label} must be between {minimum} and {maximum}."})
+            raise serializers.ValidationError(
+                {label: f"{label} must be between {minimum} and {maximum}."}
+            )
         return Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
     def validate(self, attrs):
-        attrs["pickup_latitude"] = self._normalize_coordinate(attrs["pickup_latitude"], -90, 90, "pickup_latitude")
-        attrs["pickup_longitude"] = self._normalize_coordinate(attrs["pickup_longitude"], -180, 180, "pickup_longitude")
-        attrs["drop_latitude"] = self._normalize_coordinate(attrs["drop_latitude"], -90, 90, "drop_latitude")
-        attrs["drop_longitude"] = self._normalize_coordinate(attrs["drop_longitude"], -180, 180, "drop_longitude")
+        attrs["pickup_latitude"] = self._normalize_coordinate(
+            attrs["pickup_latitude"], -90, 90, "pickup_latitude"
+        )
+        attrs["pickup_longitude"] = self._normalize_coordinate(
+            attrs["pickup_longitude"], -180, 180, "pickup_longitude"
+        )
+        attrs["drop_latitude"] = self._normalize_coordinate(
+            attrs["drop_latitude"], -90, 90, "drop_latitude"
+        )
+        attrs["drop_longitude"] = self._normalize_coordinate(
+            attrs["drop_longitude"], -180, 180, "drop_longitude"
+        )
         attrs["pickup_address"] = (attrs.get("pickup_address") or "")[:255]
         attrs["drop_address"] = (attrs.get("drop_address") or "")[:255]
         return attrs
@@ -265,7 +293,9 @@ class RideCancelSerializer(serializers.Serializer):
 
 class RideStatusUpdateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=Ride.STATUS_CHOICES)
-    final_fare = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+    final_fare = serializers.DecimalField(
+        max_digits=10, decimal_places=2, required=False
+    )
 
 
 class RideEarlyCompleteSerializer(serializers.Serializer):
@@ -298,9 +328,13 @@ class DriverLocationUpdateSerializer(serializers.Serializer):
         attrs["longitude"] = round(float(attrs["longitude"]), 6)
 
         if not -90 <= attrs["latitude"] <= 90:
-            raise serializers.ValidationError({"latitude": "Latitude must be between -90 and 90."})
+            raise serializers.ValidationError(
+                {"latitude": "Latitude must be between -90 and 90."}
+            )
         if not -180 <= attrs["longitude"] <= 180:
-            raise serializers.ValidationError({"longitude": "Longitude must be between -180 and 180."})
+            raise serializers.ValidationError(
+                {"longitude": "Longitude must be between -180 and 180."}
+            )
 
         for field_name in ("heading", "speed_kph", "accuracy_meters"):
             value = attrs.get(field_name)

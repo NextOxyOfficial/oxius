@@ -18,10 +18,10 @@ from .models import (
     DriverLocation,
     DriverProfile,
     FareConfig,
+    FareDistanceTier,
     Ride,
     RideshareSettings,
     RideStatusHistory,
-    Vehicle,
 )
 
 
@@ -39,29 +39,56 @@ BANGLADESH_COUNTRY_NAMES = {"bangladesh", "bd", "বাংলাদেশ"}
 
 DEFAULT_FARES = {
     "bike": {
-        "base_fare": Decimal("40.00"),
-        "per_km_rate": Decimal("18.00"),
-        "per_minute_rate": Decimal("2.00"),
-        "minimum_fare": Decimal("60.00"),
-        "booking_fee": Decimal("10.00"),
+        "base_fare": Decimal("25.00"),
+        "per_km_rate": Decimal("12.00"),
+        "per_minute_rate": Decimal("1.50"),
+        "minimum_fare": Decimal("40.00"),
+        "booking_fee": Decimal("5.00"),
         "surge_multiplier": Decimal("1.00"),
     },
     "car": {
-        "base_fare": Decimal("80.00"),
-        "per_km_rate": Decimal("28.00"),
-        "per_minute_rate": Decimal("3.50"),
-        "minimum_fare": Decimal("120.00"),
-        "booking_fee": Decimal("15.00"),
+        "base_fare": Decimal("50.00"),
+        "per_km_rate": Decimal("18.00"),
+        "per_minute_rate": Decimal("2.50"),
+        "minimum_fare": Decimal("75.00"),
+        "booking_fee": Decimal("10.00"),
         "surge_multiplier": Decimal("1.00"),
     },
     "cng": {
-        "base_fare": Decimal("60.00"),
-        "per_km_rate": Decimal("22.00"),
-        "per_minute_rate": Decimal("2.80"),
-        "minimum_fare": Decimal("90.00"),
-        "booking_fee": Decimal("12.00"),
+        "base_fare": Decimal("35.00"),
+        "per_km_rate": Decimal("14.00"),
+        "per_minute_rate": Decimal("2.00"),
+        "minimum_fare": Decimal("55.00"),
+        "booking_fee": Decimal("8.00"),
         "surge_multiplier": Decimal("1.00"),
     },
+}
+
+# Distance-based tiered per-km rates.
+# Local city rides stay cheap; long-distance rides scale to match
+# real-world intercity fares (e.g. Kushtia→Dhaka 190 km ≈ ৳10k car, ৳4k bike).
+DEFAULT_TIERS = {
+    "bike": [
+        {"min_km": 0, "max_km": 5, "per_km_rate": Decimal("8.00")},
+        {"min_km": 5, "max_km": 15, "per_km_rate": Decimal("10.00")},
+        {"min_km": 15, "max_km": 50, "per_km_rate": Decimal("14.00")},
+        {"min_km": 50, "max_km": 100, "per_km_rate": Decimal("18.00")},
+        {"min_km": 100, "max_km": 300, "per_km_rate": Decimal("22.00")},
+    ],
+    "car": [
+        {"min_km": 0, "max_km": 5, "per_km_rate": Decimal("15.00")},
+        {"min_km": 5, "max_km": 15, "per_km_rate": Decimal("20.00")},
+        {"min_km": 15, "max_km": 50, "per_km_rate": Decimal("35.00")},
+        {"min_km": 50, "max_km": 100, "per_km_rate": Decimal("50.00")},
+        {"min_km": 100, "max_km": 300, "per_km_rate": Decimal("60.00")},
+    ],
+    "cng": [
+        {"min_km": 0, "max_km": 5, "per_km_rate": Decimal("10.00")},
+        {"min_km": 5, "max_km": 15, "per_km_rate": Decimal("14.00")},
+        {"min_km": 15, "max_km": 50, "per_km_rate": Decimal("20.00")},
+        {"min_km": 50, "max_km": 100, "per_km_rate": Decimal("30.00")},
+        {"min_km": 100, "max_km": 300, "per_km_rate": Decimal("35.00")},
+    ],
 }
 
 
@@ -88,6 +115,11 @@ def get_driver_response_timeout_seconds():
 def get_max_search_window_minutes():
     settings_obj = get_rideshare_settings()
     return max(1, min(int(settings_obj.max_search_window_minutes or 15), 60))
+
+
+def get_max_passenger_search_radius_km():
+    settings_obj = get_rideshare_settings()
+    return float(settings_obj.max_passenger_search_radius_km or 15)
 
 
 class RoutingService:
@@ -357,6 +389,8 @@ class LocationService:
             "key": api_key,
             "language": getattr(settings, "RIDESHARE_GOOGLE_LANGUAGE", "bn"),
             "region": getattr(settings, "RIDESHARE_GOOGLE_REGION", "bd"),
+            "location": "23.6850,90.3563",
+            "radius": 500000,
         }
 
         try:
@@ -402,6 +436,7 @@ class LocationService:
             "limit": limit,
             "lat": getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LAT", 23.6850),
             "lon": getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LNG", 90.3563),
+            "bbox": f"{BANGLADESH_BOUNDS['min_lng']},{BANGLADESH_BOUNDS['min_lat']},{BANGLADESH_BOUNDS['max_lng']},{BANGLADESH_BOUNDS['max_lat']}",
         }
 
         try:
@@ -448,6 +483,9 @@ class LocationService:
             "format": "jsonv2",
             "limit": limit,
             "addressdetails": 1,
+            "countrycodes": "bd",
+            "viewbox": f"{BANGLADESH_BOUNDS['min_lng']},{BANGLADESH_BOUNDS['max_lat']},{BANGLADESH_BOUNDS['max_lng']},{BANGLADESH_BOUNDS['min_lat']}",
+            "bounded": 1,
         }
         headers = {"User-Agent": "adsyclub-rideshare/1.0"}
 
@@ -607,8 +645,58 @@ class FareService:
                 "minimum_fare": config.minimum_fare,
                 "booking_fee": config.booking_fee,
                 "surge_multiplier": config.surge_multiplier,
+                "_db_config": config,
             }
-        return DEFAULT_FARES[vehicle_type]
+        return {**DEFAULT_FARES[vehicle_type], "_db_config": None}
+
+    @staticmethod
+    def _calculate_tiered_km_cost(distance_km, db_config, flat_per_km_rate, vehicle_type=None):
+        """Calculate distance cost using tiered pricing if tiers exist."""
+        distance = Decimal(str(distance_km))
+
+        # Try DB tiers first
+        if db_config is not None:
+            tiers = list(
+                FareDistanceTier.objects.filter(fare_config=db_config).order_by("min_km")
+            )
+            if tiers:
+                return FareService._apply_tiers(
+                    distance,
+                    [{"min_km": t.min_km, "max_km": t.max_km, "per_km_rate": t.per_km_rate} for t in tiers],
+                    flat_per_km_rate,
+                )
+
+        # Fall back to code-level default tiers
+        if vehicle_type and vehicle_type in DEFAULT_TIERS:
+            return FareService._apply_tiers(distance, DEFAULT_TIERS[vehicle_type], flat_per_km_rate)
+
+        # No tiers at all – flat rate
+        return distance * Decimal(flat_per_km_rate)
+
+    @staticmethod
+    def _apply_tiers(distance, tiers, flat_per_km_rate):
+        """Walk through tier list and accumulate cost; remaining km use flat rate."""
+        total_cost = Decimal("0.00")
+        remaining = distance
+
+        for tier in tiers:
+            if remaining <= 0:
+                break
+            tier_start = Decimal(str(tier["min_km"]))
+            tier_end = Decimal(str(tier["max_km"]))
+            if distance <= tier_start:
+                break
+            applicable_start = max(tier_start, Decimal("0"))
+            applicable_end = min(tier_end, distance)
+            km_in_tier = max(applicable_end - applicable_start, Decimal("0"))
+            if km_in_tier > 0:
+                total_cost += km_in_tier * Decimal(str(tier["per_km_rate"]))
+                remaining -= km_in_tier
+
+        if remaining > 0:
+            total_cost += remaining * Decimal(flat_per_km_rate)
+
+        return total_cost
 
     @classmethod
     def estimate(cls, vehicle_type, distance_km, duration_seconds):
@@ -618,9 +706,12 @@ class FareService:
             if duration_seconds
             else Decimal("0")
         )
+        km_cost = cls._calculate_tiered_km_cost(
+            distance_km, config.get("_db_config"), config["per_km_rate"], vehicle_type
+        )
         subtotal = (
             Decimal(config["base_fare"])
-            + (Decimal(distance_km) * Decimal(config["per_km_rate"]))
+            + km_cost
             + (duration_minutes * Decimal(config["per_minute_rate"]))
             + Decimal(config["booking_fee"])
         ) * Decimal(config["surge_multiplier"])
@@ -1101,7 +1192,7 @@ class RideNotificationService:
 
         # Notify driver if assigned
         if ride.assigned_driver and ride.assigned_driver.user:
-            driver_title = f"🚗 Ride Update"
+            driver_title = "🚗 Ride Update"
             driver_body = f"Ride status: {ride.status.replace('_', ' ').title()}"
 
             if ride.status == Ride.STATUS_CANCELLED:
@@ -1343,10 +1434,22 @@ class NearestDriverDispatch:
                 float(ride.pickup_longitude),
             )
 
-            # Check if within service radius
+            # Check if within driver's service radius
             service_radius = float(driver.service_radius_km or 10)
-            if distance <= service_radius:
-                drivers_with_distance.append((driver, distance))
+            if distance > service_radius:
+                continue
+
+            # Check passenger-side max search radius (prevents rural ultra-long matches)
+            max_passenger_radius = get_max_passenger_search_radius_km()
+            if distance > max_passenger_radius:
+                continue
+
+            # Check driver's max ride distance preference
+            max_ride_dist = float(driver.max_ride_distance_km or 0)
+            if max_ride_dist > 0 and float(ride.distance_km) > max_ride_dist:
+                continue
+
+            drivers_with_distance.append((driver, distance))
 
         # Sort by distance (nearest first)
         drivers_with_distance.sort(key=lambda x: x[1])
@@ -1382,7 +1485,13 @@ class NearestDriverDispatch:
         )
 
         if not drivers:
-            cls._notify_passenger_search_status(ride, "Searching for nearby drivers...")
+            max_radius = get_max_passenger_search_radius_km()
+            cls._notify_passenger_search_status(
+                ride,
+                f"No drivers available within {int(max_radius)} km. "
+                "You may be in a remote area — try from a nearby town or city.",
+                {"no_drivers_in_range": True, "max_search_radius_km": max_radius},
+            )
             return None
 
         # Target the nearest driver

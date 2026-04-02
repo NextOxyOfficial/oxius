@@ -57,6 +57,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   final _licenseController = TextEditingController();
   final _nidController = TextEditingController();
   double _serviceRadius = 8.0;
+  double _maxRideDistance = 0.0;
 
   StreamSubscription<Position>? _locationSubscription;
   Timer? _refreshTimer;
@@ -349,6 +350,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _licenseController.text = profileResult.data!.licenseNumber;
         _nidController.text = profileResult.data!.nationalIdNumber;
         _serviceRadius = profileResult.data!.serviceRadiusKm;
+        _maxRideDistance = profileResult.data!.maxRideDistanceKm;
         _initializeProfileExpansion(profileResult.data);
       }
       if (_driverProfile?.isOnline == true) {
@@ -476,6 +478,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         licenseNumber: _licenseController.text.trim(),
         nationalIdNumber: _nidController.text.trim(),
         serviceRadiusKm: _serviceRadius,
+        maxRideDistanceKm: _maxRideDistance,
       );
     }
 
@@ -487,6 +490,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         setState(() {
           _driverProfile = result.data;
           _serviceRadius = result.data!.serviceRadiusKm;
+          _maxRideDistance = result.data!.maxRideDistanceKm;
           _isProfileExpanded = !_hasSubmittedIdentity(result.data);
           _profileExpansionInitialized = true;
         });
@@ -1202,6 +1206,39 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 onChanged: (v) => setState(() => _serviceRadius = v),
               ),
             ),
+            const SizedBox(height: 10),
+            Row(children: [
+              const Icon(Icons.route_rounded, size: 13, color: _slate500),
+              const SizedBox(width: 5),
+              Text('Max Ride Distance',
+                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _indigo.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
+                child: Text(_maxRideDistance == 0 ? 'No limit' : '${_maxRideDistance.toStringAsFixed(0)} km',
+                    style: GoogleFonts.inter(
+                        fontSize: 11, fontWeight: FontWeight.w700, color: _indigo)),
+              ),
+            ]),
+            SliderTheme(
+              data: SliderThemeData(
+                trackHeight: 3,
+                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
+                activeTrackColor: _indigo,
+                inactiveTrackColor: _slate200,
+                thumbColor: _indigo,
+                overlayColor: _indigo.withValues(alpha: 0.1),
+              ),
+              child: Slider(
+                value: _maxRideDistance,
+                min: 0,
+                max: 300,
+                divisions: 30,
+                onChanged: (v) => setState(() => _maxRideDistance = v),
+              ),
+            ),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(
@@ -1278,6 +1315,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               _buildProfileSummaryPill(
                 icon: Icons.radar_rounded,
                 label: '${_serviceRadius.toStringAsFixed(0)} km radius',
+                color: _indigo,
+                highlighted: true,
+              ),
+              _buildProfileSummaryPill(
+                icon: Icons.route_rounded,
+                label: _maxRideDistance == 0 ? 'No distance limit' : '${_maxRideDistance.toStringAsFixed(0)} km max ride',
                 color: _indigo,
                 highlighted: true,
               ),
