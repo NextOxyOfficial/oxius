@@ -44,6 +44,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   bool _isLoading = true;
   bool _isTogglingOnline = false;
   bool _isAcceptingRide = false;
+  final Set<String> _skippingRideIds = <String>{};
   bool _isUpdatingStatus = false;
   bool _isAuthError = false;
   bool _isSavingProfile = false;
@@ -273,10 +274,39 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   void _startCountdownTimer() {
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted && (_availableRequests.isNotEmpty || _activeRide != null)) {
+      if (!mounted || (_availableRequests.isEmpty && _activeRide == null)) {
+        return;
+      }
+
+      final hadExpiredRequests = _removeExpiredTargetedRequests();
+      if (!hadExpiredRequests && mounted) {
         setState(() {});
       }
     });
+  }
+
+  bool _isRequestExpired(Ride ride) {
+    return ride.targetedDriver != null &&
+        ride.targetedCountdownSeconds() <= 0;
+  }
+
+  bool _removeExpiredTargetedRequests() {
+    final before = _availableRequests.length;
+    final filtered = _availableRequests
+        .where((ride) => !_isRequestExpired(ride))
+        .toList();
+
+    if (filtered.length == before) {
+      return false;
+    }
+
+    setState(() {
+      _availableRequests = filtered;
+      _skippingRideIds.removeWhere(
+        (rideId) => !_availableRequests.any((ride) => ride.id == rideId),
+      );
+    });
+    return true;
   }
 
   Future<void> _loadDriverData() async {
@@ -398,7 +428,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _loadAvailableRequests() async {
     final result = await RideshareService.listAvailableRideRequests();
-    if (mounted && result.success) setState(() => _availableRequests = result.data ?? []);
+    if (!mounted || !result.success) return;
+
+    final requests = (result.data ?? [])
+        .where((ride) => !_isRequestExpired(ride))
+        .toList();
+    setState(() => _availableRequests = requests);
   }
 
   Future<void> _saveProfile() async {
@@ -497,6 +532,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   Future<void> _acceptRide(Ride ride) async {
+    if (_isRequestExpired(ride)) {
+      setState(() {
+        _availableRequests.removeWhere((request) => request.id == ride.id);
+      });
+      _showError('This ride request has expired.');
+      return;
+    }
+
     setState(() => _isAcceptingRide = true);
     final result = await RideshareService.acceptRide(ride.id);
     if (mounted) {
@@ -508,6 +551,35 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _showSuccess('Ride accepted!');
       } else { _showError(result.message); _loadAvailableRequests(); }
     }
+  }
+
+  Future<void> _skipRide(Ride ride) async {
+    if (_skippingRideIds.contains(ride.id)) return;
+
+    setState(() {
+      _skippingRideIds.add(ride.id);
+      _availableRequests.removeWhere((request) => request.id == ride.id);
+    });
+
+    if (ride.targetedDriver == null) {
+      if (!mounted) return;
+      setState(() => _skippingRideIds.remove(ride.id));
+      _showSuccess('Ride skipped.');
+      return;
+    }
+
+    final result = await RideshareService.skipRideRequest(ride.id);
+    if (!mounted) return;
+
+    setState(() => _skippingRideIds.remove(ride.id));
+
+    if (result.success) {
+      _showSuccess('Ride skipped. Looking for another request...');
+    } else {
+      _showError(result.message);
+    }
+
+    _loadAvailableRequests();
   }
 
   Future<void> _updateRideStatus(String status, {double? finalFare}) async {
@@ -1370,6 +1442,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Widget _buildRequestCard(Ride ride) {
     final countdown = ride.targetedCountdownSeconds();
+    final isTargeted = ride.targetedDriver != null;
+    final isExpired = _isRequestExpired(ride);
+    final isSkipping = _skippingRideIds.contains(ride.id);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
@@ -1389,21 +1464,23 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 Text('${ride.distanceKm.toStringAsFixed(1)} km • ${ride.etaDisplay}',
                     style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
               ])),
-              if (ride.targetedDriver != null)
+              if (isTargeted)
                 Container(
                   margin: const EdgeInsets.only(right: 8),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
+                    color: isExpired ? _slate100 : const Color(0xFFFFFBEB),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    border: Border.all(
+                      color: isExpired ? _slate300 : const Color(0xFFFDE68A),
+                    ),
                   ),
                   child: Text(
-                    '${countdown}s',
+                    isExpired ? 'Expired' : '${countdown}s',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFFD97706),
+                      color: isExpired ? _slate500 : const Color(0xFFD97706),
                     ),
                   ),
                 ),
@@ -1430,41 +1507,105 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             ]),
           ]),
         ),
-        // Accept button
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: _isAcceptingRide ? null : () => _acceptRide(ride),
-            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 11),
-              decoration: BoxDecoration(
-                gradient: _isAcceptingRide ? null
-                    : const LinearGradient(colors: [_emerald, _emeraldDark]),
-                color: _isAcceptingRide ? _slate100 : null,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
-                border: const Border(top: BorderSide(color: _slate200)),
-              ),
-              child: Center(
-                child: _isAcceptingRide
-                    ? Row(mainAxisSize: MainAxisSize.min, children: [
-                        const SizedBox(width: 14, height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: _indigo)),
-                        const SizedBox(width: 8),
-                        Text('Accepting...',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, fontWeight: FontWeight.w600, color: _slate500)),
-                      ])
-                    : Row(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Icons.check_circle_rounded, size: 16, color: Colors.white),
-                        const SizedBox(width: 6),
-                        Text('Accept Ride',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
-                      ]),
+        Container(
+          decoration: const BoxDecoration(
+            border: Border(top: BorderSide(color: _slate200)),
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(11)),
+          ),
+          child: Row(children: [
+            SizedBox(
+              width: 108,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: isSkipping || _isAcceptingRide ? null : () => _skipRide(ride),
+                  borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(11)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    decoration: BoxDecoration(
+                      color: isSkipping ? _slate100 : Colors.white,
+                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(11)),
+                      border: const Border(right: BorderSide(color: _slate200)),
+                    ),
+                    child: Center(
+                      child: isSkipping
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: _indigo),
+                            )
+                          : Text(
+                              'Skip',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: _slate500,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+            Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _isAcceptingRide || isSkipping || isExpired
+                      ? null
+                      : () => _acceptRide(ride),
+                  borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    decoration: BoxDecoration(
+                      gradient: _isAcceptingRide || isSkipping || isExpired
+                          ? null
+                          : const LinearGradient(colors: [_emerald, _emeraldDark]),
+                      color: (_isAcceptingRide || isSkipping || isExpired)
+                          ? _slate100
+                          : null,
+                      borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
+                    ),
+                    child: Center(
+                      child: _isAcceptingRide
+                          ? Row(mainAxisSize: MainAxisSize.min, children: [
+                              const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: _indigo),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Accepting...',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _slate500,
+                                ),
+                              ),
+                            ])
+                          : Row(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(
+                                isExpired ? Icons.schedule_rounded : Icons.check_circle_rounded,
+                                size: 16,
+                                color: isExpired ? _slate500 : Colors.white,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isExpired ? 'Expired' : 'Accept Ride',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: isExpired ? _slate500 : Colors.white,
+                                ),
+                              ),
+                            ]),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ]),
         ),
       ]),
     );
