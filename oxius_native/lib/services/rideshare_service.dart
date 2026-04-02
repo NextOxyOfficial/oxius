@@ -514,6 +514,29 @@ class RideshareService {
         success: false,
         message: 'Network error: $e',
       );
+  static Future<RideshareApiResult<DriverProfile>> applyAsDriver({
+    String? licenseNumber,
+    String? nationalIdNumber,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final body = <String, dynamic>{};
+      if (licenseNumber != null) body['license_number'] = licenseNumber;
+      if (nationalIdNumber != null) body['national_id_number'] = nationalIdNumber;
+      final response = await http.post(
+        Uri.parse('$_baseUrl/drivers/apply/'),
+        headers: headers,
+        body: json.encode(body),
+      );
+      return _parseResponse<DriverProfile>(
+        response,
+        (data) => DriverProfile.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<DriverProfile>(
+        success: false,
+        message: 'Network error: $e',
+      );
     }
   }
 

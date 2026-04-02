@@ -66,6 +66,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
 
+  // Live passenger location received via WebSocket
+  RidePoint? _passengerLocation;
+
   Ride? _resolveDriverActiveRide(DriverProfile? profile, Ride? ride) {
     if (profile == null || ride == null) return null;
     final assignedDriverId = ride.assignedDriver?.userId ?? '';
@@ -331,6 +334,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final authFailed = !profileResult.success &&
         (msg.contains('unauthorized') || msg.contains('credentials') ||
          msg.contains('authentication') || msg.contains('not provided'));
+    // 404 = no driver profile yet (not an error, user hasn't applied)
+    final noProfile = !profileResult.success &&
+        (msg.contains('no driver profile') || msg.contains('not found'));
     if (mounted) {
       setState(() {
         _isAuthError = authFailed;
@@ -396,6 +402,23 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (!mounted || _activeRide == null) return;
 
     final type = event['type']?.toString() ?? '';
+
+    // Handle live passenger location updates
+    if (type == 'passenger.location') {
+      final lat = double.tryParse(event['latitude']?.toString() ?? '');
+      final lng = double.tryParse(event['longitude']?.toString() ?? '');
+      if (lat != null && lng != null) {
+        setState(() {
+          _passengerLocation = RidePoint(
+            name: 'Passenger',
+            latitude: lat,
+            longitude: lng,
+          );
+        });
+      }
+      return;
+    }
+
     if (type != 'ride.event') {
       return;
     }
@@ -409,6 +432,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
       if (_activeRide?.isCompleted == true || _activeRide?.isCancelled == true) {
+        setState(() => _passengerLocation = null);
         _showSuccess(_activeRide!.isCompleted ? 'Ride completed!' : 'Ride cancelled');
       }
       _syncRealtimeConnections();
@@ -438,11 +462,23 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _saveProfile() async {
     setState(() => _isSavingProfile = true);
-    final result = await RideshareService.updateDriverProfile(
-      licenseNumber: _licenseController.text.trim(),
-      nationalIdNumber: _nidController.text.trim(),
-      serviceRadiusKm: _serviceRadius,
-    );
+
+    final isNewApplication = _driverProfile == null;
+    final RideshareApiResult<DriverProfile> result;
+
+    if (isNewApplication) {
+      result = await RideshareService.applyAsDriver(
+        licenseNumber: _licenseController.text.trim(),
+        nationalIdNumber: _nidController.text.trim(),
+      );
+    } else {
+      result = await RideshareService.updateDriverProfile(
+        licenseNumber: _licenseController.text.trim(),
+        nationalIdNumber: _nidController.text.trim(),
+        serviceRadiusKm: _serviceRadius,
+      );
+    }
+
     if (mounted) {
       setState(() => _isSavingProfile = false);
       if (result.success && result.data != null) {
@@ -454,7 +490,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _isProfileExpanded = !_hasSubmittedIdentity(result.data);
           _profileExpansionInitialized = true;
         });
-        _showSuccess('Profile saved');
+        _showSuccess(isNewApplication
+            ? 'Application submitted! Wait for admin approval.'
+            : 'Profile saved');
       } else {
         _showError(result.message);
       }
@@ -590,7 +628,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       setState(() => _isUpdatingStatus = false);
       if (result.success && result.data != null) {
         if (status == 'completed' || status == 'cancelled') {
-          setState(() => _activeRide = null);
+          setState(() {
+            _activeRide = null;
+            _passengerLocation = null;
+          });
           _loadAvailableRequests();
           _loadDriverData();
           _syncRealtimeConnections();
@@ -1105,7 +1146,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
-                  'Fill in your identity details once. After submission, license and NID stay locked.',
+                  _driverProfile == null
+                      ? 'Submit your identity details to apply as a driver. Admin will review and approve your application.'
+                      : 'Fill in your identity details once. After submission, license and NID stay locked.',
                   style: GoogleFonts.inter(fontSize: 12, color: _slate500),
                 ),
               ),
@@ -1172,7 +1215,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         )
                       : const Icon(Icons.save_rounded, size: 16),
                   label: Text(
-                    _isSavingProfile ? 'Saving...' : 'Save Profile',
+                    _isSavingProfile
+                        ? 'Saving...'
+                        : _driverProfile == null
+                            ? 'Apply as Driver'
+                            : 'Save Profile',
                     style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                   style: FilledButton.styleFrom(
@@ -1759,6 +1806,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           pickupPoint: ride.pickupPoint,
           dropPoint: ride.dropPoint,
           routeGeometry: ride.routeGeometry,
+          passengerLocation: _passengerLocation,
+          passengerName: ride.riderName.isNotEmpty ? ride.riderName : null,
+          passengerAvatar: ride.riderAvatar,
         ),
       ),
     ]);
@@ -1926,15 +1976,63 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _requestEarlyCompletion() async {
     final ride = _activeRide;
-    if (ride == null) return;
+    if (ride == null || _isUpdatingStatus) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text('Early Complete?',
+            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Text(
+          'This will calculate a partial fare based on the distance traveled so far and send a confirmation request to the passenger.',
+          style: GoogleFonts.inter(fontSize: 13, color: _slate500),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: GoogleFonts.inter(color: _slate500)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEA580C),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('Confirm', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isUpdatingStatus = true);
+
+    // Get live GPS coordinates for accurate distance calculation
+    double? lat = _driverProfile?.currentLatitude;
+    double? lng = _driverProfile?.currentLongitude;
+    try {
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      ).timeout(const Duration(seconds: 5));
+      lat = pos.latitude;
+      lng = pos.longitude;
+    } catch (_) {
+      // Fallback: use last known position or profile coordinates
+      try {
+        final last = await Geolocator.getLastKnownPosition();
+        if (last != null) { lat = last.latitude; lng = last.longitude; }
+      } catch (_) {}
+    }
 
     final result = await RideshareService.requestEarlyCompletion(
       ride.id,
-      latitude: _driverProfile?.currentLatitude,
-      longitude: _driverProfile?.currentLongitude,
+      latitude: lat,
+      longitude: lng,
     );
     if (!mounted) return;
 
+    setState(() => _isUpdatingStatus = false);
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
       _syncRealtimeConnections();

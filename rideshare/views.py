@@ -749,13 +749,25 @@ class DriverProfileView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        try:
+            driver_profile = DriverProfile.objects.get(user=request.user)
+        except DriverProfile.DoesNotExist:
+            return api_error(
+                "No driver profile found. Please apply to become a driver first.",
+                status.HTTP_404_NOT_FOUND,
+            )
         return api_success(
             DriverProfileSerializer(driver_profile, context={"request": request}).data
         )
 
     def put(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        try:
+            driver_profile = DriverProfile.objects.get(user=request.user)
+        except DriverProfile.DoesNotExist:
+            return api_error(
+                "No driver profile found. Please apply to become a driver first.",
+                status.HTTP_404_NOT_FOUND,
+            )
         serializer = DriverProfileSerializer(
             driver_profile,
             data=request.data,
@@ -770,6 +782,38 @@ class DriverProfileView(RideshareApiMixin, APIView):
             )
         serializer.save()
         return api_success(serializer.data, "Driver profile updated successfully.")
+
+
+class DriverApplyView(RideshareApiMixin, APIView):
+    """Explicit driver registration — creates a new pending DriverProfile."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if DriverProfile.objects.filter(user=request.user).exists():
+            driver_profile = DriverProfile.objects.get(user=request.user)
+            return api_success(
+                DriverProfileSerializer(
+                    driver_profile, context={"request": request}
+                ).data,
+                "You already have a driver profile.",
+            )
+
+        serializer = DriverProfileSerializer(
+            data=request.data, partial=True, context={"request": request}
+        )
+        if not serializer.is_valid():
+            return api_error(
+                first_error_message(serializer.errors),
+                status.HTTP_400_BAD_REQUEST,
+                serializer.errors,
+            )
+        driver_profile = serializer.save(user=request.user, approval_status="pending")
+        return api_success(
+            DriverProfileSerializer(driver_profile, context={"request": request}).data,
+            "Driver application submitted! Please wait for admin approval.",
+            status.HTTP_201_CREATED,
+        )
 
 
 class DriverToggleOnlineView(RideshareApiMixin, APIView):
@@ -847,12 +891,17 @@ class VehicleListCreateView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
         vehicles = driver_profile.vehicles.all().order_by("-is_default", "-updated_at")
         return api_success(VehicleSerializer(vehicles, many=True).data)
 
     def post(self, request):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
+        if driver_profile.approval_status != "approved":
+            return api_error(
+                "Your KYC must be approved before you can add a vehicle.",
+                status.HTTP_403_FORBIDDEN,
+            )
         serializer = VehicleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(driver=driver_profile)
@@ -864,16 +913,27 @@ class VehicleListCreateView(RideshareApiMixin, APIView):
 class VehicleDetailView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
+    # Only allow toggling is_default / is_active; block all other field edits.
+    ALLOWED_PATCH_FIELDS = {"is_default", "is_active"}
+
     def patch(self, request, id):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
         vehicle = get_object_or_404(Vehicle, id=id, driver=driver_profile)
+
+        blocked_fields = set(request.data.keys()) - self.ALLOWED_PATCH_FIELDS
+        if blocked_fields:
+            return api_error(
+                "Vehicle details cannot be edited. Please contact support to make changes.",
+                status.HTTP_403_FORBIDDEN,
+            )
+
         serializer = VehicleSerializer(vehicle, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return api_success(serializer.data, "Vehicle updated successfully.")
 
     def delete(self, request, id):
-        driver_profile, _ = DriverProfile.objects.get_or_create(user=request.user)
+        driver_profile = get_object_or_404(DriverProfile, user=request.user)
         vehicle = get_object_or_404(Vehicle, id=id, driver=driver_profile)
         vehicle.delete()
         return api_success(None, "Vehicle deleted successfully.")

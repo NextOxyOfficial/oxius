@@ -30,6 +30,13 @@ class RideshareRealtimeService {
   Stream<Map<String, dynamic>> get rideEvents => _rideEventsController.stream;
   Stream<Map<String, dynamic>> get dispatchEvents => _dispatchEventsController.stream;
 
+  /// Send a JSON message over the active ride WebSocket channel.
+  void sendToRide(Map<String, dynamic> message) {
+    if (_rideChannel != null) {
+      _rideChannel!.sink.add(jsonEncode(message));
+    }
+  }
+
   Future<void> connectRide(String rideId) async {
     _activeRideId = rideId;
     _shouldKeepRideConnection = true;

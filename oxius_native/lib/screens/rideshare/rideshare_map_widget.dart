@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
 import '../../models/rideshare_models.dart';
@@ -15,6 +16,18 @@ class RideshareMapWidget extends StatefulWidget {
   final Function(double latitude, double longitude)? onMapTap;
   final bool followDriver;
 
+  // Profile info for rich markers
+  final String? riderName;
+  final String? riderAvatar;
+  final String? driverName;
+  final String? driverAvatar;
+  final String? driverVehicleInfo; // e.g. "Honda Shine • DHA-1234"
+
+  // Live passenger location (for driver map)
+  final RidePoint? passengerLocation;
+  final String? passengerName;
+  final String? passengerAvatar;
+
   const RideshareMapWidget({
     super.key,
     this.pickupPoint,
@@ -26,6 +39,14 @@ class RideshareMapWidget extends StatefulWidget {
     this.activeSelection,
     this.onMapTap,
     this.followDriver = false,
+    this.riderName,
+    this.riderAvatar,
+    this.driverName,
+    this.driverAvatar,
+    this.driverVehicleInfo,
+    this.passengerLocation,
+    this.passengerName,
+    this.passengerAvatar,
   });
 
   @override
@@ -34,9 +55,22 @@ class RideshareMapWidget extends StatefulWidget {
 
 class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   final MapController _mapController = MapController();
+  bool _initialFitDone = false;
   
   // Default center (Dhaka, Bangladesh)
   static const LatLng _defaultCenter = LatLng(23.8103, 90.4125);
+
+  @override
+  void initState() {
+    super.initState();
+    // Defer initial fit so the map controller is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_initialFitDone) {
+        _initialFitDone = true;
+        _fitBounds();
+      }
+    });
+  }
 
   @override
   void didUpdateWidget(RideshareMapWidget oldWidget) {
@@ -76,6 +110,9 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     }
     if (widget.driverLocation != null) {
       points.add(LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude));
+    }
+    if (widget.passengerLocation != null) {
+      points.add(LatLng(widget.passengerLocation!.latitude, widget.passengerLocation!.longitude));
     }
     
     if (points.isEmpty) return;
@@ -221,14 +258,23 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   List<Marker> _buildMarkers() {
     final markers = <Marker>[];
     
-    // Pickup marker
+    // Pickup marker (with rider profile if available)
     if (widget.pickupPoint != null) {
+      final hasRiderInfo = widget.riderName != null && widget.riderName!.isNotEmpty;
       markers.add(
         Marker(
           point: LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude),
-          width: 40,
-          height: 50,
-          child: _buildPickupMarker(),
+          width: hasRiderInfo ? 160 : 40,
+          height: hasRiderInfo ? 72 : 50,
+          child: hasRiderInfo
+              ? _buildProfileMarker(
+                  name: widget.riderName!,
+                  avatarUrl: widget.riderAvatar,
+                  subtitle: 'Passenger',
+                  gradientColors: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  icon: Icons.person_rounded,
+                )
+              : _buildPickupMarker(),
         ),
       );
     }
@@ -245,18 +291,48 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       );
     }
     
-    // Driver marker
+    // Driver marker (with driver profile if available)
     if (widget.driverLocation != null) {
+      final hasDriverInfo = widget.driverName != null && widget.driverName!.isNotEmpty;
       markers.add(
         Marker(
           point: LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude),
-          width: 50,
-          height: 50,
-          child: _buildDriverMarker(),
+          width: hasDriverInfo ? 180 : 50,
+          height: hasDriverInfo ? 82 : 50,
+          child: hasDriverInfo
+              ? _buildProfileMarker(
+                  name: widget.driverName!,
+                  avatarUrl: widget.driverAvatar,
+                  subtitle: widget.driverVehicleInfo ?? 'Driver',
+                  gradientColors: const [Color(0xFF10B981), Color(0xFF059669)],
+                  icon: Icons.directions_car_rounded,
+                )
+              : _buildDriverMarker(),
         ),
       );
     }
     
+    // Live passenger location (shown on driver map)
+    if (widget.passengerLocation != null) {
+      final hasPassengerInfo = widget.passengerName != null && widget.passengerName!.isNotEmpty;
+      markers.add(
+        Marker(
+          point: LatLng(widget.passengerLocation!.latitude, widget.passengerLocation!.longitude),
+          width: hasPassengerInfo ? 160 : 40,
+          height: hasPassengerInfo ? 72 : 50,
+          child: hasPassengerInfo
+              ? _buildProfileMarker(
+                  name: widget.passengerName!,
+                  avatarUrl: widget.passengerAvatar,
+                  subtitle: 'Passenger (Live)',
+                  gradientColors: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                  icon: Icons.person_pin_circle_rounded,
+                )
+              : _buildPassengerLiveMarker(),
+        ),
+      );
+    }
+
     // Nearby drivers
     if (widget.nearbyDrivers != null) {
       for (final driver in widget.nearbyDrivers!) {
@@ -272,6 +348,101 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     }
     
     return markers;
+  }
+
+  Widget _buildProfileMarker({
+    required String name,
+    String? avatarUrl,
+    required String subtitle,
+    required List<Color> gradientColors,
+    required IconData icon,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: gradientColors.first.withOpacity(0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+            border: Border.all(color: gradientColors.first.withOpacity(0.4), width: 1.5),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(colors: gradientColors),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: avatarUrl != null && avatarUrl.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          avatarUrl,
+                          width: 28,
+                          height: 28,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(icon, size: 14, color: Colors.white),
+                        ),
+                      )
+                    : Icon(icon, size: 14, color: Colors.white),
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1E293B),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w500,
+                        color: gradientColors.first,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Pin tail
+        Container(
+          width: 2,
+          height: 8,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [gradientColors.first, gradientColors.first.withOpacity(0)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPickupMarker() {
@@ -354,6 +525,51 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
               colors: [
                 const Color(0xFF10B981),
                 const Color(0xFF10B981).withOpacity(0),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPassengerLiveMarker() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFF59E0B).withOpacity(0.4),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.person_pin_circle_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
+        ),
+        Container(
+          width: 3,
+          height: 10,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFFF59E0B),
+                const Color(0xFFF59E0B).withOpacity(0),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,

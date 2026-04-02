@@ -57,6 +57,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   int _maxDispatchAttempts = 15;
   DateTime? _targetedAtFromEvent;
   bool _isReportingCancellation = false;
+  StreamSubscription<Position>? _passengerLocationSubscription;
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _searchDebounce?.cancel();
     _statusRefreshTimer?.cancel();
     _rideEventSubscription?.cancel();
+    _passengerLocationSubscription?.cancel();
     _realtimeService.dispose();
     super.dispose();
   }
@@ -295,6 +297,37 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     _rideEventSubscription ??= _realtimeService.rideEvents.listen(_handleRideRealtimeEvent);
     _realtimeService.connectRide(ride.id);
+    _syncPassengerLocationTracking();
+  }
+
+  /// Start or stop live passenger GPS tracking based on active ride state.
+  void _syncPassengerLocationTracking() {
+    final ride = _activeRide;
+    final shouldTrack = ride != null &&
+        (ride.isDriverArriving || ride.isInProgress) &&
+        _locationGranted;
+
+    if (shouldTrack && _passengerLocationSubscription == null) {
+      _passengerLocationSubscription = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 15,
+        ),
+      ).listen(_sendPassengerLocation);
+    } else if (!shouldTrack && _passengerLocationSubscription != null) {
+      _passengerLocationSubscription?.cancel();
+      _passengerLocationSubscription = null;
+    }
+  }
+
+  void _sendPassengerLocation(Position position) {
+    _realtimeService.sendToRide({
+      'event': 'passenger.location',
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+      'heading': position.heading,
+      'accuracy_meters': position.accuracy,
+    });
   }
 
   Future<void> _handleRideRealtimeEvent(Map<String, dynamic> event) async {
@@ -1386,10 +1419,18 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
               ),
-              child: const Icon(
-                Icons.chat_bubble_rounded,
-                size: 18,
-                color: Color(0xFF10B981),
+              child: Image.asset(
+                'assets/images/chat_icon.png',
+                width: 18,
+                height: 18,
+                color: const Color(0xFF10B981),
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.chat_bubble_rounded,
+                    size: 18,
+                    color: Color(0xFF10B981),
+                  );
+                },
               ),
             ),
           ),

@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     ActiveRideView,
     AvailableRideRequestListView,
+    DriverApplyView,
     DriverEarningsSummaryView,
     DriverLocationUpdateView,
     DriverProfileView,
@@ -42,6 +43,7 @@ urlpatterns = [
         name="rides-nearby-drivers",
     ),
     path("drivers/profile/", DriverProfileView.as_view(), name="rides-driver-profile"),
+    path("drivers/apply/", DriverApplyView.as_view(), name="rides-driver-apply"),
     path(
         "drivers/toggle-online/",
         DriverToggleOnlineView.as_view(),
