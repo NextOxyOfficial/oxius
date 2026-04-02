@@ -4,6 +4,7 @@ from .views import (
     ActiveRideView,
     AvailableRideRequestListView,
     DriverApplyView,
+    DriverCashDueSettlementView,
     DriverEarningsSummaryView,
     DriverLocationUpdateView,
     DriverProfileView,
@@ -53,6 +54,11 @@ urlpatterns = [
         "drivers/location/update/",
         DriverLocationUpdateView.as_view(),
         name="rides-driver-location-update",
+    ),
+    path(
+        "drivers/settle-cash-dues/",
+        DriverCashDueSettlementView.as_view(),
+        name="rides-driver-settle-cash-dues",
     ),
     path(
         "drivers/earnings-summary/",

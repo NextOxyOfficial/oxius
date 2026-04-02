@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from .models import DriverProfile, Ride, Vehicle
 from .permissions import IsApprovedDriver
 from .serializers import (
+    DriverCashDueSettlementSerializer,
     DriverLocationUpdateSerializer,
     DriverProfileSerializer,
     DriverToggleOnlineSerializer,
@@ -576,6 +577,9 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
             )
 
         if next_status == Ride.STATUS_COMPLETED:
+            payment_method = serializer.validated_data.get(
+                "payment_method", Ride.PAYMENT_METHOD_WALLET
+            )
             if ride.status == Ride.STATUS_AWAITING_CONFIRMATION:
                 return api_error(
                     "Passenger confirmation is required before completing this early-finished ride."
@@ -590,12 +594,20 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
 
             ride.final_fare = payable_amount
             ride.save(update_fields=["final_fare", "updated_at"])
-            if not ride.payment_transaction_id and ride.rider.balance < ride.final_fare:
+            if (
+                payment_method == Ride.PAYMENT_METHOD_WALLET
+                and not ride.payment_transaction_id
+                and ride.rider.balance < ride.final_fare
+            ):
                 return api_error("Insufficient wallet balance to complete this ride.")
 
         try:
             if next_status == Ride.STATUS_COMPLETED:
-                WalletService.complete_ride_payment(ride, amount=ride.final_fare)
+                WalletService.complete_ride_payment(
+                    ride,
+                    amount=ride.final_fare,
+                    payment_method=payment_method,
+                )
             ride.transition_to(next_status, actor=request.user)
         except DjangoValidationError as exc:
             return api_error(str(exc))
@@ -611,8 +623,10 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
             event_payload.update(
                 {
                     "final_fare": str(ride.final_fare),
+                    "payment_method": ride.payment_method,
                     "platform_fee_amount": str(ride.platform_fee_amount),
                     "driver_payout_amount": str(ride.driver_payout_amount),
+                    "driver_due_amount": str(ride.driver_due_amount),
                 }
             )
         DispatchService.send_ride_event(ride, "ride_status_updated", event_payload)
@@ -678,7 +692,12 @@ class RideConfirmEarlyCompletionView(RideshareApiMixin, APIView):
 
         try:
             ride = EarlyCompletionService.confirm(
-                ride, request.user, confirm=serializer.validated_data["confirm"]
+                ride,
+                request.user,
+                confirm=serializer.validated_data["confirm"],
+                payment_method=serializer.validated_data.get(
+                    "payment_method", Ride.PAYMENT_METHOD_WALLET
+                ),
             )
         except DjangoValidationError as exc:
             return api_error(str(exc))
@@ -828,12 +847,51 @@ class DriverToggleOnlineView(RideshareApiMixin, APIView):
         if is_online and not get_driver_default_vehicle(driver_profile):
             return api_error("Add an active vehicle before going online.")
 
+        if is_online and driver_profile.cash_due_limit_reached:
+            return api_error(
+                "You have unpaid rideshare cash dues. Pay them from your Adsy balance before going online.",
+                errors={
+                    "outstanding_cash_due_count": driver_profile.outstanding_cash_due_count,
+                    "outstanding_cash_due_amount": str(driver_profile.outstanding_cash_due_amount),
+                },
+            )
+
         driver_profile.is_online = is_online
         driver_profile.is_available = is_online
         driver_profile.save(update_fields=["is_online", "is_available", "updated_at"])
         return api_success(
             DriverProfileSerializer(driver_profile, context={"request": request}).data,
             "Driver availability updated successfully.",
+        )
+
+
+class DriverCashDueSettlementView(RideshareApiMixin, APIView):
+    permission_classes = [IsAuthenticated, IsApprovedDriver]
+
+    @transaction.atomic
+    def post(self, request):
+        serializer = DriverCashDueSettlementSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        driver_profile = request.user.driver_profile
+        try:
+            settlement = WalletService.settle_driver_cash_dues(driver_profile)
+        except DjangoValidationError as exc:
+            return api_error(str(exc))
+
+        driver_profile.refresh_from_db()
+        data = DriverProfileSerializer(
+            driver_profile, context={"request": request}
+        ).data
+        data.update(
+            {
+                "settled_amount": str(settlement["settled_amount"]),
+                "settled_count": settlement["settled_count"],
+            }
+        )
+        return api_success(
+            data,
+            "Cash due paid successfully from your Adsy balance.",
         )
 
 

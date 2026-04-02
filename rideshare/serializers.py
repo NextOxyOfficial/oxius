@@ -52,6 +52,9 @@ class VehicleSerializer(serializers.ModelSerializer):
 class DriverProfileSerializer(serializers.ModelSerializer):
     user = RideUserSerializer(read_only=True)
     default_vehicle = serializers.SerializerMethodField()
+    outstanding_cash_due_count = serializers.SerializerMethodField()
+    outstanding_cash_due_amount = serializers.SerializerMethodField()
+    cash_due_limit_reached = serializers.SerializerMethodField()
 
     class Meta:
         model = DriverProfile
@@ -70,6 +73,9 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             "total_trips",
             "total_earnings",
             "default_vehicle",
+            "outstanding_cash_due_count",
+            "outstanding_cash_due_amount",
+            "cash_due_limit_reached",
             "created_at",
             "updated_at",
         ]
@@ -91,6 +97,15 @@ class DriverProfileSerializer(serializers.ModelSerializer):
         if not vehicle:
             vehicle = obj.vehicles.filter(is_active=True).first()
         return VehicleSerializer(vehicle).data if vehicle else None
+
+    def get_outstanding_cash_due_count(self, obj):
+        return obj.outstanding_cash_due_count
+
+    def get_outstanding_cash_due_amount(self, obj):
+        return obj.outstanding_cash_due_amount
+
+    def get_cash_due_limit_reached(self, obj):
+        return obj.cash_due_limit_reached
 
     def validate(self, attrs):
         instance = getattr(self, "instance", None)
@@ -181,6 +196,9 @@ class RideSerializer(serializers.ModelSerializer):
             "driver_payout_amount",
             "status",
             "payment_status",
+            "payment_method",
+            "driver_due_amount",
+            "driver_due_settled_at",
             "cancellation_reason",
             "early_completion_requested_at",
             "early_completion_distance_km",
@@ -296,6 +314,11 @@ class RideStatusUpdateSerializer(serializers.Serializer):
     final_fare = serializers.DecimalField(
         max_digits=10, decimal_places=2, required=False
     )
+    payment_method = serializers.ChoiceField(
+        choices=Ride.PAYMENT_METHOD_CHOICES,
+        required=False,
+        default=Ride.PAYMENT_METHOD_WALLET,
+    )
 
 
 class RideEarlyCompleteSerializer(serializers.Serializer):
@@ -305,6 +328,11 @@ class RideEarlyCompleteSerializer(serializers.Serializer):
 
 class RideConfirmEarlyCompletionSerializer(serializers.Serializer):
     confirm = serializers.BooleanField(default=True)
+    payment_method = serializers.ChoiceField(
+        choices=Ride.PAYMENT_METHOD_CHOICES,
+        required=False,
+        default=Ride.PAYMENT_METHOD_WALLET,
+    )
 
 
 class RideCancellationReportSerializer(serializers.Serializer):
@@ -313,6 +341,10 @@ class RideCancellationReportSerializer(serializers.Serializer):
 
 class DriverToggleOnlineSerializer(serializers.Serializer):
     is_online = serializers.BooleanField()
+
+
+class DriverCashDueSettlementSerializer(serializers.Serializer):
+    go_online_after_payment = serializers.BooleanField(required=False, default=False)
 
 
 class DriverLocationUpdateSerializer(serializers.Serializer):

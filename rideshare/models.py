@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Sum
 from django.utils import timezone
 
 
@@ -57,6 +58,28 @@ class DriverProfile(models.Model):
 
     def __str__(self):
         return f"DriverProfile({self.user_id})"
+
+    def outstanding_cash_due_rides(self):
+        return self.rides_assigned.filter(
+            payment_method=Ride.PAYMENT_METHOD_CASH,
+            payment_status="completed",
+            driver_due_amount__gt=Decimal("0.00"),
+            driver_due_settled_at__isnull=True,
+        )
+
+    @property
+    def outstanding_cash_due_count(self):
+        return self.outstanding_cash_due_rides().count()
+
+    @property
+    def outstanding_cash_due_amount(self):
+        return self.outstanding_cash_due_rides().aggregate(
+            total=Sum("driver_due_amount")
+        ).get("total") or Decimal("0.00")
+
+    @property
+    def cash_due_limit_reached(self):
+        return self.outstanding_cash_due_count >= 2
 
 
 class Vehicle(models.Model):
@@ -242,6 +265,13 @@ class Ride(models.Model):
         ("refunded", "Refunded"),
     ]
 
+    PAYMENT_METHOD_WALLET = "wallet"
+    PAYMENT_METHOD_CASH = "cash"
+    PAYMENT_METHOD_CHOICES = [
+        (PAYMENT_METHOD_WALLET, "Wallet"),
+        (PAYMENT_METHOD_CASH, "Cash"),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     rider = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -310,6 +340,15 @@ class Ride(models.Model):
     payment_status = models.CharField(
         max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
     )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        default=PAYMENT_METHOD_WALLET,
+    )
+    driver_due_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=Decimal("0.00")
+    )
+    driver_due_settled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True, default="")
     early_completion_requested_at = models.DateTimeField(null=True, blank=True)
     early_completion_distance_km = models.DecimalField(

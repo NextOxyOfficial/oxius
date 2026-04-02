@@ -721,17 +721,8 @@ class FareService:
 
 class WalletService:
     @staticmethod
-    @transaction.atomic
-    def complete_ride_payment(ride, amount=None):
-        if ride.payment_transaction_id:
-            return ride.payment_transaction
-
+    def _calculate_ride_payment_breakdown(ride, amount=None):
         amount = decimal_money(amount or ride.final_fare or ride.fare_estimate)
-        if ride.rider.balance < amount:
-            raise ValidationError("Insufficient wallet balance to complete this ride.")
-        if not ride.assigned_driver:
-            raise ValidationError("Ride has no assigned driver.")
-
         settings_obj = get_rideshare_settings()
         platform_fee_percent = decimal_money(
             ride.platform_fee_percent
@@ -745,54 +736,165 @@ class WalletService:
             max(amount - platform_fee_amount, Decimal("0.00"))
         )
 
+        return amount, platform_fee_percent, platform_fee_amount, driver_payout_amount
+
+    @staticmethod
+    def _sync_driver_due_restrictions(driver):
+        limit_reached = driver.cash_due_limit_reached
+        update_fields = ["total_earnings", "total_trips", "is_available", "updated_at"]
+        driver.is_available = not limit_reached
+        if limit_reached and driver.is_online:
+            driver.is_online = False
+            update_fields.append("is_online")
+        driver.save(update_fields=update_fields)
+
+    @staticmethod
+    @transaction.atomic
+    def complete_ride_payment(ride, amount=None, payment_method=Ride.PAYMENT_METHOD_WALLET):
+        if ride.payment_transaction_id:
+            return ride.payment_transaction
+
+        if not ride.assigned_driver:
+            raise ValidationError("Ride has no assigned driver.")
+
+        amount, platform_fee_percent, platform_fee_amount, driver_payout_amount = (
+            WalletService._calculate_ride_payment_breakdown(ride, amount=amount)
+        )
+
         rider = ride.rider
         driver = ride.assigned_driver
         driver_user = driver.user
 
-        rider.balance -= amount
-        driver_user.balance += driver_payout_amount
-        rider.save(update_fields=["balance"])
-        driver_user.save(update_fields=["balance"])
+        if payment_method == Ride.PAYMENT_METHOD_WALLET:
+            if rider.balance < amount:
+                raise ValidationError("Insufficient wallet balance to complete this ride.")
 
-        transaction_record = Balance.objects.create(
-            user=rider,
-            to_user=driver_user,
-            transaction_type="ride_payment",
-            payable_amount=amount,
-            amount=amount,
-            received_amount=driver_payout_amount,
-            description=f"Ride payment for trip {ride.id}",
-        )
+            rider.balance -= amount
+            driver_user.balance += driver_payout_amount
+            rider.save(update_fields=["balance"])
+            driver_user.save(update_fields=["balance"])
+
+            transaction_record = Balance.objects.create(
+                user=rider,
+                to_user=driver_user,
+                transaction_type="ride_payment",
+                payment_method="wallet",
+                payable_amount=amount,
+                amount=amount,
+                received_amount=driver_payout_amount,
+                completed=True,
+                approved=True,
+                bank_status="completed",
+                description=f"Wallet payment for ride {ride.id}",
+            )
+            driver_due_amount = Decimal("0.00")
+            driver_due_settled_at = timezone.now()
+        elif payment_method == Ride.PAYMENT_METHOD_CASH:
+            transaction_record = Balance.objects.create(
+                user=rider,
+                to_user=driver_user,
+                transaction_type="ride_cash",
+                payment_method="cash",
+                payable_amount=amount,
+                amount=amount,
+                received_amount=driver_payout_amount,
+                completed=True,
+                approved=True,
+                bank_status="completed",
+                description=f"Cash ride payment collected by driver for ride {ride.id}",
+            )
+            driver_due_amount = platform_fee_amount
+            driver_due_settled_at = None
+        else:
+            raise ValidationError("Unsupported rideshare payment method.")
+
         ride.payment_transaction = transaction_record
         ride.payment_status = "completed"
+        ride.payment_method = payment_method
         ride.final_fare = amount
         ride.platform_fee_percent = platform_fee_percent
         ride.platform_fee_amount = platform_fee_amount
         ride.driver_payout_amount = driver_payout_amount
+        ride.driver_due_amount = driver_due_amount
+        ride.driver_due_settled_at = driver_due_settled_at
         ride.save(
             update_fields=[
                 "payment_transaction",
                 "payment_status",
+                "payment_method",
                 "final_fare",
                 "platform_fee_percent",
                 "platform_fee_amount",
                 "driver_payout_amount",
+                "driver_due_amount",
+                "driver_due_settled_at",
                 "updated_at",
             ]
         )
 
         driver.total_earnings += driver_payout_amount
         driver.total_trips += 1
-        driver.is_available = True
-        driver.save(
-            update_fields=[
-                "total_earnings",
-                "total_trips",
-                "is_available",
-                "updated_at",
-            ]
-        )
+        WalletService._sync_driver_due_restrictions(driver)
         return transaction_record
+
+    @staticmethod
+    @transaction.atomic
+    def settle_driver_cash_dues(driver_profile):
+        due_rides = list(
+            Ride.objects.select_for_update()
+            .filter(
+                assigned_driver=driver_profile,
+                payment_method=Ride.PAYMENT_METHOD_CASH,
+                payment_status="completed",
+                driver_due_amount__gt=Decimal("0.00"),
+                driver_due_settled_at__isnull=True,
+            )
+            .only("id", "driver_due_amount")
+        )
+
+        if not due_rides:
+            raise ValidationError("No outstanding cash dues found.")
+
+        total_due = decimal_money(
+            sum((ride.driver_due_amount or Decimal("0.00")) for ride in due_rides)
+        )
+        driver_user = driver_profile.user
+        if driver_user.balance < total_due:
+            raise ValidationError(
+                f"Insufficient Adsy balance. You need ৳{total_due} to clear your rideshare due."
+            )
+
+        driver_user.balance -= total_due
+        driver_user.save(update_fields=["balance"])
+
+        settlement = Balance.objects.create(
+            user=driver_user,
+            transaction_type="ride_cash_due_settlement",
+            payment_method="wallet",
+            payable_amount=total_due,
+            amount=total_due,
+            received_amount=Decimal("0.00"),
+            completed=True,
+            approved=True,
+            bank_status="completed",
+            description=f"Settled {len(due_rides)} rideshare cash due payment(s)",
+        )
+
+        settled_at = timezone.now()
+        Ride.objects.filter(id__in=[ride.id for ride in due_rides]).update(
+            driver_due_settled_at=settled_at,
+            updated_at=settled_at,
+        )
+
+        driver_profile.refresh_from_db(fields=["is_online", "is_available", "updated_at"])
+        driver_profile.is_available = driver_profile.is_online
+        driver_profile.save(update_fields=["is_available", "updated_at"])
+
+        return {
+            "settled_amount": total_due,
+            "settled_count": len(due_rides),
+            "transaction": settlement,
+        }
 
 
 class DispatchService:
@@ -1805,7 +1907,13 @@ class EarlyCompletionService:
 
     @classmethod
     @transaction.atomic
-    def confirm(cls, ride, actor, confirm=True):
+    def confirm(
+        cls,
+        ride,
+        actor,
+        confirm=True,
+        payment_method=Ride.PAYMENT_METHOD_WALLET,
+    ):
         if ride.status != Ride.STATUS_AWAITING_CONFIRMATION:
             raise ValidationError(
                 "This ride is not waiting for early completion confirmation."
@@ -1829,13 +1937,18 @@ class EarlyCompletionService:
         payable_amount = (
             ride.early_completion_fare or ride.final_fare or ride.fare_estimate
         )
-        WalletService.complete_ride_payment(ride, amount=payable_amount)
+        WalletService.complete_ride_payment(
+            ride,
+            amount=payable_amount,
+            payment_method=payment_method,
+        )
         ride.transition_to(
             Ride.STATUS_COMPLETED,
             actor=actor,
             metadata={
                 "event": "early_completion_confirmed",
                 "fare": str(payable_amount),
+                "payment_method": payment_method,
             },
         )
         DispatchService.send_ride_event(
@@ -1843,8 +1956,10 @@ class EarlyCompletionService:
             "ride_completed",
             {
                 "fare": str(payable_amount),
+                "payment_method": payment_method,
                 "platform_fee_amount": str(ride.platform_fee_amount),
                 "driver_payout_amount": str(ride.driver_payout_amount),
+                "driver_due_amount": str(ride.driver_due_amount),
             },
         )
         RideNotificationService.notify_ride_status_change(ride)

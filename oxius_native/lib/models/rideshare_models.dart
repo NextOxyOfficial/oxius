@@ -150,6 +150,9 @@ class DriverProfile {
   final DateTime? lastLocationAt;
   final int totalTrips;
   final double totalEarnings;
+  final int outstandingCashDueCount;
+  final double outstandingCashDueAmount;
+  final bool cashDueLimitReached;
   final List<Vehicle> vehicles;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -171,6 +174,9 @@ class DriverProfile {
     this.lastLocationAt,
     required this.totalTrips,
     required this.totalEarnings,
+    required this.outstandingCashDueCount,
+    required this.outstandingCashDueAmount,
+    required this.cashDueLimitReached,
     required this.vehicles,
     required this.createdAt,
     required this.updatedAt,
@@ -197,6 +203,10 @@ class DriverProfile {
           : null,
       totalTrips: json['total_trips'] ?? 0,
       totalEarnings: double.tryParse(json['total_earnings']?.toString() ?? '') ?? 0.0,
+      outstandingCashDueCount: json['outstanding_cash_due_count'] ?? 0,
+      outstandingCashDueAmount:
+          double.tryParse(json['outstanding_cash_due_amount']?.toString() ?? '') ?? 0.0,
+      cashDueLimitReached: json['cash_due_limit_reached'] ?? false,
       vehicles: _parseVehicles(json),
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] ?? '') ?? DateTime.now(),
@@ -307,6 +317,9 @@ class Ride {
   final double driverPayoutAmount;
   final String status;
   final String paymentStatus;
+  final String paymentMethod;
+  final double driverDueAmount;
+  final DateTime? driverDueSettledAt;
   final String? cancellationReason;
   final DateTime? earlyCompletionRequestedAt;
   final double? earlyCompletionDistanceKm;
@@ -354,6 +367,9 @@ class Ride {
     required this.driverPayoutAmount,
     required this.status,
     required this.paymentStatus,
+    required this.paymentMethod,
+    required this.driverDueAmount,
+    this.driverDueSettledAt,
     this.cancellationReason,
     this.earlyCompletionRequestedAt,
     this.earlyCompletionDistanceKm,
@@ -410,6 +426,11 @@ class Ride {
       driverPayoutAmount: double.tryParse(json['driver_payout_amount']?.toString() ?? '') ?? 0.0,
       status: json['status'] ?? 'requested',
       paymentStatus: json['payment_status'] ?? 'pending',
+        paymentMethod: json['payment_method'] ?? 'wallet',
+        driverDueAmount: double.tryParse(json['driver_due_amount']?.toString() ?? '') ?? 0.0,
+        driverDueSettledAt: json['driver_due_settled_at'] != null
+          ? DateTime.tryParse(json['driver_due_settled_at'])
+          : null,
       cancellationReason: json['cancellation_reason'],
       earlyCompletionRequestedAt: json['early_completion_requested_at'] != null
           ? DateTime.tryParse(json['early_completion_requested_at'])
@@ -528,11 +549,14 @@ class Ride {
     Vehicle? vehicle,
     String? status,
     String? paymentStatus,
+    String? paymentMethod,
     String? cancellationReason,
     double? finalFare,
     double? platformFeePercent,
     double? platformFeeAmount,
     double? driverPayoutAmount,
+    double? driverDueAmount,
+    DateTime? driverDueSettledAt,
     DateTime? targetedAt,
     int? dispatchAttempt,
     DateTime? searchExpiresAt,
@@ -579,6 +603,9 @@ class Ride {
       driverPayoutAmount: driverPayoutAmount ?? this.driverPayoutAmount,
       status: status ?? this.status,
       paymentStatus: paymentStatus ?? this.paymentStatus,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      driverDueAmount: driverDueAmount ?? this.driverDueAmount,
+      driverDueSettledAt: driverDueSettledAt ?? this.driverDueSettledAt,
       cancellationReason: cancellationReason ?? this.cancellationReason,
       earlyCompletionRequestedAt: earlyCompletionRequestedAt ?? this.earlyCompletionRequestedAt,
       earlyCompletionDistanceKm: earlyCompletionDistanceKm ?? this.earlyCompletionDistanceKm,

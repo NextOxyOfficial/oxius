@@ -294,6 +294,7 @@ class RideshareService {
     String rideId,
     String status, {
     double? finalFare,
+    String paymentMethod = 'wallet',
   }) async {
     try {
       final headers = await _getHeaders();
@@ -301,6 +302,7 @@ class RideshareService {
       if (finalFare != null) {
         body['final_fare'] = finalFare;
       }
+      body['payment_method'] = paymentMethod;
       final response = await http.post(
         Uri.parse('$_baseUrl/$rideId/status/'),
         headers: headers,
@@ -348,13 +350,14 @@ class RideshareService {
   static Future<RideshareApiResult<Ride>> confirmEarlyCompletion(
     String rideId, {
     bool confirm = true,
+    String paymentMethod = 'wallet',
   }) async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
         Uri.parse('$_baseUrl/$rideId/confirm-early-complete/'),
         headers: headers,
-        body: json.encode({'confirm': confirm}),
+        body: json.encode({'confirm': confirm, 'payment_method': paymentMethod}),
       );
       return _parseResponse<Ride>(
         response,
@@ -552,6 +555,28 @@ class RideshareService {
         Uri.parse('$_baseUrl/drivers/toggle-online/'),
         headers: headers,
         body: json.encode({'is_online': isOnline}),
+      );
+      return _parseResponse<DriverProfile>(
+        response,
+        (data) => DriverProfile.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<DriverProfile>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<DriverProfile>> settleDriverCashDues({
+    bool goOnlineAfterPayment = false,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$_baseUrl/drivers/settle-cash-dues/'),
+        headers: headers,
+        body: json.encode({'go_online_after_payment': goOnlineAfterPayment}),
       );
       return _parseResponse<DriverProfile>(
         response,

@@ -56,6 +56,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   int _dispatchAttempt = 0;
   int _maxDispatchAttempts = 15;
   DateTime? _targetedAtFromEvent;
+  String? _targetedDriverNameFromEvent;
   bool _noDriversInRange = false;
   bool _isReportingCancellation = false;
   StreamSubscription<Position>? _passengerLocationSubscription;
@@ -123,7 +124,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   int _targetedRemainingSeconds(Ride ride, {DateTime? now}) {
-    if (ride.targetedDriver == null) return 0;
+    if (_currentTargetedDriverName(ride).isEmpty) return 0;
 
     final targetedAt = _targetedAtFromEvent ?? ride.targetedAt;
     if (targetedAt == null) return _driverResponseTimeoutSeconds;
@@ -132,6 +133,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final elapsed = currentTime.difference(targetedAt).inSeconds;
     final remaining = _driverResponseTimeoutSeconds - elapsed;
     return remaining > 0 ? remaining : 0;
+  }
+
+  String _currentTargetedDriverName(Ride ride) {
+    final eventName = (_targetedDriverNameFromEvent ?? '').trim();
+    if (eventName.isNotEmpty) {
+      return eventName;
+    }
+    return ride.targetedDriver?.userName.trim() ?? '';
   }
 
   @override
@@ -257,7 +266,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       _searchStatusMessage = _deriveSearchStatusMessage(ride);
       _dispatchAttempt = ride?.dispatchAttempt ?? 0;
       _maxDispatchAttempts = ride != null ? _deriveMaxDispatchAttempts(ride) : 15;
-      _targetedAtFromEvent = ride?.targetedAt;
+      _targetedAtFromEvent = ride == null
+          ? null
+          : (ride.isSearching ? (ride.targetedAt ?? _targetedAtFromEvent) : null);
+      _targetedDriverNameFromEvent = ride == null
+          ? null
+          : (ride.isSearching
+              ? (ride.targetedDriver?.userName ?? _targetedDriverNameFromEvent)
+              : null);
       _isLoadingActiveRide = isLoading;
     });
     _syncRideRealtimeConnection();
@@ -275,8 +291,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       }
     }
 
-    if (ride.isSearching && ride.targetedDriver != null) {
-      return 'Request sent to ${ride.targetedDriver!.userName}';
+    final targetedDriverName = _currentTargetedDriverName(ride);
+    if (ride.isSearching && targetedDriverName.isNotEmpty) {
+      return 'Request sent to $targetedDriverName';
     }
     if (ride.isSearching) {
       return 'Searching for nearby drivers...';
@@ -355,6 +372,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       final dispatchAttempt = _parseInt(event['dispatch_attempt'], _dispatchAttempt);
       final targetedAt = DateTime.tryParse(event['targeted_at']?.toString() ?? '');
       final targetedDriverId = event['targeted_driver_id']?.toString();
+      final targetedDriverName = event['targeted_driver_name']?.toString();
       final noDrivers = event['no_drivers_in_range'] == true;
 
       setState(() {
@@ -364,6 +382,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         _noDriversInRange = noDrivers;
         _driverResponseTimeoutSeconds = timeoutSeconds;
         _dispatchAttempt = dispatchAttempt;
+        _targetedDriverNameFromEvent =
+          (targetedDriverName == null || targetedDriverName.trim().isEmpty)
+            ? null
+            : targetedDriverName.trim();
         _targetedAtFromEvent = (targetedDriverId == null || targetedDriverId.isEmpty)
             ? null
             : targetedAt;
@@ -815,15 +837,30 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final ride = _activeRide;
     if (ride == null) return;
 
+    String paymentMethod = 'wallet';
+    if (confirm) {
+      final selectedMethod = await _selectPaymentMethod(ride);
+      if (selectedMethod == null) {
+        return;
+      }
+      paymentMethod = selectedMethod;
+    }
+
     setState(() => _isLoadingActiveRide = true);
-    final result = await RideshareService.confirmEarlyCompletion(ride.id, confirm: confirm);
+    final result = await RideshareService.confirmEarlyCompletion(
+      ride.id,
+      confirm: confirm,
+      paymentMethod: paymentMethod,
+    );
     if (!mounted) return;
 
     if (result.success && result.data != null) {
       _applyRideState(result.data, isLoading: false);
       _showSuccess(
         confirm
-            ? 'Ride completed and payment confirmed.'
+            ? (paymentMethod == 'cash'
+                ? 'Ride completed. Please pay the driver in cash.'
+                : 'Ride completed and wallet payment confirmed.')
             : 'Ride will continue until you confirm completion.',
       );
       return;
@@ -831,6 +868,107 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     setState(() => _isLoadingActiveRide = false);
     _showError(result.message);
+  }
+
+  Future<String?> _selectPaymentMethod(Ride ride) async {
+    final payableFare = ride.payableFare;
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Choose Payment Method',
+                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Trip fare: ৳${payableFare.toStringAsFixed(0)}',
+                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 14),
+              _buildPaymentMethodTile(
+                ctx,
+                value: 'wallet',
+                title: 'Pay with Adsy Balance',
+                subtitle: 'Fare will be deducted from your in-app balance instantly.',
+                icon: Icons.account_balance_wallet_rounded,
+                accent: const Color(0xFF6366F1),
+              ),
+              const SizedBox(height: 10),
+              _buildPaymentMethodTile(
+                ctx,
+                value: 'cash',
+                title: 'Pay Cash to Driver',
+                subtitle: 'You will pay the driver directly by cash after completion.',
+                icon: Icons.payments_rounded,
+                accent: const Color(0xFF10B981),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodTile(
+    BuildContext context, {
+    required String value,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color accent,
+  }) {
+    return InkWell(
+      onTap: () => Navigator.pop(context, value),
+      borderRadius: BorderRadius.circular(14),
+      child: Ink(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: accent.withValues(alpha: 0.25)),
+          color: accent.withValues(alpha: 0.06),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: accent, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF64748B), height: 1.35),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: accent),
+          ],
+        ),
+      ),
+    );
   }
 
   void _onMapTap(double latitude, double longitude) async {
@@ -1178,6 +1316,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final now = DateTime.now();
     final secondsRemaining = _targetedRemainingSeconds(ride, now: now);
     final searchWindowRemaining = _searchWindowRemainingSeconds(ride, now: now);
+    final targetedDriverName = _currentTargetedDriverName(ride);
     final attemptsLabel = _dispatchAttempt > 0
       ? 'Attempt $_dispatchAttempt/${_maxDispatchAttempts > 0 ? _maxDispatchAttempts : 15}'
       : 'Preparing driver match';
@@ -1214,7 +1353,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                   ),
                 ),
               ),
-              if (ride.targetedDriver != null)
+              if (targetedDriverName.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -1222,7 +1361,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    '${_formatDuration(secondsRemaining)}',
+                    _formatDuration(secondsRemaining),
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -1237,6 +1376,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             Text(
               'আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।',
               style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFFDC2626), height: 1.4),
+            ),
+            const SizedBox(height: 4),
+          ],
+          if (targetedDriverName.isNotEmpty) ...[
+            Text(
+              'Current driver: $targetedDriverName',
+              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF92400E)),
             ),
             const SizedBox(height: 4),
           ],

@@ -46,6 +46,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   bool _isAcceptingRide = false;
   final Set<String> _skippingRideIds = <String>{};
   bool _isUpdatingStatus = false;
+  bool _isPayingCashDues = false;
   bool _isAuthError = false;
   bool _isSavingProfile = false;
   bool _locationGranted = false;
@@ -335,9 +336,6 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final authFailed = !profileResult.success &&
         (msg.contains('unauthorized') || msg.contains('credentials') ||
          msg.contains('authentication') || msg.contains('not provided'));
-    // 404 = no driver profile yet (not an error, user hasn't applied)
-    final noProfile = !profileResult.success &&
-        (msg.contains('no driver profile') || msg.contains('not found'));
     if (mounted) {
       setState(() {
         _isAuthError = authFailed;
@@ -512,6 +510,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       return;
     }
 
+    if (newStatus && _driverProfile!.cashDueLimitReached) {
+      _showError(
+        'You have unpaid cash dues. Please pay from your Adsy balance before going online.',
+      );
+      return;
+    }
+
     setState(() => _isTogglingOnline = true);
 
     if (newStatus) {
@@ -548,6 +553,30 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _showError(result.message);
       }
     }
+  }
+
+  Future<void> _payOutstandingCashDues({bool goOnlineAfterPayment = false}) async {
+    if (_driverProfile == null || _isPayingCashDues) return;
+
+    setState(() => _isPayingCashDues = true);
+    final result = await RideshareService.settleDriverCashDues(
+      goOnlineAfterPayment: goOnlineAfterPayment,
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isPayingCashDues = false);
+    if (result.success && result.data != null) {
+      setState(() => _driverProfile = result.data);
+      _showSuccess(result.message);
+      await _loadDriverData();
+      if (goOnlineAfterPayment && _driverProfile?.isOnline != true) {
+        await _toggleOnline();
+      }
+      return;
+    }
+
+    _showError(result.message);
   }
 
   Future<void> _startLocationTracking() async {
@@ -624,10 +653,19 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _loadAvailableRequests();
   }
 
-  Future<void> _updateRideStatus(String status, {double? finalFare}) async {
+  Future<void> _updateRideStatus(
+    String status, {
+    double? finalFare,
+    String paymentMethod = 'wallet',
+  }) async {
     if (_activeRide == null) return;
     setState(() => _isUpdatingStatus = true);
-    final result = await RideshareService.updateRideStatus(_activeRide!.id, status, finalFare: finalFare);
+    final result = await RideshareService.updateRideStatus(
+      _activeRide!.id,
+      status,
+      finalFare: finalFare,
+      paymentMethod: paymentMethod,
+    );
     if (mounted) {
       setState(() => _isUpdatingStatus = false);
       if (result.success && result.data != null) {
@@ -639,7 +677,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _loadAvailableRequests();
           _loadDriverData();
           _syncRealtimeConnections();
-          _showSuccess(status == 'completed' ? 'Ride completed!' : 'Ride cancelled');
+          _showSuccess(
+            status == 'completed'
+                ? (paymentMethod == 'cash'
+                    ? 'Ride completed. Cash payment marked and due added.'
+                    : 'Ride completed!')
+                : 'Ride cancelled',
+          );
         } else {
           setState(() => _activeRide = result.data);
           _syncRealtimeConnections();
@@ -770,6 +814,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(height: 12),
                 _buildOnlineToggleCard(),
                 const SizedBox(height: 12),
+                if ((_driverProfile?.outstandingCashDueAmount ?? 0) > 0) ...[
+                  _buildCashDueCard(),
+                  const SizedBox(height: 12),
+                ],
               ],
               _buildProfileCard(),
               SizedBox(height: _isProfileExpanded ? 12 : 8),
@@ -952,6 +1000,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Widget _buildOnlineToggleCard() {
     final isOnline = _driverProfile?.isOnline == true;
     final isApproved = _driverProfile?.isApproved == true;
+    final dueLimitReached = _driverProfile?.cashDueLimitReached == true;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -985,6 +1034,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             Text(
               !_locationGranted
                 ? 'Enable location to receive ride requests'
+                : dueLimitReached
+                  ? 'Clear your unpaid cash dues to go online again'
                 : isOnline
                   ? 'Requests appear below'
                   : 'Go online to receive requests',
@@ -1021,6 +1072,98 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           ),
         ),
       ]),
+    );
+  }
+
+  Widget _buildCashDueCard() {
+    final profile = _driverProfile;
+    if (profile == null || profile.outstandingCashDueAmount <= 0) {
+      return const SizedBox.shrink();
+    }
+
+    final dueCount = profile.outstandingCashDueCount;
+    final dueAmount = profile.outstandingCashDueAmount;
+    final limitReached = profile.cashDueLimitReached;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF7ED), Color(0xFFFFFBEB)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: limitReached ? const Color(0xFFF59E0B) : const Color(0xFFFCD34D),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.receipt_long_rounded, color: Color(0xFFD97706), size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Cash Payment Due',
+                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: const Color(0xFF92400E)),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '৳${dueAmount.toStringAsFixed(0)} pending across $dueCount cash ride${dueCount > 1 ? 's' : ''}.',
+                      style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF92400E)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            limitReached
+                ? 'You reached the maximum unpaid cash rides. Pay this due from your Adsy balance to go online again.'
+                : 'You can keep driving for now, but clear this due from your Adsy balance before it reaches the limit.',
+            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF78350F), height: 1.35),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _isPayingCashDues
+                  ? null
+                  : () => _payOutstandingCashDues(goOnlineAfterPayment: limitReached),
+              icon: _isPayingCashDues
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.account_balance_wallet_rounded, size: 18),
+              label: Text(
+                _isPayingCashDues ? 'Paying...' : 'Pay Due from Adsy Balance',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFD97706),
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -2118,14 +2261,27 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: Text('Cancel', style: GoogleFonts.inter(color: _slate500))),
+          OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _updateRideStatus('completed', paymentMethod: 'cash');
+            },
+            icon: const Icon(Icons.payments_rounded, size: 18),
+            label: Text('Cash', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFD97706),
+              side: const BorderSide(color: Color(0xFFF59E0B)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _updateRideStatus('completed');
+              _updateRideStatus('completed', paymentMethod: 'wallet');
             },
             style: FilledButton.styleFrom(backgroundColor: _emerald,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            child: Text('Complete', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            child: Text('Wallet', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
