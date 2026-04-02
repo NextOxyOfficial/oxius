@@ -2700,18 +2700,19 @@ class AllProductsListView(generics.ListAPIView):
         category = self.request.query_params.get("category", None)
         category_slug = self.request.query_params.get("category_slug", None)
 
-        if category and category != "undefined" and category.strip():
+        normalized_category = category.strip() if isinstance(category, str) else category
+        normalized_category_slug = category_slug.strip() if isinstance(category_slug, str) else category_slug
+
+        if normalized_category_slug and normalized_category_slug != "undefined":
+            queryset = queryset.filter(category__slug=normalized_category_slug)
+        elif normalized_category and normalized_category != "undefined":
             try:
-                # Validate that category is a valid UUID before using it
-                category_uuid = uuid.UUID(str(category))
-                # For ManyToMany, filter products that have this category
+                category_uuid = uuid.UUID(str(normalized_category))
                 queryset = queryset.filter(category__id=category_uuid)
-            except (ValueError, AttributeError):
-                # Invalid UUID format, try slug filter instead
-                queryset = queryset.filter(category__slug=category)
-        elif category_slug and category_slug != "undefined" and category_slug.strip():
-            # Filter by category slug
-            queryset = queryset.filter(category__slug=category_slug)
+            except (ValueError, AttributeError, TypeError):
+                queryset = queryset.filter(category__slug=normalized_category)
+
+        queryset = queryset.distinct()
 
         # Comprehensive search functionality
         from django.db.models import Q

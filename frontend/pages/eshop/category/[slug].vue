@@ -558,6 +558,22 @@ async function getCategoryDetails() {
 
 await getCategoryDetails();
 
+function buildCategoryFilterQuery() {
+  const routeSlug = Array.isArray(route.params.slug)
+    ? route.params.slug[0]
+    : route.params.slug;
+
+  if (categoryDetails.value?.id) {
+    return `&category=${encodeURIComponent(String(categoryDetails.value.id))}`;
+  }
+
+  if (routeSlug) {
+    return `&category_slug=${encodeURIComponent(String(routeSlug))}`;
+  }
+
+  return "";
+}
+
 function clearPriceFilter() {
   minPrice.value = "";
   maxPrice.value = "";
@@ -595,9 +611,7 @@ async function fetchProducts() {
     // Build query parameters
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
 
-    if (categoryDetails.value?.id) {
-      queryParams += `&category=${categoryDetails.value.id}`;
-    }
+    queryParams += buildCategoryFilterQuery();
 
     if (searchQuery.value) {
       queryParams += `&name=${encodeURIComponent(searchQuery.value)}`;
@@ -647,9 +661,7 @@ async function loadMoreProducts() {
     // Build query parameters
     let queryParams = `page=${currentPage.value}&page_size=${itemsPerPage.value}`;
 
-    if (categoryDetails.value?.id) {
-      queryParams += `&category=${categoryDetails.value.id}`;
-    }
+    queryParams += buildCategoryFilterQuery();
 
     if (searchQuery.value) {
       queryParams += `&name=${encodeURIComponent(searchQuery.value)}`;
@@ -687,15 +699,22 @@ async function loadMoreProducts() {
   }
 }
 
+let observer = null;
+
 // Initialize infinite scroll
 function initInfiniteScroll() {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+
   const options = {
     root: null,
     rootMargin: "0px",
     threshold: 0.1,
   };
 
-  const observer = new IntersectionObserver((entries) => {
+  observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (
         entry.isIntersecting &&
@@ -712,8 +731,16 @@ function initInfiniteScroll() {
   }
 }
 
+async function initializeCategoryPage() {
+  currentPage.value = 1;
+  allProducts.value = [];
+  hasMoreProducts.value = true;
+  await getCategoryDetails();
+  await fetchProducts();
+}
+
 // Initialize data
-await fetchProducts();
+await initializeCategoryPage();
 onMounted(() => {
   initInfiniteScroll();
 
@@ -773,7 +800,23 @@ onUnmounted(() => {
       handleHeaderSidebarToggle
     );
   }
+
+  if (observer) {
+    observer.disconnect();
+  }
 });
+
+watch(
+  () => route.params.slug,
+  async (newSlug, oldSlug) => {
+    if (newSlug && newSlug !== oldSlug) {
+      await initializeCategoryPage();
+      nextTick(() => {
+        initInfiniteScroll();
+      });
+    }
+  }
+);
 </script>
 
 <style>

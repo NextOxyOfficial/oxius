@@ -87,17 +87,21 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     }
   }
 
+  bool _categoryIdMatches(dynamic left, dynamic right) {
+    return left?.toString() == right?.toString();
+  }
+
   Future<void> _findCategoryDetails(String categoryId) async {
     // Wait for categories to load if not loaded yet
     int attempts = 0;
-    while (_allCategories.isEmpty && attempts < 10) {
+    while (_allCategories.isEmpty && attempts < 30) {
       await Future.delayed(const Duration(milliseconds: 100));
       attempts++;
     }
     
     if (_allCategories.isNotEmpty) {
       final category = _allCategories.firstWhere(
-        (cat) => cat['id'].toString() == categoryId,
+        (cat) => _categoryIdMatches(cat['id'], categoryId),
         orElse: () => {},
       );
       if (mounted && category.isNotEmpty) {
@@ -106,7 +110,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           _selectedCategorySlug = category['slug']?.toString();
         });
         print('🏷️ Category selected: ${_selectedCategoryName} (slug: $_selectedCategorySlug)');
+      } else {
+        print('⚠️ Category $categoryId not found in loaded category list');
       }
+    } else {
+      print('⚠️ Categories did not load in time for category $categoryId');
     }
   }
 
@@ -283,6 +291,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         setState(() {
           _allCategories = categories;
         });
+        if (_selectedCategoryId != null) {
+          _findCategoryDetails(_selectedCategoryId!);
+        }
       }
     } catch (e) {
       print('Error loading categories: $e');

@@ -312,13 +312,47 @@ const isSidebarOpen = ref(false);
 // Initialize from URL query parameters
 const initializeFromURL = () => {
   if (route.query.category) {
-    const categorySlug = route.query.category;
+    const categorySlug = Array.isArray(route.query.category)
+      ? route.query.category[0]
+      : route.query.category;
     // Find category by slug to get the ID
     const category = categories.value.find((cat) => cat.slug === categorySlug);
     if (category) {
       selectedCategory.value = category.id;
     }
   }
+};
+
+const isSameCategoryId = (left, right) => {
+  if (left == null || right == null) return false;
+  return String(left) === String(right);
+};
+
+const findCategoryById = (categoryId) => {
+  return categories.value.find((cat) => isSameCategoryId(cat.id, categoryId));
+};
+
+const buildCategoryQuery = () => {
+  if (!selectedCategory.value) {
+    return "";
+  }
+
+  const category = findCategoryById(selectedCategory.value);
+  if (category?.slug) {
+    return `&category_slug=${encodeURIComponent(category.slug)}`;
+  }
+
+  if (category?.id) {
+    console.warn(
+      `Category ${selectedCategory.value} is missing slug, falling back to ID filter.`
+    );
+    return `&category=${encodeURIComponent(String(category.id))}`;
+  }
+
+  console.warn(
+    `Selected category ${selectedCategory.value} was not found in loaded category list.`
+  );
+  return `&category=${encodeURIComponent(String(selectedCategory.value))}`;
 };
 
 // Update URL when category changes
@@ -381,19 +415,19 @@ function debouncedSearch() {
 
 // Get category name by ID
 function getCategoryName(categoryId) {
-  const category = categories.value.find((cat) => cat.id === categoryId);
+  const category = findCategoryById(categoryId);
   return category ? category.name : "";
 }
 
 // Filter functions
 function toggleCategory(categoryId) {
-  if (selectedCategory.value === categoryId) {
+  if (isSameCategoryId(selectedCategory.value, categoryId)) {
     selectedCategory.value = null;
     updateURL(); // Clear category from URL
   } else {
     selectedCategory.value = categoryId;
     // Find category slug to update URL
-    const category = categories.value.find((cat) => cat.id === categoryId);
+    const category = findCategoryById(categoryId);
     if (category && category.slug) {
       updateURL(category.slug);
     }
@@ -401,7 +435,6 @@ function toggleCategory(categoryId) {
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
-  fetchProducts();
 }
 
 // Handle category change from dropdown
@@ -410,7 +443,7 @@ function handleCategoryChange(categoryId) {
 
   if (categoryId) {
     // Find category slug to update URL
-    const category = categories.value.find((cat) => cat.id === categoryId);
+    const category = findCategoryById(categoryId);
     if (category && category.slug) {
       updateURL(category.slug);
     }
@@ -421,7 +454,6 @@ function handleCategoryChange(categoryId) {
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
-  fetchProducts();
 }
 
 function clearCategoryFilter() {
@@ -430,7 +462,6 @@ function clearCategoryFilter() {
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
-  fetchProducts();
 }
 
 function clearPriceFilter() {
@@ -523,15 +554,16 @@ const syncSearchToHeader = () => {
 function selectCategoryAndCloseSidebar(categoryId) {
   selectedCategory.value = categoryId;
   // Find category slug to update URL
-  const category = categories.value.find((cat) => cat.id === categoryId);
+  const category = findCategoryById(categoryId);
   if (category && category.slug) {
     updateURL(category.slug);
+  } else if (!categoryId) {
+    updateURL();
   }
   currentPage.value = 1;
   allProducts.value = [];
   hasMoreProducts.value = true;
   toggleSidebar();
-  fetchProducts();
 }
 
 // Load more categories
@@ -608,6 +640,7 @@ async function fetchCategories() {
     categories.value = res.data;
     displayedCategories.value = res.data.slice(0, 10); // Display first 10 categories initially
     hasMoreCategoriesToLoad.value = res.data.length > 10;
+    initializeFromURL();
   } catch (error) {
     console.error("Error fetching categories:", error);
     toast.add({
@@ -745,18 +778,7 @@ async function fetchProducts() {
       queryParams += `&ordering=-created_at`;
     }
 
-    if (selectedCategory.value) {
-      // Find category slug for API call
-      const category = categories.value.find(
-        (cat) => cat.id === selectedCategory.value
-      );
-      if (category && category.slug) {
-        queryParams += `&category_slug=${encodeURIComponent(category.slug)}`;
-      } else {
-        // Fallback to category ID if slug not found
-        queryParams += `&category=${selectedCategory.value}`;
-      }
-    }
+    queryParams += buildCategoryQuery();
 
     if (searchQuery.value) {
       queryParams += `&name=${encodeURIComponent(searchQuery.value)}`;
@@ -868,18 +890,7 @@ async function loadMoreProducts() {
     // Build query parameters - always use consistent ordering for pagination
     let queryParams = `page=${nextPage}&page_size=${itemsPerPage.value}&ordering=-created_at`;
 
-    if (selectedCategory.value) {
-      // Find category slug for API call
-      const category = categories.value.find(
-        (cat) => cat.id === selectedCategory.value
-      );
-      if (category && category.slug) {
-        queryParams += `&category_slug=${encodeURIComponent(category.slug)}`;
-      } else {
-        // Fallback to category ID if slug not found
-        queryParams += `&category=${selectedCategory.value}`;
-      }
-    }
+    queryParams += buildCategoryQuery();
 
     if (searchQuery.value) {
       queryParams += `&name=${encodeURIComponent(searchQuery.value)}`;
@@ -1042,7 +1053,7 @@ watch(
         const category = categories.value.find(
           (cat) => cat.slug === newCategorySlug
         );
-        if (category && selectedCategory.value !== category.id) {
+        if (category && !isSameCategoryId(selectedCategory.value, category.id)) {
           selectedCategory.value = category.id;
           // Products will be fetched by the filter watcher above
         }
@@ -1061,18 +1072,8 @@ watch(searchQuery, (newValue) => {
 });
 
 // Initialize data
-await Promise.all([fetchCategories(), fetchProducts()]);
-
-// Initialize from URL query parameters after categories are loaded
-initializeFromURL();
-
-// If we loaded a category from URL, fetch products with that filter
-if (selectedCategory.value) {
-  currentPage.value = 1;
-  allProducts.value = [];
-  hasMoreProducts.value = true;
-  await fetchProducts();
-}
+await fetchCategories();
+await fetchProducts();
 
 onMounted(() => {
   // Initialize infinite scroll after a delay to ensure DOM is ready

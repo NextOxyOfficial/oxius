@@ -249,11 +249,11 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               maxChildSize: 0.94,
               builder: (context, scrollController) {
                 return Padding(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 12),
+                  padding: EdgeInsets.only(top: 16, bottom: bottomInset),
                   child: Container(
                     decoration: BoxDecoration(
                       color: _card,
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.06),

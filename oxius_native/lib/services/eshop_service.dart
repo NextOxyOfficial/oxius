@@ -210,7 +210,7 @@ class EshopService {
 
   static Future<List<Map<String, dynamic>>> fetchEshopCategories() async {
     try {
-      final uri = Uri.parse('$baseUrl/eshop/categories/');
+      final uri = Uri.parse('$baseUrl/product-categories/');
       print('EshopService: Fetching categories from: $uri');
       
       final response = await http.get(

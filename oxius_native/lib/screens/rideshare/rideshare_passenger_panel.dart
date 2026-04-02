@@ -782,6 +782,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   Widget _buildActiveRideView() {
     final ride = _activeRide!;
+    final canCancelRide = ride.passengerCanCancel ||
+        ride.isSearching ||
+        ride.status == 'requested' ||
+        ride.isAccepted ||
+        ride.isDriverArriving;
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(4),
@@ -936,7 +941,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                             ),
                           ],
                         )
-                      else if (ride.passengerCanCancel)
+                      else if (canCancelRide)
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
@@ -952,7 +957,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                                   )
                                 : const Icon(Icons.cancel_outlined, size: 18),
                             label: Text(
-                              _isCancellingRide ? 'Cancelling...' : 'Cancel Ride',
+                              _isCancellingRide
+                                  ? 'Cancelling...'
+                                  : (ride.isSearching ? 'Cancel Request' : 'Cancel Ride'),
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
