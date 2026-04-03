@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/auth_service.dart';
 import '../../services/rideshare_service.dart';
+import '../../services/translation_service.dart';
 
 class RideshareVehiclesScreen extends StatefulWidget {
   const RideshareVehiclesScreen({super.key});
@@ -30,6 +31,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   static const Color _warning = Color(0xFFF59E0B);
   static const Color _warningSoft = Color(0xFFFFFBEB);
 
+  final TranslationService _ts = TranslationService();
+  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -39,7 +43,18 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   @override
   void initState() {
     super.initState();
+    _ts.addListener(_onTranslationsChanged);
     _loadVehicles();
+  }
+
+  @override
+  void dispose() {
+    _ts.removeListener(_onTranslationsChanged);
+    super.dispose();
+  }
+
+  void _onTranslationsChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadVehicles() async {
@@ -80,11 +95,11 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Text(
-            'KYC Approval Required',
+            t('rideshare_kyc_required', fallback: 'KYC Approval Required'),
             style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
           ),
           content: Text(
-            'Your KYC must be approved before you can add a vehicle. Please complete your driver registration and wait for admin approval.',
+            t('rideshare_kyc_required_desc', fallback: 'Your KYC must be approved before you can add a vehicle. Please complete your driver registration and wait for admin approval.'),
             style: GoogleFonts.inter(fontSize: 13, color: _textSecondary, height: 1.5),
           ),
           actions: [
@@ -94,7 +109,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                 backgroundColor: _primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              child: Text('OK', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+              child: Text(t('ok', fallback: 'OK'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -134,11 +149,11 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
-          'Contact Support',
+          t('rideshare_contact_support', fallback: 'Contact Support'),
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
         ),
         content: Text(
-          'Vehicle information cannot be edited directly. Please contact our support center to make changes to your vehicle details.',
+          t('rideshare_vehicle_edit_note', fallback: 'Vehicle information cannot be edited directly. Please contact our support center to make changes to your vehicle details.'),
           style: GoogleFonts.inter(fontSize: 13, color: _textSecondary, height: 1.5),
         ),
         actions: [
@@ -183,7 +198,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                 borderRadius: BorderRadius.circular(16),
               ),
               title: Text(
-                'Delete vehicle?',
+                t('rideshare_delete_confirm', fallback: 'Delete vehicle?'),
                 style: GoogleFonts.inter(
                   color: _textPrimary,
                   fontSize: 16,
@@ -201,9 +216,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: _textSecondary, fontWeight: FontWeight.w600),
+                  child: Text(
+                    t('cancel', fallback: 'Cancel'),
+                    style: const TextStyle(color: _textSecondary, fontWeight: FontWeight.w600),
                   ),
                 ),
                 FilledButton(
@@ -215,7 +230,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     ),
                   ),
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Delete'),
+                  child: Text(t('rideshare_delete_vehicle', fallback: 'Delete')),
                 ),
               ],
             );
@@ -357,7 +372,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Keep your vehicle details accurate so ride assignment stays smooth.',
+                                t('rideshare_vehicle_accuracy_note', fallback: 'Keep your vehicle details accurate so ride assignment stays smooth.'),
                                 style: GoogleFonts.inter(
                                   color: _textSecondary,
                                   fontSize: 12,
@@ -376,10 +391,10 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                                   fontWeight: FontWeight.w500,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
-                                items: const [
-                                  DropdownMenuItem(value: 'bike', child: Text('Bike')),
-                                  DropdownMenuItem(value: 'car', child: Text('Car')),
-                                  DropdownMenuItem(value: 'cng', child: Text('CNG')),
+                                items: [
+                                  DropdownMenuItem(value: 'bike', child: Text(t('rideshare_vehicle_bike', fallback: 'Bike'))),
+                                  DropdownMenuItem(value: 'car', child: Text(t('rideshare_vehicle_car', fallback: 'Car'))),
+                                  DropdownMenuItem(value: 'cng', child: Text(t('rideshare_vehicle_cng', fallback: 'CNG'))),
                                 ],
                                 onChanged: (value) {
                                   if (value == null) return;
@@ -772,7 +787,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'My Vehicle Garage',
+                      t('rideshare_my_vehicles', fallback: 'My Vehicle Garage'),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 15,
@@ -781,7 +796,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Manage your listed and active vehicles from one compact garage dashboard.',
+                      t('rideshare_my_vehicles_desc', fallback: 'Manage your listed and active vehicles from one compact garage dashboard.'),
                       style: GoogleFonts.inter(
                         color: const Color(0xFFD6E2FF),
                         fontSize: 11,
@@ -927,7 +942,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      'Default',
+                      t('rideshare_set_default', fallback: 'Default'),
                       style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 11,
@@ -986,7 +1001,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   onPressed: () => _showContactSupportDialog(),
                   icon: const Icon(Icons.support_agent_rounded, size: 18),
                   label: Text(
-                    'Edit via Support',
+                    t('rideshare_edit_via_support', fallback: 'Edit via Support'),
                     style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
                   ),
                 ),
@@ -1102,7 +1117,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Unable to load vehicles',
+                    t('rideshare_load_error', fallback: 'Unable to load vehicles'),
                     style: GoogleFonts.inter(
                       color: _textPrimary,
                       fontSize: 16,
@@ -1129,7 +1144,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       ),
                     ),
                     onPressed: _loadVehicles,
-                    child: Text('Try again', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                    child: Text(t('try_again', fallback: 'Try again'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -1144,7 +1159,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Your vehicles',
+                      t('rideshare_your_vehicles', fallback: 'Your vehicles'),
                       style: GoogleFonts.inter(
                         color: _textPrimary,
                         fontSize: 16,
@@ -1153,7 +1168,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Manage which vehicles are active and ready for rides.',
+                      t('rideshare_vehicles_manage_desc', fallback: 'Manage which vehicles are active and ready for rides.'),
                       style: GoogleFonts.inter(
                         color: _textSecondary,
                         fontSize: 12,
@@ -1174,7 +1189,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     const Icon(Icons.tips_and_updates_outlined, color: _warning, size: 14),
                     const SizedBox(width: 5),
                     Text(
-                      'Keep one default',
+                      t('rideshare_keep_one_default', fallback: 'Keep one default'),
                       style: GoogleFonts.inter(
                         color: _warning,
                         fontSize: 11,
@@ -1221,7 +1236,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'No vehicles added yet',
+                    t('rideshare_no_vehicles', fallback: 'No vehicles added yet'),
                     style: GoogleFonts.inter(
                       color: _textPrimary,
                       fontSize: 16,
@@ -1230,7 +1245,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Add your bike, car, or CNG to start receiving rides with the right vehicle type.',
+                    t('rideshare_no_vehicles_desc', fallback: 'Add your bike, car, or CNG to start receiving rides with the right vehicle type.'),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: _textSecondary,
@@ -1262,7 +1277,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'My Vehicles',
+              t('rideshare_my_vehicles', fallback: 'My Vehicles'),
               style: GoogleFonts.inter(
                 color: _textPrimary,
                 fontSize: 18,
@@ -1271,7 +1286,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
             ),
             const SizedBox(height: 1),
             Text(
-              'Compact garage management',
+              t('rideshare_garage_subtitle', fallback: 'Compact garage management'),
               style: GoogleFonts.inter(
                 color: _textSecondary,
                 fontSize: 11,
@@ -1302,7 +1317,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         onPressed: _isSubmitting ? null : () => _handleAddVehicle(),
         icon: const Icon(Icons.add_rounded),
         label: Text(
-          'Add Vehicle',
+          t('rideshare_add_vehicle', fallback: 'Add Vehicle'),
           style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
         ),
       ),

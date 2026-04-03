@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,20 +8,24 @@ import '../../services/adsyconnect_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/rideshare_realtime_service.dart';
+import '../../services/translation_service.dart';
 import '../../utils/network_error_handler.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
 
-class Rideshareযাত্রীPanel extends StatefulWidget {
-  const Rideshareযাত্রীPanel({super.key});
+class RidesharePassengerPanel extends StatefulWidget {
+  const RidesharePassengerPanel({super.key});
 
   @override
-  State<Rideshareযাত্রীPanel> createState() => _Rideshareযাত্রীPanelState();
+  State<RidesharePassengerPanel> createState() => _RidesharePassengerPanelState();
 }
 
-class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্রীPanel>
+class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   with WidgetsBindingObserver {
+  final TranslationService _ts = TranslationService();
+  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+
   // Controllers
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _dropController = TextEditingController();
@@ -41,7 +45,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
   bool _isLoadingLocation = false;
   bool _isEstimating = false;
   bool _isCreatingRide = false;
-  bool _isবাতিলlingRide = false;
+  bool _isCancellingRide = false;
   bool _isLoadingActiveRide = true;
   bool _locationGranted = false;
   bool _isCheckingLocationPermission = true;
@@ -53,26 +57,28 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
   final RideshareRealtimeService _realtimeService = RideshareRealtimeService();
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
   Timer? _statusRefreshTimer;
-  String _searchStatusMessage = 'কাছাকাছি ড্রাইভার খোঁজা হচ্ছে...';
+  String _searchStatusMessage = 'Looking for nearby drivers...';
   int _driverResponseTimeoutSeconds = 60;
   int _dispatchAttempt = 0;
   DateTime? _targetedAtFromEvent;
   String? _targetedDriverNameFromEvent;
   bool _noDriversInRange = false;
-  bool _isReportingবাতিলlation = false;
+  bool _isReportingCancellation = false;
   StreamSubscription<Position>? _passengerLocationSubscription;
 
   @override
   void initState() {
     super.initState();
+    _ts.addListener(_onTranslationsChanged);
     WidgetsBinding.instance.addObserver(this);
-    _startStatusরিফ্রেশTimer();
+    _startStatusRefreshTimer();
     _refreshLocationPermissionStatus(autoFillCurrentLocation: true);
     _loadActiveRide();
   }
 
   @override
   void dispose() {
+    _ts.removeListener(_onTranslationsChanged);
     WidgetsBinding.instance.removeObserver(this);
     _pickupController.dispose();
     _dropController.dispose();
@@ -84,7 +90,11 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
     super.dispose();
   }
 
-  void _startStatusরিফ্রেশTimer() {
+  void _onTranslationsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _startStatusRefreshTimer() {
     _statusRefreshTimer?.cancel();
     _statusRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || _activeRide == null) return;
@@ -272,7 +282,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
 
   String _deriveSearchStatusMessage(Ride? ride) {
     if (ride == null) {
-      return 'কাছাকাছি ড্রাইভার খোঁজা হচ্ছে...';
+      return t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...');
     }
 
     for (final entry in ride.statusHistory.reversed) {
@@ -291,9 +301,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
       return 'Request sent to $targetedDriverName';
     }
     if (ride.isSearching) {
-      return 'কাছাকাছি ড্রাইভার খোঁজা হচ্ছে...';
+      return t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...');
     }
-    if (ride.isবাতিলled && (ride.cancellationReason?.isNotEmpty ?? false)) {
+    if (ride.isCancelled && (ride.cancellationReason?.isNotEmpty ?? false)) {
       return ride.cancellationReason!;
     }
     return ride.statusDisplay;
@@ -310,11 +320,11 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
 
     _rideEventSubscription ??= _realtimeService.rideEvents.listen(_handleRideRealtimeEvent);
     _realtimeService.connectRide(ride.id);
-    _syncযাত্রীLocationTracking();
+    _syncPassengerLocationTracking();
   }
 
   /// Start or stop live passenger GPS tracking based on active ride state.
-  void _syncযাত্রীLocationTracking() {
+  void _syncPassengerLocationTracking() {
     final ride = _activeRide;
     final shouldTrack = ride != null &&
         (ride.isDriverArriving || ride.isInProgress) &&
@@ -326,14 +336,14 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
           accuracy: LocationAccuracy.high,
           distanceFilter: 15,
         ),
-      ).listen(_sendযাত্রীLocation);
+      ).listen(_sendPassengerLocation);
     } else if (!shouldTrack && _passengerLocationSubscription != null) {
       _passengerLocationSubscription?.cancel();
       _passengerLocationSubscription = null;
     }
   }
 
-  void _sendযাত্রীLocation(Position position) {
+  void _sendPassengerLocation(Position position) {
     _realtimeService.sendToRide({
       'event': 'passenger.location',
       'latitude': position.latitude,
@@ -559,7 +569,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
 
   Future<void> _createRide() async {
     if (!_locationGranted) {
-      _showError('রাইড বুক করার আগে লোকেশন অ্যাক্সেস প্রয়োজন।');
+      _showError(t('rideshare_location_required', fallback: 'Location access required before booking a ride.'));
       return;
     }
     if (_pickupPoint == null || _dropPoint == null) return;
@@ -582,7 +592,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
       
       if (result.success && result.data != null) {
         _applyRideState(result.data, isLoading: false);
-        _showSuccess('রাইড রিকোয়েস্ট করা হয়েছে! ড্রাইভার খোঁজা হচ্ছে...');
+        _showSuccess(t('rideshare_ride_requested', fallback: 'Ride requested! Looking for a driver...'));
       } else {
         final msg = result.message.toLowerCase();
         if (msg.contains('active ride') || msg.contains('already have')) {
@@ -605,21 +615,21 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
     }
   }
 
-  Future<void> _confirmবাতিলRide() async {
+  Future<void> _confirmCancelRide() async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Text('রাইড বাতিল করুন?',
+        title: Text(t('rideshare_cancel_ride_title', fallback: 'Cancel Ride?'),
             style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
-          'আপনি কি নিশ্চিত এই রাইড বাতিল করতে চান? বাতিল করার পর নতুন রাইড বুক করতে পারবেন।',
+          t('rideshare_cancel_ride_confirm', fallback: 'Are you sure you want to cancel? You can book a new ride after cancellation.'),
           style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('রাইড চালু রাখুন',
+            child: Text(t('rideshare_keep_ride', fallback: 'Keep Ride'),
                 style: GoogleFonts.inter(
                     fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
           ),
@@ -629,7 +639,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
               backgroundColor: Colors.red.shade600,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('হ্যাঁ, বাতিল করুন',
+            child: Text(t('rideshare_yes_cancel', fallback: 'Yes, Cancel'),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
@@ -641,15 +651,15 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
   Future<void> _cancelRide() async {
     if (_activeRide == null) return;
     
-    setState(() => _isবাতিলlingRide = true);
+    setState(() => _isCancellingRide = true);
     
     final result = await RideshareService.cancelRide(
       _activeRide!.id,
-      reason: 'বাতিলled by passenger',
+      reason: 'Cancelled by passenger',
     );
     
     if (mounted) {
-      setState(() => _isবাতিলlingRide = false);
+      setState(() => _isCancellingRide = false);
       
       if (result.success) {
         // Clear active ride AND reset the booking form so user starts fresh
@@ -662,7 +672,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
           _pickupSuggestions = [];
           _dropSuggestions = [];
           _activeInput = 'pickup';
-          _searchStatusMessage = 'কাছাকাছি ড্রাইভার খোঁজা হচ্ছে...';
+          _searchStatusMessage = t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...');
           _noDriversInRange = false;
           _targetedAtFromEvent = null;
           _dispatchAttempt = 0;
@@ -670,7 +680,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
         _pickupController.clear();
         _dropController.clear();
         _realtimeService.disconnectRide();
-        _showSuccess('রাইড বাতিল করা হয়েছে');
+        _showSuccess(t('rideshare_ride_cancelled', fallback: 'Ride cancelled'));
       } else {
         _showError(result.message);
       }
@@ -682,7 +692,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
         (ride.isAccepted ||
             ride.isDriverArriving ||
             ride.isInProgress ||
-            ride.isAwaitingযাত্রীনিশ্চিত করুনation);
+            ride.isAwaitingPassengerConfirmation);
   }
 
   Future<void> _openDriverChat(Ride ride) async {
@@ -824,9 +834,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
     );
   }
 
-  Future<void> _reportDriverবাতিলlation() async {
+  Future<void> _reportDriverCancellation() async {
     final ride = _activeRide;
-    if (ride == null || !ride.canReportDriver || _isReportingবাতিলlation) {
+    if (ride == null || !ride.canReportDriver || _isReportingCancellation) {
       return;
     }
 
@@ -836,25 +846,25 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
-          'Report Driver বাতিলlation',
+          t('rideshare_report_driver_cancellation', fallback: 'Report Driver Cancellation'),
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         content: TextField(
           controller: controller,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText: 'Add details for support',
+            hintText: t('rideshare_add_details_hint', fallback: 'Add details for support...'),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('বন্ধ করুন', style: GoogleFonts.inter()),
+            child: Text(t('rideshare_close', fallback: 'Close'), style: GoogleFonts.inter()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Submit', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            child: Text(t('rideshare_submit', fallback: 'Submit'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -864,14 +874,14 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
       return;
     }
 
-    setState(() => _isReportingবাতিলlation = true);
-    final result = await RideshareService.reportDriverবাতিলlation(
+    setState(() => _isReportingCancellation = true);
+    final result = await RideshareService.reportDriverCancellation(
       ride.id,
       details: controller.text.trim(),
     );
     if (!mounted) return;
 
-    setState(() => _isReportingবাতিলlation = false);
+    setState(() => _isReportingCancellation = false);
     if (result.success) {
       setState(() {
         _activeRide = _activeRide?.copyWith(canReportDriver: false);
@@ -926,8 +936,8 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
       _showSuccess(
         confirm
             ? (paymentMethod == 'cash'
-                ? 'রাইড সম্পন্ন হয়েছে। অনুগ্রহ করে ড্রাইভারকে নগদ পরিশোধ করুন।'
-                : 'রাইড সম্পন্ন হয়েছে এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।')
+                ? t('rideshare_cash_completion_note', fallback: 'Ride complete. Please pay the driver in cash.')
+                : t('rideshare_wallet_completion_note', fallback: 'Ride complete and wallet payment confirmed.'))
             : 'Ride will continue until you confirm completion.',
       );
       return;
@@ -953,20 +963,20 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'পেমেন্ট পদ্ধতি বেছে নিন',
+                t('rideshare_choose_payment_method', fallback: 'Choose Payment Method'),
                 style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 6),
               Text(
-                'ট্রিপ ভাড়া: ৳${payableFare.toStringAsFixed(0)}',
+'${t('rideshare_trip_fare', fallback: 'Trip Fare')}: ৳${payableFare.toStringAsFixed(0)}',
                 style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
               ),
               const SizedBox(height: 14),
               _buildPaymentMethodTile(
                 ctx,
                 value: 'wallet',
-                title: 'অ্যাডসি ব্যালেন্স দিয়ে পরিশোধ',
-                subtitle: 'ভাড়া will be deducted from your in-app ব্যালেন্স instantly.',
+                title: t('rideshare_wallet_payment_title', fallback: 'Pay with Adsy Balance'),
+                subtitle: t('rideshare_wallet_subtitle', fallback: 'Fare will be deducted from your in-app balance instantly.'),
                 icon: Icons.account_balance_wallet_rounded,
                 accent: const Color(0xFF6366F1),
               ),
@@ -974,8 +984,8 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
               _buildPaymentMethodTile(
                 ctx,
                 value: 'cash',
-                title: 'ড্রাইভারকে নগদ দিন',
-                subtitle: 'রাইড শেষে আপনি ড্রাইভারকে সরাসরি নগদ পরিশোধ করবেন।',
+                title: t('rideshare_cash_payment_title', fallback: 'Pay Driver in Cash'),
+                subtitle: t('rideshare_cash_subtitle', fallback: 'You will pay the driver directly in cash at the end of the ride.'),
                 icon: Icons.payments_rounded,
                 accent: const Color(0xFF10B981),
               ),
@@ -1125,9 +1135,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
 
     // Active ride takes full priority â€” booking form is completely hidden
     if (_activeRide != null) {
-      return রিফ্রেশIndicator(
+      return RefreshIndicator(
         color: const Color(0xFF6366F1),
-        onরিফ্রেশ: _loadActiveRide,
+        onRefresh: _loadActiveRide,
         child: _buildActiveRideView(),
       );
     }
@@ -1138,12 +1148,12 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
 
   Widget _buildActiveRideView() {
     final ride = _activeRide!;
-    final canবাতিলRide =
-      ride.passengerCanবাতিল &&
+    final canCancelRide =
+      ride.passengerCanCancel &&
       !ride.isInProgress &&
-      !ride.isAwaitingযাত্রীনিশ্চিত করুনation &&
-      !ride.isসম্পন্ন করুনd &&
-      !ride.isবাতিলled;
+      !ride.isAwaitingPassengerConfirmation &&
+      !ride.isCompleted &&
+      !ride.isCancelled;
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(4),
@@ -1223,9 +1233,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                       // Route info
                       _buildRouteInfo(ride),
 
-                      if (ride.isবাতিলled && _shouldShowবাতিলlationReason(ride)) ...[
+                      if (ride.isCancelled && _shouldShowCancellationReason(ride)) ...[
                         const SizedBox(height: 12),
-                        _buildবাতিলlationReasonCard(ride),
+                        _buildCancellationReasonCard(ride),
                       ],
 
                       if (ride.isSearching) ...[
@@ -1245,11 +1255,11 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                         ),
                         child: Row(
                           children: [
-                            _buildStatItem('ভাড়া', '৳${ride.payableFare.toStringAsFixed(0)}'),
+                            _buildStatItem(t('rideshare_fare', fallback: 'Fare'), '৳${ride.payableFare.toStringAsFixed(0)}'),
                             _buildStatDivider(),
-                            _buildStatItem('দূরত্ব', '${ride.distanceKm.toStringAsFixed(1)} km'),
+                            _buildStatItem(t('rideshare_distance', fallback: 'Distance'), '${ride.distanceKm.toStringAsFixed(1)} km'),
                             _buildStatDivider(),
-                            _buildStatItem('ETA', ride.etaDisplay),
+                            _buildStatItem(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay),
                           ],
                         ),
                       ),
@@ -1264,7 +1274,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                       
                       const SizedBox(height: 16),
 
-                      if (ride.isAwaitingযাত্রীনিশ্চিত করুনation)
+                      if (ride.isAwaitingPassengerConfirmation)
                         Row(
                           children: [
                             Expanded(
@@ -1279,7 +1289,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                                   ),
                                 ),
                                 child: Text(
-                                  'Continue Ride',
+                                  t('rideshare_continue_ride', fallback: 'Continue Ride'),
                                   style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                                 ),
                               ),
@@ -1296,19 +1306,19 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                                   ),
                                 ),
                                 child: Text(
-                                  'নিশ্চিত করুন Payment',
+                                  t('rideshare_confirm_payment', fallback: 'Confirm Payment'),
                                   style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                                 ),
                               ),
                             ),
                           ],
                         )
-                      else if (canবাতিলRide)
+                      else if (canCancelRide)
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: _isবাতিলlingRide ? null : _confirmবাতিলRide,
-                            icon: _isবাতিলlingRide
+                            onPressed: _isCancellingRide ? null : _confirmCancelRide,
+                            icon: _isCancellingRide
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
@@ -1319,9 +1329,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                                   )
                                 : const Icon(Icons.cancel_outlined, size: 18),
                             label: Text(
-                              _isবাতিলlingRide
-                                  ? 'বাতিলling...'
-                                  : (ride.isSearching ? 'বাতিল Request' : 'রাইড বাতিল করুন'),
+                              _isCancellingRide
+                                  ? 'Cancelling...'
+                                  : (ride.isSearching ? t('rideshare_cancel_request', fallback: 'Cancel Request') : t('rideshare_cancel_ride', fallback: 'Cancel Ride')),
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -1341,8 +1351,8 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed: _isReportingবাতিলlation ? null : _reportDriverবাতিলlation,
-                            icon: _isReportingবাতিলlation
+                            onPressed: _isReportingCancellation ? null : _reportDriverCancellation,
+                            icon: _isReportingCancellation
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
@@ -1353,7 +1363,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                                   )
                                 : const Icon(Icons.report_problem_rounded, size: 18),
                             label: Text(
-                              _isReportingবাতিলlation ? 'Submitting...' : 'Report Driver বাতিলlation',
+                              _isReportingCancellation ? t('rideshare_submitting', fallback: 'Submitting...') : t('rideshare_report_driver_cancellation', fallback: 'Report Driver Cancellation'),
                               style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                             ),
                             style: FilledButton.styleFrom(
@@ -1406,10 +1416,10 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
 
   String _passengerStatusLabel(Ride ride) {
     if (ride.isSearching) {
-      return 'Finding Driver';
+      return t('rideshare_finding_driver_status', fallback: 'Looking for a driver');
     }
     if (ride.isAccepted) {
-      return 'Driver Assigned';
+      return t('rideshare_driver_assigned', fallback: 'Driver confirmed');
     }
     return ride.statusDisplay;
   }
@@ -1512,7 +1522,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'PICKUP',
+                      t('rideshare_pickup', fallback: 'Pickup').toUpperCase(),
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -1563,7 +1573,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'DROP',
+                      t('rideshare_drop', fallback: 'Drop').toUpperCase(),
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -1591,7 +1601,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
     );
   }
 
-  bool _shouldShowবাতিলlationReason(Ride ride) {
+  bool _shouldShowCancellationReason(Ride ride) {
     final reason = ride.cancellationReason?.trim() ?? '';
     if (reason.isEmpty) {
       return false;
@@ -1603,7 +1613,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
         lower.contains('remote area');
   }
 
-  Widget _buildবাতিলlationReasonCard(Ride ride) {
+  Widget _buildCancellationReasonCard(Ride ride) {
     final reason = ride.cancellationReason?.trim() ?? '';
     return Container(
       width: double.infinity,
@@ -1768,9 +1778,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
 
   Widget _buildBookingView() {
     if (_isCheckingLocationPermission) {
-      return রিফ্রেশIndicator(
+      return RefreshIndicator(
         color: const Color(0xFF6366F1),
-        onরিফ্রেশ: () => _refreshLocationPermissionStatus(
+        onRefresh: () => _refreshLocationPermissionStatus(
           autoFillCurrentLocation: _pickupPoint == null,
         ),
         child: SingleChildScrollView(
@@ -1789,9 +1799,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
     }
 
     if (!_locationGranted) {
-      return রিফ্রেশIndicator(
+      return RefreshIndicator(
         color: const Color(0xFF6366F1),
-        onরিফ্রেশ: () => _refreshLocationPermissionStatus(
+        onRefresh: () => _refreshLocationPermissionStatus(
           autoFillCurrentLocation: _pickupPoint == null,
         ),
         child: SingleChildScrollView(
@@ -1832,7 +1842,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Location Sharing Required',
+                      t('rideshare_location_required_title', fallback: 'Location Access Required'),
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -1842,7 +1852,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'রাইড বুক করতে এবং স্বয়ংক্রিয়ভাবে পিকআপ সেট করতে লোকেশন চালু করুন।',
+                      t('rideshare_enable_location_desc', fallback: 'Enable location to book rides and auto-set pickup.'),
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         color: const Color(0xFF64748B),
@@ -1866,7 +1876,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                               )
                             : const Icon(Icons.my_location_rounded, size: 18),
                         label: Text(
-                          _isLoadingLocation ? 'চালু হচ্ছে...' : 'লোকেশন চালু করুন',
+                          _isLoadingLocation ? t('rideshare_enabling', fallback: 'Enabling...') : t('rideshare_enable_location', fallback: 'Enable Location'),
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -1890,9 +1900,9 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
       );
     }
 
-    return রিফ্রেশIndicator(
+    return RefreshIndicator(
       color: const Color(0xFF6366F1),
-      onরিফ্রেশ: _loadActiveRide,
+      onRefresh: _loadActiveRide,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(4, 4, 4, 24),
@@ -1937,7 +1947,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'রাইড বুক করুন',
+                            t('rideshare_book_ride', fallback: 'Book Ride'),
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -1945,7 +1955,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                             ),
                           ),
                           Text(
-                            'শুরু করতে লোকেশন দিন',
+                            t('rideshare_enter_location_to_start', fallback: 'Enter location to start'),
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               color: const Color(0xFF94A3B8),
@@ -2010,7 +2020,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
             const Icon(Icons.payment_rounded, size: 15, color: Color(0xFF6366F1)),
             const SizedBox(width: 6),
             Text(
-              'পেমেন্ট পদ্ধতি',
+              t('rideshare_payment_method', fallback: 'Payment Method'),
               style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF1E293B)),
             ),
           ],
@@ -2050,7 +2060,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            'ওয়ালেট',
+                            t('rideshare_wallet', fallback: 'Wallet'),
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -2068,14 +2078,14 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '৳${walletBalance.toStringAsFixed(0)} ব্যালেন্স',
+                        '৳${walletBalance.toStringAsFixed(0)} ${t("rideshare_balance", fallback: "Balance")}',
                         style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
                       GestureDetector(
                         onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
                         child: Text(
-                          '+ ফান্ড যোগ করুন',
+                          t('rideshare_add_funds', fallback: '+ Add Funds'),
                           style: GoogleFonts.inter(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -2122,7 +2132,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            'নগদ',
+                            t('rideshare_cash', fallback: 'Cash'),
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -2140,12 +2150,12 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'ড্রাইভারকে সরাসরি দিন',
+                        t('rideshare_pay_driver_directly', fallback: 'Pay driver directly'),
                         style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'ওয়ালেট প্রয়োজন নেই',
+                        t('rideshare_no_wallet_needed', fallback: 'No wallet needed'),
                         style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFFCBD5E1)),
                       ),
                     ],
@@ -2202,8 +2212,8 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
               // Pickup input
               _buildLocationInput(
                 controller: _pickupController,
-                label: 'Pickup Location',
-                hint: 'Search pickup...',
+                label: t('rideshare_pickup_location', fallback: 'Pickup Location'),
+                hint: t('rideshare_search_pickup', fallback: 'Search pickup...').toString(),
                 isActive: _activeInput == 'pickup',
                 onTap: () => setState(() => _activeInput = 'pickup'),
                 onChanged: _onPickupSearch,
@@ -2216,8 +2226,8 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
               // Drop input
               _buildLocationInput(
                 controller: _dropController,
-                label: 'Drop Location',
-                hint: 'Search drop...',
+                label: t('rideshare_drop_location', fallback: 'Drop Location'),
+                hint: t('rideshare_search_drop', fallback: 'Search drop...').toString(),
                 isActive: _activeInput == 'drop',
                 onTap: () => setState(() => _activeInput = 'drop'),
                 onChanged: _onDropSearch,
@@ -2389,7 +2399,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Current',
+                    t('rideshare_current_location_btn', fallback: 'Current'),
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -2407,7 +2417,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Vehicle Type',
+          t('rideshare_vehicle_type', fallback: 'Vehicle Type'),
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -2417,11 +2427,11 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
         const SizedBox(height: 8),
         Row(
           children: [
-            _buildVehicleOption('bike', 'ðŸï¸', 'Bike'),
+            _buildVehicleOption('bike', '🏍', t('rideshare_vehicle_bike', fallback: 'Bike')),
             const SizedBox(width: 8),
-            _buildVehicleOption('car', 'ðŸš—', 'Car'),
+            _buildVehicleOption('car', '🚗', t('rideshare_vehicle_car', fallback: 'Car')),
             const SizedBox(width: 8),
-            _buildVehicleOption('cng', 'ðŸ›º', 'CNG'),
+            _buildVehicleOption('cng', '🛺', t('rideshare_vehicle_cng', fallback: 'CNG')),
           ],
         ),
       ],
@@ -2493,7 +2503,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
             ),
             const SizedBox(width: 10),
             Text(
-              'Calculating fare...',
+              t('rideshare_calculating_fare', fallback: 'Calculating fare...'),
               style: GoogleFonts.inter(
                 fontSize: 13,
                 color: const Color(0xFF64748B),
@@ -2522,7 +2532,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'ESTIMATED FARE',
+                  t('rideshare_estimated_fare', fallback: 'Estimated Fare').toUpperCase(),
                   style: GoogleFonts.inter(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -2658,7 +2668,7 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      canBook ? 'Book Ride Now' : 'Enter locations to book',
+                      canBook ? t('rideshare_book_ride_now', fallback: 'Book Ride Now') : t('rideshare_enter_locations', fallback: 'Enter Locations'),
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -2671,5 +2681,8 @@ class _Rideshareযাত্রীPanelState extends State<Rideshareযাত্
     );
   }
 }
+
+
+
 
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/rideshare_service.dart';
@@ -122,8 +122,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
         ),
         title: Text(
           widget.asDriver
-              ? t('rideshare.history.driver_title', fallback: 'আমার ট্রিপ (ড্রাইভার)')
-              : t('rideshare.history.title', fallback: 'রাইড হিস্ট্রি'),
+              ? t('rideshare_history_driver_title', fallback: 'My Trips (Driver)')
+              : t('rideshare_history_title', fallback: 'Ride History'),
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -163,7 +163,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                           : TextButton(
                               onPressed: _loadMore,
                               child: Text(
-                                t('rideshare.history.load_more', fallback: 'আরও দেখুন'),
+                                t('rideshare_load_more', fallback: 'Load more'),
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -205,7 +205,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: _loadRides,
-                                child: Text(t('common.retry', fallback: 'আবার চেষ্টা করুন')),
+                                child: Text(t('try_again', fallback: 'Try Again')),
                               ),
                             ],
                           )
@@ -226,7 +226,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                t('rideshare.history.empty_title', fallback: 'এখনও কোনো রাইড নেই'),
+                                t('rideshare_no_rides_title', fallback: 'No rides yet'),
                                 style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -236,8 +236,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 widget.asDriver
-                                    ? t('rideshare.history.driver_empty_subtitle', fallback: 'আপনার সম্পন্ন ট্রিপগুলো এখানে দেখাবে')
-                                    : t('rideshare.history.empty_subtitle', fallback: 'আপনার রাইড হিস্ট্রি এখানে দেখাবে'),
+                                    ? t('rideshare_no_rides_driver', fallback: 'Your completed trips will appear here')
+                                    : t('rideshare_no_rides_passenger', fallback: 'Your ride history will appear here'),
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   color: const Color(0xFF64748B),
@@ -325,7 +325,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                 _buildRouteRow(
                   icon: Icons.circle,
                   iconColor: const Color(0xFF6366F1),
-                  label: t('rideshare.pickup', fallback: 'পিকআপ'),
+                  label: t('rideshare_pickup', fallback: 'Pickup'),
                   address: ride.pickupAddress,
                 ),
                 Padding(
@@ -343,7 +343,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                 _buildRouteRow(
                   icon: Icons.square_rounded,
                   iconColor: const Color(0xFF10B981),
-                  label: t('rideshare.drop', fallback: 'ড্রপ'),
+                  label: t('rideshare_drop', fallback: 'Drop'),
                   address: ride.dropAddress,
                 ),
                 
@@ -365,7 +365,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      '৳${(ride.finalFare ?? ride.fareEstimate).toStringAsFixed(0)}',
+                      'à§³${(ride.finalFare ?? ride.fareEstimate).toStringAsFixed(0)}',
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -406,7 +406,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               ),
                             ),
                             Text(
-                              t('rideshare.passenger', fallback: 'যাত্রী'),
+                              t('rideshare_passenger', fallback: 'Passenger'),
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 color: const Color(0xFF64748B),
@@ -558,3 +558,4 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
     return '${hour == 0 ? 12 : hour}:${date.minute.toString().padLeft(2, '0')} $period';
   }
 }
+

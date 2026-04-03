@@ -906,7 +906,7 @@ class DriverCashDueSettlementView(RideshareApiMixin, APIView):
         try:
             settlement = WalletService.settle_driver_cash_dues(driver_profile)
         except DjangoValidationError as exc:
-            return api_error(str(exc))
+            return api_error(exc.messages[0] if exc.messages else str(exc))
 
         driver_profile.refresh_from_db()
         data = DriverProfileSerializer(
