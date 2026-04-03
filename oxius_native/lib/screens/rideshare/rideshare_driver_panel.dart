@@ -2001,175 +2001,273 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final isTargeted = ride.targetedDriver != null;
     final isExpired = _isRequestExpired(ride);
     final isSkipping = _skippingRideIds.contains(ride.id);
+    final isBusy = _isAcceptingRide || isSkipping;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-          color: _slate50, borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _slate200)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isTargeted && !isExpired
+              ? const Color(0xFFFDE68A)
+              : _slate200,
+          width: isTargeted && !isExpired ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isTargeted && !isExpired
+                ? const Color(0xFFD97706).withValues(alpha: 0.10)
+                : _emerald.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(children: [
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              Text(ride.vehicleIcon, style: const TextStyle(fontSize: 18)),
-              const SizedBox(width: 10),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+
+        // ── Header strip ─────────────────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isTargeted && !isExpired
+                  ? [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)]
+                  : [_slate50, Colors.white],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+            border: Border(
+              bottom: BorderSide(color: _slate200, width: 0.8),
+            ),
+          ),
+          child: Row(children: [
+            // Vehicle icon circle
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: _indigo.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(ride.vehicleIcon,
+                    style: const TextStyle(fontSize: 19)),
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // Rider info
+            Expanded(child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 _buildIdentityRow(
                   name: ride.riderName,
                   isVerified: ride.riderIsVerified,
                   isPro: ride.riderIsPro,
                   completedTrips: ride.riderCompletedTrips,
                   textStyle: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: _slate800,
+                      fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                ),
+                const SizedBox(height: 2),
+                Row(children: [
+                  Icon(Icons.route_rounded, size: 11, color: _slate400),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${ride.distanceKm.toStringAsFixed(1)} km · ${ride.etaDisplay}',
+                    style: GoogleFonts.inter(fontSize: 11, color: _slate500),
                   ),
-                ),
-                Row(
-                  children: [
-                    Text('${ride.distanceKm.toStringAsFixed(1)} km • ${ride.etaDisplay}',
-                        style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
-                    const SizedBox(width: 6),
-                    _buildPaymentBadge(ride.paymentMethod),
-                  ],
-                ),
-              ])),
+                  const SizedBox(width: 6),
+                  _buildPaymentBadge(ride.paymentMethod),
+                ]),
+              ],
+            )),
+
+            // Right side: countdown + fare
+            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               if (isTargeted)
                 Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: isExpired ? _slate100 : const Color(0xFFFFFBEB),
-                    borderRadius: BorderRadius.circular(8),
+                    color: isExpired ? _slate100 : const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isExpired ? _slate300 : const Color(0xFFFDE68A),
+                      color: isExpired ? _slate300 : const Color(0xFFFCD34D),
                     ),
                   ),
-                  child: Text(
-                    isExpired ? t('rideshare_expired', fallback: 'Expired') : '${countdown}s',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(
+                      isExpired ? Icons.timer_off_rounded : Icons.timer_rounded,
+                      size: 10,
                       color: isExpired ? _slate500 : const Color(0xFFD97706),
                     ),
-                  ),
+                    const SizedBox(width: 3),
+                    Text(
+                      isExpired
+                          ? t('rideshare_expired', fallback: 'Expired')
+                          : '${countdown}s',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: isExpired ? _slate500 : const Color(0xFFD97706),
+                      ),
+                    ),
+                  ]),
                 ),
+              if (isTargeted) const SizedBox(height: 4),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: _emerald.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _emerald.withValues(alpha: 0.25)),
+                  gradient: const LinearGradient(colors: [_emerald, _emeraldDark]),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _emerald.withValues(alpha: 0.30),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: Text('৳${ride.fareEstimate.toStringAsFixed(0)}',
-                    style: GoogleFonts.inter(
-                        fontSize: 14, fontWeight: FontWeight.w800, color: _emerald)),
+                child: Text(
+                  '৳${ride.fareEstimate.toStringAsFixed(0)}',
+                  style: GoogleFonts.inter(
+                      fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                ),
               ),
-            ]),
-            const SizedBox(height: 10),
-            _buildRouteWidget(ride),
-            const SizedBox(height: 10),
-            Row(children: [
-              _buildMini(t('rideshare_fare', fallback: 'Fare'), '৳${ride.fareEstimate.toStringAsFixed(0)}', _indigo),
-              const SizedBox(width: 6),
-              _buildMini(t('rideshare_distance', fallback: 'Distance'), '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
-              const SizedBox(width: 6),
-              _buildMini(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay, _slate800),
             ]),
           ]),
         ),
-        Container(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: _slate200)),
-            borderRadius: BorderRadius.vertical(bottom: Radius.circular(11)),
-          ),
+
+        // ── Route ────────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+          child: _buildRouteWidget(ride),
+        ),
+
+        // ── Stats row ────────────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
           child: Row(children: [
+            _buildMini(t('rideshare_fare', fallback: 'Fare'),
+                '৳${ride.fareEstimate.toStringAsFixed(0)}', _indigo),
+            const SizedBox(width: 6),
+            _buildMini(t('rideshare_distance', fallback: 'Distance'),
+                '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
+            const SizedBox(width: 6),
+            _buildMini(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay, _slate800),
+          ]),
+        ),
+
+        // ── Action buttons ───────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+          child: Row(children: [
+            // Skip button
             SizedBox(
-              width: 108,
+              width: 90,
+              height: 44,
               child: Material(
                 color: Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
                 child: InkWell(
-                  onTap: isSkipping || _isAcceptingRide ? null : () => _skipRide(ride),
-                  borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(11)),
+                  onTap: isBusy ? null : () => _skipRide(ride),
+                  borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 11),
                     decoration: BoxDecoration(
-                      color: isSkipping ? _slate100 : Colors.white,
-                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(11)),
-                      border: const Border(right: BorderSide(color: _slate200)),
+                      color: isSkipping ? _slate100 : _slate50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _slate200),
                     ),
                     child: Center(
                       child: isSkipping
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: _indigo),
-                            )
-                          : Text(
-                              t('rideshare_skip', fallback: 'Skip'),
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: _slate500,
-                              ),
-                            ),
+                          ? const SizedBox(width: 16, height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: _slate400))
+                          : Row(mainAxisSize: MainAxisSize.min, children: [
+                              const Icon(Icons.skip_next_rounded, size: 15, color: _slate500),
+                              const SizedBox(width: 4),
+                              Text(t('rideshare_skip', fallback: 'Skip'),
+                                  style: GoogleFonts.inter(
+                                      fontSize: 12, fontWeight: FontWeight.w700,
+                                      color: _slate500)),
+                            ]),
                     ),
                   ),
                 ),
               ),
             ),
+            const SizedBox(width: 8),
+
+            // Accept button
             Expanded(
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _isAcceptingRide || isSkipping || isExpired
-                      ? null
-                      : () => _acceptRide(ride),
-                  borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    decoration: BoxDecoration(
-                      gradient: _isAcceptingRide || isSkipping || isExpired
-                          ? null
-                          : const LinearGradient(colors: [_emerald, _emeraldDark]),
-                      color: (_isAcceptingRide || isSkipping || isExpired)
-                          ? _slate100
-                          : null,
-                      borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
-                    ),
-                    child: Center(
-                      child: _isAcceptingRide
-                          ? Row(mainAxisSize: MainAxisSize.min, children: [
-                              const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: _indigo),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Accepting...',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: _slate500,
+              child: SizedBox(
+                height: 44,
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    onTap: isBusy || isExpired ? null : () => _acceptRide(ride),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: !isBusy && !isExpired
+                            ? const LinearGradient(
+                                colors: [_emerald, _emeraldDark],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : null,
+                        color: isBusy || isExpired ? _slate100 : null,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: !isBusy && !isExpired
+                            ? [
+                                BoxShadow(
+                                  color: _emerald.withValues(alpha: 0.35),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
                                 ),
-                              ),
-                            ])
-                          : Row(mainAxisSize: MainAxisSize.min, children: [
-                              Icon(
-                                isExpired ? Icons.schedule_rounded : Icons.check_circle_rounded,
-                                size: 16,
-                                color: isExpired ? _slate500 : Colors.white,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                isExpired ? t('rideshare_expired', fallback: 'Expired') : t('rideshare_accept_ride', fallback: 'Accept Ride'),
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
+                              ]
+                            : null,
+                      ),
+                      child: Center(
+                        child: _isAcceptingRide
+                            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                                const SizedBox(width: 16, height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2, color: Colors.white)),
+                                const SizedBox(width: 8),
+                                Text('Accepting...',
+                                    style: GoogleFonts.inter(
+                                        fontSize: 13, fontWeight: FontWeight.w600,
+                                        color: Colors.white)),
+                              ])
+                            : Row(mainAxisSize: MainAxisSize.min, children: [
+                                Icon(
+                                  isExpired
+                                      ? Icons.timer_off_rounded
+                                      : Icons.check_circle_rounded,
+                                  size: 17,
                                   color: isExpired ? _slate500 : Colors.white,
                                 ),
-                              ),
-                            ]),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isExpired
+                                      ? t('rideshare_expired', fallback: 'Expired')
+                                      : t('rideshare_accept_ride', fallback: 'Accept Ride'),
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: isExpired ? _slate500 : Colors.white,
+                                  ),
+                                ),
+                              ]),
+                      ),
                     ),
                   ),
                 ),
@@ -2184,16 +2282,23 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Widget _buildMini(String label, String value, Color vc) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: _slate200)),
+          color: _slate50,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _slate200),
+        ),
         child: Column(children: [
-          Text(label, style: GoogleFonts.inter(
-              fontSize: 9, fontWeight: FontWeight.w600, color: _slate400, letterSpacing: 0.2)),
-          const SizedBox(height: 2),
-          Text(value, style: GoogleFonts.inter(
-              fontSize: 12, fontWeight: FontWeight.w700, color: vc)),
+          Text(label,
+              style: GoogleFonts.inter(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: _slate400,
+                  letterSpacing: 0.4)),
+          const SizedBox(height: 3),
+          Text(value,
+              style: GoogleFonts.inter(
+                  fontSize: 13, fontWeight: FontWeight.w800, color: vc)),
         ]),
       ),
     );
@@ -2201,27 +2306,106 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Widget _buildRouteWidget(Ride ride) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: _slate200)),
-      child: Row(children: [
-        Column(children: [
-          Container(width: 8, height: 8,
-              decoration: const BoxDecoration(color: _indigo, shape: BoxShape.circle)),
-          Container(width: 1.5, height: 14, color: _slate300),
-          Container(width: 8, height: 8,
+        color: _slate50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: _slate200),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Column(children: [
+            Container(
+              width: 9,
+              height: 9,
               decoration: BoxDecoration(
-                  color: _emerald, borderRadius: BorderRadius.circular(2))),
-        ]),
-        const SizedBox(width: 10),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(ride.pickupAddress, maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: _slate800)),
-          const SizedBox(height: 6),
-          Text(ride.dropAddress, maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: _slate800)),
-        ])),
+                color: _indigo,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                      color: _indigo.withValues(alpha: 0.35),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1)),
+                ],
+              ),
+            ),
+            Container(
+              width: 1.5,
+              height: 18,
+              margin: const EdgeInsets.symmetric(vertical: 2),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_indigo.withValues(alpha: 0.5), _emerald.withValues(alpha: 0.5)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+            Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(
+                color: _emerald,
+                borderRadius: BorderRadius.circular(3),
+                boxShadow: [
+                  BoxShadow(
+                      color: _emerald.withValues(alpha: 0.35),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1)),
+                ],
+              ),
+            ),
+          ]),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  color: _indigo.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text('PICK',
+                    style: GoogleFonts.inter(
+                        fontSize: 8, fontWeight: FontWeight.w800, color: _indigo,
+                        letterSpacing: 0.5)),
+              ),
+              Expanded(
+                child: Text(ride.pickupAddress,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 12, fontWeight: FontWeight.w600, color: _slate800)),
+              ),
+            ]),
+            const SizedBox(height: 10),
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                margin: const EdgeInsets.only(right: 6),
+                decoration: BoxDecoration(
+                  color: _emerald.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text('DROP',
+                    style: GoogleFonts.inter(
+                        fontSize: 8, fontWeight: FontWeight.w800, color: _emerald,
+                        letterSpacing: 0.5)),
+              ),
+              Expanded(
+                child: Text(ride.dropAddress,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 12, fontWeight: FontWeight.w600, color: _slate800)),
+              ),
+            ]),
+          ]),
+        ),
       ]),
     );
   }

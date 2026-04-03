@@ -19,12 +19,23 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   final TranslationService _translationService = TranslationService();
   final GigsService _gigsService = GigsService();
   final UserStateService _userStateService = UserStateService();
+
+  static const Color _indigo = Color(0xFF6366F1);
+  static const Color _violet = Color(0xFF8B5CF6);
+  static const Color _emerald = Color(0xFF10B981);
+  static const Color _emeraldDark = Color(0xFF059669);
+  static const Color _slate50 = Color(0xFFF8FAFC);
+  static const Color _slate100 = Color(0xFFF1F5F9);
+  static const Color _slate200 = Color(0xFFE2E8F0);
+  static const Color _slate400 = Color(0xFF94A3B8);
+  static const Color _slate500 = Color(0xFF64748B);
+  static const Color _slate800 = Color(0xFF1E293B);
   
   List<Map<String, dynamic>> _microGigs = [];
   List<Map<String, dynamic>> _categories = [];
-  List<Map<String, dynamic>> _operators = [];
   
   bool _isLoading = true;
+  String? _loadError;
   String? _selectedCategory;
   String _filterStatus = 'all'; // 'all', 'available', 'completed'
   
@@ -60,10 +71,13 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
     
     try {
-      // Load gigs with pagination, categories, and operators in parallel
+      // Load gigs with pagination and categories in parallel
       final results = await Future.wait([
         _gigsService.fetchMicroGigs(
           showSubmitted: false,
@@ -71,7 +85,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           pageSize: _itemsPerPage,
         ),
         _gigsService.fetchMicroGigCategories(),
-        _gigsService.fetchMobileRechargeOperators(),
       ]);
       
       if (mounted) {
@@ -82,13 +95,19 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           _microGigs = gigsList;
           _totalCount = gigsData['count'] as int;
           _categories = _processCategories(gigsList);
-          _operators = results[2] as List<Map<String, dynamic>>;
           _isLoading = false;
+          _loadError = null;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _loadError = _translationService.t(
+            'gigs_load_failed',
+            fallback: 'Could not load gigs right now. Please try again.',
+          );
+        });
       }
     }
   }
@@ -146,6 +165,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       _selectedCategory = categoryId;
       _currentPage = 1;
       _isLoading = true;
+      _loadError = null;
     });
     
     try {
@@ -167,11 +187,18 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
           _totalCount = gigsData['count'] as int;
           _isLoading = false;
+          _loadError = null;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _loadError = _translationService.t(
+            'gigs_filter_failed',
+            fallback: 'Failed to apply filter. Please try again.',
+          );
+        });
       }
     }
   }
@@ -181,6 +208,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       _filterStatus = status;
       _currentPage = 1;
       _isLoading = true;
+      _loadError = null;
     });
     
     try {
@@ -205,11 +233,18 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
           _totalCount = gigsData['count'] as int;
           _isLoading = false;
+          _loadError = null;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _loadError = _translationService.t(
+            'gigs_status_failed',
+            fallback: 'Could not load this status right now.',
+          );
+        });
       }
     }
   }
@@ -229,6 +264,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     setState(() {
       _currentPage = page;
       _isLoading = true;
+      _loadError = null;
     });
     
     try {
@@ -250,11 +286,18 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
           _totalCount = gigsData['count'] as int;
           _isLoading = false;
+          _loadError = null;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _loadError = _translationService.t(
+            'gigs_page_failed',
+            fallback: 'Could not load this page. Please retry.',
+          );
+        });
       }
     }
   }
@@ -295,29 +338,29 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: _indigo.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
                     Icons.work_outline,
                     size: 16,
-                    color: Color(0xFF10B981),
+                    color: _indigo,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '${_translationService.t('micro_gigs', fallback: 'Micro Gigs')}',
+                  _translationService.t('micro_gigs', fallback: 'Micro Gigs'),
                   style: AppFonts.poppins(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade900,
+                    fontWeight: FontWeight.w700,
+                    color: _slate800,
                   ),
                 ),
                 const SizedBox(width: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: _violet.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -325,7 +368,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                     style: AppFonts.roboto(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF10B981),
+                      color: _violet,
                     ),
                   ),
                 ),
@@ -348,12 +391,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: Colors.grey.shade200,
+                color: _slate200,
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -364,66 +407,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 : _buildDesktopLayout(),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMobileRechargeLink(bool isMobile) {
-    return GestureDetector(
-      onTap: () {
-        // Navigate to mobile recharge page
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade500),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _translationService.t('mobile_recharge', fallback: 'Mobile Recharge'),
-              style: AppFonts.roboto(
-                fontSize: isMobile ? 16 : 18,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade800,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Row(
-              children: _operators.take(4).map((operator) {
-                return Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: Image.network(
-                      _getImageUrl(operator['icon']),
-                      width: 24,
-                      height: 24,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 24,
-                          height: 24,
-                          color: Colors.grey.shade300,
-                        );
-                      },
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -453,10 +436,10 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         Container(
           width: 240,
           decoration: BoxDecoration(
-            color: Colors.grey.shade50.withOpacity(0.7),
+            color: _slate50.withValues(alpha: 0.9),
             border: Border(
               right: BorderSide(
-                color: Colors.grey.shade300,
+                color: _slate200,
                 width: 1,
               ),
             ),
@@ -479,40 +462,88 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
 
   Widget _buildMobileCategoriesDropdown() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50.withOpacity(0.7),
+        color: _slate50.withValues(alpha: 0.9),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200),
+          bottom: BorderSide(color: _slate200),
         ),
       ),
-      child: DropdownButtonFormField<String>(
-        value: _selectedCategory,
-        decoration: InputDecoration(
-          labelText: _translationService.t('select_category', fallback: 'Select Category'),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        ),
-        items: [
-          DropdownMenuItem<String>(
-            value: null,
-            child: Text(_translationService.t('all_category', fallback: 'All Categories')),
-          ),
-          ..._categories.map((category) {
-            return DropdownMenuItem<String>(
-              value: category['id'].toString(),
-              child: Text(
-                '${category['category']} (${category['active']})',
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: _indigo.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Icon(Icons.category_outlined, size: 13, color: _indigo),
               ),
-            );
-          }).toList(),
+              const SizedBox(width: 7),
+              Text(
+                _translationService.t('all_category', fallback: 'All Categories'),
+                style: AppFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: _slate800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 44,
+            child: DropdownButtonFormField<String>(
+              isExpanded: true,
+              initialValue: _selectedCategory,
+              icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: _slate500),
+              style: AppFonts.roboto(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _slate800,
+              ),
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(9),
+                  borderSide: BorderSide(color: _slate200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(9),
+                  borderSide: BorderSide(color: _indigo.withValues(alpha: 0.75), width: 1.2),
+                ),
+              ),
+              items: [
+                DropdownMenuItem<String>(
+                  value: null,
+                  child: Text(
+                    _translationService.t('all_category', fallback: 'All Categories'),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                ..._categories.map((category) {
+                  return DropdownMenuItem<String>(
+                    value: category['id'].toString(),
+                    child: Text(
+                      '${category['category']} (${category['active']})',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(),
+                    ),
+                  );
+                }),
+              ],
+              onChanged: (value) => _filterByCategory(value),
+            ),
+          ),
         ],
-        onChanged: (value) => _filterByCategory(value),
       ),
     );
   }
@@ -579,97 +610,224 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   }
 
   Widget _buildGigsList() {
-    if (_isLoading) {
-      return Container(
-        padding: const EdgeInsets.all(48),
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_microGigs.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(48),
-        child: Column(
-          children: [
-            Icon(Icons.work_outline, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              _translationService.t('no_gigs_available', fallback: 'No gigs available'),
-              style: AppFonts.roboto(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     return Column(
       children: [
-        // Header with Filter
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: Colors.grey.shade200),
-            ),
+            color: _slate50.withValues(alpha: 0.8),
+            border: Border(bottom: BorderSide(color: _slate200)),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                _translationService.t('available_gigs', fallback: 'Available Gigs'),
-                style: AppFonts.roboto(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: _indigo.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    child: const Icon(Icons.work_outline_rounded, size: 14, color: _indigo),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _translationService.t('available_gigs', fallback: 'Available Gigs'),
+                      style: AppFonts.roboto(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _indigo.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _paginatedGigs.length.toString(),
+                      style: AppFonts.roboto(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: _indigo,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              _buildStatusFilter(),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.center,
+                child: _buildStatusFilter(),
+              ),
             ],
           ),
         ),
-        
-        // Gigs Cards
+        if (_loadError != null)
+          Container(
+            margin: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: _violet.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: _violet.withValues(alpha: 0.30)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline_rounded, size: 16, color: _violet),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _loadError!,
+                    style: AppFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: _slate800,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _refreshGigs,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    _translationService.t('retry', fallback: 'Retry'),
+                    style: AppFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: _indigo,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (_isLoading)
+          Container(
+            padding: const EdgeInsets.all(30),
+            child: const Center(child: CircularProgressIndicator()),
+          )
+        else if (_microGigs.isEmpty)
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            child: Column(
+              children: [
+                Icon(Icons.work_outline_rounded, size: 48, color: _slate400),
+                const SizedBox(height: 10),
+                Text(
+                  _filterStatus == 'completed'
+                      ? _translationService.t(
+                          'no_completed_gigs',
+                          fallback: 'No completed gigs yet.',
+                        )
+                      : _translationService.t(
+                          'no_gigs_available',
+                          fallback: 'No gigs available',
+                        ),
+                  style: AppFonts.roboto(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: _slate500,
+                  ),
+                ),
+                if (_filterStatus == 'completed') ...[
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => _filterByStatus('available'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: _indigo,
+                      textStyle: AppFonts.roboto(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: Text(
+                      _translationService.t(
+                        'view_open_gigs',
+                        fallback: 'View Open Gigs',
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          )
+        else
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: _paginatedGigs.length,
-          separatorBuilder: (context, index) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            return _buildGigCard(_paginatedGigs[index]);
-          },
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          itemBuilder: (context, index) => _buildGigCard(_paginatedGigs[index]),
         ),
       ],
     );
   }
 
   Widget _buildStatusFilter() {
-    // Use UserStateService for reactive authentication state
     final isLoggedIn = _userStateService.isAuthenticated;
-
-    // Build items list based on current state
-    final List<DropdownMenuItem<String>> items = [
-      const DropdownMenuItem(value: 'all', child: Text('All')),
-      const DropdownMenuItem(value: 'available', child: Text('Available')),
-    ];
-
-    // Add completed option for logged-in users
-    if (isLoggedIn) {
-      items.add(const DropdownMenuItem(value: 'completed', child: Text('Completed')));
-    }
-
-    // Reset filter if user logged out and was viewing completed gigs
     final currentValue = isLoggedIn || _filterStatus != 'completed' ? _filterStatus : 'all';
 
-    return DropdownButton<String>(
-      value: currentValue,
-      underline: const SizedBox(),
-      items: items,
-      onChanged: (value) {
-        if (value != null) _filterByStatus(value);
-      },
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildStatusChip('all', 'All', currentValue == 'all'),
+        const SizedBox(width: 6),
+        _buildStatusChip('available', 'Open', currentValue == 'available'),
+        if (isLoggedIn) ...[
+          const SizedBox(width: 6),
+          _buildStatusChip('completed', 'Complete', currentValue == 'completed'),
+        ],
+      ],
     );
+  }
+
+  Widget _buildStatusChip(String value, String label, bool isSelected) {
+    return InkWell(
+      onTap: () => _filterByStatus(value),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? _indigo.withValues(alpha: 0.10) : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? _indigo : _slate200),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: AppFonts.roboto(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? _indigo : _slate500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openGigDetails(Map<String, dynamic> gig) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GigDetailsScreen(gigSlug: gig['slug']),
+      ),
+    );
+
+    if (result == true && mounted) {
+      _refreshGigs();
+    }
   }
 
   Widget _buildGigCard(Map<String, dynamic> gig) {
@@ -683,44 +841,51 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     final requiredQty = gig['required_quantity'] ?? 0;
     final price = gig['price'] ?? 0;
     final createdAt = gig['created_at'] ?? '';
-    final userName = user['name'] ?? '';
-    
-    final isMobile = MediaQuery.of(context).size.width < 768;
-    
+    final completion = requiredQty > 0 ? filledQty / requiredQty : 0.0;
+    final progress = completion.clamp(0.0, 1.0).toDouble();
+    final slotsLeft = (requiredQty - filledQty) > 0 ? (requiredQty - filledQty) : 0;
+
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade100),
-        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _slate200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Gig Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.network(
-                  imageUrl,
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 40,
-                      height: 40,
-                      color: Colors.grey.shade200,
-                      child: Icon(Icons.work_outline, size: 20, color: Colors.grey.shade400),
-                    );
-                  },
+              Container(
+                width: 42,
+                height: 42,
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: _slate100,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.work_outline,
+                          size: 20, color: Colors.grey.shade400);
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
-              
-              // Gig Details
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,176 +895,141 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                       style: AppFonts.roboto(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade900,
+                        color: _slate800,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 7),
                     Wrap(
-                      spacing: 12,
+                      spacing: 10,
                       runSpacing: 6,
                       children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.people_outline, size: 14, color: Color(0xFF6B7280)),
-                            const SizedBox(width: 3),
-                            Text(
-                              '$filledQty/',
-                              style: AppFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
-                            ),
-                            Text(
-                              '$requiredQty',
-                              style: AppFonts.roboto(
-                                fontSize: 12,
-                                color: Colors.green.shade600,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.access_time, size: 14, color: Color(0xFF6B7280)),
-                            const SizedBox(width: 3),
-                            Text(
-                              _formatDate(createdAt),
-                              style: AppFonts.roboto(fontSize: 12, color: Color(0xFF6B7280)),
-                            ),
-                          ],
-                        ),
-                        if (!isMobile)
-                          Row(
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _emerald.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              const Icon(Icons.people_outline,
+                                  size: 13, color: Color(0xFF15803D)),
+                              const SizedBox(width: 4),
                               Text(
-                                'Posted By: ',
-                                style: AppFonts.roboto(fontSize: 14),
-                              ),
-                              Text(
-                                '${userName.substring(0, userName.length > 6 ? 6 : userName.length)}***',
+                                '$filledQty/$requiredQty',
                                 style: AppFonts.roboto(
-                                  fontSize: 14,
-                                  color: Colors.green.shade600,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                  color: _emeraldDark,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
                           ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _slate100,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.schedule_rounded,
+                                  size: 13, color: Color(0xFF6B7280)),
+                              const SizedBox(width: 4),
+                              Text(
+                                _formatDate(createdAt),
+                                style: AppFonts.roboto(
+                                  fontSize: 11,
+                                  color: _slate500,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _indigo.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            slotsLeft > 0 ? '$slotsLeft slots left' : 'Filling soon',
+                            style: AppFonts.roboto(
+                              fontSize: 11,
+                              color: _indigo,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-              
-              // Price and Action Button (Desktop)
-              if (!isMobile) ...[
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '৳$price',
-                        style: AppFonts.roboto(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    OutlinedButton(
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => GigDetailsScreen(
-                              gigSlug: gig['slug'],
-                            ),
-                          ),
-                        );
-                        
-                        // If submission was successful, refresh the gig list
-                        if (result == true && mounted) {
-                          _refreshGigs();
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF10B981),
-                        side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        textStyle: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
-                      ),
-                      child: const Text('Earn Now'),
-                    ),
-                  ],
-                ),
-              ],
             ],
           ),
-          
-          // Mobile Price and Button
-          if (isMobile) ...[
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '৳$price',
-                    style: AppFonts.roboto(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: _slate100,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                progress >= 0.85 ? _violet : _indigo,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 11),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: _indigo.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _indigo.withValues(alpha: 0.25)),
+                ),
+                child: Text(
+                  '৳$price',
+                  style: AppFonts.roboto(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: _indigo,
                   ),
                 ),
-                OutlinedButton(
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GigDetailsScreen(
-                          gigSlug: gig['slug'],
-                        ),
-                      ),
-                    );
-                    
-                    // If submission was successful, refresh the gig list
-                    if (result == true && mounted) {
-                      _refreshGigs();
-                    }
-                  },
+              ),
+              SizedBox(
+                height: 34,
+                child: OutlinedButton(
+                  onPressed: () => _openGigDetails(gig),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981),
-                    side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    elevation: 0,
+                    backgroundColor: Colors.white,
+                    foregroundColor: _indigo,
+                    side: const BorderSide(color: _indigo, width: 1.2),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    textStyle: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
+                    textStyle: AppFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   child: const Text('Earn Now'),
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -915,7 +1045,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -952,7 +1082,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               // Page Numbers
               ..._getVisiblePages().map((page) {
                 return _buildPageNumberButton(page);
-              }).toList(),
+              }),
               
               // Next Button
               _buildPaginationButton(
@@ -996,10 +1126,10 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isEnabled ? const Color(0xFF10B981).withOpacity(0.1) : Colors.grey.shade100,
+            color: isEnabled ? _indigo.withValues(alpha: 0.1) : _slate100,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade300,
+              color: isEnabled ? _indigo : _slate200,
               width: 1,
             ),
           ),
@@ -1009,7 +1139,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               if (isIconLeft) Icon(
                 icon,
                 size: 16,
-                color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade400,
+                color: isEnabled ? _indigo : _slate400,
               ),
               if (isIconLeft) const SizedBox(width: 4),
               Text(
@@ -1017,14 +1147,14 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 style: AppFonts.roboto(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade400,
+                  color: isEnabled ? _indigo : _slate400,
                 ),
               ),
               if (!isIconLeft) const SizedBox(width: 4),
               if (!isIconLeft) Icon(
                 icon,
                 size: 16,
-                color: isEnabled ? const Color(0xFF10B981) : Colors.grey.shade400,
+                color: isEnabled ? _indigo : _slate400,
               ),
             ],
           ),
@@ -1044,10 +1174,10 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF10B981) : Colors.transparent,
+            color: isActive ? _indigo : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isActive ? const Color(0xFF10B981) : Colors.grey.shade300,
+              color: isActive ? _indigo : _slate200,
               width: 1,
             ),
           ),
@@ -1057,7 +1187,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? Colors.white : Colors.grey.shade700,
+                color: isActive ? Colors.white : _slate500,
               ),
             ),
           ),
