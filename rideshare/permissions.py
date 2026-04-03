@@ -10,9 +10,11 @@ class IsApprovedDriver(BasePermission):
         user = getattr(request, "user", None)
         if not user or not user.is_authenticated:
             return False
-
-        driver_profile = DriverProfile.objects.filter(user=user).first()
-        return bool(driver_profile and driver_profile.approval_status == "approved")
+        # Use EXISTS check to avoid selecting every DriverProfile column.
+        return DriverProfile.objects.filter(
+            user_id=user.id,
+            approval_status="approved",
+        ).exists()
 
 
 class IsRideParticipant(BasePermission):

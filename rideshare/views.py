@@ -921,12 +921,42 @@ class DriverHeartbeatView(RideshareApiMixin, APIView):
 class DriverCashDueSettlementView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated, IsApprovedDriver]
 
+    RESPONSE_PROFILE_FIELDS = [
+        "id",
+        "user_id",
+        "license_number",
+        "national_id_number",
+        "driver_details",
+        "additional_documents",
+        "approval_status",
+        "is_online",
+        "is_available",
+        "service_radius_km",
+        "max_ride_distance_km",
+        "current_latitude",
+        "current_longitude",
+        "last_location_at",
+        "total_trips",
+        "total_earnings",
+        "created_at",
+        "updated_at",
+    ]
+
     @transaction.atomic
     def post(self, request):
         serializer = DriverCashDueSettlementSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        driver_profile = request.user.driver_profile
+        driver_profile = (
+            DriverProfile.objects.only("id", "user_id", "is_online", "is_available")
+            .filter(user_id=request.user.id, approval_status="approved")
+            .first()
+        )
+        if not driver_profile:
+            return api_error(
+                "No approved driver profile found.",
+                status.HTTP_403_FORBIDDEN,
+            )
         go_online_after_payment = serializer.validated_data.get(
             "go_online_after_payment", False
         )
@@ -948,9 +978,13 @@ class DriverCashDueSettlementView(RideshareApiMixin, APIView):
                 status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        driver_profile.refresh_from_db()
+        response_driver_profile = (
+            DriverProfile.objects.select_related("user")
+            .only(*self.RESPONSE_PROFILE_FIELDS)
+            .get(id=driver_profile.id)
+        )
         data = DriverProfileSerializer(
-            driver_profile, context={"request": request}
+            response_driver_profile, context={"request": request}
         ).data
         data.update(
             {
