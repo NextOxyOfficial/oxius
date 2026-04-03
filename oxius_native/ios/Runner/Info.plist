@@ -50,6 +50,7 @@
 	<array>
 		<string>audio</string>
 		<string>fetch</string>
+		<string>location</string>
 		<string>remote-notification</string>
 		<string>voip</string>
 	</array>
@@ -63,6 +64,10 @@
 	<string>AdsyClub needs access to your microphone for voice messages and video calls.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>AdsyClub needs your location to show nearby products and services.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>AdsyClub shares your location in the background while you are active as a driver so passengers can find you and you can receive ride requests.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>AdsyClub shares your location in the background while you are active as a driver so passengers can find you and you can receive ride requests.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>AdsyClub can use your contacts to help you connect with friends.</string>
 	<key>NSFaceIDUsageDescription</key>

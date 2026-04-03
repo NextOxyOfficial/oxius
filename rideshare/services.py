@@ -6,7 +6,9 @@ from datetime import timedelta
 # How many minutes of silence from a driver's device before we consider it stale/offline.
 # A driver who has not sent any signal (location, heartbeat, or online toggle) for this
 # long will be excluded from dispatch and eventually marked offline by the Celery task.
-DRIVER_STALE_THRESHOLD_MINUTES = 10
+# The driver app sends a location update every 30 s (even when stationary), so 3 minutes
+# means 6 missed consecutive pings — very unlikely to be a false positive.
+DRIVER_STALE_THRESHOLD_MINUTES = 3
 
 import httpx
 from asgiref.sync import async_to_sync

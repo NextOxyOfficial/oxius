@@ -148,7 +148,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
           ? ListView.builder(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
               itemCount: _rides.length + (_isLoadingMore || _hasMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == _rides.length) {

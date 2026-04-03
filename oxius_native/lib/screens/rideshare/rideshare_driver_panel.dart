@@ -1,4 +1,5 @@
 ﻿import 'dart:async';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -65,6 +66,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   double _maxRideDistance = 0.0;
 
   StreamSubscription<Position>? _locationSubscription;
+  // Fallback timer: sends last-known location every 30 s for stationary drivers
+  // (covers iOS background + Android edge cases where the stream stays silent).
+  Timer? _locationHeartbeatTimer;
+  DateTime? _lastLocationSentAt;
   Timer? _refreshTimer;
   Timer? _activeRideRefreshTimer;
   Timer? _countdownTimer;
@@ -185,6 +190,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _ts.removeListener(_onTranslationsChanged);
     WidgetsBinding.instance.removeObserver(this);
     _locationSubscription?.cancel();
+    _locationHeartbeatTimer?.cancel();
     _refreshTimer?.cancel();
     _activeRideRefreshTimer?.cancel();
     _countdownTimer?.cancel();
@@ -322,6 +328,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (mounted && _driverProfile?.isOnline == true && _activeRide == null) {
         _loadAvailableRequests();
+      }
+      // Keep last_seen_at fresh on the server so the staleness task does not
+      // auto-offline a driver who is online but temporarily stationary.
+      if (mounted && _driverProfile?.isOnline == true) {
+        RideshareService.sendDriverHeartbeat();
       }
     });
   }
@@ -704,21 +715,79 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _startLocationTracking() async {
     _locationSubscription?.cancel();
+    _locationHeartbeatTimer?.cancel();
     try {
       final granted = await _refreshLocationPermissionStatus(syncTracking: false);
       if (!granted) {
         _showError('Location permission required');
         return;
       }
+
+      // Build platform-specific settings so location tracking survives backgrounding:
+      //  • Android: foreground service with a visible notification (no ACCESS_BACKGROUND_LOCATION needed)
+      //  • iOS: allowBackgroundLocationUpdates keeps the stream alive while screen is off
+      late LocationSettings locationSettings;
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        locationSettings = AndroidSettings(
+          accuracy: LocationAccuracy.high,
+          // distanceFilter: 0 means fire on every OS-reported position, throttled by intervalDuration.
+          distanceFilter: 0,
+          // Guarantee at least one update every 30 s even when perfectly stationary.
+          intervalDuration: const Duration(seconds: 30),
+          foregroundNotificationConfig: const ForegroundNotificationConfig(
+            notificationTitle: 'AdsyClub – Driver Mode',
+            notificationText: 'Location is being shared while you are online.',
+            enableWakeLock: true,
+            setOngoing: true,
+          ),
+        );
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+        locationSettings = AppleSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 50,
+          activityType: ActivityType.automotiveNavigation,
+          pauseLocationUpdatesAutomatically: false,
+          // Required for background location on iOS (also needs UIBackgroundModes → location in Info.plist).
+          allowBackgroundLocationUpdates: true,
+          showBackgroundLocationIndicator: true,
+        );
+      } else {
+        // Web / desktop fallback
+        locationSettings = const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 50,
+        );
+      }
+
       _locationSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 10),
+        locationSettings: locationSettings,
       ).listen(_updateDriverLocation);
-    } catch (_) { _showError('Failed to start location tracking'); }
+
+      // iOS fallback: if the driver is stationary the stream stays silent.
+      // Send last-known position every 30 s so the server never loses the driver.
+      _locationHeartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
+        if (!mounted || _driverProfile?.isOnline != true) return;
+        final last = _lastLocationSentAt;
+        if (last != null && DateTime.now().difference(last) < const Duration(seconds: 25)) {
+          return; // A real GPS position was just sent — skip the duplicate.
+        }
+        final pos = await Geolocator.getLastKnownPosition();
+        if (pos != null) await _updateDriverLocation(pos);
+      });
+    } catch (_) {
+      _showError('Failed to start location tracking');
+    }
   }
 
-  void _stopLocationTracking() { _locationSubscription?.cancel(); _locationSubscription = null; }
+  void _stopLocationTracking() {
+    _locationSubscription?.cancel();
+    _locationSubscription = null;
+    _locationHeartbeatTimer?.cancel();
+    _locationHeartbeatTimer = null;
+  }
 
   Future<void> _updateDriverLocation(Position p) async {
+    _lastLocationSentAt = DateTime.now();
     await RideshareService.updateDriverLocation(
       latitude: p.latitude, longitude: p.longitude, rideId: _activeRide?.id,
       heading: p.heading, speedKph: p.speed * 3.6, accuracyMeters: p.accuracy,

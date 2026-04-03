@@ -831,4 +831,19 @@ class RideshareService {
       );
     }
   }
+
+  /// Fire-and-forget heartbeat. Keeps the driver's `last_seen_at` fresh on the server
+  /// so the staleness detection Celery task does not mark an idle-but-online driver offline.
+  static Future<void> sendDriverHeartbeat() async {
+    try {
+      final headers = await _getHeaders();
+      await http.post(
+        Uri.parse('$_baseUrl/drivers/heartbeat/'),
+        headers: headers,
+      );
+    } catch (_) {
+      // Silently ignore — heartbeat failures are non-critical; the driver will be
+      // auto-offlined if enough heartbeats are missed.
+    }
+  }
 }
