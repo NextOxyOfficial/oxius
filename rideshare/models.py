@@ -22,6 +22,16 @@ class DriverProfile(models.Model):
     )
     license_number = models.CharField(max_length=100, blank=True, default="")
     national_id_number = models.CharField(max_length=100, blank=True, default="")
+    driver_details = models.TextField(
+        blank=True,
+        default="",
+        help_text="Additional driver details provided during verification.",
+    )
+    additional_documents = models.JSONField(
+        blank=True,
+        default=list,
+        help_text="Additional verification documents (base64/image URLs).",
+    )
     approval_status = models.CharField(
         max_length=20, choices=APPROVAL_STATUS_CHOICES, default="pending"
     )

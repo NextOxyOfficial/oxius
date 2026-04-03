@@ -142,6 +142,8 @@ class DriverProfile {
   final bool userIsPro;
   final String licenseNumber;
   final String nationalIdNumber;
+  final String driverDetails;
+  final List<String> additionalDocuments;
   final String approvalStatus;
   final bool isOnline;
   final bool isAvailable;
@@ -168,6 +170,8 @@ class DriverProfile {
     required this.userIsPro,
     required this.licenseNumber,
     required this.nationalIdNumber,
+    required this.driverDetails,
+    required this.additionalDocuments,
     required this.approvalStatus,
     required this.isOnline,
     required this.isAvailable,
@@ -197,6 +201,11 @@ class DriverProfile {
       userIsPro: user['is_pro'] == true,
       licenseNumber: json['license_number'] ?? '',
       nationalIdNumber: json['national_id_number'] ?? '',
+        driverDetails: json['driver_details'] ?? '',
+        additionalDocuments: (json['additional_documents'] as List<dynamic>? ?? [])
+          .map((doc) => doc.toString())
+          .where((doc) => doc.trim().isNotEmpty)
+          .toList(),
       approvalStatus: json['approval_status'] ?? 'pending',
       isOnline: json['is_online'] ?? false,
       isAvailable: json['is_available'] ?? false,

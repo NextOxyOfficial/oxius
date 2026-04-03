@@ -37,6 +37,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
+  bool _isKYCPending = false;
   List<Vehicle> _vehicles = const [];
   DriverProfile? _driverProfile;
 
@@ -62,6 +63,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       setState(() {
         _isLoading = false;
         _errorMessage = 'Please log in to manage your vehicles.';
+        _isKYCPending = false;
       });
       return;
     }
@@ -69,6 +71,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _isKYCPending = false;
     });
 
     final vehicleFuture = RideshareService.listVehicles();
@@ -80,9 +83,17 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
     setState(() {
       _isLoading = false;
       _driverProfile = profileResult.data;
-      if (vehicleResult.success) {
+      
+      // Check if driver profile exists and is pending
+      if (profileResult.data != null && profileResult.data!.isPending) {
+        _isKYCPending = true;
+        _errorMessage = null;
+        _vehicles = const [];
+      } else if (vehicleResult.success) {
+        _isKYCPending = false;
         _vehicles = vehicleResult.data ?? const [];
       } else {
+        _isKYCPending = false;
         _errorMessage = vehicleResult.message;
       }
     });
@@ -1091,7 +1102,97 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(10, 8, 10, 96),
         children: [
-          if (_errorMessage != null)
+          // Show KYC Pending message
+          if (_isKYCPending)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _line),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: _warningSoft,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.hourglass_top_rounded,
+                      color: _warning,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    t('rideshare_kyc_under_review', fallback: 'Driver Profile Under Review'),
+                    style: GoogleFonts.inter(
+                      color: _textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    t('rideshare_kyc_pending_vehicle_desc', fallback: 'Your driver registration is currently under review by our admin team. You\'ll be able to add vehicles once your profile is approved.'),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: _textSecondary,
+                      fontSize: 13,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _warningSoft,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _warning.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_rounded, color: _warning, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            t('rideshare_kyc_timeline', fallback: 'Approval usually takes 24-48 hours'),
+                            style: GoogleFonts.inter(
+                              color: _warning,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    onPressed: _loadVehicles,
+                    child: Text(
+                      t('refresh', fallback: 'Refresh Status'),
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          // Show error message
+          else if (_errorMessage != null)
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(

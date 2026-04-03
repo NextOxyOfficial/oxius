@@ -529,6 +529,8 @@ class RideshareService {
   static Future<RideshareApiResult<DriverProfile>> updateDriverProfile({
     String? licenseNumber,
     String? nationalIdNumber,
+    String? driverDetails,
+    List<String>? additionalDocuments,
     double? serviceRadiusKm,
     double? maxRideDistanceKm,
   }) async {
@@ -537,6 +539,8 @@ class RideshareService {
       final body = <String, dynamic>{};
       if (licenseNumber != null) body['license_number'] = licenseNumber;
       if (nationalIdNumber != null) body['national_id_number'] = nationalIdNumber;
+      if (driverDetails != null) body['driver_details'] = driverDetails;
+      if (additionalDocuments != null) body['additional_documents'] = additionalDocuments;
       if (serviceRadiusKm != null) body['service_radius_km'] = serviceRadiusKm;
       if (maxRideDistanceKm != null) body['max_ride_distance_km'] = maxRideDistanceKm;
       
@@ -560,12 +564,16 @@ class RideshareService {
   static Future<RideshareApiResult<DriverProfile>> applyAsDriver({
     String? licenseNumber,
     String? nationalIdNumber,
+    String? driverDetails,
+    List<String>? additionalDocuments,
   }) async {
     try {
       final headers = await _getHeaders();
       final body = <String, dynamic>{};
       if (licenseNumber != null) body['license_number'] = licenseNumber;
       if (nationalIdNumber != null) body['national_id_number'] = nationalIdNumber;
+      if (driverDetails != null) body['driver_details'] = driverDetails;
+      if (additionalDocuments != null) body['additional_documents'] = additionalDocuments;
       final response = await http.post(
         Uri.parse('$_baseUrl/drivers/apply/'),
         headers: headers,

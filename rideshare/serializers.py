@@ -77,6 +77,8 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             "user",
             "license_number",
             "national_id_number",
+            "driver_details",
+            "additional_documents",
             "approval_status",
             "is_online",
             "is_available",
@@ -146,6 +148,33 @@ class DriverProfileSerializer(serializers.ModelSerializer):
                         field_name: f"{label} cannot be changed after it has been submitted.",
                     }
                 )
+
+        if "driver_details" in attrs:
+            attrs["driver_details"] = (attrs.get("driver_details") or "").strip()
+
+        if "additional_documents" in attrs:
+            documents = attrs.get("additional_documents")
+            if not isinstance(documents, list):
+                raise serializers.ValidationError(
+                    {"additional_documents": "Additional documents must be a list."}
+                )
+
+            cleaned_documents = []
+            for item in documents:
+                if not isinstance(item, str):
+                    raise serializers.ValidationError(
+                        {"additional_documents": "Each document must be a string."}
+                    )
+                value = item.strip()
+                if value:
+                    cleaned_documents.append(value)
+
+            if len(cleaned_documents) > 10:
+                raise serializers.ValidationError(
+                    {"additional_documents": "You can upload up to 10 additional documents."}
+                )
+
+            attrs["additional_documents"] = cleaned_documents
 
         return attrs
 

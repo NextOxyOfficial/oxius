@@ -1,9 +1,11 @@
 ﻿import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:vibration/vibration.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/adsyconnect_service.dart';
@@ -27,6 +29,7 @@ const _slate200 = Color(0xFFE2E8F0);
 const _slate300 = Color(0xFFCBD5E1);
 const _slate400 = Color(0xFF94A3B8);
 const _slate500 = Color(0xFF64748B);
+const _slate600 = Color(0xFF475569);
 const _slate800 = Color(0xFF1E293B);
 
 class RideshareDriverPanel extends StatefulWidget {
@@ -62,6 +65,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   final _licenseController = TextEditingController();
   final _nidController = TextEditingController();
+  final _driverDetailsController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
+  List<String> _additionalDocuments = [];
+  List<String> _additionalDocumentLabels = [];
   double _serviceRadius = 8.0;
   double _maxRideDistance = 0.0;
 
@@ -201,6 +208,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _ringtonePlayer.stop();
     _licenseController.dispose();
     _nidController.dispose();
+    _driverDetailsController.dispose();
     super.dispose();
   }
 
@@ -461,9 +469,21 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       if (profileResult.data != null) {
         _licenseController.text = profileResult.data!.licenseNumber;
         _nidController.text = profileResult.data!.nationalIdNumber;
+        _driverDetailsController.text = profileResult.data!.driverDetails;
+        _additionalDocuments = List<String>.from(profileResult.data!.additionalDocuments);
+        _additionalDocumentLabels = List<String>.generate(
+          _additionalDocuments.length,
+          (i) => 'Document ${i + 1}',
+        );
         _serviceRadius = profileResult.data!.serviceRadiusKm;
         _maxRideDistance = profileResult.data!.maxRideDistanceKm;
         _initializeProfileExpansion(profileResult.data);
+      } else {
+        _licenseController.clear();
+        _nidController.clear();
+        _driverDetailsController.clear();
+        _additionalDocuments = [];
+        _additionalDocumentLabels = [];
       }
       if (_driverProfile?.isOnline == true) {
         await _startLocationTracking();
@@ -604,11 +624,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       result = await RideshareService.applyAsDriver(
         licenseNumber: _licenseController.text.trim(),
         nationalIdNumber: _nidController.text.trim(),
+        driverDetails: _driverDetailsController.text.trim(),
+        additionalDocuments: _additionalDocuments,
       );
     } else {
       result = await RideshareService.updateDriverProfile(
         licenseNumber: _licenseController.text.trim(),
         nationalIdNumber: _nidController.text.trim(),
+        driverDetails: _driverDetailsController.text.trim(),
+        additionalDocuments: _additionalDocuments,
         serviceRadiusKm: _serviceRadius,
         maxRideDistanceKm: _maxRideDistance,
       );
@@ -619,8 +643,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       if (result.success && result.data != null) {
         _licenseController.text = result.data!.licenseNumber;
         _nidController.text = result.data!.nationalIdNumber;
+        _driverDetailsController.text = result.data!.driverDetails;
         setState(() {
           _driverProfile = result.data;
+          _additionalDocuments = List<String>.from(result.data!.additionalDocuments);
+          _additionalDocumentLabels = List<String>.generate(
+            _additionalDocuments.length,
+            (i) => 'Document ${i + 1}',
+          );
           _serviceRadius = result.data!.serviceRadiusKm;
           _maxRideDistance = result.data!.maxRideDistanceKm;
           _isProfileExpanded = !_hasSubmittedIdentity(result.data);
@@ -633,6 +663,49 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _showError(result.message);
       }
     }
+  }
+
+  Future<void> _pickAdditionalDocuments() async {
+    final remainingSlots = 10 - _additionalDocuments.length;
+    if (remainingSlots <= 0) {
+      _showError(t('rideshare_doc_limit', fallback: 'You can upload up to 10 additional documents.'));
+      return;
+    }
+
+    try {
+      final files = await _imagePicker.pickMultiImage(imageQuality: 80, maxWidth: 1800);
+      if (files.isEmpty || !mounted) return;
+
+      final docs = List<String>.from(_additionalDocuments);
+      final labels = List<String>.from(_additionalDocumentLabels);
+
+      for (final file in files.take(remainingSlots)) {
+        final bytes = await file.readAsBytes();
+        final base64Data = base64Encode(bytes);
+        final ext = file.name.toLowerCase();
+        final mime = ext.endsWith('.png') ? 'png' : ext.endsWith('.webp') ? 'webp' : 'jpeg';
+        docs.add('data:image/$mime;base64,$base64Data');
+        labels.add(file.name);
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _additionalDocuments = docs;
+        _additionalDocumentLabels = labels;
+      });
+    } catch (_) {
+      _showError(t('rideshare_doc_pick_failed', fallback: 'Could not pick documents right now.'));
+    }
+  }
+
+  void _removeAdditionalDocument(int index) {
+    if (index < 0 || index >= _additionalDocuments.length) return;
+    setState(() {
+      _additionalDocuments.removeAt(index);
+      if (index < _additionalDocumentLabels.length) {
+        _additionalDocumentLabels.removeAt(index);
+      }
+    });
   }
 
   Future<void> _toggleOnline() async {
@@ -1576,6 +1649,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             hasSubmittedIdentity: hasSubmittedIdentity,
             licenseLocked: licenseLocked,
             nidLocked: nidLocked,
+            additionalDocumentCount: _additionalDocuments.length,
           ),
         ),
       ]),
@@ -1611,18 +1685,54 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             textColor: Colors.red.shade800,
           ),
         Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            if (isNew)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  _driverProfile == null
-                      ? t('rideshare_apply_instructions', fallback: 'Submit your identity details to apply as a driver. Admin will review and approve.')
-                      : t('rideshare_identity_instructions', fallback: 'Fill in your identity details once. After submission, license and NID stay locked.'),
-                  style: GoogleFonts.inter(fontSize: 12, color: _slate500),
+            // Instructions
+            if (isNew) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _indigo.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _indigo.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      _driverProfile == null ? Icons.info_rounded : Icons.check_circle_rounded,
+                      size: 16,
+                      color: _indigo,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _driverProfile == null
+                            ? t('rideshare_apply_instructions', fallback: 'Submit your identity details to apply as a driver. Admin will review and approve.')
+                            : t('rideshare_identity_instructions', fallback: 'Fill in your identity details once. After submission, license and NID stay locked.'),
+                        style: GoogleFonts.inter(fontSize: 12, height: 1.4, color: _indigo),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: 18),
+            ],
+            // Identity Section Header
+            Row(
+              children: [
+                Icon(Icons.verified_user_rounded, size: 16, color: _indigo),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    t('rideshare_identity_section', fallback: 'Identity Verification'),
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // License Field
             _buildField(
               _licenseController,
               t('rideshare_license_number', fallback: 'License Number'),
@@ -1631,7 +1741,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               readOnly: licenseLocked,
               helperText: licenseLocked ? t('rideshare_license_locked', fallback: 'Submitted license number cannot be edited.') : null,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
+            // NID Field
             _buildField(
               _nidController,
               t('rideshare_nid_label', fallback: 'National ID (NID)'),
@@ -1640,110 +1751,358 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               readOnly: nidLocked,
               helperText: nidLocked ? t('rideshare_nid_locked', fallback: 'Submitted NID cannot be edited.') : null,
             ),
-            const SizedBox(height: 10),
-            Row(children: [
-              const Icon(Icons.radar_rounded, size: 13, color: _slate500),
-              const SizedBox(width: 5),
-              Text(t('rideshare_service_radius', fallback: 'Minimum Service Radius'),
-                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: _indigo.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
-                child: Text('${_serviceRadius.toStringAsFixed(0)} km',
-                    style: GoogleFonts.inter(
-                        fontSize: 11, fontWeight: FontWeight.w700, color: _indigo)),
-              ),
-            ]),
-            SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
-                activeTrackColor: _indigo,
-                inactiveTrackColor: _slate200,
-                thumbColor: _indigo,
-                overlayColor: _indigo.withValues(alpha: 0.1),
-              ),
-              child: Slider(
-                value: _serviceRadius,
-                min: 1,
-                max: 30,
-                divisions: 29,
-                onChanged: (v) => setState(() => _serviceRadius = v),
+            const SizedBox(height: 20),
+            // Driver Details Section Header
+            Row(
+              children: [
+                Icon(Icons.person_outline_rounded, size: 16, color: _slate800),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    t('rideshare_details_section', fallback: 'Driver Information'),
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Driver Details Label
+            Text(
+              t('rideshare_driver_details', fallback: 'Experience & Notes'),
+              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate600),
+            ),
+            const SizedBox(height: 6),
+            // Driver Details TextField
+            TextField(
+              controller: _driverDetailsController,
+              minLines: 3,
+              maxLines: 5,
+              style: GoogleFonts.inter(fontSize: 13, color: _slate800, height: 1.5),
+              decoration: InputDecoration(
+                hintText: t('rideshare_driver_details_hint', fallback: 'Describe your driving experience, favorite routes, vehicle details, or any special notes...'),
+                hintStyle: GoogleFonts.inter(fontSize: 12, color: _slate400),
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Icon(Icons.description_rounded, size: 16, color: _slate400),
+                ),
+                prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 42),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                filled: true,
+                fillColor: _slate50,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: _slate200, width: 1)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: _slate200, width: 1)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: _indigo, width: 2)),
               ),
             ),
-            const SizedBox(height: 10),
-            Row(children: [
-              const Icon(Icons.route_rounded, size: 13, color: _slate500),
-              const SizedBox(width: 5),
-              Text(t('rideshare_max_ride_distance', fallback: 'Max Ride Distance'),
-                  style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: _indigo.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
-                child: Text(_maxRideDistance == 0 ? t('rideshare_no_limit', fallback: 'No limit') : '${_maxRideDistance.toStringAsFixed(0)} km',
+            const SizedBox(height: 20),
+            // Documents Section Header
+            Row(
+              children: [
+                Icon(Icons.folder_copy_rounded, size: 16, color: _slate800),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    t('rideshare_documents_section', fallback: 'Additional Documents'),
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: _indigo.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${_additionalDocuments.length}/10',
                     style: GoogleFonts.inter(
-                        fontSize: 11, fontWeight: FontWeight.w700, color: _indigo)),
+                        fontSize: 10.5, fontWeight: FontWeight.w700, color: _indigo),
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Documents Helper Text
+            Text(
+              t('rideshare_documents_hint', fallback: 'Upload additional documents to support your application (licenses, certifications, insurance, etc.)'),
+              style: GoogleFonts.inter(fontSize: 11, color: _slate500, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            // Upload Button
+            SizedBox(
+              height: 44,
+              child: ElevatedButton.icon(
+                onPressed: _pickAdditionalDocuments,
+                icon: const Icon(Icons.cloud_upload_rounded, size: 18),
+                label: Text(
+                  t('rideshare_upload_btn', fallback: 'Upload license documents photo'),
+                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _indigo,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
+                ),
               ),
-            ]),
-            SliderTheme(
-              data: SliderThemeData(
-                trackHeight: 3,
-                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 9),
-                activeTrackColor: _indigo,
-                inactiveTrackColor: _slate200,
-                thumbColor: _indigo,
-                overlayColor: _indigo.withValues(alpha: 0.1),
+            ),
+            // Document List
+            if (_additionalDocumentLabels.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(
+                t('rideshare_uploaded_docs', fallback: 'Uploaded Documents'),
+                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate600),
               ),
-              child: Slider(
-                value: _maxRideDistance,
-                min: 0,
-                max: 300,
-                divisions: 30,
-                onChanged: (v) => setState(() => _maxRideDistance = v),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: List.generate(_additionalDocumentLabels.length, (index) {
+                  final label = _additionalDocumentLabels[index];
+                  return Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: _slate200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Document thumbnail/preview
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: _indigo.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: _additionalDocuments[index].startsWith('data:image')
+                              ? Image.memory(
+                                  base64Decode(_additionalDocuments[index].split(',')[1]),
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(Icons.insert_drive_file_rounded, size: 28, color: _indigo),
+                        ),
+                        const SizedBox(height: 6),
+                        // Document name/label
+                        SizedBox(
+                          width: 60,
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w600, color: _slate800),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        // Remove button
+                        GestureDetector(
+                          onTap: () => _removeAdditionalDocument(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 14,
+                              color: Colors.red.shade600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ],
+            const SizedBox(height: 20),
+            // Service Settings Section Header
+            Row(
+              children: [
+                Icon(Icons.settings_rounded, size: 16, color: _slate800),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    t('rideshare_service_section', fallback: 'Service Preferences'),
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Service Radius
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _slate50,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _slate200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(children: [
+                    Icon(Icons.radar_rounded, size: 14, color: _indigo),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        t('rideshare_service_radius', fallback: 'Minimum Service Radius'),
+                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate800),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: _indigo.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '${_serviceRadius.toStringAsFixed(0)} km',
+                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: _indigo),
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 10),
+                  SliderTheme(
+                    data: SliderThemeData(
+                      trackHeight: 4,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                      activeTrackColor: _indigo,
+                      inactiveTrackColor: _slate300,
+                      thumbColor: _indigo,
+                      overlayColor: _indigo.withValues(alpha: 0.15),
+                    ),
+                    child: Slider(
+                      value: _serviceRadius,
+                      min: 1,
+                      max: 30,
+                      divisions: 29,
+                      onChanged: (v) => setState(() => _serviceRadius = v),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 12),
+            // Max Ride Distance
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _slate50,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _slate200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(children: [
+                    Icon(Icons.route_rounded, size: 14, color: _indigo),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        t('rideshare_max_ride_distance', fallback: 'Max Ride Distance'),
+                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate800),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: _indigo.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        _maxRideDistance == 0
+                            ? t('rideshare_no_limit', fallback: 'Unlimited')
+                            : '${_maxRideDistance.toStringAsFixed(0)} km',
+                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: _indigo),
+                      ),
+                    ),
+                  ]),
+                  const SizedBox(height: 10),
+                  SliderTheme(
+                    data: SliderThemeData(
+                      trackHeight: 4,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                      activeTrackColor: _indigo,
+                      inactiveTrackColor: _slate300,
+                      thumbColor: _indigo,
+                      overlayColor: _indigo.withValues(alpha: 0.15),
+                    ),
+                    child: Slider(
+                      value: _maxRideDistance,
+                      min: 0,
+                      max: 300,
+                      divisions: 30,
+                      onChanged: (v) => setState(() => _maxRideDistance = v),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Action Buttons
             Row(children: [
               Expanded(
-                child: FilledButton.icon(
-                  onPressed: _isSavingProfile ? null : _saveProfile,
-                  icon: _isSavingProfile
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : const Icon(Icons.save_rounded, size: 16),
-                  label: Text(
-                    _isSavingProfile
-                        ? t('rideshare_saving', fallback: 'Saving...')
-                        : _driverProfile == null
-                            ? t('rideshare_apply_driver', fallback: 'Apply as Driver')
-                            : t('rideshare_save_profile', fallback: 'Save Profile'),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _indigo,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.icon(
+                    onPressed: _isSavingProfile ? null : _saveProfile,
+                    icon: _isSavingProfile
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.check_rounded, size: 18),
+                    label: Text(
+                      _isSavingProfile
+                          ? t('rideshare_saving', fallback: 'Saving...')
+                          : _driverProfile == null
+                              ? t('rideshare_apply_driver', fallback: 'Apply as Driver')
+                              : t('rideshare_save_profile', fallback: 'Save Changes'),
+                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _indigo,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              OutlinedButton.icon(
-                onPressed: _openVehicles,
-                icon: const Icon(Icons.two_wheeler_rounded, size: 16),
-                label: Text(t('rideshare_vehicles_btn', fallback: 'Vehicles'),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: _indigo,
-                  side: const BorderSide(color: _indigo),
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              const SizedBox(width: 10),
+              SizedBox(
+                height: 48,
+                width: 48,
+                child: OutlinedButton(
+                  onPressed: _openVehicles,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: _indigo,
+                    side: const BorderSide(color: _indigo),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: EdgeInsets.zero,
+                  ),
+                  child: const Icon(Icons.two_wheeler_rounded, size: 20),
                 ),
               ),
             ]),
@@ -1757,6 +2116,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     required bool hasSubmittedIdentity,
     required bool licenseLocked,
     required bool nidLocked,
+    required int additionalDocumentCount,
   }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
@@ -1790,6 +2150,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 label: _maxRideDistance == 0 ? t('rideshare_no_distance_limit', fallback: 'No distance limit') : '${_maxRideDistance.toStringAsFixed(0)} km max ride',
                 color: _indigo,
                 highlighted: true,
+              ),
+              _buildProfileSummaryPill(
+                icon: Icons.folder_copy_rounded,
+                label: additionalDocumentCount > 0
+                    ? '$additionalDocumentCount additional docs'
+                    : 'No additional docs',
+                color: additionalDocumentCount > 0 ? _emerald : _slate500,
+                highlighted: additionalDocumentCount > 0,
               ),
             ],
           ),
@@ -1863,30 +2231,61 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     String? helperText,
   }) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: GoogleFonts.inter(
-          fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
-      const SizedBox(height: 5),
+      Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: _slate600,
+          letterSpacing: 0.3,
+        ),
+      ),
+      const SizedBox(height: 7),
       TextField(
         controller: ctrl,
         readOnly: readOnly,
-        style: GoogleFonts.inter(fontSize: 13, color: _slate800),
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          color: _slate800,
+          fontWeight: FontWeight.w500,
+        ),
         decoration: InputDecoration(
           hintText: hint,
           helperText: helperText,
           helperMaxLines: 2,
-          helperStyle: GoogleFonts.inter(fontSize: 10.5, color: _slate500, height: 1.3),
+          helperStyle: GoogleFonts.inter(
+            fontSize: 11,
+            color: _slate500,
+            height: 1.3,
+          ),
           hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
-          prefixIcon: Icon(icon, size: 15, color: _slate400),
-          suffixIcon: readOnly ? const Icon(Icons.lock_rounded, size: 16, color: _slate400) : null,
-          prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          contentPadding: const EdgeInsets.symmetric(vertical: 11, horizontal: 12),
-          filled: true, fillColor: readOnly ? _slate100 : _slate50,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: _slate200)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: _slate200)),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: _indigo, width: 1.5)),
+          prefixIcon: Icon(icon, size: 16, color: _slate400),
+          suffixIcon: readOnly
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 2),
+                  child: Icon(Icons.lock_rounded, size: 16, color: _slate400),
+                )
+              : null,
+          prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 42),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+          filled: true,
+          fillColor: readOnly ? _slate100 : _slate50,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _slate200, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _slate200, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _indigo, width: 2),
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: _slate200, width: 1),
+          ),
         ),
       ),
     ]);
