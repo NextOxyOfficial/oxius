@@ -881,7 +881,7 @@ class WalletService:
             try:
                 settlement = Balance.objects.create(
                     user=driver_user,
-                    transaction_type="ride_cash_due_settlement",
+                    transaction_type="ride_due_settle",
                     payment_method="wallet",
                     payable_amount=total_due,
                     amount=total_due,

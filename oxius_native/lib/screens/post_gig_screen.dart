@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _emerald = Color(0xFF10B981);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate100 = Color(0xFFF1F5F9);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate400 = Color(0xFF94A3B8);
+const _slate500 = Color(0xFF64748B);
+const _slate700 = Color(0xFF334155);
+const _slate800 = Color(0xFF1E293B);
 
 class PostGigScreen extends StatefulWidget {
   const PostGigScreen({super.key});
@@ -26,7 +38,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
   
   List<String> _selectedDevices = [];
   List<String> _selectedNetworks = [];
-  List<String> _uploadedImages = [];
+  final List<String> _uploadedImages = [];
   String _targetCountry = 'Bangladesh';
   
   bool _isLoading = false;
@@ -414,36 +426,37 @@ class _PostGigScreenState extends State<PostGigScreen> {
     final bool isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: _slate50,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        surfaceTintColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
+          icon: const Icon(Icons.arrow_back_rounded, color: _slate800, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              gradient: const LinearGradient(colors: [_indigo, _violet]),
+              borderRadius: BorderRadius.circular(9),
             ),
             child: const Icon(
-              Icons.add_circle_outline,
+              Icons.work_outline_rounded,
               size: 16,
-              color: Color(0xFF10B981),
+              color: Colors.white,
             ),
           ),
           const SizedBox(width: 8),
-          const Text(
+          Text(
             'Post a Gig',
-            style: TextStyle(
-              color: Colors.black,
+            style: GoogleFonts.inter(
+              color: _slate800,
               fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -474,29 +487,31 @@ class _PostGigScreenState extends State<PostGigScreen> {
 Widget _buildHeader(bool isMobile) {
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-    padding: const EdgeInsets.all(12),
+    padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [
-          const Color(0xFF10B981).withOpacity(0.1),
-          const Color(0xFF3B82F6).withOpacity(0.1),
+          _indigo.withValues(alpha: 0.12),
+          _violet.withValues(alpha: 0.12),
         ],
       ),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: _indigo.withValues(alpha: 0.2)),
     ),
     child: Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF10B981),
-            borderRadius: BorderRadius.circular(8),
+            gradient: const LinearGradient(colors: [_indigo, _violet]),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(
-            Icons.add_circle_outline,
+            Icons.auto_awesome_rounded,
             color: Colors.white,
-            size: 24,
+            size: 22,
           ),
         ),
         const SizedBox(width: 12),
@@ -504,20 +519,21 @@ Widget _buildHeader(bool isMobile) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Create New Gig',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: _slate800,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
-                'Reach potential customers',
-                style: TextStyle(
+                'Design clear tasks and reach the right workers fast',
+                style: GoogleFonts.inter(
                   fontSize: 11,
-                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                  color: _slate500,
                 ),
               ),
             ],
@@ -530,16 +546,16 @@ Widget _buildHeader(bool isMobile) {
 
 Widget _buildForm(bool isMobile) {
   return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+    margin: const EdgeInsets.fromLTRB(4, 0, 4, 10),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Colors.grey.shade200),
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: _slate200),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.04),
-          blurRadius: 6,
-          offset: const Offset(0, 2),
+          color: Colors.black.withValues(alpha: 0.035),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
         ),
       ],
     ),
@@ -609,34 +625,34 @@ Widget _buildForm(bool isMobile) {
                   const SizedBox(height: 16),
                   // Cost Calculator
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0FDF4),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF10B981)),
+                      color: _slate50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _slate200),
                     ),
                     child: Column(
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Subtotal:', style: TextStyle(fontWeight: FontWeight.w500)),
+                            Text('Subtotal:', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: _slate700, fontSize: 12)),
                             Text('৳${((double.tryParse(_priceController.text) ?? 0) * (int.tryParse(_quantityController.text) ?? 0)).toStringAsFixed(2)}'),
                           ],
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Service Fee (10%):', style: TextStyle(fontWeight: FontWeight.w500)),
+                            Text('Service Fee (10%):', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: _slate700, fontSize: 12)),
                             Text('৳${(((double.tryParse(_priceController.text) ?? 0) * (int.tryParse(_quantityController.text) ?? 0)) * 0.1).toStringAsFixed(2)}'),
                           ],
                         ),
-                        const Divider(),
+                        const Divider(height: 18),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Total Cost:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                            Text('৳${totalCost.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            Text('Total Cost:', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14, color: _slate800)),
+                            Text('৳${totalCost.toStringAsFixed(2)}', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14, color: _indigo)),
                           ],
                         ),
                       ],
@@ -670,11 +686,11 @@ Widget _buildForm(bool isMobile) {
                   ),
                   const SizedBox(height: 20),
                   // Instructions field
-                  const Text(
+                  Text(
                     'Provide detailed instructions for completing this gig',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: Color(0xFF6B7280),
+                      color: _slate500,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -702,34 +718,74 @@ Widget _buildForm(bool isMobile) {
               icon: Icons.location_on,
               child: Column(
                 children: [
-                  // Target Country and Device in a row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildDropdownField(
-                          label: 'Target Country',
-                          value: _targetCountry,
-                          items: _countries.map((c) => DropdownMenuItem<String>(
-                            value: c['title'],
-                            child: Text(c['title']),
-                          )).toList(),
-                          onChanged: (value) => setState(() => _targetCountry = value ?? 'Bangladesh'),
-                          isRequired: true,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMultiSelectChips(
-                          label: 'Target Device',
-                          options: _devices,
-                          selectedValues: _selectedDevices,
-                          onChanged: (selected) => setState(() => _selectedDevices = selected),
-                          isRequired: true,
-                        ),
-                      ),
-                    ],
+                  // Country + Device grouped responsively for better mobile sizing
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final bool useVerticalLayout = isMobile || constraints.maxWidth < 680;
+                      if (useVerticalLayout) {
+                        return Column(
+                          children: [
+                            _buildDropdownField(
+                              label: 'Target Country',
+                              value: _targetCountry,
+                              items: _countries
+                                  .map((c) => DropdownMenuItem<String>(
+                                        value: c['title'],
+                                        child: Text(c['title']),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) =>
+                                  setState(() => _targetCountry = value ?? 'Bangladesh'),
+                              isRequired: true,
+                            ),
+                            const SizedBox(height: 14),
+                            _buildMultiSelectChips(
+                              label: 'Target Device',
+                              options: _devices,
+                              selectedValues: _selectedDevices,
+                              onChanged: (selected) =>
+                                  setState(() => _selectedDevices = selected),
+                              isRequired: true,
+                            ),
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildDropdownField(
+                              label: 'Target Country',
+                              value: _targetCountry,
+                              items: _countries
+                                  .map((c) => DropdownMenuItem<String>(
+                                        value: c['title'],
+                                        child: Text(c['title']),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) =>
+                                  setState(() => _targetCountry = value ?? 'Bangladesh'),
+                              isRequired: true,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: _buildMultiSelectChips(
+                              label: 'Target Device',
+                              options: _devices,
+                              selectedValues: _selectedDevices,
+                              onChanged: (selected) =>
+                                  setState(() => _selectedDevices = selected),
+                              isRequired: true,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   // Network Selection
                   _buildMultiSelectChips(
                     label: 'Target Network',
@@ -744,7 +800,7 @@ Widget _buildForm(bool isMobile) {
 
             // Submit Section
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
                   // Error message from API
@@ -753,9 +809,9 @@ Widget _buildForm(bool isMobile) {
                       padding: const EdgeInsets.all(16),
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFEE2E2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFEF4444)),
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFECACA)),
                       ),
                       child: Row(
                         children: [
@@ -767,17 +823,18 @@ Widget _buildForm(bool isMobile) {
                               children: [
                                 Text(
                                   _showError!,
-                                  style: const TextStyle(
-                                    color: Color(0xFFDC2626),
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFFB91C1C),
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 GestureDetector(
                                   onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
-                                  child: const Text(
+                                  child: Text(
                                     'Click here to make a deposit',
-                                    style: TextStyle(
-                                      color: Color(0xFF059669),
+                                    style: GoogleFonts.inter(
+                                      color: _emerald,
                                       fontWeight: FontWeight.w500,
                                       decoration: TextDecoration.underline,
                                     ),
@@ -796,9 +853,9 @@ Widget _buildForm(bool isMobile) {
                       padding: const EdgeInsets.all(16),
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFF59E0B)),
+                        color: const Color(0xFFFFFBEB),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFDE68A)),
                       ),
                       child: Row(
                         children: [
@@ -808,9 +865,9 @@ Widget _buildForm(bool isMobile) {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Insufficient Balance',
-                                  style: TextStyle(
+                                  style: GoogleFonts.inter(
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFFF59E0B),
                                   ),
@@ -818,18 +875,18 @@ Widget _buildForm(bool isMobile) {
                                 const SizedBox(height: 4),
                                 Text(
                                   'Your balance: ৳${_userBalance.toStringAsFixed(2)} | Required: ৳${totalCost.toStringAsFixed(2)}',
-                                  style: const TextStyle(
+                                  style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: Color(0xFF92400E),
+                                    color: const Color(0xFF92400E),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 GestureDetector(
                                   onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
-                                  child: const Text(
+                                  child: Text(
                                     'Click here to make a deposit',
-                                    style: TextStyle(
-                                      color: Color(0xFF059669),
+                                    style: GoogleFonts.inter(
+                                      color: _emerald,
                                       decoration: TextDecoration.underline,
                                     ),
                                   ),
@@ -844,16 +901,17 @@ Widget _buildForm(bool isMobile) {
                   // Submit Button
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: (_isLoading || hasInsufficientBalance) ? null : _handleSubmit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF059669),
+                        backgroundColor: _indigo,
                         foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey.shade300,
-                        disabledForegroundColor: Colors.grey.shade600,
+                        disabledBackgroundColor: _slate200,
+                        disabledForegroundColor: _slate400,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                       child: _isLoading
@@ -865,16 +923,16 @@ Widget _buildForm(bool isMobile) {
                                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Row(
+                          : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.send),
-                                SizedBox(width: 8),
+                                const Icon(Icons.send_rounded),
+                                const SizedBox(width: 8),
                                 Text(
                                   'Post Gig',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],
@@ -896,10 +954,10 @@ Widget _buildForm(bool isMobile) {
     required Widget child,
   }) {
     return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Color(0xFFE5E7EB)),
+          bottom: BorderSide(color: _slate200),
         ),
       ),
       child: Column(
@@ -907,19 +965,26 @@ Widget _buildForm(bool isMobile) {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF059669), size: 20),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: _indigo.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: _indigo, size: 16),
+              ),
+              const SizedBox(width: 10),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: _slate800,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
           child,
         ],
       ),
@@ -941,10 +1006,10 @@ Widget _buildForm(bool isMobile) {
         RichText(
           text: TextSpan(
             text: label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1F2937),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _slate700,
             ),
             children: isRequired ? [
               const TextSpan(
@@ -959,26 +1024,30 @@ Widget _buildForm(bool isMobile) {
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hintText,
-            prefixIcon: icon != null ? Icon(icon, size: 20) : null,
+            hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+            prefixIcon: icon != null ? Icon(icon, size: 18, color: _slate400) : null,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF059669), width: 2),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _indigo, width: 1.8),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Colors.red),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            filled: true,
+            fillColor: _slate50,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
           validator: isRequired && _checkSubmit
               ? (value) => value?.trim().isEmpty == true ? 'This field is required' : null
@@ -1006,10 +1075,10 @@ Widget _buildForm(bool isMobile) {
         RichText(
           text: TextSpan(
             text: label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1F2937),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _slate700,
             ),
             children: isRequired ? [
               const TextSpan(
@@ -1021,23 +1090,28 @@ Widget _buildForm(bool isMobile) {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           items: items,
           onChanged: onChanged,
+          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w600),
+          iconEnabledColor: _slate500,
+          dropdownColor: Colors.white,
           decoration: InputDecoration(
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF059669), width: 2),
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _indigo, width: 1.8),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            filled: true,
+            fillColor: _slate50,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
           validator: isRequired && _checkSubmit
               ? (value) => value == null ? 'Please select an option' : null
@@ -1060,10 +1134,10 @@ Widget _buildForm(bool isMobile) {
         RichText(
           text: TextSpan(
             text: label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1F2937),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _slate700,
             ),
             children: isRequired ? [
               const TextSpan(
@@ -1082,7 +1156,7 @@ Widget _buildForm(bool isMobile) {
             final optionTitle = option['title'];
             final isSelected = selectedValues.contains(optionId);
             return FilterChip(
-              label: Text(optionTitle),
+              label: Text(optionTitle, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
               selected: isSelected,
               onSelected: (selected) {
                 final newSelected = List<String>.from(selectedValues);
@@ -1093,8 +1167,8 @@ Widget _buildForm(bool isMobile) {
                 }
                 onChanged(newSelected);
               },
-              backgroundColor: const Color(0xFFF9FAFB),
-              selectedColor: const Color(0xFF059669),
+              backgroundColor: _slate100,
+              selectedColor: _indigo,
               labelStyle: TextStyle(
                 color: isSelected ? Colors.white : const Color(0xFF6B7280),
                 fontWeight: FontWeight.w500,
@@ -1102,7 +1176,7 @@ Widget _buildForm(bool isMobile) {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
-                  color: isSelected ? const Color(0xFF059669) : const Color(0xFFE5E7EB),
+                  color: isSelected ? _indigo : _slate200,
                 ),
               ),
             );
@@ -1116,11 +1190,11 @@ Widget _buildForm(bool isMobile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Add photos or videos to explain your task (optional)',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 14,
-            color: Color(0xFF6B7280),
+            color: _slate500,
           ),
         ),
         const SizedBox(height: 16),
@@ -1140,8 +1214,8 @@ Widget _buildForm(bool isMobile) {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: _slate200),
                 ),
                 child: Stack(
                   children: [
@@ -1193,13 +1267,13 @@ Widget _buildForm(bool isMobile) {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: const Color(0xFF059669),
+                    color: _indigo,
                     width: 2,
                     style: BorderStyle.solid,
                   ),
-                  color: const Color(0xFF059669).withOpacity(0.05),
+                  color: _indigo.withValues(alpha: 0.06),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -1210,30 +1284,30 @@ Widget _buildForm(bool isMobile) {
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
+                          valueColor: AlwaysStoppedAnimation<Color>(_indigo),
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Uploading...',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: Color(0xFF059669),
+                          color: _indigo,
                         ),
                       ),
                     ] else ...[
                       const Icon(
                         Icons.add_photo_alternate,
                         size: 32,
-                        color: Color(0xFF059669),
+                        color: _indigo,
                       ),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'Add Media',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: Color(0xFF059669),
-                          fontWeight: FontWeight.w500,
+                          color: _indigo,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
