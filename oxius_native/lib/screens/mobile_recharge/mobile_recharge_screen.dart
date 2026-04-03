@@ -460,9 +460,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   
   Widget _buildPackageGrid(List<Map<String, dynamic>> packages, bool isSmallMobile) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardAspectRatio = isSmallMobile
-        ? 0.86
-        : (screenWidth < 420 ? 0.90 : 0.96);
+    final cardHeight = isSmallMobile
+      ? (screenWidth < 380 ? 244.0 : 232.0)
+      : 224.0;
     
     if (packages.isEmpty) {
       return Center(
@@ -516,7 +516,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         crossAxisCount: isSmallMobile ? 2 : 3,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        childAspectRatio: cardAspectRatio,
+        mainAxisExtent: cardHeight,
       ),
       itemCount: packages.length,
       itemBuilder: (context, index) {
@@ -546,111 +546,122 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Type badge and Popular badge
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getTagColor(package['type']),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _capitalizeFirst(package['type']),
-                          style: TextStyle(
-                            fontSize: isSmallMobile ? 10 : 11,
-                            fontWeight: FontWeight.w600,
-                            color: _getTagTextColor(package['type']),
-                          ),
-                        ),
-                      ),
-                      if (package['popular'] == true)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Popular',
-                            style: TextStyle(
-                              fontSize: isSmallMobile ? 9 : 10,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF92400E),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Type badge and Popular badge
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _getTagColor(package['type']),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              _capitalizeFirst(package['type']),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: isSmallMobile ? 10 : 11,
+                                fontWeight: FontWeight.w600,
+                                color: _getTagTextColor(package['type']),
+                              ),
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Price and operator icon
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        package['price'],
-                        style: TextStyle(
-                          fontSize: isSmallMobile ? 16 : 18,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF111827),
-                        ),
-                      ),
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: package['operator_details']?['icon'] != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(3),
-                                child: Image.network(
-                                  package['operator_details']['icon'],
-                                  width: 20,
-                                  height: 20,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(
-                                    Icons.phone_android,
-                                    size: 14,
-                                    color: Color(0xFF6B7280),
-                                  ),
-                                ),
-                              )
-                            : const Icon(
-                                Icons.phone_android,
-                                size: 14,
-                                color: Color(0xFF6B7280),
+                        if (package['popular'] == true) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Popular',
+                              style: TextStyle(
+                                fontSize: isSmallMobile ? 9 : 10,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF92400E),
                               ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Package details
-                  _buildPackageDetail(Icons.wifi, package['data'], isSmallMobile),
-                  const SizedBox(height: 6),
-                  _buildPackageDetail(Icons.calendar_today, package['validity'], isSmallMobile),
-                  const SizedBox(height: 6),
-                  _buildPackageDetail(Icons.phone, package['calls'], isSmallMobile),
-                ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Price and operator icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            package['price'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: isSmallMobile ? 16 : 18,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF111827),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: package['operator_details']?['icon'] != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(3),
+                                  child: Image.network(
+                                    package['operator_details']['icon'],
+                                    width: 20,
+                                    height: 20,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.phone_android,
+                                      size: 14,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.phone_android,
+                                  size: 14,
+                                  color: Color(0xFF6B7280),
+                                ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Package details
+                    _buildPackageDetail(Icons.wifi, package['data'], isSmallMobile),
+                    const SizedBox(height: 6),
+                    _buildPackageDetail(Icons.calendar_today, package['validity'], isSmallMobile),
+                    const SizedBox(height: 6),
+                    _buildPackageDetail(Icons.phone, package['calls'], isSmallMobile),
+                  ],
+                ),
               ),
             ),
             
-            const SizedBox(height: 8),
-            
             // Recharge button
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

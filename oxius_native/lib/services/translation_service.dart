@@ -23,7 +23,7 @@ class TranslationService extends ChangeNotifier {
   // Use centralized API service base URL
   static String get baseUrl => ApiService.baseUrl;
   
-  String _currentLanguage = 'en';
+  String _currentLanguage = 'bn';
   Map<String, dynamic> _translations = {};
   List<Map<String, dynamic>> _availableLanguages = [];
   bool _isLoading = false;
@@ -48,10 +48,10 @@ class TranslationService extends ChangeNotifier {
   Future<void> _loadSavedLanguage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _currentLanguage = prefs.getString('selected_language') ?? 'en';
+      _currentLanguage = prefs.getString('selected_language') ?? 'bn';
     } catch (e) {
       print('Error loading saved language: $e');
-      _currentLanguage = 'en';
+      _currentLanguage = 'bn';
     }
   }
 
@@ -79,16 +79,16 @@ class TranslationService extends ChangeNotifier {
       } else {
         // Fallback to default languages if API fails
         _availableLanguages = [
-          {'code': 'en', 'name': 'English', 'native_name': 'English', 'flag': '🇺🇸'},
           {'code': 'bn', 'name': 'Bengali', 'native_name': 'বাংলা', 'flag': '🇧🇩'},
+          {'code': 'en', 'name': 'English', 'native_name': 'English', 'flag': '🇺🇸'},
         ];
       }
     } catch (e) {
       print('Error loading available languages: $e');
       // Fallback languages
       _availableLanguages = [
-        {'code': 'en', 'name': 'English', 'native_name': 'English', 'flag': '🇺🇸'},
         {'code': 'bn', 'name': 'Bengali', 'native_name': 'বাংলা', 'flag': '🇧🇩'},
+        {'code': 'en', 'name': 'English', 'native_name': 'English', 'flag': '🇺🇸'},
       ];
     }
   }
