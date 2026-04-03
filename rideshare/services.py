@@ -14,7 +14,7 @@ import httpx
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
+from django.db import IntegrityError, models, transaction
 from django.utils import timezone
 from channels.layers import get_channel_layer
 
@@ -846,7 +846,7 @@ class WalletService:
 
     @staticmethod
     @transaction.atomic
-    def settle_driver_cash_dues(driver_profile):
+    def settle_driver_cash_dues(driver_profile, go_online_after_payment=False):
         due_rides = list(
             Ride.objects.select_for_update()
             .filter(
@@ -866,26 +866,46 @@ class WalletService:
             sum((ride.driver_due_amount or Decimal("0.00")) for ride in due_rides)
         )
         driver_user = driver_profile.user
-        if driver_user.balance < total_due:
+        current_balance = decimal_money(driver_user.balance or Decimal("0.00"))
+        if current_balance < total_due:
             raise ValidationError(
                 f"Insufficient Adsy balance. You need ৳{total_due} to clear your rideshare due."
             )
 
-        driver_user.balance -= total_due
+        driver_user.balance = current_balance - total_due
         driver_user.save(update_fields=["balance"])
 
-        settlement = Balance.objects.create(
-            user=driver_user,
-            transaction_type="ride_cash_due_settlement",
-            payment_method="wallet",
-            payable_amount=total_due,
-            amount=total_due,
-            received_amount=Decimal("0.00"),
-            completed=True,
-            approved=True,
-            bank_status="completed",
-            description=f"Settled {len(due_rides)} rideshare cash due payment(s)",
-        )
+        settlement = None
+        last_error = None
+        for _ in range(3):
+            try:
+                settlement = Balance.objects.create(
+                    user=driver_user,
+                    transaction_type="ride_cash_due_settlement",
+                    payment_method="wallet",
+                    payable_amount=total_due,
+                    amount=total_due,
+                    received_amount=Decimal("0.00"),
+                    completed=True,
+                    approved=True,
+                    bank_status="completed",
+                    description=f"Settled {len(due_rides)} rideshare cash due payment(s)",
+                )
+                break
+            except IntegrityError as exc:
+                # Balance.save generates unique transaction numbers; retry on race collisions.
+                last_error = exc
+                continue
+
+        if settlement is None:
+            logger.exception(
+                "Failed to create rideshare due settlement transaction for driver %s",
+                driver_profile.id,
+                exc_info=last_error,
+            )
+            raise ValidationError(
+                "Could not create settlement transaction. Please try again."
+            )
 
         settled_at = timezone.now()
         Ride.objects.filter(id__in=[ride.id for ride in due_rides]).update(
@@ -894,8 +914,12 @@ class WalletService:
         )
 
         driver_profile.refresh_from_db(fields=["is_online", "is_available", "updated_at"])
+        update_fields = ["is_available", "updated_at"]
+        if go_online_after_payment:
+            driver_profile.is_online = True
+            update_fields.insert(0, "is_online")
         driver_profile.is_available = driver_profile.is_online
-        driver_profile.save(update_fields=["is_available", "updated_at"])
+        driver_profile.save(update_fields=update_fields)
 
         return {
             "settled_amount": total_due,

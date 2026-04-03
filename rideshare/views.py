@@ -3,7 +3,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
+from django.db import DatabaseError, IntegrityError, transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404
 from django.http import Http404
@@ -927,10 +927,26 @@ class DriverCashDueSettlementView(RideshareApiMixin, APIView):
         serializer.is_valid(raise_exception=True)
 
         driver_profile = request.user.driver_profile
+        go_online_after_payment = serializer.validated_data.get(
+            "go_online_after_payment", False
+        )
         try:
-            settlement = WalletService.settle_driver_cash_dues(driver_profile)
+            settlement = WalletService.settle_driver_cash_dues(
+                driver_profile,
+                go_online_after_payment=go_online_after_payment,
+            )
         except DjangoValidationError as exc:
             return api_error(exc.messages[0] if exc.messages else str(exc))
+        except ValidationError as exc:
+            return api_error(str(exc.detail) if hasattr(exc, "detail") else str(exc))
+        except (IntegrityError, DatabaseError):
+            logger.exception(
+                "Cash due settlement DB error for driver %s", driver_profile.id
+            )
+            return api_error(
+                "Could not process due payment right now. Please try again.",
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
 
         driver_profile.refresh_from_db()
         data = DriverProfileSerializer(
