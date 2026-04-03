@@ -47,10 +47,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   _log('📱 Background message received: ${message.messageId}');
   _log('📦 Data: ${message.data}');
   
-  // Handle incoming call in background - show high priority notification
   final type = message.data['type']?.toString();
+
+  // Handle incoming call in background - show high priority notification
   if (type == 'incoming_call' || type == 'call') {
     await _showBackgroundCallNotification(message.data);
+    return;
+  }
+
+  // Handle ride request in background - wake the driver
+  if (type == 'targeted_ride_request') {
+    await _showBackgroundRideRequestNotification(message.data);
   }
 }
 
@@ -130,6 +137,58 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
   );
   
   await FlutterCallkitIncoming.showCallkitIncoming(params);
+}
+
+/// Show ride request notification when app is in background/killed
+/// Uses a separate plugin instance since FCMService static members are unavailable
+@pragma('vm:entry-point')
+Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) async {
+  final rideId = data['ride_id']?.toString() ?? '';
+  final pickup = data['pickup_address']?.toString() ?? 'Pickup';
+  final drop = data['drop_address']?.toString() ?? 'Drop';
+  final fare = data['fare_estimate']?.toString() ?? '';
+  final timeoutSec = int.tryParse(data['timeout_seconds']?.toString() ?? '') ?? 60;
+
+  final title = '🚗 New Ride Request!';
+  final body = '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → ${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}${fare.isNotEmpty ? ' · ৳$fare' : ''}';
+
+  final plugin = FlutterLocalNotificationsPlugin();
+  const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  await plugin.initialize(const InitializationSettings(android: androidInit));
+
+  final androidPlugin = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
+    'oxius_ride_requests',
+    'Ride Requests',
+    description: 'New ride request alerts for drivers',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  ));
+
+  final details = AndroidNotificationDetails(
+    'oxius_ride_requests',
+    'Ride Requests',
+    channelDescription: 'New ride request alerts for drivers',
+    importance: Importance.max,
+    priority: Priority.max,
+    playSound: true,
+    enableVibration: true,
+    fullScreenIntent: true,
+    category: AndroidNotificationCategory.alarm,
+    visibility: NotificationVisibility.public,
+    icon: '@mipmap/ic_launcher',
+    timeoutAfter: timeoutSec * 1000,
+    autoCancel: true,
+  );
+
+  await plugin.show(
+    rideId.hashCode,
+    title,
+    body,
+    NotificationDetails(android: details),
+    payload: jsonEncode({...data, 'type': 'targeted_ride_request'}),
+  );
 }
 
 class FCMService {
@@ -413,11 +472,24 @@ class FCMService {
       showBadge: true,
     );
 
+    // High-priority channel for ride requests (heads-up, sound, vibration)
+    const AndroidNotificationChannel rideChannel = AndroidNotificationChannel(
+      'oxius_ride_requests', // id
+      'Ride Requests', // name
+      description: 'New ride request alerts for drivers',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      showBadge: true,
+    );
+
     final androidPlugin = _localNotifications
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     
     await androidPlugin?.createNotificationChannel(channel);
     await androidPlugin?.createNotificationChannel(callChannel);
+    await androidPlugin?.createNotificationChannel(rideChannel);
   }
 
   /// Initialize CallKit for native incoming call UI
@@ -799,8 +871,56 @@ class FCMService {
       return;
     }
 
+    // Ride request for driver: show high-priority heads-up notification
+    if (type == 'targeted_ride_request') {
+      _showRideRequestNotification(message.data);
+      return;
+    }
+
     // Show local notification
     _showLocalNotification(message);
+  }
+
+  /// Show high-priority ride request notification for drivers
+  static Future<void> _showRideRequestNotification(Map<String, dynamic> data) async {
+    final rideId = data['ride_id']?.toString() ?? '';
+    final pickup = data['pickup_address']?.toString() ?? 'Pickup';
+    final drop = data['drop_address']?.toString() ?? 'Drop';
+    final fare = data['fare_estimate']?.toString() ?? '';
+    final timeoutSec = int.tryParse(data['timeout_seconds']?.toString() ?? '') ?? 60;
+
+    final title = '🚗 New Ride Request!';
+    final body = '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → ${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}${fare.isNotEmpty ? ' · ৳$fare' : ''} · ${timeoutSec}s';
+
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'oxius_ride_requests',
+      'Ride Requests',
+      channelDescription: 'New ride request alerts for drivers',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      fullScreenIntent: true,
+      category: AndroidNotificationCategory.alarm,
+      visibility: NotificationVisibility.public,
+      icon: '@mipmap/ic_launcher',
+      timeoutAfter: timeoutSec * 1000,
+      autoCancel: true,
+      styleInformation: BigTextStyleInformation(
+        body,
+        contentTitle: title,
+        summaryText: 'Tap to view the request',
+      ),
+    );
+
+    await _localNotifications.show(
+      rideId.hashCode,
+      title,
+      body,
+      NotificationDetails(android: androidDetails),
+      payload: jsonEncode({...data, 'type': 'targeted_ride_request'}),
+    );
   }
 
   /// Show local notification
@@ -1041,6 +1161,15 @@ class FCMService {
 
     _log('🔔 Navigating based on notification type: $type, notification_type: $notificationType');
     _log('   Data: $data');
+
+    // ============================================
+    // RIDESHARE NOTIFICATIONS
+    // ============================================
+    if (type == 'targeted_ride_request') {
+      _log('   → Navigating to rideshare driver panel');
+      navigator.pushNamed('/rideshare', arguments: {'mode': 'driver'});
+      return;
+    }
 
     // ============================================
     // WORKSPACE NOTIFICATIONS

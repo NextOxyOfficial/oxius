@@ -197,7 +197,22 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // App came back to foreground — refresh location permission,
+      // reconnect WebSocket, and reload pending ride requests so the
+      // driver sees requests that arrived while the app was backgrounded.
       _refreshLocationPermissionStatus();
+      if (_driverProfile?.isOnline == true) {
+        _syncRealtimeConnections();
+        _loadAvailableRequests();
+        if (_activeRide != null) {
+          // Lightweight active-ride refresh without a full profile reload
+          RideshareService.getActiveRide().then((result) {
+            if (mounted && result.data != null) {
+              setState(() => _activeRide = result.data);
+            }
+          });
+        }
+      }
     }
   }
 
