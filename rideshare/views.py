@@ -187,7 +187,9 @@ class RideCreateView(RideshareApiMixin, APIView):
             minutes=get_max_search_window_minutes()
         )
 
-        if request.user.balance < fare:
+        payment_method = data.get("payment_method", Ride.PAYMENT_METHOD_WALLET)
+
+        if payment_method == Ride.PAYMENT_METHOD_WALLET and request.user.balance < fare:
             return api_error("Insufficient wallet balance for this ride estimate.")
 
         ride = Ride.objects.create(
@@ -207,6 +209,7 @@ class RideCreateView(RideshareApiMixin, APIView):
             platform_fee_percent=settings_obj.platform_fee_percent,
             search_expires_at=search_expires_at,
             status=Ride.STATUS_SEARCHING,
+            payment_method=payment_method,
         )
         ride.status_history.create(
             status=Ride.STATUS_SEARCHING,
@@ -606,9 +609,9 @@ class RideStatusUpdateView(RideshareApiMixin, APIView):
             )
 
         if next_status == Ride.STATUS_COMPLETED:
-            payment_method = serializer.validated_data.get(
-                "payment_method", Ride.PAYMENT_METHOD_WALLET
-            )
+            # Always use the payment_method set at ride creation by the passenger.
+            # Ignore any driver-supplied value to prevent payment method tampering.
+            payment_method = ride.payment_method or Ride.PAYMENT_METHOD_WALLET
             if ride.status == Ride.STATUS_AWAITING_CONFIRMATION:
                 return api_error(
                     "Passenger confirmation is required before completing this early-finished ride."
@@ -724,9 +727,9 @@ class RideConfirmEarlyCompletionView(RideshareApiMixin, APIView):
                 ride,
                 request.user,
                 confirm=serializer.validated_data["confirm"],
-                payment_method=serializer.validated_data.get(
-                    "payment_method", Ride.PAYMENT_METHOD_WALLET
-                ),
+                # Use ride's stored payment_method (set by passenger at booking).
+                # Do not accept passenger-supplied value here to prevent tampering.
+                payment_method=ride.payment_method or Ride.PAYMENT_METHOD_WALLET,
             )
         except DjangoValidationError as exc:
             return api_error(str(exc))
@@ -887,11 +890,32 @@ class DriverToggleOnlineView(RideshareApiMixin, APIView):
 
         driver_profile.is_online = is_online
         driver_profile.is_available = is_online
-        driver_profile.save(update_fields=["is_online", "is_available", "updated_at"])
+        if is_online:
+            driver_profile.last_seen_at = timezone.now()
+        driver_profile.save(update_fields=["is_online", "is_available", "last_seen_at", "updated_at"])
         return api_success(
             DriverProfileSerializer(driver_profile, context={"request": request}).data,
             "Driver availability updated successfully.",
         )
+
+
+class DriverHeartbeatView(RideshareApiMixin, APIView):
+    """Lightweight endpoint that the driver app pings periodically to keep last_seen_at fresh.
+
+    Called every ~30 seconds by the Flutter app while the driver is online. This ensures
+    that drivers whose devices go offline (app killed, network loss) are detected promptly
+    by the Celery staleness task and removed from dispatch rotation.
+    """
+
+    permission_classes = [IsAuthenticated, IsApprovedDriver]
+
+    def post(self, request):
+        dp = request.user.driver_profile
+        if not dp.is_online:
+            return api_error("Driver is not currently online.")
+        dp.last_seen_at = timezone.now()
+        dp.save(update_fields=["last_seen_at", "updated_at"])
+        return api_success({"last_seen_at": dp.last_seen_at.isoformat()}, "Heartbeat received.")
 
 
 class DriverCashDueSettlementView(RideshareApiMixin, APIView):

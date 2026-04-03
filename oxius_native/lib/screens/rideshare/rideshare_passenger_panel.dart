@@ -65,6 +65,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   bool _noDriversInRange = false;
   bool _isReportingCancellation = false;
   StreamSubscription<Position>? _passengerLocationSubscription;
+  bool _isRefreshingActiveRide = false;
+  int _statusRefreshTick = 0;
 
   @override
   void initState() {
@@ -100,6 +102,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       if (!mounted || _activeRide == null) return;
       if (_activeRide!.isSearching) {
         setState(() {});
+      }
+      _statusRefreshTick += 1;
+      if (_statusRefreshTick % 4 == 0) {
+        _refreshActiveRideSilently();
       }
     });
   }
@@ -145,12 +151,21 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     return ride.targetedDriver?.userName.trim() ?? '';
   }
 
+  Ride? _resolvePassengerActiveRide(Ride? ride) {
+    final currentUserId = AuthService.currentUser?.id ?? '';
+    if (ride == null || currentUserId.isEmpty) {
+      return ride;
+    }
+    return ride.riderId == currentUserId ? ride : null;
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _refreshLocationPermissionStatus(
         autoFillCurrentLocation: _pickupPoint == null && _activeRide == null,
       );
+      _loadActiveRide();
     }
   }
 
@@ -250,7 +265,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _isLoadingActiveRide = true);
     final result = await RideshareService.getActiveRide();
     if (mounted) {
-      _applyRideState(result.data, isLoading: false);
+      _applyRideState(_resolvePassengerActiveRide(result.data), isLoading: false);
     }
   }
 
@@ -258,7 +273,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _isLoadingActiveRide = true);
     final result = await RideshareService.getRide(rideId);
     if (mounted) {
-      _applyRideState(result.data, isLoading: false);
+      _applyRideState(_resolvePassengerActiveRide(result.data), isLoading: false);
     }
   }
 
@@ -276,8 +291,57 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               ? (ride.targetedDriver?.userName ?? _targetedDriverNameFromEvent)
               : null);
       _isLoadingActiveRide = isLoading;
+      _statusRefreshTick = 0;
     });
     _syncRideRealtimeConnection();
+  }
+
+  Future<void> _refreshActiveRideSilently() async {
+    final rideId = _activeRide?.id;
+    if (_isRefreshingActiveRide || rideId == null || rideId.isEmpty || _isCancellingRide) {
+      return;
+    }
+
+    _isRefreshingActiveRide = true;
+    try {
+      final result = await RideshareService.getRide(rideId);
+      if (!mounted || !result.success) {
+        return;
+      }
+
+      final refreshedRide = result.data;
+      if (refreshedRide == null) {
+        _applyRideState(null, isLoading: false);
+        return;
+      }
+
+      final resolvedRide = _resolvePassengerActiveRide(refreshedRide);
+      if (resolvedRide == null) {
+        _applyRideState(null, isLoading: false);
+        return;
+      }
+
+      if (_activeRide?.updatedAt == resolvedRide.updatedAt) {
+        _syncPassengerLocationTracking();
+        return;
+      }
+
+      setState(() {
+        _activeRide = resolvedRide;
+        _searchStatusMessage = _deriveSearchStatusMessage(resolvedRide);
+        _dispatchAttempt = resolvedRide.dispatchAttempt;
+        _targetedAtFromEvent = resolvedRide.isSearching
+            ? (resolvedRide.targetedAt ?? _targetedAtFromEvent)
+            : null;
+        _targetedDriverNameFromEvent = resolvedRide.isSearching
+            ? (resolvedRide.targetedDriver?.userName ?? _targetedDriverNameFromEvent)
+            : null;
+        _statusRefreshTick = 0;
+      });
+      _syncPassengerLocationTracking();
+    } finally {
+      _isRefreshingActiveRide = false;
+    }
   }
 
   String _deriveSearchStatusMessage(Ride? ride) {
@@ -1267,6 +1331,52 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                             _buildStatItem(t('rideshare_distance', fallback: 'Distance'), '${ride.distanceKm.toStringAsFixed(1)} km'),
                             _buildStatDivider(),
                             _buildStatItem(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              ride.paymentMethod == 'cash'
+                                  ? Icons.payments_rounded
+                                  : Icons.account_balance_wallet_rounded,
+                              size: 15,
+                              color: ride.paymentMethod == 'cash'
+                                  ? const Color(0xFFD97706)
+                                  : const Color(0xFF6366F1),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              t('rideshare_payment_method', fallback: 'Payment Method'),
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF64748B),
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              ride.paymentMethod == 'cash'
+                                  ? t('rideshare_cash', fallback: 'Cash')
+                                  : t('rideshare_wallet', fallback: 'Wallet'),
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: ride.paymentMethod == 'cash'
+                                    ? const Color(0xFFD97706)
+                                    : const Color(0xFF6366F1),
+                              ),
+                            ),
                           ],
                         ),
                       ),

@@ -9,6 +9,7 @@ from .views import (
     DriverLocationUpdateView,
     DriverProfileView,
     DriverToggleOnlineView,
+    DriverHeartbeatView,
     EstimateRideView,
     LocationSearchView,
     NearbyDriversView,
@@ -49,6 +50,11 @@ urlpatterns = [
         "drivers/toggle-online/",
         DriverToggleOnlineView.as_view(),
         name="rides-driver-toggle-online",
+    ),
+    path(
+        "drivers/heartbeat/",
+        DriverHeartbeatView.as_view(),
+        name="rides-driver-heartbeat",
     ),
     path(
         "drivers/location/update/",

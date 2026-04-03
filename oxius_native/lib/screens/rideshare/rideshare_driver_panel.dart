@@ -66,6 +66,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   StreamSubscription<Position>? _locationSubscription;
   Timer? _refreshTimer;
+  Timer? _activeRideRefreshTimer;
   Timer? _countdownTimer;
   Timer? _incomingRideAlertTimer;
   Timer? _incomingRideAlertStopTimer;
@@ -73,6 +74,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   StreamSubscription<Map<String, dynamic>>? _dispatchEventSubscription;
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
+  bool _isRefreshingActiveRide = false;
 
   // Live passenger location received via WebSocket
   RidePoint? _passengerLocation;
@@ -174,6 +176,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _refreshLocationPermissionStatus();
     _loadDriverData();
     _startRefreshTimer();
+    _startActiveRideRefreshTimer();
     _startCountdownTimer();
   }
 
@@ -183,6 +186,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     WidgetsBinding.instance.removeObserver(this);
     _locationSubscription?.cancel();
     _refreshTimer?.cancel();
+    _activeRideRefreshTimer?.cancel();
     _countdownTimer?.cancel();
     _stopIncomingRideAlert();
     _dispatchEventSubscription?.cancel();
@@ -207,8 +211,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         if (_activeRide != null) {
           // Lightweight active-ride refresh without a full profile reload
           RideshareService.getActiveRide().then((result) {
-            if (mounted && result.data != null) {
-              setState(() => _activeRide = result.data);
+            if (!mounted) {
+              return;
+            }
+            setState(() {
+              _activeRide = _resolveDriverActiveRide(_driverProfile, result.data);
+              if (_activeRide == null) {
+                _passengerLocation = null;
+              }
+            });
+            _syncRealtimeConnections();
+            if (_activeRide == null) {
+              _loadAvailableRequests();
             }
           });
         }
@@ -310,6 +324,60 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _loadAvailableRequests();
       }
     });
+  }
+
+  void _startActiveRideRefreshTimer() {
+    _activeRideRefreshTimer?.cancel();
+    _activeRideRefreshTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!mounted || _activeRide == null || _isUpdatingStatus || _isAcceptingRide) {
+        return;
+      }
+      _refreshActiveRideSilently();
+    });
+  }
+
+  Future<void> _refreshActiveRideSilently() async {
+    final rideId = _activeRide?.id;
+    if (_isRefreshingActiveRide || rideId == null || rideId.isEmpty) {
+      return;
+    }
+
+    _isRefreshingActiveRide = true;
+    try {
+      final result = await RideshareService.getRide(rideId);
+      if (!mounted) {
+        return;
+      }
+
+      final refreshedRide = result.data;
+      if (!result.success || refreshedRide == null) {
+        return;
+      }
+
+      if (refreshedRide.isCompleted || refreshedRide.isCancelled) {
+        setState(() {
+          _activeRide = null;
+          _passengerLocation = null;
+        });
+        _syncRealtimeConnections();
+        _loadAvailableRequests();
+        _loadDriverData();
+        _showSuccess(
+          refreshedRide.isCompleted
+              ? t('rideshare_ride_completed', fallback: 'Ride completed!')
+              : t('rideshare_ride_cancelled', fallback: 'Ride cancelled'),
+        );
+        return;
+      }
+
+      if (_activeRide?.updatedAt == refreshedRide.updatedAt) {
+        return;
+      }
+
+      setState(() => _activeRide = refreshedRide);
+    } finally {
+      _isRefreshingActiveRide = false;
+    }
   }
 
   void _startCountdownTimer() {
@@ -2183,6 +2251,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 _buildMini(t('rideshare_distance', fallback: 'Distance'), '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
                 const SizedBox(width: 6),
                 _buildMini(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay, _slate800),
+                const Spacer(),
+                _buildPaymentBadge(ride.paymentMethod),
               ]),
               const SizedBox(height: 12),
               _buildRideActions(ride),

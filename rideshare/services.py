@@ -3,6 +3,11 @@ from math import asin, cos, radians, sin, sqrt
 import logging
 from datetime import timedelta
 
+# How many minutes of silence from a driver's device before we consider it stale/offline.
+# A driver who has not sent any signal (location, heartbeat, or online toggle) for this
+# long will be excluded from dispatch and eventually marked offline by the Celery task.
+DRIVER_STALE_THRESHOLD_MINUTES = 10
+
 import httpx
 from asgiref.sync import async_to_sync
 from django.conf import settings
@@ -986,14 +991,17 @@ class DriverLocationService:
         speed_kph=None,
         accuracy_meters=None,
     ):
+        now = timezone.now()
         driver_profile.current_latitude = latitude
         driver_profile.current_longitude = longitude
-        driver_profile.last_location_at = timezone.now()
+        driver_profile.last_location_at = now
+        driver_profile.last_seen_at = now
         driver_profile.save(
             update_fields=[
                 "current_latitude",
                 "current_longitude",
                 "last_location_at",
+                "last_seen_at",
                 "updated_at",
             ]
         )
@@ -1506,6 +1514,7 @@ class NearestDriverDispatch:
             except (TypeError, ValueError):
                 exclude_ids.add(eid)
 
+        stale_threshold = timezone.now() - timedelta(minutes=DRIVER_STALE_THRESHOLD_MINUTES)
         candidates = list(
             DriverProfile.objects.filter(
                 approval_status="approved",
@@ -1513,6 +1522,10 @@ class NearestDriverDispatch:
                 is_available=True,
                 vehicles__is_active=True,
                 vehicles__vehicle_type=ride.requested_vehicle_type,
+                # Only include drivers whose device was active recently.
+                # last_seen_at=None means the driver was online before this feature
+                # was deployed and hasn't sent any signal since — treat as stale.
+                last_seen_at__gte=stale_threshold,
             )
             .exclude(user=ride.rider)
             .exclude(id__in=exclude_ids)
@@ -1565,6 +1578,30 @@ class NearestDriverDispatch:
         # Append no-GPS drivers as fallback so dispatch always targets someone
         sorted_drivers.extend(no_gps_drivers)
         return sorted_drivers
+
+    @classmethod
+    def mark_stale_drivers_offline(cls, threshold_minutes=None):
+        """Bulk-offline drivers whose devices have been silent beyond DRIVER_STALE_THRESHOLD_MINUTES.
+
+        This is called by the Celery beat task every few minutes. Drivers with
+        last_seen_at=None are also considered stale (were online before this feature
+        was deployed and have not pinged since).
+        """
+        mins = threshold_minutes if threshold_minutes is not None else DRIVER_STALE_THRESHOLD_MINUTES
+        stale_threshold = timezone.now() - timedelta(minutes=mins)
+        stale_qs = DriverProfile.objects.filter(is_online=True).filter(
+            models.Q(last_seen_at__isnull=True) | models.Q(last_seen_at__lt=stale_threshold)
+        )
+        count = stale_qs.update(
+            is_online=False,
+            is_available=False,
+            updated_at=timezone.now(),
+        )
+        if count > 0:
+            logger.info(
+                f"mark_stale_drivers_offline: offlined {count} stale driver(s) (threshold={mins} min)"
+            )
+        return count
 
     @classmethod
     @transaction.atomic

@@ -17,6 +17,7 @@ class RideshareHistoryScreen extends StatefulWidget {
 }
 
 class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
+  static const String _bdtSymbol = '\u09F3';
   final TranslationService _ts = TranslationService();
   List<Ride> _rides = [];
   bool _isLoading = true;
@@ -365,7 +366,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      'à§³${(ride.finalFare ?? ride.fareEstimate).toStringAsFixed(0)}',
+                      '$_bdtSymbol${(ride.finalFare ?? ride.fareEstimate).toStringAsFixed(0)}',
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -373,6 +374,44 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                       ),
                     ),
                   ],
+                ),
+
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.account_balance_wallet_rounded,
+                        size: 16,
+                        color: Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        t('rideshare_payment_method', fallback: 'Payment Method'),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF64748B),
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        _paymentMethodLabel(ride.paymentMethod),
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1E293B),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 
                 // Driver/Rider info
@@ -556,6 +595,20 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
     final hour = date.hour > 12 ? date.hour - 12 : date.hour;
     final period = date.hour >= 12 ? 'PM' : 'AM';
     return '${hour == 0 ? 12 : hour}:${date.minute.toString().padLeft(2, '0')} $period';
+  }
+
+  String _paymentMethodLabel(String paymentMethod) {
+    switch (paymentMethod.trim().toLowerCase()) {
+      case 'cash':
+        return t('rideshare_payment_cash', fallback: 'Cash');
+      case 'wallet':
+        return t('rideshare_payment_wallet', fallback: 'Wallet');
+      default:
+        if (paymentMethod.trim().isEmpty) {
+          return t('rideshare_not_available', fallback: 'N/A');
+        }
+        return paymentMethod.replaceAll('_', ' ');
+    }
   }
 }
 

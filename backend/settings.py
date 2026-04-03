@@ -333,6 +333,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "rideshare.tasks.cancel_expired_rides",
         "schedule": timedelta(minutes=2),  # Run every 2 minutes to check 15-minute timeouts
     },
+    "mark-stale-drivers-offline": {
+        "task": "rideshare.tasks.mark_stale_drivers_offline",
+        "schedule": timedelta(minutes=2),  # Run every 2 minutes to auto-offline stale drivers
+    },
 }
 
 # ShurjoPay Settings

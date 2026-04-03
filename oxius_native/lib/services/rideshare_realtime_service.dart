@@ -38,6 +38,9 @@ class RideshareRealtimeService {
   }
 
   Future<void> connectRide(String rideId) async {
+    if (_rideChannel != null && _shouldKeepRideConnection && _activeRideId == rideId) {
+      return;
+    }
     _activeRideId = rideId;
     _shouldKeepRideConnection = true;
     await _openRideSocket();
@@ -53,6 +56,9 @@ class RideshareRealtimeService {
   }
 
   Future<void> connectDriverDispatch() async {
+    if (_dispatchChannel != null && _shouldKeepDispatchConnection) {
+      return;
+    }
     _shouldKeepDispatchConnection = true;
     await _openDispatchSocket();
   }

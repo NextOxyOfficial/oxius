@@ -40,3 +40,20 @@ def cancel_expired_rides():
     except Exception as e:
         logger.exception(f"Error in cancel_expired_rides task: {e}")
         return 0
+
+
+@shared_task
+def mark_stale_drivers_offline():
+    """Mark drivers offline when their device has been silent beyond the stale threshold.
+
+    Runs every 2 minutes. Catches drivers whose app was killed or lost connectivity
+    without explicitly calling the toggle-offline endpoint.
+    """
+    try:
+        count = NearestDriverDispatch.mark_stale_drivers_offline()
+        if count > 0:
+            logger.info(f"Marked {count} stale driver(s) offline")
+        return count
+    except Exception as e:
+        logger.exception(f"Error in mark_stale_drivers_offline task: {e}")
+        return 0

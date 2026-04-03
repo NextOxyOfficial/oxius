@@ -513,6 +513,9 @@ class _WalletScreenState extends State<WalletScreen> {
         return Icons.phone_android;
       case 'order_payment':
         return Icons.shopping_bag;
+      case 'ride_payment':
+      case 'ride_cash':
+        return Icons.local_taxi_rounded;
       case 'pro_subscription':
         return Icons.workspace_premium;
       case 'referral_commission':
@@ -542,6 +545,9 @@ class _WalletScreenState extends State<WalletScreen> {
         return const Color(0xFF3B82F6); // Blue
       case 'order_payment':
         return const Color(0xFF059669); // Green
+      case 'ride_payment':
+      case 'ride_cash':
+        return const Color(0xFF0F766E); // Teal
       case 'pro_subscription':
         return const Color(0xFFF59E0B); // Amber
       case 'referral_commission':
@@ -849,6 +855,10 @@ class _WalletScreenState extends State<WalletScreen> {
         return 'Pro Subscription';
       case 'order_payment':
         return 'Product Purchase';
+      case 'ride_payment':
+        return 'Ride Payment';
+      case 'ride_cash':
+        return 'Ride Cash Payment';
       case 'referral_commission':
         return 'Referral Commission';
       case 'referral_reward':
@@ -916,6 +926,16 @@ class _WalletScreenState extends State<WalletScreen> {
             const SizedBox(height: 16),
             // Amount
             _buildDetailRow('Amount', '৳${txn.amount.toStringAsFixed(2)}', color),
+            if (_isRideTransaction(txn)) ...[
+              _buildDetailRow('Ride Fare', '৳${txn.payableAmount.toStringAsFixed(2)}'),
+              _buildDetailRow(
+                txn.transactionType.toLowerCase() == 'ride_cash'
+                    ? 'Adsy Fee Due'
+                    : 'Platform Fee',
+                '৳${txn.feeAmount.toStringAsFixed(2)}',
+              ),
+              _buildDetailRow('Driver Receives', '৳${txn.receivedAmount.toStringAsFixed(2)}'),
+            ],
             // Transaction ID - Always show (either transaction number or UUID)
             _buildDetailRow(
               'Transaction ID', 
@@ -972,6 +992,10 @@ class _WalletScreenState extends State<WalletScreen> {
         return 'Money transferred';
       case 'order_payment':
         return 'Payment for product purchase';
+      case 'ride_payment':
+        return 'Ride fare paid from AdsyPay balance';
+      case 'ride_cash':
+        return 'Ride fare collected in cash; platform fee tracked separately';
       case 'pro_subscription':
         return 'Pro subscription payment';
       case 'mobile_recharge':
@@ -995,6 +1019,11 @@ class _WalletScreenState extends State<WalletScreen> {
     }
   }
 
+  bool _isRideTransaction(Transaction txn) {
+    final type = txn.transactionType.toLowerCase();
+    return type == 'ride_payment' || type == 'ride_cash';
+  }
+
   String _getPaymentMethodDisplay(Transaction txn) {
     // If payment method exists, format it
     if (txn.paymentMethod != null && txn.paymentMethod!.isNotEmpty) {
@@ -1012,9 +1041,12 @@ class _WalletScreenState extends State<WalletScreen> {
       case 'order_payment':
       case 'pro_subscription':
       case 'mobile_recharge':
+      case 'ride_payment':
       case 'referral_commission':
       case 'referral_reward':
         return 'Account Balance';
+      case 'ride_cash':
+        return 'Cash';
       case 'diamond_purchase':
       case 'diamond_gift':
       case 'diamond_bonus':
@@ -1038,11 +1070,14 @@ class _WalletScreenState extends State<WalletScreen> {
       case 'upay':
         return 'Upay';
       case 'balance':
+      case 'wallet':
         return 'Account Balance';
       case 'bank':
         return 'Bank Transfer';
       case 'card':
         return 'Card Payment';
+      case 'cash':
+        return 'Cash';
       default:
         // Capitalize first letter of each word
         return method.split('_').map((word) => 

@@ -3,6 +3,9 @@ class Transaction {
   final String? transactionNumber; // Human-readable transaction number
   final String transactionType;
   final double amount;
+  final double payableAmount;
+  final double receivedAmount;
+  final double feeAmount;
   final String? status;
   final String? bankStatus;
   final bool? completed;
@@ -22,6 +25,9 @@ class Transaction {
     this.transactionNumber,
     required this.transactionType,
     required this.amount,
+    required this.payableAmount,
+    required this.receivedAmount,
+    required this.feeAmount,
     this.status,
     this.bankStatus,
     this.completed,
@@ -38,6 +44,17 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
+    double parseAmount(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is String) {
+        return double.tryParse(value) ?? 0.0;
+      }
+      if (value is num) {
+        return value.toDouble();
+      }
+      return 0.0;
+    }
+
     // Extract sender and recipient info from user_details (from BalanceSerializer)
     final userDetails = json['user_details'];
     final toUserDetails = json['to_user_details'];
@@ -60,39 +77,23 @@ class Transaction {
       recipientName = '$firstName $lastName'.trim();
       if (recipientName.isEmpty) recipientName = name.isNotEmpty ? name : null;
     }
-    
-    // Parse amount - backend may return as string or number
-    // For order_payment and some other transactions, amount might be in 'amount' field
-    // For withdraw/deposit, it's usually in 'payable_amount'
-    double amount = 0.0;
-    
-    // Try payable_amount first
-    final payableAmountValue = json['payable_amount'];
-    if (payableAmountValue != null) {
-      final payableAmount = payableAmountValue is String 
-        ? double.parse(payableAmountValue) 
-        : (payableAmountValue as num).toDouble();
-      if (payableAmount != 0.0) {
-        amount = payableAmount.abs();
-      }
-    }
-    
-    // If payable_amount is 0 or null, try amount field
-    if (amount == 0.0) {
-      final amountValue = json['amount'];
-      if (amountValue != null) {
-        amount = amountValue is String 
-          ? double.parse(amountValue) 
-          : (amountValue as num).toDouble();
-        amount = amount.abs();
-      }
-    }
+
+    final payableAmount = parseAmount(json['payable_amount']).abs();
+    final rawAmount = parseAmount(json['amount']).abs();
+    final receivedAmount = parseAmount(json['received_amount']).abs();
+    final amount = payableAmount != 0.0 ? payableAmount : rawAmount;
+    final feeAmount = payableAmount > 0 && receivedAmount > 0
+        ? (payableAmount - receivedAmount).clamp(0.0, double.infinity)
+        : 0.0;
     
     return Transaction(
       id: json['id']?.toString() ?? '',
       transactionNumber: json['transaction_number'],
       transactionType: json['transaction_type'] ?? '',
       amount: amount,
+      payableAmount: payableAmount,
+      receivedAmount: receivedAmount,
+      feeAmount: feeAmount,
       status: json['status'],
       bankStatus: json['bank_status'],
       completed: json['completed'],

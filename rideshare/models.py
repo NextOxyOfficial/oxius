@@ -46,6 +46,12 @@ class DriverProfile(models.Model):
         max_digits=9, decimal_places=6, null=True, blank=True
     )
     last_location_at = models.DateTimeField(null=True, blank=True)
+    last_seen_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Last time the driver was confirmed active (online toggle, GPS ping, or heartbeat). "
+                  "Used to detect stale/offline devices.",
+    )
     total_trips = models.PositiveIntegerField(default=0)
     total_earnings = models.DecimalField(
         max_digits=10, decimal_places=2, default=Decimal("0.00")

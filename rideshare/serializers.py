@@ -325,7 +325,11 @@ class RideEstimateRequestSerializer(serializers.Serializer):
 
 
 class RideCreateSerializer(RideEstimateRequestSerializer):
-    pass
+    payment_method = serializers.ChoiceField(
+        choices=Ride.PAYMENT_METHOD_CHOICES,
+        required=False,
+        default=Ride.PAYMENT_METHOD_WALLET,
+    )
 
 
 class RideCancelSerializer(serializers.Serializer):
