@@ -280,9 +280,27 @@ class RideListView(RideshareApiMixin, APIView):
         )
 
     def get(self, request):
-        queryset = self.get_queryset(request)
-        serializer = RideSerializer(queryset, many=True, context={"request": request})
-        return api_success(serializer.data)
+        queryset = self.get_queryset(request).order_by("-created_at")
+        try:
+            page_size = max(1, min(int(request.query_params.get("page_size", 20)), 100))
+        except (ValueError, TypeError):
+            page_size = 20
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+        except (ValueError, TypeError):
+            page = 1
+        total_count = queryset.count()
+        start = (page - 1) * page_size
+        end = start + page_size
+        page_qs = queryset[start:end]
+        serializer = RideSerializer(page_qs, many=True, context={"request": request})
+        return api_success({
+            "results": serializer.data,
+            "count": total_count,
+            "page": page,
+            "page_size": page_size,
+            "has_next": end < total_count,
+        })
 
 
 class ActiveRideView(RideshareApiMixin, APIView):
@@ -460,22 +478,11 @@ class RideSkipView(RideshareApiMixin, APIView):
                 "event": "driver_skipped",
                 "targeted_driver_id": str(old_target_id),
                 "targeted_driver_name": old_target_name,
-                "status_text": "Driver skipped, trying another...",
-            },
-        )
-
-        DispatchService.send_ride_event(
-            ride,
-            "search_status_updated",
-            {
-                "message": "Driver skipped, trying another...",
-                "skipped_driver_id": str(old_target_id),
-                "skipped_driver_name": old_target_name,
             },
         )
 
         next_driver = NearestDriverDispatch.dispatch_to_nearest_driver(ride)
-        if not next_driver and RideAutoCancel.should_cancel_ride(ride):
+        if not next_driver and ride.status == Ride.STATUS_SEARCHING and not ride.assigned_driver_id:
             RideAutoCancel.cancel_expired_ride(ride)
 
         return api_success(None, "Ride skipped.")

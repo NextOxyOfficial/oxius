@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/translation_service.dart';
 import 'rideshare_passenger_panel.dart';
 import 'rideshare_driver_panel.dart';
 
@@ -13,6 +14,25 @@ class RideshareScreen extends StatefulWidget {
 
 class _RideshareScreenState extends State<RideshareScreen> {
   String _mode = 'passenger'; // 'passenger' or 'driver'
+  final TranslationService _ts = TranslationService();
+
+  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+
+  @override
+  void initState() {
+    super.initState();
+    _ts.addListener(_onTranslationsChanged);
+  }
+
+  @override
+  void dispose() {
+    _ts.removeListener(_onTranslationsChanged);
+    super.dispose();
+  }
+
+  void _onTranslationsChanged() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +99,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ride Share',
+                t('rideshare.title', fallback: 'রাইড শেয়ার'),
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -87,7 +107,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
                 ),
               ),
               Text(
-                'Book a ride or drive',
+                t('rideshare.subtitle', fallback: 'রাইড বুক করুন বা ড্রাইভ করুন'),
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   color: const Color(0xFF64748B),
@@ -105,7 +125,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
                 ? '/rideshare/driver-history'
                 : '/rideshare/history',
           ),
-          tooltip: 'History',
+          tooltip: t('rideshare.history', fallback: 'হিস্ট্রি'),
           icon: Container(
             width: 36,
             height: 36,
@@ -123,7 +143,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
         if (_mode == 'driver')
           IconButton(
             onPressed: () => Navigator.pushNamed(context, '/rideshare/vehicles'),
-            tooltip: 'Vehicles',
+            tooltip: t('rideshare.vehicles', fallback: 'যানবাহন'),
             icon: Container(
               width: 36,
               height: 36,
@@ -163,7 +183,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
         children: [
           Expanded(
             child: _buildModeButton(
-              label: 'Passenger',
+              label: t('rideshare.passenger_mode', fallback: 'যাত্রী'),
               icon: Icons.person_rounded,
               isActive: _mode == 'passenger',
               onTap: () => setState(() => _mode = 'passenger'),
@@ -172,7 +192,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
           const SizedBox(width: 4),
           Expanded(
             child: _buildModeButton(
-              label: 'Driver',
+              label: t('rideshare.driver_mode', fallback: 'ড্রাইভার'),
               icon: Icons.badge_rounded,
               isActive: _mode == 'driver',
               onTap: () => setState(() => _mode = 'driver'),

@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-from .models import MicroGigPost
+from .models import AdminNotice, FCMToken, MicroGigPost
 
 
 @receiver(pre_save, sender=MicroGigPost)
@@ -103,3 +103,45 @@ def handle_gig_status_change(sender, instance, created, **kwargs):
             print(f"ℹ️ Update without previous status tracking")
     
     print(f"=== END GIG STATUS SIGNAL ===\n")
+
+
+@receiver(post_save, sender=AdminNotice)
+def send_financial_notice_push(sender, instance, created, **kwargs):
+    if not created or instance.user_id is None:
+        return
+
+    financial_types = {
+        "withdraw_successful",
+        "mobile_recharge_successful",
+        "transfer_sent",
+        "transfer_received",
+        "deposit_successful",
+    }
+    if instance.notification_type not in financial_types:
+        return
+
+    tokens = list(
+        FCMToken.objects.filter(user=instance.user, is_active=True).values_list(
+            "token", flat=True
+        )
+    )
+    if not tokens:
+        return
+
+    from .fcm_service import send_fcm_notification
+
+    payload = {
+        "type": instance.notification_type,
+        "notification_type": instance.notification_type,
+        "reference_id": instance.reference_id or "",
+        "amount": str(instance.amount) if instance.amount is not None else "",
+        "click_action": "FLUTTER_NOTIFICATION_CLICK",
+    }
+
+    for token in tokens:
+        send_fcm_notification(
+            fcm_token=token,
+            title=instance.title,
+            body=instance.message,
+            data=payload,
+        )

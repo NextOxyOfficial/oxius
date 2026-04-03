@@ -138,6 +138,8 @@ class DriverProfile {
   final String userName;
   final String userPhone;
   final String? userAvatar;
+  final bool userIsVerified;
+  final bool userIsPro;
   final String licenseNumber;
   final String nationalIdNumber;
   final String approvalStatus;
@@ -162,6 +164,8 @@ class DriverProfile {
     required this.userName,
     required this.userPhone,
     this.userAvatar,
+    required this.userIsVerified,
+    required this.userIsPro,
     required this.licenseNumber,
     required this.nationalIdNumber,
     required this.approvalStatus,
@@ -189,6 +193,8 @@ class DriverProfile {
       userName: user['name'] ?? user['username'] ?? '',
       userPhone: user['phone'] ?? '',
       userAvatar: user['avatar'] ?? user['image'],
+      userIsVerified: user['kyc'] == true || user['is_verified'] == true,
+      userIsPro: user['is_pro'] == true,
       licenseNumber: json['license_number'] ?? '',
       nationalIdNumber: json['national_id_number'] ?? '',
       approvalStatus: json['approval_status'] ?? 'pending',
@@ -294,6 +300,9 @@ class Ride {
   final String riderName;
   final String? riderPhone;
   final String? riderAvatar;
+  final bool riderIsVerified;
+  final bool riderIsPro;
+  final int riderCompletedTrips;
   final DriverProfile? assignedDriver;
   final DriverProfile? targetedDriver;
   final Vehicle? vehicle;
@@ -345,6 +354,9 @@ class Ride {
     required this.riderName,
     this.riderPhone,
     this.riderAvatar,
+    required this.riderIsVerified,
+    required this.riderIsPro,
+    required this.riderCompletedTrips,
     this.assignedDriver,
     this.targetedDriver,
     this.vehicle,
@@ -399,6 +411,9 @@ class Ride {
       riderName: rider['name'] ?? rider['username'] ?? '',
       riderPhone: rider['phone'],
       riderAvatar: rider['avatar'] ?? rider['image'],
+      riderIsVerified: rider['kyc'] == true || rider['is_verified'] == true,
+      riderIsPro: rider['is_pro'] == true,
+      riderCompletedTrips: rider['completed_trips'] ?? 0,
       assignedDriver: json['assigned_driver'] != null
           ? DriverProfile.fromJson(json['assigned_driver'] as Map<String, dynamic>)
           : null,
@@ -591,6 +606,9 @@ class Ride {
       riderName: riderName,
       riderPhone: riderPhone,
       riderAvatar: riderAvatar,
+      riderIsVerified: riderIsVerified,
+      riderIsPro: riderIsPro,
+      riderCompletedTrips: riderCompletedTrips,
       assignedDriver: assignedDriver ?? this.assignedDriver,
       targetedDriver: targetedDriver ?? this.targetedDriver,
       vehicle: vehicle ?? this.vehicle,

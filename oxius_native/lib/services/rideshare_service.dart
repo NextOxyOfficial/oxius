@@ -151,6 +151,7 @@ class RideshareService {
     required String vehicleType,
     String? pickupAddress,
     String? dropAddress,
+    String paymentMethod = 'wallet',
   }) async {
     try {
       final headers = await _getHeaders();
@@ -165,6 +166,7 @@ class RideshareService {
           'vehicle_type': vehicleType,
           'pickup_address': pickupAddress ?? '',
           'drop_address': dropAddress ?? '',
+          'payment_method': paymentMethod,
         }),
       );
       return _parseResponse<Ride>(
@@ -181,16 +183,31 @@ class RideshareService {
 
   // ==================== Ride List & Details ====================
   
-  static Future<RideshareApiResult<List<Ride>>> listRides({bool asDriver = false}) async {
+  static Future<RideshareApiResult<List<Ride>>> listRides({
+    bool asDriver = false,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
     try {
       final headers = await _getHeaders();
-      final uri = Uri.parse('$_baseUrl/').replace(
-        queryParameters: asDriver ? {'as_driver': 'true'} : null,
-      );
+      final params = <String, String>{
+        'page': page.toString(),
+        'page_size': pageSize.toString(),
+      };
+      if (asDriver) params['as_driver'] = 'true';
+      final uri = Uri.parse('$_baseUrl/').replace(queryParameters: params);
       final response = await http.get(uri, headers: headers);
       return _parseResponse<List<Ride>>(
         response,
-        (data) => (data as List).map((r) => Ride.fromJson(r as Map<String, dynamic>)).toList(),
+        (data) {
+          // Handle both paginated {results: [...], count: N} and plain list responses
+          if (data is Map<String, dynamic> && data.containsKey('results')) {
+            return (data['results'] as List)
+                .map((r) => Ride.fromJson(r as Map<String, dynamic>))
+                .toList();
+          }
+          return (data as List).map((r) => Ride.fromJson(r as Map<String, dynamic>)).toList();
+        },
       );
     } catch (e) {
       return RideshareApiResult<List<Ride>>(

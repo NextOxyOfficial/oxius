@@ -16,10 +16,22 @@ from .models import (
 
 class RideUserSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    completed_trips = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "name", "first_name", "last_name", "phone", "image"]
+        fields = [
+            "id",
+            "username",
+            "name",
+            "first_name",
+            "last_name",
+            "phone",
+            "image",
+            "kyc",
+            "is_pro",
+            "completed_trips",
+        ]
 
     def get_image(self, obj):
         if not obj.image:
@@ -28,6 +40,9 @@ class RideUserSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(obj.image.url)
         return obj.image.url
+
+    def get_completed_trips(self, obj):
+        return obj.rides_requested.filter(status=Ride.STATUS_COMPLETED).count()
 
 
 class VehicleSerializer(serializers.ModelSerializer):

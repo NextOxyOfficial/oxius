@@ -58,11 +58,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   final _licenseController = TextEditingController();
   final _nidController = TextEditingController();
   double _serviceRadius = 8.0;
-  double _maxRideDistance = 0.0;
+  double _maxRideদূরত্ব = 0.0;
 
   StreamSubscription<Position>? _locationSubscription;
   Timer? _refreshTimer;
   Timer? _countdownTimer;
+  Timer? _incomingRideAlertTimer;
+  Timer? _incomingRideAlertStopTimer;
   final RideshareRealtimeService _realtimeService = RideshareRealtimeService();
   StreamSubscription<Map<String, dynamic>>? _dispatchEventSubscription;
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
@@ -78,7 +80,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     return assignedDriverId == profile.userId ? ride : null;
   }
 
-  bool _canChatWithPassenger(Ride ride) {
+  bool _canChatWithযাত্রী(Ride ride) {
     return ride.riderId.isNotEmpty &&
         (ride.isAccepted || ride.isDriverArriving || ride.isInProgress);
   }
@@ -129,18 +131,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Add a Vehicle First',
+          'আগে একটি যানবাহন যোগ করুন',
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
         ),
         content: Text(
-          'You need at least one active vehicle before going online. Add your bike, car, or CNG from the Vehicles section, then try again.',
+          'অনলাইনে যাওয়ার আগে কমপক্ষে একটি সক্রিয় যানবাহন প্রয়োজন। Vehicles সেকশন থেকে বাইক/কার/CNG যোগ করে আবার চেষ্টা করুন।',
           style: GoogleFonts.inter(fontSize: 13, color: _slate500, height: 1.45),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(
-              'Close',
+              'বন্ধ করুন',
               style: GoogleFonts.inter(fontWeight: FontWeight.w600),
             ),
           ),
@@ -151,7 +153,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             },
             icon: const Icon(Icons.two_wheeler_rounded, size: 16),
             label: Text(
-              'Open Vehicles',
+              'যানবাহন খুলুন',
               style: GoogleFonts.inter(fontWeight: FontWeight.w700),
             ),
           ),
@@ -166,7 +168,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     WidgetsBinding.instance.addObserver(this);
     _refreshLocationPermissionStatus();
     _loadDriverData();
-    _startRefreshTimer();
+    _startরিফ্রেশTimer();
     _startCountdownTimer();
   }
 
@@ -176,6 +178,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _locationSubscription?.cancel();
     _refreshTimer?.cancel();
     _countdownTimer?.cancel();
+    _stopIncomingRideAlert();
     _dispatchEventSubscription?.cancel();
     _rideEventSubscription?.cancel();
     _realtimeService.dispose();
@@ -276,7 +279,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
-  void _startRefreshTimer() {
+  void _startরিফ্রেশTimer() {
     _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (mounted && _driverProfile?.isOnline == true && _activeRide == null) {
         _loadAvailableRequests();
@@ -290,22 +293,22 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         return;
       }
 
-      final hadExpiredRequests = _removeExpiredTargetedRequests();
-      if (!hadExpiredRequests && mounted) {
+      final hadমেয়াদোত্তীর্ণRequests = _removeমেয়াদোত্তীর্ণTargetedRequests();
+      if (!hadমেয়াদোত্তীর্ণRequests && mounted) {
         setState(() {});
       }
     });
   }
 
-  bool _isRequestExpired(Ride ride) {
+  bool _isRequestমেয়াদোত্তীর্ণ(Ride ride) {
     return ride.targetedDriver != null &&
         ride.targetedCountdownSeconds() <= 0;
   }
 
-  bool _removeExpiredTargetedRequests() {
+  bool _removeমেয়াদোত্তীর্ণTargetedRequests() {
     final before = _availableRequests.length;
     final filtered = _availableRequests
-        .where((ride) => !_isRequestExpired(ride))
+        .where((ride) => !_isRequestমেয়াদোত্তীর্ণ(ride))
         .toList();
 
     if (filtered.length == before) {
@@ -355,7 +358,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _licenseController.text = profileResult.data!.licenseNumber;
         _nidController.text = profileResult.data!.nationalIdNumber;
         _serviceRadius = profileResult.data!.serviceRadiusKm;
-        _maxRideDistance = profileResult.data!.maxRideDistanceKm;
+        _maxRideদূরত্ব = profileResult.data!.maxRideদূরত্বKm;
         _initializeProfileExpansion(profileResult.data);
       }
       if (_driverProfile?.isOnline == true) {
@@ -417,7 +420,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       if (lat != null && lng != null) {
         setState(() {
           _passengerLocation = RidePoint(
-            name: 'Passenger',
+            name: 'যাত্রী',
             latitude: lat,
             longitude: lng,
           );
@@ -438,9 +441,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
-      if (_activeRide?.isCompleted == true || _activeRide?.isCancelled == true) {
+      if (_activeRide?.isসম্পন্ন করুনd == true || _activeRide?.isবাতিলled == true) {
+        _stopIncomingRideAlert();
         setState(() => _passengerLocation = null);
-        _showSuccess(_activeRide!.isCompleted ? 'Ride completed!' : 'Ride cancelled');
+        _showSuccess(_activeRide!.isসম্পন্ন করুনd ? 'রাইড সম্পন্ন হয়েছে!' : 'রাইড বাতিল করা হয়েছে');
       }
       _syncRealtimeConnections();
     }
@@ -448,8 +452,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _playIncomingRideAlert() async {
     try {
+      _stopIncomingRideAlert();
+
       if (await Vibration.hasVibrator()) {
         await Vibration.vibrate(duration: 1200);
+        _incomingRideAlertTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+          Vibration.vibrate(duration: 1200);
+        });
+        _incomingRideAlertStopTimer = Timer(const Duration(minutes: 1), () {
+          _stopIncomingRideAlert();
+        });
       }
       await _ringtonePlayer.playNotification(looping: false, asAlarm: true);
     } catch (_) {
@@ -457,13 +469,24 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
+  void _stopIncomingRideAlert() {
+    _incomingRideAlertTimer?.cancel();
+    _incomingRideAlertTimer = null;
+    _incomingRideAlertStopTimer?.cancel();
+    _incomingRideAlertStopTimer = null;
+    Vibration.cancel();
+  }
+
   Future<void> _loadAvailableRequests() async {
     final result = await RideshareService.listAvailableRideRequests();
     if (!mounted || !result.success) return;
 
     final requests = (result.data ?? [])
-        .where((ride) => !_isRequestExpired(ride))
+        .where((ride) => !_isRequestমেয়াদোত্তীর্ণ(ride))
         .toList();
+    if (requests.isEmpty) {
+      _stopIncomingRideAlert();
+    }
     setState(() => _availableRequests = requests);
   }
 
@@ -483,7 +506,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         licenseNumber: _licenseController.text.trim(),
         nationalIdNumber: _nidController.text.trim(),
         serviceRadiusKm: _serviceRadius,
-        maxRideDistanceKm: _maxRideDistance,
+        maxRideদূরত্বKm: _maxRideদূরত্ব,
       );
     }
 
@@ -495,7 +518,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         setState(() {
           _driverProfile = result.data;
           _serviceRadius = result.data!.serviceRadiusKm;
-          _maxRideDistance = result.data!.maxRideDistanceKm;
+          _maxRideদূরত্ব = result.data!.maxRideদূরত্বKm;
           _isProfileExpanded = !_hasSubmittedIdentity(result.data);
           _profileExpansionInitialized = true;
         });
@@ -519,7 +542,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     if (newStatus && _driverProfile!.cashDueLimitReached) {
       _showError(
-        'You have unpaid cash dues. Please pay from your Adsy balance before going online.',
+        'আপনার নগদ বকেয়া আছে। অনলাইনে যাওয়ার আগে অ্যাডসি ব্যালেন্স থেকে পরিশোধ করুন।',
       );
       return;
     }
@@ -545,12 +568,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           await _startLocationTracking();
           _loadAvailableRequests();
           _syncRealtimeConnections();
-          _showSuccess('You are now online');
+          _showSuccess('আপনি এখন অনলাইনে আছেন');
         } else {
           _stopLocationTracking();
           setState(() => _availableRequests = []);
           _syncRealtimeConnections();
-          _showSuccess('You are now offline');
+          _showSuccess('আপনি এখন অফলাইনে আছেন');
         }
       } else {
         if (newStatus && result.message.toLowerCase().contains('vehicle')) {
@@ -566,7 +589,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (_driverProfile == null || _isPayingCashDues) return;
 
     setState(() => _isPayingCashDues = true);
-    final result = await RideshareService.settleDriverCashDues(
+    final result = await RideshareService.settleDriverনগদDues(
       goOnlineAfterPayment: goOnlineAfterPayment,
     );
 
@@ -610,7 +633,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   Future<void> _acceptRide(Ride ride) async {
-    if (_isRequestExpired(ride)) {
+    if (_isRequestমেয়াদোত্তীর্ণ(ride)) {
       setState(() {
         _availableRequests.removeWhere((request) => request.id == ride.id);
       });
@@ -623,6 +646,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (mounted) {
       setState(() => _isAcceptingRide = false);
       if (result.success && result.data != null) {
+        _stopIncomingRideAlert();
         setState(() { _activeRide = result.data; _availableRequests = []; });
         _ringtonePlayer.stop();
         _syncRealtimeConnections();
@@ -649,6 +673,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final result = await RideshareService.skipRideRequest(ride.id);
     if (!mounted) return;
 
+    _stopIncomingRideAlert();
     setState(() => _skippingRideIds.remove(ride.id));
 
     if (result.success) {
@@ -662,7 +687,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _updateRideStatus(
     String status, {
-    double? finalFare,
+    double? finalভাড়া,
     String paymentMethod = 'wallet',
   }) async {
     if (_activeRide == null) return;
@@ -674,7 +699,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       result = await RideshareService.updateRideStatus(
         _activeRide!.id,
         status,
-        finalFare: finalFare,
+        finalভাড়া: finalভাড়া,
         paymentMethod: paymentMethod,
       );
     }
@@ -692,9 +717,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _showSuccess(
             status == 'completed'
                 ? (paymentMethod == 'cash'
-                    ? 'Ride completed. Cash payment marked and due added.'
-                    : 'Ride completed!')
-                : 'Ride cancelled',
+                    ? 'Ride completed. নগদ payment marked and due added.'
+                    : 'রাইড সম্পন্ন হয়েছে!')
+                : 'রাইড বাতিল করা হয়েছে',
           );
         } else {
           setState(() => _activeRide = result.data);
@@ -708,6 +733,97 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (userId.isEmpty) return;
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => ProfileScreen(userId: userId)),
+    );
+  }
+
+  Widget _buildVerifiedBadge() {
+    return const Icon(
+      Icons.verified,
+      size: 14,
+      color: Color(0xFF3B82F6),
+    );
+  }
+
+  Widget _buildProBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: _indigo,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        'Pro',
+        style: GoogleFonts.inter(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTripsBadge(int completedTrips) {
+    final label = completedTrips == 1 ? '1 trip' : '$completedTrips trips';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: _slate100,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _slate200),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: _slate500,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIdentityRow({
+    required String name,
+    required bool isVerified,
+    required bool isPro,
+    required int completedTrips,
+    required TextStyle textStyle,
+  }) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(name, style: textStyle),
+        if (isVerified) _buildVerifiedBadge(),
+        if (isPro) _buildProBadge(),
+        _buildTripsBadge(completedTrips),
+      ],
+    );
+  }
+
+  Widget _buildPaymentBadge(String? paymentMethod) {
+    final isCash = paymentMethod == 'cash';
+    final color = isCash ? const Color(0xFFD97706) : const Color(0xFF6366F1);
+    final bg = isCash ? const Color(0xFFFFFBEB) : const Color(0xFFEEF2FF);
+    final border = isCash ? const Color(0xFFFDE68A) : const Color(0xFFC7D2FE);
+    final icon = isCash ? Icons.payments_rounded : Icons.account_balance_wallet_rounded;
+    final label = isCash ? 'নগদ' : 'ওয়ালেট';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 10, color: color),
+          const SizedBox(width: 3),
+          Text(label, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+        ],
+      ),
     );
   }
 
@@ -733,9 +849,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     ));
   }
 
-  Future<void> _openPassengerChat(Ride ride) async {
+  Future<void> _openযাত্রীChat(Ride ride) async {
     if (ride.riderId.isEmpty) {
-      _showError('Passenger chat is unavailable');
+      _showError('যাত্রী chat is unavailable');
       return;
     }
 
@@ -781,7 +897,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               userId: ride.riderId,
               userName: ride.riderName,
               userAvatar: ride.riderAvatar,
-              profession: 'Passenger',
+              profession: 'যাত্রী',
               isOnline: false,
             ),
           ),
@@ -802,9 +918,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Widget build(BuildContext context) {
     if (_isLoading) return const Center(child: CircularProgressIndicator(color: _indigo));
     if (_isAuthError) return _buildLoginRequired();
-    return RefreshIndicator(
+    return রিফ্রেশIndicator(
       color: _indigo,
-      onRefresh: () async {
+      onরিফ্রেশ: () async {
         await _refreshLocationPermissionStatus();
         await _loadDriverData();
       },
@@ -826,8 +942,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(height: 12),
                 _buildOnlineToggleCard(),
                 const SizedBox(height: 12),
-                if ((_driverProfile?.outstandingCashDueAmount ?? 0) > 0) ...[
-                  _buildCashDueCard(),
+                if ((_driverProfile?.outstandingনগদDueAmount ?? 0) > 0) ...[
+                  _buildনগদDueCard(),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -1040,17 +1156,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         ),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(isOnline ? 'Online — Accepting Rides' : 'Offline',
+          Text(isOnline ? 'অনলাইন — রাইড গ্রহণ চলছে' : 'অফলাইন',
               style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
                   color: isOnline ? Colors.white : _slate800)),
             Text(
               !_locationGranted
-                ? 'Enable location to receive ride requests'
+                ? 'রাইড অনুরোধ পেতে লোকেশন চালু করুন'
                 : dueLimitReached
-                  ? 'Clear your unpaid cash dues to go online again'
+                  ? 'আবার অনলাইনে যেতে নগদ বকেয়া পরিশোধ করুন'
                 : isOnline
-                  ? 'Requests appear below'
-                  : 'Go online to receive requests',
+                  ? 'নিচে রিকোয়েস্ট দেখাবে'
+                  : 'রিকোয়েস্ট পেতে অনলাইনে যান',
               style: GoogleFonts.inter(fontSize: 11,
                   color: isOnline ? Colors.white.withValues(alpha: 0.8) : _slate500)),
         ])),
@@ -1087,14 +1203,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     );
   }
 
-  Widget _buildCashDueCard() {
+  Widget _buildনগদDueCard() {
     final profile = _driverProfile;
-    if (profile == null || profile.outstandingCashDueAmount <= 0) {
+    if (profile == null || profile.outstandingনগদDueAmount <= 0) {
       return const SizedBox.shrink();
     }
 
-    final dueCount = profile.outstandingCashDueCount;
-    final dueAmount = profile.outstandingCashDueAmount;
+    final dueCount = profile.outstandingনগদDueCount;
+    final dueAmount = profile.outstandingনগদDueAmount;
     final limitReached = profile.cashDueLimitReached;
 
     return Container(
@@ -1129,7 +1245,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Cash Payment Due',
+                      'নগদ পেমেন্ট Due',
                       style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: const Color(0xFF92400E)),
                     ),
                     const SizedBox(height: 2),
@@ -1145,34 +1261,68 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           const SizedBox(height: 10),
           Text(
             limitReached
-                ? 'You reached the maximum unpaid cash rides. Pay this due from your Adsy balance to go online again.'
-                : 'You can keep driving for now, but clear this due from your Adsy balance before it reaches the limit.',
+                ? 'You reached the maximum unpaid cash rides. Pay this due from your Adsy ব্যালেন্স to go online again.'
+                : 'You can keep driving for now, but clear this due from your Adsy ব্যালেন্স before it reaches the limit.',
             style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF78350F), height: 1.35),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _isPayingCashDues
-                  ? null
-                  : () => _payOutstandingCashDues(goOnlineAfterPayment: limitReached),
-              icon: _isPayingCashDues
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.account_balance_wallet_rounded, size: 18),
-              label: Text(
-                _isPayingCashDues ? 'Paying...' : 'Pay Due from Adsy Balance',
-                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-              ),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFD97706),
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
+          Builder(
+            builder: (context) {
+              final walletBalance = AuthService.currentUser?.balance ?? 0.0;
+              final hasEnough = walletBalance >= dueAmount;
+              return Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: (hasEnough && !_isPayingCashDues)
+                          ? () => _payOutstandingCashDues(goOnlineAfterPayment: limitReached)
+                          : null,
+                      icon: _isPayingCashDues
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.account_balance_wallet_rounded, size: 18),
+                      label: Text(
+                        _isPayingCashDues
+                            ? 'পরিশোধ হচ্ছে...'
+                            : hasEnough
+                                ? 'অ্যাডসি ব্যালেন্স থেকে বকেয়া পরিশোধ করুন'
+                                : 'অপর্যাপ্ত ব্যালেন্স (৳${walletBalance.toStringAsFixed(0)})',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: hasEnough ? const Color(0xFFD97706) : _slate400,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  if (!hasEnough) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: Text(
+                          'Add Funds to Adsy ওয়ালেট',
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF6366F1),
+                          side: const BorderSide(color: Color(0xFF6366F1)),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -1365,14 +1515,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             Row(children: [
               const Icon(Icons.route_rounded, size: 13, color: _slate500),
               const SizedBox(width: 5),
-              Text('Max Ride Distance',
+              Text('Max Ride দূরত্ব',
                   style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate500)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: _indigo.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(6)),
-                child: Text(_maxRideDistance == 0 ? 'No limit' : '${_maxRideDistance.toStringAsFixed(0)} km',
+                child: Text(_maxRideদূরত্ব == 0 ? 'No limit' : '${_maxRideদূরত্ব.toStringAsFixed(0)} km',
                     style: GoogleFonts.inter(
                         fontSize: 11, fontWeight: FontWeight.w700, color: _indigo)),
               ),
@@ -1387,11 +1537,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 overlayColor: _indigo.withValues(alpha: 0.1),
               ),
               child: Slider(
-                value: _maxRideDistance,
+                value: _maxRideদূরত্ব,
                 min: 0,
                 max: 300,
                 divisions: 30,
-                onChanged: (v) => setState(() => _maxRideDistance = v),
+                onChanged: (v) => setState(() => _maxRideদূরত্ব = v),
               ),
             ),
             const SizedBox(height: 12),
@@ -1475,7 +1625,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               ),
               _buildProfileSummaryPill(
                 icon: Icons.route_rounded,
-                label: _maxRideDistance == 0 ? 'No distance limit' : '${_maxRideDistance.toStringAsFixed(0)} km max ride',
+                label: _maxRideদূরত্ব == 0 ? 'No distance limit' : '${_maxRideদূরত্ব.toStringAsFixed(0)} km max ride',
                 color: _indigo,
                 highlighted: true,
               ),
@@ -1613,7 +1763,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           child: Row(children: [
             const Icon(Icons.hail_rounded, size: 16, color: _indigo),
             const SizedBox(width: 8),
-            Text('Ride Requests',
+            Text('রাইড অনুরোধসমূহ',
                 style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
             const Spacer(),
             if (isOnline && _availableRequests.isNotEmpty)
@@ -1633,7 +1783,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                       color: _slate100, borderRadius: BorderRadius.circular(6)),
-                  child: Text('Refresh',
+                  child: Text('রিফ্রেশ',
                       style: GoogleFonts.inter(
                           fontSize: 10, fontWeight: FontWeight.w600, color: _slate500)),
                 ),
@@ -1645,18 +1795,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 color: isOnline ? _emerald.withValues(alpha: 0.12) : _slate100,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Text(isOnline ? 'Online' : 'Offline',
+              child: Text(isOnline ? 'Online' : 'অফলাইন',
                   style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700,
                       color: isOnline ? _emerald : _slate500)),
             ),
           ]),
         ),
         if (!isOnline)
-          _buildEmptyRequests(Icons.wifi_off_rounded, 'You are Offline',
-              'Go online above to receive ride requests.')
+          _buildEmptyRequests(Icons.wifi_off_rounded, 'আপনি অফলাইনে আছেন',
+              'রাইড অনুরোধ পেতে উপরের সুইচ থেকে অনলাইনে যান।')
         else if (_availableRequests.isEmpty)
-          _buildEmptyRequests(Icons.search_rounded, 'No Requests Yet',
-              'New ride requests will appear here automatically.')
+          _buildEmptyRequests(Icons.search_rounded, 'এখনও কোনো অনুরোধ নেই',
+              'নতুন রাইড অনুরোধ এখানে স্বয়ংক্রিয়ভাবে দেখাবে।')
         else
           Padding(
             padding: const EdgeInsets.all(12),
@@ -1688,7 +1838,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Widget _buildRequestCard(Ride ride) {
     final countdown = ride.targetedCountdownSeconds();
     final isTargeted = ride.targetedDriver != null;
-    final isExpired = _isRequestExpired(ride);
+    final isমেয়াদোত্তীর্ণ = _isRequestমেয়াদোত্তীর্ণ(ride);
     final isSkipping = _skippingRideIds.contains(ride.id);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -1703,29 +1853,43 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               Text(ride.vehicleIcon, style: const TextStyle(fontSize: 18)),
               const SizedBox(width: 10),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(ride.riderName,
-                    style: GoogleFonts.inter(
-                        fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
-                Text('${ride.distanceKm.toStringAsFixed(1)} km • ${ride.etaDisplay}',
-                    style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
+                _buildIdentityRow(
+                  name: ride.riderName,
+                  isVerified: ride.riderIsVerified,
+                  isPro: ride.riderIsPro,
+                  completedTrips: ride.riderসম্পন্ন করুনdTrips,
+                  textStyle: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _slate800,
+                  ),
+                ),
+                Row(
+                  children: [
+                    Text('${ride.distanceKm.toStringAsFixed(1)} km • ${ride.etaDisplay}',
+                        style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
+                    const SizedBox(width: 6),
+                    _buildPaymentBadge(ride.paymentMethod),
+                  ],
+                ),
               ])),
               if (isTargeted)
                 Container(
                   margin: const EdgeInsets.only(right: 8),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
-                    color: isExpired ? _slate100 : const Color(0xFFFFFBEB),
+                    color: isমেয়াদোত্তীর্ণ ? _slate100 : const Color(0xFFFFFBEB),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: isExpired ? _slate300 : const Color(0xFFFDE68A),
+                      color: isমেয়াদোত্তীর্ণ ? _slate300 : const Color(0xFFFDE68A),
                     ),
                   ),
                   child: Text(
-                    isExpired ? 'Expired' : '${countdown}s',
+                    isমেয়াদোত্তীর্ণ ? 'মেয়াদোত্তীর্ণ' : '${countdown}s',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: isExpired ? _slate500 : const Color(0xFFD97706),
+                      color: isমেয়াদোত্তীর্ণ ? _slate500 : const Color(0xFFD97706),
                     ),
                   ),
                 ),
@@ -1744,9 +1908,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             _buildRouteWidget(ride),
             const SizedBox(height: 10),
             Row(children: [
-              _buildMini('Fare', '৳${ride.fareEstimate.toStringAsFixed(0)}', _indigo),
+              _buildMini('ভাড়া', '৳${ride.fareEstimate.toStringAsFixed(0)}', _indigo),
               const SizedBox(width: 6),
-              _buildMini('Distance', '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
+              _buildMini('দূরত্ব', '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
               const SizedBox(width: 6),
               _buildMini('ETA', ride.etaDisplay, _slate800),
             ]),
@@ -1796,17 +1960,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: _isAcceptingRide || isSkipping || isExpired
+                  onTap: _isAcceptingRide || isSkipping || isমেয়াদোত্তীর্ণ
                       ? null
                       : () => _acceptRide(ride),
                   borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 11),
                     decoration: BoxDecoration(
-                      gradient: _isAcceptingRide || isSkipping || isExpired
+                      gradient: _isAcceptingRide || isSkipping || isমেয়াদোত্তীর্ণ
                           ? null
                           : const LinearGradient(colors: [_emerald, _emeraldDark]),
-                      color: (_isAcceptingRide || isSkipping || isExpired)
+                      color: (_isAcceptingRide || isSkipping || isমেয়াদোত্তীর্ণ)
                           ? _slate100
                           : null,
                       borderRadius: const BorderRadius.only(bottomRight: Radius.circular(11)),
@@ -1831,17 +1995,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                             ])
                           : Row(mainAxisSize: MainAxisSize.min, children: [
                               Icon(
-                                isExpired ? Icons.schedule_rounded : Icons.check_circle_rounded,
+                                isমেয়াদোত্তীর্ণ ? Icons.schedule_rounded : Icons.check_circle_rounded,
                                 size: 16,
-                                color: isExpired ? _slate500 : Colors.white,
+                                color: isমেয়াদোত্তীর্ণ ? _slate500 : Colors.white,
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                isExpired ? 'Expired' : 'Accept Ride',
+                                isমেয়াদোত্তীর্ণ ? 'মেয়াদোত্তীর্ণ' : 'রাইড গ্রহণ করুন',
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: isExpired ? _slate500 : Colors.white,
+                                  color: isমেয়াদোত্তীর্ণ ? _slate500 : Colors.white,
                                 ),
                               ),
                             ]),
@@ -1921,7 +2085,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             child: Row(children: [
               const Icon(Icons.directions_car_rounded, color: Colors.white, size: 18),
               const SizedBox(width: 8),
-              Expanded(child: Text('Active Ride',
+              Expanded(child: Text('চলমান রাইড',
                   style: GoogleFonts.inter(
                       fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white))),
               _buildStatusPill(ride.statusDisplay),
@@ -1930,7 +2094,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           Padding(
             padding: const EdgeInsets.all(14),
             child: Column(children: [
-              // Passenger row
+              // যাত্রী row
               Row(children: [
                 GestureDetector(
                   onTap: () => _openBusinessProfile(ride.riderId),
@@ -1947,16 +2111,24 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 Expanded(child: GestureDetector(
                   onTap: () => _openBusinessProfile(ride.riderId),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(ride.riderName,
-                        style: GoogleFonts.inter(
-                            fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
-                    Text('Passenger',
+                    _buildIdentityRow(
+                      name: ride.riderName,
+                      isVerified: ride.riderIsVerified,
+                      isPro: ride.riderIsPro,
+                      completedTrips: ride.riderসম্পন্ন করুনdTrips,
+                      textStyle: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800,
+                      ),
+                    ),
+                    Text('যাত্রী',
                         style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
                   ]),
                 )),
-                if (_canChatWithPassenger(ride))
+                if (_canChatWithযাত্রী(ride))
                   GestureDetector(
-                    onTap: () => _openPassengerChat(ride),
+                    onTap: () => _openযাত্রীChat(ride),
                     child: Container(
                       width: 40,
                       height: 40,
@@ -1982,9 +2154,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               _buildRouteWidget(ride),
               const SizedBox(height: 10),
               Row(children: [
-                _buildMini('Fare', '৳${ride.payableFare.toStringAsFixed(0)}', _indigo),
+                _buildMini('ভাড়া', '৳${ride.payableFare.toStringAsFixed(0)}', _indigo),
                 const SizedBox(width: 6),
-                _buildMini('Distance', '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
+                _buildMini('দূরত্ব', '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
                 const SizedBox(width: 6),
                 _buildMini('ETA', ride.etaDisplay, _slate800),
               ]),
@@ -2039,7 +2211,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: Text('Cancel',
+              child: Text('বাতিল',
                   style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ),
@@ -2049,7 +2221,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             child: FilledButton.icon(
               onPressed: () => _updateRideStatus('driver_arriving'),
               icon: const Icon(Icons.navigation_rounded, size: 16),
-              label: Text('Start Navigation',
+              label: Text('নেভিগেশন শুরু করুন',
                   style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
               style: FilledButton.styleFrom(
                 backgroundColor: _indigo,
@@ -2070,7 +2242,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: Text('Cancel',
+              child: Text('বাতিল',
                   style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ),
@@ -2080,7 +2252,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             child: FilledButton.icon(
               onPressed: () => _updateRideStatus('in_progress'),
               icon: const Icon(Icons.play_arrow_rounded, size: 18),
-              label: Text('Start Ride',
+              label: Text('রাইড শুরু করুন',
                   style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
               style: FilledButton.styleFrom(
                 backgroundColor: _emerald,
@@ -2104,16 +2276,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: Text('Cancel',
+                  child: Text('বাতিল',
                       style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: _showCompleteRideDialog,
+                  onPressed: _showসম্পন্ন করুনRideDialog,
                   icon: const Icon(Icons.check_circle_rounded, size: 18),
-                  label: Text('Complete',
+                  label: Text('সম্পন্ন করুন',
                       style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
                   style: FilledButton.styleFrom(
                     backgroundColor: _emerald,
@@ -2127,7 +2299,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             FilledButton.icon(
               onPressed: _requestEarlyCompletion,
               icon: const Icon(Icons.flag_circle_rounded, size: 18),
-              label: Text('Early Complete',
+              label: Text('আগে সম্পন্ন করুন',
                   style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEA580C),
@@ -2149,7 +2321,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 border: Border.all(color: const Color(0xFFFDE68A)),
               ),
               child: Text(
-                'Waiting for the passenger to confirm the early completion payment.',
+                'আর্লি কমপ্লিশনের পেমেন্ট যাত্রীর নিশ্চিতকরণের অপেক্ষায়।',
                 style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF92400E)),
               ),
             ),
@@ -2162,7 +2334,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: Text('Cancel Ride',
+              child: Text('রাইড বাতিল করুন',
                   style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ],
@@ -2180,16 +2352,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Text('Early Complete?',
+        title: Text('আগে সম্পন্ন করবেন?',
             style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
-          'This will calculate a partial fare based on the distance traveled so far and send a confirmation request to the passenger.',
+          'এটি এখন পর্যন্ত অতিক্রান্ত দূরত্বের ভিত্তিতে আংশিক ভাড়া হিসাব করবে এবং যাত্রীকে কনফার্মেশন পাঠাবে।',
           style: GoogleFonts.inter(fontSize: 13, color: _slate500),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Cancel', style: GoogleFonts.inter(color: _slate500)),
+            child: Text('বাতিল', style: GoogleFonts.inter(color: _slate500)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -2197,7 +2369,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               backgroundColor: const Color(0xFFEA580C),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('Confirm', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            child: Text('নিশ্চিত করুন', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -2234,69 +2406,294 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
       _syncRealtimeConnections();
-      _showSuccess('Passenger confirmation requested for early completion.');
+      _showSuccess('যাত্রী confirmation requested for early completion.');
     } else {
       _showError(result.message);
     }
   }
 
-  void _showCompleteRideDialog() {
-    final fare = _activeRide?.fareEstimate ?? 0;
-    showDialog(
+  void _showসম্পন্ন করুনRideDialog() {
+    final ride = _activeRide;
+    if (ride == null) return;
+    final fare = ride.fareEstimate;
+    final paymentMethod = ride.paymentMethod.isEmpty ? 'wallet' : ride.paymentMethod;
+    final isCash = paymentMethod == 'cash';
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Text('Complete Ride',
-            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
-          Text(
-            'This ride will be completed with the fixed fare calculated by the system.',
-            style: GoogleFonts.inter(fontSize: 13, color: _slate500),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _slate50,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _slate200),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: _slate200,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
             ),
-            child: Text(
-              'Payable fare: ৳${fare.toStringAsFixed(0)}',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: _slate800),
+            const SizedBox(height: 16),
+            // Title row
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _emerald.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.flag_rounded, color: _emerald, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'সম্পন্ন করুন Ride',
+                  style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800, color: _slate800),
+                ),
+              ],
             ),
-          ),
-        ]),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: GoogleFonts.inter(color: _slate500))),
-          OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _updateRideStatus('completed', paymentMethod: 'cash');
-            },
-            icon: const Icon(Icons.payments_rounded, size: 18),
-            label: Text('Cash', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFD97706),
-              side: const BorderSide(color: Color(0xFFF59E0B)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            const SizedBox(height: 16),
+            // যাত্রী info
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _slate50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _slate200),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: _slate100,
+                    backgroundImage: ride.riderAvatar != null ? NetworkImage(ride.riderAvatar!) : null,
+                    child: ride.riderAvatar == null
+                        ? const Icon(Icons.person_rounded, size: 18, color: _slate500)
+                        : null,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildIdentityRow(
+                      name: ride.riderName,
+                      isVerified: ride.riderIsVerified,
+                      isPro: ride.riderIsPro,
+                      completedTrips: ride.riderসম্পন্ন করুনdTrips,
+                      textStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _updateRideStatus('completed', paymentMethod: 'wallet');
-            },
-            style: FilledButton.styleFrom(backgroundColor: _emerald,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            child: Text('Wallet', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-          ),
-        ],
+            const SizedBox(height: 10),
+            // Route summary
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _slate50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _slate200),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.circle, size: 10, color: Color(0xFF6366F1)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          ride.pickupAddress.isNotEmpty ? ride.pickupAddress : 'পিকআপ লোকেশন',
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Container(width: 2, height: 12, color: _slate200),
+                  ),
+                  Row(
+                    children: [
+                      const Icon(Icons.square_rounded, size: 10, color: _emerald),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          ride.dropAddress.isNotEmpty ? ride.dropAddress : 'ড্রপ লোকেশন',
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Stats + fare row
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _slate50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _slate200),
+                    ),
+                    child: Column(
+                      children: [
+                        Text('${ride.distanceKm.toStringAsFixed(1)} km',
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF334155))),
+                        Text('দূরত্ব', style: GoogleFonts.inter(fontSize: 10, color: _slate400)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: _slate50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _slate200),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(ride.etaDisplay,
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF334155))),
+                        Text('Duration', style: GoogleFonts.inter(fontSize: 10, color: _slate400)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      children: [
+                        Text('৳${fare.toStringAsFixed(0)}',
+                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white)),
+                        Text('ভাড়া', style: GoogleFonts.inter(fontSize: 10, color: Colors.white.withValues(alpha: 0.8))),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // Payment method info
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isCash ? const Color(0xFFFFFBEB) : const Color(0xFFEEF2FF),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isCash ? const Color(0xFFFDE68A) : const Color(0xFFC7D2FE),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isCash ? Icons.payments_rounded : Icons.account_balance_wallet_rounded,
+                    size: 18,
+                    color: isCash ? const Color(0xFFD97706) : const Color(0xFF6366F1),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isCash ? 'নগদ পেমেন্ট' : 'ওয়ালেট পেমেন্ট',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: isCash ? const Color(0xFF92400E) : const Color(0xFF3730A3),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          isCash
+                              ? 'সংগ্রহ করুন ৳${fare.toStringAsFixed(0)} যাত্রীর কাছ থেকে, তারপর নিশ্চিত করুন।'
+                              : '৳${fare.toStringAsFixed(0)} যাত্রীর ওয়ালেট থেকে স্বয়ংক্রিয়ভাবে কেটে যাবে।',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: isCash ? const Color(0xFF78350F) : const Color(0xFF4338CA),
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF475569),
+                      side: const BorderSide(color: _slate300),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text('বাতিল', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _updateRideStatus('completed', paymentMethod: paymentMethod);
+                    },
+                    icon: Icon(
+                      isCash ? Icons.payments_rounded : Icons.check_circle_rounded,
+                      size: 18,
+                    ),
+                    label: Text(
+                      isCash ? 'নিশ্চিত করুন & নগদ Received' : 'নিশ্চিত করুন Completion',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: isCash ? const Color(0xFFD97706) : _emerald,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
+
+
