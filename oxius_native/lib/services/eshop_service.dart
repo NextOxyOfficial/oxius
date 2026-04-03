@@ -12,6 +12,39 @@ class EshopService {
     final u = url.startsWith('/') ? url : '/$url';
     return '$_originBase$u';
   }
+
+  static Map<String, dynamic> _normalizeStore(Map<String, dynamic> store) {
+    final normalized = Map<String, dynamic>.from(store);
+
+    if (normalized['image'] != null) {
+      normalized['image'] = _abs(normalized['image'].toString());
+    }
+    if (normalized['store_logo'] != null) {
+      normalized['store_logo'] = _abs(normalized['store_logo'].toString());
+    }
+    if (normalized['store_banner'] != null) {
+      normalized['store_banner'] = _abs(normalized['store_banner'].toString());
+    }
+
+    return normalized;
+  }
+
+  static List<Map<String, dynamic>> _extractProductList(dynamic data) {
+    if (data is Map && data['results'] is List) {
+      return List<Map<String, dynamic>>.from(
+        (data['results'] as List).map((e) => _transformProduct(Map<String, dynamic>.from(e))),
+      );
+    }
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(
+        data.map((e) => _transformProduct(Map<String, dynamic>.from(e))),
+      );
+    }
+    if (data is Map<String, dynamic>) {
+      return [_transformProduct(data)];
+    }
+    return [];
+  }
   
   // Transform backend Product model to expected frontend format
   static Map<String, dynamic> _transformProduct(Map<String, dynamic> backendProduct) {
@@ -34,6 +67,7 @@ class EshopService {
       print('DEBUG _transformProduct: ownerDetails value: $ownerDetails');
       
       String storeName = 'Store'; // Default fallback
+      String storeUsername = '';
       if (ownerDetails is Map<String, dynamic>) {
         print('DEBUG _transformProduct: ownerDetails keys: ${ownerDetails.keys.toList()}');
         // Prioritize store_name first, then other fields
@@ -42,6 +76,9 @@ class EshopService {
                     ownerDetails['username']?.toString() ??
                     ownerDetails['first_name']?.toString() ??
                     'Store';
+        storeUsername = ownerDetails['store_username']?.toString() ??
+          ownerDetails['username']?.toString() ??
+          '';
         
         print('DEBUG _transformProduct: Extracted storeName: "$storeName"');
         
@@ -82,11 +119,19 @@ class EshopService {
         // Owner/Store information
         'owner': storeName, // Use the extracted store name instead of raw owner ID
         'owner_details': {
+          'id': ownerDetails is Map ? ownerDetails['id']?.toString() ?? '' : '',
           'store_name': storeName,
           'name': storeName,
+          'store_username': storeUsername,
           'username': ownerDetails is Map ? (ownerDetails['username']?.toString() ?? '') : '',
           'email': ownerDetails is Map ? (ownerDetails['email']?.toString() ?? '') : '',
           'image': ownerDetails is Map && ownerDetails['image'] != null ? _abs(ownerDetails['image'].toString()) : null,
+          'store_logo': ownerDetails is Map && ownerDetails['store_logo'] != null ? _abs(ownerDetails['store_logo'].toString()) : null,
+          'store_banner': ownerDetails is Map && ownerDetails['store_banner'] != null ? _abs(ownerDetails['store_banner'].toString()) : null,
+          'store_description': ownerDetails is Map ? ownerDetails['store_description']?.toString() ?? '' : '',
+          'is_verified': ownerDetails is Map ? (ownerDetails['kyc'] == true || ownerDetails['is_verified'] == true) : false,
+          'rating': ownerDetails is Map ? ownerDetails['rating'] : null,
+          'followers_count': ownerDetails is Map ? ownerDetails['followers_count'] : null,
         },
         
         // Categories
@@ -126,6 +171,7 @@ class EshopService {
         'owner_details': {
           'store_name': 'Store',
           'name': 'Store',
+          'store_username': '',
         },
       };
     }
@@ -172,21 +218,12 @@ class EshopService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        List<Map<String, dynamic>> _normalize(List list) {
-          return List<Map<String, dynamic>>.from(list.map((e) {
-            final m = Map<String, dynamic>.from(e);
-            
-            // Transform backend Product model to expected format
-            return _transformProduct(m);
-          }));
-        }
-
         if (data is Map && data['results'] is List) {
-          final products = _normalize(data['results']);
+          final products = _extractProductList(data);
           print('EshopService: Successfully fetched ${products.length} products (paginated)');
           return products;
         } else if (data is List) {
-          final products = _normalize(data);
+          final products = _extractProductList(data);
           print('EshopService: Successfully fetched ${products.length} products (direct array)');
           return products;
         } else if (data is Map<String, dynamic>) {
@@ -205,6 +242,70 @@ class EshopService {
       print('EshopService: Error fetching products: $e');
       print('EshopService: Stack trace: $stackTrace');
       return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>?> fetchStoreDetails(String storeIdentity) async {
+    try {
+      final uri = Uri.parse('$baseUrl/store/$storeIdentity/');
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final data = json.decode(response.body);
+      if (data is Map<String, dynamic>) {
+        return _normalizeStore(data);
+      }
+      return null;
+    } catch (e) {
+      print('EshopService: Error fetching store details: $e');
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>> fetchStoreProducts({
+    required String storeIdentity,
+    int page = 1,
+    int pageSize = 24,
+  }) async {
+    try {
+      final uri = Uri.parse('$baseUrl/store/$storeIdentity/products/').replace(
+        queryParameters: {
+          'page': page.toString(),
+          'page_size': pageSize.toString(),
+        },
+      );
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to load store products: ${response.statusCode}');
+      }
+
+      final data = json.decode(response.body);
+      final products = _extractProductList(data);
+      final hasMore = data is Map && data['next'] != null;
+
+      return {
+        'products': products,
+        'hasMore': hasMore,
+      };
+    } catch (e) {
+      print('EshopService: Error fetching store products: $e');
+      rethrow;
     }
   }
 
@@ -517,63 +618,6 @@ class EshopService {
     } catch (e) {
       print('EshopService: Error clearing search history: $e');
       return false;
-    }
-  }
-
-  // Fetch products from a specific store by username
-  static Future<List<Map<String, dynamic>>> fetchStoreProducts({
-    required String storeUsername,
-    int page = 1,
-    int pageSize = 12,
-  }) async {
-    try {
-      final Map<String, String> queryParams = {
-        'page': page.toString(),
-        'page_size': pageSize.toString(),
-      };
-
-      final uri = Uri.parse('$baseUrl/store/$storeUsername/products/').replace(queryParameters: queryParams);
-      print('EshopService: Fetching store products from: $uri');
-      
-      final response = await http.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
-
-      print('EshopService: Store products response status: ${response.statusCode}');
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        List<Map<String, dynamic>> _normalize(List list) {
-          return List<Map<String, dynamic>>.from(list.map((e) {
-            final m = Map<String, dynamic>.from(e);
-            return _transformProduct(m);
-          }));
-        }
-
-        if (data is Map && data['results'] is List) {
-          final products = _normalize(data['results']);
-          print('EshopService: Successfully fetched ${products.length} products from store $storeUsername');
-          return products;
-        } else if (data is List) {
-          final products = _normalize(data);
-          print('EshopService: Successfully fetched ${products.length} products from store $storeUsername (direct array)');
-          return products;
-        }
-      }
-      
-      print('EshopService: Failed to fetch store products. Status: ${response.statusCode}');
-      print('EshopService: Response body: ${response.body}');
-      
-      return [];
-    } catch (e, stackTrace) {
-      print('EshopService: Error fetching store products: $e');
-      print('EshopService: Stack trace: $stackTrace');
-      return [];
     }
   }
 

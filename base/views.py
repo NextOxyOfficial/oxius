@@ -2784,6 +2784,20 @@ class AllProductsListView(generics.ListAPIView):
                 # Invalid UUID format, ignore the filter
                 pass
 
+        store_username = (
+            self.request.query_params.get("store_username")
+            or self.request.query_params.get("owner__store_username")
+        )
+        if isinstance(store_username, str) and store_username.strip():
+            queryset = queryset.filter(owner__store_username=store_username.strip())
+
+        owner_username = (
+            self.request.query_params.get("owner_username")
+            or self.request.query_params.get("owner__username")
+        )
+        if isinstance(owner_username, str) and owner_username.strip():
+            queryset = queryset.filter(owner__username=owner_username.strip())
+
         return queryset
 
     def get_random_products_from_categories(self, limit=None):
@@ -2864,6 +2878,20 @@ class StoreDetailsView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
     lookup_field = "store_username"
+
+    def get_object(self):
+        store_identity = self.kwargs.get(self.lookup_field)
+        if not store_identity:
+            raise Http404
+
+        instance = (
+            self.get_queryset()
+            .filter(Q(store_username=store_identity) | Q(username=store_identity))
+            .first()
+        )
+        if instance is None:
+            raise Http404
+        return instance
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
@@ -2971,14 +2999,19 @@ class StoreProductsListView(generics.ListAPIView):
 
     def get_queryset(self):
         """Return products owned by the user with the specified store_username"""
-        store_username = self.kwargs.get("store_username")
-        try:
-            store_owner = User.objects.get(store_username=store_username)
-            return Product.objects.filter(owner=store_owner, is_active=True).order_by(
-                "-created_at"
-            )
-        except User.DoesNotExist:
+        store_identity = self.kwargs.get("store_username")
+        if not store_identity:
             return Product.objects.none()
+
+        store_owner = User.objects.filter(
+            Q(store_username=store_identity) | Q(username=store_identity)
+        ).first()
+        if not store_owner:
+            return Product.objects.none()
+
+        return Product.objects.filter(owner=store_owner, is_active=True).order_by(
+            "-created_at"
+        )
 
 
 # Category List and Create
