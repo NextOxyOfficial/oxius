@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -2426,6 +2426,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final paymentMethod = ride.paymentMethod.isEmpty ? 'wallet' : ride.paymentMethod;
     final isCash = paymentMethod == 'cash';
 
+    // Fee breakdown (5% platform fee)
+    final double feePercent = ride.platformFeePercent > 0 ? ride.platformFeePercent : 5.0;
+    final double platformFee = (fare * feePercent / 100);
+    final double driverEarnings = fare - platformFee;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -2651,6 +2656,74 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       ],
                     ),
                   ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Fee breakdown card
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(t('rideshare_trip_fare', fallback: 'Trip Fare'),
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569))),
+                      Text('৳${fare.toStringAsFixed(0)}',
+                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF334155))),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${t('rideshare_platform_fee', fallback: 'Platform Fee')} (${feePercent.toStringAsFixed(0)}%)',
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
+                      Text('- ৳${platformFee.toStringAsFixed(0)}',
+                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFFDC2626))),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 6),
+                    child: Divider(height: 1, color: Color(0xFFBBF7D0)),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(t('rideshare_your_earnings', fallback: 'Your Earnings'),
+                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF166534))),
+                      Text('৳${driverEarnings.toStringAsFixed(0)}',
+                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: const Color(0xFF16A34A))),
+                    ],
+                  ),
+                  if (isCash) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFFD97706)),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              '৳${platformFee.toStringAsFixed(0)} ${t('rideshare_cash_fee_due_note', fallback: 'platform fee will be added as cash due')}',
+                              style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF92400E), height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

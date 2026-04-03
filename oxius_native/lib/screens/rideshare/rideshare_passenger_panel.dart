@@ -354,7 +354,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   Future<void> _handleRideRealtimeEvent(Map<String, dynamic> event) async {
-    if (!mounted || _activeRide == null) {
+    if (!mounted || _activeRide == null || _isCancellingRide) {
       return;
     }
 
@@ -650,9 +650,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   Future<void> _cancelRide() async {
     if (_activeRide == null) return;
-    
+
+    // Disconnect realtime immediately to prevent incoming events from
+    // overwriting state while the cancel API call is in flight.
+    _rideEventSubscription?.cancel();
+    _rideEventSubscription = null;
+    _realtimeService.disconnectRide();
+
     setState(() => _isCancellingRide = true);
-    
+
     final result = await RideshareService.cancelRide(
       _activeRide!.id,
       reason: 'Cancelled by passenger',
@@ -679,9 +685,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         });
         _pickupController.clear();
         _dropController.clear();
-        _realtimeService.disconnectRide();
         _showSuccess(t('rideshare_ride_cancelled', fallback: 'Ride cancelled'));
       } else {
+        // Reconnect realtime so the user can keep receiving ride updates
+        _syncRideRealtimeConnection();
         _showError(result.message);
       }
     }
@@ -2090,7 +2097,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF6366F1),
-                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),

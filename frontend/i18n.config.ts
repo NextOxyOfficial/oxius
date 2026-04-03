@@ -398,6 +398,9 @@ export default defineI18nConfig(() => ({
       rideshare_cash_payment: "Cash Payment",
       rideshare_confirm_cash_received: "Confirm & Cash Received",
       rideshare_confirm_completion: "Confirm Completion",
+      rideshare_platform_fee: "Platform Fee",
+      rideshare_your_earnings: "Your Earnings",
+      rideshare_cash_fee_due_note: "platform fee will be added as cash due",
 
       // Rideshare - booking (passenger)
       rideshare_book_ride: "Book Ride",
@@ -984,6 +987,9 @@ export default defineI18nConfig(() => ({
       rideshare_cash_payment: "ক্যাশ পেমেন্ট",
       rideshare_confirm_cash_received: "নিশ্চিত করুন ও ক্যাশ পেয়েছি",
       rideshare_confirm_completion: "কমপ্লিট নিশ্চিত করুন",
+      rideshare_platform_fee: "প্ল্যাটফর্ম ফি",
+      rideshare_your_earnings: "আপনার আয়",
+      rideshare_cash_fee_due_note: "প্ল্যাটফর্ম ফি ক্যাশ ডিউ হিসেবে যোগ হবে",
 
       // Rideshare - booking (passenger)
       rideshare_book_ride: "রাইড বুক করুন",
@@ -1137,7 +1143,7 @@ export default defineI18nConfig(() => ({
       rideshare_cash_payment_title: "ড্রাইভারকে ক্যাশ পরিশোধ",
       rideshare_cash_subtitle: "রাইড শেষে সরাসরি ড্রাইভারকে ক্যাশ পরিশোধ করুন।",
       rideshare_confirm_payment: "পেমেন্ট নিশ্চিত করুন",
-      rideshare_cancel_request: "অনুরোধ বাতিল",
+      rideshare_cancel_request: "রিকোয়েস্ট বাতিল করুন",
       rideshare_submitting: "জমা দেওয়া হচ্ছে...",
       rideshare_driver_assigned: "ড্রাইভার নিশ্চিত",
       rideshare_location_required_title: "লোকেশন পারমিশন প্রয়োজন",
