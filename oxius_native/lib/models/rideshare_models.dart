@@ -299,6 +299,7 @@ class Ride {
   final Vehicle? vehicle;
   final String requestedVehicleType;
   final DateTime? targetedAt;
+  final DateTime? targetedExpiresAt;
   final int dispatchAttempt;
   final DateTime? searchExpiresAt;
   final double pickupLatitude;
@@ -349,6 +350,7 @@ class Ride {
     this.vehicle,
     required this.requestedVehicleType,
     this.targetedAt,
+    this.targetedExpiresAt,
     required this.dispatchAttempt,
     this.searchExpiresAt,
     required this.pickupLatitude,
@@ -408,6 +410,9 @@ class Ride {
           : null,
       requestedVehicleType: json['requested_vehicle_type'] ?? 'bike',
       targetedAt: json['targeted_at'] != null ? DateTime.tryParse(json['targeted_at']) : null,
+      targetedExpiresAt: json['targeted_driver_response_expires_at'] != null
+          ? DateTime.tryParse(json['targeted_driver_response_expires_at'])
+          : null,
       dispatchAttempt: json['dispatch_attempt'] ?? 0,
       searchExpiresAt: json['search_expires_at'] != null ? DateTime.tryParse(json['search_expires_at']) : null,
       pickupLatitude: double.tryParse(json['pickup_latitude']?.toString() ?? '') ?? 0.0,
@@ -536,8 +541,13 @@ class Ride {
   double get payableFare => finalFare ?? earlyCompletionFare ?? fareEstimate;
 
   int targetedCountdownSeconds({int timeoutSeconds = 60, DateTime? now}) {
-    if (targetedAt == null) return timeoutSeconds;
     final currentTime = now ?? DateTime.now();
+    // Prefer server-computed expiry for accurate countdown
+    if (targetedExpiresAt != null) {
+      final remaining = targetedExpiresAt!.difference(currentTime).inSeconds;
+      return remaining > 0 ? remaining : 0;
+    }
+    if (targetedAt == null) return timeoutSeconds;
     final elapsed = currentTime.difference(targetedAt!).inSeconds;
     final remaining = timeoutSeconds - elapsed;
     return remaining > 0 ? remaining : 0;
@@ -558,6 +568,7 @@ class Ride {
     double? driverDueAmount,
     DateTime? driverDueSettledAt,
     DateTime? targetedAt,
+    DateTime? targetedExpiresAt,
     int? dispatchAttempt,
     DateTime? searchExpiresAt,
     DateTime? acceptedAt,
@@ -585,6 +596,7 @@ class Ride {
       vehicle: vehicle ?? this.vehicle,
       requestedVehicleType: requestedVehicleType,
       targetedAt: targetedAt ?? this.targetedAt,
+      targetedExpiresAt: targetedExpiresAt ?? this.targetedExpiresAt,
       dispatchAttempt: dispatchAttempt ?? this.dispatchAttempt,
       searchExpiresAt: searchExpiresAt ?? this.searchExpiresAt,
       pickupLatitude: pickupLatitude,

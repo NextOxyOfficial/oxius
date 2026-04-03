@@ -149,8 +149,6 @@ class MyApp extends StatelessWidget {
         if (userState.isInitializing) {
           return MaterialApp(
             title: 'AdsyClub Native',
-            navigatorKey: FCMService.navigatorKey,
-            navigatorObservers: [FCMService.routeObserver],
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),

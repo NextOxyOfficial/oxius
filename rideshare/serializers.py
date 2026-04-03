@@ -167,6 +167,7 @@ class RideSerializer(serializers.ModelSerializer):
     passenger_can_cancel = serializers.SerializerMethodField()
     driver_can_cancel = serializers.SerializerMethodField()
     can_report_driver = serializers.SerializerMethodField()
+    targeted_driver_response_expires_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Ride
@@ -178,6 +179,7 @@ class RideSerializer(serializers.ModelSerializer):
             "vehicle",
             "requested_vehicle_type",
             "targeted_at",
+            "targeted_driver_response_expires_at",
             "dispatch_attempt",
             "search_expires_at",
             "pickup_latitude",
@@ -218,6 +220,14 @@ class RideSerializer(serializers.ModelSerializer):
             "status_history",
         ]
 
+    def get_targeted_driver_response_expires_at(self, obj):
+        if obj.targeted_at is None or obj.targeted_driver_id is None:
+            return None
+        from datetime import timedelta
+        from .services import get_driver_response_timeout_seconds
+        expires = obj.targeted_at + timedelta(seconds=get_driver_response_timeout_seconds())
+        return expires.isoformat()
+
     def get_latest_driver_location(self, obj):
         latest = obj.driver_locations.order_by("-recorded_at").first()
         return DriverLocationSerializer(latest).data if latest else None
@@ -226,8 +236,6 @@ class RideSerializer(serializers.ModelSerializer):
         return obj.status in [
             Ride.STATUS_REQUESTED,
             Ride.STATUS_SEARCHING,
-            Ride.STATUS_ACCEPTED,
-            Ride.STATUS_DRIVER_ARRIVING,
         ]
 
     def get_driver_can_cancel(self, obj):

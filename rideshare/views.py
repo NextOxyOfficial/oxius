@@ -108,6 +108,14 @@ class RideshareApiMixin:
         )
 
 
+def _cascade_expired_targets_safely():
+    """Best-effort cascade trigger for environments where Celery beat is unavailable."""
+    try:
+        NearestDriverDispatch.check_and_cascade_expired_targets()
+    except Exception as exc:
+        logger.warning("Inline cascade check failed: %s", exc)
+
+
 class EstimateRideView(RideshareApiMixin, APIView):
     permission_classes = [AllowAny]
 
@@ -236,6 +244,14 @@ class RideCreateView(RideshareApiMixin, APIView):
         )
         ride.refresh_from_db()
 
+        # Auto-cancel if no drivers available
+        if not nearest_driver:
+            RideAutoCancel.cancel_expired_ride(ride)
+            return api_success(
+                RideSerializer(ride, context={"request": request}).data,
+                "No drivers available. Ride cancelled automatically.",
+            )
+
         # If driver was auto-assigned, notify about acceptance
         if ride.assigned_driver:
             RideNotificationService.notify_ride_status_change(ride)
@@ -273,6 +289,7 @@ class ActiveRideView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        _cascade_expired_targets_safely()
         ride = (
             Ride.objects.select_related(
                 "rider", "assigned_driver__user", "targeted_driver__user", "vehicle"
@@ -323,18 +340,19 @@ class AvailableRideRequestListView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated, IsApprovedDriver]
 
     def get(self, request):
+        _cascade_expired_targets_safely()
         driver_profile = request.user.driver_profile
 
-        # Only show rides targeted to this driver or rides with no target
+        # Only show rides explicitly targeted to this driver (sequential 1-at-a-time dispatch)
         queryset = (
             Ride.objects.filter(
                 status=Ride.STATUS_SEARCHING,
                 assigned_driver__isnull=True,
+                targeted_driver=driver_profile,
             )
             .exclude(
                 rider=request.user,
             )
-            .filter(Q(targeted_driver__isnull=True) | Q(targeted_driver=driver_profile))
         )
 
         default_vehicle = get_driver_default_vehicle(driver_profile)
@@ -398,7 +416,7 @@ class RideSkipView(RideshareApiMixin, APIView):
     def post(self, request, id):
         ride = get_object_or_404(
             Ride.objects.select_for_update().select_related(
-                "rider", "targeted_driver__user"
+                "rider"
             ),
             id=id,
         )
@@ -486,10 +504,14 @@ class RideCancelView(RideshareApiMixin, APIView):
         if ride.status in [Ride.STATUS_COMPLETED, Ride.STATUS_CANCELLED]:
             return api_error("This ride can no longer be cancelled.")
         if is_rider and ride.status in [
+            Ride.STATUS_ACCEPTED,
+            Ride.STATUS_DRIVER_ARRIVING,
             Ride.STATUS_IN_PROGRESS,
             Ride.STATUS_AWAITING_CONFIRMATION,
         ]:
-            return api_error("You cannot cancel a ride after it has started.")
+            return api_error(
+                "You cannot cancel a ride after a driver has accepted it."
+            )
 
         cancelled_by = (
             "admin" if request.user.is_superuser else "driver" if is_driver else "rider"

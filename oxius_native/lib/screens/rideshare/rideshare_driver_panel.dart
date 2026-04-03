@@ -667,12 +667,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }) async {
     if (_activeRide == null) return;
     setState(() => _isUpdatingStatus = true);
-    final result = await RideshareService.updateRideStatus(
-      _activeRide!.id,
-      status,
-      finalFare: finalFare,
-      paymentMethod: paymentMethod,
-    );
+    final RideshareApiResult<Ride> result;
+    if (status == 'cancelled') {
+      result = await RideshareService.cancelRide(_activeRide!.id);
+    } else {
+      result = await RideshareService.updateRideStatus(
+        _activeRide!.id,
+        status,
+        finalFare: finalFare,
+        paymentMethod: paymentMethod,
+      );
+    }
     if (mounted) {
       setState(() => _isUpdatingStatus = false);
       if (result.success && result.data != null) {

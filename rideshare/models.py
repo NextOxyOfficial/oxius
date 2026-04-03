@@ -492,12 +492,12 @@ class DriverLocation(models.Model):
     )
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
-    heading = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    heading = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
     speed_kph = models.DecimalField(
-        max_digits=6, decimal_places=2, null=True, blank=True
+        max_digits=7, decimal_places=2, null=True, blank=True
     )
     accuracy_meters = models.DecimalField(
-        max_digits=6, decimal_places=2, null=True, blank=True
+        max_digits=10, decimal_places=2, null=True, blank=True
     )
     recorded_at = models.DateTimeField(auto_now_add=True)
 

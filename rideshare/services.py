@@ -1525,8 +1525,13 @@ class NearestDriverDispatch:
 
         # Calculate distance and sort
         drivers_with_distance = []
+        no_gps_drivers = []
         for driver in candidates:
             if driver.current_latitude is None or driver.current_longitude is None:
+                # Collect no-GPS drivers as fallback (tried last after all GPS drivers)
+                max_ride_dist = float(driver.max_ride_distance_km or 0)
+                if max_ride_dist == 0 or float(ride.distance_km) <= max_ride_dist:
+                    no_gps_drivers.append(driver)
                 continue
 
             distance = RoutingService._haversine_distance_km(
@@ -1553,9 +1558,13 @@ class NearestDriverDispatch:
 
             drivers_with_distance.append((driver, distance))
 
-        # Sort by distance (nearest first)
+        # Sort GPS-tracked drivers by distance (nearest first)
         drivers_with_distance.sort(key=lambda x: x[1])
-        return [d[0] for d in drivers_with_distance]
+        sorted_drivers = [d[0] for d in drivers_with_distance]
+
+        # Append no-GPS drivers as fallback so dispatch always targets someone
+        sorted_drivers.extend(no_gps_drivers)
+        return sorted_drivers
 
     @classmethod
     @transaction.atomic
@@ -1713,7 +1722,7 @@ class NearestDriverDispatch:
                 with transaction.atomic():
                     ride = (
                         Ride.objects.select_for_update()
-                        .select_related("targeted_driver__user", "rider")
+                        .select_related("rider")
                         .get(id=ride_id)
                     )
                     if (
@@ -1733,31 +1742,53 @@ class NearestDriverDispatch:
                     ride.save(
                         update_fields=["targeted_driver", "targeted_at", "updated_at"]
                     )
-
-                    RideStatusHistory.objects.create(
-                        ride=ride,
-                        status=ride.status,
-                        metadata={
-                            "event": "driver_timeout",
-                            "targeted_driver_id": str(old_target_id),
-                            "targeted_driver_name": old_target_name,
-                            "status_text": "Driver did not respond, trying another...",
-                        },
-                    )
-                    cls._notify_passenger_search_status(
-                        ride,
-                        "Driver did not respond, trying another...",
-                        {
-                            "timed_out_driver_id": str(old_target_id),
-                            "timed_out_driver_name": old_target_name,
-                        },
-                    )
-
                     next_driver = cls.dispatch_to_nearest_driver(ride)
+
+                    if next_driver:
+                        RideStatusHistory.objects.create(
+                            ride=ride,
+                            status=ride.status,
+                            metadata={
+                                "event": "driver_timeout",
+                                "targeted_driver_id": str(old_target_id),
+                                "targeted_driver_name": old_target_name,
+                                "status_text": "Driver did not respond, trying another...",
+                            },
+                        )
+                        cls._notify_passenger_search_status(
+                            ride,
+                            "Driver did not respond, trying another...",
+                            {
+                                "timed_out_driver_id": str(old_target_id),
+                                "timed_out_driver_name": old_target_name,
+                            },
+                        )
+                    else:
+                        max_radius = get_max_passenger_search_radius_km()
+                        RideStatusHistory.objects.create(
+                            ride=ride,
+                            status=ride.status,
+                            metadata={
+                                "event": "no_driver_available_after_timeout",
+                                "targeted_driver_id": str(old_target_id),
+                                "targeted_driver_name": old_target_name,
+                                "status_text": f"No drivers available within {int(max_radius)} km.",
+                            },
+                        )
+                        cls._notify_passenger_search_status(
+                            ride,
+                            f"No drivers available within {int(max_radius)} km. You may be in a remote area — try from a nearby town or city.",
+                            {
+                                "no_drivers_in_range": True,
+                                "max_search_radius_km": max_radius,
+                                "timed_out_driver_id": str(old_target_id),
+                                "timed_out_driver_name": old_target_name,
+                            },
+                        )
                 if next_driver:
                     cascaded_count += 1
                 else:
-                    if RideAutoCancel.should_cancel_ride(ride):
+                    if ride.status == Ride.STATUS_SEARCHING and not ride.assigned_driver_id:
                         RideAutoCancel.cancel_expired_ride(ride)
                         logger.info(
                             f"Auto-cancelled ride {ride.id} after dispatch cascade ended"
@@ -1773,7 +1804,6 @@ class NearestDriverDispatch:
                 status=Ride.STATUS_SEARCHING,
                 assigned_driver__isnull=True,
                 targeted_driver__isnull=True,
-                search_expires_at__gt=timezone.now(),
             ).values_list("id", flat=True)
         )
 
@@ -1799,7 +1829,7 @@ class NearestDriverDispatch:
                         f"Retried orphaned ride {ride_id} → dispatched to driver {next_driver.id}"
                     )
                 else:
-                    if RideAutoCancel.should_cancel_ride(ride):
+                    if ride.status == Ride.STATUS_SEARCHING and not ride.assigned_driver_id:
                         RideAutoCancel.cancel_expired_ride(ride)
                         logger.info(f"Auto-cancelled orphaned ride {ride_id}")
             except Exception as e:

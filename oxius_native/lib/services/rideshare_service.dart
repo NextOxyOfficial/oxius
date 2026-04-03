@@ -46,6 +46,24 @@ class RideshareService {
     return await ApiService.getHeaders();
   }
 
+  static List<dynamic> _extractListPayload(dynamic data) {
+    if (data is List) return data;
+    if (data is Map) {
+      final candidates = [
+        data['results'],
+        data['vehicles'],
+        data['items'],
+        data['list'],
+        data['data'],
+      ];
+
+      for (final candidate in candidates) {
+        if (candidate is List) return candidate;
+      }
+    }
+    return const <dynamic>[];
+  }
+
   static RideshareApiResult<T> _parseResponse<T>(
     http.Response response,
     T Function(dynamic)? parser,
@@ -661,7 +679,10 @@ class RideshareService {
       );
       return _parseResponse<List<Vehicle>>(
         response,
-        (data) => (data as List).map((v) => Vehicle.fromJson(v as Map<String, dynamic>)).toList(),
+        (data) => _extractListPayload(data)
+            .whereType<Map<String, dynamic>>()
+            .map(Vehicle.fromJson)
+            .toList(),
       );
     } catch (e) {
       return RideshareApiResult<List<Vehicle>>(
