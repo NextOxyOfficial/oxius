@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
@@ -7,6 +8,13 @@ import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import '../settings_screen.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate500 = Color(0xFF64748B);
+const _slate800 = Color(0xFF1E293B);
 
 class DepositTab extends StatefulWidget {
   final double balance;
@@ -393,12 +401,12 @@ class _DepositTabState extends State<DepositTab> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF10B981).withOpacity(0.1),
-                  const Color(0xFF3B82F6).withOpacity(0.1),
+                  _indigo.withValues(alpha: 0.08),
+                  _violet.withValues(alpha: 0.08),
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+              border: Border.all(color: _indigo.withValues(alpha: 0.18)),
             ),
             child: Column(
               children: [
@@ -409,12 +417,12 @@ class _DepositTabState extends State<DepositTab> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.security,
-                        color: Color(0xFF10B981),
-                        size: 24,
+                        color: _indigo,
+                        size: 22,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -423,17 +431,18 @@ class _DepositTabState extends State<DepositTab> {
                       children: [
                         Text(
                           'Secure Payment Gateway',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade800,
+                            fontWeight: FontWeight.w700,
+                            color: _slate800,
                           ),
                         ),
                         Text(
                           'SSL Encrypted & Safe',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             fontSize: 11,
-                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                            color: _slate500,
                           ),
                         ),
                       ],
@@ -479,12 +488,12 @@ class _DepositTabState extends State<DepositTab> {
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                colors: [_indigo, _violet],
               ),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF10B981).withOpacity(0.3),
+                  color: _indigo.withValues(alpha: 0.22),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -496,9 +505,9 @@ class _DepositTabState extends State<DepositTab> {
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
                 shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: _isLoading
@@ -515,11 +524,11 @@ class _DepositTabState extends State<DepositTab> {
                       children: [
                         const Icon(Icons.lock_outline, size: 18),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Proceed to Payment',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],

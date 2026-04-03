@@ -1,7 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../screens/terms_and_conditions_screen.dart';
 import '../../screens/privacy_policy_screen.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _slate100 = Color(0xFFF1F5F9);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate500 = Color(0xFF64748B);
 
 class TermsCheckbox extends StatelessWidget {
   final bool value;
@@ -22,72 +28,81 @@ class TermsCheckbox extends StatelessWidget {
       children: [
         InkWell(
           onTap: () => onChanged(!value),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: value,
-                  onChanged: onChanged,
-                  activeColor: const Color(0xFF10B981),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[700],
-                      height: 1.4,
-                    ),
-                    children: [
-                      const TextSpan(text: 'I accept '),
-                      TextSpan(
-                        text: 'Terms & Conditions',
-                        style: const TextStyle(
-                          color: Color(0xFF10B981),
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const TermsAndConditionsScreen(),
-                              ),
-                            );
-                          },
-                      ),
-                      const TextSpan(text: ' and '),
-                      TextSpan(
-                        text: 'Privacy Policy',
-                        style: const TextStyle(
-                          color: Color(0xFF10B981),
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const PrivacyPolicyScreen(),
-                              ),
-                            );
-                          },
-                      ),
-                      const TextSpan(text: '.'),
-                    ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: _slate100,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _slate200),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    value: value,
+                    onChanged: onChanged,
+                    activeColor: _indigo,
+                    side: const BorderSide(color: _slate500),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    visualDensity: VisualDensity.compact,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: _slate500,
+                        height: 1.45,
+                      ),
+                      children: [
+                        const TextSpan(text: 'I accept '),
+                        TextSpan(
+                          text: 'Terms & Conditions',
+                          style: GoogleFonts.inter(
+                            color: _indigo,
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const TermsAndConditionsScreen(),
+                                ),
+                              );
+                            },
+                        ),
+                        const TextSpan(text: ' and '),
+                        TextSpan(
+                          text: 'Privacy Policy',
+                          style: GoogleFonts.inter(
+                            color: _indigo,
+                            decoration: TextDecoration.underline,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const PrivacyPolicyScreen(),
+                                ),
+                              );
+                            },
+                        ),
+                        const TextSpan(text: '.'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (errorText != null)
@@ -95,7 +110,7 @@ class TermsCheckbox extends StatelessWidget {
             padding: const EdgeInsets.only(left: 32, top: 4),
             child: Text(
               errorText!,
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 color: Colors.red,
                 fontSize: 12,
               ),

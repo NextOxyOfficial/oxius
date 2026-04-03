@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../services/user_state_service.dart';
@@ -9,6 +10,16 @@ import '../../widgets/home/mobile_recharge_section.dart';
 import 'deposit_tab.dart';
 import 'withdraw_tab.dart';
 import 'transfer_tab.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _emerald = Color(0xFF10B981);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate100 = Color(0xFFF1F5F9);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate400 = Color(0xFF94A3B8);
+const _slate500 = Color(0xFF64748B);
+const _slate800 = Color(0xFF1E293B);
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -189,36 +200,41 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: _slate50,
       appBar: AppBar(
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                gradient: const LinearGradient(colors: [_indigo, _violet]),
+                borderRadius: BorderRadius.circular(9),
               ),
               child: const Icon(
                 Icons.account_balance_wallet_outlined,
                 size: 16,
-                color: Color(0xFF10B981),
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'AdsyPay',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: _slate800,
+              ),
             ),
           ],
         ),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        foregroundColor: _slate800,
+        surfaceTintColor: Colors.white,
         elevation: 0,
       ),
       body: RefreshIndicator(
         onRefresh: _refreshAll,
-        color: const Color(0xFF10B981),
+        color: _indigo,
         child: SingleChildScrollView(
           controller: _transactionScrollController,
           physics: const AlwaysScrollableScrollPhysics(),
@@ -236,13 +252,13 @@ class _WalletScreenState extends State<WalletScreen> {
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _slate200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                    color: Colors.black.withValues(alpha: 0.035),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -276,30 +292,37 @@ class _WalletScreenState extends State<WalletScreen> {
             // Tab Content
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              child: _currentTab == 0
-                  ? DepositTab(
-                      balance: _balance?.balance ?? 0.0,
-                      onDepositSuccess: () async {
-                        await _loadBalance();
-                        await _loadTransactions();
-                      },
-                    )
-                  : _currentTab == 1
-                      ? WithdrawTab(
-                          balance: _balance?.balance ?? 0.0,
-                          onWithdrawSuccess: () async {
-                            await _loadBalance();
-                            await _loadTransactions();
-                          },
-                        )
-                      : TransferTab(
-                          balance: _balance?.balance ?? 0.0,
-                          userPhone: _userState.userEmail,
-                          onTransferSuccess: () async {
-                            await _loadBalance();
-                            await _loadTransactions();
-                          },
-                        ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _slate200),
+                ),
+                child: _currentTab == 0
+                    ? DepositTab(
+                        balance: _balance?.balance ?? 0.0,
+                        onDepositSuccess: () async {
+                          await _loadBalance();
+                          await _loadTransactions();
+                        },
+                      )
+                    : _currentTab == 1
+                        ? WithdrawTab(
+                            balance: _balance?.balance ?? 0.0,
+                            onWithdrawSuccess: () async {
+                              await _loadBalance();
+                              await _loadTransactions();
+                            },
+                          )
+                        : TransferTab(
+                            balance: _balance?.balance ?? 0.0,
+                            userPhone: _userState.userEmail,
+                            onTransferSuccess: () async {
+                              await _loadBalance();
+                              await _loadTransactions();
+                            },
+                          ),
+              ),
             ),
 
             // Transaction History Section (Always show)
@@ -315,23 +338,22 @@ class _WalletScreenState extends State<WalletScreen> {
                         Container(
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.1),
+                            color: _indigo.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Icon(
                             Icons.history_rounded,
                             size: 14,
-                            color: Color(0xFF10B981),
+                            color: _indigo,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
                           t('transaction_history'),
-                          style: const TextStyle(
+                          style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF1E293B),
-                            letterSpacing: -0.2,
+                            color: _slate800,
                           ),
                         ),
                       ],
@@ -344,8 +366,8 @@ class _WalletScreenState extends State<WalletScreen> {
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.grey.shade200),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: _slate200),
                       ),
                       child: Row(
                         children: [
@@ -386,8 +408,11 @@ class _WalletScreenState extends State<WalletScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
+          gradient: isSelected
+              ? const LinearGradient(colors: [_indigo, _violet])
+              : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -395,15 +420,15 @@ class _WalletScreenState extends State<WalletScreen> {
             Icon(
               icon,
               size: 16,
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Colors.white : _slate500,
             ),
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : Colors.grey[600],
+                fontWeight: FontWeight.w700,
+                color: isSelected ? Colors.white : _slate500,
               ),
             ),
           ],
@@ -566,17 +591,16 @@ class _WalletScreenState extends State<WalletScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
-          borderRadius: BorderRadius.circular(5),
+          color: isSelected ? _indigo.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: isSelected ? Colors.white : Colors.grey[600],
-            letterSpacing: -0.1,
+            color: isSelected ? _indigo : _slate500,
           ),
         ),
       ),
@@ -596,10 +620,10 @@ class _WalletScreenState extends State<WalletScreen> {
               const SizedBox(height: 8),
               Text(
                 'No ${_transactionTab} transactions',
-                style: TextStyle(
+                style: GoogleFonts.inter(
                   fontSize: 13,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
+                  color: _slate500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -623,8 +647,8 @@ class _WalletScreenState extends State<WalletScreen> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200, width: 1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _slate200, width: 1),
             ),
             child: Row(
               children: [
@@ -677,11 +701,11 @@ class _WalletScreenState extends State<WalletScreen> {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey.shade200, width: 1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _slate200, width: 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),
@@ -694,7 +718,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, color: color, size: 18),
@@ -709,10 +733,10 @@ class _WalletScreenState extends State<WalletScreen> {
                         children: [
                           Text(
                             _getTransactionTypeName(txn.transactionType),
-                            style: const TextStyle(
+                            style: GoogleFonts.inter(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
-                              letterSpacing: -0.1,
+                              color: _slate800,
                             ),
                           ),
                           const SizedBox(width: 4),
@@ -816,7 +840,7 @@ class _WalletScreenState extends State<WalletScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.12),
+        color: statusColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(

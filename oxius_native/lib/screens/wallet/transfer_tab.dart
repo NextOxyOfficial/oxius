@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../services/wallet_service.dart';
@@ -6,6 +7,15 @@ import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import 'transfer_confirmation_dialog.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate400 = Color(0xFF94A3B8);
+const _slate500 = Color(0xFF64748B);
+const _slate700 = Color(0xFF334155);
+const _slate800 = Color(0xFF1E293B);
 
 class TransferTab extends StatefulWidget {
   final double balance;
@@ -333,15 +343,14 @@ class _TransferTabState extends State<TransferTab> {
             child: OutlinedButton.icon(
               onPressed: _showMyQrCode,
               icon: const Icon(Icons.qr_code, size: 18),
-              label: const Text('Show My QR Code'),
+              label: Text('Show My QR Code', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF10B981),
-                side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                foregroundColor: _indigo,
+                side: const BorderSide(color: _indigo, width: 1.4),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -352,22 +361,34 @@ class _TransferTabState extends State<TransferTab> {
             controller: _contactController,
             keyboardType: TextInputType.text,
             onChanged: (value) => _validateContact(),
+            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
             decoration: InputDecoration(
               labelText: 'Recipient ID, Email or Phone',
               hintText: 'Enter user ID, email or phone',
-              prefixIcon: const Icon(Icons.person_outline, size: 20),
+              labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
+              hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+              prefixIcon: const Icon(Icons.person_outline_rounded, size: 18, color: _slate400),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.qr_code_scanner, size: 20),
+                icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: _indigo),
                 onPressed: _scanQRCode,
                 tooltip: 'Scan Recipient QR Code',
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _slate200),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _slate200),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _indigo, width: 1.8),
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: _slate50,
               errorText: _contactError,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             ),
           ),
           const SizedBox(height: 12),
@@ -401,12 +422,12 @@ class _TransferTabState extends State<TransferTab> {
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                colors: [_indigo, _violet],
               ),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withOpacity(0.3),
+                  color: _indigo.withValues(alpha: 0.22),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -418,9 +439,9 @@ class _TransferTabState extends State<TransferTab> {
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
                 shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: _isLoading
@@ -437,11 +458,11 @@ class _TransferTabState extends State<TransferTab> {
                       children: [
                         const Icon(Icons.swap_horiz, size: 18),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Transfer Money',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],

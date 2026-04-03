@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/wallet_models.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate500 = Color(0xFF64748B);
+const _slate800 = Color(0xFF1E293B);
 
 class PaymentMethodSelector extends StatelessWidget {
   final String selectedMethod;
@@ -18,12 +25,12 @@ class PaymentMethodSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Select Payment Method',
-          style: TextStyle(
+          style: GoogleFonts.inter(
             fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1E293B),
+            fontWeight: FontWeight.w700,
+            color: _slate800,
           ),
         ),
         const SizedBox(height: 10),
@@ -37,12 +44,10 @@ class PaymentMethodSelector extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF10B981).withOpacity(0.1) : Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    color: isSelected ? _indigo.withValues(alpha: 0.08) : _slate50,
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFF10B981)
-                          : Colors.grey[300]!,
+                      color: isSelected ? _indigo : _slate200,
                       width: isSelected ? 1.5 : 1,
                     ),
                   ),
@@ -54,8 +59,8 @@ class PaymentMethodSelector extends StatelessWidget {
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[200]!),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: _slate200),
                         ),
                         child: Image.asset(
                           'assets/${method.icon}',
@@ -72,12 +77,10 @@ class PaymentMethodSelector extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         method.label,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? const Color(0xFF10B981)
-                              : Colors.grey[700],
+                          fontWeight: FontWeight.w700,
+                          color: isSelected ? _indigo : _slate500,
                         ),
                       ),
                     ],

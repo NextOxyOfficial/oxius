@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/wallet_models.dart';
 import '../../services/wallet_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/payment_method_selector.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate400 = Color(0xFF94A3B8);
+const _slate500 = Color(0xFF64748B);
+const _slate700 = Color(0xFF334155);
+const _slate800 = Color(0xFF1E293B);
 
 class WithdrawTab extends StatefulWidget {
   final double balance;
@@ -167,17 +177,29 @@ class _WithdrawTabState extends State<WithdrawTab> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             onChanged: (value) => _validatePhone(),
+            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
             decoration: InputDecoration(
               labelText: '${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} Number',
               hintText: 'Enter ${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} number',
-              prefixIcon: const Icon(Icons.phone_android, size: 20),
+              labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
+              hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+              prefixIcon: const Icon(Icons.phone_android_rounded, size: 18, color: _slate400),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _slate200),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _slate200),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _indigo, width: 1.8),
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: _slate50,
               errorText: _phoneError,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             ),
           ),
           const SizedBox(height: 12),
@@ -196,16 +218,11 @@ class _WithdrawTabState extends State<WithdrawTab> {
           // Charge Information
           if (amount > 0) ...[
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.orange.shade50,
-                    Colors.red.shade50,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
+                color: _slate50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _slate200),
               ),
               child: Column(
                 children: [
@@ -214,13 +231,14 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     children: [
                       Text(
                         'Withdrawal Amount:',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                        style: GoogleFonts.inter(fontSize: 12, color: _slate700, fontWeight: FontWeight.w600),
                       ),
                       Text(
                         '৳${amount.toStringAsFixed(2)}',
-                        style: const TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
+                          color: _slate800,
                         ),
                       ),
                     ],
@@ -231,35 +249,36 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     children: [
                       Text(
                         'Charges (${WalletService.withdrawalChargePercent}%):',
-                        style: TextStyle(fontSize: 12, color: Colors.red.shade700),
+                        style: GoogleFonts.inter(fontSize: 12, color: _slate500, fontWeight: FontWeight.w600),
                       ),
                       Text(
                         '৳${(amount * WalletService.withdrawalChargePercent / 100).toStringAsFixed(2)}',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: Colors.red.shade700,
-                          fontWeight: FontWeight.w600,
+                          color: _slate800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
-                  Divider(height: 12, color: Colors.grey.shade300),
+                  Divider(height: 12, color: _slate200),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Total Deduction:',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 13,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
+                          color: _slate800,
                         ),
                       ),
                       Text(
                         '৳${totalDeduction.toStringAsFixed(2)}',
-                        style: const TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFEF4444),
+                          fontWeight: FontWeight.w800,
+                          color: _indigo,
                         ),
                       ),
                     ],
@@ -288,12 +307,12 @@ class _WithdrawTabState extends State<WithdrawTab> {
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                colors: [_indigo, _violet],
               ),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFEF4444).withOpacity(0.3),
+                  color: _indigo.withValues(alpha: 0.22),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -305,9 +324,9 @@ class _WithdrawTabState extends State<WithdrawTab> {
                 backgroundColor: Colors.transparent,
                 foregroundColor: Colors.white,
                 shadowColor: Colors.transparent,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: _isLoading
@@ -324,11 +343,11 @@ class _WithdrawTabState extends State<WithdrawTab> {
                       children: [
                         const Icon(Icons.arrow_upward, size: 18),
                         const SizedBox(width: 8),
-                        const Text(
+                        Text(
                           'Submit Withdrawal',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
