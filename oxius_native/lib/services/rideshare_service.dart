@@ -141,6 +141,40 @@ class RideshareService {
     }
   }
 
+  static Future<RideshareApiResult<RoutePreview>> previewRoute({
+    required double originLatitude,
+    required double originLongitude,
+    required double destinationLatitude,
+    required double destinationLongitude,
+    String? originAddress,
+    String? destinationAddress,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$_baseUrl/route-preview/'),
+        headers: headers,
+        body: json.encode({
+          'origin_latitude': originLatitude,
+          'origin_longitude': originLongitude,
+          'destination_latitude': destinationLatitude,
+          'destination_longitude': destinationLongitude,
+          'origin_address': originAddress ?? '',
+          'destination_address': destinationAddress ?? '',
+        }),
+      );
+      return _parseResponse<RoutePreview>(
+        response,
+        (data) => RoutePreview.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<RoutePreview>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
   // ==================== Ride Creation ====================
   
   static Future<RideshareApiResult<Ride>> createRide({

@@ -305,6 +305,14 @@ RIDESHARE_PHOTON_URL = os.getenv("RIDESHARE_PHOTON_URL", "https://photon.komoot.
 RIDESHARE_PHOTON_DEFAULT_LAT = float(os.getenv("RIDESHARE_PHOTON_DEFAULT_LAT", "23.6850"))
 RIDESHARE_PHOTON_DEFAULT_LNG = float(os.getenv("RIDESHARE_PHOTON_DEFAULT_LNG", "90.3563"))
 RIDESHARE_OSRM_URL = os.getenv("RIDESHARE_OSRM_URL", "http://127.0.0.1:5000")
+RIDESHARE_OSRM_FALLBACK_URLS = [
+    url.strip()
+    for url in os.getenv(
+        "RIDESHARE_OSRM_FALLBACK_URLS",
+        "https://router.project-osrm.org",
+    ).split(",")
+    if url.strip()
+]
 RIDESHARE_NOMINATIM_URL = os.getenv("RIDESHARE_NOMINATIM_URL", "https://nominatim.openstreetmap.org")
 
 # Celery Configuration

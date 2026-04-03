@@ -13,6 +13,7 @@ from .views import (
     EstimateRideView,
     LocationSearchView,
     NearbyDriversView,
+    RoutePreviewView,
     ReverseGeocodeView,
     RideAcceptView,
     RideCancelView,
@@ -30,6 +31,7 @@ from .views import (
 
 urlpatterns = [
     path("estimate/", EstimateRideView.as_view(), name="rides-estimate"),
+    path("route-preview/", RoutePreviewView.as_view(), name="rides-route-preview"),
     path("create/", RideCreateView.as_view(), name="rides-create"),
     path("", RideListView.as_view(), name="rides-list"),
     path("active/", ActiveRideView.as_view(), name="rides-active"),

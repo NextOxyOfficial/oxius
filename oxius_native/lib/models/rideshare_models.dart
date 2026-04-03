@@ -725,6 +725,48 @@ class RideEstimate {
   }
 }
 
+class RoutePreview {
+  final String originAddress;
+  final String destinationAddress;
+  final double distanceKm;
+  final int etaSeconds;
+  final Map<String, dynamic>? routeGeometry;
+  final String routingSource;
+  final bool isFallback;
+
+  RoutePreview({
+    required this.originAddress,
+    required this.destinationAddress,
+    required this.distanceKm,
+    required this.etaSeconds,
+    this.routeGeometry,
+    required this.routingSource,
+    required this.isFallback,
+  });
+
+  factory RoutePreview.fromJson(Map<String, dynamic> json) {
+    return RoutePreview(
+      originAddress: json['origin_address'] ?? '',
+      destinationAddress: json['destination_address'] ?? '',
+      distanceKm: double.tryParse(json['distance_km']?.toString() ?? '') ?? 0.0,
+      etaSeconds: json['eta_seconds'] ?? 0,
+      routeGeometry: json['route_geometry'] as Map<String, dynamic>?,
+      routingSource: json['routing_source'] ?? 'fallback',
+      isFallback: json['is_fallback'] == true,
+    );
+  }
+
+  String get etaDisplay {
+    final minutes = (etaSeconds / 60).round();
+    if (minutes < 60) {
+      return '$minutes min';
+    }
+    final hours = minutes ~/ 60;
+    final remainingMinutes = minutes % 60;
+    return '${hours}h ${remainingMinutes}m';
+  }
+}
+
 class NearbyDriver {
   final double latitude;
   final double longitude;

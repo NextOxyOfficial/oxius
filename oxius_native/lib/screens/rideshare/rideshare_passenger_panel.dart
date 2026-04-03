@@ -67,6 +67,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   StreamSubscription<Position>? _passengerLocationSubscription;
   bool _isRefreshingActiveRide = false;
   int _statusRefreshTick = 0;
+  RoutePreview? _activeRoutePreview;
+  String _activeRouteSignature = '';
+  bool _isLoadingActiveRoute = false;
 
   @override
   void initState() {
@@ -294,6 +297,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       _statusRefreshTick = 0;
     });
     _syncRideRealtimeConnection();
+    _refreshPassengerRoutePreview(force: true);
   }
 
   Future<void> _refreshActiveRideSilently() async {
@@ -339,6 +343,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         _statusRefreshTick = 0;
       });
       _syncPassengerLocationTracking();
+      _refreshPassengerRoutePreview();
     } finally {
       _isRefreshingActiveRide = false;
     }
@@ -429,6 +434,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       setState(() {
         _activeRide = _activeRide?.copyWith(latestDriverLocation: location);
       });
+      _refreshPassengerRoutePreview();
       return;
     }
 
@@ -738,6 +744,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           _pickupPoint = null;
           _dropPoint = null;
           _estimate = null;
+          _activeRoutePreview = null;
+          _activeRouteSignature = '';
           _nearbyDrivers = [];
           _pickupSuggestions = [];
           _dropSuggestions = [];
@@ -979,6 +987,101 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       );
     }
     return null;
+  }
+
+  bool _supportsPassengerSmartRoute(Ride ride) {
+    return ride.isAccepted ||
+        ride.isDriverArriving ||
+        ride.isInProgress ||
+        ride.isAwaitingPassengerConfirmation;
+  }
+
+  RidePoint? _resolvePassengerRouteOrigin(Ride ride) {
+    return _currentDriverPoint(ride);
+  }
+
+  RidePoint? _resolvePassengerRouteDestination(Ride ride) {
+    if (ride.isAccepted || ride.isDriverArriving) {
+      return ride.pickupPoint;
+    }
+    if (ride.isInProgress || ride.isAwaitingPassengerConfirmation) {
+      return ride.dropPoint;
+    }
+    return null;
+  }
+
+  String _passengerRoutePointSignature(RidePoint? point) {
+    if (point == null) return 'none';
+    return '${point.latitude.toStringAsFixed(3)},${point.longitude.toStringAsFixed(3)}';
+  }
+
+  Future<void> _refreshPassengerRoutePreview({bool force = false}) async {
+    final ride = _activeRide;
+    if (ride == null || !_supportsPassengerSmartRoute(ride)) {
+      if (!mounted) return;
+      if (_activeRoutePreview != null || _activeRouteSignature.isNotEmpty || _isLoadingActiveRoute) {
+        setState(() {
+          _activeRoutePreview = null;
+          _activeRouteSignature = '';
+          _isLoadingActiveRoute = false;
+        });
+      }
+      return;
+    }
+
+    final origin = _resolvePassengerRouteOrigin(ride);
+    final destination = _resolvePassengerRouteDestination(ride);
+    if (origin == null || destination == null) {
+      return;
+    }
+
+    final signature =
+        '${ride.id}|${ride.status}|${_passengerRoutePointSignature(origin)}|${_passengerRoutePointSignature(destination)}';
+    if (!force && (_isLoadingActiveRoute || signature == _activeRouteSignature)) {
+      return;
+    }
+
+    if (mounted) {
+      setState(() => _isLoadingActiveRoute = true);
+    }
+
+    final result = await RideshareService.previewRoute(
+      originLatitude: origin.latitude,
+      originLongitude: origin.longitude,
+      destinationLatitude: destination.latitude,
+      destinationLongitude: destination.longitude,
+      originAddress: origin.name,
+      destinationAddress: destination.name,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (_activeRide?.id != ride.id) {
+      setState(() => _isLoadingActiveRoute = false);
+      return;
+    }
+
+    setState(() {
+      _isLoadingActiveRoute = false;
+      if (result.success && result.data != null) {
+        _activeRoutePreview = result.data;
+        _activeRouteSignature = signature;
+      }
+    });
+  }
+
+  double _currentPassengerDistanceKm(Ride ride) {
+    return _activeRoutePreview?.distanceKm ?? ride.distanceKm;
+  }
+
+  String _currentPassengerEta(Ride ride) {
+    return _activeRoutePreview?.etaDisplay ?? ride.etaDisplay;
+  }
+
+  Map<String, dynamic>? _currentPassengerRouteGeometry(Ride ride) {
+    return _activeRoutePreview?.routeGeometry ?? ride.routeGeometry;
   }
 
   Future<void> _confirmEarlyCompletion(bool confirm) async {
@@ -1328,9 +1431,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                           children: [
                             _buildStatItem(t('rideshare_fare', fallback: 'Fare'), '৳${ride.payableFare.toStringAsFixed(0)}'),
                             _buildStatDivider(),
-                            _buildStatItem(t('rideshare_distance', fallback: 'Distance'), '${ride.distanceKm.toStringAsFixed(1)} km'),
+                            _buildStatItem(t('rideshare_distance', fallback: 'Distance'), '${_currentPassengerDistanceKm(ride).toStringAsFixed(1)} km'),
                             _buildStatDivider(),
-                            _buildStatItem(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay),
+                            _buildStatItem(t('rideshare_eta', fallback: 'ETA'), _currentPassengerEta(ride)),
                           ],
                         ),
                       ),
@@ -1519,7 +1622,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             child: RideshareMapWidget(
               pickupPoint: ride.pickupPoint,
               dropPoint: ride.dropPoint,
-              routeGeometry: ride.routeGeometry,
+              routeGeometry: _currentPassengerRouteGeometry(ride),
               driverLocation: _currentDriverPoint(ride),
               driverHeading: ride.latestDriverLocation?.heading,
               followDriver: ride.isDriverArriving || ride.isInProgress,

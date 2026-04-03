@@ -6,6 +6,7 @@ import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/adsyconnect_service.dart';
@@ -90,6 +91,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   // Live passenger location received via WebSocket
   RidePoint? _passengerLocation;
+  RidePoint? _driverCurrentPoint;
+  RoutePreview? _smartRoutePreview;
+  String _smartRouteSignature = '';
+  bool _isLoadingSmartRoute = false;
 
   Ride? _resolveDriverActiveRide(DriverProfile? profile, Ride? ride) {
     if (profile == null || ride == null) return null;
@@ -377,6 +382,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         setState(() {
           _activeRide = null;
           _passengerLocation = null;
+          _smartRoutePreview = null;
+          _smartRouteSignature = '';
         });
         _syncRealtimeConnections();
         _loadAvailableRequests();
@@ -394,6 +401,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       }
 
       setState(() => _activeRide = refreshedRide);
+      _refreshSmartRoutePreview();
     } finally {
       _isRefreshingActiveRide = false;
     }
@@ -490,6 +498,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         if (_activeRide == null) _loadAvailableRequests();
       }
       _syncRealtimeConnections();
+      _refreshSmartRoutePreview(force: true);
     }
   }
 
@@ -549,6 +558,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             longitude: lng,
           );
         });
+        _refreshSmartRoutePreview();
       }
       return;
     }
@@ -567,8 +577,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       setState(() => _activeRide = result.data);
       if (_activeRide?.isCompleted == true || _activeRide?.isCancelled == true) {
         _stopIncomingRideAlert();
-        setState(() => _passengerLocation = null);
+        setState(() {
+          _passengerLocation = null;
+          _smartRoutePreview = null;
+          _smartRouteSignature = '';
+        });
         _showSuccess(_activeRide!.isCompleted ? t('rideshare_ride_completed', fallback: 'Ride completed!') : t('rideshare_ride_cancelled', fallback: 'Ride cancelled'));
+      } else {
+        _refreshSmartRoutePreview(force: true);
       }
       _syncRealtimeConnections();
     }
@@ -860,6 +876,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   Future<void> _updateDriverLocation(Position p) async {
+    if (mounted) {
+      setState(() {
+        _driverCurrentPoint = RidePoint(
+          name: t('rideshare_you', fallback: 'You'),
+          latitude: p.latitude,
+          longitude: p.longitude,
+        );
+      });
+    }
+    _refreshSmartRoutePreview();
     _lastLocationSentAt = DateTime.now();
     await RideshareService.updateDriverLocation(
       latitude: p.latitude, longitude: p.longitude, rideId: _activeRide?.id,
@@ -885,6 +911,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         setState(() { _activeRide = result.data; _availableRequests = []; });
         _ringtonePlayer.stop();
         _syncRealtimeConnections();
+        _refreshSmartRoutePreview(force: true);
         _showSuccess(t('rideshare_ride_accepted', fallback: 'Ride accepted!'));
       } else { _showError(result.message); _loadAvailableRequests(); }
     }
@@ -945,6 +972,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           setState(() {
             _activeRide = null;
             _passengerLocation = null;
+            _smartRoutePreview = null;
+            _smartRouteSignature = '';
           });
           _loadAvailableRequests();
           _loadDriverData();
@@ -959,9 +988,171 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         } else {
           setState(() => _activeRide = result.data);
           _syncRealtimeConnections();
+          _refreshSmartRoutePreview(force: true);
         }
       } else { _showError(result.message); }
     }
+  }
+
+  RidePoint? _effectiveDriverCurrentPoint() {
+    if (_driverCurrentPoint != null) {
+      return _driverCurrentPoint;
+    }
+
+    final rideLocation = _activeRide?.latestDriverLocation;
+    if (rideLocation != null) {
+      return RidePoint(
+        name: t('rideshare_you', fallback: 'You'),
+        latitude: rideLocation.latitude,
+        longitude: rideLocation.longitude,
+      );
+    }
+
+    final profile = _driverProfile;
+    if (profile?.currentLatitude != null && profile?.currentLongitude != null) {
+      return RidePoint(
+        name: t('rideshare_you', fallback: 'You'),
+        latitude: profile!.currentLatitude!,
+        longitude: profile.currentLongitude!,
+      );
+    }
+
+    return null;
+  }
+
+  bool _supportsSmartRoute(Ride ride) {
+    return ride.isAccepted ||
+        ride.isDriverArriving ||
+        ride.isInProgress ||
+        ride.isAwaitingPassengerConfirmation;
+  }
+
+  RidePoint? _resolveDriverNavigationDestination(Ride ride) {
+    if (ride.isAccepted || ride.isDriverArriving) {
+      return ride.pickupPoint;
+    }
+    if (ride.isInProgress || ride.isAwaitingPassengerConfirmation) {
+      return ride.dropPoint;
+    }
+    return null;
+  }
+
+  String _driverRoutePointSignature(RidePoint? point) {
+    if (point == null) return 'none';
+    return '${point.latitude.toStringAsFixed(3)},${point.longitude.toStringAsFixed(3)}';
+  }
+
+  Future<void> _refreshSmartRoutePreview({bool force = false}) async {
+    final ride = _activeRide;
+    if (ride == null || !_supportsSmartRoute(ride)) {
+      if (!mounted) return;
+      if (_smartRoutePreview != null || _smartRouteSignature.isNotEmpty || _isLoadingSmartRoute) {
+        setState(() {
+          _smartRoutePreview = null;
+          _smartRouteSignature = '';
+          _isLoadingSmartRoute = false;
+        });
+      }
+      return;
+    }
+
+    final origin = _effectiveDriverCurrentPoint();
+    final destination = _resolveDriverNavigationDestination(ride);
+    if (origin == null || destination == null) {
+      return;
+    }
+
+    final signature =
+        '${ride.id}|${ride.status}|${_driverRoutePointSignature(origin)}|${_driverRoutePointSignature(destination)}';
+    if (!force && (_isLoadingSmartRoute || signature == _smartRouteSignature)) {
+      return;
+    }
+
+    if (mounted) {
+      setState(() => _isLoadingSmartRoute = true);
+    }
+
+    final result = await RideshareService.previewRoute(
+      originLatitude: origin.latitude,
+      originLongitude: origin.longitude,
+      destinationLatitude: destination.latitude,
+      destinationLongitude: destination.longitude,
+      originAddress: origin.name,
+      destinationAddress: destination.name,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (_activeRide?.id != ride.id) {
+      setState(() => _isLoadingSmartRoute = false);
+      return;
+    }
+
+    setState(() {
+      _isLoadingSmartRoute = false;
+      if (result.success && result.data != null) {
+        _smartRoutePreview = result.data;
+        _smartRouteSignature = signature;
+      }
+    });
+  }
+
+  double _currentDisplayedDistanceKm(Ride ride) {
+    return _smartRoutePreview?.distanceKm ?? ride.distanceKm;
+  }
+
+  String _currentDisplayedEta(Ride ride) {
+    return _smartRoutePreview?.etaDisplay ?? ride.etaDisplay;
+  }
+
+  Map<String, dynamic>? _currentDisplayedRouteGeometry(Ride ride) {
+    return _smartRoutePreview?.routeGeometry ?? ride.routeGeometry;
+  }
+
+  Future<void> _advanceRideWithNavigation(String status) async {
+    await _updateRideStatus(status);
+    final ride = _activeRide;
+    if (ride == null) {
+      return;
+    }
+    await _refreshSmartRoutePreview(force: true);
+    await _openExternalNavigation(ride);
+  }
+
+  Future<void> _openExternalNavigation(Ride ride) async {
+    final destination = _resolveDriverNavigationDestination(ride);
+    if (destination == null) {
+      _showError(t('rideshare_navigation_unavailable', fallback: 'Navigation is not available for this ride yet.'));
+      return;
+    }
+
+    final destinationValue = '${destination.latitude},${destination.longitude}';
+    final uris = <Uri>[
+      Uri.parse('google.navigation:q=$destinationValue&mode=d'),
+      Uri.https('www.google.com', '/maps/dir/', {
+        'api': '1',
+        'destination': destinationValue,
+        'travelmode': 'driving',
+      }),
+    ];
+
+    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+      uris.insert(
+        0,
+        Uri.parse('http://maps.apple.com/?daddr=$destinationValue&dirflg=d'),
+      );
+    }
+
+    for (final uri in uris) {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        return;
+      }
+    }
+
+    _showError(t('rideshare_navigation_open_failed', fallback: 'Could not open navigation app.'));
   }
 
   void _openBusinessProfile(String userId) {
@@ -2900,9 +3091,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               Row(children: [
                 _buildMini(t('rideshare_fare', fallback: 'Fare'), '৳${ride.payableFare.toStringAsFixed(0)}', _indigo),
                 const SizedBox(width: 6),
-                _buildMini(t('rideshare_distance', fallback: 'Distance'), '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
+                _buildMini(t('rideshare_distance', fallback: 'Distance'), '${_currentDisplayedDistanceKm(ride).toStringAsFixed(1)} km', _slate800),
                 const SizedBox(width: 6),
-                _buildMini(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay, _slate800),
+                _buildMini(t('rideshare_eta', fallback: 'ETA'), _currentDisplayedEta(ride), _slate800),
                 const Spacer(),
                 _buildPaymentBadge(ride.paymentMethod),
               ]),
@@ -2921,10 +3112,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         child: RideshareMapWidget(
           pickupPoint: ride.pickupPoint,
           dropPoint: ride.dropPoint,
-          routeGeometry: ride.routeGeometry,
+          routeGeometry: _currentDisplayedRouteGeometry(ride),
+          driverLocation: _effectiveDriverCurrentPoint(),
           passengerLocation: _passengerLocation,
           passengerName: ride.riderName.isNotEmpty ? ride.riderName : null,
           passengerAvatar: ride.riderAvatar,
+          followDriver: ride.isDriverArriving || ride.isInProgress,
         ),
       ),
     ]);
@@ -2965,7 +3158,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           Expanded(
             flex: 2,
             child: FilledButton.icon(
-              onPressed: () => _updateRideStatus('driver_arriving'),
+              onPressed: () => _advanceRideWithNavigation('driver_arriving'),
               icon: const Icon(Icons.navigation_rounded, size: 16),
               label: Text(t('rideshare_start_navigation', fallback: 'Start Navigation'),
                   style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
@@ -2995,7 +3188,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           Expanded(
             flex: 2,
             child: FilledButton.icon(
-              onPressed: () => _updateRideStatus('in_progress'),
+              onPressed: () => _advanceRideWithNavigation('in_progress'),
               icon: const Icon(Icons.play_arrow_rounded, size: 18),
               label: Text(t('rideshare_start_ride', fallback: 'Start Ride'),
                   style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),

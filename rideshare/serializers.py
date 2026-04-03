@@ -361,6 +361,36 @@ class RideCreateSerializer(RideEstimateRequestSerializer):
     )
 
 
+class RoutePreviewRequestSerializer(serializers.Serializer):
+    origin_latitude = serializers.FloatField()
+    origin_longitude = serializers.FloatField()
+    destination_latitude = serializers.FloatField()
+    destination_longitude = serializers.FloatField()
+    origin_address = serializers.CharField(required=False, allow_blank=True)
+    destination_address = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, attrs):
+        attrs["origin_latitude"] = RideEstimateRequestSerializer._normalize_coordinate(
+            attrs["origin_latitude"], -90, 90, "origin_latitude"
+        )
+        attrs["origin_longitude"] = RideEstimateRequestSerializer._normalize_coordinate(
+            attrs["origin_longitude"], -180, 180, "origin_longitude"
+        )
+        attrs[
+            "destination_latitude"
+        ] = RideEstimateRequestSerializer._normalize_coordinate(
+            attrs["destination_latitude"], -90, 90, "destination_latitude"
+        )
+        attrs[
+            "destination_longitude"
+        ] = RideEstimateRequestSerializer._normalize_coordinate(
+            attrs["destination_longitude"], -180, 180, "destination_longitude"
+        )
+        attrs["origin_address"] = (attrs.get("origin_address") or "")[:255]
+        attrs["destination_address"] = (attrs.get("destination_address") or "")[:255]
+        return attrs
+
+
 class RideCancelSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
 

@@ -223,8 +223,6 @@ class RoutingService:
 
     @classmethod
     def _get_osrm_route(cls, pickup_lat, pickup_lng, drop_lat, drop_lng):
-        osrm_base_url = getattr(settings, "RIDESHARE_OSRM_URL", "http://localhost:5000")
-        url = f"{osrm_base_url.rstrip('/')}/route/v1/driving/{pickup_lng},{pickup_lat};{drop_lng},{drop_lat}"
         params = {
             "overview": "full",
             "geometries": "geojson",
@@ -232,25 +230,56 @@ class RoutingService:
             "alternatives": "false",
         }
 
-        try:
-            with httpx.Client(timeout=10.0) as client:
-                response = client.get(url, params=params)
-                response.raise_for_status()
-                payload = response.json()
+        configured_url = getattr(settings, "RIDESHARE_OSRM_URL", "").strip()
+        configured_fallbacks = getattr(settings, "RIDESHARE_OSRM_FALLBACK_URLS", [])
+        base_urls = []
 
-            routes = payload.get("routes") or []
-            if routes:
-                route = routes[0]
-                return {
-                    "distance_km": decimal_money(
-                        Decimal(str(route.get("distance", 0))) / Decimal("1000")
-                    ),
-                    "duration_seconds": int(route.get("duration", 0)),
-                    "route_geometry": route.get("geometry") or {},
-                    "routing_source": "osrm",
-                }
-        except Exception:
-            return None
+        if configured_url:
+            base_urls.append(configured_url)
+
+        if isinstance(configured_fallbacks, str):
+            base_urls.extend(
+                [url.strip() for url in configured_fallbacks.split(",") if url.strip()]
+            )
+        else:
+            base_urls.extend(
+                [str(url).strip() for url in configured_fallbacks if str(url).strip()]
+            )
+
+        if not base_urls:
+            base_urls.append("https://router.project-osrm.org")
+
+        seen_urls = set()
+        for base_url in base_urls:
+            normalized_base_url = base_url.rstrip("/")
+            if not normalized_base_url or normalized_base_url in seen_urls:
+                continue
+            seen_urls.add(normalized_base_url)
+
+            url = (
+                f"{normalized_base_url}/route/v1/driving/"
+                f"{pickup_lng},{pickup_lat};{drop_lng},{drop_lat}"
+            )
+
+            try:
+                with httpx.Client(timeout=10.0) as client:
+                    response = client.get(url, params=params)
+                    response.raise_for_status()
+                    payload = response.json()
+
+                routes = payload.get("routes") or []
+                if routes:
+                    route = routes[0]
+                    return {
+                        "distance_km": decimal_money(
+                            Decimal(str(route.get("distance", 0))) / Decimal("1000")
+                        ),
+                        "duration_seconds": int(route.get("duration", 0)),
+                        "route_geometry": route.get("geometry") or {},
+                        "routing_source": "osrm",
+                    }
+            except Exception:
+                continue
 
         return None
 

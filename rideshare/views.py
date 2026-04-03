@@ -21,6 +21,7 @@ from .serializers import (
     DriverLocationUpdateSerializer,
     DriverProfileSerializer,
     DriverToggleOnlineSerializer,
+    RoutePreviewRequestSerializer,
     RideCancellationReportSerializer,
     RideCancelSerializer,
     RideCreateSerializer,
@@ -145,6 +146,33 @@ class EstimateRideView(RideshareApiMixin, APIView):
             "routing_source": route["routing_source"],
         }
         return api_success(response, "Ride estimate generated.")
+
+
+class RoutePreviewView(RideshareApiMixin, APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RoutePreviewRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        route = RoutingService.get_route(
+            data["origin_latitude"],
+            data["origin_longitude"],
+            data["destination_latitude"],
+            data["destination_longitude"],
+        )
+
+        response = {
+            "origin_address": data.get("origin_address") or "",
+            "destination_address": data.get("destination_address") or "",
+            "distance_km": str(route["distance_km"]),
+            "eta_seconds": route["duration_seconds"],
+            "route_geometry": route["route_geometry"],
+            "routing_source": route["routing_source"],
+            "is_fallback": route["routing_source"] == "fallback",
+        }
+        return api_success(response, "Route preview generated.")
 
 
 class RideCreateView(RideshareApiMixin, APIView):

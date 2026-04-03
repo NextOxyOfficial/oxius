@@ -79,10 +79,12 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     final driverChanged =
         widget.driverLocation?.latitude != oldWidget.driverLocation?.latitude ||
         widget.driverLocation?.longitude != oldWidget.driverLocation?.longitude;
+    final routeChanged = widget.routeGeometry?.toString() != oldWidget.routeGeometry?.toString();
 
     // Auto-fit bounds when points change
     if (widget.pickupPoint != oldWidget.pickupPoint ||
         widget.dropPoint != oldWidget.dropPoint ||
+        routeChanged ||
         (driverChanged && !widget.followDriver)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fitBounds();
@@ -101,6 +103,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
 
   void _fitBounds() {
     final points = <LatLng>[];
+    points.addAll(_parseRouteCoordinates());
     
     if (widget.pickupPoint != null) {
       points.add(LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude));
@@ -136,8 +139,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     }
     
     // Add padding
-    final latPadding = (maxLat - minLat) * 0.2;
-    final lngPadding = (maxLng - minLng) * 0.2;
+    final latPadding = math.max((maxLat - minLat) * 0.2, 0.0025);
+    final lngPadding = math.max((maxLng - minLng) * 0.2, 0.0025);
     
     final bounds = LatLngBounds(
       LatLng(minLat - latPadding, minLng - lngPadding),
@@ -375,12 +378,12 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: gradientColors.first.withOpacity(0.25),
+                color: gradientColors.first.withValues(alpha: 0.25),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
-            border: Border.all(color: gradientColors.first.withOpacity(0.4), width: 1.5),
+            border: Border.all(color: gradientColors.first.withValues(alpha: 0.4), width: 1.5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -443,7 +446,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
           height: 8,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradientColors.first, gradientColors.first.withOpacity(0)],
+              colors: [gradientColors.first, gradientColors.first.withValues(alpha: 0)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -468,7 +471,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6366F1).withOpacity(0.4),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -487,7 +490,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             gradient: LinearGradient(
               colors: [
                 const Color(0xFF6366F1),
-                const Color(0xFF6366F1).withOpacity(0),
+                const Color(0xFF6366F1).withValues(alpha: 0),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -513,7 +516,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF10B981).withOpacity(0.4),
+                color: const Color(0xFF10B981).withValues(alpha: 0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -532,7 +535,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             gradient: LinearGradient(
               colors: [
                 const Color(0xFF10B981),
-                const Color(0xFF10B981).withOpacity(0),
+                const Color(0xFF10B981).withValues(alpha: 0),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -558,7 +561,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFF59E0B).withOpacity(0.4),
+                color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -577,7 +580,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             gradient: LinearGradient(
               colors: [
                 const Color(0xFFF59E0B),
-                const Color(0xFFF59E0B).withOpacity(0),
+                const Color(0xFFF59E0B).withValues(alpha: 0),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -600,7 +603,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
           border: Border.all(color: const Color(0xFF6366F1), width: 3),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -623,7 +626,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
         border: Border.all(color: const Color(0xFF94A3B8), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
