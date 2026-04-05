@@ -419,6 +419,11 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
   Widget _buildAppBar() {
     final banner = _storeBanner();
+    const fallbackGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [_indigo, _violet, _emerald],
+    );
 
     return SliverAppBar(
       expandedHeight: 144,
@@ -427,7 +432,15 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
       elevation: 0,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+        icon: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.24),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+        ),
       ),
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
@@ -438,48 +451,13 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 imageUrl: banner,
                 fit: BoxFit.cover,
                 errorWidget: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _indigo.withValues(alpha: 0.92),
-                    _violet.withValues(alpha: 0.86),
-                    _emerald.withValues(alpha: 0.76),
-                  ],
+              )
+            else
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: fallbackGradient,
                 ),
               ),
-            ),
-            Positioned(
-              left: 12,
-              right: 12,
-              bottom: 14,
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.18),
-                      ),
-                    ),
-                    child: Text(
-                      'Vendor Store',
-                      style: GoogleFonts.inter(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
@@ -613,23 +591,20 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                       label: 'Products',
                       value:
                           '${_allProducts.where((item) => item['is_active'] == true).length}',
-                      icon: Icons.inventory_2_rounded,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  _buildStatDivider(),
                   Expanded(
                     child: _buildStatCard(
                       label: 'Categories',
                       value: '${_categories.length}',
-                      icon: Icons.grid_view_rounded,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  _buildStatDivider(),
                   Expanded(
                     child: _buildStatCard(
                       label: 'Rating',
                       value: _ratingLabel(),
-                      icon: Icons.star_rounded,
                     ),
                   ),
                 ],
@@ -644,57 +619,46 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   Widget _buildStatCard({
     required String label,
     required String value,
-    required IconData icon,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: _slate50,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: _indigo.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
+          Text(
+            value,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: _slate800,
             ),
-            child: Icon(icon, size: 18, color: _indigo),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: _slate800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: _slate500,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 3),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: _slate500,
+              height: 1.15,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatDivider() {
+    return Container(
+      width: 1,
+      height: 34,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      color: _slate200,
     );
   }
 
@@ -873,21 +837,37 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.57,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) => ProductCard(
-            product: _products[index],
-            isLoading: false,
-            onBuyNow: () => _navigateToCheckout(_products[index]),
-          ),
-          childCount: _products.length,
-        ),
+      sliver: SliverLayoutBuilder(
+        builder: (context, constraints) {
+          final screenWidth = MediaQuery.of(context).size.width;
+          final isSmallScreen = screenWidth < 360;
+          final isLargeScreen = screenWidth > 600;
+          const crossAxisCount = 2;
+          const crossAxisSpacing = 10.0;
+          const mainAxisSpacing = 10.0;
+          final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
+          final available = (constraints.crossAxisExtent - totalSpacing).clamp(0.0, double.infinity);
+          final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
+          final detailsHeight = isSmallScreen ? 108.0 : isLargeScreen ? 126.0 : 114.0;
+          final cardHeight = cellWidth > 0 ? cellWidth + detailsHeight : 290.0;
+
+          return SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: crossAxisSpacing,
+              mainAxisSpacing: mainAxisSpacing,
+              mainAxisExtent: cardHeight,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => ProductCard(
+                product: _products[index],
+                isLoading: false,
+                onBuyNow: () => _navigateToCheckout(_products[index]),
+              ),
+              childCount: _products.length,
+            ),
+          );
+        },
       ),
     );
   }

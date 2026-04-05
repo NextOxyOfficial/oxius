@@ -13,6 +13,16 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   final UserStateService _userState = UserStateService();
   final SubscriptionService _subscriptionService = SubscriptionService();
 
+  static const Color _ink = Color(0xFF14213D);
+  static const Color _muted = Color(0xFF64748B);
+  static const Color _surface = Color(0xFFFFFBF4);
+  static const Color _panel = Color(0xFFFFFFFF);
+  static const Color _gold = Color(0xFFF59E0B);
+  static const Color _peach = Color(0xFFFFE7C7);
+  static const Color _sage = Color(0xFFDFF4EA);
+  static const Color _mint = Color(0xFF10B981);
+  static const Color _primary = Color(0xFF2563EB);
+
   bool _isSubscribing = false;
   bool _isLoadingBalance = true;
   int _selectedMonths = 1;
@@ -39,288 +49,380 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: _surface,
       appBar: AppBar(
         title: const Text(
           'Upgrade to Pro',
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1F2937),
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: _ink,
           ),
         ),
-        backgroundColor: Colors.white,
+        centerTitle: false,
+        backgroundColor: _surface,
+        surfaceTintColor: _surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.arrow_back, color: _ink),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(4),
+        padding: EdgeInsets.fromLTRB(4, 6, 4, bottomInset + 140),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 8),
-            // Hero Section
             _buildHeroSection(),
-            const SizedBox(height: 4),
-            
-            // Pricing Cards
-            _buildPricingCard(),
-            const SizedBox(height: 4),
-            
-            // Features List
+            const SizedBox(height: 14),
+            _buildQuickStatusStrip(),
+            const SizedBox(height: 14),
+            _buildPlanComposer(),
+            const SizedBox(height: 14),
             _buildFeaturesSection(),
-            const SizedBox(height: 4),
-            
-            // CTA Button
-            _buildCTAButton(),
-            
-            // Safe area bottom padding for devices with gesture navigation
-            SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+            const SizedBox(height: 14),
+            _buildTrustSection(),
           ],
         ),
       ),
+      bottomNavigationBar: _buildBottomCheckoutBar(bottomInset),
     );
   }
 
   Widget _buildHeroSection() {
     return Container(
-      margin: const EdgeInsets.all(4),
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
+            Color(0xFF123261),
+            Color(0xFF1E4EA8),
             Color(0xFF3B82F6),
-            Color(0xFF6366F1),
-            Color(0xFF8B5CF6),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.workspace_premium,
-              size: 40,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Unlock Premium Features',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Grow your business with powerful tools',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withOpacity(0.9),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPricingCard() {
-    return Container(
-      margin: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3B82F6), width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            color: _primary.withValues(alpha: 0.22),
+            blurRadius: 28,
+            offset: const Offset(0, 16),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Duration Selector
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F9FF),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -28,
+              right: -18,
+              child: Container(
+                width: 118,
+                height: 118,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Select Plan',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
-                  ),
+            Positioned(
+              bottom: -36,
+              left: -8,
+              child: Container(
+                width: 138,
+                height: 138,
+                decoration: BoxDecoration(
+                  color: _gold.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildDurationOption(1, 'Monthly', '৳$_monthlyPrice/mo'),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildDurationOption(12, 'Yearly', '৳${(_monthlyPrice * 12 - _yearlyDiscount) ~/ 12}/mo', 
-                        badge: 'Save ৳$_yearlyDiscount'),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
-          
-          // Price Display
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '৳',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF3B82F6),
-                      ),
-                    ),
-                    Text(
-                      _totalPrice.toString(),
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1F2937),
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'for ${_selectedMonths == 1 ? "1 month" : "12 months"}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                if (_selectedMonths == 12) ...[
-                  const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.18),
+                      ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.savings, size: 14, color: Color(0xFF10B981)),
-                        const SizedBox(width: 4),
+                        Icon(Icons.auto_awesome, size: 14, color: Colors.white),
+                        SizedBox(width: 6),
                         Text(
-                          'You save ৳$_yearlyDiscount',
-                          style: const TextStyle(
+                          'Premium membership',
+                          style: TextStyle(
+                            color: Colors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF10B981),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
-                // Current Balance Display
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Move faster with Pro access',
+                    style: TextStyle(
+                      fontSize: 28,
+                      height: 1.08,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.9,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(height: 10),
+                  Text(
+                    'Sell more, post more, and unlock the tools that make your account work like a business hub.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.45,
+                      color: Colors.white.withValues(alpha: 0.88),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.account_balance_wallet,
-                              size: 16,
-                              color: Color(0xFF10B981),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'Your Balance',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
+                      Expanded(
+                        child: _buildHeroStat('Starting at', '৳$_monthlyPrice/mo'),
                       ),
-                      _isLoadingBalance
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
-                              ),
-                            )
-                          : Row(
-                              children: [
-                                Text(
-                                  '৳${_userState.balance.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1F2937),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                GestureDetector(
-                                  onTap: _refreshBalance,
-                                  child: const Icon(
-                                    Icons.refresh_rounded,
-                                    size: 18,
-                                    color: Color(0xFF3B82F6),
-                                  ),
-                                ),
-                              ],
-                            ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildHeroStat('Yearly saving', '৳$_yearlyDiscount'),
+                      ),
                     ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroStat(String label, String value) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.82),
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickStatusStrip() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _panel,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFF1E8D7)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatusTile(
+              label: 'Membership',
+              value: _userState.isPro ? 'Already Pro' : 'Starter',
+              accent: _userState.isPro ? _mint : _gold,
+              icon: _userState.isPro ? Icons.verified_rounded : Icons.bolt_rounded,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _buildStatusTile(
+              label: 'Wallet balance',
+              value: _isLoadingBalance
+                  ? 'Checking...'
+                  : '৳${_userState.balance.toStringAsFixed(2)}',
+              accent: _mint,
+              icon: Icons.account_balance_wallet_rounded,
+              onTap: _refreshBalance,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusTile({
+    required String label,
+    required String value,
+    required Color accent,
+    required IconData icon,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 18, color: accent),
+              ),
+              const Spacer(),
+              if (onTap != null)
+                GestureDetector(
+                  onTap: onTap,
+                  child: Icon(Icons.refresh_rounded, size: 18, color: accent),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _muted,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              height: 1.2,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlanComposer() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _panel,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFF1E8D7)),
+        boxShadow: [
+          BoxShadow(
+            color: _ink.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Choose your Pro rhythm',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+              letterSpacing: -0.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Pick a plan that matches how fast you want to grow. Yearly keeps the price lower and unlocks the same tools.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: _muted,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildDurationOption(
+            1,
+            'Monthly',
+            'Flexible start',
+            accent: _peach,
+            badge: 'Popular for trial',
+          ),
+          const SizedBox(height: 12),
+          _buildDurationOption(
+            12,
+            'Yearly',
+            'Best value for sellers',
+            accent: _sage,
+            badge: 'Save ৳$_yearlyDiscount',
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryMetric(
+                    'Today you pay',
+                    '৳$_totalPrice',
+                    _primary,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildSummaryMetric(
+                    'Billing cycle',
+                    _selectedMonths == 1 ? '1 month' : '12 months',
+                    _gold,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildSummaryMetric(
+                    'Per month',
+                    _selectedMonths == 1
+                        ? '৳$_monthlyPrice'
+                        : '৳${(_monthlyPrice * 12 - _yearlyDiscount) ~/ 12}',
+                    _mint,
                   ),
                 ),
               ],
@@ -331,62 +433,145 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     );
   }
 
-  Widget _buildDurationOption(int months, String title, String price, {String? badge}) {
+  Widget _buildSummaryMetric(String label, String value, Color accent) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: _muted,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: accent,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDurationOption(
+    int months,
+    String title,
+    String subtitle, {
+    required Color accent,
+    String? badge,
+  }) {
     final isSelected = _selectedMonths == months;
+    final price = months == 1
+        ? '৳$_monthlyPrice / month'
+        : '৳${(_monthlyPrice * 12 - _yearlyDiscount) ~/ 12} / month';
+    final total = months == 1
+        ? 'Total ৳$_monthlyPrice'
+        : 'Total ৳${(_monthlyPrice * 12) - _yearlyDiscount}';
     
     return GestureDetector(
       onTap: () => setState(() => _selectedMonths = months),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF3B82F6) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected ? _ink : accent.withValues(alpha: 0.45),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+            color: isSelected ? _ink : accent,
             width: 2,
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white.withValues(alpha: 0.12) : Colors.white,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Icon(
+                months == 1 ? Icons.flash_on_rounded : Icons.workspace_premium_rounded,
+                color: isSelected ? Colors.white : _ink,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: isSelected ? Colors.white : _ink,
+                          ),
+                        ),
+                      ),
+                      if (badge != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isSelected ? _gold.withValues(alpha: 0.18) : Colors.white,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            badge,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: isSelected ? const Color(0xFFFFF3C4) : _ink,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.82)
+                          : _muted,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    price,
                     style: TextStyle(
                       fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected ? Colors.white : _primary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    total,
+                    style: TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF1F2937),
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.76)
+                          : _muted,
                     ),
                   ),
-                ),
-                if (badge != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.white.withOpacity(0.2) : const Color(0xFF10B981),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      badge.split(' ')[0], // Just "Save"
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        color: isSelected ? Colors.white : Colors.white,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              price,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white.withOpacity(0.9) : Colors.grey.shade600,
+                ],
               ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+              color: isSelected ? Colors.white : _muted,
             ),
           ],
         ),
@@ -396,113 +581,282 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   Widget _buildFeaturesSection() {
     return Container(
-      margin: const EdgeInsets.all(4),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: _panel,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFF1E8D7)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'What\'s Included',
+            'Everything you unlock',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1F2937),
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+              letterSpacing: -0.4,
             ),
           ),
-          const SizedBox(height: 16),
-          _buildFeature(Icons.store, 'Access to eShop Manager'),
-          _buildFeature(Icons.shopping_bag, 'Sell Products on AdsyClub'),
-          _buildFeature(Icons.inventory_2, 'Add up to 10 Products'),
-          _buildFeature(Icons.all_inbox, 'Receive Unlimited Orders'),
-          _buildFeature(Icons.campaign, 'Post Unlimited Ads'),
-          _buildFeature(Icons.task_alt, 'Earn from Completing Tasks'),
-          _buildFeature(Icons.account_balance_wallet, 'Fast Deposit & Withdraw'),
-          _buildFeature(Icons.support_agent, 'Priority Support 24/7'),
+          const SizedBox(height: 8),
+          const Text(
+            'Designed for sellers, service providers, and members who want stronger visibility across the app.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: _muted,
+            ),
+          ),
+          const SizedBox(height: 18),
+          _buildFeature(Icons.storefront_rounded, 'Access to eShop Manager', _peach),
+          _buildFeature(Icons.shopping_bag_rounded, 'Sell products across AdsyClub', _sage),
+          _buildFeature(Icons.inventory_2_rounded, 'Add up to 10 products', const Color(0xFFE5DEFF)),
+          _buildFeature(Icons.all_inbox_rounded, 'Receive unlimited orders', const Color(0xFFFFE2E2)),
+          _buildFeature(Icons.campaign_rounded, 'Post unlimited ads', const Color(0xFFDFF7F0)),
+          _buildFeature(Icons.task_alt_rounded, 'Earn from completing tasks', const Color(0xFFFDE9D5)),
+          _buildFeature(Icons.account_balance_wallet_rounded, 'Fast deposit and withdraw', const Color(0xFFE0F2FE)),
+          _buildFeature(Icons.support_agent_rounded, 'Priority support 24/7', const Color(0xFFFFF1CC)),
         ],
       ),
     );
   }
 
-  Widget _buildFeature(IconData icon, String text) {
+  Widget _buildFeature(IconData icon, String text, Color tint) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: tint,
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               icon,
-              size: 16,
-              color: const Color(0xFF3B82F6),
+              size: 18,
+              color: _ink,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF374151),
-                fontWeight: FontWeight.w500,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.35,
+                  color: _ink,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-          const Icon(
-            Icons.check_circle,
-            size: 18,
-            color: Color(0xFF10B981),
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Icon(
+              Icons.check_circle_rounded,
+              size: 18,
+              color: _mint,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCTAButton() {
+  Widget _buildTrustSection() {
     return Container(
-      margin: const EdgeInsets.all(4),
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: _isSubscribing ? null : _handleUpgrade,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF3B82F6),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _panel,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: const Color(0xFFF1E8D7)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Payment summary',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+            ),
           ),
-          elevation: 0,
-        ),
-        child: _isSubscribing
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          const SizedBox(height: 14),
+          _buildSummaryRow('Selected plan', _selectedMonths == 1 ? 'Monthly Pro' : 'Yearly Pro'),
+          _buildSummaryRow('Total payable', '৳$_totalPrice', emphasize: true),
+          _buildSummaryRow(
+            'Available wallet balance',
+            _isLoadingBalance ? 'Checking...' : '৳${_userState.balance.toStringAsFixed(2)}',
+          ),
+          if (!_isLoadingBalance && _userState.balance < _totalPrice)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF1F2),
+                  borderRadius: BorderRadius.circular(18),
                 ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_rounded, color: Color(0xFFE11D48)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Add ৳${(_totalPrice - _userState.balance).toStringAsFixed(2)} more to your wallet before checkout.',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          height: 1.45,
+                          color: Color(0xFF9F1239),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _TrustPill(icon: Icons.lock_rounded, label: 'Secure checkout'),
+              _TrustPill(icon: Icons.bolt_rounded, label: 'Instant activation'),
+              _TrustPill(icon: Icons.receipt_long_rounded, label: 'Wallet billing'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, {bool emphasize = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _muted,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: emphasize ? 18 : 14,
+              fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
+              color: emphasize ? _primary : _ink,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomCheckoutBar(double bottomInset) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(4, 14, 4, bottomInset > 0 ? 6 : 14),
+        decoration: BoxDecoration(
+          color: _panel.withValues(alpha: 0.96),
+          border: const Border(
+            top: BorderSide(color: Color(0xFFF1E8D7)),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _ink.withValues(alpha: 0.05),
+              blurRadius: 24,
+              offset: const Offset(0, -10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.workspace_premium, size: 20),
-                  const SizedBox(width: 8),
                   Text(
-                    _userState.isPro ? 'Already Pro' : 'Upgrade Now',
+                    _userState.isPro ? 'Current membership' : 'Checkout total',
                     style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _muted,
                     ),
                   ),
+                  const SizedBox(height: 3),
+                  Text(
+                    _userState.isPro ? 'Pro already active' : '৳$_totalPrice',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: _ink,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
+                  if (!_userState.isPro)
+                    Text(
+                      _selectedMonths == 1
+                          ? 'Billed monthly from wallet'
+                          : 'One yearly wallet payment',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _muted,
+                      ),
+                    ),
                 ],
               ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _isSubscribing ? null : _handleUpgrade,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _ink,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: _ink.withValues(alpha: 0.55),
+                  padding: const EdgeInsets.symmetric(vertical: 17),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 0,
+                ),
+                child: _isSubscribing
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(
+                        _userState.isPro ? 'Already Pro' : 'Upgrade now',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -554,6 +908,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Login Required'),
         content: const Text('Please log in to upgrade to Pro'),
         actions: [
@@ -566,6 +921,10 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/login');
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _ink,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Log In'),
           ),
         ],
@@ -577,7 +936,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('You\'re already a Pro member!'),
-        backgroundColor: Color(0xFF10B981),
+        backgroundColor: _mint,
       ),
     );
   }
@@ -586,6 +945,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Insufficient Funds'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -621,7 +981,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               Navigator.pushNamed(context, '/deposit-withdraw');
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: _mint,
+              foregroundColor: Colors.white,
             ),
             child: const Text('Add Funds'),
           ),
@@ -635,19 +996,20 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: _mint.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.check_circle,
                 size: 60,
-                color: Color(0xFF10B981),
+                color: _mint,
               ),
             ),
             const SizedBox(height: 20),
@@ -673,7 +1035,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF3B82F6),
+              backgroundColor: _ink,
+              foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 48),
             ),
             child: const Text('Get Started'),
@@ -688,6 +1051,39 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       SnackBar(
         content: Text('Error: $message'),
         backgroundColor: const Color(0xFFEF4444),
+      ),
+    );
+  }
+}
+
+class _TrustPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _TrustPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFF475569)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF334155),
+            ),
+          ),
+        ],
       ),
     );
   }

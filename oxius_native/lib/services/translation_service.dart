@@ -11,10 +11,40 @@ class TranslationService extends ChangeNotifier {
 
   static const Map<String, Map<String, String>> _localFallbackTranslations = {
     'en': {
+      'premium_access': 'Premium Access',
+      'current_plan': 'Current Plan',
+      'pro': 'Pro',
+      'free': 'Free',
+      'upgrade_pro': 'Upgrade to Pro',
+      'upgrade_pro_text': 'Get premium features',
+      'pro_member': 'Pro Membership',
+      'classified_service': 'My Services',
+      'business_network': 'Business Network',
+      'adsy_news': 'Adsy News',
+      'verification': 'Verification',
+      'adsy_pay': 'Adsy Pay',
+      'mobile_recharge': 'Mobile Recharge',
+      'settings': 'Settings',
+      'logout': 'Logout',
       'eshop_manager': 'E-Shop Manager',
       'shop_manager': 'Shop Manager',
     },
     'bn': {
+      'premium_access': 'প্রিমিয়াম অ্যাক্সেস',
+      'current_plan': 'বর্তমান প্ল্যান',
+      'pro': 'প্রো',
+      'free': 'ফ্রি',
+      'upgrade_pro': 'প্রো প্যাকেজ নিই',
+      'upgrade_pro_text': 'প্রিমিয়াম ফিচার পান',
+      'pro_member': 'প্রো মেম্বার',
+      'classified_service': 'আমার সেবা',
+      'business_network': 'বিজনেস নেটওয়ার্ক',
+      'adsy_news': 'নিউজ',
+      'verification': 'ভেরিফিকেশন',
+      'adsy_pay': 'অ্যাডজি পে',
+      'mobile_recharge': 'মোবাইল রিচার্জ',
+      'settings': 'সেটিংস্‌',
+      'logout': 'লগ আউট',
       'eshop_manager': 'ই-শপ ম্যানেজার',
       'shop_manager': 'শপ ম্যানেজার',
     },
@@ -183,16 +213,41 @@ class TranslationService extends ChangeNotifier {
   /// Get translation for a key
   String translate(String key, {String? fallback}) {
     final translatedValue = _translations[key]?.toString();
-    if (translatedValue != null && translatedValue.isNotEmpty) {
+    if (translatedValue != null && translatedValue.isNotEmpty && !_shouldPreferFallback(key, translatedValue)) {
       return translatedValue;
     }
 
-    final localFallback = _localFallbackTranslations[_currentLanguage]?[key];
+    final normalizedLanguageCode = _currentLanguage.split(RegExp(r'[-_]')).first;
+    final localFallback = _localFallbackTranslations[_currentLanguage]?[key] ??
+        _localFallbackTranslations[normalizedLanguageCode]?[key];
     if (localFallback != null && localFallback.isNotEmpty) {
       return localFallback;
     }
 
     return fallback ?? key;
+  }
+
+  bool _shouldPreferFallback(String key, String translatedValue) {
+    final normalizedValue = _normalizeTranslationToken(translatedValue);
+    final normalizedKey = _normalizeTranslationToken(key);
+
+    if (normalizedValue.isEmpty) {
+      return true;
+    }
+
+    if (normalizedValue == normalizedKey) {
+      return true;
+    }
+
+    if (key == 'adsy_pay' && _currentLanguage != 'en') {
+      return normalizedValue == 'adsypay';
+    }
+
+    return false;
+  }
+
+  String _normalizeTranslationToken(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9\u0980-\u09ff]+'), '');
   }
 
   /// Short form of translate method (similar to Vue.js $t)

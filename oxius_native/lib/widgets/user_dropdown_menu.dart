@@ -38,6 +38,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
   @override
   void initState() {
     super.initState();
+    _translationService.initialize();
+    _translationService.addListener(_onTranslationsChanged);
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -68,6 +70,12 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
     ));
   }
 
+  void _onTranslationsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void didUpdateWidget(UserDropdownMenu oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -82,8 +90,13 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
 
   @override
   void dispose() {
+    _translationService.removeListener(_onTranslationsChanged);
     _animationController.dispose();
     super.dispose();
+  }
+
+  String _tr(String key, {required String fallback}) {
+    return _translationService.t(key, fallback: fallback);
   }
 
   @override
@@ -240,7 +253,9 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        isPro ? 'Premium Access' : 'Current Plan',
+                        isPro
+                            ? _tr('premium_access', fallback: 'Premium Access')
+                            : _tr('current_plan', fallback: 'Current Plan'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -277,7 +292,9 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                           const SizedBox(width: 4),
                         ],
                         Text(
-                          isPro ? 'PRO' : 'FREE',
+                          isPro
+                              ? _tr('pro', fallback: 'Pro')
+                              : _tr('free', fallback: 'Free'),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
@@ -339,7 +356,9 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                         children: [
                           Flexible(
                             child: Text(
-                              isPro ? 'Pro Member' : 'Upgrade to Pro',
+                              isPro
+                                  ? _tr('pro_member', fallback: 'Pro Membership')
+                                  : _tr('upgrade_pro', fallback: 'Upgrade to Pro'),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -352,8 +371,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                           Flexible(
                             child: Text(
                               isPro 
-                                ? 'Premium features active'
-                                : 'Unlock premium features',
+                                ? _tr('premium_access', fallback: 'Premium Access')
+                                : _tr('upgrade_pro_text', fallback: 'Get premium features'),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade600,
@@ -426,39 +445,41 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
 
     final navigationItems = [
       {
-        'label': 'Business Network',
+        'label': _tr('business_network', fallback: 'Business Network'),
         'icon': Icons.network_check,
         'color': const Color(0xFFEA580C),
         'route': '/business-network',
       },
       {
-        'label': 'Adsy News',
+        'label': _tr('adsy_news', fallback: 'Adsy News'),
         'icon': Icons.newspaper,
         'color': const Color(0xFF9333EA),
         'route': '/adsy-news',
       },
       {
-        'label': 'Ad Services',
+        'label': _tr('classified_service', fallback: 'My Services'),
         'icon': Icons.campaign,
         'color': const Color(0xFF059669),
         'route': '/my-classified-services',
-        'badge': 'FREE',
+        'badge': _tr('free', fallback: 'Free'),
+        'badgeType': 'free',
       },
       {
         'label': eshopManagerLabel,
         'icon': Icons.shopping_bag,
         'color': const Color(0xFF2563EB),
         'route': '/shop-manager',
-        'badge': 'PRO',
+        'badge': _tr('pro', fallback: 'Pro'),
+        'badgeType': 'pro',
       },
       {
-        'label': 'Adsy Pay',
+        'label': _tr('adsy_pay', fallback: 'Adsy Pay'),
         'icon': Icons.payments,
         'color': const Color(0xFF059669),
         'route': '/deposit-withdraw',
       },
       {
-        'label': 'Mobile Recharge',
+        'label': _tr('mobile_recharge', fallback: 'Mobile Recharge'),
         'icon': Icons.phone_android,
         'color': const Color(0xFFEA580C),
         'route': '/mobile-recharge',
@@ -504,7 +525,7 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
-                          color: item['badge'] == 'PRO' 
+                          color: item['badgeType'] == 'pro' 
                             ? const Color(0xFF6366F1)
                             : Colors.grey.shade500,
                           borderRadius: BorderRadius.circular(8),
@@ -605,8 +626,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Text(
-                        'Settings',
+                      Text(
+                        _tr('settings', fallback: 'Settings'),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.black87,
@@ -642,8 +663,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Text(
-                        'Verification',
+                      Text(
+                        _tr('verification', fallback: 'Verification'),
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.black87,
@@ -678,7 +699,7 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Logout',
+                    _tr('logout', fallback: 'Logout'),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,

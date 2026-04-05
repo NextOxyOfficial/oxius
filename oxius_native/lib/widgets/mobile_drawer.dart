@@ -246,7 +246,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('classified_service', fallback: 'Classified Service'),
+                      title: _translationService.t('classified_service', fallback: 'My Services'),
                       icon: Icons.list_alt,
                       iconColor: const Color(0xFF10B981),
                       onTap: () {
@@ -327,7 +327,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
 
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('upgrade_to_pro', fallback: 'Upgrade to Pro'),
+                      title: _translationService.t('upgrade_pro', fallback: 'Upgrade to Pro'),
                       icon: Icons.star,
                       iconColor: const Color(0xFFFBBF24),
                       badge: 'PRO',

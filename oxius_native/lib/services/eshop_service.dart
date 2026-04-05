@@ -245,6 +245,63 @@ class EshopService {
     }
   }
 
+  static Future<Map<String, dynamic>?> fetchProductDetails({
+    dynamic productId,
+    String? slug,
+  }) async {
+    final candidates = <Uri>[];
+
+    final idValue = productId?.toString();
+    if (idValue != null && idValue.isNotEmpty) {
+      candidates.add(Uri.parse('$baseUrl/products/$idValue/'));
+      candidates.add(
+        Uri.parse('$baseUrl/products/').replace(
+          queryParameters: {
+            'id': idValue,
+            'page_size': '1',
+          },
+        ),
+      );
+    }
+
+    if (slug != null && slug.isNotEmpty) {
+      candidates.add(
+        Uri.parse('$baseUrl/products/').replace(
+          queryParameters: {
+            'slug': slug,
+            'page_size': '1',
+          },
+        ),
+      );
+    }
+
+    for (final uri in candidates) {
+      try {
+        final response = await http.get(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ).timeout(const Duration(seconds: 10));
+
+        if (response.statusCode != 200) {
+          continue;
+        }
+
+        final data = json.decode(response.body);
+        final products = _extractProductList(data);
+        if (products.isNotEmpty) {
+          return products.first;
+        }
+      } catch (_) {
+        continue;
+      }
+    }
+
+    return null;
+  }
+
   static Future<Map<String, dynamic>?> fetchStoreDetails(String storeIdentity) async {
     try {
       final uri = Uri.parse('$baseUrl/store/$storeIdentity/');
