@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
-import '../services/translation_service.dart';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
 import '../services/api_service.dart';
 import '../services/user_state_service.dart';
-import 'package:http/http.dart' as http;
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -14,33 +15,28 @@ class VerificationScreen extends StatefulWidget {
 }
 
 class _VerificationScreenState extends State<VerificationScreen> {
-  final TranslationService _translationService = TranslationService();
   final UserStateService _userState = UserStateService();
   final ImagePicker _picker = ImagePicker();
-  
-  bool _isLoading = false;
-  bool _isPending = false;
-  bool _isVerified = false;
-  
-  String? _frontImage;
-  String? _backImage;
-  String? _selfieImage;
-  String? _otherDocument;
-  
-  Map<String, bool> _errors = {
+  final Map<String, bool> _errors = {
     'front': false,
     'back': false,
     'selfie': false,
   };
-  
-  String t(String key) => _translationService.translate(key);
-  
+
+  bool _isLoading = false;
+  bool _isPending = false;
+  bool _isVerified = false;
+
+  String? _frontImage;
+  String? _backImage;
+  String? _selfieImage;
+
   @override
   void initState() {
     super.initState();
     _loadVerificationStatus();
   }
-  
+
   Future<void> _loadVerificationStatus() async {
     try {
       final headers = await ApiService.getHeaders();
@@ -48,30 +44,30 @@ class _VerificationScreenState extends State<VerificationScreen> {
         Uri.parse(ApiService.getApiUrl('get-user-nid/')),
         headers: headers,
       );
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted && data['data'] != null) {
           setState(() {
             _isPending = data['data']['pending'] ?? false;
             _isVerified = data['data']['approved'] ?? false;
-            if (data['data']['front'] != null) {
-              _frontImage = '${ApiService.baseUrl}${data['data']['front']}';
-            }
-            if (data['data']['back'] != null) {
-              _backImage = '${ApiService.baseUrl}${data['data']['back']}';
-            }
-            if (data['data']['selfie'] != null) {
-              _selfieImage = '${ApiService.baseUrl}${data['data']['selfie']}';
-            }
+            _frontImage = data['data']['front'] != null
+                ? '${ApiService.baseUrl}${data['data']['front']}'
+                : _frontImage;
+            _backImage = data['data']['back'] != null
+                ? '${ApiService.baseUrl}${data['data']['back']}'
+                : _backImage;
+            _selfieImage = data['data']['selfie'] != null
+                ? '${ApiService.baseUrl}${data['data']['selfie']}'
+                : _selfieImage;
           });
         }
       }
-    } catch (e) {
-      print('Error loading verification status: $e');
+    } catch (error) {
+      debugPrint('Error loading verification status: $error');
     }
   }
-  
+
   int _calculateProgress() {
     int completed = 0;
     if (_frontImage != null) completed++;
@@ -79,7 +75,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     if (_selfieImage != null) completed++;
     return ((completed / 3) * 100).floor();
   }
-  
+
   Future<void> _pickImage(String field) async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -88,58 +84,56 @@ class _VerificationScreenState extends State<VerificationScreen> {
         maxHeight: 1200,
         imageQuality: 70,
       );
-      
-      if (image != null) {
-        final bytes = await image.readAsBytes();
-        
-        // Check file size (12MB max)
-        if (bytes.length > 12 * 1024 * 1024) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('File size too large. Maximum size is 12MB.'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+
+      if (image == null) {
+        return;
+      }
+
+      final bytes = await image.readAsBytes();
+      if (bytes.length > 12 * 1024 * 1024) {
+        if (!mounted) {
           return;
         }
-        
-        final base64String = base64Encode(bytes);
-        
-        setState(() {
-          switch (field) {
-            case 'front':
-              _frontImage = 'data:image/jpeg;base64,$base64String';
-              _errors['front'] = false;
-              break;
-            case 'back':
-              _backImage = 'data:image/jpeg;base64,$base64String';
-              _errors['back'] = false;
-              break;
-            case 'selfie':
-              _selfieImage = 'data:image/jpeg;base64,$base64String';
-              _errors['selfie'] = false;
-              break;
-            case 'other':
-              _otherDocument = 'data:image/jpeg;base64,$base64String';
-              break;
-          }
-        });
-      }
-    } catch (e) {
-      print('Error picking image: $e');
-      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Error selecting image. Please try again.'),
+            content: Text('File size too large. Maximum size is 12MB.'),
             backgroundColor: Colors.red,
           ),
         );
+        return;
       }
+
+      final base64String = base64Encode(bytes);
+      setState(() {
+        switch (field) {
+          case 'front':
+            _frontImage = 'data:image/jpeg;base64,$base64String';
+            _errors['front'] = false;
+            break;
+          case 'back':
+            _backImage = 'data:image/jpeg;base64,$base64String';
+            _errors['back'] = false;
+            break;
+          case 'selfie':
+            _selfieImage = 'data:image/jpeg;base64,$base64String';
+            _errors['selfie'] = false;
+            break;
+        }
+      });
+    } catch (error) {
+      debugPrint('Error picking image: $error');
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error selecting image. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
-  
+
   void _deleteImage(String field) {
     setState(() {
       switch (field) {
@@ -152,22 +146,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
         case 'selfie':
           _selfieImage = null;
           break;
-        case 'other':
-          _otherDocument = null;
-          break;
       }
     });
   }
-  
+
   Future<void> _submitDocuments() async {
-    // Validate
     setState(() {
       _errors['front'] = _frontImage == null;
       _errors['back'] = _backImage == null;
       _errors['selfie'] = _selfieImage == null;
     });
-    
-    if (_errors.values.any((error) => error)) {
+
+    if (_errors.values.any((hasError) => hasError)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all required fields.'),
@@ -176,9 +166,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
       );
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.post(
@@ -190,36 +180,39 @@ class _VerificationScreenState extends State<VerificationScreen> {
           'selfie': _selfieImage,
         }),
       );
-      
-      if (mounted) {
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          final data = json.decode(response.body);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(data['message'] ?? 'Documents submitted successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          _loadVerificationStatus();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to submit documents. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+
+      if (!mounted) {
+        return;
       }
-    } catch (e) {
-      print('Error submitting documents: $e');
-      if (mounted) {
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Documents submitted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await _loadVerificationStatus();
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('An error occurred. Please try again later.'),
+            content: Text('Failed to submit documents. Please try again.'),
             backgroundColor: Colors.red,
           ),
         );
       }
+    } catch (error) {
+      debugPrint('Error submitting documents: $error');
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('An error occurred. Please try again later.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -229,10 +222,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF4F7FB),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black, size: 22),
@@ -242,161 +238,278 @@ class _VerificationScreenState extends State<VerificationScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: const Color(0x1910B981),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
-                Icons.verified_user,
-                size: 16,
-                color: Color(0xFF10B981),
+                Icons.verified_user_rounded,
+                size: 18,
+                color: Color(0xFF0F766E),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             const Text(
               'Verification',
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            
-            // User Status Banner (only show if not pending)
-            if (!_isPending) _buildUserStatusBanner(),
-            
-            if (!_isPending) const SizedBox(height: 24),
-            
-            // Instructions Card
-            _buildInstructionsCard(),
-            
-            const SizedBox(height: 32),
-            
-            // Pending Status or Upload Section
-            if (_isPending)
-              _buildPendingStatus()
-            else if (!_isVerified)
-              _buildUploadSection()
-            else
-              _buildVerifiedStatus(),
-            
-            const SizedBox(height: 80),
-          ],
-        ),
-      ),
-    );
-  }
-  
-  
-  Widget _buildUserStatusBanner() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 210,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF0F766E),
+                    Color(0xFF10B981),
+                    Color(0xFF6EE7B7),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+            child: Column(
+              children: [
+                _buildHeroCard(theme),
+                const SizedBox(height: 18),
+                _buildInstructionsCard(),
+                const SizedBox(height: 18),
+                if (_isPending)
+                  _buildPendingStatus()
+                else if (_isVerified)
+                  _buildVerifiedStatus()
+                else
+                  _buildUploadSection(),
+                const SizedBox(height: 28),
+              ],
+            ),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Icon(
-              Icons.person,
-              color: Colors.grey.shade600,
-              size: 20,
-            ),
+    );
+  }
+
+  Widget _buildHeroCard(ThemeData theme) {
+    final Color chipColor = _isVerified
+        ? const Color(0xFFDCFCE7)
+        : _isPending
+            ? const Color(0xFFFEF3C7)
+            : const Color(0xFFFEE2E2);
+    final Color chipTextColor = _isVerified
+        ? const Color(0xFF166534)
+        : _isPending
+            ? const Color(0xFF92400E)
+            : const Color(0xFFB91C1C);
+    final int progress = _isVerified ? 100 : _calculateProgress();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x140F172A),
+            blurRadius: 26,
+            offset: Offset(0, 16),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE2FDF3), Color(0xFFD1FAE5)],
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(
+                  _isVerified
+                      ? Icons.verified_rounded
+                      : _isPending
+                          ? Icons.hourglass_top_rounded
+                          : Icons.shield_outlined,
+                  color: const Color(0xFF059669),
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _userState.userName,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
                       ),
                     ),
-                    if (_isVerified) ...[
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.verified,
-                        color: Color(0xFF3B82F6),
-                        size: 16,
+                    const SizedBox(height: 4),
+                    Text(
+                      _isVerified
+                          ? 'Your identity is fully approved and ready to use.'
+                          : _isPending
+                              ? 'Your documents are under review by our team.'
+                              : 'Complete document upload to unlock verification.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: const Color(0xFF64748B),
+                        height: 1.35,
                       ),
-                    ],
+                    ),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: chipColor,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
                   _isVerified
-                      ? 'Your identity has been verified'
-                      : 'Please complete verification',
+                      ? 'Verified'
+                      : _isPending
+                          ? 'Reviewing'
+                          : 'Unverified',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                    color: chipTextColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFF8FAFC), Color(0xFFECFDF5)],
+              ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _isVerified ? 'Verification completed' : 'Verification progress',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _isVerified
+                            ? 'Your account now meets the document check requirements.'
+                            : '$progress% of your required documents are ready.',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x1F10B981),
+                        blurRadius: 14,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 70,
+                        height: 70,
+                        child: CircularProgressIndicator(
+                          value: progress / 100,
+                          strokeWidth: 7,
+                          backgroundColor: const Color(0xFFE2E8F0),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                        ),
+                      ),
+                      Text(
+                        '$progress%',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: _isVerified
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              _isVerified ? 'Verified' : 'Unverified',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: _isVerified ? Colors.green.shade700 : Colors.red.shade700,
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
-  
+
   Widget _buildInstructionsCard() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Color(0x0D0F172A),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
       ),
@@ -406,55 +519,71 @@ class _VerificationScreenState extends State<VerificationScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0x1910B981),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
-                  Icons.info_outline,
+                  Icons.fact_check_outlined,
                   color: Color(0xFF10B981),
                   size: 20,
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Verification Instructions',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+              const Expanded(
+                child: Text(
+                  'Verification Instructions',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          _buildInstructionItem('Upload center for document verification'),
-          _buildInstructionItem('Upload NID front, back, and selfie'),
-          _buildInstructionItem('We accept NID, Passport, Driving License'),
-          _buildInstructionItem('Documents will be reviewed and approved'),
+          const SizedBox(height: 10),
+          Text(
+            'Make sure every image is bright, readable, and fully visible before you submit.',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildInstructionItem('Capture all four corners of your document clearly'),
+          _buildInstructionItem('Upload NID front, back, and a clear selfie'),
+          _buildInstructionItem('We accept NID, Passport, and Driving License'),
+          _buildInstructionItem('Reviews usually complete within 24 to 48 hours'),
         ],
       ),
     );
   }
-  
+
   Widget _buildInstructionItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.check_circle,
-            color: Color(0xFF10B981),
-            size: 16,
+          const Padding(
+            padding: EdgeInsets.only(top: 2),
+            child: Icon(
+              Icons.check_circle_rounded,
+              color: Color(0xFF10B981),
+              size: 16,
+            ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade700,
+                height: 1.45,
               ),
             ),
           ),
@@ -462,43 +591,47 @@ class _VerificationScreenState extends State<VerificationScreen> {
       ),
     );
   }
-  
+
   Widget _buildPendingStatus() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.amber.shade50,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        gradient: LinearGradient(
+          colors: [Colors.amber.shade50, const Color(0xFFFFFBEB)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.amber.shade200),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Color(0x1FF59E0B),
+            blurRadius: 22,
+            offset: Offset(0, 12),
           ),
         ],
       ),
       child: Column(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
               color: Colors.amber.shade100,
-              borderRadius: BorderRadius.circular(32),
+              borderRadius: BorderRadius.circular(36),
             ),
             child: const Icon(
-              Icons.schedule,
+              Icons.schedule_rounded,
               color: Colors.amber,
-              size: 32,
+              size: 36,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Text(
             'Verification in Progress',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.amber.shade800,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.amber.shade900,
             ),
           ),
           const SizedBox(height: 8),
@@ -506,11 +639,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
             'Your ID verification is currently under review by our team.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.amber.shade700,
+              fontSize: 13,
+              color: Colors.amber.shade800,
+              height: 1.45,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Container(
             height: 8,
             decoration: BoxDecoration(
@@ -526,55 +660,60 @@ class _VerificationScreenState extends State<VerificationScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
-            'We\'ll notify you when your verification is complete.',
+            'We\'ll notify you as soon as approval is complete.',
             style: TextStyle(
               fontSize: 11,
-              color: Colors.amber.shade600,
+              color: Colors.amber.shade700,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildVerifiedStatus() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
+        gradient: LinearGradient(
+          colors: [Colors.green.shade50, const Color(0xFFF0FDF4)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.green.shade200),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Color(0x1A10B981),
+            blurRadius: 20,
+            offset: Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
               color: Colors.green.shade100,
-              borderRadius: BorderRadius.circular(32),
+              borderRadius: BorderRadius.circular(36),
             ),
             child: const Icon(
-              Icons.check_circle,
+              Icons.check_circle_rounded,
               color: Colors.green,
-              size: 32,
+              size: 36,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Text(
             'Account Verified',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.green.shade800,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Colors.green.shade900,
             ),
           ),
           const SizedBox(height: 8),
@@ -582,131 +721,173 @@ class _VerificationScreenState extends State<VerificationScreen> {
             'Your identity has been successfully verified!',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.green.shade700,
+              fontSize: 13,
+              color: Colors.green.shade800,
+              height: 1.45,
             ),
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildUploadSection() {
     return Column(
       children: [
-        // ID Verification Section
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: double.infinity,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Color(0x0D0F172A),
+                blurRadius: 20,
+                offset: Offset(0, 10),
               ),
             ],
           ),
           child: Column(
             children: [
-              // Header
               Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
+                padding: const EdgeInsets.all(18),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF0F766E), Color(0xFF10B981)],
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(23)),
                 ),
                 child: Row(
-                  children: const [
-                    Icon(Icons.badge, color: Colors.white, size: 18),
-                    SizedBox(width: 8),
-                    Text(
-                      'ID Verification',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                  children: [
+                    const Icon(Icons.badge_outlined, color: Colors.white, size: 20),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'ID Verification',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0x29FFFFFF),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '${_calculateProgress()}% done',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              // Upload Fields
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                padding: const EdgeInsets.all(20),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildUploadField('ID Front', 'front', _frontImage, _errors['front']!),
-                    const SizedBox(height: 32),
-                    _buildUploadField('ID Back', 'back', _backImage, _errors['back']!),
-                    const SizedBox(height: 32),
-                    _buildUploadField('Selfie with ID', 'selfie', _selfieImage, _errors['selfie']!),
+                    Text(
+                      'Upload clean, readable images for every required document.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    _buildUploadField('ID Front', 'front', _frontImage, _errors['front'] ?? false),
+                    const SizedBox(height: 18),
+                    _buildUploadField('ID Back', 'back', _backImage, _errors['back'] ?? false),
+                    const SizedBox(height: 18),
+                    _buildUploadField('Selfie with ID', 'selfie', _selfieImage, _errors['selfie'] ?? false),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        
-        const SizedBox(height: 12),
-        
-        // Progress Section
+        const SizedBox(height: 18),
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.all(16),
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Color(0x0D0F172A),
+                blurRadius: 20,
+                offset: Offset(0, 10),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Verification Progress',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Verification Progress',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${_calculateProgress()}%',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF059669),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(999),
                 child: LinearProgressIndicator(
                   value: _calculateProgress() / 100,
-                  minHeight: 8,
-                  backgroundColor: Colors.grey.shade200,
+                  minHeight: 10,
+                  backgroundColor: const Color(0xFFE2E8F0),
                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildProgressIndicator('ID Front', _frontImage != null),
-                  _buildProgressIndicator('ID Back', _backImage != null),
-                  _buildProgressIndicator('Selfie', _selfieImage != null),
+                  Expanded(child: _buildProgressIndicator('ID Front', _frontImage != null)),
+                  Expanded(child: _buildProgressIndicator('ID Back', _backImage != null)),
+                  Expanded(child: _buildProgressIndicator('Selfie', _selfieImage != null)),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _submitDocuments,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: const Color(0xFF0F766E),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                   ),
                   child: _isLoading
@@ -718,16 +899,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : Row(
+                      : const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.send, size: 18),
+                          children: [
+                            Icon(Icons.send_rounded, size: 18),
                             SizedBox(width: 8),
                             Text(
                               'Submit Documents',
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
@@ -740,7 +921,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
       ],
     );
   }
-  
+
   Widget _buildUploadField(String label, String field, String? image, bool hasError) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -752,82 +933,112 @@ class _VerificationScreenState extends State<VerificationScreen> {
               label,
               style: TextStyle(
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade800,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade900,
               ),
             ),
             Container(
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: image != null ? Colors.green : Colors.grey.shade300,
+                color: image != null ? const Color(0xFF10B981) : Colors.grey.shade300,
                 shape: BoxShape.circle,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         if (image != null)
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: image.startsWith('http')
-                    ? Image.network(
-                        image,
-                        height: 180,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.memory(
-                        base64Decode(image.split(',')[1]),
-                        height: 180,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: GestureDetector(
-                  onTap: () => _deleteImage(field),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: image.startsWith('http')
+                      ? Image.network(
+                          image,
+                          height: 190,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.memory(
+                          base64Decode(image.split(',').last),
+                          height: 190,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _pickImage(field),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF0F766E),
+                          side: const BorderSide(color: Color(0xFF99F6E4)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('Replace'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextButton.icon(
+                        onPressed: () => _deleteImage(field),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFDC2626),
+                          backgroundColor: const Color(0xFFFEF2F2),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                        label: const Text('Remove'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           )
         else
           GestureDetector(
             onTap: () => _pickImage(field),
             child: Container(
-              height: 180,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 26),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFCFFFE), Color(0xFFF0FDFA)],
+                ),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: hasError ? Colors.red.shade300 : Colors.grey.shade300,
+                  color: hasError ? Colors.red.shade300 : const Color(0xFF99F6E4),
                   width: 2,
-                  style: BorderStyle.values[1], // dashed
                 ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
+                    padding: const EdgeInsets.all(14),
+                    decoration: const BoxDecoration(
+                      color: Color(0x1910B981),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -838,19 +1049,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Upload ${label.split(' ').last}',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade800,
+                    label,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Click or drag file',
+                    'Tap to choose a clear image from your gallery',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey.shade600,
+                      height: 1.4,
                     ),
                   ),
                 ],
@@ -877,27 +1091,44 @@ class _VerificationScreenState extends State<VerificationScreen> {
       ],
     );
   }
-  
+
   Widget _buildProgressIndicator(String label, bool completed) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: completed ? Colors.green : Colors.grey.shade300,
-            shape: BoxShape.circle,
-          ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: completed ? const Color(0xFFECFDF5) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: completed ? const Color(0xFFA7F3D0) : const Color(0xFFE2E8F0),
         ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade600,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: completed ? const Color(0xFF10B981) : Colors.grey.shade300,
+              shape: BoxShape.circle,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: completed ? const Color(0xFF047857) : Colors.grey.shade600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
