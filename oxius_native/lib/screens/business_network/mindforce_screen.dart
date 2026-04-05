@@ -32,8 +32,18 @@ class _MindForceScreenState extends State<MindForceScreen> {
   
   String _selectedFilter = 'all'; // all, active, solved, my
   int? _selectedCategoryId; // null means 'All'
-  int _currentPage = 1;
   bool _hasMore = true;
+
+  static const Color _page = Color(0xFFFFFFFF);
+  static const Color _surface = Color(0xFFF8FAFC);
+  static const Color _ink = Color(0xFF1E293B);
+  static const Color _muted = Color(0xFF64748B);
+  static const Color _line = Color(0xFFE2E8F0);
+  static const Color _brand = Color(0xFF6366F1);
+  static const Color _brandSoft = Color(0xFFE0E7FF);
+  static const Color _mintSoft = Color(0xFFD1FAE5);
+  static const Color _amber = Color(0xFFD97706);
+  static const Color _amberSoft = Color(0xFFFEF3C7);
 
   @override
   void initState() {
@@ -54,7 +64,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
         });
       }
     } catch (e) {
-      print('Error loading notification count: $e');
+      debugPrint('Error loading notification count: $e');
     }
   }
 
@@ -76,7 +86,6 @@ class _MindForceScreenState extends State<MindForceScreen> {
   Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
-      _currentPage = 1;
       _hasMore = true;
     });
     
@@ -97,7 +106,6 @@ class _MindForceScreenState extends State<MindForceScreen> {
     
     setState(() {
       _isLoadingMore = true;
-      _currentPage++;
     });
     
     // TODO: Implement paginated API call when backend supports it
@@ -197,10 +205,12 @@ class _MindForceScreenState extends State<MindForceScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final activeCount = _problems.where((problem) => problem.status == 'active').length;
+    final solvedCount = _problems.where((problem) => problem.status == 'solved').length;
     
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: _page,
       appBar: BusinessNetworkHeader(
         onMenuTap: () {
           if (isMobile) {
@@ -223,136 +233,9 @@ class _MindForceScreenState extends State<MindForceScreen> {
         },
       ),
       drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network/mindforce') : null,
-      body: Column(
-        children: [
-          // Header with Filter Dropdown
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 0.5)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.psychology, size: 22, color: Colors.purple.shade700),
-                const SizedBox(width: 8),
-                Text(
-                  'MindForce',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade900,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Filter Dropdown
-                Expanded(
-                  child: Container(
-                    height: 32,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300, width: 0.5),
-                      borderRadius: BorderRadius.circular(6),
-                      color: Colors.grey.shade50,
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedFilter,
-                        isExpanded: true,
-                        icon: Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey.shade600),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade800,
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 'all', child: Text('All Problems')),
-                          DropdownMenuItem(value: 'active', child: Text('Active')),
-                          DropdownMenuItem(value: 'solved', child: Text('Solved')),
-                          DropdownMenuItem(value: 'my', child: Text('My Problems')),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() => _selectedFilter = value);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                // Post Button
-                Material(
-                  color: Colors.purple.shade600,
-                  borderRadius: BorderRadius.circular(6),
-                  child: InkWell(
-                    onTap: _showCreateProblemDialog,
-                    borderRadius: BorderRadius.circular(6),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add, size: 16, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Post',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Category Tabs
-          if (_categories.isNotEmpty)
-            Container(
-              height: 44,
-              color: Colors.white,
-              padding: const EdgeInsets.only(bottom: 1),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                itemCount: _categories.length + 1, // +1 for 'All'
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    // All category
-                    return _buildCategoryChip(
-                      'All',
-                      null,
-                      _selectedCategoryId == null,
-                    );
-                  }
-                  final category = _categories[index - 1];
-                  return _buildCategoryChip(
-                    category.name,
-                    category.id,
-                    _selectedCategoryId == category.id,
-                  );
-                },
-              ),
-            ),
-          
-          // Content List
-          Expanded(
-            child: Container(
-              color: const Color(0xFFF8F9FA),
-              child: _isLoading
-                  ? SkeletonLoader.listView(itemCount: 6, showAvatar: true)
-                  : _buildProblemsList(),
-            ),
-          ),
-        ],
-      ),
+      body: _isLoading
+          ? SkeletonLoader.listView(itemCount: 6, showAvatar: true)
+          : _buildProblemsList(activeCount: activeCount, solvedCount: solvedCount),
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
               currentIndex: 4, // More tab since MindForce is in drawer
@@ -364,72 +247,309 @@ class _MindForceScreenState extends State<MindForceScreen> {
     );
   }
 
-  Widget _buildProblemsList() {
-    final problems = _filteredProblems;
-    
-    if (problems.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.purple.shade50,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.psychology_outlined,
-                size: 48,
-                color: Colors.purple.shade400,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _getEmptyMessage(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF616161),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: _showCreateProblemDialog,
-              icon: Icon(Icons.add, size: 18, color: Colors.purple.shade700),
-              label: Text(
-                'Post a Problem',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.purple.shade700,
+  Widget _buildPageIntro(int activeCount, int solvedCount) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: _brandSoft,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.psychology_alt_rounded,
+                  size: 19,
+                  color: _brand,
                 ),
               ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MindForce',
+                      style: TextStyle(
+                        fontSize: 19,
+                        height: 1.1,
+                        fontWeight: FontWeight.w800,
+                        color: _ink,
+                        letterSpacing: -0.4,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'A Collaborative Network for Problem Solving',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: _muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Material(
+                color: _ink,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: _showCreateProblemDialog,
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text(
+                          'Post',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildTopMetric('Active', '$activeCount', _brandSoft)),
+              const SizedBox(width: 8),
+              Expanded(child: _buildTopMetric('Solved', '$solvedCount', _mintSoft)),
+              const SizedBox(width: 8),
+              Expanded(child: _buildTopMetric('Topics', '${_categories.length}', const Color(0xFFE5E7FF))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopMetric(String label, String value, Color tone) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: tone,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: _muted,
+              letterSpacing: 0.2,
             ),
-          ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: _ink,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToolbar() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: _surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: _line),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedFilter,
+                isExpanded: true,
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: _muted),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _ink,
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'all', child: Text('All Problems')),
+                  DropdownMenuItem(value: 'active', child: Text('Active')),
+                  DropdownMenuItem(value: 'solved', child: Text('Solved')),
+                  DropdownMenuItem(value: 'my', child: Text('My Problems')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedFilter = value);
+                  }
+                },
+              ),
+            ),
+          ),
         ),
-      );
-    }
+        const SizedBox(width: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: _surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _line),
+          ),
+          child: Text(
+            '${_filteredProblems.length} results',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: _muted,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProblemsList({required int activeCount, required int solvedCount}) {
+    final problems = _filteredProblems;
 
     return RefreshIndicator(
       onRefresh: _loadData,
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-        itemCount: problems.length + (_isLoadingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == problems.length) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
-              ),
-            );
-          }
-          
-          return _buildCompactProblemItem(problems[index]);
-        },
+      child: Container(
+        color: Colors.white,
+        child: ListView.builder(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(4, 6, 4, 14),
+          itemCount: 1 + (problems.isEmpty ? 1 : problems.length) + (_isLoadingMore && problems.isNotEmpty ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildPageIntro(activeCount, solvedCount),
+                  const SizedBox(height: 8),
+                  _buildToolbar(),
+                  if (_categories.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 36,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.zero,
+                        itemCount: _categories.length + 1,
+                        itemBuilder: (context, chipIndex) {
+                          if (chipIndex == 0) {
+                            return _buildCategoryChip(
+                              'All topics',
+                              null,
+                              _selectedCategoryId == null,
+                            );
+                          }
+                          final category = _categories[chipIndex - 1];
+                          return _buildCategoryChip(
+                            category.name,
+                            category.id,
+                            _selectedCategoryId == category.id,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  const Divider(height: 1, thickness: 1, color: _line),
+                ],
+              );
+            }
+
+            if (problems.isEmpty && index == 1) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.psychology_alt_outlined,
+                      size: 48,
+                      color: _brand,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _getEmptyMessage(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        color: _ink,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Post a clear problem statement so the right people can help quickly.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        height: 1.45,
+                        color: _muted,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: _showCreateProblemDialog,
+                      icon: const Icon(Icons.add_rounded, size: 18, color: _brand),
+                      label: const Text(
+                        'Post a Problem',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: _brand,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (_isLoadingMore && index == problems.length + 1) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+            
+            final problemIndex = index - 1;
+            return _buildCompactProblemItem(problems[problemIndex]);
+          },
+        ),
       ),
     );
   }
@@ -462,223 +582,255 @@ class _MindForceScreenState extends State<MindForceScreen> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 0.5)),
+            border: const Border(bottom: BorderSide(color: _line, width: 1)),
           ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Row
-            Row(
-              children: [
-                // Avatar
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.grey.shade200, width: 0.5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: _line),
+                    ),
+                    child: ClipOval(
+                      child: problem.userDetails.image != null
+                          ? Image.network(
+                              problem.userDetails.image!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.white,
+                                  child: const Icon(Icons.person_outline, size: 16, color: _muted),
+                                );
+                              },
+                            )
+                          : Container(
+                              color: Colors.white,
+                              child: const Icon(Icons.person_outline, size: 16, color: _muted),
+                            ),
+                    ),
                   ),
-                  child: ClipOval(
-                    child: problem.userDetails.image != null
-                        ? Image.network(
-                            problem.userDetails.image!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey.shade200,
-                                child: Icon(Icons.person, size: 18, color: Colors.grey.shade400),
-                              );
-                            },
-                          )
-                        : Container(
-                            color: Colors.grey.shade200,
-                            child: Icon(Icons.person, size: 18, color: Colors.grey.shade400),
-                          ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Name, Badges, and Stats
-                Expanded(
-                  child: Row(
-                    children: [
-                      // Name with badges
-                      Flexible(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Flexible(
-                              child: Text(
-                                problem.userDetails.name,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey.shade900,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      problem.userDetails.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color: _ink,
+                                      ),
+                                    ),
+                                  ),
+                                  if (_isUserVerified(problem)) ...[
+                                    const SizedBox(width: 3),
+                                    const Icon(Icons.verified_rounded, size: 13, color: Color(0xFF2563EB)),
+                                  ],
+                                  if (_isUserPro(problem)) ...[
+                                    const SizedBox(width: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: _ink,
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: const Text(
+                                        'PRO',
+                                        style: TextStyle(
+                                          fontSize: 7,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            // Verified Badge
-                            if (_isUserVerified(problem)) ...[
-                              const SizedBox(width: 3),
-                              Icon(
-                                Icons.verified,
-                                size: 15,
-                                color: Colors.blue.shade500,
+                            if (problem.category != null) ...[
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: _buildCategoryTag(problem.category!.name),
                               ),
                             ],
-                            // Pro Badge
-                            if (_isUserPro(problem)) ...[
-                              const SizedBox(width: 3),
+                            if (problem.category != null && problem.status == 'solved')
+                              const SizedBox(width: 6),
+                            if (problem.status == 'solved')
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Color(0xFF7f00ff), Color(0xFFe100ff)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(3),
+                                  color: _mintSoft,
+                                  borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: const Text(
-                                  'PRO',
+                                  'Solved',
                                   style: TextStyle(
                                     fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    letterSpacing: 0.3,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF166534),
                                   ),
                                 ),
                               ),
-                            ],
                           ],
                         ),
-                      ),
-                      // Separator
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Text('•', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                      ),
-                      // Time
-                      Text(
-                        _formatTimeAgo(problem.createdAt),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      // Separator
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Text('•', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                      ),
-                      // Views
-                      Icon(Icons.visibility_outlined, size: 12, color: Colors.grey.shade700),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${problem.views}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      // Separator
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Text('•', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                      ),
-                      // Comments
-                      Icon(Icons.chat_bubble_outline, size: 11, color: Colors.grey.shade700),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${problem.comments.length}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Status Badge
-                if (problem.status == 'solved')
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: Colors.green.shade200, width: 0.5),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.check_circle, size: 11, color: Colors.green.shade700),
-                        const SizedBox(width: 3),
-                        Text(
-                          'Solved',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.green.shade700,
-                          ),
+                        const SizedBox(height: 2),
+                        Wrap(
+                          spacing: 7,
+                          runSpacing: 3,
+                          children: [
+                            Text(
+                              _formatTimeAgo(problem.createdAt),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: _muted,
+                              ),
+                            ),
+                            _buildFeedMeta(Icons.visibility_outlined, '${problem.views}'),
+                            _buildFeedMeta(Icons.chat_bubble_outline_rounded, '${problem.comments.length}'),
+                          ],
                         ),
                       ],
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            // Title - aligned with name
-            Padding(
-              padding: const EdgeInsets.only(left: 46), // Avatar (36px) + spacing (10px)
-              child: Text(
-                problem.title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                  height: 1.35,
-                  letterSpacing: -0.1,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                ],
               ),
-            ),
-            // Payment Badge (if applicable) - aligned with title
-            if (problem.paymentOption == 'paid' && problem.paymentAmount != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 5),
               Padding(
-                padding: const EdgeInsets.only(left: 46), // Aligned with title
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.amber.shade300, width: 0.5),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.payments_outlined, size: 13, color: Colors.amber.shade700),
-                      const SizedBox(width: 4),
-                      Text(
-                        '৳${problem.paymentAmount!.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.amber.shade900,
+                padding: const EdgeInsets.only(left: 37),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            problem.title,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              height: 1.24,
+                              fontWeight: FontWeight.w600,
+                              color: _ink,
+                              letterSpacing: -0.1,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                      ],
+                    ),
+                    if (problem.description.trim().isNotEmpty || (problem.paymentOption == 'paid' && problem.paymentAmount != null)) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          if (problem.description.trim().isNotEmpty)
+                            Expanded(
+                              child: Text(
+                                problem.description.trim(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  height: 1.35,
+                                  color: _muted,
+                                ),
+                              ),
+                            ),
+                          if (problem.paymentOption == 'paid' && problem.paymentAmount != null) ...[
+                            if (problem.description.trim().isNotEmpty) const SizedBox(width: 8),
+                            _buildMetaTag('৳${problem.paymentAmount!.toStringAsFixed(0)}', _amberSoft, _amber),
+                          ],
+                        ],
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ],
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFeedMeta(IconData icon, String value) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 11, color: _muted),
+        const SizedBox(width: 3),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: _muted,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetaTag(String label, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: fg.withValues(alpha: 0.12)),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          color: fg,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryTag(String label) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+        decoration: BoxDecoration(
+          color: _brandSoft,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _brand.withValues(alpha: 0.12)),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.right,
+          softWrap: true,
+          style: const TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+            color: _brand,
+            height: 1.2,
+          ),
         ),
       ),
     );
@@ -768,25 +920,29 @@ class _MindForceScreenState extends State<MindForceScreen> {
 
   Widget _buildCategoryChip(String label, int? categoryId, bool isSelected) {
     return Padding(
-      padding: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.only(right: 8),
       child: Material(
-        color: isSelected ? Colors.purple.shade600 : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(16),
+        color: isSelected ? _brand : _surface,
+        borderRadius: BorderRadius.circular(999),
         child: InkWell(
           onTap: () {
             setState(() {
               _selectedCategoryId = isSelected ? null : categoryId;
             });
           },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(999),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: isSelected ? _brand : _line),
+            ),
             child: Text(
               label,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
-                color: isSelected ? Colors.white : Colors.grey.shade700,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? Colors.white : _muted,
               ),
             ),
           ),

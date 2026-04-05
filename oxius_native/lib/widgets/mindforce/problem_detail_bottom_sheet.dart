@@ -403,7 +403,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(4, 16, 4, 16),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,
                   borderRadius: const BorderRadius.only(
@@ -455,7 +455,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     ? const Center(child: CircularProgressIndicator())
                     : ListView(
                         controller: scrollController,
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.fromLTRB(4, 16, 4, 16),
                         children: [
                           if (_problem != null) ...[
                             _buildProblemDetails(),
@@ -1037,7 +1037,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
   Widget _buildCommentInput() {
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
     return Container(
-      padding: EdgeInsets.fromLTRB(12, 12, 12, 12 + bottomPadding),
+      padding: EdgeInsets.fromLTRB(4, 12, 4, 12 + bottomPadding),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey.shade200)),
