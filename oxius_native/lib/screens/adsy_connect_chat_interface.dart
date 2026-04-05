@@ -11,6 +11,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import '../services/auth_service.dart';
+import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/active_chat_tracker.dart';
 import '../utils/image_compressor.dart';
@@ -85,8 +86,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   int _statusPollCounter = 0;
   bool _isUserNearBottom = true;
   bool _isOtherUserOnline = false;
+  bool _isOtherUserTyping = false;
   String? _lastSeenTime;
   Timer? _onlineStatusTimer;
+  Timer? _remoteTypingResetTimer;
+  StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
   Map<String, dynamic>? _replyingToMessage;
 
   bool _isSearchMode = false;
@@ -112,6 +116,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _loadChatroomStatus();
     _loadMessages();
     _loadOnlineStatus();
+    unawaited(AdsyConnectRealtimeService.instance.connect());
+    _realtimeSubscription = AdsyConnectRealtimeService.instance.events.listen(
+      _handleRealtimeEvent,
+    );
     _messageController.addListener(_onTypingChanged);
     _searchController.addListener(_onSearchChanged);
     _itemPositionsListener.itemPositions.addListener(_onItemPositionsChanged);
@@ -236,8 +244,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   @override
   void dispose() {
+    if (_isTyping) {
+      AdsyConnectRealtimeService.instance.sendTypingStatus(
+        chatroomId: widget.chatroomId,
+        isTyping: false,
+      );
+    }
     ActiveChatTracker.clearActiveChat();
     AdsyConnectService.clearActiveChat();
+    _realtimeSubscription?.cancel();
+    _remoteTypingResetTimer?.cancel();
     _messageController.dispose();
     _searchController.dispose();
     _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
@@ -322,6 +338,116 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final isCurrentlyTyping = _messageController.text.isNotEmpty;
     if (isCurrentlyTyping != _isTyping) {
       setState(() => _isTyping = isCurrentlyTyping);
+      AdsyConnectRealtimeService.instance.sendTypingStatus(
+        chatroomId: widget.chatroomId,
+        isTyping: isCurrentlyTyping,
+      );
+    }
+  }
+
+  void _handleRealtimeEvent(Map<String, dynamic> event) {
+    final type = event['type']?.toString();
+    if (type == null || !mounted) {
+      return;
+    }
+
+    if (type == 'user_online_status') {
+      final userId = event['user_id']?.toString();
+      if (userId != widget.userId) {
+        return;
+      }
+
+      setState(() {
+        _isOtherUserOnline = _parseBool(event['is_online']);
+        _lastSeenTime = event['last_seen']?.toString() ?? _lastSeenTime;
+        if (_isOtherUserOnline) {
+          _isOtherUserTyping = false;
+        }
+      });
+      return;
+    }
+
+    if (type == 'typing_status') {
+      final chatroomId = event['chatroom_id']?.toString();
+      final userId = event['user_id']?.toString();
+      if (chatroomId != widget.chatroomId || userId != widget.userId) {
+        return;
+      }
+
+      final isTyping = _parseBool(event['is_typing']);
+      _remoteTypingResetTimer?.cancel();
+      if (isTyping) {
+        _remoteTypingResetTimer = Timer(const Duration(seconds: 4), () {
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            _isOtherUserTyping = false;
+          });
+        });
+      }
+
+      setState(() {
+        _isOtherUserTyping = isTyping;
+      });
+      return;
+    }
+
+    if (type == 'new_message') {
+      final rawMessage = event['message'];
+      if (rawMessage is! Map) {
+        return;
+      }
+
+      final message = Map<String, dynamic>.from(rawMessage);
+      final chatroomId = message['chatroom']?.toString();
+      if (chatroomId != widget.chatroomId) {
+        return;
+      }
+
+      final parsedMessages = _parseMessages([message]);
+      if (parsedMessages.isEmpty) {
+        return;
+      }
+
+      final parsed = parsedMessages.first;
+      final isIncoming = parsed['isMe'] != true;
+      setState(() {
+        _upsertMessage(parsed);
+        if (_searchQuery.trim().isNotEmpty) {
+          _recomputeSearchMatches(keepCurrent: true);
+        }
+        if (isIncoming) {
+          _lastMessageId = parsed['id'];
+          _isOtherUserTyping = false;
+        }
+      });
+
+      if (_isUserNearBottom) {
+        _scrollToBottom();
+      }
+      if (isIncoming) {
+        unawaited(_markMessagesAsRead());
+      }
+      return;
+    }
+
+    if (type == 'message_read') {
+      final messageId = event['message_id']?.toString();
+      if (messageId == null || messageId.isEmpty) {
+        return;
+      }
+
+      final existingIndex = _messages.indexWhere(
+        (message) => (message['id']?.toString() ?? '') == messageId,
+      );
+      if (existingIndex == -1) {
+        return;
+      }
+
+      setState(() {
+        _messages[existingIndex]['isSeen'] = true;
+      });
     }
   }
 
@@ -541,7 +667,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   void _startOnlineStatusPolling() {
     _onlineStatusTimer?.cancel();
-    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (mounted) {
         _loadOnlineStatus();
       }
@@ -570,12 +696,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _startMessagePolling() {
-    // Poll for new messages and status updates every 2 seconds for real-time feel
-    _messagePollingTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    // WebSocket is the primary realtime path; polling stays as a recovery fallback.
+    _messagePollingTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted && !_isLoadingMessages) {
         _checkForNewMessages();
         _statusPollCounter++;
-        if (_statusPollCounter >= 5) {
+        if (_statusPollCounter >= 3) {
           _statusPollCounter = 0;
           _loadChatroomStatus();
         }
@@ -2768,13 +2894,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        _isOtherUserOnline 
-                            ? 'Online' 
+                        _isOtherUserTyping
+                          ? 'Typing...'
+                          : _isOtherUserOnline
+                            ? 'Online'
                             : _formatLastSeen(_lastSeenTime),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: _isOtherUserOnline 
+                          color: _isOtherUserTyping
+                            ? const Color(0xFF93C5FD)
+                            : _isOtherUserOnline
                               ? const Color(0xFF10B981)
                               : Colors.white.withOpacity(0.7),
                         ),

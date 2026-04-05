@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'adsyconnect_service.dart';
 import 'auth_service.dart';
 
@@ -14,6 +15,8 @@ class OnlineStatusService {
     
     _isRunning = true;
     print('💚 OnlineStatusService started');
+
+    unawaited(AdsyConnectService.updateOnlineStatus(true));
     
     // Send initial heartbeat
     _sendHeartbeat();
@@ -26,9 +29,15 @@ class OnlineStatusService {
   
   /// Stop sending heartbeats
   static void stop() {
+    final shouldNotifyOffline = AuthService.isAuthenticated;
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
     _isRunning = false;
+
+    if (shouldNotifyOffline) {
+      unawaited(AdsyConnectService.updateOnlineStatus(false));
+    }
+
     print('💔 OnlineStatusService stopped');
   }
   

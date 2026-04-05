@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'adsy_connect_chat_interface.dart';
+import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../widgets/chat_list_skeleton.dart';
 import '../config/app_config.dart';
@@ -21,6 +22,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   bool _hasMore = true;
   Timer? _pollingTimer;
   Timer? _onlineStatusTimer;
+  StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
 
   final TextEditingController _chatSearchController = TextEditingController();
   String _chatSearchQuery = '';
@@ -42,9 +44,43 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   void initState() {
     super.initState();
     _loadChats();
+    unawaited(AdsyConnectRealtimeService.instance.connect());
+    _realtimeSubscription = AdsyConnectRealtimeService.instance.events.listen(
+      _handleRealtimeEvent,
+    );
     _startRealTimePolling();
     _startOnlineStatusPolling();
     _chatSearchController.addListener(_onChatSearchChanged);
+  }
+
+  void _handleRealtimeEvent(Map<String, dynamic> event) {
+    final type = event['type']?.toString();
+    if (type == null || !mounted) {
+      return;
+    }
+
+    if (type == 'user_online_status') {
+      final userId = event['user_id']?.toString();
+      if (userId == null || userId.isEmpty) {
+        return;
+      }
+
+      final index = _chatConversations.indexWhere(
+        (chat) => (chat['userId'] ?? '').toString() == userId,
+      );
+      if (index == -1) {
+        return;
+      }
+
+      setState(() {
+        _chatConversations[index]['isOnline'] = _parseBool(event['is_online']);
+      });
+      return;
+    }
+
+    if (type == 'new_message' || type == 'message_read') {
+      unawaited(_refreshChatsInBackground());
+    }
   }
 
   void _onChatSearchChanged() {
@@ -58,7 +94,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   void _startOnlineStatusPolling() {
     _onlineStatusTimer?.cancel();
-    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+    _onlineStatusTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       _refreshOnlineStatuses();
     });
   }
@@ -84,7 +120,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       for (final item in statuses) {
         if (item is Map) {
           final map = Map<String, dynamic>.from(item);
-          final id = (map['user_id'] ?? map['userId'] ?? map['id'])?.toString();
+            final id = (map['user_id'] ??
+                map['userId'] ??
+                map['id'] ??
+                (map['user'] is Map ? map['user']['id'] : null))
+              ?.toString();
           if (id != null && id.isNotEmpty) {
             statusByUserId[id] = map;
           }
@@ -107,8 +147,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   void _startRealTimePolling() {
-    // Poll for new messages every 5 seconds
-    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    // WebSocket is the primary realtime path; polling stays as a recovery fallback.
+    _pollingTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
       if (mounted) {
         _refreshChatsInBackground();
       }
@@ -150,6 +190,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   void dispose() {
     _pollingTimer?.cancel();
     _onlineStatusTimer?.cancel();
+    _realtimeSubscription?.cancel();
     _chatSearchController.dispose();
     super.dispose();
   }

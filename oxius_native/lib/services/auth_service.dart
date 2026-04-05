@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import 'adsyconnect_realtime_service.dart';
 import 'online_status_service.dart';
 import 'rideshare_driver_presence_service.dart';
 
@@ -278,6 +279,7 @@ class AuthService {
   static Future<void> clearAuthData() async {
     print('🔴 Clearing all auth data...');
 
+    await AdsyConnectRealtimeService.instance.disconnect();
     OnlineStatusService.stop();
     await RideshareDriverPresenceService.stop();
     

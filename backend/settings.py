@@ -331,7 +331,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "deactivate-expired-subscriptions": {
         "task": "subscription.tasks.deactivate_expired_subscriptions",
-        "schedule": crontab(hour=8, minute=0),  # Run every day at 8:00 AM
+        "schedule": timedelta(minutes=10),  # Run every 10 minutes
     },
     "cascade-expired-ride-targets": {
         "task": "rideshare.tasks.cascade_expired_ride_targets",

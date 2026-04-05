@@ -18,16 +18,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
         """Handle WebSocket connection"""
-        self.user_id = self.scope['url_route']['kwargs']['user_id']
-        self.user_group_name = f'user_{self.user_id}'
-        
-        # Verify user exists and is authenticated
-        user = await self.get_user(self.user_id)
-        if not user:
+        requested_user_id = self.scope['url_route']['kwargs']['user_id']
+        authenticated_user = self.scope.get('user')
+
+        if not authenticated_user or authenticated_user.is_anonymous:
             await self.close()
             return
-        
-        self.user = user
+
+        if str(authenticated_user.id) != str(requested_user_id):
+            await self.close()
+            return
+
+        self.user_id = str(authenticated_user.id)
+        self.user_group_name = f'user_{self.user_id}'
+        self.user = authenticated_user
         
         # Join user's personal group
         await self.channel_layer.group_add(
@@ -39,10 +43,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
         
         # Update user's online status
-        await self.update_online_status(True)
+        last_seen = await self.update_online_status(True)
         
         # Notify other users that this user is online
-        await self.broadcast_online_status(True)
+        await self.broadcast_online_status(True, last_seen=last_seen)
         
         logger.info(f"User {self.user.username} connected to chat")
 
@@ -56,10 +60,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
             
             # Update user's online status
-            await self.update_online_status(False)
+            last_seen = await self.update_online_status(False)
             
             # Notify other users that this user is offline
-            await self.broadcast_online_status(False)
+            await self.broadcast_online_status(False, last_seen=last_seen)
             
             logger.info(f"User {self.user.username} disconnected from chat")
 
@@ -75,6 +79,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.handle_typing_status(data)
             elif message_type == 'mark_as_read':
                 await self.handle_mark_as_read(data)
+            elif message_type == 'ping':
+                await self.update_online_status(True)
+                await self.send(text_data=json.dumps({'type': 'pong'}))
             else:
                 logger.warning(f"Unknown message type: {message_type}")
                 
@@ -214,7 +221,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'user_online_status',
             'user_id': event['user_id'],
-            'is_online': event['is_online']
+            'is_online': event['is_online'],
+            'last_seen': event.get('last_seen')
         }))
 
     # Database operations
@@ -293,17 +301,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             online_status, created = OnlineStatus.objects.get_or_create(
                 user=self.user,
-                defaults={'is_online': is_online}
+                defaults={'is_online': is_online, 'last_seen': timezone.now()}
             )
-            if not created:
-                online_status.is_online = is_online
-                online_status.save(update_fields=['is_online'])
-                
-            if not is_online:
-                online_status.update_last_seen()
-                
+            if created:
+                online_status.set_presence(is_online)
+            else:
+                online_status.set_presence(is_online)
+            return online_status.last_seen.isoformat()
         except Exception as e:
             logger.error(f"Error updating online status: {e}")
+            return None
 
     @database_sync_to_async
     def update_typing_status(self, chatroom, is_typing):
@@ -320,7 +327,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"Error updating typing status: {e}")
 
-    async def broadcast_online_status(self, is_online):
+    async def broadcast_online_status(self, is_online, last_seen=None):
         """Broadcast online status to all users who have chats with this user"""
         try:
             # Get all users who have chats with this user
@@ -332,7 +339,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     {
                         'type': 'user_online_status',
                         'user_id': str(self.user.id),
-                        'is_online': is_online
+                        'is_online': is_online,
+                        'last_seen': last_seen,
                     }
                 )
         except Exception as e:
@@ -366,16 +374,20 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     
     async def connect(self):
         """Handle WebSocket connection for notifications"""
-        self.user_id = self.scope['url_route']['kwargs']['user_id']
-        self.notification_group_name = f'notifications_{self.user_id}'
-        
-        # Verify user exists
-        user = await self.get_user(self.user_id)
-        if not user:
+        requested_user_id = self.scope['url_route']['kwargs']['user_id']
+        authenticated_user = self.scope.get('user')
+
+        if not authenticated_user or authenticated_user.is_anonymous:
             await self.close()
             return
-        
-        self.user = user
+
+        if str(authenticated_user.id) != str(requested_user_id):
+            await self.close()
+            return
+
+        self.user_id = str(authenticated_user.id)
+        self.notification_group_name = f'notifications_{self.user_id}'
+        self.user = authenticated_user
         
         # Join notification group
         await self.channel_layer.group_add(

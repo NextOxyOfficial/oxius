@@ -16,12 +16,18 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 django.setup()
 
-from rideshare.routing import websocket_urlpatterns
+from adsyconnect.routing import websocket_urlpatterns as adsyconnect_websocket_urlpatterns
+from rideshare.routing import websocket_urlpatterns as rideshare_websocket_urlpatterns
 from rideshare.socket_auth import JwtAuthMiddleware
 
 django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": JwtAuthMiddleware(URLRouter(websocket_urlpatterns)),
+    "websocket": JwtAuthMiddleware(
+        URLRouter([
+            *adsyconnect_websocket_urlpatterns,
+            *rideshare_websocket_urlpatterns,
+        ])
+    ),
 })

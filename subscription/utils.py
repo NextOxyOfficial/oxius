@@ -2,6 +2,100 @@ from django.utils import timezone
 from base.models import User, Product
 from .models import Subscription, SubscriptionPlan, SubscriptionLog
 
+
+def expire_due_subscriptions(now=None, trigger='system'):
+    """Expire due subscriptions and sync legacy pro flags.
+
+    This is the single source of truth for automated subscription expiry.
+    It is safe to call repeatedly from Celery, cron, or a systemd timer.
+    """
+    now = now or timezone.now()
+
+    expired_count = 0
+    expired_results = []
+
+    expired_subscriptions = Subscription.objects.select_related('user', 'plan').filter(
+        status='active',
+        end_date__isnull=False,
+        end_date__lte=now,
+    )
+
+    for subscription in expired_subscriptions:
+        subscription.expire()
+        SubscriptionLog.objects.create(
+            subscription=subscription,
+            action='expired',
+            details=(
+                f"Subscription expired automatically by {trigger} at "
+                f"{now.strftime('%Y-%m-%d %H:%M:%S')}"
+            ),
+        )
+        expired_count += 1
+        expired_results.append(
+            {
+                'subscription_id': subscription.id,
+                'user_id': subscription.user_id,
+                'plan': subscription.plan.name,
+            }
+        )
+
+    legacy_count = 0
+    legacy_results = []
+
+    legacy_expired_users = User.objects.filter(
+        is_pro=True,
+        pro_validity__isnull=False,
+        pro_validity__lte=now,
+    )
+
+    for user in legacy_expired_users:
+        active_paid_subscription = Subscription.objects.filter(
+            user=user,
+            status='active',
+            end_date__gt=now,
+            plan__price__gt=0,
+        ).order_by('-end_date').first()
+
+        if active_paid_subscription:
+            latest_end = active_paid_subscription.end_date
+            updates = []
+            if not user.is_pro:
+                user.is_pro = True
+                updates.append('is_pro')
+            if user.pro_validity != latest_end:
+                user.pro_validity = latest_end
+                updates.append('pro_validity')
+            if updates:
+                user.save(update_fields=updates)
+            continue
+
+        user.is_pro = False
+        user.pro_validity = None
+        user.save(update_fields=['is_pro', 'pro_validity'])
+        product_result = manage_user_products_activation(
+            user,
+            activate=False,
+            reason=f"Legacy pro validity expired via {trigger}",
+        )
+        legacy_count += 1
+        legacy_results.append(
+            {
+                'user_id': user.id,
+                'username': user.username,
+                'products_affected': product_result.get('products_affected', 0),
+            }
+        )
+
+    return {
+        'timestamp': now,
+        'trigger': trigger,
+        'subscriptions_expired': expired_count,
+        'legacy_users_deactivated': legacy_count,
+        'expired_results': expired_results,
+        'legacy_results': legacy_results,
+        'total_processed': expired_count + legacy_count,
+    }
+
 def get_user_subscription(user):
     """Get the user's active subscription"""
     if not user or user.is_anonymous:

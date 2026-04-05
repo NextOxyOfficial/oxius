@@ -32,8 +32,8 @@ class UserBasicSerializer(serializers.ModelSerializer):
     
     def get_is_online(self, obj):
         try:
-            return obj.online_status.is_online
-        except:
+            return obj.online_status.is_effectively_online()
+        except Exception:
             return False
 
 
@@ -196,11 +196,16 @@ class BlockedUserSerializer(serializers.ModelSerializer):
 class OnlineStatusSerializer(serializers.ModelSerializer):
     """Online status serializer"""
     user = UserBasicSerializer(read_only=True)
+    user_id = serializers.CharField(source='user_id', read_only=True)
+    is_online = serializers.SerializerMethodField()
     
     class Meta:
         model = OnlineStatus
-        fields = ['user', 'is_online', 'last_seen']
+        fields = ['user', 'user_id', 'is_online', 'last_seen']
         read_only_fields = ['user', 'last_seen']
+
+    def get_is_online(self, obj):
+        return obj.is_effectively_online()
 
 
 class TypingStatusSerializer(serializers.ModelSerializer):

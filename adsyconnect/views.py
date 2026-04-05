@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.db.models import Q, Max
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -18,6 +20,13 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+
+def _broadcast_to_user(user_id, event):
+    channel_layer = get_channel_layer()
+    if channel_layer is None:
+        return
+    async_to_sync(channel_layer.group_send)(f'user_{user_id}', event)
 
 
 @api_view(['GET'])
@@ -312,6 +321,14 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     def mark_as_read(self, request, pk=None):
         """Mark all messages in chat room as read"""
         chatroom = self.get_object()
+        unread_messages = list(
+            Message.objects.filter(
+                chatroom=chatroom,
+                is_read=False,
+            )
+            .exclude(sender=request.user)
+            .values_list('id', 'sender_id')
+        )
         
         # Mark all unread messages from other user as read
         Message.objects.filter(
@@ -321,6 +338,15 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             is_read=True,
             read_at=timezone.now()
         )
+
+        for message_id, sender_id in unread_messages:
+            _broadcast_to_user(
+                sender_id,
+                {
+                    'type': 'message_read_update',
+                    'message_id': str(message_id),
+                },
+            )
         
         return Response({'status': 'messages marked as read'})
     
@@ -434,6 +460,13 @@ class MessageViewSet(viewsets.ModelViewSet):
         
         # Return full message serialization with all fields
         output_serializer = MessageSerializer(message, context={'request': request})
+        _broadcast_to_user(
+            message.receiver_id,
+            {
+                'type': 'new_message',
+                'message': output_serializer.data,
+            },
+        )
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['post'])
@@ -443,6 +476,13 @@ class MessageViewSet(viewsets.ModelViewSet):
         
         if message.receiver == request.user:
             message.mark_as_read()
+            _broadcast_to_user(
+                message.sender_id,
+                {
+                    'type': 'message_read_update',
+                    'message_id': str(message.id),
+                },
+            )
             return Response({'status': 'message marked as read'})
         
         return Response(
@@ -598,12 +638,17 @@ class OnlineStatusViewSet(viewsets.ReadOnlyModelViewSet):
     def update_status(self, request):
         """Update current user's online status"""
         is_online = request.data.get('is_online', True)
+
+        if isinstance(is_online, str):
+            is_online = is_online.strip().lower() in {'true', '1', 'yes'}
+        else:
+            is_online = bool(is_online)
         
         online_status, created = OnlineStatus.objects.get_or_create(
-            user=request.user
+            user=request.user,
+            defaults={'is_online': is_online, 'last_seen': timezone.now()}
         )
-        online_status.is_online = is_online
-        online_status.update_last_seen()
+        online_status.set_presence(is_online)
         
         return Response({'status': 'online status updated'})
 
@@ -632,6 +677,11 @@ class TypingStatusViewSet(viewsets.ModelViewSet):
         """Update typing status"""
         chatroom_id = request.data.get('chatroom')
         is_typing = request.data.get('is_typing', False)
+
+        if isinstance(is_typing, str):
+            is_typing = is_typing.strip().lower() in {'true', '1', 'yes'}
+        else:
+            is_typing = bool(is_typing)
         
         if not chatroom_id:
             return Response(
@@ -645,6 +695,21 @@ class TypingStatusViewSet(viewsets.ModelViewSet):
         )
         typing_status.is_typing = is_typing
         typing_status.save()
+
+        try:
+            chatroom = ChatRoom.objects.select_related('user1', 'user2').get(id=chatroom_id)
+            other_user = chatroom.get_other_user(request.user)
+            _broadcast_to_user(
+                other_user.id,
+                {
+                    'type': 'typing_status_update',
+                    'chatroom_id': str(chatroom_id),
+                    'user_id': str(request.user.id),
+                    'is_typing': is_typing,
+                },
+            )
+        except ChatRoom.DoesNotExist:
+            pass
         
         return Response({'status': 'typing status updated'})
 
@@ -696,8 +761,9 @@ def clear_active_chat(request):
 @permission_classes([IsAuthenticated])
 def heartbeat(request):
     """Update user's online status - call periodically to stay online"""
-    OnlineStatus.objects.update_or_create(
+    online_status, _ = OnlineStatus.objects.get_or_create(
         user=request.user,
         defaults={'is_online': True, 'last_seen': timezone.now()}
     )
+    online_status.set_presence(True)
     return Response({'status': 'online', 'timestamp': timezone.now().isoformat()})

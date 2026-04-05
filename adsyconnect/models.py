@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -336,14 +338,25 @@ class OnlineStatus(models.Model):
     
     class Meta:
         db_table = 'adsyconnect_online_status'
+
+    STALE_AFTER = timedelta(seconds=90)
     
     def __str__(self):
         return f"{self.user.username} - {'Online' if self.is_online else 'Offline'}"
+
+    def is_effectively_online(self):
+        if not self.is_online or not self.last_seen:
+            return False
+        return self.last_seen >= timezone.now() - self.STALE_AFTER
+
+    def set_presence(self, is_online, *, seen_at=None):
+        self.is_online = is_online
+        self.last_seen = seen_at or timezone.now()
+        self.save(update_fields=['is_online', 'last_seen'])
     
     def update_last_seen(self):
         """Update last seen timestamp"""
-        self.last_seen = timezone.now()
-        self.save(update_fields=['last_seen'])
+        self.set_presence(self.is_online, seen_at=timezone.now())
 
 
 class ActiveChatSession(models.Model):
