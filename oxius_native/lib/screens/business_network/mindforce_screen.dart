@@ -490,51 +490,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
             }
 
             if (problems.isEmpty && index == 1) {
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.psychology_alt_outlined,
-                      size: 48,
-                      color: _brand,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _getEmptyMessage(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        color: _ink,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Post a clear problem statement so the right people can help quickly.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.45,
-                        color: _muted,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton.icon(
-                      onPressed: _showCreateProblemDialog,
-                      icon: const Icon(Icons.add_rounded, size: 18, color: _brand),
-                      label: const Text(
-                        'Post a Problem',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: _brand,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              return _buildEmptyStateCard(activeCount: activeCount, solvedCount: solvedCount);
             }
 
             if (_isLoadingMore && index == problems.length + 1) {
@@ -565,6 +521,273 @@ class _MindForceScreenState extends State<MindForceScreen> {
       default:
         return 'No problems found';
     }
+  }
+
+  String _getEmptyDescription() {
+    if (_selectedCategoryId != null || _selectedFilter == 'my' || _selectedFilter == 'solved') {
+      return 'This view is empty right now. Try another filter or clear the topic selection to explore more discussions.';
+    }
+
+    return 'Start the conversation with a clear problem statement so the right people can jump in quickly.';
+  }
+
+  bool get _hasActiveFilters {
+    return _selectedFilter != 'all' || _selectedCategoryId != null;
+  }
+
+  Widget _buildEmptyStateCard({required int activeCount, required int solvedCount}) {
+    final selectedCategory = _categories.where((category) => category.id == _selectedCategoryId).cast<MindForceCategory?>().firstWhere(
+          (category) => category != null,
+          orElse: () => null,
+        );
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(6, 18, 6, 20),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: _line),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A0F172A),
+              blurRadius: 18,
+              offset: Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _brandSoft,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_mosaic_rounded,
+                    color: _brand,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _surface,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: _line),
+                        ),
+                        child: Text(
+                          _hasActiveFilters ? 'Filtered view' : 'Quiet right now',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: _muted,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _getEmptyMessage(),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          height: 1.15,
+                          fontWeight: FontWeight.w800,
+                          color: _ink,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _getEmptyDescription(),
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: _muted,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildEmptyInsightTile(
+                    'View',
+                    _selectedFilter == 'all'
+                        ? 'Active feed'
+                        : _selectedFilter == 'my'
+                            ? 'My problems'
+                            : _selectedFilter[0].toUpperCase() + _selectedFilter.substring(1),
+                    _surface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildEmptyInsightTile(
+                    'Topic',
+                    selectedCategory?.name ?? 'All topics',
+                    _brandSoft,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildEmptyInsightTile(
+                    'Open now',
+                    '$activeCount active',
+                    _mintSoft,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _line),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.tips_and_updates_outlined, size: 18, color: _amber),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      solvedCount > 0
+                          ? '$solvedCount solved discussions are already in the network. A new post can attract faster, targeted replies.'
+                          : 'Add one concise title and a focused description to make your post easier to solve.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        height: 1.45,
+                        color: _muted,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _showCreateProblemDialog,
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: _ink,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text(
+                      'Post a Problem',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                if (_hasActiveFilters) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _selectedFilter = 'all';
+                          _selectedCategoryId = null;
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _ink,
+                        side: const BorderSide(color: _line),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
+                      label: const Text(
+                        'Clear Filters',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyInsightTile(String label, String value, Color tone) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: tone,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: _muted,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              height: 1.25,
+              fontWeight: FontWeight.w700,
+              color: _ink,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildCompactProblemItem(MindForceProblem problem) {

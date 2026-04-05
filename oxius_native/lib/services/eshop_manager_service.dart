@@ -497,10 +497,10 @@ class EshopManagerService {
       final Map<String, dynamic> body = {};
       if (name != null) body['name'] = name;
       if (price != null) body['sale_price'] = price; // Backend uses sale_price
-      if (stock != null) body['quantity'] = stock; // Backend uses quantity
       if (description != null) body['description'] = description;
       if (categoryId != null) body['category'] = categoryId;
       if (image != null) body['image'] = image;
+      if (stock != null) body['quantity'] = stock; // Backend uses quantity
       
       // Convert status to is_active boolean
       if (status != null) {
@@ -508,8 +508,10 @@ class EshopManagerService {
           body['is_active'] = true;
         } else if (status == 'inactive') {
           body['is_active'] = false;
+        } else if (status == 'out-of-stock') {
+          body['is_active'] = true;
+          body['quantity'] = 0;
         }
-        // 'out-of-stock' means quantity = 0, handled separately
       }
 
       print('📦 Updating product ID: $productId');
@@ -565,7 +567,7 @@ class EshopManagerService {
       if (token == null) throw Exception('Not authenticated');
 
       final response = await http.delete(
-        Uri.parse('$baseUrl/my-products/$productId/'),
+        Uri.parse('$baseUrl/products/$productId/'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',

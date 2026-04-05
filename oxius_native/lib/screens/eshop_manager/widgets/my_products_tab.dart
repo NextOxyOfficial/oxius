@@ -6,16 +6,18 @@ import '../../../services/eshop_manager_service.dart';
 class MyProductsTab extends StatefulWidget {
   final List<ShopProduct> products;
   final int productLimit;
+  final int totalProducts;
   final VoidCallback onRefresh;
   final VoidCallback onProductUpdated;
   final VoidCallback onProductDeleted;
   final bool hasMore;
-  final VoidCallback? onLoadMore;
+  final Future<void> Function()? onLoadMore;
 
   const MyProductsTab({
     super.key,
     required this.products,
     required this.productLimit,
+    required this.totalProducts,
     required this.onRefresh,
     required this.onProductUpdated,
     required this.onProductDeleted,
@@ -29,7 +31,6 @@ class MyProductsTab extends StatefulWidget {
 
 class _MyProductsTabState extends State<MyProductsTab> {
   String _selectedFilter = 'all';
-  ShopProduct? _editingProduct;
   bool _isProcessing = false;
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMore = false;
@@ -61,8 +62,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
     if (_isLoadingMore || !widget.hasMore || widget.onLoadMore == null) return;
     
     setState(() => _isLoadingMore = true);
-    widget.onLoadMore!();
-    await Future.delayed(const Duration(milliseconds: 500));
+    await widget.onLoadMore!();
     if (mounted) {
       setState(() => _isLoadingMore = false);
     }
@@ -78,8 +78,6 @@ class _MyProductsTabState extends State<MyProductsTab> {
   int get _outOfStockCount => widget.products.where((p) => p.status == 'out-of-stock').length;
 
   void _showEditDialog(ShopProduct product) {
-    setState(() => _editingProduct = product);
-    
     final nameController = TextEditingController(text: product.name);
     final descController = TextEditingController(text: product.description ?? '');
     final priceController = TextEditingController(text: product.price.toString());
@@ -302,38 +300,48 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
                                       setState(() => _isProcessing = false);
 
+                                      if (!mounted || !context.mounted) {
+                                        return;
+                                      }
+
                                       if (result['success'] == true) {
-                                        if (mounted) {
-                                          Navigator.pop(context);
-                                          _showSnackBar('Product updated successfully');
-                                          // Update local state immediately
-                                          setState(() {
-                                            final index = widget.products.indexWhere((p) => p.id == product.id);
-                                            if (index != -1) {
-                                              // Update the product in the list
-                                              widget.products[index] = ShopProduct(
-                                                id: product.id,
-                                                name: nameController.text.trim(),
-                                                description: descController.text.trim(),
-                                                price: double.tryParse(priceController.text) ?? product.price,
-                                                stock: int.tryParse(stockController.text) ?? product.stock,
-                                                status: selectedStatus,
-                                                image: product.image,
-                                                imageDetails: product.imageDetails,
-                                                featuredImage: product.featuredImage,
-                                                categoryId: product.categoryId,
-                                                categoryName: product.categoryName,
-                                                createdAt: product.createdAt,
-                                                updatedAt: DateTime.now(),
-                                                sellerId: product.sellerId,
-                                                sellerName: product.sellerName,
-                                                views: product.views,
-                                              );
-                                            }
-                                          });
-                                          // Also refresh from backend
-                                          widget.onProductUpdated();
-                                        }
+                                        Navigator.pop(context);
+                                        _showSnackBar('Product updated successfully');
+                                        final updatedStock = selectedStatus == 'out-of-stock'
+                                            ? 0
+                                            : int.tryParse(stockController.text) ?? product.stock;
+                                        final updatedStatus = selectedStatus == 'inactive'
+                                            ? 'inactive'
+                                            : updatedStock <= 0
+                                                ? 'out-of-stock'
+                                                : 'active';
+                                        // Update local state immediately
+                                        setState(() {
+                                          final index = widget.products.indexWhere((p) => p.id == product.id);
+                                          if (index != -1) {
+                                            // Update the product in the list
+                                            widget.products[index] = ShopProduct(
+                                              id: product.id,
+                                              name: nameController.text.trim(),
+                                              description: descController.text.trim(),
+                                              price: double.tryParse(priceController.text) ?? product.price,
+                                              stock: updatedStock,
+                                              status: updatedStatus,
+                                              image: product.image,
+                                              imageDetails: product.imageDetails,
+                                              featuredImage: product.featuredImage,
+                                              categoryId: product.categoryId,
+                                              categoryName: product.categoryName,
+                                              createdAt: product.createdAt,
+                                              updatedAt: DateTime.now(),
+                                              sellerId: product.sellerId,
+                                              sellerName: product.sellerName,
+                                              views: product.views,
+                                            );
+                                          }
+                                        });
+                                        // Also refresh from backend
+                                        widget.onProductUpdated();
                                       } else {
                                         _showSnackBar(result['message'] ?? 'Failed to update', isError: true);
                                       }

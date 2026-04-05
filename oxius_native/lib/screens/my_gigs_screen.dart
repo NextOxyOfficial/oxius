@@ -79,6 +79,338 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     return active == true || active == 1 || active == '1' || active == 'true' || active == 'True';
   }
 
+  int _countGigsForFilter(String filter) {
+    if (filter == 'all') return _userGigs.length;
+
+    return _userGigs.where((gig) {
+      final gigStatus = _getGigStatus(gig);
+      final isActive = _isGigActive(gig);
+
+      switch (filter) {
+        case 'live':
+          return gigStatus == 'approved' && isActive;
+        case 'paused':
+          return gigStatus == 'approved' && !isActive;
+        case 'pending':
+          return gigStatus == 'pending';
+        case 'completed':
+          return gigStatus == 'completed';
+        case 'rejected':
+          return gigStatus == 'rejected';
+        default:
+          return true;
+      }
+    }).length;
+  }
+
+  String _getSelectedFilterLabel() {
+    switch (_selectedFilter) {
+      case 'live':
+        return 'Live';
+      case 'paused':
+        return 'Paused';
+      case 'pending':
+        return 'Pending';
+      case 'completed':
+        return 'Completed';
+      case 'rejected':
+        return 'Rejected';
+      default:
+        return 'All';
+    }
+  }
+
+  Widget _buildEmptyState(bool isMobile) {
+    final hasAnyGigs = _userGigs.isNotEmpty;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(isMobile ? 12 : 18, 14, isMobile ? 12 : 18, 20),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 18, isMobile ? 14 : 18, 16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A0F172A),
+              blurRadius: 20,
+              offset: Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.work_outline_rounded,
+                    color: Color(0xFF10B981),
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Text(
+                          hasAnyGigs ? 'Filtered view' : 'Ready to launch',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        hasAnyGigs ? 'No gigs in $_getSelectedFilterLabel()' : 'No gigs found yet',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          height: 1.1,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF111827),
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              hasAnyGigs
+                  ? 'Your gigs exist, but none match the current filter. Switch the view to manage other listings.'
+                  : 'Create your first gig to start receiving orders, track performance, and grow your earnings from one place.',
+              style: const TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildEmptyStateChip(
+                    'All',
+                    '${_userGigs.length}',
+                    const Color(0xFFF3F4F6),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildEmptyStateChip(
+                    'Live',
+                    '${_countGigsForFilter('live')}',
+                    const Color(0xFFD1FAE5),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildEmptyStateChip(
+                    'Pending',
+                    '${_countGigsForFilter('pending')}',
+                    const Color(0xFFFEF3C7),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.insights_outlined, size: 18, color: Color(0xFF10B981)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      hasAnyGigs
+                          ? 'Try switching back to All, Live, or Pending to continue managing your current gigs.'
+                          : 'A strong title, clear price, and focused description will help your first gig get approved faster.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        height: 1.45,
+                        color: Color(0xFF6B7280),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.pushNamed(context, '/post-a-gig'),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(0xFF111827),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: Text(
+                      hasAnyGigs ? 'Post Another Gig' : 'Create Your First Gig',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  if (hasAnyGigs) ...[
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _selectedFilter = 'all';
+                          _filteredGigs = List.from(_userGigs);
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF111827),
+                        side: BorderSide(color: Colors.grey.shade300),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
+                      label: const Text(
+                        'Clear Filter',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ],
+                ],
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.pushNamed(context, '/post-a-gig'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: const Color(0xFF111827),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: Text(
+                        hasAnyGigs ? 'Post Another Gig' : 'Create Your First Gig',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                  if (hasAnyGigs) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _selectedFilter = 'all';
+                            _filteredGigs = List.from(_userGigs);
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF111827),
+                          side: BorderSide(color: Colors.grey.shade300),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
+                        label: const Text(
+                          'Clear Filter',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyStateChip(String label, String value, Color bgColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF6B7280),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF111827),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getGigCategoryIconUrl(Map<String, dynamic>? categoryDetails) {
     final dynamic raw = categoryDetails?['image'] ??
         categoryDetails?['icon'] ??
@@ -902,29 +1234,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
               child: Center(child: CircularProgressIndicator()),
             )
           else if (_filteredGigs.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(40),
-              child: Column(
-                children: [
-                  Icon(Icons.work_off, size: 64, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  Text(
-                    _userGigs.isEmpty ? 'No gigs found' : 'No gigs match the selected filter',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  if (_userGigs.isEmpty) ...[
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/post-a-gig'),
-                      child: const Text('Create Your First Gig'),
-                    ),
-                  ],
-                ],
-              ),
-            )
+            _buildEmptyState(isMobile)
           else
             ListView.separated(
               key: ValueKey('gigs_list_${_selectedFilter}_${_filteredGigs.length}'),

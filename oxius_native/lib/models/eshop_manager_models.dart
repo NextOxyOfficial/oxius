@@ -85,16 +85,21 @@ class ShopProduct {
   });
 
   factory ShopProduct.fromJson(Map<String, dynamic> json) {
-    // Convert backend fields to match our model
+    // Handle quantity field (backend uses 'quantity', we use 'stock')
+    int stock = json['stock'] ?? json['quantity'] ?? 0;
+
+    // Convert backend fields to match our model.
+    // The web app treats `is_active && quantity <= 0` as out-of-stock.
     String status = 'active';
     if (json['is_active'] != null) {
-      status = json['is_active'] == true ? 'active' : 'inactive';
+      if (json['is_active'] == true && stock <= 0) {
+        status = 'out-of-stock';
+      } else {
+        status = json['is_active'] == true ? 'active' : 'inactive';
+      }
     } else if (json['status'] != null) {
       status = json['status'];
     }
-    
-    // Handle quantity field (backend uses 'quantity', we use 'stock')
-    int stock = json['stock'] ?? json['quantity'] ?? 0;
     
     // Handle price fields (backend uses 'regular_price' and 'sale_price')
     double price = 0.0;

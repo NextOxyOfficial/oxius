@@ -7,12 +7,14 @@ import '../../../services/eshop_manager_service.dart';
 class AddProductTab extends StatefulWidget {
   final List<ShopProduct> products;
   final int productLimit;
+  final int totalProducts;
   final VoidCallback onProductAdded;
 
   const AddProductTab({
     super.key,
     required this.products,
     required this.productLimit,
+    required this.totalProducts,
     required this.onProductAdded,
   });
 
@@ -28,7 +30,7 @@ class _AddProductTabState extends State<AddProductTab> {
       backgroundColor: Colors.transparent,
       builder: (context) => AddProductBottomSheet(
         productLimit: widget.productLimit,
-        currentProductCount: widget.products.length,
+        currentProductCount: widget.totalProducts,
         onProductAdded: widget.onProductAdded,
       ),
     );
@@ -36,7 +38,8 @@ class _AddProductTabState extends State<AddProductTab> {
 
   @override
   Widget build(BuildContext context) {
-    final remainingSlots = widget.productLimit - widget.products.length;
+    final currentProductCount = widget.totalProducts > 0 ? widget.totalProducts : widget.products.length;
+    final remainingSlots = (widget.productLimit - currentProductCount).clamp(0, widget.productLimit);
 
     if (remainingSlots <= 0) {
       return _buildLimitReached();

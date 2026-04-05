@@ -544,8 +544,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
   }
 
   Widget _buildManagerContent(bool isMobile) {
-    final user = AuthService.currentUser;
-    final remainingSlots = _productLimit - _products.length;
+    final currentProductCount = _totalProducts > 0 ? _totalProducts : _products.length;
+    final remainingSlots = (_productLimit - currentProductCount).clamp(0, _productLimit);
 
     return RefreshIndicator(
       onRefresh: _refreshData,
@@ -622,6 +622,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                           MyProductsTab(
                             products: _products,
                             productLimit: _productLimit,
+                            totalProducts: currentProductCount,
                             onRefresh: _loadProducts,
                             onProductUpdated: _handleProductUpdated,
                             onProductDeleted: _handleProductDeleted,
@@ -631,6 +632,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                           AddProductTab(
                             products: _products,
                             productLimit: _productLimit,
+                            totalProducts: currentProductCount,
                             onProductAdded: _handleProductAdded,
                           ),
                         ],
