@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
@@ -11,6 +12,18 @@ import '../services/classified_post_service.dart';
 import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import '../widgets/geo_selector_dialog.dart';
+
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _emerald = Color(0xFF10B981);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate100 = Color(0xFFF1F5F9);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate300 = Color(0xFFCBD5E1);
+const _slate400 = Color(0xFF94A3B8);
+const _slate500 = Color(0xFF64748B);
+const _slate700 = Color(0xFF334155);
+const _slate800 = Color(0xFF1E293B);
 
 class ClassifiedPostFormScreen extends StatefulWidget {
   final String? postId;
@@ -366,177 +379,314 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: _slate50,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          _isEditMode ? 'Edit Post' : 'Create New Post',
-          style: const TextStyle(
-            color: Color(0xFF1F2937),
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.2,
-          ),
+        surfaceTintColor: Colors.white,
+        centerTitle: true,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [_indigo, _violet]),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(
+                Icons.campaign_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _isEditMode ? 'Edit Post' : 'Create Post',
+              style: GoogleFonts.inter(
+                color: _slate800,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
+          icon: const Icon(Icons.arrow_back_rounded, color: _slate800, size: 22),
           onPressed: () => Navigator.of(context).pop(),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            color: const Color(0xFFE5E7EB),
-            height: 1,
-          ),
         ),
       ),
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                valueColor: AlwaysStoppedAnimation<Color>(_indigo),
                 strokeWidth: 2,
               ),
             )
-          : Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 4),
-                    // Category Selector
-                    _buildCategorySelector(),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Title Field
-                    _buildTextField(
-                      controller: _titleController,
-                      label: 'Post Title',
-                      hint: 'Enter a descriptive title',
-                      required: true,
-                      maxLength: 100,
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Description Field
-                    _buildTextField(
-                      controller: _instructionsController,
-                      label: 'Description',
-                      hint: 'Provide detailed information',
-                      maxLines: 5,
-                      maxLength: 5000,
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Price Section
-                    _buildPriceSection(),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Location Selector
-                    _buildLocationSelector(),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Image Upload Section
-                    _buildImageUploadSection(),
-                    
-                    const SizedBox(height: 4),
-                    
-                    // Privacy Checkbox
-                    _buildPrivacyCheckbox(),
-                    
-                    const SizedBox(height: 12),
-                    
-                    // Submit Button
-                    _buildSubmitButton(),
-                    
-                    const SizedBox(height: 12),
-                  ],
-                ),
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildHeader(isMobile),
+                  _buildFormShell(isMobile),
+                ],
               ),
             ),
     );
   }
 
-  Widget _buildCategorySelector() {
+  Widget _buildHeader(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _indigo.withValues(alpha: 0.12),
+            _violet.withValues(alpha: 0.12),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _indigo.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [_indigo, _violet]),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              _isEditMode ? Icons.edit_note_rounded : Icons.add_business_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _isEditMode ? 'Update Your Post' : 'Create New Classified Post',
+                  style: GoogleFonts.inter(
+                    fontSize: isMobile ? 15 : 16,
+                    fontWeight: FontWeight.w700,
+                    color: _slate800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Add clear details, pricing, location and photos to attract the right buyers fast',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: _slate500,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFormShell(bool isMobile) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _slate200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            _buildSectionCard(
+              title: 'Basic Details',
+              icon: Icons.description_outlined,
+              child: Column(
+                children: [
+                  _buildCategorySelector(),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    controller: _titleController,
+                    label: 'Post Title',
+                    hint: 'Enter a descriptive title',
+                    required: true,
+                    maxLength: 100,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    controller: _instructionsController,
+                    label: 'Description',
+                    hint: 'Provide detailed information',
+                    maxLines: 5,
+                    maxLength: 5000,
+                  ),
+                ],
+              ),
+            ),
+            _buildSectionCard(
+              title: 'Pricing',
+              icon: Icons.sell_outlined,
+              child: _buildPriceSection(),
+            ),
+            _buildSectionCard(
+              title: 'Location',
+              icon: Icons.location_on_outlined,
+              child: _buildLocationSelector(),
+            ),
+            _buildSectionCard(
+              title: 'Photos',
+              icon: Icons.photo_library_outlined,
+              child: _buildImageUploadSection(),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _slate50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _slate200),
+                    ),
+                    child: _buildPrivacyCheckbox(),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSubmitButton(),
+                  const SizedBox(height: 4),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: _slate200),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text(
-                'Category',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF374151),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: _indigo.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                child: Icon(icon, color: _indigo, size: 16),
               ),
-              const Text(
-                ' *',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: _slate800,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-            ),
-            child: DropdownButtonFormField<String>(
-              value: _selectedCategoryId,
-              decoration: const InputDecoration(
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                border: InputBorder.none,
-                hintText: 'Select a category',
-                hintStyle: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
-              ),
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF6B7280), size: 18),
-              dropdownColor: Colors.white,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF111827)),
-              items: _categories.map((category) {
-                return DropdownMenuItem<String>(
-                  value: category.id,
-                  child: Text(category.title),
-                );
-              }).toList(),
-              onChanged: (value) => setState(() => _selectedCategoryId = value),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please select a category';
-                }
-                return null;
-              },
-            ),
-          ),
+          const SizedBox(height: 14),
+          child,
         ],
       ),
+    );
+  }
+
+  Widget _buildCategorySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            text: 'Category',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _slate700,
+            ),
+            children: const [
+              TextSpan(
+                text: ' *',
+                style: TextStyle(color: Colors.red),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: _selectedCategoryId,
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _indigo, width: 1.8),
+            ),
+            filled: true,
+            fillColor: _slate50,
+            hintText: 'Select a category',
+            hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
+            prefixIcon: const Icon(Icons.grid_view_rounded, size: 18, color: _slate400),
+          ),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _slate500, size: 18),
+          dropdownColor: Colors.white,
+          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
+          items: _categories.map((category) {
+            return DropdownMenuItem<String>(
+              value: category.id,
+              child: Text(category.title),
+            );
+          }).toList(),
+          onChanged: (value) => setState(() => _selectedCategoryId = value),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select a category';
+            }
+            return null;
+          },
+        ),
+      ],
     );
   }
 
@@ -549,88 +699,74 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     int? maxLength,
     TextInputType? keyboardType,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: _slate700,
+              ),
+            ),
+            if (required)
+              const Text(
+                ' *',
+                style: TextStyle(
+                  color: Colors.red,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF374151),
                 ),
               ),
-              if (required)
-                const Text(
-                  ' *',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          TextFormField(
-            controller: controller,
-            maxLines: maxLines,
-            maxLength: maxLength,
-            keyboardType: keyboardType,
-            style: const TextStyle(fontSize: 13),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(
-                color: Color(0xFF9CA3AF),
-                fontSize: 12,
-              ),
-              filled: true,
-              fillColor: const Color(0xFFF9FAFB),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Colors.red),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              counterStyle: const TextStyle(fontSize: 10),
+          ],
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          maxLength: maxLength,
+          keyboardType: keyboardType,
+          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(
+              color: _slate400,
+              fontSize: 12,
             ),
-            validator: required
-                ? (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'This field is required';
-                    }
-                    return null;
-                  }
-                : null,
+            filled: true,
+            fillColor: _slate50,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _slate200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: _indigo, width: 1.8),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            counterStyle: GoogleFonts.inter(fontSize: 10, color: _slate400),
           ),
-        ],
-      ),
+          validator: required
+              ? (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'This field is required';
+                  }
+                  return null;
+                }
+              : null,
+        ),
+      ],
     );
   }
 
@@ -638,27 +774,24 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Price',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF374151),
+        Text(
+          'Choose a fixed price or mark the post as negotiable.',
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: _slate500,
           ),
         ),
-        const SizedBox(height: 6),
-        
-        // Negotiable Checkbox
+        const SizedBox(height: 10),
         InkWell(
           onTap: () => setState(() => _negotiable = !_negotiable),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(10),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: _negotiable ? const Color(0xFF10B981).withOpacity(0.05) : Colors.white,
-              borderRadius: BorderRadius.circular(6),
+              color: _negotiable ? _emerald.withValues(alpha: 0.08) : _slate50,
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: _negotiable ? const Color(0xFF10B981) : const Color(0xFFD1D5DB),
+                color: _negotiable ? _emerald : _slate300,
               ),
             ),
             child: Row(
@@ -667,9 +800,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                   width: 18,
                   height: 18,
                   decoration: BoxDecoration(
-                    color: _negotiable ? const Color(0xFF10B981) : Colors.white,
+                    color: _negotiable ? _emerald : Colors.white,
                     border: Border.all(
-                      color: _negotiable ? const Color(0xFF10B981) : const Color(0xFFD1D5DB),
+                      color: _negotiable ? _emerald : _slate300,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(3),
@@ -679,11 +812,11 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                       : null,
                 ),
                 const SizedBox(width: 8),
-                const Text(
+                Text(
                   'Price is negotiable',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 13,
-                    color: Color(0xFF374151),
+                    color: _slate700,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -700,34 +833,34 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
             ],
-            style: const TextStyle(fontSize: 13),
+            style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               hintText: 'Enter price',
               prefixText: '৳ ',
-              prefixStyle: const TextStyle(
-                color: Color(0xFF111827),
+              prefixStyle: GoogleFonts.inter(
+                color: _slate800,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
-              hintStyle: const TextStyle(
-                color: Color(0xFF9CA3AF),
+              hintStyle: GoogleFonts.inter(
+                color: _slate400,
                 fontSize: 13,
               ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: _slate50,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: _slate200),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: _slate200),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: _indigo, width: 1.8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
             validator: (value) {
               if (!_negotiable && (value == null || value.trim().isEmpty)) {
@@ -745,42 +878,38 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Text(
-              'Location',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
-              ),
+        RichText(
+          text: TextSpan(
+            text: 'Select your location',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _slate700,
             ),
-            const Text(
-              ' *',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+            children: const [
+              TextSpan(
+                text: ' *',
+                style: TextStyle(color: Colors.red),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 8),
         InkWell(
           onTap: _showLocationSelector,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFD1D5DB)),
+              color: _slate50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _slate200),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.location_on_outlined,
-                  color: Color(0xFF10B981),
+                  color: _emerald,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
@@ -795,14 +924,14 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                                 .join(', '),
                     style: TextStyle(
                       fontSize: 13,
-                      color: _location == null ? const Color(0xFF9CA3AF) : const Color(0xFF374151),
+                      color: _location == null ? _slate400 : _slate700,
                       fontWeight: _location == null ? FontWeight.w400 : FontWeight.w500,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.chevron_right,
-                  color: Colors.grey[400],
+                  color: _slate400,
                   size: 20,
                 ),
               ],
@@ -820,19 +949,19 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Photos',
-              style: TextStyle(
+            Text(
+              'Add up to 5 photos',
+              style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
+                color: _slate700,
               ),
             ),
             Text(
               '${_selectedImages.length}/5',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 11,
-                color: Colors.grey[500],
+                color: _slate500,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -868,7 +997,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           child: Container(
             width: 80,
             height: 80,
-            color: const Color(0xFFF3F4F6),
+            color: _slate100,
             child: _buildImageWidget(image),
           ),
         ),
@@ -880,7 +1009,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             child: Container(
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.9),
+                color: Colors.red.withValues(alpha: 0.9),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -903,10 +1032,10 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(6),
+          color: _slate50,
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: const Color(0xFFD1D5DB),
+            color: _slate300,
             width: 1.5,
           ),
         ),
@@ -915,15 +1044,15 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           children: [
             Icon(
               Icons.add_photo_alternate_outlined,
-              color: Colors.grey[400],
+              color: _slate400,
               size: 28,
             ),
             const SizedBox(height: 3),
             Text(
               'Add',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 fontSize: 10,
-                color: Colors.grey[500],
+                color: _slate500,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -944,9 +1073,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             height: 18,
             margin: const EdgeInsets.only(top: 1),
             decoration: BoxDecoration(
-              color: _acceptedPrivacy ? const Color(0xFF10B981) : Colors.white,
+              color: _acceptedPrivacy ? _emerald : Colors.white,
               border: Border.all(
-                color: _acceptedPrivacy ? const Color(0xFF10B981) : const Color(0xFFD1D5DB),
+                color: _acceptedPrivacy ? _emerald : _slate300,
                 width: 2,
               ),
               borderRadius: BorderRadius.circular(3),
@@ -958,26 +1087,26 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: RichText(
-              text: const TextSpan(
-                style: TextStyle(
+              text: TextSpan(
+                style: GoogleFonts.inter(
                   fontSize: 12,
-                  color: Color(0xFF6B7280),
+                  color: _slate500,
                   height: 1.3,
                 ),
                 children: [
-                  TextSpan(text: 'I accept the '),
+                  const TextSpan(text: 'I accept the '),
                   TextSpan(
                     text: 'Terms and Conditions',
-                    style: TextStyle(
-                      color: Color(0xFF10B981),
+                    style: const TextStyle(
+                      color: _emerald,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  TextSpan(text: ' and '),
+                  const TextSpan(text: ' and '),
                   TextSpan(
                     text: 'Privacy Policy',
-                    style: TextStyle(
-                      color: Color(0xFF10B981),
+                    style: const TextStyle(
+                      color: _emerald,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -991,34 +1120,38 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   }
 
   Widget _buildSubmitButton() {
-    return ElevatedButton(
-      onPressed: _isSubmitting ? null : _submitForm,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF10B981),
-        disabledBackgroundColor: const Color(0xFFE5E7EB),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: _isSubmitting ? null : _submitForm,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _indigo,
+          disabledBackgroundColor: _slate200,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          elevation: 0,
         ),
-        elevation: 0,
+        child: _isSubmitting
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                _isEditMode ? 'Update Post' : 'Create Post',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
       ),
-      child: _isSubmitting
-          ? const SizedBox(
-              height: 18,
-              width: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          : Text(
-              _isEditMode ? 'Update Post' : 'Create Post',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
     );
   }
 }
