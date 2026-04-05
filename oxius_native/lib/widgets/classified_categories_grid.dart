@@ -28,18 +28,21 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width < 390
+    final crossAxisCount = width < 340
         ? 3
         : width < 760
             ? 4
             : width < 1100
                 ? 5
                 : 6;
-    final childAspectRatio = width < 390
+    final childAspectRatio = width < 340
       ? 0.72
+      : width < 390
+        ? 0.58
       : width < 760
         ? 0.76
         : 0.84;
+    final spacing = width < 390 ? 8.0 : 10.0;
 
     if (widget.isLoading) {
       return _buildLoadingSkeleton(crossAxisCount, childAspectRatio);
@@ -57,8 +60,8 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
           childAspectRatio: childAspectRatio,
         ),
         itemCount: widget.categories.length,
@@ -77,6 +80,9 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
   }
 
   Widget _buildLoadingSkeleton(int crossAxisCount, double childAspectRatio) {
+    final width = MediaQuery.of(context).size.width;
+    final spacing = width < 390 ? 8.0 : 10.0;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: GridView.builder(
@@ -84,8 +90,8 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: crossAxisCount,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
           childAspectRatio: childAspectRatio,
         ),
         itemCount: crossAxisCount * 2,
@@ -115,6 +121,7 @@ class _CategoryTileState extends State<_CategoryTile> {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.of(context).size.width < 390;
     final highlightColor = const Color(0xFF0F766E);
     final labelColor = widget.isSelected
         ? const Color(0xFF065F46)
@@ -137,15 +144,15 @@ class _CategoryTileState extends State<_CategoryTile> {
             borderRadius: BorderRadius.circular(16),
             onTap: widget.onTap,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+              padding: EdgeInsets.fromLTRB(compact ? 2 : 4, 6, compact ? 2 : 4, 8),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 160),
                     curve: Curves.easeOut,
-                    width: 56,
-                    height: 56,
+                    width: compact ? 50 : 56,
+                    height: compact ? 50 : 56,
                     decoration: BoxDecoration(
                       color: widget.isSelected
                           ? highlightColor.withValues(alpha: 0.10)
@@ -161,18 +168,18 @@ class _CategoryTileState extends State<_CategoryTile> {
                       child: _CategoryImage(
                         url: widget.category.getIconAsset(),
                         categoryTitle: widget.category.title,
-                        size: 34,
+                        size: compact ? 30 : 34,
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 34,
+                    height: compact ? 32 : 34,
                     child: Text(
                       widget.category.title,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: compact ? 11.2 : 12.5,
                         fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w600,
                         letterSpacing: -0.1,
                         color: labelColor,

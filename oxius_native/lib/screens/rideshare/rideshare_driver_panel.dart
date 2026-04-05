@@ -1434,67 +1434,76 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFFCA5A5)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.location_disabled_rounded,
-              color: Color(0xFFDC2626),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  t('rideshare_location_mandatory', fallback: 'Location Sharing Required'),
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF991B1B),
-                  ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  t('rideshare_location_mandatory_driver_desc', fallback: 'You must enable location sharing to receive ride requests and go online as a driver.'),
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: const Color(0xFF7F1D1D),
-                    height: 1.35,
-                  ),
+                child: const Icon(
+                  Icons.location_disabled_rounded,
+                  color: Color(0xFFDC2626),
+                  size: 24,
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          FilledButton.icon(
-            onPressed: isBusy ? null : _requestLocationPermission,
-            icon: isBusy
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t('rideshare_location_mandatory', fallback: 'Location Sharing Required'),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF991B1B),
+                      ),
                     ),
-                  )
-                : const Icon(Icons.my_location_rounded, size: 16),
-            label: Text(
-              isBusy ? t('rideshare_checking', fallback: 'Checking...') : t('rideshare_enable_location', fallback: 'Enable Location'),
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-            ),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    const SizedBox(height: 4),
+                    Text(
+                      t('rideshare_location_mandatory_driver_desc', fallback: 'You must enable location sharing to receive ride requests and go online as a driver.'),
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF7F1D1D),
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: isBusy ? null : _requestLocationPermission,
+              icon: isBusy
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.my_location_rounded, size: 16),
+              label: Text(
+                isBusy ? t('rideshare_checking', fallback: 'Checking...') : t('rideshare_enable_location', fallback: 'Enable Location'),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
             ),
           ),
         ],
