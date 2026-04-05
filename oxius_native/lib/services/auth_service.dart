@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
+import 'online_status_service.dart';
+import 'rideshare_driver_presence_service.dart';
 
 class User {
   final String id; // Changed from int to String to handle UUID
@@ -275,6 +277,9 @@ class AuthService {
   // Clear all authentication data
   static Future<void> clearAuthData() async {
     print('🔴 Clearing all auth data...');
+
+    OnlineStatusService.stop();
+    await RideshareDriverPresenceService.stop();
     
     _currentUser = null;
     _accessToken = null;

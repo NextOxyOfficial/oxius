@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/adsyconnect_service.dart';
+import '../../services/rideshare_driver_presence_service.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/rideshare_realtime_service.dart';
 import '../../services/auth_service.dart';
@@ -73,11 +74,6 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   double _serviceRadius = 8.0;
   double _maxRideDistance = 0.0;
 
-  StreamSubscription<Position>? _locationSubscription;
-  // Fallback timer: sends last-known location every 30 s for stationary drivers
-  // (covers iOS background + Android edge cases where the stream stays silent).
-  Timer? _locationHeartbeatTimer;
-  DateTime? _lastLocationSentAt;
   Timer? _refreshTimer;
   Timer? _activeRideRefreshTimer;
   Timer? _countdownTimer;
@@ -101,6 +97,20 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final assignedDriverId = ride.assignedDriver?.userId ?? '';
     if (assignedDriverId.isEmpty) return null;
     return assignedDriverId == profile.userId ? ride : null;
+  }
+
+  RidePoint? _driverPointFromProfile(DriverProfile? profile) {
+    final latitude = profile?.currentLatitude;
+    final longitude = profile?.currentLongitude;
+    if (latitude == null || longitude == null) {
+      return null;
+    }
+
+    return RidePoint(
+      name: t('rideshare_you', fallback: 'You'),
+      latitude: latitude,
+      longitude: longitude,
+    );
   }
 
   bool _canChatWithPassenger(Ride ride) {
@@ -190,7 +200,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     super.initState();
     _ts.addListener(_onTranslationsChanged);
     WidgetsBinding.instance.addObserver(this);
+    RideshareDriverPresenceService.positionNotifier.addListener(
+      _handlePresencePositionChanged,
+    );
     _refreshLocationPermissionStatus();
+    _handlePresencePositionChanged();
     _loadDriverData();
     _startRefreshTimer();
     _startActiveRideRefreshTimer();
@@ -201,8 +215,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   void dispose() {
     _ts.removeListener(_onTranslationsChanged);
     WidgetsBinding.instance.removeObserver(this);
-    _locationSubscription?.cancel();
-    _locationHeartbeatTimer?.cancel();
+    RideshareDriverPresenceService.positionNotifier.removeListener(
+      _handlePresencePositionChanged,
+    );
     _refreshTimer?.cancel();
     _activeRideRefreshTimer?.cancel();
     _countdownTimer?.cancel();
@@ -249,6 +264,22 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
+  void _handlePresencePositionChanged() {
+    final position = RideshareDriverPresenceService.positionNotifier.value;
+    if (!mounted || position == null) {
+      return;
+    }
+
+    setState(() {
+      _driverCurrentPoint = RidePoint(
+        name: t('rideshare_you', fallback: 'You'),
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+    });
+    _refreshSmartRoutePreview();
+  }
+
   Future<bool> _refreshLocationPermissionStatus({bool syncTracking = true}) async {
     if (mounted) {
       setState(() => _isCheckingLocationPermission = true);
@@ -256,10 +287,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      final permission = await Geolocator.checkPermission();
+      final permission = await RideshareDriverPresenceService.getLocationPermission();
       final granted = serviceEnabled &&
-          permission != LocationPermission.denied &&
-          permission != LocationPermission.deniedForever;
+          RideshareDriverPresenceService.isBackgroundPermissionGranted(permission);
 
       if (mounted) {
         setState(() {
@@ -312,6 +342,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
       if (permission == LocationPermission.deniedForever) {
         _showError('Location permission permanently denied. Please enable it in app settings.');
+        await Geolocator.openAppSettings();
+        return false;
+      }
+
+      if (!RideshareDriverPresenceService.isBackgroundPermissionGranted(permission)) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (!RideshareDriverPresenceService.isBackgroundPermissionGranted(permission)) {
+        _showError(
+          'Allow background location ("Always allow") so you stay online and receive ride requests while the app is in your pocket.',
+        );
         await Geolocator.openAppSettings();
         return false;
       }
@@ -472,6 +514,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _driverProfile = profileResult.data;
         _activeRide = resolvedActiveRide;
         _earnings = earningsResult.data;
+        _driverCurrentPoint = RideshareDriverPresenceService.positionNotifier.value != null
+            ? RidePoint(
+                name: t('rideshare_you', fallback: 'You'),
+                latitude: RideshareDriverPresenceService.positionNotifier.value!.latitude,
+                longitude: RideshareDriverPresenceService.positionNotifier.value!.longitude,
+              )
+            : _driverPointFromProfile(profileResult.data);
         _isLoading = false;
       });
       if (profileResult.data != null) {
@@ -503,6 +552,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   void _syncRealtimeConnections() {
+    RideshareDriverPresenceService.setActiveRideId(_activeRide?.id);
+
     final canReceiveDispatch = _driverProfile?.isOnline == true && _activeRide == null;
     if (canReceiveDispatch) {
       _dispatchEventSubscription ??=
@@ -803,94 +854,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   Future<void> _startLocationTracking() async {
-    _locationSubscription?.cancel();
-    _locationHeartbeatTimer?.cancel();
-    try {
-      final granted = await _refreshLocationPermissionStatus(syncTracking: false);
-      if (!granted) {
-        _showError('Location permission required');
-        return;
-      }
-
-      // Build platform-specific settings so location tracking survives backgrounding:
-      //  • Android: foreground service with a visible notification (no ACCESS_BACKGROUND_LOCATION needed)
-      //  • iOS: allowBackgroundLocationUpdates keeps the stream alive while screen is off
-      late LocationSettings locationSettings;
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        locationSettings = AndroidSettings(
-          accuracy: LocationAccuracy.high,
-          // distanceFilter: 0 means fire on every OS-reported position, throttled by intervalDuration.
-          distanceFilter: 0,
-          // Guarantee at least one update every 30 s even when perfectly stationary.
-          intervalDuration: const Duration(seconds: 30),
-          foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationTitle: 'AdsyClub – Driver Mode',
-            notificationText: 'Location is being shared while you are online.',
-            enableWakeLock: true,
-            setOngoing: true,
-          ),
-        );
-      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
-        locationSettings = AppleSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 50,
-          activityType: ActivityType.automotiveNavigation,
-          pauseLocationUpdatesAutomatically: false,
-          // Required for background location on iOS (also needs UIBackgroundModes → location in Info.plist).
-          allowBackgroundLocationUpdates: true,
-          showBackgroundLocationIndicator: true,
-        );
-      } else {
-        // Web / desktop fallback
-        locationSettings = const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 50,
-        );
-      }
-
-      _locationSubscription = Geolocator.getPositionStream(
-        locationSettings: locationSettings,
-      ).listen(_updateDriverLocation);
-
-      // iOS fallback: if the driver is stationary the stream stays silent.
-      // Send last-known position every 30 s so the server never loses the driver.
-      _locationHeartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
-        if (!mounted || _driverProfile?.isOnline != true) return;
-        final last = _lastLocationSentAt;
-        if (last != null && DateTime.now().difference(last) < const Duration(seconds: 25)) {
-          return; // A real GPS position was just sent — skip the duplicate.
-        }
-        final pos = await Geolocator.getLastKnownPosition();
-        if (pos != null) await _updateDriverLocation(pos);
-      });
-    } catch (_) {
-      _showError('Failed to start location tracking');
-    }
+    await RideshareDriverPresenceService.syncWithDriverProfile(
+      _driverProfile,
+      promptForPermissions: false,
+    );
+    _handlePresencePositionChanged();
   }
 
   void _stopLocationTracking() {
-    _locationSubscription?.cancel();
-    _locationSubscription = null;
-    _locationHeartbeatTimer?.cancel();
-    _locationHeartbeatTimer = null;
-  }
-
-  Future<void> _updateDriverLocation(Position p) async {
+    unawaited(RideshareDriverPresenceService.stop());
     if (mounted) {
-      setState(() {
-        _driverCurrentPoint = RidePoint(
-          name: t('rideshare_you', fallback: 'You'),
-          latitude: p.latitude,
-          longitude: p.longitude,
-        );
-      });
+      setState(() => _driverCurrentPoint = null);
     }
-    _refreshSmartRoutePreview();
-    _lastLocationSentAt = DateTime.now();
-    await RideshareService.updateDriverLocation(
-      latitude: p.latitude, longitude: p.longitude, rideId: _activeRide?.id,
-      heading: p.heading, speedKph: p.speed * 3.6, accuracyMeters: p.accuracy,
-    );
   }
 
   Future<void> _acceptRide(Ride ride) async {

@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
+import 'online_status_service.dart';
+import 'rideshare_driver_presence_service.dart';
 
 /// Global user state management service
 /// Provides reactive updates to user authentication state across the app
@@ -66,11 +70,15 @@ class UserStateService extends ChangeNotifier {
   void updateUser(User user) {
     _currentUser = user;
     _isAuthenticated = true;
+    OnlineStatusService.start();
+    unawaited(RideshareDriverPresenceService.restoreIfNeeded());
     notifyListeners();
   }
 
   /// Clear user state on logout
   Future<void> clearUser() async {
+    OnlineStatusService.stop();
+    await RideshareDriverPresenceService.stop();
     _currentUser = null;
     _isAuthenticated = false;
     await AuthService.clearAuthData();

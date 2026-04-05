@@ -43,6 +43,7 @@ import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
 import 'services/deep_link_service.dart';
+import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
 import 'services/online_status_service.dart';
@@ -82,6 +83,10 @@ void main() async {
     print('Initializing FCM...');
     await FCMService.initialize();
     print('FCM initialized successfully');
+
+    // Initialize rideshare driver presence service before session restoration so
+    // Android boot auto-start and app resume share the same callback config.
+    await RideshareDriverPresenceService.initialize();
     
     // Initialize translation service
     print('Initializing translation service...');
@@ -100,6 +105,7 @@ void main() async {
       print('Session restored successfully for user: ${userState.userName}');
       await FCMService.syncTokenWithBackend();
       OnlineStatusService.start();
+      await RideshareDriverPresenceService.restoreIfNeeded();
     } else {
       print('No existing session found');
     }
