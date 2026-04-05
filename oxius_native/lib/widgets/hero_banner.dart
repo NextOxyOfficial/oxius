@@ -251,7 +251,7 @@ class _HeroBannerState extends State<HeroBanner> {
     final title = _translationService.t('social_business_network', fallback: 'Social Business Network');
     return Container(
       // Mobile-only margin
-      margin: EdgeInsets.symmetric(horizontal: 2),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F8FA),
         borderRadius: BorderRadius.circular(14),

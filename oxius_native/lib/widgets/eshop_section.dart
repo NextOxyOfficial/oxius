@@ -174,7 +174,7 @@ class _EshopSectionState extends State<EshopSection> {
     
     return Container(
       margin: EdgeInsets.symmetric(
-        horizontal: isMobile ? 6 : 16,
+        horizontal: isMobile ? 4 : 16,
         vertical: 8,
       ),
       child: Column(

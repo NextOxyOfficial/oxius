@@ -19,6 +19,7 @@ class TranslationService extends ChangeNotifier {
       'upgrade_pro_text': 'Get premium features',
       'pro_member': 'Pro Membership',
       'classified_service': 'My Services',
+      'post_free_ad': 'Post Free Service',
       'business_network': 'Business Network',
       'adsy_news': 'Adsy News',
       'verification': 'Verification',
@@ -28,6 +29,19 @@ class TranslationService extends ChangeNotifier {
       'logout': 'Logout',
       'eshop_manager': 'E-Shop Manager',
       'shop_manager': 'Shop Manager',
+      'my_services_subtitle': 'Browse and post services',
+      'post_free_service': 'Post Free Service',
+      'loading_services': 'Loading services...',
+      'classified_search_placeholder': 'Search services, categories...',
+      'classified_search_helper': 'Find services by title or category',
+      'classified_live_search': 'Live search',
+      'clear_search': 'Clear',
+      'search_results_categories': 'Categories',
+      'search_results_services': 'Services',
+      'classified_loading_more': 'Loading more...',
+      'classified_all_results_loaded': 'All results loaded',
+      'classified_no_results_found': 'No results found',
+      'classified_try_different_keywords': 'Try different keywords',
     },
     'bn': {
       'premium_access': 'প্রিমিয়াম অ্যাক্সেস',
@@ -38,6 +52,7 @@ class TranslationService extends ChangeNotifier {
       'upgrade_pro_text': 'প্রিমিয়াম ফিচার পান',
       'pro_member': 'প্রো মেম্বার',
       'classified_service': 'আমার সেবা',
+      'post_free_ad': 'ফ্রি সেবা বিজ্ঞাপন দিই',
       'business_network': 'বিজনেস নেটওয়ার্ক',
       'adsy_news': 'নিউজ',
       'verification': 'ভেরিফিকেশন',
@@ -47,6 +62,19 @@ class TranslationService extends ChangeNotifier {
       'logout': 'লগ আউট',
       'eshop_manager': 'ই-শপ ম্যানেজার',
       'shop_manager': 'শপ ম্যানেজার',
+      'my_services_subtitle': 'সেবা খুঁজুন এবং পোস্ট করুন',
+      'post_free_service': 'ফ্রি সার্ভিস পোস্ট করুন',
+      'loading_services': 'সেবাসমূহ লোড হচ্ছে...',
+      'classified_search_placeholder': 'সেবা বা ক্যাটাগরি খুঁজুন...',
+      'classified_search_helper': 'নাম বা ক্যাটাগরি দিয়ে সেবা খুঁজুন',
+      'classified_live_search': 'লাইভ সার্চ',
+      'clear_search': 'মুছুন',
+      'search_results_categories': 'ক্যাটাগরি',
+      'search_results_services': 'সেবাসমূহ',
+      'classified_loading_more': 'আরও লোড হচ্ছে...',
+      'classified_all_results_loaded': 'সব ফলাফল দেখা হয়েছে',
+      'classified_no_results_found': 'কোনো ফলাফল পাওয়া যায়নি',
+      'classified_try_different_keywords': 'অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন',
     },
   };
 
@@ -239,11 +267,30 @@ class TranslationService extends ChangeNotifier {
       return true;
     }
 
-    if (key == 'adsy_pay' && _currentLanguage != 'en') {
-      return normalizedValue == 'adsypay';
+    if (!_currentLanguage.startsWith('en')) {
+      final englishFallback = _localFallbackTranslations['en']?[key];
+      if (englishFallback != null &&
+          _normalizeTranslationToken(englishFallback) == normalizedValue) {
+        return true;
+      }
+    }
+
+    if (key == 'adsy_pay' && !_currentLanguage.startsWith('en')) {
+      return _isMalformedAdsyPayTranslation(normalizedValue);
     }
 
     return false;
+  }
+
+  bool _isMalformedAdsyPayTranslation(String normalizedValue) {
+    if (normalizedValue.isEmpty) {
+      return true;
+    }
+
+    return normalizedValue == 'adsypay' ||
+        normalizedValue == 'adsypayment' ||
+        normalizedValue == 'adsyclubpay' ||
+        normalizedValue.contains('adsypay');
   }
 
   String _normalizeTranslationToken(String value) {

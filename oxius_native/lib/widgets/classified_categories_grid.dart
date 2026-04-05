@@ -35,7 +35,11 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
             : width < 1100
                 ? 5
                 : 6;
-    final childAspectRatio = width < 390 ? 0.82 : 0.9;
+    final childAspectRatio = width < 390
+      ? 0.72
+      : width < 760
+        ? 0.76
+        : 0.84;
 
     if (widget.isLoading) {
       return _buildLoadingSkeleton(crossAxisCount, childAspectRatio);
@@ -133,10 +137,9 @@ class _CategoryTileState extends State<_CategoryTile> {
             borderRadius: BorderRadius.circular(16),
             onTap: widget.onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 160),
@@ -163,7 +166,8 @@ class _CategoryTileState extends State<_CategoryTile> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Flexible(
+                  SizedBox(
+                    height: 34,
                     child: Text(
                       widget.category.title,
                       textAlign: TextAlign.center,
@@ -176,19 +180,6 @@ class _CategoryTileState extends State<_CategoryTile> {
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    curve: Curves.easeOut,
-                    width: widget.isSelected ? 26 : 14,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: widget.isSelected
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFD1D5DB),
-                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                 ],
@@ -207,10 +198,9 @@ class _LoadingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
             width: 56,
@@ -223,19 +213,10 @@ class _LoadingTile extends StatelessWidget {
           const SizedBox(height: 8),
           Container(
             width: 52,
-            height: 12,
+            height: 28,
             decoration: BoxDecoration(
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(6),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Container(
-            width: 18,
-            height: 3,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(999),
             ),
           ),
         ],

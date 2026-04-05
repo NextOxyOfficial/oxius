@@ -62,9 +62,14 @@ class _HomeScreenState extends State<HomeScreen> {
   // Double-tap back to exit
   DateTime? _lastBackPressTime;
 
+  static const Map<String, String> _translationKeyAliases = {
+    'adsypay': 'adsy_pay',
+  };
+
   // Helper method to translate keys
-  String t(String key) {
-    return _translationService.translate(key);
+  String t(String key, {String? fallback}) {
+    final normalizedKey = _translationKeyAliases[key] ?? key;
+    return _translationService.translate(normalizedKey, fallback: fallback);
   }
 
   @override

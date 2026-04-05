@@ -80,7 +80,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
           ..addAll(categoryObjects);
         _loadingCategories = false;
       });
-    } catch (e, stackTrace) {
+    } catch (e) {
       if (!mounted) return;
       setState(() {
         _loadingCategories = false;
@@ -141,26 +141,51 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(isMobile),
-          const SizedBox(height: 16),
-          // Search bar (mobile first)
-          ClassifiedSearchBar(
-            onSearch: _onSearch,
-            margin: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 8),
+          Container(
+            padding: EdgeInsets.fromLTRB(
+              isMobile ? 12 : 16,
+              isMobile ? 14 : 16,
+              isMobile ? 12 : 16,
+              isMobile ? 10 : 12,
+            ),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFF0FDFA),
+                  Color(0xFFFFFFFF),
+                  Color(0xFFECFDF5),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFCCFBF1),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(isMobile),
+                const SizedBox(height: 14),
+                ClassifiedSearchBar(
+                  onSearch: _onSearch,
+                  margin: EdgeInsets.zero,
+                  embedded: true,
+                ),
+                const SizedBox(height: 12),
+                ClassifiedCategoriesGrid(
+                  categories: categoriesToShow,
+                  selectedId: _selectedCategoryId,
+                  onTap: _onCategoryTap,
+                  isLoading: _loadingCategories,
+                ),
+                if (hasMoreCategories && !_loadingCategories)
+                  _buildSeeMoreButton(isMobile),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          // Categories horizontal chips (limited or all based on expanded state)
-          ClassifiedCategoriesGrid(
-            categories: categoriesToShow,
-            selectedId: _selectedCategoryId,
-            onTap: _onCategoryTap,
-            isLoading: _loadingCategories,
-          ),
-          // See More / See Less button
-          if (hasMoreCategories && !_loadingCategories)
-            _buildSeeMoreButton(isMobile),
           const SizedBox(height: 12),
-          // Show ads scroll widget with real data from backend
           if (_posts.isNotEmpty) ...[
             AdsScrollWidget(
               ads: {
@@ -177,45 +202,50 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Widget _buildHeader(bool isMobile) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 16,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _translationService.t('my_services', fallback: 'My Services'),
-                  style: AppFonts.roboto(
-                    fontSize: isMobile ? 18 : 20,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF111827),
-                    letterSpacing: -0.5,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Browse and post services',
-                  style: AppFonts.roboto(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
+    final title = _translationService.t('classified_service', fallback: 'My Services');
+    final subtitle = _translationService.t(
+      'my_services_subtitle',
+      fallback: 'Browse and post services',
+    );
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _buildHeaderContent(title, subtitle, isMobile),
+        ),
+        const SizedBox(width: 12),
+        _buildActionButton(isMobile),
+      ],
+    );
+  }
+
+  Widget _buildHeaderContent(String title, String subtitle, bool isMobile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppFonts.roboto(
+            fontSize: isMobile ? 19 : 22,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF155E75),
+            letterSpacing: -0.5,
           ),
-          const SizedBox(width: 12),
-          _buildActionButton(isMobile),
-        ],
-      ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          style: AppFonts.roboto(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Colors.grey.shade700,
+            height: 1.4,
+          ),
+        ),
+      ],
     );
   }
 
@@ -224,8 +254,8 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 8 : 16,
-        vertical: 8,
+        horizontal: 4,
+        vertical: 4,
       ),
       child: Align(
         alignment: Alignment.centerRight,
@@ -273,17 +303,24 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     return GestureDetector(
       onTap: isLoading ? null : () => _handleButtonClick('post-free-ad'),
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: 8,
-          horizontal: 8,
+        padding: EdgeInsets.symmetric(
+          vertical: isMobile ? 11 : 12,
+          horizontal: isMobile ? 12 : 14,
         ),
         decoration: BoxDecoration(
-          color: const Color(0xFF10B981).withOpacity(0.1),
+          color: const Color(0xFF0FA36B),
           border: Border.all(
-            color: const Color(0xFF10B981),
+            color: const Color(0xFF0C8F5E),
             width: 1,
           ),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0FA36B).withValues(alpha: 0.12),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: isLoading
             ? SizedBox(
@@ -291,7 +328,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                 height: 16,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF10B981)),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
             : Row(
@@ -300,16 +337,17 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                 children: [
                   const Icon(
                     Icons.add_circle_outline,
-                    size: 16,
-                    color: Color(0xFF10B981),
+                    size: 17,
+                    color: Colors.white,
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   Text(
-                    'Post Free Service',
+                    _translationService.t('post_free_ad', fallback: 'Post Free Service'),
                     style: AppFonts.roboto(
-                      fontSize: 11,
+                      fontSize: isMobile ? 11.5 : 12,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF10B981),
+                      color: Colors.white,
+                      letterSpacing: -0.1,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -334,7 +372,10 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Loading services...',
+                _translationService.t(
+                  'loading_services',
+                  fallback: 'Loading services...',
+                ),
                 style: AppFonts.roboto(
                   fontSize: 13,
                   color: Colors.grey.shade600,
