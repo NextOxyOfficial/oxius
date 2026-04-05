@@ -1108,28 +1108,30 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         child: Center(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
-            child: _buildGlassPanel(
+            child: KeyedSubtree(
               key: ValueKey<String>(_statusOverlay!),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              borderRadius: BorderRadius.circular(22),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.info_outline_rounded,
-                    color: Colors.white.withOpacity(0.92),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    _statusOverlay!,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+              child: _buildGlassPanel(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                borderRadius: BorderRadius.circular(22),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.white.withOpacity(0.92),
+                      size: 18,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Text(
+                      _statusOverlay!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
