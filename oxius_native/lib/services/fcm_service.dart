@@ -280,6 +280,8 @@ class FCMService {
   static String? _fcmToken;
   static final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
   static AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
+  static const int _callRecoveryMaxAgeMs = 30000;
+  static bool _callRecoveryEnabled = false;
   
   // Track active calls to prevent duplicates
   static final Set<String> _activeCallIds = <String>{};
@@ -300,6 +302,55 @@ class FCMService {
 
   static String _buildCallId(String callerId, String channelName) {
     return '${callerId}_$channelName';
+  }
+
+  static int? _parseCallTimestamp(dynamic rawValue) {
+    if (rawValue == null) return null;
+    if (rawValue is int) return rawValue;
+    return int.tryParse(rawValue.toString());
+  }
+
+  static bool _isCallTimestampFresh(int? timestamp) {
+    if (timestamp == null) return false;
+    final age = DateTime.now().millisecondsSinceEpoch - timestamp;
+    return age >= 0 && age <= _callRecoveryMaxAgeMs;
+  }
+
+  static Future<bool> _hasRecoverableAuthenticatedSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final loggedOut = prefs.getBool('adsyclub_logged_out') ?? false;
+    final token = prefs.getString('adsyclub_token');
+    return !loggedOut && token != null && token.isNotEmpty;
+  }
+
+  static Future<void> handleAuthenticationState(bool isAuthenticated) async {
+    _callRecoveryEnabled = isAuthenticated;
+
+    if (isAuthenticated) {
+      await _tryNavigateToActiveCallkitCall();
+      return;
+    }
+
+    await _clearPersistedIncomingCallState();
+  }
+
+  static Future<void> _clearPersistedIncomingCallState() async {
+    try {
+      await FlutterCallkitIncoming.endAllCalls();
+    } catch (e) {
+      _log('⚠️ Failed to end persisted CallKit calls: $e');
+    }
+
+    try {
+      await cancelCallNotification();
+    } catch (e) {
+      _log('⚠️ Failed to cancel stale call notification: $e');
+    }
+
+    _activeCallIds.clear();
+    _callTimestamps.clear();
+    _acceptedCallkitUuids.clear();
+    _pendingNavigationData = null;
   }
 
   static bool _registerIncomingCall({
@@ -488,11 +539,6 @@ class FCMService {
       // Handle notification tap when app is in background
       FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
-      // If app was opened via CallKit notification shade tap, FCM callbacks may not fire.
-      // Detect any active CallKit calls and navigate to the call screen.
-      // Do this BEFORE processing FCM initial message to prioritize accepted calls
-      await _tryNavigateToActiveCallkitCall();
-
       // Check if app was opened from a notification
       // Skip if we already have an accepted_call pending (from CallKit accept)
       RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
@@ -538,6 +584,17 @@ class FCMService {
 
   static Future<void> _tryNavigateToActiveCallkitCall() async {
     if (AgoraCallService.isCallScreenVisible) return;
+
+    if (!_callRecoveryEnabled) {
+      _log('📞 Skipping active CallKit recovery - authentication not ready');
+      return;
+    }
+
+    if (!await _hasRecoverableAuthenticatedSession()) {
+      _log('📞 No authenticated session found. Clearing persisted CallKit state.');
+      await _clearPersistedIncomingCallState();
+      return;
+    }
     
     // Don't overwrite pending accepted_call navigation
     if (_pendingNavigationData != null && _pendingNavigationData!['type'] == 'accepted_call') {
@@ -575,16 +632,29 @@ class FCMService {
 
       final callerId = extra?['caller_id']?.toString();
       final channelName = extra?['channel_name']?.toString();
+      final timestamp = _parseCallTimestamp(extra?['timestamp']);
       if (callerId == null || channelName == null) {
       _log('📞 CallKit actionCallAccept missing callerId/channelName: callerId=$callerId channelName=$channelName');
       return;
     }
+
+      if (!_isCallTimestampFresh(timestamp)) {
+        _log('📞 Clearing stale CallKit recovery entry for channel=$channelName');
+        if (callkitUuid.isNotEmpty) {
+          await FlutterCallkitIncoming.endCall(callkitUuid);
+        } else {
+          await _clearPersistedIncomingCallState();
+        }
+        releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+        return;
+      }
 
       final callData = {
         // If call was accepted, use 'accepted_call' type to go directly to CallScreen
         'type': wasAccepted ? 'accepted_call' : 'incoming_call',
         'caller_id': callerId,
         'channel_name': channelName,
+        'timestamp': timestamp,
         'call_type': extra?['call_type']?.toString() ?? 'video',
         'caller_name': extra?['caller_name']?.toString() ?? 'Unknown',
         'caller_avatar': extra?['caller_avatar']?.toString() ?? '',
@@ -714,6 +784,7 @@ class FCMService {
       'type': 'incoming_call',
       'caller_id': callerId,
       'channel_name': channelName,
+      'timestamp': _parseCallTimestamp(extra['timestamp']),
       'call_type': extra['call_type']?.toString() ?? 'video',
       'caller_name': extra['caller_name']?.toString() ?? 'Unknown',
       'caller_avatar': extra['caller_avatar']?.toString() ?? '',
@@ -893,6 +964,7 @@ class FCMService {
       extra: {
         'caller_id': callerId,
         'channel_name': channelName,
+        'timestamp': (timestamp ?? DateTime.now().millisecondsSinceEpoch).toString(),
         'call_type': callType,
         'caller_name': callerName,
         'caller_avatar': callerAvatar ?? '',

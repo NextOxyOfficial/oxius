@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
 import 'adsyconnect_realtime_service.dart';
+import 'fcm_service.dart';
 import 'online_status_service.dart';
 import 'rideshare_driver_presence_service.dart';
 
@@ -71,6 +72,7 @@ class UserStateService extends ChangeNotifier {
   void updateUser(User user) {
     _currentUser = user;
     _isAuthenticated = true;
+    unawaited(FCMService.handleAuthenticationState(true));
     unawaited(AdsyConnectRealtimeService.instance.connect());
     OnlineStatusService.start();
     unawaited(RideshareDriverPresenceService.restoreIfNeeded());
@@ -82,6 +84,7 @@ class UserStateService extends ChangeNotifier {
     await AdsyConnectRealtimeService.instance.disconnect();
     OnlineStatusService.stop();
     await RideshareDriverPresenceService.stop();
+    await FCMService.handleAuthenticationState(false);
     _currentUser = null;
     _isAuthenticated = false;
     await AuthService.clearAuthData();

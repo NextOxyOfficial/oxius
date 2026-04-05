@@ -142,12 +142,6 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.fromLTRB(
-              isMobile ? 12 : 16,
-              isMobile ? 14 : 16,
-              isMobile ? 12 : 16,
-              isMobile ? 10 : 12,
-            ),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
@@ -166,22 +160,46 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeader(isMobile),
-                const SizedBox(height: 14),
-                ClassifiedSearchBar(
-                  onSearch: _onSearch,
-                  margin: EdgeInsets.zero,
-                  embedded: true,
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    isMobile ? 12 : 16,
+                    isMobile ? 14 : 16,
+                    isMobile ? 12 : 16,
+                    0,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(isMobile),
+                      const SizedBox(height: 14),
+                      ClassifiedSearchBar(
+                        onSearch: _onSearch,
+                        margin: EdgeInsets.zero,
+                        embedded: true,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 ClassifiedCategoriesGrid(
                   categories: categoriesToShow,
                   selectedId: _selectedCategoryId,
                   onTap: _onCategoryTap,
                   isLoading: _loadingCategories,
+                  margin: const EdgeInsets.fromLTRB(0, 0, 0, 6),
                 ),
                 if (hasMoreCategories && !_loadingCategories)
-                  _buildSeeMoreButton(isMobile),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      isMobile ? 8 : 12,
+                      0,
+                      isMobile ? 8 : 12,
+                      isMobile ? 10 : 12,
+                    ),
+                    child: _buildSeeMoreButton(isMobile),
+                  )
+                else
+                  SizedBox(height: isMobile ? 10 : 12),
               ],
             ),
           ),

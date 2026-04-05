@@ -109,12 +109,14 @@ void main() async {
     
     if (userState.isAuthenticated) {
       print('Session restored successfully for user: ${userState.userName}');
+      await FCMService.handleAuthenticationState(true);
       await FCMService.syncTokenWithBackend();
       await AdsyConnectRealtimeService.instance.connect();
       OnlineStatusService.start();
       await RideshareDriverPresenceService.restoreIfNeeded();
     } else {
       print('No existing session found');
+      await FCMService.handleAuthenticationState(false);
     }
     
     runApp(MyApp(userState: userState));

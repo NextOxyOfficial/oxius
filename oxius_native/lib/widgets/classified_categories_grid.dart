@@ -10,6 +10,7 @@ class ClassifiedCategoriesGrid extends StatefulWidget {
   final void Function(ClassifiedCategory category)? onTap;
   final bool isLoading;
   final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
 
   const ClassifiedCategoriesGrid({
     super.key,
@@ -18,6 +19,7 @@ class ClassifiedCategoriesGrid extends StatefulWidget {
     this.onTap,
     this.isLoading = false,
     this.padding,
+    this.margin,
   });
 
   @override
@@ -53,7 +55,7 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       padding: widget.padding,
       child: GridView.builder(
         shrinkWrap: true,
@@ -84,7 +86,7 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
     final spacing = width < 390 ? 8.0 : 10.0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
