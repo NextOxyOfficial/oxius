@@ -167,6 +167,7 @@ class ClassifiedPostService {
             count: data['count'] as int? ?? results.length,
             next: data['next']?.toString(),
             previous: data['previous']?.toString(),
+            pageSize: pageSize,
           );
         } else if (data is List) {
           final results = data
@@ -177,14 +178,15 @@ class ClassifiedPostService {
           return ClassifiedPostsResponse(
             results: results,
             count: results.length,
+            pageSize: pageSize,
           );
         }
       }
       
-      return ClassifiedPostsResponse(results: [], count: 0);
+      return ClassifiedPostsResponse(results: [], count: 0, pageSize: pageSize);
     } catch (e) {
       print('Error fetching posts: $e');
-      return ClassifiedPostsResponse(results: [], count: 0);
+      return ClassifiedPostsResponse(results: [], count: 0, pageSize: pageSize);
     }
   }
 
@@ -565,14 +567,30 @@ class ClassifiedPostsResponse {
   final int count;
   final String? next;
   final String? previous;
+  final int pageSize;
 
   ClassifiedPostsResponse({
     required this.results,
     required this.count,
     this.next,
     this.previous,
+    this.pageSize = 20,
   });
 
   bool get hasMore => next != null;
-  int get totalPages => (count / results.length).ceil();
+  int get totalPages {
+    if (count <= 0) {
+      return 0;
+    }
+
+    final divisor = pageSize > 0
+        ? pageSize
+        : (results.isNotEmpty ? results.length : count);
+
+    if (divisor <= 0) {
+      return 0;
+    }
+
+    return (count / divisor).ceil();
+  }
 }

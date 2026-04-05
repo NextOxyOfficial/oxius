@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import '../services/translation_service.dart';
 import '../services/classified_category_service.dart';
 import '../services/category_icon_mapping.dart';
 
@@ -26,25 +25,37 @@ class ClassifiedCategoriesGrid extends StatefulWidget {
 }
 
 class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
-  final TranslationService _ts = TranslationService();
-
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCount = width < 390
+        ? 3
+        : width < 760
+            ? 4
+            : width < 1100
+                ? 5
+                : 6;
+    final childAspectRatio = width < 390 ? 0.82 : 0.9;
+
+    if (widget.isLoading) {
+      return _buildLoadingSkeleton(crossAxisCount, childAspectRatio);
+    }
+
     if (widget.categories.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Hero section inspired grid layout: 4 columns with square tiles
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      padding: widget.padding,
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4, // 4 categories per row like hero section
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
-          childAspectRatio: 0.9, // Slightly taller than square like hero section
+          childAspectRatio: childAspectRatio,
         ),
         itemCount: widget.categories.length,
         itemBuilder: (context, index) {
@@ -61,26 +72,25 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
     );
   }
 
-  Widget _buildLoadingSkeleton() {
+  Widget _buildLoadingSkeleton(int crossAxisCount, double childAspectRatio) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
           mainAxisSpacing: 10,
           crossAxisSpacing: 10,
-          childAspectRatio: 0.9,
+          childAspectRatio: childAspectRatio,
         ),
-        itemCount: 8, // Show 8 skeleton items
+        itemCount: crossAxisCount * 2,
         itemBuilder: (context, index) => const _LoadingTile(),
       ),
     );
   }
 }
 
-// Hero section inspired category tile with AnimatedScale and rounded square design
 class _CategoryTile extends StatefulWidget {
   final ClassifiedCategory category;
   final bool isSelected;
@@ -101,14 +111,10 @@ class _CategoryTileState extends State<_CategoryTile> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
-    // Color scheme similar to hero section
-    final backgroundColor = isDark ? Colors.grey.shade800 : const Color(0xFFF9FAFB);
-    final highlightColor = theme.colorScheme.primary;
-    final iconColor = widget.isSelected ? highlightColor : Colors.grey.shade600;
-    final labelColor = widget.isSelected ? Colors.grey.shade800 : Colors.grey.shade600;
+    final highlightColor = const Color(0xFF0F766E);
+    final labelColor = widget.isSelected
+        ? const Color(0xFF065F46)
+        : const Color(0xFF334155);
     
     return GestureDetector(
       onTapDown: widget.onTap == null ? null : (_) => setState(() => _pressed = true),
@@ -121,89 +127,119 @@ class _CategoryTileState extends State<_CategoryTile> {
         scale: _pressed ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min, // Prevent overflow
-          children: [
-            // Icon container with hero section styling - rounded square
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: widget.isSelected ? highlightColor.withValues(alpha: 0.1) : backgroundColor,
-                borderRadius: BorderRadius.circular(12), // Rounded square like hero section
-                border: widget.isSelected 
-                  ? Border.all(color: highlightColor.withValues(alpha: 0.3), width: 1.5)
-                  : null,
-                boxShadow: [
-                  BoxShadow(
-                    color: iconColor.withValues(alpha: 0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: widget.onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: widget.isSelected
+                          ? highlightColor.withValues(alpha: 0.10)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: widget.isSelected
+                            ? highlightColor.withValues(alpha: 0.20)
+                            : const Color(0xFFE2E8F0),
+                      ),
+                    ),
+                    child: Center(
+                      child: _CategoryImage(
+                        url: widget.category.getIconAsset(),
+                        categoryTitle: widget.category.title,
+                        size: 34,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Flexible(
+                    child: Text(
+                      widget.category.title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w600,
+                        letterSpacing: -0.1,
+                        color: labelColor,
+                        height: 1.22,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    width: widget.isSelected ? 26 : 14,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: widget.isSelected
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFD1D5DB),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                   ),
                 ],
               ),
-              child: Center(
-                child: _CategoryImage(
-                  url: widget.category.getIconAsset(),
-                  categoryTitle: widget.category.title,
-                  // Don't pass color to preserve original icon colors
-                  size: 32,
-                ),
-              ),
             ),
-            const SizedBox(height: 6),
-            // Label with hero section typography
-            Flexible( // Make text flexible to prevent overflow
-              child: Text(
-                widget.category.title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.1,
-                  color: labelColor,
-                  height: 1.1, // Slightly reduced line height
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Loading skeleton tile matching hero section design
 class _LoadingTile extends StatelessWidget {
   const _LoadingTile();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min, // Prevent overflow
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          width: 40,
-          height: 12,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(6),
+          const SizedBox(height: 8),
+          Container(
+            width: 52,
+            height: 12,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(6),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          Container(
+            width: 18,
+            height: 3,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200,
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

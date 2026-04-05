@@ -1647,8 +1647,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               child: OutlinedButton(
                 onPressed: _openChatWithSeller,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF10B981),
-                  side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                  foregroundColor: const Color(0xFF0284C7),
+                  side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                  backgroundColor: const Color(0xFFF0F9FF),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -1658,10 +1659,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/images/chat_icon.png',
-                      width: 18,
-                      height: 18,
-                      color: const Color(0xFF10B981),
+                      'assets/icons/chat_icon.png',
+                      width: 20,
+                      height: 20,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(width: 8),
                     const Text(
