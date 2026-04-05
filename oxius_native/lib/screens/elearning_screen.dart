@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../widgets/elearning/batch_selector.dart';
-import '../widgets/elearning/batch_products.dart';
 import '../widgets/elearning/division_selector.dart';
 import '../widgets/elearning/subject_selector.dart';
 import '../widgets/elearning/video_lessons.dart';
@@ -13,9 +13,18 @@ class ElearningScreen extends StatefulWidget {
 }
 
 class _ElearningScreenState extends State<ElearningScreen> {
+  static const _slate50 = Color(0xFFF8FAFC);
+  static const _slate100 = Color(0xFFF1F5F9);
+  static const _slate200 = Color(0xFFE2E8F0);
+  static const _slate500 = Color(0xFF64748B);
+  static const _slate800 = Color(0xFF1E293B);
+  static const _indigo = Color(0xFF6366F1);
+  static const _violet = Color(0xFF8B5CF6);
+
   String? _selectedBatch;
   String? _selectedDivision;
   String? _selectedSubject;
+  String _expandedStep = 'batch';
 
   void _handleBatchSelection(String batchCode) {
     setState(() {
@@ -23,6 +32,7 @@ class _ElearningScreenState extends State<ElearningScreen> {
       // Reset subsequent selections
       _selectedDivision = null;
       _selectedSubject = null;
+      _expandedStep = 'division';
     });
   }
 
@@ -31,12 +41,14 @@ class _ElearningScreenState extends State<ElearningScreen> {
       _selectedDivision = divisionCode;
       // Reset subject selection
       _selectedSubject = null;
+      _expandedStep = 'subject';
     });
   }
 
   void _handleSubjectSelection(String subjectCode) {
     setState(() {
       _selectedSubject = subjectCode;
+      _expandedStep = 'videos';
     });
   }
 
@@ -44,285 +56,236 @@ class _ElearningScreenState extends State<ElearningScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
+    final horizontalPadding = isMobile ? 4.0 : 12.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Custom Header with gradient background
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                ),
-                child: _buildHeader(),
-              ),
-              
-              // Content with rounded top
-              Expanded(
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF9FAFB),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(24),
-                      topRight: Radius.circular(24),
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 20),
-                        // Compact Hero Section
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 4 : 16,
-                            vertical: isMobile ? 12 : 16,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: const Icon(
-                                      Icons.school_rounded,
-                                      color: Colors.white,
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'E-Learning Platform',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1F2937),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'Learn anytime, anywhere',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Color(0xFF6B7280),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        // Content Section
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 1280),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isMobile ? 1 : 16,
-                            vertical: 12,
-                          ),
-                          child: Column(
-                            children: [
-                  // Batch Selector
+      backgroundColor: _slate50,
+      appBar: _buildAppBar(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1280),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeroCard(),
                   BatchSelector(
                     selectedBatch: _selectedBatch,
+                    isExpanded: _expandedStep == 'batch',
+                    onTapExpand: () => setState(() => _expandedStep = 'batch'),
                     onSelectBatch: _handleBatchSelection,
                   ),
-
-                  // Batch Products
-                  BatchProducts(selectedBatch: _selectedBatch),
-
-                  // Division Selector
                   DivisionSelector(
                     batch: _selectedBatch,
                     selectedDivision: _selectedDivision,
+                    isExpanded: _expandedStep == 'division',
+                    onTapExpand: () => setState(() => _expandedStep = 'division'),
                     onSelectDivision: _handleDivisionSelection,
                   ),
-
-                  // Subject Selector
                   SubjectSelector(
                     batch: _selectedBatch,
                     division: _selectedDivision,
                     selectedSubject: _selectedSubject,
+                    isExpanded: _expandedStep == 'subject',
+                    onTapExpand: () => setState(() => _expandedStep = 'subject'),
                     onSelectSubject: _handleSubjectSelection,
                   ),
-
-                  // Video Lessons
                   VideoLessons(subject: _selectedSubject),
-
-                  // Compact Getting Started Info
-                  if (_selectedBatch == null)
-                    Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: Colors.blue.shade200,
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.lightbulb_outline,
-                            color: Colors.blue.shade600,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Quick Start Guide',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.blue.shade900,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  '1. Select batch → 2. Choose division → 3. Pick subject → 4. Watch videos',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.blue.shade700,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                              const SizedBox(height: 40), // Reduced bottom padding
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                  const SizedBox(height: 24),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Row(
-        children: [
-          // Back Button
-          IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: _slate100,
+            borderRadius: BorderRadius.circular(10),
           ),
-          
-          // Title
-          const Expanded(
-            child: Text(
-              'eLearning',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+          child: const Icon(
+            Icons.arrow_back_rounded,
+            size: 20,
+            color: _slate800,
+          ),
+        ),
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [_indigo, _violet],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: const Icon(
+              Icons.school_rounded,
+              color: Colors.white,
+              size: 18,
             ),
           ),
-          
-          // Info Icon
-          IconButton(
-            icon: const Icon(Icons.info_outline_rounded, color: Colors.white, size: 22),
-            onPressed: () {
-              // Show info dialog
-            },
-            tooltip: 'Information',
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'eLearning',
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: _slate800,
+                ),
+              ),
+              Text(
+                'Structured study path',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: _slate500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          tooltip: 'How it works',
+          onPressed: _showLearningInfo,
+          icon: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _slate100,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              size: 20,
+              color: _slate500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 4),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: _slate200),
+      ),
+    );
+  }
+
+  Widget _buildHeroCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [_indigo, _violet],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: _indigo.withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.auto_stories_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Follow a focused study flow',
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Pick your batch, narrow the syllabus, then jump straight into lessons.',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        height: 1.45,
+                        color: Colors.white.withValues(alpha: 0.82),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProgressStep(int number, String label, bool isActive) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.white.withOpacity(0.3),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
+  void _showLearningInfo() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text(
+          'How eLearning works',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Start with your batch, narrow it down by division and subject, then continue directly into the lesson videos. Recommended books appear after the study path so they do not interrupt the learning flow.',
+          style: GoogleFonts.inter(fontSize: 13, height: 1.5, color: _slate500),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              '$number',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.blue.shade600 : Colors.white,
-              ),
+              'Close',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
             ),
           ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: isActive ? Colors.white : Colors.white.withOpacity(0.7),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressArrow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Icon(
-        Icons.chevron_right,
-        size: 14,
-        color: Colors.white.withOpacity(0.5),
+        ],
       ),
     );
   }

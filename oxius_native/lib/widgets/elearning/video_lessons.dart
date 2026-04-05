@@ -16,6 +16,11 @@ class VideoLessons extends StatefulWidget {
 }
 
 class _VideoLessonsState extends State<VideoLessons> {
+  static const _slate200 = Color(0xFFE2E8F0);
+  static const _slate500 = Color(0xFF64748B);
+  static const _slate800 = Color(0xFF1E293B);
+  static const _indigo = Color(0xFF6366F1);
+
   List<VideoLesson> _videos = [];
   List<VideoLesson> _filteredVideos = [];
   bool _loading = false;
@@ -114,16 +119,16 @@ class _VideoLessonsState extends State<VideoLessons> {
     if (widget.subject == null) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.only(top: 12),
+      margin: const EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -174,6 +179,22 @@ class _VideoLessonsState extends State<VideoLessons> {
                     ],
                   ),
                 ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _indigo.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Text(
+                    'Step 4/4',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: _indigo,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 if (!_loading)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

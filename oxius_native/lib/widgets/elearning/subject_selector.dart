@@ -6,6 +6,8 @@ class SubjectSelector extends StatefulWidget {
   final String? batch;
   final String? division;
   final String? selectedSubject;
+  final bool isExpanded;
+  final VoidCallback onTapExpand;
   final Function(String) onSelectSubject;
 
   const SubjectSelector({
@@ -13,6 +15,8 @@ class SubjectSelector extends StatefulWidget {
     this.batch,
     this.division,
     this.selectedSubject,
+    required this.isExpanded,
+    required this.onTapExpand,
     required this.onSelectSubject,
   });
 
@@ -21,6 +25,12 @@ class SubjectSelector extends StatefulWidget {
 }
 
 class _SubjectSelectorState extends State<SubjectSelector> {
+  static const _slate200 = Color(0xFFE2E8F0);
+  static const _slate500 = Color(0xFF64748B);
+  static const _slate800 = Color(0xFF1E293B);
+  static const _indigo = Color(0xFF6366F1);
+  static const _violet = Color(0xFF8B5CF6);
+
   List<Subject> _subjects = [];
   bool _loading = false;
   String? _error;
@@ -87,58 +97,115 @@ class _SubjectSelectorState extends State<SubjectSelector> {
     return _colorOptions[index % _colorOptions.length];
   }
 
+  Subject? get _selectedSubjectItem {
+    final code = widget.selectedSubject;
+    if (code == null) {
+      return null;
+    }
+
+    for (final subject in _subjects) {
+      if (subject.code == code) {
+        return subject;
+      }
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.division == null) return const SizedBox.shrink();
 
+    final selectedSubject = _selectedSubjectItem;
+    final isCollapsed = !widget.isExpanded && selectedSubject != null;
+
     return Container(
-      margin: const EdgeInsets.only(top: 12),
+      margin: const EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(18),
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Compact Header
-          Row(
+          InkWell(
+            onTap: isCollapsed ? widget.onTapExpand : null,
+            borderRadius: BorderRadius.circular(14),
+            child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Select Your Subject',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1F2937),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'Step 3/4',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF1D4ED8),
-                    fontWeight: FontWeight.w600,
+              Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [_indigo, _violet],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.menu_book_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Choose subject',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: _slate800,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Open the exact lesson track',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: _slate500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _indigo.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      'Step 3/4',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: _indigo,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (isCollapsed) ...[
+                    const SizedBox(width: 8),
+                    const Icon(Icons.expand_more_rounded, size: 18, color: _slate500),
+                  ],
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          ),
+          const SizedBox(height: 12),
 
           // Loading state
           if (_loading)
@@ -202,119 +269,128 @@ class _SubjectSelectorState extends State<SubjectSelector> {
               ),
             ),
 
-          // Subject grid
-          if (!_loading && _error == null && _subjects.isNotEmpty)
-            LayoutBuilder(
-              builder: (context, constraints) {
-                // Responsive grid columns
-                int crossAxisCount = 3; // Mobile default (small cards)
-                if (constraints.maxWidth >= 1024) {
-                  crossAxisCount = 4; // Desktop
-                } else if (constraints.maxWidth >= 768) {
-                  crossAxisCount = 3; // Tablet
-                } else if (constraints.maxWidth >= 640) {
-                  crossAxisCount = 2; // Large mobile
-                }
+          if (!_loading && _error == null && isCollapsed)
+            _buildCollapsedSummary(selectedSubject),
 
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    childAspectRatio: 0.95, // Match batches and divisions
-                  ),
-                  itemCount: _subjects.length,
-                  itemBuilder: (context, index) {
-                    final subject = _subjects[index];
-                    final isSelected = widget.selectedSubject == subject.code;
-                    final colors = _getSubjectColors(index);
+          if (!_loading && _error == null && _subjects.isNotEmpty && !isCollapsed)
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _subjects.length,
+              separatorBuilder: (context, index) => Divider(color: _slate200, height: 1),
+              itemBuilder: (context, index) {
+                final subject = _subjects[index];
+                final isSelected = widget.selectedSubject == subject.code;
+                final colors = _getSubjectColors(index);
 
-                    return InkWell(
-                      onTap: () => widget.onSelectSubject(subject.code),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.blue.shade500
-                                : Colors.grey.shade200,
-                            width: isSelected ? 2 : 1,
+                return InkWell(
+                  onTap: () => widget.onSelectSubject(subject.code),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: colors['bg'],
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                          color: Colors.white,
+                          child: Icon(
+                            Icons.menu_book_rounded,
+                            size: 18,
+                            color: colors['text'],
+                          ),
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Icon
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: colors['bg'],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.menu_book,
-                                size: 20,
-                                color: colors['text'],
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Name
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text(
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
                                 subject.name,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            // Selected indicator
-                            if (isSelected)
-                              Container(
-                                margin: const EdgeInsets.only(top: 4),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.shade50,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.check,
-                                      size: 12,
-                                      color: Colors.blue.shade600,
-                                    ),
-                                    const SizedBox(width: 2),
-                                    Text(
-                                      'Selected',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.blue.shade600,
-                                      ),
-                                    ),
-                                  ],
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: isSelected ? _indigo : _slate800,
                                 ),
                               ),
-                          ],
+                              if (subject.description.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                Text(
+                                  subject.description,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    height: 1.4,
+                                    color: _slate500,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                        if (isSelected)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8, top: 2),
+                            child: Icon(Icons.check_circle_rounded, size: 18, color: _indigo),
+                          ),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollapsedSummary(Subject subject) {
+    final colors = _getSubjectColors(_subjects.indexOf(subject));
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: colors['bg'],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.menu_book_rounded,
+              size: 18,
+              color: colors['text'],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  subject.name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _slate800,
+                  ),
+                ),
+                if (subject.description.isNotEmpty)
+                  Text(
+                    subject.description,
+                    style: const TextStyle(fontSize: 11, color: _slate500),
+                  ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: widget.onTapExpand,
+            child: const Text('Change'),
+          ),
         ],
       ),
     );

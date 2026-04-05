@@ -17,6 +17,10 @@ class BatchProducts extends StatefulWidget {
 }
 
 class _BatchProductsState extends State<BatchProducts> {
+  static const _slate200 = Color(0xFFE2E8F0);
+  static const _slate500 = Color(0xFF64748B);
+  static const _slate800 = Color(0xFF1E293B);
+
   List<Map<String, dynamic>> _products = [];
   bool _loading = false;
   String? _error;
@@ -92,63 +96,83 @@ class _BatchProductsState extends State<BatchProducts> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(top: 16),
+      margin: const EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _slate200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
-                Icon(
-                  Icons.shopping_bag,
-                  size: 20,
-                  color: Colors.green.shade600,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${widget.selectedBatch} ব্যাচের গুরুত্বপূর্ণ বই ও শিক্ষা সামগ্রী',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
-                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  child: Icon(
+                    Icons.shopping_bag_rounded,
+                    size: 18,
+                    color: Colors.green.shade600,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Recommended study resources',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: _slate800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${widget.selectedBatch} batch books and learning materials',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: _slate500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
                   child: Text(
-                    widget.selectedBatch!,
+                    '${_products.length} items',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       color: Colors.green.shade700,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Loading state
           if (_loading)
@@ -193,7 +217,7 @@ class _BatchProductsState extends State<BatchProducts> {
           // Products horizontal scroll
           if (!_loading && _error == null && _products.isNotEmpty)
             SizedBox(
-              height: 340,
+              height: 292,
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
