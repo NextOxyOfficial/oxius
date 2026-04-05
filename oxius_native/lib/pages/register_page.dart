@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:oxius_native/utils/app_fonts.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:oxius_native/utils/app_fonts.dart';
+
 import '../services/auth_service.dart';
 import '../services/geo_service.dart';
 import '../services/user_state_service.dart';
@@ -12,7 +14,7 @@ import '../utils/network_error_handler.dart';
 
 class RegisterPage extends StatefulWidget {
   final String? referralCode;
-  
+
   const RegisterPage({super.key, this.referralCode});
 
   @override
@@ -20,12 +22,24 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  int _currentStep = 1;
+  static const _pageBackgroundColor = Color(0xFFF3F7FC);
+  static const _surfaceColor = Color(0xFFFFFFFF);
+  static const _softSurfaceColor = Color(0xFFF8FBFF);
+  static const _cardBorderColor = Color(0xFFDCE6F2);
+  static const _primaryColor = Color(0xFF1D4ED8);
+  static const _primaryDarkColor = Color(0xFF163B8C);
+  static const _primarySoftColor = Color(0xFFEAF2FF);
+  static const _headingTextColor = Color(0xFF0F172A);
+  static const _bodyTextColor = Color(0xFF475569);
+  static const _mutedTextColor = Color(0xFF64748B);
+  static const _dangerColor = Color(0xFFDC2626);
+  static const _dangerSurfaceColor = Color(0xFFFEF2F2);
+
   bool _isLoading = false;
   String? _errorMessage;
   bool _showPassword = false;
-  
-  // Controllers
+  bool _showConfirmPassword = false;
+
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -36,25 +50,21 @@ class _RegisterPageState extends State<RegisterPage> {
   final _zipController = TextEditingController();
   final _addressController = TextEditingController();
   final _referralController = TextEditingController();
-  
-  // Form data
+
   String? _profileImageBase64;
   File? _profileImageFile;
-  Uint8List? _profileImageBytes; // For platforms without file system
+  Uint8List? _profileImageBytes;
   String? _profileImageName;
   String _gender = '';
-  String _country = 'Bangladesh';
+  final String _country = 'Bangladesh';
   String? _selectedRegion;
   String? _selectedCity;
   String? _selectedUpazila;
-  
-  // Geo data
+
   List<Map<String, dynamic>> _regions = [];
   List<Map<String, dynamic>> _cities = [];
   List<Map<String, dynamic>> _upazilas = [];
-  
-  // Field errors
-  Map<String, String?> _errors = {};
+  final Map<String, String?> _errors = {};
 
   @override
   void initState() {
@@ -83,63 +93,65 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _loadRegions() async {
     try {
       final regions = await GeoService.getRegions(_country);
-      setState(() => _regions = regions);
+      if (mounted) {
+        setState(() => _regions = regions);
+      }
     } catch (e) {
-      print('Error loading regions: $e');
+      debugPrint('Error loading regions: $e');
     }
   }
 
   Future<void> _loadCities(String region) async {
     try {
       final cities = await GeoService.getCities(region);
-      setState(() {
-        _cities = cities;
-        _selectedCity = null;
-        _upazilas = [];
-        _selectedUpazila = null;
-      });
+      if (mounted) {
+        setState(() {
+          _cities = cities;
+          _selectedCity = null;
+          _upazilas = [];
+          _selectedUpazila = null;
+        });
+      }
     } catch (e) {
-      print('Error loading cities: $e');
+      debugPrint('Error loading cities: $e');
     }
   }
 
   Future<void> _loadUpazilas(String city) async {
     try {
       final upazilas = await GeoService.getUpazilas(city);
-      setState(() {
-        _upazilas = upazilas;
-        _selectedUpazila = null;
-      });
+      if (mounted) {
+        setState(() {
+          _upazilas = upazilas;
+          _selectedUpazila = null;
+        });
+      }
     } catch (e) {
-      print('Error loading upazilas: $e');
+      debugPrint('Error loading upazilas: $e');
     }
   }
 
   Future<void> _pickImage() async {
     try {
-      print('Starting image picker...');
-      
-      // Try file_picker first (works on most platforms)
       FilePickerResult? result;
-      
+
       try {
         result = await FilePicker.platform.pickFiles(
           type: FileType.image,
           allowMultiple: false,
-          withData: true, // Important: Load file data into memory
+          withData: true,
         );
       } catch (e) {
-        print('FilePicker error: $e');
-        // If file_picker fails, try image_picker as fallback
+        debugPrint('FilePicker error: $e');
         try {
           final picker = ImagePicker();
-          final XFile? pickedFile = await picker.pickImage(
+          final pickedFile = await picker.pickImage(
             source: ImageSource.gallery,
             maxWidth: 1024,
             maxHeight: 1024,
             imageQuality: 85,
           );
-          
+
           if (pickedFile != null) {
             final bytes = await pickedFile.readAsBytes();
             setState(() {
@@ -147,84 +159,50 @@ class _RegisterPageState extends State<RegisterPage> {
               _profileImageName = pickedFile.name;
               _profileImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
             });
-            print('Image loaded via ImagePicker: ${bytes.length} bytes');
-            
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Image selected successfully!'),
-                  backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            }
             return;
           }
         } catch (imagePickerError) {
-          print('ImagePicker also failed: $imagePickerError');
+          debugPrint('ImagePicker error: $imagePickerError');
         }
       }
-      
+
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
-        print('File selected: ${file.name}, Size: ${file.size} bytes');
-        
         Uint8List? bytes;
-        
-        // Try to get bytes from the file
+
         if (file.bytes != null) {
-          // Web or when withData: true
           bytes = file.bytes;
-          print('Using file.bytes: ${bytes!.length}');
         } else if (file.path != null) {
-          // Desktop/Mobile with file path
           try {
             bytes = await File(file.path!).readAsBytes();
-            print('Read from file path: ${bytes.length}');
           } catch (e) {
-            print('Error reading file: $e');
+            debugPrint('Error reading file: $e');
           }
         }
-        
-        if (bytes != null) {
-          setState(() {
-            _profileImageBytes = bytes;
-            _profileImageName = file.name;
-            _profileImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes!)}';
-            
-            // Also try to set file if path exists
-            if (file.path != null) {
-              try {
-                _profileImageFile = File(file.path!);
-              } catch (e) {
-                print('Could not create File object: $e');
-              }
-            }
-          });
-          
-          print('Image loaded successfully: ${bytes.length} bytes');
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Image selected successfully!'),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
-              ),
-            );
-          }
-        } else {
+
+        if (bytes == null) {
           throw Exception('Could not read image data');
         }
-      } else {
-        print('No file selected');
+
+        setState(() {
+          _profileImageBytes = bytes;
+          _profileImageName = file.name;
+          _profileImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes!)}';
+
+          if (file.path != null) {
+            try {
+              _profileImageFile = File(file.path!);
+            } catch (e) {
+              debugPrint('Could not create File object: $e');
+            }
+          }
+        });
       }
     } catch (e) {
-      print('Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick image. Please try again.'),
+            content: const Text('Failed to pick image. Please try again.'),
             backgroundColor: Colors.orange,
             duration: const Duration(seconds: 3),
             action: SnackBarAction(
@@ -247,47 +225,63 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
-  bool _validateStep2() {
+  bool _validateForm() {
     _errors.clear();
-    bool isValid = true;
+    var isValid = true;
 
-    if (_firstNameController.text.isEmpty) {
+    if (_firstNameController.text.trim().isEmpty) {
       _errors['first_name'] = 'First name is required';
       isValid = false;
     }
-    if (_lastNameController.text.isEmpty) {
+
+    if (_lastNameController.text.trim().isEmpty) {
       _errors['last_name'] = 'Last name is required';
       isValid = false;
     }
-    if (_emailController.text.isEmpty) {
+
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
       _errors['email'] = 'Email is required';
       isValid = false;
+    } else if (!RegExp(r'^[\w\-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      _errors['email'] = 'Enter a valid email address';
+      isValid = false;
     }
-    if (_phoneController.text.isEmpty) {
+
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
       _errors['phone'] = 'Phone is required';
       isValid = false;
-    } else if (!RegExp(r'^(?:\+?88)?01[3-9]\d{8}$').hasMatch(_phoneController.text.trim())) {
+    } else if (!RegExp(r'^(?:\+?88)?01[3-9]\d{8}$').hasMatch(phone)) {
       _errors['phone'] = 'Invalid phone number';
       isValid = false;
     }
+
     if (_passwordController.text.isEmpty) {
       _errors['password'] = 'Password is required';
       isValid = false;
+    } else if (_passwordController.text.length < 6) {
+      _errors['password'] = 'Password must be at least 6 characters';
+      isValid = false;
     }
+
     if (_confirmPasswordController.text.isEmpty) {
       _errors['confirm_password'] = 'Confirm password is required';
       isValid = false;
-    } else if (_passwordController.text != _confirmPasswordController.text) {
+    } else if (_confirmPasswordController.text != _passwordController.text) {
       _errors['confirm_password'] = 'Passwords do not match';
       isValid = false;
     }
-    if (_ageController.text.isEmpty) {
+
+    final age = _ageController.text.trim();
+    if (age.isEmpty) {
       _errors['age'] = 'Age is required';
       isValid = false;
-    } else if (!RegExp(r'^\d+$').hasMatch(_ageController.text)) {
+    } else if (!RegExp(r'^\d+$').hasMatch(age)) {
       _errors['age'] = 'Invalid age';
       isValid = false;
     }
+
     if (_gender.isEmpty) {
       _errors['gender'] = 'Gender is required';
       isValid = false;
@@ -297,30 +291,8 @@ class _RegisterPageState extends State<RegisterPage> {
     return isValid;
   }
 
-  void _nextStep() {
-    if (_currentStep == 2 && !_validateStep2()) {
-      return;
-    }
-    if (_currentStep < 3) {
-      setState(() => _currentStep++);
-    }
-  }
-
-  void _prevStep() {
-    if (_currentStep > 1) {
-      setState(() => _currentStep--);
-    }
-  }
-
-  void _skipStep() {
-    if (_currentStep < 3) {
-      setState(() => _currentStep++);
-    }
-  }
-
   Future<void> _handleSubmit() async {
-    if (!_validateStep2()) {
-      setState(() => _currentStep = 2);
+    if (!_validateForm()) {
       return;
     }
 
@@ -330,7 +302,7 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     try {
-      final formData = {
+      final formData = <String, dynamic>{
         'first_name': _firstNameController.text.trim(),
         'last_name': _lastNameController.text.trim(),
         'name': '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
@@ -356,7 +328,6 @@ class _RegisterPageState extends State<RegisterPage> {
       final result = await AuthService.register(formData);
 
       if (mounted && result != null) {
-        // Auto-login after registration
         final loginResult = await AuthService.login(
           _emailController.text.trim(),
           _passwordController.text,
@@ -366,24 +337,25 @@ class _RegisterPageState extends State<RegisterPage> {
           final userState = UserStateService();
           userState.updateUser(loginResult.user);
 
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.celebration, color: Colors.white),
+                  const Icon(Icons.celebration_rounded, color: Colors.white),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Welcome to AdsyClub! 🎉',
-                      style: AppFonts.roboto(),
+                      'Welcome to AdsyClub!',
+                      style: AppFonts.roboto(color: Colors.white),
                     ),
                   ),
                 ],
               ),
               backgroundColor: const Color(0xFF10B981),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               duration: const Duration(seconds: 4),
             ),
           );
@@ -397,388 +369,917 @@ class _RegisterPageState extends State<RegisterPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          // Use NetworkErrorHandler for friendly offline/network error messages
           _errorMessage = NetworkErrorHandler.isNetworkError(e)
               ? NetworkErrorHandler.getErrorMessage(e)
               : e.toString().replaceFirst('Exception: ', '');
-          _isLoading = false;
         });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 420;
+
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.purple.shade700, Colors.purple.shade500, Colors.deepPurple.shade600],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-            child: Column(
-              children: [
-                const SizedBox(height: 8),
-                _buildHeader(),
-                const SizedBox(height: 24),
-                _buildProgressIndicator(),
-                const SizedBox(height: 24),
-                _buildFormCard(),
-              ],
+      backgroundColor: _pageBackgroundColor,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned(
+              top: -120,
+              right: -60,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      _primaryColor.withValues(alpha: 0.12),
+                      _primaryColor.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            Positioned(
+              top: 340,
+              left: -90,
+              child: Container(
+                width: 240,
+                height: 240,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF0EA5E9).withValues(alpha: 0.10),
+                      const Color(0xFF0EA5E9).withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(0, 10, 0, 24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: _buildAuthCard(isMobile),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildAuthCard(bool isMobile) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-            child: Icon(Icons.person_add_rounded, size: 32, color: Colors.purple.shade600),
-          ),
-          const SizedBox(height: 16),
-          Text('Create Account', style: AppFonts.roboto(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-          const SizedBox(height: 8),
-          Text('Join our community today', style: AppFonts.roboto(fontSize: 14, color: Colors.white.withOpacity(0.9))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressIndicator() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildStepCircle(1, 'Photo'),
-        _buildStepLine(1),
-        _buildStepCircle(2, 'Info'),
-        _buildStepLine(2),
-        _buildStepCircle(3, 'Address'),
-      ],
-    );
-  }
-
-  Widget _buildStepCircle(int step, String label) {
-    final isActive = _currentStep >= step;
-    return Column(
-      children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(color: isActive ? Colors.white : Colors.white.withOpacity(0.3), shape: BoxShape.circle),
-          child: Center(child: Text('$step', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600, color: isActive ? Colors.purple.shade600 : Colors.white))),
-        ),
-        const SizedBox(height: 4),
-        Text(label, style: AppFonts.roboto(fontSize: 10, color: Colors.white.withOpacity(0.8))),
-      ],
-    );
-  }
-
-  Widget _buildStepLine(int step) {
-    final isActive = _currentStep > step;
-    return Container(width: 40, height: 2, margin: const EdgeInsets.only(bottom: 16), color: isActive ? Colors.white : Colors.white.withOpacity(0.3));
-  }
-
-  Widget _buildFormCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 2),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(8, 14, 8, 18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 10))],
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_surfaceColor, _softSurfaceColor],
+        ),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryDarkColor.withValues(alpha: 0.08),
+            blurRadius: 34,
+            offset: const Offset(0, 18),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.9),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (_errorMessage != null) ...[
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFFCA5A5))),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(_errorMessage!, style: AppFonts.roboto(color: const Color(0xFF991B1B), fontSize: 13))),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-          if (_currentStep == 1) _buildStep1(),
-          if (_currentStep == 2) _buildStep2(),
-          if (_currentStep == 3) _buildStep3(),
+          _buildTopBar(),
+          const SizedBox(height: 12),
+          _buildHeroCard(),
+          const SizedBox(height: 16),
+          _buildRegistrationCard(isMobile),
+          const SizedBox(height: 14),
+          _buildFooter(),
         ],
       ),
     );
   }
 
-  Widget _buildStep1() {
-    return Column(
+  Widget _buildTopBar() {
+    return Row(
       children: [
-        Text('Profile Photo', style: AppFonts.roboto(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
-        const SizedBox(height: 8),
-        Text('Upload your profile picture (optional)', style: AppFonts.roboto(fontSize: 13, color: Colors.grey.shade600)),
-        const SizedBox(height: 24),
-        GestureDetector(
-          onTap: _pickImage,
-          child: Stack(
+        Container(
+          decoration: BoxDecoration(
+            color: _surfaceColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _cardBorderColor),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_rounded,
+              color: _headingTextColor,
+              size: 20,
+            ),
+            onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
+            padding: const EdgeInsets.all(10),
+            constraints: const BoxConstraints(),
+          ),
+        ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: _primarySoftColor,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: const Color(0xFFCFE0FF)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.purple.shade200, width: 3),
-                ),
-                child: _profileImageBytes != null
-                    ? ClipOval(
-                        child: Image.memory(
-                          _profileImageBytes!,
-                          key: ValueKey(_profileImageName ?? 'image'),
-                          fit: BoxFit.cover,
-                          width: 120,
-                          height: 120,
-                          errorBuilder: (context, error, stackTrace) {
-                            print('Error displaying image: $error');
-                            return Icon(Icons.error, size: 60, color: Colors.red.shade400);
-                          },
-                        ),
-                      )
-                    : _profileImageFile != null
-                        ? ClipOval(
-                            child: Image.file(
-                              _profileImageFile!,
-                              key: ValueKey(_profileImageFile!.path),
-                              fit: BoxFit.cover,
-                              width: 120,
-                              height: 120,
-                              errorBuilder: (context, error, stackTrace) {
-                                print('Error displaying image: $error');
-                                return Icon(Icons.error, size: 60, color: Colors.red.shade400);
-                              },
-                            ),
-                          )
-                        : Icon(Icons.person, size: 60, color: Colors.grey.shade400),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.purple.shade600, shape: BoxShape.circle),
-                  child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+              const Icon(Icons.person_add_alt_1_rounded, size: 16, color: _primaryColor),
+              const SizedBox(width: 6),
+              Text(
+                'Secured signup',
+                style: AppFonts.roboto(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: _primaryDarkColor,
                 ),
               ),
-              if (_profileImageBytes != null || _profileImageFile != null)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: _removeImage,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                      child: const Icon(Icons.close, size: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
-        const SizedBox(height: 32),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextButton(onPressed: _skipStep, child: Text('Skip', style: AppFonts.roboto(fontSize: 14, color: Colors.grey.shade600))),
-            ElevatedButton(
-              onPressed: _nextStep,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              child: Row(children: [Text('Continue', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600)), const SizedBox(width: 8), const Icon(Icons.arrow_forward, size: 18)]),
-            ),
-          ],
-        ),
       ],
     );
   }
 
-  Widget _buildStep2() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text('Personal Information', style: AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(child: _buildTextField('First Name', _firstNameController, Icons.person_outline, error: _errors['first_name'])),
-            const SizedBox(width: 12),
-            Expanded(child: _buildTextField('Last Name', _lastNameController, Icons.person_outline, error: _errors['last_name'])),
-          ],
+  Widget _buildHeroCard() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_surfaceColor, _primarySoftColor],
         ),
-        const SizedBox(height: 12),
-        _buildTextField('Email', _emailController, Icons.email_outlined, keyboardType: TextInputType.emailAddress, error: _errors['email']),
-        const SizedBox(height: 12),
-        _buildTextField('Phone', _phoneController, Icons.phone_outlined, keyboardType: TextInputType.phone, error: _errors['phone']),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _buildTextField('Age', _ageController, Icons.calendar_today_outlined, keyboardType: TextInputType.number, error: _errors['age'])),
-            const SizedBox(width: 12),
-            Expanded(child: _buildGenderDropdown()),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _buildTextField('Password', _passwordController, Icons.lock_outline, isPassword: true, error: _errors['password']),
-        const SizedBox(height: 12),
-        _buildTextField('Confirm Password', _confirmPasswordController, Icons.lock_outline, isPassword: true, error: _errors['confirm_password']),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextButton.icon(onPressed: _prevStep, icon: const Icon(Icons.arrow_back, size: 18), label: Text('Back', style: AppFonts.roboto(fontSize: 14)), style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700)),
-            ElevatedButton(
-              onPressed: _nextStep,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              child: Row(children: [Text('Continue', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600)), const SizedBox(width: 8), const Icon(Icons.arrow_forward, size: 18)]),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: _cardBorderColor),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: _surfaceColor.withValues(alpha: 0.92),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: const Color(0xFFD7E5FF)),
             ),
-          ],
-        ),
-      ],
+            child: Text(
+              'Create your member profile',
+              style: AppFonts.roboto(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: _primaryDarkColor,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: 92,
+            height: 92,
+            decoration: BoxDecoration(
+              color: _surfaceColor.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: _primaryDarkColor.withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Image.asset(
+                'assets/images/logo.png',
+                height: 66,
+                width: 66,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.storefront_rounded,
+                    size: 48,
+                    color: _primaryColor,
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Create your account',
+            textAlign: TextAlign.center,
+            style: AppFonts.roboto(
+              fontSize: 25,
+              fontWeight: FontWeight.w700,
+              color: _headingTextColor,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Complete your details once and start using your account right away.',
+            textAlign: TextAlign.center,
+            style: AppFonts.roboto(
+              fontSize: 12,
+              color: _bodyTextColor,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildStep3() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text('Address Information', style: AppFonts.roboto(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade800)),
-        const SizedBox(height: 16),
-        _buildDropdown('Region/State', _regions, _selectedRegion, (value) {
-          setState(() => _selectedRegion = value);
-          if (value != null) _loadCities(value);
-        }),
-        const SizedBox(height: 12),
-        _buildDropdown('City', _cities, _selectedCity, (value) {
-          setState(() => _selectedCity = value);
-          if (value != null) _loadUpazilas(value);
-        }),
-        const SizedBox(height: 12),
-        _buildDropdown('Area/Upazila', _upazilas, _selectedUpazila, (value) => setState(() => _selectedUpazila = value)),
-        const SizedBox(height: 12),
-        _buildTextField('Zip/Postal Code', _zipController, Icons.markunread_mailbox_outlined),
-        const SizedBox(height: 12),
-        _buildTextField('Full Address', _addressController, Icons.home_outlined, maxLines: 2),
-        const SizedBox(height: 12),
-        _buildTextField('Referral Code (Optional)', _referralController, Icons.card_giftcard_outlined),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextButton.icon(onPressed: _prevStep, icon: const Icon(Icons.arrow_back, size: 18), label: Text('Back', style: AppFonts.roboto(fontSize: 14)), style: TextButton.styleFrom(foregroundColor: Colors.grey.shade700)),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _handleSubmit,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple.shade600, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), disabledBackgroundColor: Colors.grey.shade300),
-              child: _isLoading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
-                  : Row(children: [const Icon(Icons.check_circle, size: 20), const SizedBox(width: 8), Text('Complete', style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600))]),
+  Widget _buildRegistrationCard(bool isMobile) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+      decoration: BoxDecoration(
+        color: _surfaceColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _cardBorderColor),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryDarkColor.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Registration details',
+            style: AppFonts.roboto(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: _headingTextColor,
+              letterSpacing: -0.3,
             ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Fill out the form below to create your account in one step.',
+            style: AppFonts.roboto(
+              fontSize: 12.5,
+              color: _bodyTextColor,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (_errorMessage != null) ...[
+            _buildErrorBanner(),
+            const SizedBox(height: 16),
           ],
+          _buildPhotoCard(isMobile),
+          const SizedBox(height: 18),
+          _buildSectionHeader(
+            'Personal details',
+            'These details are required to create and secure your account.',
+          ),
+          const SizedBox(height: 12),
+          _buildTwoColumnRow(
+            isMobile: isMobile,
+            left: _buildTextField(
+              label: 'First Name',
+              hintText: 'Enter first name',
+              controller: _firstNameController,
+              icon: Icons.person_outline_rounded,
+              error: _errors['first_name'],
+            ),
+            right: _buildTextField(
+              label: 'Last Name',
+              hintText: 'Enter last name',
+              controller: _lastNameController,
+              icon: Icons.badge_outlined,
+              error: _errors['last_name'],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            label: 'Email Address',
+            hintText: 'Enter your email',
+            controller: _emailController,
+            icon: Icons.alternate_email_rounded,
+            keyboardType: TextInputType.emailAddress,
+            error: _errors['email'],
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            label: 'Phone Number',
+            hintText: 'Enter your phone number',
+            controller: _phoneController,
+            icon: Icons.phone_outlined,
+            keyboardType: TextInputType.phone,
+            error: _errors['phone'],
+          ),
+          const SizedBox(height: 12),
+          _buildTwoColumnRow(
+            isMobile: isMobile,
+            left: _buildTextField(
+              label: 'Age',
+              hintText: 'Enter your age',
+              controller: _ageController,
+              icon: Icons.cake_outlined,
+              keyboardType: TextInputType.number,
+              error: _errors['age'],
+            ),
+            right: _buildDropdownField(
+              label: 'Gender',
+              hintText: 'Select gender',
+              icon: Icons.wc_rounded,
+              value: _gender.isEmpty ? null : _gender,
+              items: const ['Male', 'Female', 'Others'],
+              onChanged: (value) => setState(() => _gender = value ?? ''),
+              error: _errors['gender'],
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            label: 'Password',
+            hintText: 'Create a password',
+            controller: _passwordController,
+            icon: Icons.lock_outline_rounded,
+            isPassword: true,
+            isVisible: _showPassword,
+            onToggleVisibility: () => setState(() => _showPassword = !_showPassword),
+            error: _errors['password'],
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            label: 'Confirm Password',
+            hintText: 'Re-enter your password',
+            controller: _confirmPasswordController,
+            icon: Icons.verified_user_outlined,
+            isPassword: true,
+            isVisible: _showConfirmPassword,
+            onToggleVisibility: () => setState(() => _showConfirmPassword = !_showConfirmPassword),
+            error: _errors['confirm_password'],
+          ),
+          const SizedBox(height: 18),
+          _buildSectionHeader(
+            'Location and referral',
+            'These details are optional, but they help personalize your profile.',
+          ),
+          const SizedBox(height: 12),
+          _buildDropdownField(
+            label: 'Region / State',
+            hintText: 'Choose your region',
+            icon: Icons.map_outlined,
+            value: _selectedRegion,
+            items: _regions.map((item) => item['name_eng'] as String).toList(),
+            onChanged: (value) {
+              setState(() => _selectedRegion = value);
+              if (value != null) {
+                _loadCities(value);
+              }
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildTwoColumnRow(
+            isMobile: isMobile,
+            left: _buildDropdownField(
+              label: 'City',
+              hintText: 'Choose city',
+              icon: Icons.location_city_outlined,
+              value: _selectedCity,
+              items: _cities.map((item) => item['name_eng'] as String).toList(),
+              onChanged: (value) {
+                setState(() => _selectedCity = value);
+                if (value != null) {
+                  _loadUpazilas(value);
+                }
+              },
+            ),
+            right: _buildDropdownField(
+              label: 'Area / Upazila',
+              hintText: 'Choose area',
+              icon: Icons.pin_drop_outlined,
+              value: _selectedUpazila,
+              items: _upazilas.map((item) => item['name_eng'] as String).toList(),
+              onChanged: (value) => setState(() => _selectedUpazila = value),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildTwoColumnRow(
+            isMobile: isMobile,
+            left: _buildTextField(
+              label: 'Postal Code',
+              hintText: 'Enter postal code',
+              controller: _zipController,
+              icon: Icons.markunread_mailbox_outlined,
+            ),
+            right: _buildTextField(
+              label: 'Referral Code',
+              hintText: 'Optional referral code',
+              controller: _referralController,
+              icon: Icons.card_giftcard_outlined,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            label: 'Full Address',
+            hintText: 'Enter your address',
+            controller: _addressController,
+            icon: Icons.home_outlined,
+            maxLines: 3,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _primarySoftColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFD7E5FF)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline_rounded, size: 18, color: _primaryColor),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'By continuing, you confirm that your information is accurate and your account credentials will be kept secure.',
+                    style: AppFonts.roboto(
+                      fontSize: 11.8,
+                      color: _primaryDarkColor,
+                      height: 1.45,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 54,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [_primaryDarkColor, _primaryColor],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: _primaryColor.withValues(alpha: 0.24),
+                    blurRadius: 18,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.transparent,
+                  disabledForegroundColor: Colors.white70,
+                  shadowColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.rocket_launch_rounded, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Create Account',
+                            style: AppFonts.roboto(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhotoCard(bool isMobile) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _softSurfaceColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _cardBorderColor),
+      ),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPhotoPreview(),
+                const SizedBox(height: 12),
+                _buildPhotoActions(),
+              ],
+            )
+          : Row(
+              children: [
+                _buildPhotoPreview(),
+                const SizedBox(width: 14),
+                Expanded(child: _buildPhotoActions()),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildPhotoPreview() {
+    return Stack(
+      children: [
+        Container(
+          width: 84,
+          height: 84,
+          decoration: BoxDecoration(
+            color: _surfaceColor,
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFFD6E4FF), width: 2),
+          ),
+          child: ClipOval(
+            child: _profileImageBytes != null
+                ? Image.memory(
+                    _profileImageBytes!,
+                    key: ValueKey(_profileImageName ?? 'image-memory'),
+                    fit: BoxFit.cover,
+                  )
+                : _profileImageFile != null
+                    ? Image.file(
+                        _profileImageFile!,
+                        key: ValueKey(_profileImageFile!.path),
+                        fit: BoxFit.cover,
+                      )
+                    : const Icon(
+                        Icons.person_rounded,
+                        size: 38,
+                        color: _primaryColor,
+                      ),
+          ),
         ),
-        const SizedBox(height: 16),
-        Center(
-          child: TextButton(
-            onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
-            child: Text('Already have an account? Sign In', style: AppFonts.roboto(fontSize: 13, color: Colors.purple.shade600, fontWeight: FontWeight.w600)),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: _primaryColor,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, {bool isPassword = false, TextInputType? keyboardType, int maxLines = 1, String? error}) {
+  Widget _buildPhotoActions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'Profile photo',
+          style: AppFonts.roboto(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: _headingTextColor,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Optional. Add a clear photo to make your profile look complete.',
+          style: AppFonts.roboto(
+            fontSize: 12,
+            color: _bodyTextColor,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            FilledButton.tonal(
+              onPressed: _pickImage,
+              style: FilledButton.styleFrom(
+                backgroundColor: _primarySoftColor,
+                foregroundColor: _primaryDarkColor,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                _profileImageBytes != null || _profileImageFile != null ? 'Change Photo' : 'Upload Photo',
+                style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w600),
+              ),
+            ),
+            if (_profileImageBytes != null || _profileImageFile != null)
+              TextButton(
+                onPressed: _removeImage,
+                style: TextButton.styleFrom(
+                  foregroundColor: _dangerColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                ),
+                child: Text(
+                  'Remove',
+                  style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w600),
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorBanner() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _dangerSurfaceColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline_rounded, color: _dangerColor, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              _errorMessage ?? '',
+              style: AppFonts.roboto(
+                fontSize: 11.5,
+                color: const Color(0xFF991B1B),
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, String subtitle) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: AppFonts.roboto(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: _headingTextColor,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          subtitle,
+          style: AppFonts.roboto(
+            fontSize: 11.8,
+            color: _bodyTextColor,
+            height: 1.4,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTwoColumnRow({
+    required bool isMobile,
+    required Widget left,
+    required Widget right,
+  }) {
+    if (isMobile) {
+      return Column(
+        children: [
+          left,
+          const SizedBox(height: 12),
+          right,
+        ],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: left),
+        const SizedBox(width: 12),
+        Expanded(child: right),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hintText,
+    required TextEditingController controller,
+    required IconData icon,
+    String? error,
+    bool isPassword = false,
+    bool isVisible = false,
+    VoidCallback? onToggleVisibility,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInputLabel(label),
+        const SizedBox(height: 8),
         TextField(
           controller: controller,
-          obscureText: isPassword && !_showPassword,
           keyboardType: keyboardType,
-          maxLines: maxLines,
-          style: AppFonts.roboto(fontSize: 14),
+          maxLines: isPassword ? 1 : maxLines,
+          obscureText: isPassword ? !isVisible : false,
+          style: AppFonts.roboto(
+            fontSize: 13.5,
+            color: _headingTextColor,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
-            hintText: label,
-            hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
-            prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
+            hintText: hintText,
+            hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
+            prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
+            prefixIcon: _buildFieldIcon(icon),
             suffixIcon: isPassword
-                ? IconButton(icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey.shade400, size: 20), onPressed: () => setState(() => _showPassword = !_showPassword))
+                ? IconButton(
+                    icon: Icon(
+                      isVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      color: _bodyTextColor,
+                      size: 18,
+                    ),
+                    onPressed: onToggleVisibility,
+                  )
                 : null,
             filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade200)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.purple.shade500, width: 2)),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFEF4444))),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            fillColor: _surfaceColor,
+            errorText: error,
+            errorMaxLines: 2,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _cardBorderColor),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _primaryColor, width: 1.8),
+            ),
+            errorBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _dangerColor),
+            ),
+            focusedErrorBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _dangerColor, width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
-        if (error != null) Padding(padding: const EdgeInsets.only(top: 4, left: 12), child: Text(error, style: AppFonts.roboto(fontSize: 12, color: Colors.red.shade600))),
       ],
     );
   }
 
-  Widget _buildGenderDropdown() {
+  Widget _buildDropdownField({
+    required String label,
+    required String hintText,
+    required IconData icon,
+    required List<String> items,
+    required String? value,
+    required ValueChanged<String?> onChanged,
+    String? error,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildInputLabel(label),
+        const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _gender.isEmpty ? null : _gender,
+          initialValue: value,
+          isExpanded: true,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _bodyTextColor),
           decoration: InputDecoration(
-            hintText: 'Gender',
-            hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
-            prefixIcon: Icon(Icons.wc_outlined, color: Colors.grey.shade400, size: 20),
+            hintText: hintText,
+            hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
+            prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
+            prefixIcon: _buildFieldIcon(icon),
             filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade200)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.purple.shade500, width: 2)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            fillColor: _surfaceColor,
+            errorText: error,
+            errorMaxLines: 2,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _cardBorderColor),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _primaryColor, width: 1.8),
+            ),
+            errorBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _dangerColor),
+            ),
+            focusedErrorBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _dangerColor, width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
-          items: ['Male', 'Female', 'Others'].map((gender) => DropdownMenuItem(value: gender, child: Text(gender, style: AppFonts.roboto(fontSize: 14)))).toList(),
-          onChanged: (value) => setState(() => _gender = value ?? ''),
+          items: items
+              .map(
+                (item) => DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    style: AppFonts.roboto(fontSize: 13.5, color: _headingTextColor),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: onChanged,
         ),
-        if (_errors['gender'] != null) Padding(padding: const EdgeInsets.only(top: 4, left: 12), child: Text(_errors['gender']!, style: AppFonts.roboto(fontSize: 12, color: Colors.red.shade600))),
       ],
     );
   }
 
-  Widget _buildDropdown(String label, List<Map<String, dynamic>> items, String? value, Function(String?) onChanged) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      decoration: InputDecoration(
-        hintText: label,
-        hintStyle: AppFonts.roboto(color: Colors.grey.shade400, fontSize: 14),
-        prefixIcon: Icon(Icons.location_on_outlined, color: Colors.grey.shade400, size: 20),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade200)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.purple.shade500, width: 2)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  Widget _buildInputLabel(String label) {
+    return Text(
+      label,
+      style: AppFonts.roboto(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: _bodyTextColor,
       ),
-      items: items.map<DropdownMenuItem<String>>((item) => DropdownMenuItem<String>(value: item['name_eng'] as String, child: Text(item['name_eng'] as String, style: AppFonts.roboto(fontSize: 14)))).toList(),
-      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildFieldIcon(IconData icon) {
+    return Icon(icon, color: _primaryColor, size: 18);
+  }
+
+  Widget _buildFooter() {
+    return Center(
+      child: TextButton(
+        onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
+        style: TextButton.styleFrom(
+          foregroundColor: _primaryColor,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        ),
+        child: Text(
+          'Already have an account? Sign In',
+          style: AppFonts.roboto(
+            fontSize: 12.5,
+            color: _primaryColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
     );
   }
 }

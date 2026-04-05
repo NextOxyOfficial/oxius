@@ -164,6 +164,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     );
   }
 
+
   Widget _buildAuthCard(bool isMobile) {
     return Container(
       width: double.infinity,
@@ -582,18 +583,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         hintText: 'Enter your email',
         hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
         prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
-        prefixIcon: Padding(
-          padding: const EdgeInsets.only(left: 10, right: 8),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: _primarySoftColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.alternate_email_rounded, color: _primaryColor, size: 18),
-          ),
-        ),
+        prefixIcon: const Icon(Icons.alternate_email_rounded, color: _primaryColor, size: 18),
         filled: true,
         fillColor: _surfaceColor,
         border: OutlineInputBorder(
@@ -633,18 +623,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         hintText: 'Enter your password',
         hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
         prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
-        prefixIcon: Padding(
-          padding: const EdgeInsets.only(left: 10, right: 8),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: _primarySoftColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.lock_outline_rounded, color: _primaryColor, size: 18),
-          ),
-        ),
+        prefixIcon: const Icon(Icons.lock_outline_rounded, color: _primaryColor, size: 18),
         suffixIcon: IconButton(
           icon: Icon(
             _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
