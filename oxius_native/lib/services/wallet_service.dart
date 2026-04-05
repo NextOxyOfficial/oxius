@@ -1,17 +1,139 @@
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/wallet_models.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
 
 class WalletService {
   static String get baseUrl => ApiService.baseUrl;
+  static const _pendingPaymentSessionKey = 'wallet_pending_payment_session';
 
   // Minimum transaction amounts
   static const double minDeposit = 100.0;
   static const double minWithdrawal = 200.0;
   static const double minTransfer = 50.0;
   static const double withdrawalChargePercent = 2.95;
+
+    static bool isPaymentSuccessful(Map<String, dynamic> paymentDetails) {
+    final message =
+      paymentDetails['shurjopay_message']?.toString().toLowerCase() ?? '';
+    final bankStatus =
+      paymentDetails['bank_status']?.toString().toLowerCase() ?? '';
+
+    return message == 'success' ||
+      bankStatus == 'success' ||
+      bankStatus == 'completed';
+    }
+
+    static bool isPaymentFailed(Map<String, dynamic> paymentDetails) {
+    final message =
+      paymentDetails['shurjopay_message']?.toString().toLowerCase() ?? '';
+    final bankStatus =
+      paymentDetails['bank_status']?.toString().toLowerCase() ?? '';
+    final combined = '$message $bankStatus';
+
+    return combined.contains('fail') ||
+      combined.contains('cancel') ||
+      combined.contains('declin') ||
+      combined.contains('expire') ||
+      combined.contains('invalid');
+  }
+
+  static String? extractVerificationOrderId(Map<String, dynamic>? response) {
+    if (response == null) {
+      return null;
+    }
+
+    final candidates = [
+      response['verification_order_id'],
+      response['sp_order_id'],
+      response['shurjopay_order_id'],
+      response['order_id'],
+      response['merchant_invoice_no'],
+    ];
+
+    for (final candidate in candidates) {
+      final value = candidate?.toString();
+      if (value != null && value.isNotEmpty) {
+        return value;
+      }
+    }
+
+    return null;
+  }
+
+  static String? extractVerificationOrderIdFromUrl(String? url) {
+    if (url == null || url.isEmpty) {
+      return null;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      return null;
+    }
+
+    final candidates = [
+      uri.queryParameters['sp_order_id'],
+      uri.queryParameters['order_id'],
+      uri.queryParameters['invoice_no'],
+      uri.queryParameters['merchant_invoice_no'],
+    ];
+
+    for (final candidate in candidates) {
+      if (candidate != null && candidate.isNotEmpty) {
+        return candidate;
+      }
+    }
+
+    return null;
+  }
+
+  static Future<void> cachePendingPaymentSession({
+    required String orderId,
+    required String verificationOrderId,
+    required String checkoutUrl,
+    required double amount,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _pendingPaymentSessionKey,
+      json.encode({
+        'order_id': orderId,
+        'verification_order_id': verificationOrderId,
+        'checkout_url': checkoutUrl,
+        'amount': amount,
+      }),
+    );
+  }
+
+  static Future<Map<String, dynamic>?> getPendingPaymentSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawValue = prefs.getString(_pendingPaymentSessionKey);
+    if (rawValue == null || rawValue.isEmpty) {
+      return null;
+    }
+
+    final decoded = json.decode(rawValue);
+    if (decoded is Map<String, dynamic>) {
+      return decoded;
+    }
+
+    if (decoded is Map) {
+      return decoded.map(
+        (key, value) => MapEntry(key.toString(), value),
+      );
+    }
+
+    return null;
+  }
+
+  static Future<void> clearPendingPaymentSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pendingPaymentSessionKey);
+  }
 
   /// Get user's wallet balance
   static Future<WalletBalance?> getBalance() async {
@@ -94,7 +216,6 @@ class WalletService {
         throw Exception('Failed to load balance: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting balance: $e');
       return null;
     }
   }
@@ -144,10 +265,13 @@ class WalletService {
         'customer_post_code': zip,
       };
 
-      final uri = Uri.parse('$baseUrl/pay/').replace(queryParameters: queryParams);
+      if (kIsWeb) {
+        final origin = '${Uri.base.scheme}://${Uri.base.authority}';
+        queryParams['return_url'] = '$origin/payment-callback.html';
+        queryParams['cancel_url'] = '$origin/payment-cancel.html';
+      }
 
-      print('📱 Initiating Surjopay deposit: ${request.amount} BDT');
-      print('📱 Payment URL: $uri');
+      final uri = Uri.parse('$baseUrl/pay/').replace(queryParameters: queryParams);
 
       final response = await http.get(
         uri,
@@ -157,26 +281,23 @@ class WalletService {
         },
       );
 
-      print('📱 Payment response status: ${response.statusCode}');
-      print('📱 Payment response body: ${response.body}');
-
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = json.decode(response.body);
+        final data = Map<String, dynamic>.from(json.decode(response.body));
+        data['order_id'] ??= uniqueOrderId;
+        data['verification_order_id'] ??= data['sp_order_id'] ??
+            data['shurjopay_order_id'] ??
+            data['order_id'];
         
         if (data['checkout_url'] != null) {
-          print('✅ Surjopay checkout URL received: ${data['checkout_url']}');
           return data; // Contains checkout_url for Surjopay gateway
         } else {
-          print('❌ No checkout_url in response');
           throw Exception('Failed to get payment URL. Please check your profile information.');
         }
       } else {
         final error = json.decode(response.body);
-        print('❌ Payment gateway error: $error');
         throw Exception(error['message'] ?? error['error'] ?? 'Failed to initiate payment');
       }
     } catch (e) {
-      print('❌ Error creating deposit: $e');
       rethrow;
     }
   }
@@ -217,7 +338,6 @@ class WalletService {
         throw Exception(error['message'] ?? 'Failed to create withdrawal');
       }
     } catch (e) {
-      print('Error creating withdrawal: $e');
       rethrow;
     }
   }
@@ -258,7 +378,6 @@ class WalletService {
         throw Exception(error['message'] ?? error['error'] ?? 'Failed to transfer');
       }
     } catch (e) {
-      print('Error creating transfer: $e');
       rethrow;
     }
   }
@@ -327,8 +446,7 @@ class WalletService {
           
           try {
             transactions.add(Transaction.fromJson(item));
-          } catch (e) {
-            print('Error parsing transaction: $e');
+          } catch (_) {
           }
         }
         
@@ -337,7 +455,6 @@ class WalletService {
         throw Exception('Failed to load transactions: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting transactions: $e');
       return [];
     }
   }
@@ -385,7 +502,6 @@ class WalletService {
         throw Exception('Failed to load received transfers: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error getting received transfers: $e');
       return [];
     }
   }
@@ -417,7 +533,6 @@ class WalletService {
         throw Exception('User not found');
       }
     } catch (e) {
-      print('Error getting user by ID: $e');
       rethrow;
     }
   }
@@ -446,8 +561,6 @@ class WalletService {
         throw Exception('No authentication token found');
       }
 
-      print('📱 Verifying payment for order: $orderId');
-
       final response = await http.get(
         Uri.parse('$baseUrl/verify-pay/?sp_order_id=$orderId'),
         headers: {
@@ -455,9 +568,6 @@ class WalletService {
           'Content-Type': 'application/json',
         },
       );
-
-      print('📱 Verification response status: ${response.statusCode}');
-      print('📱 Verification response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -467,7 +577,6 @@ class WalletService {
         throw Exception(error['error'] ?? 'Payment verification failed');
       }
     } catch (e) {
-      print('❌ Error verifying payment: $e');
       rethrow;
     }
   }
@@ -481,8 +590,6 @@ class WalletService {
       if (token == null) {
         throw Exception('No authentication token found');
       }
-
-      print('📱 Adding balance after payment verification');
 
       final response = await http.post(
         Uri.parse('$baseUrl/add-user-balance/'),
@@ -503,9 +610,6 @@ class WalletService {
         }),
       );
 
-      print('📱 Add balance response status: ${response.statusCode}');
-      print('📱 Add balance response body: ${response.body}');
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
         
@@ -515,15 +619,77 @@ class WalletService {
         return {
           'success': true,
           'message': 'Payment successful!',
+          'already_processed': false,
           'data': data,
         };
       } else {
         final error = json.decode(response.body);
-        throw Exception(error['error'] ?? 'Failed to add balance');
+        final errorMessage =
+            error['error'] ?? error['message'] ?? 'Failed to add balance';
+
+        if (errorMessage
+            .toString()
+            .toLowerCase()
+            .contains('already exists')) {
+          await AuthService.refreshUserData();
+          return {
+            'success': true,
+            'message': 'Payment already processed.',
+            'already_processed': true,
+            'data': null,
+          };
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
-      print('❌ Error adding balance: $e');
       rethrow;
     }
+  }
+
+  static Future<Map<String, dynamic>> verifyAndFinalizePayment(
+    String orderId,
+  ) async {
+    final verificationResult = await verifyPayment(orderId);
+
+    if (verificationResult == null) {
+      return {
+        'success': false,
+        'status': 'pending',
+        'message': 'Waiting for payment confirmation.',
+      };
+    }
+
+    if (isPaymentSuccessful(verificationResult)) {
+      final balanceResult = await addBalanceAfterPayment(verificationResult);
+
+      return {
+        'success': true,
+        'status': 'success',
+        'message': balanceResult?['already_processed'] == true
+            ? 'Payment already confirmed and balance is available.'
+            : 'Payment successful! Your balance has been updated.',
+        'paymentDetails': verificationResult,
+        'balanceResult': balanceResult,
+      };
+    }
+
+    if (isPaymentFailed(verificationResult)) {
+      return {
+        'success': false,
+        'status': 'failed',
+        'message': verificationResult['shurjopay_message']?.toString() ??
+            'Payment was not successful.',
+        'paymentDetails': verificationResult,
+      };
+    }
+
+    return {
+      'success': false,
+      'status': 'pending',
+      'message': verificationResult['shurjopay_message']?.toString() ??
+          'Waiting for payment confirmation.',
+      'paymentDetails': verificationResult,
+    };
   }
 }

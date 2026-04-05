@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Confirmation</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      color: #1e293b;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .message {
+      max-width: 320px;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="message">
+    <h2>Payment received</h2>
+    <p>Returning to the app to confirm your deposit.</p>
+  </div>
+  <script>
+    const redirectUrl = '/#/deposit-withdraw?payment_callback_url=' + encodeURIComponent(window.location.href);
+    window.location.replace(redirectUrl);
+  </script>
+</body>
+</html>

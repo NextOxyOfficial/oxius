@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -189,23 +190,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _updateAppBadge(int count) async {
+    if (kIsWeb) {
+      return;
+    }
+
     try {
       // Check if app badge is supported on this device
-      bool isSupported = await AppBadgePlus.isSupported();
+      final isSupported = await AppBadgePlus.isSupported();
       
       if (isSupported) {
         if (count > 0) {
           // Update badge with count
           await AppBadgePlus.updateBadge(count);
-          print('📱 App badge updated: $count');
         } else {
           // Remove badge when count is 0
           await AppBadgePlus.updateBadge(0);
-          print('📱 App badge removed');
         }
-      } else {
-        print('📱 App badge not supported on this device');
       }
+    } on MissingPluginException {
+      return;
     } catch (e) {
       print('Error updating app badge: $e');
     }
@@ -1951,13 +1954,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final displayName = user.firstName ?? user.displayName ?? user.username ?? 'U';
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
     
-    // Debug: Print profile picture URL
-    if (profilePic.isNotEmpty) {
-      print('🖼️ User Profile Picture URL: $profilePic');
-    } else {
-      print('⚠️ No profile picture found for user: ${user.username}');
-    }
-
     return GestureDetector(
       onTap: () {
         setState(() {

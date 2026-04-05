@@ -4,18 +4,35 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from shurjopay_plugin import *
 from django.conf import settings
+from urllib.parse import urlparse
 
-engine = ShurjopayPlugin(
-            ShurjoPayConfigModel(
-                SP_USERNAME=settings.SP_USERNAME,
-                SP_PASSWORD=settings.SP_PASSWORD,
-                SP_ENDPOINT=settings.SP_ENDPOINT,
-                SP_RETURN=settings.SP_RETURN,
-                SP_CANCEL=settings.SP_CANCEL,
-                SP_PREFIX=settings.SP_PREFIX,
-                SP_LOGDIR='./shurjopay_live.log'
-            )
+def _is_safe_redirect_url(value):
+    try:
+        parsed = urlparse(value)
+    except Exception:
+        return False
+
+    return parsed.scheme in ["http", "https"] and bool(parsed.netloc)
+
+
+def _build_engine(return_url=None, cancel_url=None):
+    resolved_return = return_url if return_url and _is_safe_redirect_url(return_url) else settings.SP_RETURN
+    resolved_cancel = cancel_url if cancel_url and _is_safe_redirect_url(cancel_url) else settings.SP_CANCEL
+
+    return ShurjopayPlugin(
+        ShurjoPayConfigModel(
+            SP_USERNAME=settings.SP_USERNAME,
+            SP_PASSWORD=settings.SP_PASSWORD,
+            SP_ENDPOINT=settings.SP_ENDPOINT,
+            SP_RETURN=resolved_return,
+            SP_CANCEL=resolved_cancel,
+            SP_PREFIX=settings.SP_PREFIX,
+            SP_LOGDIR='./shurjopay_live.log'
         )
+    )
+
+
+engine = _build_engine()
 @api_view(["GET"])
 def verifyPayment(request):
     # Extracting query parameters
@@ -44,8 +61,32 @@ def verifyPayment(request):
         
         return Response(payment_details_dict, status=status.HTTP_200_OK)
     except Exception as e:
+        message = str(e)
+        normalized_message = message.lower()
+
+        pending_markers = [
+            "not found",
+            "no data",
+            "invalid sp order id",
+            "invalid order",
+            "does not exist",
+            "unable to verify",
+            "merchant order",
+        ]
+
+        if any(marker in normalized_message for marker in pending_markers):
+            return Response(
+                {
+                    "sp_order_id": oid,
+                    "bank_status": "pending",
+                    "shurjopay_message": "Pending",
+                    "message": "Payment is not confirmed yet.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         return Response(
-            {"error": str(e)},
+            {"error": message},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
@@ -66,6 +107,9 @@ def makePayment(request):
         )
     
     try:
+        return_url = request.query_params.get('return_url')
+        cancel_url = request.query_params.get('cancel_url')
+
         # Extract parameters from the request
         amount = request.query_params.get('amount')
         order_id = request.query_params.get('order_id')
@@ -89,7 +133,8 @@ def makePayment(request):
         )
         
         # Making the payment
-        payment_details = engine.make_payment(model)
+        payment_engine = _build_engine(return_url=return_url, cancel_url=cancel_url)
+        payment_details = payment_engine.make_payment(model)
         
         # Convert the payment details to a dictionary
         if hasattr(payment_details, "__dict__"):

@@ -8,6 +8,7 @@ import '../../services/translation_service.dart';
 import '../../widgets/home/account_balance_section.dart';
 import '../../widgets/home/mobile_recharge_section.dart';
 import 'deposit_tab.dart';
+import 'payment_verification_screen.dart';
 import 'withdraw_tab.dart';
 import 'transfer_tab.dart';
 
@@ -22,7 +23,9 @@ const _slate500 = Color(0xFF64748B);
 const _slate800 = Color(0xFF1E293B);
 
 class WalletScreen extends StatefulWidget {
-  const WalletScreen({super.key});
+  final String? paymentCallbackUrl;
+
+  const WalletScreen({super.key, this.paymentCallbackUrl});
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
@@ -50,6 +53,7 @@ class _WalletScreenState extends State<WalletScreen> {
   final UserStateService _userState = UserStateService();
   final TranslationService _translationService = TranslationService();
   final GlobalKey<AccountBalanceSectionState> _balanceKey = GlobalKey();
+  bool _isResumingPendingPayment = false;
 
   String t(String key) => _translationService.translate(key);
 
@@ -59,9 +63,61 @@ class _WalletScreenState extends State<WalletScreen> {
     _checkAuthentication();
     _loadBalance();
     _loadTransactions();
+    _resumePendingPaymentIfNeeded();
     
     // Add scroll listener for pagination
     _transactionScrollController.addListener(_onTransactionScroll);
+  }
+
+  void _resumePendingPaymentIfNeeded() {
+    final callbackUrl = widget.paymentCallbackUrl;
+    if (callbackUrl == null || callbackUrl.isEmpty || _isResumingPendingPayment) {
+      return;
+    }
+
+    _isResumingPendingPayment = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final pendingPayment = await WalletService.getPendingPaymentSession();
+      if (!mounted || pendingPayment == null) {
+        _isResumingPendingPayment = false;
+        return;
+      }
+
+      final orderId = pendingPayment['order_id']?.toString();
+      final checkoutUrl = pendingPayment['checkout_url']?.toString();
+      final amountValue = pendingPayment['amount'];
+      final amount = amountValue is num
+          ? amountValue.toDouble()
+          : double.tryParse(amountValue?.toString() ?? '0') ?? 0;
+      final verificationOrderId =
+          WalletService.extractVerificationOrderIdFromUrl(callbackUrl) ??
+          pendingPayment['verification_order_id']?.toString() ??
+          orderId;
+
+      if (orderId == null || checkoutUrl == null || verificationOrderId == null) {
+        _isResumingPendingPayment = false;
+        return;
+      }
+
+      final completed = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => PaymentVerificationScreen(
+            orderId: orderId,
+            verificationOrderId: verificationOrderId,
+            checkoutUrl: checkoutUrl,
+            amount: amount,
+            resumeOnly: true,
+            initialGatewayUrl: callbackUrl,
+          ),
+        ),
+      );
+
+      if (completed == true) {
+        await _refreshAll();
+      }
+
+      _isResumingPendingPayment = false;
+    });
   }
   
   void _onTransactionScroll() {

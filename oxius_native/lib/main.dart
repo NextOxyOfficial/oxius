@@ -247,6 +247,16 @@ class MyApp extends StatelessWidget {
             '/rideshare/vehicles': (context) => const RideshareVehiclesScreen(),
           },
           onGenerateRoute: (settings) {
+            final routeUri = Uri.tryParse(settings.name ?? '');
+            if (routeUri?.path == '/deposit-withdraw') {
+              return MaterialPageRoute(
+                builder: (context) => WalletScreen(
+                  paymentCallbackUrl:
+                      routeUri?.queryParameters['payment_callback_url'],
+                ),
+              );
+            }
+
             if (settings.name == '/classified-category') {
               final args = settings.arguments as Map<String, dynamic>?;
               return MaterialPageRoute(

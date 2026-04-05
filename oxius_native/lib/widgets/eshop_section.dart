@@ -138,16 +138,12 @@ class _EshopSectionState extends State<EshopSection> {
   }
 
   Future<void> _bootstrap() async {
-    print('DEBUG: eShop Bootstrap called, initialized: $_initialized');
     if (_initialized) return;
     _initialized = true;
-    print('DEBUG: Starting eShop bootstrap process...');
     await _loadProducts();
-    print('DEBUG: eShop Bootstrap completed');
   }
 
   Future<void> _loadProducts() async {
-    print('DEBUG: Loading eShop products...');
     setState(() { _loadingProducts = true; });
     
     try {
@@ -157,19 +153,13 @@ class _EshopSectionState extends State<EshopSection> {
         pageSize: 10,
       );
       
-      print('DEBUG: eShop API returned ${products.length} products');
-      
       if (!mounted) return;
       setState(() {
         _products = products;
         _displayProducts = _pickRandom(products, 10);
         _loadingProducts = false;
       });
-      print('DEBUG: eShop products state updated, total: ${_products.length}');
     } catch (e, stackTrace) {
-      print('DEBUG: Error loading eShop products: $e');
-      print('DEBUG: Stack trace: $stackTrace');
-      
       // Leave products empty on error
       if (!mounted) return;
       setState(() {

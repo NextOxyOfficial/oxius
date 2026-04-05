@@ -52,27 +52,20 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Future<void> _bootstrap() async {
-    print('DEBUG: Bootstrap called, initialized: $_initialized');
     if (_initialized) return;
     _initialized = true;
-    print('DEBUG: Starting bootstrap process...');
     await _loadCategories();
     // Optionally load initial posts (could be trending/latest)
     await _loadPosts();
-    print('DEBUG: Bootstrap completed');
   }
 
   Future<void> _loadCategories() async {
-    print('DEBUG: Loading categories...');
     setState(() { _loadingCategories = true; });
     try {
       final cats = await ApiService.fetchClassifiedCategories();
-      print('DEBUG: API returned ${cats.length} categories');
       if (!mounted) return;
-      final categoryObjects = cats.map((catMap) {
-        print('DEBUG: Processing category: ${catMap['title']}');
-        return ClassifiedCategory.fromJson(catMap);
-      }).toList();
+      final categoryObjects =
+          cats.map((catMap) => ClassifiedCategory.fromJson(catMap)).toList();
       
       // Sort categories: featured first, then by update time
       categoryObjects.sort((a, b) {
@@ -81,17 +74,13 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         return 0;
       });
       
-      print('DEBUG: Created ${categoryObjects.length} category objects (sorted with featured first)');
       setState(() {
         _categories
           ..clear()
           ..addAll(categoryObjects);
         _loadingCategories = false;
       });
-      print('DEBUG: Categories state updated, total: ${_categories.length}');
     } catch (e, stackTrace) {
-      print('DEBUG: Error loading categories: $e');
-      print('DEBUG: Stack trace: $stackTrace');
       if (!mounted) return;
       setState(() {
         _loadingCategories = false;
@@ -143,9 +132,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         : _categories.take(_initialCategoryCount).toList();
     
     final hasMoreCategories = _categories.length > _initialCategoryCount;
-    
-    print('DEBUG BUILD: Total categories: ${_categories.length}, Showing: ${categoriesToShow.length}, Has more: $hasMoreCategories, Loading: $_loadingCategories, Expanded: $_isExpanded');
-    
+
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: isMobile ? 4 : 12,

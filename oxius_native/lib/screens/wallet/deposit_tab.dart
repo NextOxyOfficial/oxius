@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/wallet_models.dart';
@@ -7,12 +7,11 @@ import '../../services/wallet_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
+import 'payment_verification_screen.dart';
 import '../settings_screen.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
-const _slate50 = Color(0xFFF8FAFC);
-const _slate200 = Color(0xFFE2E8F0);
 const _slate500 = Color(0xFF64748B);
 const _slate800 = Color(0xFF1E293B);
 
@@ -54,6 +53,15 @@ class _DepositTabState extends State<DepositTab> {
       } else {
         _amountError = null;
       }
+    });
+  }
+
+  void _resetForm() {
+    _amountController.clear();
+    setState(() {
+      _acceptedTerms = false;
+      _amountError = null;
+      _termsError = null;
     });
   }
 
@@ -123,7 +131,9 @@ class _DepositTabState extends State<DepositTab> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFDCFCE7),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -240,36 +250,64 @@ class _DepositTabState extends State<DepositTab> {
 
       final response = await WalletService.createDeposit(request);
 
+      if (!mounted) {
+        return;
+      }
+
       if (response != null && response['checkout_url'] != null) {
-        // Extract order ID from response or generate it
-        final orderId = response['order_id']?.toString() ?? 
-                       response['merchant_invoice_no']?.toString() ??
-                       DateTime.now().millisecondsSinceEpoch.toString();
-        
-        // Launch payment gateway
-        final url = Uri.parse(response['checkout_url']);
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-          
-          if (mounted) {
-            // Show message and start polling
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Complete payment in browser. We\'ll update your balance automatically.'),
-                backgroundColor: Color(0xFF10B981),
-                duration: Duration(seconds: 4),
-              ),
-            );
-            
-            // Reset form
-            _amountController.clear();
-            setState(() => _acceptedTerms = false);
-            
-            // Start polling for payment status
-            _startPaymentStatusPolling(orderId);
+        final orderId = response['order_id']?.toString() ??
+            response['merchant_invoice_no']?.toString() ??
+            DateTime.now().millisecondsSinceEpoch.toString();
+        final verificationOrderId =
+          WalletService.extractVerificationOrderId(response) ?? orderId;
+        final checkoutUrl = response['checkout_url']?.toString();
+
+        if (checkoutUrl == null || checkoutUrl.isEmpty) {
+          throw Exception('Failed to initialize secure checkout.');
+        }
+
+        await WalletService.cachePendingPaymentSession(
+          orderId: orderId,
+          verificationOrderId: verificationOrderId,
+          checkoutUrl: checkoutUrl,
+          amount: amount,
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        if (kIsWeb) {
+          final launched = await launchUrl(
+            Uri.parse(checkoutUrl),
+            webOnlyWindowName: '_self',
+          );
+
+          if (!launched) {
+            throw Exception('Could not open the secure payment page.');
           }
-        } else {
-          throw Exception('Could not launch payment gateway');
+
+          return;
+        }
+
+        final depositCompleted = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (context) => PaymentVerificationScreen(
+              orderId: orderId,
+              verificationOrderId: verificationOrderId,
+              checkoutUrl: checkoutUrl,
+              amount: amount,
+            ),
+          ),
+        );
+
+        if (!mounted) {
+          return;
+        }
+
+        if (depositCompleted == true) {
+          _resetForm();
+          widget.onDepositSuccess();
         }
       }
     } catch (e) {
@@ -303,77 +341,6 @@ class _DepositTabState extends State<DepositTab> {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  void _startPaymentStatusPolling(String orderId) {
-    print('📱 Starting payment status polling for order: $orderId');
-    int pollCount = 0;
-    const maxPolls = 60; // Poll for 5 minutes (60 * 5 seconds)
-    
-    Timer.periodic(const Duration(seconds: 5), (timer) async {
-      pollCount++;
-      
-      try {
-        print('📱 Polling attempt $pollCount/$maxPolls');
-        
-        final result = await WalletService.verifyPayment(orderId);
-        
-        if (result != null && result['shurjopay_message'] == 'Success') {
-          timer.cancel();
-          print('✅ Payment verified successfully!');
-          
-          // Add balance to account
-          await WalletService.addBalanceAfterPayment(result);
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🎉 Payment successful! Your balance has been updated.'),
-                backgroundColor: Color(0xFF10B981),
-                duration: Duration(seconds: 4),
-              ),
-            );
-            
-            // Refresh balance
-            widget.onDepositSuccess();
-          }
-        } else if (result != null && result['shurjopay_message'] != null && 
-                   result['shurjopay_message'] != 'Success') {
-          // Payment failed
-          timer.cancel();
-          print('❌ Payment failed: ${result['shurjopay_message']}');
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Payment failed: ${result['shurjopay_message']}'),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 4),
-              ),
-            );
-          }
-        }
-        
-        // Stop polling after max attempts
-        if (pollCount >= maxPolls) {
-          timer.cancel();
-          print('⏱️ Polling timeout reached');
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Payment status check timed out. Please check your balance or contact support.'),
-                backgroundColor: Colors.orange,
-                duration: Duration(seconds: 5),
-              ),
-            );
-          }
-        }
-      } catch (e) {
-        print('⚠️ Polling error (will retry): $e');
-        // Continue polling on error
-      }
-    });
   }
 
   @override

@@ -280,17 +280,6 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   List<Map<String, dynamic>> _parseChatRooms(List<dynamic> chatRooms) {
     return chatRooms
-        .where((room) {
-          // Filter out chats with no messages
-          final lastMessage = room['last_message'];
-          final lastMessagePreview = room['last_message_preview'];
-          
-          // Include chats that have:
-          // 1. A last message (even if deleted)
-          // 2. OR a last message preview
-          return (lastMessage != null) ||
-                 (lastMessagePreview != null && lastMessagePreview.toString().isNotEmpty);
-        })
         .map((room) {
           final otherUser = room['other_user'] ?? {};
           final lastMessage = room['last_message'];

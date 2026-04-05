@@ -127,15 +127,11 @@ class AdsyConnectService {
   }) async {
     try {
       final headers = await _getHeaders();
-      print('🔵 Fetching chat rooms from: $baseUrl/chatrooms/?page=$page&page_size=$pageSize');
-      
+
       final response = await http.get(
         Uri.parse('$baseUrl/chatrooms/?page=$page&page_size=$pageSize'),
         headers: headers,
       );
-
-      print('🔵 Chat rooms response status: ${response.statusCode}');
-      print('🔵 Chat rooms response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -162,7 +158,6 @@ class AdsyConnectService {
         throw Exception('Failed to load chat rooms: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('🔴 Error loading chat rooms: $e');
       rethrow;
     }
   }

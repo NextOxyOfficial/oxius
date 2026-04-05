@@ -186,7 +186,6 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
   }
 
   Widget _buildLoggedInNavigation(BuildContext context) {
-    print('📱 Mobile Sticky Nav: Building logged-in nav with unreadCount: $unreadCount');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
