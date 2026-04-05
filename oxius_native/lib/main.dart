@@ -58,6 +58,11 @@ import 'screens/rideshare/rideshare_vehicles_screen.dart';
 void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
+
+    await SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
     
     // Set status bar to white with dark icons
     SystemChrome.setSystemUIOverlayStyle(
