@@ -27,6 +27,85 @@ void _log(String message) {
   }
 }
 
+const Set<String> _rideshareNotificationTypes = <String>{
+  'rideshare_update',
+  'new_ride_request',
+  'targeted_ride_request',
+  'ride_accepted',
+  'ride_cancelled',
+  'ride_completed',
+  'ride_auto_cancelled',
+};
+
+const Set<String> _rideshareRideRequestTypes = <String>{
+  'new_ride_request',
+  'targeted_ride_request',
+};
+
+const Set<String> _rideshareStatusTypes = <String>{
+  'searching_driver',
+  'accepted',
+  'driver_arriving',
+  'in_progress',
+  'awaiting_passenger_confirmation',
+  'completed',
+  'cancelled',
+  'no_driver_available',
+  'auto_cancelled',
+};
+
+bool _isRideshareNotification(
+  Map<String, dynamic> data, {
+  String? type,
+  String? notificationType,
+}) {
+  final rideId = data['ride_id']?.toString();
+  final status = data['status']?.toString();
+
+  return _rideshareNotificationTypes.contains(type) ||
+      _rideshareNotificationTypes.contains(notificationType) ||
+      _rideshareStatusTypes.contains(notificationType) ||
+      _rideshareStatusTypes.contains(status) ||
+      (rideId != null && rideId.isNotEmpty);
+}
+
+bool _isRideshareRideRequestNotification(String? type) {
+  return _rideshareRideRequestTypes.contains(type);
+}
+
+String _resolveRideshareMode(
+  Map<String, dynamic> data, {
+  String? type,
+  String? notificationType,
+}) {
+  final modeHint = data['mode']?.toString() ??
+      data['user_role']?.toString() ??
+      data['recipient_role']?.toString() ??
+      data['target_role']?.toString();
+
+  if (modeHint == 'driver' || modeHint == 'passenger') {
+    return modeHint!;
+  }
+
+  if (type == 'targeted_ride_request' ||
+      type == 'new_ride_request' ||
+      data['targeted_driver_id'] != null ||
+      data['targeted_driver_user_id'] != null) {
+    return 'driver';
+  }
+
+  if (notificationType == 'searching_driver' ||
+      notificationType == 'accepted' ||
+      notificationType == 'driver_arriving' ||
+      notificationType == 'awaiting_passenger_confirmation' ||
+      notificationType == 'no_driver_available' ||
+      notificationType == 'auto_cancelled') {
+    return 'passenger';
+  }
+
+  return 'passenger';
+}
+
 class _CallkitLifecycleObserver extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -56,7 +135,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 
   // Handle ride request in background - wake the driver
-  if (type == 'targeted_ride_request') {
+  if (_isRideshareRideRequestNotification(type)) {
     await _showBackgroundRideRequestNotification(message.data);
   }
 }
@@ -187,7 +266,10 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
     title,
     body,
     NotificationDetails(android: details),
-    payload: jsonEncode({...data, 'type': 'targeted_ride_request'}),
+    payload: jsonEncode({
+      ...data,
+      'type': data['type']?.toString() ?? 'targeted_ride_request',
+    }),
   );
 }
 
@@ -872,7 +954,7 @@ class FCMService {
     }
 
     // Ride request for driver: show high-priority heads-up notification
-    if (type == 'targeted_ride_request') {
+    if (_isRideshareRideRequestNotification(type)) {
       _showRideRequestNotification(message.data);
       return;
     }
@@ -919,7 +1001,10 @@ class FCMService {
       title,
       body,
       NotificationDetails(android: androidDetails),
-      payload: jsonEncode({...data, 'type': 'targeted_ride_request'}),
+      payload: jsonEncode({
+        ...data,
+        'type': data['type']?.toString() ?? 'targeted_ride_request',
+      }),
     );
   }
 
@@ -1165,9 +1250,28 @@ class FCMService {
     // ============================================
     // RIDESHARE NOTIFICATIONS
     // ============================================
-    if (type == 'targeted_ride_request') {
-      _log('   → Navigating to rideshare driver panel');
-      navigator.pushNamed('/rideshare', arguments: {'mode': 'driver'});
+    if (_isRideshareNotification(
+      data,
+      type: type,
+      notificationType: notificationType,
+    )) {
+      final mode = _resolveRideshareMode(
+        data,
+        type: type,
+        notificationType: notificationType,
+      );
+      final rideId = data['ride_id']?.toString();
+      _log('   → Navigating to rideshare ($mode) for ride: $rideId');
+      navigator.pushNamed(
+        '/rideshare',
+        arguments: {
+          'mode': mode,
+          if (rideId != null && rideId.isNotEmpty) 'ride_id': rideId,
+          if (type != null && type.isNotEmpty) 'type': type,
+          if (notificationType != null && notificationType.isNotEmpty)
+            'notification_type': notificationType,
+        },
+      );
       return;
     }
 

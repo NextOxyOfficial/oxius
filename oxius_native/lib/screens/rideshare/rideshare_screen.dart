@@ -15,6 +15,7 @@ class RideshareScreen extends StatefulWidget {
 class _RideshareScreenState extends State<RideshareScreen> {
   String _mode = 'passenger'; // 'passenger' or 'driver'
   final TranslationService _ts = TranslationService();
+  bool _didApplyRouteArgs = false;
 
   String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
 
@@ -28,6 +29,30 @@ class _RideshareScreenState extends State<RideshareScreen> {
   void dispose() {
     _ts.removeListener(_onTranslationsChanged);
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_didApplyRouteArgs) {
+      return;
+    }
+
+    final args = ModalRoute.of(context)?.settings.arguments;
+    String? requestedMode;
+
+    if (args is Map) {
+      requestedMode = args['mode']?.toString();
+    } else if (args is String) {
+      requestedMode = args;
+    }
+
+    if (requestedMode == 'driver' || requestedMode == 'passenger') {
+      _mode = requestedMode!;
+    }
+
+    _didApplyRouteArgs = true;
   }
 
   void _onTranslationsChanged() {
