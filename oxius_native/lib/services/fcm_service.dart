@@ -215,13 +215,44 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
       ringtonePath: 'default',
     ),
   );
-  
+
   await FlutterCallkitIncoming.showCallkitIncoming(params);
+}
+
+class _TrackingRouteObserver extends RouteObserver<PageRoute<dynamic>> {
+  String? currentRouteName;
+
+  void _capture(Route<dynamic>? route) {
+    currentRouteName = route?.settings.name;
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    _capture(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    _capture(previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    _capture(newRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _capture(previousRoute);
+  }
 }
 
 /// Show ride request notification when app is in background/killed
 /// Uses a separate plugin instance since FCMService static members are unavailable
-@pragma('vm:entry-point')
 Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) async {
   final rideId = data['ride_id']?.toString() ?? '';
   final pickup = data['pickup_address']?.toString() ?? 'Pickup';
@@ -278,7 +309,10 @@ class FCMService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
   static String? _fcmToken;
-  static final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+  static final _TrackingRouteObserver _routeObserver = _TrackingRouteObserver();
+  static final StreamController<Map<String, dynamic>>
+      _rideshareNotificationController =
+      StreamController<Map<String, dynamic>>.broadcast();
   static AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
   static const int _callRecoveryMaxAgeMs = 30000;
   static bool _callRecoveryEnabled = false;
@@ -299,6 +333,17 @@ class FCMService {
   static bool _lifecycleObserverInstalled = false;
 
   static bool get _isAppInForeground => _appLifecycleState == AppLifecycleState.resumed;
+  static RouteObserver<PageRoute<dynamic>> get routeObserver => _routeObserver;
+  static String? get currentRouteName => _routeObserver.currentRouteName;
+
+  static Stream<Map<String, dynamic>> get rideshareNotificationEvents =>
+      _rideshareNotificationController.stream;
+
+  static void _emitRideshareNotificationEvent(Map<String, dynamic> payload) {
+    if (!_rideshareNotificationController.isClosed) {
+      _rideshareNotificationController.add(payload);
+    }
+  }
 
   static String _buildCallId(String callerId, String channelName) {
     return '${callerId}_$channelName';
@@ -332,6 +377,59 @@ class FCMService {
     }
 
     await _clearPersistedIncomingCallState();
+  }
+
+  static Future<void> preflightCallStateCleanup() async {
+    final hasSession = await _hasRecoverableAuthenticatedSession();
+
+    try {
+      final calls = await FlutterCallkitIncoming.activeCalls();
+      if (calls is! List || calls.isEmpty) {
+        if (!hasSession) {
+          await _clearPersistedIncomingCallState();
+        }
+        return;
+      }
+
+      bool shouldClear = !hasSession;
+
+      for (final call in calls) {
+        if (call is! Map) {
+          shouldClear = true;
+          continue;
+        }
+
+        final map = Map<String, dynamic>.from(call);
+        Map<String, dynamic>? extra;
+        final rawExtra = map['extra'];
+
+        if (rawExtra is Map) {
+          extra = Map<String, dynamic>.from(rawExtra);
+        } else if (rawExtra is String && rawExtra.isNotEmpty) {
+          try {
+            final decoded = jsonDecode(rawExtra);
+            if (decoded is Map) {
+              extra = Map<String, dynamic>.from(decoded);
+            }
+          } catch (_) {
+            shouldClear = true;
+          }
+        }
+
+        final timestamp = _parseCallTimestamp(extra?['timestamp']);
+        if (!_isCallTimestampFresh(timestamp)) {
+          shouldClear = true;
+        }
+      }
+
+      if (shouldClear) {
+        _log('📞 Preflight cleanup removed stale persisted CallKit state');
+        await _clearPersistedIncomingCallState();
+      }
+    } catch (e) {
+      _log('⚠️ Preflight CallKit cleanup failed, forcing reset: $e');
+      await _clearPersistedIncomingCallState();
+    }
   }
 
   static Future<void> _clearPersistedIncomingCallState() async {
@@ -769,7 +867,27 @@ class FCMService {
       _log('📞 Skipping _cacheCallIncoming - accepted_call already pending');
       return;
     }
-    _pendingNavigationData ??= _extractCallDataFromCallEvent(event);
+
+    final callData = _extractCallDataFromCallEvent(event);
+    if (callData == null) return;
+
+    if (!_isCallTimestampFresh(_parseCallTimestamp(callData['timestamp']))) {
+      _log('📞 Ignoring stale actionCallIncoming event');
+      final callkitUuid = event.body['id']?.toString() ?? '';
+      if (callkitUuid.isNotEmpty) {
+        unawaited(FlutterCallkitIncoming.endCall(callkitUuid));
+      } else {
+        unawaited(_clearPersistedIncomingCallState());
+      }
+      return;
+    }
+
+    if (!_callRecoveryEnabled) {
+      _log('📞 Skipping _cacheCallIncoming - call recovery not enabled yet');
+      return;
+    }
+
+    _pendingNavigationData ??= callData;
   }
 
   static Map<String, dynamic>? _extractCallDataFromCallEvent(CallEvent event) {
@@ -792,7 +910,7 @@ class FCMService {
   }
 
   /// Handle call accepted from CallKit
-  static void _handleCallAccepted(CallEvent event) {
+  static Future<void> _handleCallAccepted(CallEvent event) async {
     _log('📞 CallKit actionCallAccept body: ${event.body}');
 
     final extra = _parseCallkitExtra(event.body['extra']);
@@ -807,8 +925,19 @@ class FCMService {
     final callerName = extra['caller_name']?.toString() ?? 'Unknown';
     final callerAvatar = extra['caller_avatar']?.toString();
     final callkitUuid = event.body['id']?.toString() ?? '';
+    final timestamp = _parseCallTimestamp(extra['timestamp']);
     
     if (callerId == null || channelName == null) return;
+
+    if (!_isCallTimestampFresh(timestamp) || !await _hasRecoverableAuthenticatedSession()) {
+      _log('📞 Ignoring accepted CallKit event for stale/unauthenticated call');
+      releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+      if (callkitUuid.isNotEmpty) {
+        await FlutterCallkitIncoming.endCall(callkitUuid);
+      }
+      await _clearPersistedIncomingCallState();
+      return;
+    }
     
     // Mark this CallKit UUID as accepted so actionCallEnded won't send 'ended' status
     if (callkitUuid.isNotEmpty) {
@@ -826,6 +955,7 @@ class FCMService {
       'type': 'accepted_call', // Special type to bypass showIncomingCall and go directly to CallScreen
       'caller_id': callerId,
       'channel_name': channelName,
+      'timestamp': timestamp,
       'call_type': callType,
       'caller_name': callerName,
       'caller_avatar': callerAvatar ?? '',
@@ -1377,16 +1507,25 @@ class FCMService {
         notificationType: notificationType,
       );
       final rideId = data['ride_id']?.toString();
+      final payload = {
+        'mode': mode,
+        if (rideId != null && rideId.isNotEmpty) 'ride_id': rideId,
+        if (type != null && type.isNotEmpty) 'type': type,
+        if (notificationType != null && notificationType.isNotEmpty)
+          'notification_type': notificationType,
+      };
+
       _log('   → Navigating to rideshare ($mode) for ride: $rideId');
+      _emitRideshareNotificationEvent(payload);
+
+      if (currentRouteName == '/rideshare') {
+        _log('   → Rideshare screen already open, refreshing in place');
+        return;
+      }
+
       navigator.pushNamed(
         '/rideshare',
-        arguments: {
-          'mode': mode,
-          if (rideId != null && rideId.isNotEmpty) 'ride_id': rideId,
-          if (type != null && type.isNotEmpty) 'type': type,
-          if (notificationType != null && notificationType.isNotEmpty)
-            'notification_type': notificationType,
-        },
+        arguments: payload,
       );
       return;
     }

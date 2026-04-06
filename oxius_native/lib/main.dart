@@ -59,6 +59,8 @@ void main() async {
   try {
     WidgetsFlutterBinding.ensureInitialized();
 
+    await FCMService.preflightCallStateCleanup();
+
     await SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: SystemUiOverlay.values,

@@ -1,16 +1,15 @@
 ﻿import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/adsyconnect_service.dart';
 import '../../services/rideshare_driver_presence_service.dart';
+import '../../services/fcm_service.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/rideshare_realtime_service.dart';
 import '../../services/auth_service.dart';
@@ -82,6 +81,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   final RideshareRealtimeService _realtimeService = RideshareRealtimeService();
   StreamSubscription<Map<String, dynamic>>? _dispatchEventSubscription;
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
+  StreamSubscription<Map<String, dynamic>>? _rideshareNotificationSubscription;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
   bool _isRefreshingActiveRide = false;
 
@@ -203,6 +203,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     RideshareDriverPresenceService.positionNotifier.addListener(
       _handlePresencePositionChanged,
     );
+    _rideshareNotificationSubscription =
+        FCMService.rideshareNotificationEvents.listen(
+          _handleRideshareNotificationEvent,
+        );
     _refreshLocationPermissionStatus();
     _handlePresencePositionChanged();
     _loadDriverData();
@@ -224,6 +228,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _stopIncomingRideAlert();
     _dispatchEventSubscription?.cancel();
     _rideEventSubscription?.cancel();
+    _rideshareNotificationSubscription?.cancel();
     _realtimeService.dispose();
     _ringtonePlayer.stop();
     _licenseController.dispose();
@@ -446,6 +451,48 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       _refreshSmartRoutePreview();
     } finally {
       _isRefreshingActiveRide = false;
+    }
+  }
+
+  Future<void> _handleRideshareNotificationEvent(
+    Map<String, dynamic> payload,
+  ) async {
+    if (!mounted) {
+      return;
+    }
+
+    final mode = payload['mode']?.toString();
+    if (mode != 'driver') {
+      return;
+    }
+
+    final rideId = payload['ride_id']?.toString() ?? '';
+    if (rideId.isNotEmpty) {
+      final result = await RideshareService.getRide(rideId);
+      if (!mounted || !result.success || result.data == null) {
+        return;
+      }
+
+      final resolvedRide = _resolveDriverActiveRide(_driverProfile, result.data);
+      if (resolvedRide != null) {
+        _stopIncomingRideAlert();
+        setState(() {
+          _activeRide = resolvedRide;
+          _availableRequests = [];
+        });
+        _syncRealtimeConnections();
+        _refreshSmartRoutePreview(force: true);
+        return;
+      }
+    }
+
+    if (_activeRide != null) {
+      await _refreshActiveRideSilently();
+      return;
+    }
+
+    if (_driverProfile?.isOnline == true) {
+      await _loadAvailableRequests();
     }
   }
 
@@ -877,18 +924,40 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       return;
     }
 
-    setState(() => _isAcceptingRide = true);
+    setState(() {
+      _isAcceptingRide = true;
+      _activeRide = ride.copyWith(
+        status: 'accepted',
+        assignedDriver: _driverProfile,
+        targetedDriver: _driverProfile,
+        vehicle: _driverProfile?.defaultVehicle,
+        acceptedAt: DateTime.now(),
+      );
+      _availableRequests = [];
+      _passengerLocation = null;
+    });
+    _stopIncomingRideAlert();
+    _ringtonePlayer.stop();
+    _syncRealtimeConnections();
+    _refreshSmartRoutePreview(force: true);
+
     final result = await RideshareService.acceptRide(ride.id);
     if (mounted) {
       setState(() => _isAcceptingRide = false);
       if (result.success && result.data != null) {
-        _stopIncomingRideAlert();
         setState(() { _activeRide = result.data; _availableRequests = []; });
-        _ringtonePlayer.stop();
         _syncRealtimeConnections();
         _refreshSmartRoutePreview(force: true);
         _showSuccess(t('rideshare_ride_accepted', fallback: 'Ride accepted!'));
-      } else { _showError(result.message); _loadAvailableRequests(); }
+      } else {
+        setState(() {
+          _activeRide = null;
+          _smartRoutePreview = null;
+          _smartRouteSignature = '';
+        });
+        _showError(result.message);
+        _loadAvailableRequests();
+      }
     }
   }
 
@@ -928,6 +997,21 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     String paymentMethod = 'wallet',
   }) async {
     if (_activeRide == null) return;
+    final previousRide = _activeRide;
+
+    if (status == 'driver_arriving' || status == 'in_progress') {
+      setState(() {
+        _activeRide = _activeRide?.copyWith(
+          status: status,
+          acceptedAt: _activeRide?.acceptedAt ?? DateTime.now(),
+          startedAt: status == 'in_progress' ? DateTime.now() : _activeRide?.startedAt,
+          passengerCanCancel: status == 'in_progress' ? false : _activeRide?.passengerCanCancel,
+        );
+      });
+      _syncRealtimeConnections();
+      _refreshSmartRoutePreview(force: true);
+    }
+
     setState(() => _isUpdatingStatus = true);
     final RideshareApiResult<Ride> result;
     if (status == 'cancelled') {
@@ -965,7 +1049,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _syncRealtimeConnections();
           _refreshSmartRoutePreview(force: true);
         }
-      } else { _showError(result.message); }
+      } else {
+        if (previousRide != null && (status == 'driver_arriving' || status == 'in_progress')) {
+          setState(() => _activeRide = previousRide);
+          _syncRealtimeConnections();
+          _refreshSmartRoutePreview(force: true);
+        }
+        _showError(result.message);
+      }
     }
   }
 
@@ -1093,41 +1184,6 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       return;
     }
     await _refreshSmartRoutePreview(force: true);
-    await _openExternalNavigation(ride);
-  }
-
-  Future<void> _openExternalNavigation(Ride ride) async {
-    final destination = _resolveDriverNavigationDestination(ride);
-    if (destination == null) {
-      _showError(t('rideshare_navigation_unavailable', fallback: 'Navigation is not available for this ride yet.'));
-      return;
-    }
-
-    final destinationValue = '${destination.latitude},${destination.longitude}';
-    final uris = <Uri>[
-      Uri.parse('google.navigation:q=$destinationValue&mode=d'),
-      Uri.https('www.google.com', '/maps/dir/', {
-        'api': '1',
-        'destination': destinationValue,
-        'travelmode': 'driving',
-      }),
-    ];
-
-    if (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
-      uris.insert(
-        0,
-        Uri.parse('http://maps.apple.com/?daddr=$destinationValue&dirflg=d'),
-      );
-    }
-
-    for (final uri in uris) {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-        return;
-      }
-    }
-
-    _showError(t('rideshare_navigation_open_failed', fallback: 'Could not open navigation app.'));
   }
 
   void _openBusinessProfile(String userId) {

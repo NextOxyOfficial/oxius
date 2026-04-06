@@ -274,6 +274,24 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     );
   }
 
+  Future<void> _openProductDetails(
+    Map<String, dynamic> product, {
+    bool replaceCurrent = true,
+  }) async {
+    final route = MaterialPageRoute(
+      builder: (context) => ProductDetailsScreen(
+        product: Map<String, dynamic>.from(product),
+      ),
+    );
+
+    if (replaceCurrent) {
+      await Navigator.of(context).pushReplacement(route);
+      return;
+    }
+
+    await Navigator.of(context).push(route);
+  }
+
   Future<void> _loadProductDetails() async {
     setState(() => _isLoading = true);
     
@@ -1500,16 +1518,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     product: _similarProducts[index],
                     isLoading: false,
                     onBuyNow: () => _handleBuyNowForProduct(_similarProducts[index]),
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsScreen(
-                            product: _similarProducts[index],
-                          ),
-                        ),
-                      );
-                    },
+                    onTap: () => _openProductDetails(_similarProducts[index]),
                   );
                 },
               );
@@ -1579,16 +1588,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               itemBuilder: (context, index) {
                 return _buildInlineProductRow(
                   product: _storeProducts[index],
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ProductDetailsScreen(
-                          product: _storeProducts[index],
-                        ),
-                      ),
-                    );
-                  },
+                  onTap: () => _openProductDetails(_storeProducts[index]),
                   onBuyNow: () => _handleBuyNowForProduct(_storeProducts[index]),
                 );
               },
@@ -1627,106 +1627,124 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     final imageUrl = _resolveProductImage(product);
     final hasDiscount = sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!;
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                width: 74,
-                height: 74,
-                color: _slate100,
-                child: imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.image_outlined,
-                          size: 28,
-                          color: _slate500,
-                        ),
-                      )
-                    : Icon(
-                        Icons.image_outlined,
-                        size: 28,
-                        color: _slate500,
-                      ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.roboto(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: _slate800,
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    storeName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppFonts.roboto(
-                      fontSize: 12,
-                      color: _slate500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(16),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '৳${_formatPrice(price)}',
-                        style: AppFonts.roboto(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: _emerald,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          width: 74,
+                          height: 74,
+                          color: _slate100,
+                          child: imageUrl.isNotEmpty
+                              ? Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Icon(
+                                    Icons.image_outlined,
+                                    size: 28,
+                                    color: _slate500,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.image_outlined,
+                                  size: 28,
+                                  color: _slate500,
+                                ),
                         ),
                       ),
-                      if (hasDiscount) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '৳${_formatPrice(regular)}',
-                          style: AppFonts.roboto(
-                            fontSize: 12,
-                            color: _slate500,
-                            decoration: TextDecoration.lineThrough,
-                          ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: onTap,
+                              child: Text(
+                                title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppFonts.roboto(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: _slate800,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              storeName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppFonts.roboto(
+                                fontSize: 12,
+                                color: _slate500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Text(
+                                  '৳${_formatPrice(price)}',
+                                  style: AppFonts.roboto(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: _emerald,
+                                  ),
+                                ),
+                                if (hasDiscount) ...[
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '৳${_formatPrice(regular)}',
+                                    style: AppFonts.roboto(
+                                      fontSize: 12,
+                                      color: _slate500,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            TextButton(
-              onPressed: onBuyNow,
-              style: TextButton.styleFrom(
-                foregroundColor: _emerald,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              ),
-              child: Text(
-                'Buy',
-                style: AppFonts.roboto(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: onBuyNow,
+            style: TextButton.styleFrom(
+              foregroundColor: _emerald,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            ),
+            child: Text(
+              'Buy',
+              style: AppFonts.roboto(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/adsyconnect_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/fcm_service.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/rideshare_realtime_service.dart';
 import '../../services/translation_service.dart';
@@ -56,6 +57,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   Timer? _searchDebounce;
   final RideshareRealtimeService _realtimeService = RideshareRealtimeService();
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
+  StreamSubscription<Map<String, dynamic>>? _rideshareNotificationSubscription;
   Timer? _statusRefreshTimer;
   String _searchStatusMessage = 'Looking for nearby drivers...';
   int _driverResponseTimeoutSeconds = 60;
@@ -77,6 +79,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _ts.addListener(_onTranslationsChanged);
     WidgetsBinding.instance.addObserver(this);
     _startStatusRefreshTimer();
+    _rideshareNotificationSubscription =
+        FCMService.rideshareNotificationEvents.listen(
+          _handleRideshareNotificationEvent,
+        );
     _refreshLocationPermissionStatus(autoFillCurrentLocation: true);
     _loadActiveRide();
   }
@@ -90,6 +96,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _searchDebounce?.cancel();
     _statusRefreshTimer?.cancel();
     _rideEventSubscription?.cancel();
+    _rideshareNotificationSubscription?.cancel();
     _passengerLocationSubscription?.cancel();
     _realtimeService.dispose();
     super.dispose();
@@ -280,6 +287,17 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     }
   }
 
+  Future<void> _refreshRideSnapshot({String? rideId}) async {
+    final result = rideId != null && rideId.isNotEmpty
+        ? await RideshareService.getRide(rideId)
+        : await RideshareService.getActiveRide();
+    if (!mounted || !result.success) {
+      return;
+    }
+
+    _applyRideState(_resolvePassengerActiveRide(result.data), isLoading: false);
+  }
+
   void _applyRideState(Ride? ride, {required bool isLoading}) {
     setState(() {
       _activeRide = ride;
@@ -298,6 +316,27 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     });
     _syncRideRealtimeConnection();
     _refreshPassengerRoutePreview(force: true);
+  }
+
+  Future<void> _handleRideshareNotificationEvent(
+    Map<String, dynamic> payload,
+  ) async {
+    if (!mounted) {
+      return;
+    }
+
+    final mode = payload['mode']?.toString();
+    if (mode != 'passenger') {
+      return;
+    }
+
+    final rideId = payload['ride_id']?.toString();
+    if (rideId != null && rideId.isNotEmpty) {
+      await _refreshRideSnapshot(rideId: rideId);
+      return;
+    }
+
+    await _refreshRideSnapshot();
   }
 
   Future<void> _refreshActiveRideSilently() async {

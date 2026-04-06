@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/fcm_service.dart';
 import '../../services/translation_service.dart';
 import 'rideshare_passenger_panel.dart';
 import 'rideshare_driver_panel.dart';
@@ -16,6 +19,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
   String _mode = 'passenger'; // 'passenger' or 'driver'
   final TranslationService _ts = TranslationService();
   bool _didApplyRouteArgs = false;
+  StreamSubscription<Map<String, dynamic>>? _rideshareNotificationSubscription;
 
   String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
 
@@ -23,10 +27,13 @@ class _RideshareScreenState extends State<RideshareScreen> {
   void initState() {
     super.initState();
     _ts.addListener(_onTranslationsChanged);
+    _rideshareNotificationSubscription =
+        FCMService.rideshareNotificationEvents.listen(_handleRideshareEvent);
   }
 
   @override
   void dispose() {
+    _rideshareNotificationSubscription?.cancel();
     _ts.removeListener(_onTranslationsChanged);
     super.dispose();
   }
@@ -57,6 +64,17 @@ class _RideshareScreenState extends State<RideshareScreen> {
 
   void _onTranslationsChanged() {
     if (mounted) setState(() {});
+  }
+
+  void _handleRideshareEvent(Map<String, dynamic> payload) {
+    final requestedMode = payload['mode']?.toString();
+    if (!mounted || (requestedMode != 'driver' && requestedMode != 'passenger')) {
+      return;
+    }
+
+    if (_mode != requestedMode) {
+      setState(() => _mode = requestedMode!);
+    }
   }
 
   @override
@@ -252,7 +270,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.35),
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
