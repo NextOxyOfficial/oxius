@@ -177,7 +177,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: accentColor.withValues(alpha: 0.14)),
         boxShadow: [
           BoxShadow(
@@ -187,52 +187,39 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           ),
         ],
       ),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Compact header: icon + title + badge in a single tight row
           Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [accentColor, accentColor.withValues(alpha: 0.72)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, size: 20, color: Colors.white),
+                child: Icon(icon, size: 14, color: Colors.white),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0F172A),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        height: 1.35,
-                        color: const Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(999),
@@ -241,7 +228,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 child: Text(
                   badge,
                   style: GoogleFonts.inter(
-                    fontSize: 10.5,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: accentColor,
                   ),
@@ -249,11 +236,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
             height: _mapViewportHeight(context),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: Colors.white.withValues(alpha: 0.72), width: 1.2),
               boxShadow: [
                 BoxShadow(
@@ -2619,53 +2606,30 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   Widget _buildLocationInputs() {
-    // Determine which field's suggestions to show below the row
-    final pickupSuggestions = _visibleSuggestionsForField(
-      _pickupController, _pickupSuggestions, _activeInput == 'pickup');
-    final dropSuggestions = _visibleSuggestionsForField(
-      _dropController, _dropSuggestions, _activeInput == 'drop');
-    final activeSuggestions = _activeInput == 'pickup' ? pickupSuggestions : dropSuggestions;
-    final showingRecent = _activeInput == 'pickup'
-        ? (_pickupSuggestions.isEmpty && pickupSuggestions.isNotEmpty)
-        : (_dropSuggestions.isEmpty && dropSuggestions.isNotEmpty);
-    final onSuggestionTap = _activeInput == 'pickup' ? _selectPickupSuggestion : _selectDropSuggestion;
-
-    return Column(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Single row: Pickup + Drop
-        Row(
+        // Route indicator
+        Column(
           children: [
-            // Pickup dot
             Container(
-              width: 8,
-              height: 8,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
                   colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                 ),
                 shape: BoxShape.circle,
               ),
             ),
-            const SizedBox(width: 6),
-            // Pickup field
-            Expanded(
-              child: _buildCompactLocationField(
-                controller: _pickupController,
-                hint: t('rideshare_search_pickup', fallback: 'Pickup...').toString(),
-                isActive: _activeInput == 'pickup',
-                onTap: () => setState(() => _activeInput = 'pickup'),
-                onChanged: _onPickupSearch,
-              ),
-            ),
-            // Arrow separator
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Icon(Icons.arrow_forward_rounded, size: 14, color: const Color(0xFF94A3B8)),
-            ),
-            // Drop dot
             Container(
-              width: 8,
-              height: 8,
+              width: 2,
+              height: 50,
+              color: const Color(0xFFE2E8F0),
+            ),
+            Container(
+              width: 12,
+              height: 12,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -2673,24 +2637,126 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(width: 6),
-            // Drop field
-            Expanded(
-              child: _buildCompactLocationField(
+          ],
+        ),
+        const SizedBox(width: 12),
+        
+        // Input fields
+        Expanded(
+          child: Column(
+            children: [
+              // Pickup input
+              _buildLocationInput(
+                controller: _pickupController,
+                label: t('rideshare_pickup_location', fallback: 'Pickup Location'),
+                hint: t('rideshare_search_pickup', fallback: 'Search pickup...').toString(),
+                isActive: _activeInput == 'pickup',
+                onTap: () => setState(() => _activeInput = 'pickup'),
+                onChanged: _onPickupSearch,
+                suggestions: _pickupSuggestions,
+                onSuggestionTap: _selectPickupSuggestion,
+                trailing: _buildCurrentLocationButton(),
+              ),
+              const SizedBox(height: 12),
+              
+              // Drop input
+              _buildLocationInput(
                 controller: _dropController,
-                hint: t('rideshare_search_drop', fallback: 'Drop-off...').toString(),
+                label: t('rideshare_drop_location', fallback: 'Drop Location'),
+                hint: t('rideshare_search_drop', fallback: 'Search drop...').toString(),
                 isActive: _activeInput == 'drop',
                 onTap: () => setState(() => _activeInput = 'drop'),
                 onChanged: _onDropSearch,
+                suggestions: _dropSuggestions,
+                onSuggestionTap: _selectDropSuggestion,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocationInput({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool isActive,
+    required VoidCallback onTap,
+    required Function(String) onChanged,
+    required List<RidePoint> suggestions,
+    required Function(RidePoint) onSuggestionTap,
+    Widget? trailing,
+  }) {
+    final visibleSuggestions = _visibleSuggestionsForField(
+      controller,
+      suggestions,
+      isActive,
+    );
+    final showingRecent = suggestions.isEmpty && visibleSuggestions.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isActive ? Colors.white : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isActive ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0),
+                width: isActive ? 2 : 1,
               ),
             ),
-            // Current location button (compact)
-            const SizedBox(width: 4),
-            _buildCompactCurrentLocationButton(),
-          ],
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF94A3B8),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      TextField(
+                        controller: controller,
+                        onChanged: onChanged,
+                        onTap: onTap,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF1E293B),
+                        ),
+                        decoration: InputDecoration(
+                          hintText: hint,
+                          hintStyle: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: const Color(0xFF94A3B8),
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (trailing != null) trailing,
+              ],
+            ),
+          ),
         ),
-        // Suggestions dropdown below the row
-        if (activeSuggestions.isNotEmpty)
+        
+        // Suggestions dropdown
+        if (visibleSuggestions.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(top: 4),
             decoration: BoxDecoration(
@@ -2728,9 +2794,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                   child: ListView.builder(
                     shrinkWrap: true,
                     padding: EdgeInsets.zero,
-                    itemCount: activeSuggestions.length,
+                    itemCount: visibleSuggestions.length,
                     itemBuilder: (context, index) {
-                      final suggestion = activeSuggestions[index];
+                      final suggestion = visibleSuggestions[index];
                       final subtitle = suggestion.displaySubtitle;
                       final isRecentItem = showingRecent;
                       return InkWell(
@@ -2803,54 +2869,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     );
   }
 
-  Widget _buildCompactLocationField({
-    required TextEditingController controller,
-    required String hint,
-    required bool isActive,
-    required VoidCallback onTap,
-    required Function(String) onChanged,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive ? Colors.white : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isActive ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0),
-            width: isActive ? 1.5 : 1,
-          ),
-        ),
-        child: TextField(
-          controller: controller,
-          onChanged: onChanged,
-          onTap: onTap,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF1E293B),
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: GoogleFonts.inter(
-              fontSize: 12,
-              color: const Color(0xFF94A3B8),
-            ),
-            border: InputBorder.none,
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCompactCurrentLocationButton() {
+  Widget _buildCurrentLocationButton() {
     return GestureDetector(
       onTap: _isLoadingLocation ? null : _useCurrentLocation,
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -2866,7 +2889,25 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                   color: Colors.white,
                 ),
               )
-            : const Icon(Icons.my_location_rounded, size: 14, color: Colors.white),
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.my_location_rounded,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    t('rideshare_current_location_btn', fallback: 'Current'),
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
