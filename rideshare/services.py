@@ -1463,7 +1463,7 @@ class WalletService:
                 payment_method="cash",
                 payable_amount=amount,
                 amount=amount,
-                received_amount=driver_payout_amount,
+                received_amount=amount,
                 completed=True,
                 approved=True,
                 bank_status="completed",

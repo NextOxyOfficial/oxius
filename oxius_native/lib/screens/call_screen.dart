@@ -408,7 +408,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     await AgoraCallService.leaveChannel();
     AgoraCallService.setInCall(false);
     if (mounted && _statusOverlay != null) {
-      await Future.delayed(const Duration(milliseconds: 700));
+      await Future.delayed(const Duration(milliseconds: 120));
     }
     if (mounted) {
       final navigator = Navigator.of(context, rootNavigator: true);

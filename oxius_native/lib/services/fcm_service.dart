@@ -189,7 +189,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     },
     headers: <String, dynamic>{'platform': 'android'},
     android: const AndroidParams(
-      isCustomNotification: true,
+      isCustomNotification: false,
       isShowLogo: false,
       ringtonePath: 'system_ringtone_default',
       backgroundColor: '#0955fa',
@@ -324,6 +324,7 @@ class FCMService {
   
   // Track accepted CallKit UUIDs to prevent actionCallEnded from sending 'ended' status
   static final Set<String> _acceptedCallkitUuids = <String>{};
+  static final Set<String> _terminalCallkitUuids = <String>{};
   
   static const String _fcmTokenKey = 'adsyclub_fcm_token';
   static const String _lastUploadedKey = 'adsyclub_fcm_token_last_uploaded';
@@ -502,6 +503,7 @@ class FCMService {
     _activeCallIds.clear();
     _callTimestamps.clear();
     _acceptedCallkitUuids.clear();
+    _terminalCallkitUuids.clear();
     _pendingNavigationData = null;
   }
 
@@ -1038,6 +1040,7 @@ class FCMService {
     final callerId = extra['caller_id']?.toString();
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
+    final callkitUuid = event.body['id']?.toString() ?? '';
     
     if (callerId == null || channelName == null) return;
 
@@ -1052,12 +1055,16 @@ class FCMService {
     );
     
     // End the CallKit UI
-    FlutterCallkitIncoming.endCall(event.body['id'] ?? '');
+    if (callkitUuid.isNotEmpty) {
+      _terminalCallkitUuids.add(callkitUuid);
+    }
+    FlutterCallkitIncoming.endCall(callkitUuid);
   }
 
   /// Handle call ended from CallKit
   static void _handleCallEnded(CallEvent event) {
     final callkitUuid = event.body['id']?.toString() ?? '';
+    final terminalAlreadyHandled = _terminalCallkitUuids.remove(callkitUuid);
     
     // If this call was accepted, don't send 'ended' status - the CallScreen will handle it
     final wasAccepted = _acceptedCallkitUuids.remove(callkitUuid);
@@ -1070,6 +1077,11 @@ class FCMService {
       
       if (callerId != null && channelName != null) {
         releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+
+        if (terminalAlreadyHandled) {
+          _log('📞 CallKit end event already handled for uuid=$callkitUuid');
+          return;
+        }
         
         // Only send ended status if the call was NOT accepted
         // If accepted, the CallScreen handles sending the proper status when call ends
@@ -1101,6 +1113,7 @@ class FCMService {
     final callerId = extra['caller_id']?.toString();
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
+    final callkitUuid = event.body['id']?.toString() ?? '';
     
     if (callerId == null || channelName == null) return;
 
@@ -1114,7 +1127,10 @@ class FCMService {
       callType: callType,
     );
     
-    FlutterCallkitIncoming.endCall(event.body['id'] ?? '');
+    if (callkitUuid.isNotEmpty) {
+      _terminalCallkitUuids.add(callkitUuid);
+    }
+    FlutterCallkitIncoming.endCall(callkitUuid);
   }
 
   /// Show native incoming call screen (for foreground calls too)
@@ -1158,7 +1174,7 @@ class FCMService {
       },
       headers: <String, dynamic>{'platform': 'android'},
       android: const AndroidParams(
-        isCustomNotification: true,
+        isCustomNotification: false,
         isShowLogo: false,
         ringtonePath: 'system_ringtone_default',
         backgroundColor: '#0955fa',
@@ -1187,6 +1203,7 @@ class FCMService {
     _activeCallIds.clear();
     _callTimestamps.clear();
     _acceptedCallkitUuids.clear();
+    _terminalCallkitUuids.clear();
   }
 
   /// Navigate directly to CallScreen for accepted calls (bypasses showIncomingCall)

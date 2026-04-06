@@ -1066,10 +1066,9 @@ class DriverEarningsSummaryView(RideshareApiMixin, APIView):
         completed_rides = Ride.objects.filter(
             assigned_driver=driver_profile, status=Ride.STATUS_COMPLETED
         )
-        earnings = completed_rides.aggregate(total=Sum("final_fare"))
         summary = {
-            "total_trips": completed_rides.count(),
-            "total_earnings": str(earnings["total"] or Decimal("0.00")),
+            "total_trips": driver_profile.total_trips or completed_rides.count(),
+            "total_earnings": str(driver_profile.total_earnings or Decimal("0.00")),
             "is_online": driver_profile.is_online,
             "is_available": driver_profile.is_available,
         }

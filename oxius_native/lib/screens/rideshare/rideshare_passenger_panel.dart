@@ -1920,7 +1920,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           const SizedBox(height: 6),
           if (_noDriversInRange) ...[
             Text(
-              'à¦†à¦ªà¦¨à¦¾à¦° à¦à¦²à¦¾à¦•à¦¾à¦¯à¦¼ à¦•à§‹à¦¨à§‹ à¦¡à§à¦°à¦¾à¦‡à¦­à¦¾à¦° à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦šà§à¦›à§‡ à¦¨à¦¾à¥¤ à¦¶à¦¹à¦° à¦à¦²à¦¾à¦•à¦¾ à¦¥à§‡à¦•à§‡ à¦šà§‡à¦·à§à¦Ÿà¦¾ à¦•à¦°à§à¦¨à¥¤',
+              'আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।',
               style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFFDC2626), height: 1.4),
             ),
             const SizedBox(height: 4),
