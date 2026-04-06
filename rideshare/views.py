@@ -1133,11 +1133,20 @@ class LocationSearchView(RideshareApiMixin, APIView):
 
     def get(self, request):
         query = request.query_params.get("q", "")
+        focus_lat = request.query_params.get("lat")
+        focus_lng = request.query_params.get("lng")
         try:
             limit = max(1, min(int(request.query_params.get("limit", 5)), 10))
         except (TypeError, ValueError):
             limit = 5
-        return api_success(LocationService.search_places(query, limit=limit))
+        return api_success(
+            LocationService.search_places(
+                query,
+                limit=limit,
+                focus_lat=focus_lat,
+                focus_lng=focus_lng,
+            )
+        )
 
 
 class ReverseGeocodeView(RideshareApiMixin, APIView):

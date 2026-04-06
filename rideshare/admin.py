@@ -77,8 +77,21 @@ class RideshareSettingsAdmin(admin.ModelAdmin):
         "platform_fee_percent",
         "driver_response_timeout_seconds",
         "max_search_window_minutes",
+        "google_maps_key_configured",
         "updated_at",
     )
+    readonly_fields = ("google_maps_key_configured",)
+    fields = (
+        "platform_fee_percent",
+        "driver_response_timeout_seconds",
+        "max_search_window_minutes",
+        "google_maps_api_key",
+        "google_maps_key_configured",
+    )
+
+    @admin.display(boolean=True, description="Google key configured")
+    def google_maps_key_configured(self, obj):
+        return bool(obj and obj.google_maps_api_key.strip())
 
 
 class RideStatusHistoryInline(admin.TabularInline):

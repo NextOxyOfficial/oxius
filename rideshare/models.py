@@ -223,6 +223,12 @@ class RideshareSettings(models.Model):
         default=Decimal("15.00"),
         help_text="Maximum distance (km) from pickup to search for drivers. Prevents rural ultra-long matches.",
     )
+    google_maps_api_key = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Optional override for Google Places and Geocoding. Leave blank to use the server environment variable.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

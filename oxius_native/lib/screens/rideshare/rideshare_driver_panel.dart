@@ -137,6 +137,116 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     return preferredHeight < 420 ? 420 : preferredHeight;
   }
 
+  Widget _buildMapSectionFrame({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String badge,
+    required Widget child,
+    Color accentColor = _indigo,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Colors.white, Color(0xFFF8FAFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: accentColor.withValues(alpha: 0.14)),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [accentColor, accentColor.withValues(alpha: 0.74)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 20, color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: _slate800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        height: 1.35,
+                        color: _slate500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: accentColor.withValues(alpha: 0.14)),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: accentColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: _mapViewportHeight(context),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.76), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: _slate800.withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+
   void _initializeProfileExpansion(DriverProfile? profile) {
     if (_profileExpansionInitialized) return;
     _isProfileExpanded = !_hasSubmittedIdentity(profile);
@@ -3144,11 +3254,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         ]),
       ),
       const SizedBox(height: 10),
-      Container(
-        height: _mapViewportHeight(context),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14), border: Border.all(color: _slate200)),
-        clipBehavior: Clip.antiAlias,
+      _buildMapSectionFrame(
+        context: context,
+        icon: ride.isInProgress ? Icons.navigation_rounded : Icons.route_rounded,
+        title: t('rideshare_command_map', fallback: 'Trip Command Map'),
+        subtitle: ride.isInProgress
+            ? t('rideshare_command_map_progress_subtitle', fallback: 'Keep the passenger, route path and live driver position visible while you drive.')
+            : t('rideshare_command_map_arrival_subtitle', fallback: 'Use the route preview to approach pickup with live passenger visibility.'),
+        badge: ride.isInProgress
+            ? t('rideshare_live_badge', fallback: 'Live')
+            : t('rideshare_en_route_badge', fallback: 'En Route'),
+        accentColor: ride.isInProgress ? _emeraldDark : _indigo,
         child: RideshareMapWidget(
           pickupPoint: ride.pickupPoint,
           dropPoint: ride.dropPoint,

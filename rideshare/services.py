@@ -2,6 +2,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from math import asin, cos, radians, sin, sqrt
 import logging
 from datetime import timedelta
+import re
 
 # How many minutes of silence from a driver's device before we consider it stale/offline.
 # A driver who has not sent any signal (location, heartbeat, or online toggle) for this
@@ -42,6 +43,81 @@ BANGLADESH_BOUNDS = {
 }
 
 BANGLADESH_COUNTRY_NAMES = {"bangladesh", "bd", "বাংলাদেশ"}
+
+SEARCH_QUERY_ALIASES = {
+    "govt": "government",
+    "govt.": "government",
+    "gov": "government",
+    "collage": "college",
+    "clg": "college",
+    "coll": "college",
+    "varsity": "university",
+    "uni": "university",
+    "rd": "road",
+    "rd.": "road",
+    "st": "street",
+    "st.": "street",
+    "hosp": "hospital",
+}
+
+SEARCH_ENGLISH_TO_BANGLA = {
+    "government": "সরকারি",
+    "college": "কলেজ",
+    "university": "বিশ্ববিদ্যালয়",
+    "road": "রোড",
+    "street": "স্ট্রিট",
+    "hospital": "হাসপাতাল",
+    "market": "বাজার",
+    "library": "লাইব্রেরি",
+    "school": "স্কুল",
+    "station": "স্টেশন",
+    "bus": "বাস",
+    "bridge": "ব্রিজ",
+    "mosque": "মসজিদ",
+    "police": "পুলিশ",
+    "kushtia": "কুষ্টিয়া",
+    "khulna": "খুলনা",
+    "dhaka": "ঢাকা",
+    "rajshahi": "রাজশাহী",
+    "chattogram": "চট্টগ্রাম",
+    "chittagong": "চট্টগ্রাম",
+    "sylhet": "সিলেট",
+    "barishal": "বরিশাল",
+    "rangpur": "রংপুর",
+    "mymensingh": "ময়মনসিংহ",
+}
+
+SEARCH_BANGLA_TO_ENGLISH = {
+    "সরকারি": "government",
+    "কলেজ": "college",
+    "বিশ্ববিদ্যালয়": "university",
+    "বিশ্ববিদ্যালয়": "university",
+    "সড়ক": "road",
+    "সড়ক": "road",
+    "রোড": "road",
+    "রাস্তা": "road",
+    "স্ট্রিট": "street",
+    "হাসপাতাল": "hospital",
+    "বাজার": "market",
+    "লাইব্রেরি": "library",
+    "স্কুল": "school",
+    "স্টেশন": "station",
+    "বাস": "bus",
+    "ব্রিজ": "bridge",
+    "মসজিদ": "mosque",
+    "পুলিশ": "police",
+    "কুষ্টিয়া": "kushtia",
+    "কুষ্টিয়া": "kushtia",
+    "খুলনা": "khulna",
+    "ঢাকা": "dhaka",
+    "রাজশাহী": "rajshahi",
+    "চট্টগ্রাম": "chattogram",
+    "সিলেট": "sylhet",
+    "বরিশাল": "barishal",
+    "রংপুর": "rangpur",
+    "ময়মনসিংহ": "mymensingh",
+    "ময়মনসিংহ": "mymensingh",
+}
 
 
 DEFAULT_FARES = {
@@ -127,6 +203,14 @@ def get_max_search_window_minutes():
 def get_max_passenger_search_radius_km():
     settings_obj = get_rideshare_settings()
     return float(settings_obj.max_passenger_search_radius_km or 15)
+
+
+def get_google_maps_api_key():
+    settings_obj = get_rideshare_settings()
+    admin_key = getattr(settings_obj, "google_maps_api_key", "").strip()
+    if admin_key:
+        return admin_key
+    return getattr(settings, "RIDESHARE_GOOGLE_MAPS_API_KEY", "").strip()
 
 
 class RoutingService:
@@ -326,6 +410,289 @@ class RoutingService:
 
 class LocationService:
     @staticmethod
+    def _normalize_search_text(value):
+        return re.sub(r"\s+", " ", str(value or "").strip().lower())
+
+    @staticmethod
+    def _contains_bangla_text(value):
+        return bool(re.search(r"[\u0980-\u09FF]", str(value or "")))
+
+    @staticmethod
+    def _google_maps_enabled():
+        return bool(get_google_maps_api_key())
+
+    @classmethod
+    def _preferred_google_languages(cls, query):
+        return ["bn", "en"] if cls._contains_bangla_text(query) else ["en", "bn"]
+
+    @classmethod
+    def _expand_query_aliases(cls, query):
+        normalized_query = cls._normalize_search_text(query)
+        if not normalized_query:
+            return ""
+
+        changed = False
+        normalized_tokens = []
+        for token in normalized_query.split(" "):
+            replacement = SEARCH_QUERY_ALIASES.get(token, token)
+            if replacement != token:
+                changed = True
+            normalized_tokens.extend(replacement.split(" "))
+
+        rebuilt_query = " ".join(token for token in normalized_tokens if token)
+        return rebuilt_query if changed else ""
+
+    @classmethod
+    def _translate_query_terms(cls, query, mapping):
+        normalized_query = cls._normalize_search_text(query)
+        if not normalized_query:
+            return ""
+
+        translated_tokens = []
+        changed = False
+        for token in normalized_query.split(" "):
+            replacement = mapping.get(token, token)
+            if replacement != token:
+                changed = True
+            translated_tokens.extend(replacement.split(" "))
+
+        translated_query = " ".join(token for token in translated_tokens if token)
+        return translated_query if changed else ""
+
+    @staticmethod
+    def _coerce_focus_coordinates(latitude=None, longitude=None):
+        try:
+            if latitude is None or longitude is None:
+                raise ValueError()
+            lat_value = float(latitude)
+            lng_value = float(longitude)
+        except (TypeError, ValueError):
+            return (
+                float(getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LAT", 23.6850)),
+                float(getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LNG", 90.3563)),
+                False,
+            )
+
+        if LocationService._is_within_bangladesh(lat_value, lng_value):
+            return lat_value, lng_value, True
+
+        return (
+            float(getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LAT", 23.6850)),
+            float(getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LNG", 90.3563)),
+            False,
+        )
+
+    @classmethod
+    def _build_query_variants(cls, query):
+        cleaned_query = str(query or "").strip()
+        if not cleaned_query:
+            return []
+
+        variants = [cleaned_query]
+        alias_variant = cls._expand_query_aliases(cleaned_query)
+        if alias_variant:
+            variants.append(alias_variant)
+
+        for source_query in list(variants):
+            english_to_bangla = cls._translate_query_terms(
+                source_query,
+                SEARCH_ENGLISH_TO_BANGLA,
+            )
+            if english_to_bangla:
+                variants.append(english_to_bangla)
+
+            bangla_to_english = cls._translate_query_terms(
+                source_query,
+                SEARCH_BANGLA_TO_ENGLISH,
+            )
+            if bangla_to_english:
+                variants.append(bangla_to_english)
+
+        normalized_query = cls._normalize_search_text(cleaned_query)
+        if "bangladesh" not in normalized_query and "বাংলাদেশ" not in cleaned_query:
+            for item in list(variants):
+                variants.append(f"{item}, Bangladesh")
+        return cls._dedupe_parts(variants)
+
+    @staticmethod
+    def _dedupe_parts(parts):
+        unique_parts = []
+        seen = set()
+        for part in parts:
+            normalized_part = str(part or "").strip()
+            if not normalized_part:
+                continue
+            key = normalized_part.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            unique_parts.append(normalized_part)
+        return unique_parts
+
+    @classmethod
+    def _compact_address_parts(cls, address):
+        if not address:
+            return []
+
+        locality = address.get("suburb") or address.get("neighbourhood")
+        city = address.get("city") or address.get("town") or address.get("county")
+        return cls._dedupe_parts(
+            [
+                address.get("road"),
+                locality,
+                city,
+                address.get("state_district"),
+                address.get("postcode"),
+                address.get("country"),
+            ]
+        )
+
+    @classmethod
+    def _normalize_place_item(cls, item):
+        if not item:
+            return None
+
+        address = item.get("address") or {}
+        raw_name = str(item.get("name") or "").strip()
+        raw_title = str(item.get("title") or "").strip()
+        raw_subtitle = str(item.get("subtitle") or "").strip()
+        compact_parts = cls._compact_address_parts(address)
+        fallback_primary = raw_name.split(",", 1)[0].strip() if raw_name else ""
+        if raw_title:
+            title = raw_title
+        elif compact_parts:
+            title = compact_parts[0] or fallback_primary or raw_name or "Selected location"
+        else:
+            title = fallback_primary or raw_name or "Selected location"
+        subtitle_parts = compact_parts[1:] if compact_parts else []
+
+        if raw_subtitle:
+            subtitle = raw_subtitle
+        else:
+            if not subtitle_parts and raw_name:
+                raw_segments = cls._dedupe_parts(raw_name.split(","))
+                subtitle_parts = raw_segments[1:]
+
+            subtitle = ", ".join(subtitle_parts)
+
+        if not subtitle and raw_name:
+            raw_segments = cls._dedupe_parts(raw_name.split(","))
+            subtitle = ", ".join(raw_segments[1:])
+        full_name = raw_name or ", ".join(cls._dedupe_parts([title, subtitle])) or title
+
+        latitude = item.get("latitude")
+        longitude = item.get("longitude")
+
+        return {
+            "name": full_name,
+            "title": title,
+            "subtitle": subtitle,
+            "latitude": latitude,
+            "longitude": longitude,
+            "address": address,
+        }
+
+    @classmethod
+    def _score_place_item(
+        cls,
+        query,
+        item,
+        provider_index=0,
+        focus_lat=None,
+        focus_lng=None,
+    ):
+        normalized_query = cls._normalize_search_text(query)
+        title = cls._normalize_search_text(item.get("title"))
+        subtitle = cls._normalize_search_text(item.get("subtitle"))
+        full_name = cls._normalize_search_text(item.get("name"))
+        haystack = " ".join(part for part in [title, subtitle, full_name] if part)
+        tokens = [token for token in normalized_query.split(" ") if token]
+        title_tokens = [token for token in title.split(" ") if token]
+
+        score = max(0, 30 - (provider_index * 3))
+        if title.startswith(normalized_query):
+            score += 120
+        elif normalized_query and normalized_query in title:
+            score += 80
+
+        if normalized_query and normalized_query in subtitle:
+            score += 45
+        if normalized_query and normalized_query in full_name:
+            score += 35
+
+        score += sum(18 for token in tokens if token in haystack)
+        score += sum(18 for token in tokens if any(title_token.startswith(token) for title_token in title_tokens))
+
+        address = item.get("address") or {}
+        if address.get("road"):
+            score += 12
+        if address.get("suburb") or address.get("neighbourhood"):
+            score += 8
+        if address.get("city") or address.get("town"):
+            score += 8
+
+        try:
+            if focus_lat is not None and focus_lng is not None:
+                distance_km = RoutingService._haversine_distance_km(
+                    float(focus_lat),
+                    float(focus_lng),
+                    float(item.get("latitude")),
+                    float(item.get("longitude")),
+                )
+                if distance_km <= 5:
+                    score += 36
+                elif distance_km <= 15:
+                    score += 24
+                elif distance_km <= 40:
+                    score += 14
+                elif distance_km <= 80:
+                    score += 7
+        except (TypeError, ValueError):
+            pass
+
+        return score
+
+    @classmethod
+    def _dedupe_search_results(cls, items):
+        deduped = []
+        seen = set()
+        for item in items:
+            latitude = str(item.get("latitude") or "")
+            longitude = str(item.get("longitude") or "")
+            key = (
+                round(float(latitude), 5) if latitude else 0,
+                round(float(longitude), 5) if longitude else 0,
+                cls._normalize_search_text(item.get("title")),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(item)
+        return deduped
+
+    @classmethod
+    def _build_reverse_geocode_fallback(cls, lat, lng):
+        try:
+            latitude = float(lat)
+            longitude = float(lng)
+        except (TypeError, ValueError):
+            return None
+
+        if not cls._is_within_bangladesh(latitude, longitude):
+            return None
+
+        return {
+            "name": "Pinned location",
+            "title": "Pinned location",
+            "subtitle": f"{latitude:.5f}, {longitude:.5f}",
+            "latitude": latitude,
+            "longitude": longitude,
+            "address": {
+                "country": "Bangladesh",
+            },
+        }
+
+    @staticmethod
     def _is_within_bangladesh(latitude, longitude):
         try:
             latitude = float(latitude)
@@ -400,8 +767,10 @@ class LocationService:
             return {}
 
         return {
+            "house_number": properties.get("housenumber") or "",
             "road": properties.get("street") or properties.get("name") or "",
             "suburb": properties.get("district") or properties.get("suburb") or "",
+            "neighbourhood": properties.get("neighbourhood") or "",
             "city": properties.get("city")
             or properties.get("county")
             or properties.get("state")
@@ -412,68 +781,302 @@ class LocationService:
         }
 
     @classmethod
-    def _search_places_google(cls, query, limit=5):
-        api_key = getattr(settings, "RIDESHARE_GOOGLE_MAPS_API_KEY", "").strip()
+    def _search_places_google(cls, query, limit=5, focus_lat=None, focus_lng=None):
+        autocomplete_results = cls._search_places_google_autocomplete(
+            query,
+            limit=limit,
+            focus_lat=focus_lat,
+            focus_lng=focus_lng,
+        )
+        if autocomplete_results:
+            return autocomplete_results
+
+        api_key = get_google_maps_api_key()
         base_url = getattr(
             settings, "RIDESHARE_GOOGLE_PLACES_TEXTSEARCH_URL", ""
         ).strip()
         if not api_key or not base_url:
             return []
 
-        params = {
-            "query": query,
-            "key": api_key,
-            "language": getattr(settings, "RIDESHARE_GOOGLE_LANGUAGE", "bn"),
-            "region": getattr(settings, "RIDESHARE_GOOGLE_REGION", "bd"),
-            "location": "23.6850,90.3563",
-            "radius": 500000,
-        }
+        resolved_lat, resolved_lng, has_focus = cls._coerce_focus_coordinates(
+            focus_lat,
+            focus_lng,
+        )
+
+        results = []
+        languages = cls._preferred_google_languages(query)
+        try:
+            with httpx.Client(
+                timeout=10.0, headers={"User-Agent": "adsyclub-rideshare/1.0"}
+            ) as client:
+                for language in languages:
+                    params = {
+                        "query": query,
+                        "key": api_key,
+                        "language": language,
+                        "region": getattr(settings, "RIDESHARE_GOOGLE_REGION", "bd"),
+                        "location": f"{resolved_lat},{resolved_lng}",
+                        "radius": 120000 if has_focus else 500000,
+                    }
+                    response = client.get(base_url, params=params)
+                    response.raise_for_status()
+                    payload = response.json()
+                    if payload.get("status") not in {"OK", "ZERO_RESULTS"}:
+                        continue
+
+                    for item in (payload.get("results") or [])[:limit]:
+                        location = (item.get("geometry") or {}).get("location") or {}
+                        latitude = location.get("lat")
+                        longitude = location.get("lng")
+                        if latitude is None or longitude is None:
+                            continue
+                        results.append(
+                            {
+                                "name": item.get("formatted_address") or item.get("name") or query,
+                                "title": item.get("name") or "",
+                                "subtitle": item.get("formatted_address") or "",
+                                "latitude": latitude,
+                                "longitude": longitude,
+                                "address": cls._google_components_to_address(
+                                    item.get("address_components") or []
+                                ),
+                            }
+                        )
+                    if len(results) >= limit:
+                        break
+        except Exception:
+            return []
+
+        results = cls._dedupe_search_results(results)
+        return results
+
+    @classmethod
+    def _search_places_google_autocomplete(cls, query, limit=5, focus_lat=None, focus_lng=None):
+        api_key = get_google_maps_api_key()
+        autocomplete_url = getattr(
+            settings,
+            "RIDESHARE_GOOGLE_PLACES_AUTOCOMPLETE_URL",
+            "",
+        ).strip()
+        details_url = getattr(settings, "RIDESHARE_GOOGLE_PLACE_DETAILS_URL", "").strip()
+        if not api_key or not autocomplete_url or not details_url:
+            return []
+
+        resolved_lat, resolved_lng, has_focus = cls._coerce_focus_coordinates(
+            focus_lat,
+            focus_lng,
+        )
+        languages = cls._preferred_google_languages(query)
+        hydrated_results = []
+        seen_place_ids = set()
 
         try:
             with httpx.Client(
                 timeout=10.0, headers={"User-Agent": "adsyclub-rideshare/1.0"}
             ) as client:
-                response = client.get(base_url, params=params)
-                response.raise_for_status()
-                payload = response.json()
+                for language in languages:
+                    params = {
+                        "input": query,
+                        "key": api_key,
+                        "language": language,
+                        "components": "country:bd",
+                        "location": f"{resolved_lat},{resolved_lng}",
+                        "radius": 120000 if has_focus else 500000,
+                    }
+                    response = client.get(autocomplete_url, params=params)
+                    response.raise_for_status()
+                    payload = response.json()
+                    if payload.get("status") not in {"OK", "ZERO_RESULTS"}:
+                        continue
+
+                    for prediction in (payload.get("predictions") or [])[: max(limit, 5)]:
+                        place_id = (prediction.get("place_id") or "").strip()
+                        if not place_id or place_id in seen_place_ids:
+                            continue
+                        seen_place_ids.add(place_id)
+
+                        details_response = client.get(
+                            details_url,
+                            params={
+                                "place_id": place_id,
+                                "key": api_key,
+                                "language": language,
+                                "fields": "name,formatted_address,geometry,address_component",
+                            },
+                        )
+                        details_response.raise_for_status()
+                        details_payload = details_response.json()
+                        if details_payload.get("status") != "OK":
+                            continue
+
+                        details = details_payload.get("result") or {}
+                        location = (details.get("geometry") or {}).get("location") or {}
+                        latitude = location.get("lat")
+                        longitude = location.get("lng")
+                        if latitude is None or longitude is None:
+                            continue
+
+                        structured_formatting = prediction.get("structured_formatting") or {}
+                        title = (
+                            structured_formatting.get("main_text")
+                            or details.get("name")
+                            or prediction.get("description")
+                            or query
+                        )
+                        subtitle = (
+                            structured_formatting.get("secondary_text")
+                            or details.get("formatted_address")
+                            or prediction.get("description")
+                            or ""
+                        )
+
+                        hydrated_results.append(
+                            {
+                                "name": details.get("formatted_address")
+                                or prediction.get("description")
+                                or title,
+                                "title": title,
+                                "subtitle": subtitle,
+                                "latitude": latitude,
+                                "longitude": longitude,
+                                "address": cls._google_components_to_address(
+                                    details.get("address_components") or []
+                                ),
+                            }
+                        )
+                        if len(hydrated_results) >= limit:
+                            return hydrated_results
         except Exception:
             return []
 
-        if payload.get("status") not in {"OK", "ZERO_RESULTS"}:
-            return []
-
-        results = []
-        for item in (payload.get("results") or [])[:limit]:
-            location = (item.get("geometry") or {}).get("location") or {}
-            latitude = location.get("lat")
-            longitude = location.get("lng")
-            if latitude is None or longitude is None:
-                continue
-            results.append(
-                {
-                    "name": item.get("formatted_address") or item.get("name") or query,
-                    "latitude": latitude,
-                    "longitude": longitude,
-                    "address": cls._google_components_to_address(
-                        item.get("address_components") or []
-                    ),
-                }
-            )
-        return results
+        return hydrated_results
 
     @classmethod
-    def _search_places_photon(cls, query, limit=5):
+    def _collect_ranked_search_results(
+        cls,
+        query,
+        providers,
+        *,
+        limit=5,
+        focus_lat=None,
+        focus_lng=None,
+    ):
+        combined_results = []
+        query_variants = cls._build_query_variants(query)
+
+        for provider_index, current in enumerate(providers):
+            for query_index, search_query in enumerate(query_variants):
+                if current == "photon":
+                    results = cls._search_places_photon(
+                        search_query,
+                        limit=max(limit * 2, 8),
+                        focus_lat=focus_lat,
+                        focus_lng=focus_lng,
+                    )
+                elif current == "nominatim":
+                    results = cls._search_places_nominatim(
+                        search_query,
+                        limit=max(limit * 2, 8),
+                        focus_lat=focus_lat,
+                        focus_lng=focus_lng,
+                    )
+                elif current == "google":
+                    results = cls._search_places_google(
+                        search_query,
+                        limit=max(limit * 2, 8),
+                        focus_lat=focus_lat,
+                        focus_lng=focus_lng,
+                    )
+                else:
+                    results = []
+
+                for result_index, item in enumerate(cls._filter_bangladesh_results(results)):
+                    normalized_item = cls._normalize_place_item(item)
+                    if not normalized_item:
+                        continue
+                    normalized_item["_score"] = max(
+                        cls._score_place_item(
+                            query,
+                            normalized_item,
+                            provider_index=provider_index + (query_index * 2),
+                            focus_lat=focus_lat,
+                            focus_lng=focus_lng,
+                        ),
+                        cls._score_place_item(
+                            search_query,
+                            normalized_item,
+                            provider_index=provider_index + (query_index * 2),
+                            focus_lat=focus_lat,
+                            focus_lng=focus_lng,
+                        ),
+                    )
+                    if current == "google":
+                        normalized_item["_score"] += max(0, 320 - (result_index * 40) - (query_index * 20))
+                    combined_results.append(normalized_item)
+
+        ranked_results = cls._dedupe_search_results(combined_results)
+        ranked_results.sort(key=lambda item: item.get("_score", 0), reverse=True)
+        return ranked_results
+
+    @classmethod
+    def _clean_ranked_search_results(cls, ranked_results, limit):
+        cleaned_results = []
+        for item in ranked_results[:limit]:
+            cleaned_results.append(
+                {
+                    key: value
+                    for key, value in item.items()
+                    if not key.startswith("_")
+                }
+            )
+        return cleaned_results
+
+    @classmethod
+    def _free_results_are_strong_enough(cls, query, ranked_results, limit):
+        if not ranked_results:
+            return False
+
+        normalized_query = cls._normalize_search_text(query)
+        top_result = ranked_results[0]
+        top_score = top_result.get("_score", 0)
+        top_title = cls._normalize_search_text(top_result.get("title"))
+        top_name = cls._normalize_search_text(top_result.get("name"))
+
+        strong_count = sum(
+            1
+            for item in ranked_results[: max(3, limit)]
+            if item.get("_score", 0) >= 95
+        )
+        strong_title_match = normalized_query and (
+            top_title.startswith(normalized_query) or normalized_query in top_name
+        )
+
+        if strong_title_match and top_score >= 100 and strong_count >= min(2, limit):
+            return True
+        if top_score >= 130:
+            return True
+        return False
+
+    @classmethod
+    def _search_places_photon(cls, query, limit=5, focus_lat=None, focus_lng=None):
         base_url = getattr(settings, "RIDESHARE_PHOTON_URL", "").strip()
         if not base_url:
             return []
 
+        resolved_lat, resolved_lng, has_focus = cls._coerce_focus_coordinates(
+            focus_lat,
+            focus_lng,
+        )
+
         params = {
             "q": query,
             "limit": limit,
-            "lat": getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LAT", 23.6850),
-            "lon": getattr(settings, "RIDESHARE_PHOTON_DEFAULT_LNG", 90.3563),
+            "lat": resolved_lat,
+            "lon": resolved_lng,
             "bbox": f"{BANGLADESH_BOUNDS['min_lng']},{BANGLADESH_BOUNDS['min_lat']},{BANGLADESH_BOUNDS['max_lng']},{BANGLADESH_BOUNDS['max_lat']}",
         }
+        if has_focus:
+            params["zoom"] = 13
 
         try:
             with httpx.Client(
@@ -509,20 +1112,34 @@ class LocationService:
         return results
 
     @staticmethod
-    def _search_places_nominatim(query, limit=5):
+    def _search_places_nominatim(query, limit=5, focus_lat=None, focus_lng=None):
         nominatim_base_url = getattr(
             settings, "RIDESHARE_NOMINATIM_URL", "https://nominatim.openstreetmap.org"
         )
         url = f"{nominatim_base_url.rstrip('/')}/search"
+        resolved_lat, resolved_lng, has_focus = LocationService._coerce_focus_coordinates(
+            focus_lat,
+            focus_lng,
+        )
         params = {
             "q": query,
             "format": "jsonv2",
             "limit": limit,
             "addressdetails": 1,
             "countrycodes": "bd",
-            "viewbox": f"{BANGLADESH_BOUNDS['min_lng']},{BANGLADESH_BOUNDS['max_lat']},{BANGLADESH_BOUNDS['max_lng']},{BANGLADESH_BOUNDS['min_lat']}",
-            "bounded": 1,
+            "dedupe": 1,
         }
+        if has_focus:
+            lat_delta = 0.9
+            lng_delta = 1.1
+            params["viewbox"] = (
+                f"{resolved_lng - lng_delta},{resolved_lat + lat_delta},"
+                f"{resolved_lng + lng_delta},{resolved_lat - lat_delta}"
+            )
+            params["bounded"] = 0
+        else:
+            params["viewbox"] = f"{BANGLADESH_BOUNDS['min_lng']},{BANGLADESH_BOUNDS['max_lat']},{BANGLADESH_BOUNDS['max_lng']},{BANGLADESH_BOUNDS['min_lat']}"
+            params["bounded"] = 1
         headers = {"User-Agent": "adsyclub-rideshare/1.0"}
 
         try:
@@ -546,38 +1163,48 @@ class LocationService:
         return results
 
     @classmethod
-    def search_places(cls, query, limit=5):
+    def search_places(cls, query, limit=5, focus_lat=None, focus_lng=None):
         if not query:
             return []
 
         provider = (
-            getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "google").strip().lower()
+            getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "photon").strip().lower()
         )
-        providers = [provider]
-        if provider != "google":
-            providers.append("google")
-        if provider != "photon":
-            providers.append("photon")
-        if provider != "nominatim":
-            providers.append("nominatim")
+        free_providers = []
+        for candidate in [provider, "photon", "nominatim"]:
+            if candidate in {"photon", "nominatim"} and candidate not in free_providers:
+                free_providers.append(candidate)
 
-        for current in providers:
-            if current == "google":
-                results = cls._search_places_google(query, limit=limit)
-            elif current == "photon":
-                results = cls._search_places_photon(query, limit=limit)
-            elif current == "nominatim":
-                results = cls._search_places_nominatim(query, limit=limit)
-            else:
-                results = []
-            results = cls._filter_bangladesh_results(results)
-            if results:
-                return results
-        return []
+        free_ranked_results = cls._collect_ranked_search_results(
+            query,
+            free_providers,
+            limit=limit,
+            focus_lat=focus_lat,
+            focus_lng=focus_lng,
+        )
+
+        if not cls._google_maps_enabled():
+            return cls._clean_ranked_search_results(free_ranked_results, limit)
+
+        google_ranked_results = cls._collect_ranked_search_results(
+            query,
+            ["google"],
+            limit=limit,
+            focus_lat=focus_lat,
+            focus_lng=focus_lng,
+        )
+
+        if not google_ranked_results:
+            return cls._clean_ranked_search_results(free_ranked_results, limit)
+
+        merged_ranked_results = cls._dedupe_search_results(
+            [*google_ranked_results, *free_ranked_results]
+        )
+        return cls._clean_ranked_search_results(merged_ranked_results, limit)
 
     @classmethod
     def _reverse_geocode_google(cls, lat, lng):
-        api_key = getattr(settings, "RIDESHARE_GOOGLE_MAPS_API_KEY", "").strip()
+        api_key = get_google_maps_api_key()
         base_url = getattr(settings, "RIDESHARE_GOOGLE_GEOCODE_URL", "").strip()
         if not api_key or not base_url:
             return None
@@ -647,13 +1274,14 @@ class LocationService:
     @classmethod
     def reverse_geocode(cls, lat, lng):
         provider = (
-            getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "google").strip().lower()
+            getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "photon").strip().lower()
         )
-        providers = [provider]
-        if provider != "google":
+        providers = []
+        if cls._google_maps_enabled():
             providers.append("google")
-        if provider != "nominatim":
-            providers.append("nominatim")
+        for candidate in [provider, "nominatim"]:
+            if candidate in {"google", "nominatim"} and candidate not in providers:
+                providers.append(candidate)
 
         for current in providers:
             if current == "google":
@@ -663,7 +1291,10 @@ class LocationService:
             else:
                 result = None
             if result and cls._is_bangladesh_result(result):
-                return result
+                return cls._normalize_place_item(result)
+        fallback_result = cls._build_reverse_geocode_fallback(lat, lng)
+        if fallback_result:
+            return cls._normalize_place_item(fallback_result)
         return None
 
 

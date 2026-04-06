@@ -468,11 +468,21 @@ class RideshareService {
   static Future<RideshareApiResult<List<RidePoint>>> searchLocations(
     String query, {
     int limit = 5,
+    double? latitude,
+    double? longitude,
   }) async {
     try {
       final headers = await _getHeaders();
+      final queryParameters = <String, String>{
+        'q': query,
+        'limit': limit.toString(),
+      };
+      if (latitude != null && longitude != null) {
+        queryParameters['lat'] = latitude.toString();
+        queryParameters['lng'] = longitude.toString();
+      }
       final uri = Uri.parse('$_baseUrl/location/search/').replace(
-        queryParameters: {'q': query, 'limit': limit.toString()},
+        queryParameters: queryParameters,
       );
       final response = await http.get(uri, headers: headers);
       return _parseResponse<List<RidePoint>>(

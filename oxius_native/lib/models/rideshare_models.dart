@@ -1,11 +1,15 @@
 class RidePoint {
   final String name;
+  final String? title;
+  final String? subtitle;
   final double latitude;
   final double longitude;
   final Map<String, dynamic>? address;
 
   RidePoint({
     required this.name,
+    this.title,
+    this.subtitle,
     required this.latitude,
     required this.longitude,
     this.address,
@@ -14,6 +18,8 @@ class RidePoint {
   factory RidePoint.fromJson(Map<String, dynamic> json) {
     return RidePoint(
       name: json['name'] ?? json['display_name'] ?? 'Selected location',
+      title: json['title']?.toString(),
+      subtitle: json['subtitle']?.toString(),
       latitude: double.tryParse(json['latitude']?.toString() ?? '') ??
           double.tryParse(json['lat']?.toString() ?? '') ??
           0.0,
@@ -26,10 +32,46 @@ class RidePoint {
 
   Map<String, dynamic> toJson() => {
         'name': name,
+        'title': title,
+        'subtitle': subtitle,
         'latitude': latitude,
         'longitude': longitude,
         'address': address,
       };
+
+  String get displayTitle {
+    final resolvedTitle = title?.trim();
+    if (resolvedTitle != null && resolvedTitle.isNotEmpty) {
+      return resolvedTitle;
+    }
+    final compactName = name.split(',').first.trim();
+    return compactName.isNotEmpty ? compactName : name;
+  }
+
+  String get displaySubtitle {
+    final resolvedSubtitle = subtitle?.trim();
+    if (resolvedSubtitle != null && resolvedSubtitle.isNotEmpty) {
+      return resolvedSubtitle;
+    }
+
+    final addressMap = address;
+    if (addressMap != null && addressMap.isNotEmpty) {
+      final parts = <String>[
+        addressMap['suburb']?.toString() ?? addressMap['neighbourhood']?.toString() ?? '',
+        addressMap['city']?.toString() ?? addressMap['town']?.toString() ?? addressMap['county']?.toString() ?? '',
+        addressMap['state_district']?.toString() ?? '',
+      ].where((part) => part.trim().isNotEmpty).toList();
+      if (parts.isNotEmpty) {
+        return parts.join(', ');
+      }
+    }
+
+    final segments = name.split(',').map((segment) => segment.trim()).where((segment) => segment.isNotEmpty).toList();
+    if (segments.length <= 1) {
+      return '';
+    }
+    return segments.skip(1).join(', ');
+  }
 }
 
 String _parseStringId(dynamic value) {

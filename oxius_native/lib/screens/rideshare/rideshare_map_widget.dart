@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'dart:math' as math;
+import 'dart:ui';
 import '../../models/rideshare_models.dart';
 
 class RideshareMapWidget extends StatefulWidget {
@@ -14,6 +15,7 @@ class RideshareMapWidget extends StatefulWidget {
   final List<NearbyDriver>? nearbyDrivers;
   final String? activeSelection;
   final Function(double latitude, double longitude)? onMapTap;
+  final Function(double latitude, double longitude)? onCenterChanged;
   final bool followDriver;
 
   // Profile info for rich markers
@@ -38,6 +40,7 @@ class RideshareMapWidget extends StatefulWidget {
     this.nearbyDrivers,
     this.activeSelection,
     this.onMapTap,
+    this.onCenterChanged,
     this.followDriver = false,
     this.riderName,
     this.riderAvatar,
@@ -173,50 +176,496 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        initialCenter: _getInitialCenter(),
-        initialZoom: 13,
-        cameraConstraint: CameraConstraint.contain(bounds: _bangladeshBounds),
-        minZoom: 6,
-        onTap: widget.onMapTap != null
-            ? (tapPosition, point) {
-                widget.onMapTap!(point.latitude, point.longitude);
-              }
-            : null,
-      ),
-      children: [
-        // Tile layer (OpenStreetMap)
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.adsyclub.oxius',
+    final routeCoordinates = _parseRouteCoordinates();
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFEFF6FF), Color(0xFFF8FAFC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        
-        // Route polyline
-        if (widget.routeGeometry != null) _buildRouteLayer(),
-        
-        // Markers
-        MarkerLayer(
-          markers: _buildMarkers(),
+      ),
+      child: Stack(
+        children: [
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _getInitialCenter(),
+              initialZoom: 13,
+              cameraConstraint: CameraConstraint.contain(bounds: _bangladeshBounds),
+              minZoom: 6,
+              maxZoom: 19,
+              onPositionChanged: (camera, hasGesture) {
+                final center = camera.center;
+                if (center == null) {
+                  return;
+                }
+                widget.onCenterChanged?.call(center.latitude, center.longitude);
+              },
+              onTap: widget.onMapTap != null
+                  ? (tapPosition, point) {
+                      widget.onMapTap!(point.latitude, point.longitude);
+                    }
+                  : null,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+                userAgentPackageName: 'com.adsyclub.oxius',
+                retinaMode: RetinaMode.isHighDensity(context),
+                maxZoom: 20,
+              ),
+              if (routeCoordinates.isNotEmpty) _buildRouteLayer(routeCoordinates),
+              MarkerLayer(
+                markers: _buildMarkers(),
+              ),
+            ],
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.18),
+                      Colors.transparent,
+                      const Color(0xFF0F172A).withValues(alpha: 0.18),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: const [0, 0.45, 1],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 12,
+            left: 12,
+            right: 76,
+            child: _buildStatusPanel(routeCoordinates),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Column(
+              children: [
+                _buildMapActionButton(
+                  icon: Icons.fit_screen_rounded,
+                  tooltip: 'Fit route',
+                  onPressed: _fitBounds,
+                ),
+                const SizedBox(height: 8),
+                _buildMapActionButton(
+                  icon: widget.followDriver && widget.driverLocation != null
+                      ? Icons.my_location_rounded
+                      : Icons.center_focus_strong_rounded,
+                  tooltip: widget.followDriver && widget.driverLocation != null
+                      ? 'Follow driver'
+                      : 'Focus map',
+                  onPressed: _focusPrimaryLocation,
+                  isHighlighted: widget.followDriver && widget.driverLocation != null,
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 12,
+            child: _buildLegendPanel(routeCoordinates),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRouteLayer(List<LatLng> coordinates) {
+    return PolylineLayer(
+      polylines: [
+        Polyline(
+          points: coordinates,
+          strokeWidth: 10,
+          color: Colors.white.withValues(alpha: 0.72),
+        ),
+        Polyline(
+          points: coordinates,
+          strokeWidth: 5.5,
+          color: const Color(0xFF4F46E5),
+        ),
+        Polyline(
+          points: coordinates,
+          strokeWidth: 2.25,
+          color: const Color(0xFF93C5FD).withValues(alpha: 0.95),
         ),
       ],
     );
   }
 
-  Widget _buildRouteLayer() {
-    final coordinates = _parseRouteCoordinates();
-    if (coordinates.isEmpty) return const SizedBox.shrink();
-    
-    return PolylineLayer(
-      polylines: [
-        Polyline(
-          points: coordinates,
-          strokeWidth: 4,
-          color: const Color(0xFF6366F1),
-        ),
-      ],
+  void _focusPrimaryLocation() {
+    if (widget.followDriver && widget.driverLocation != null) {
+      _mapController.move(
+        LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude),
+        15.5,
+      );
+      return;
+    }
+    if (widget.passengerLocation != null) {
+      _mapController.move(
+        LatLng(widget.passengerLocation!.latitude, widget.passengerLocation!.longitude),
+        15,
+      );
+      return;
+    }
+    if (widget.pickupPoint != null) {
+      _mapController.move(
+        LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude),
+        15,
+      );
+      return;
+    }
+    if (widget.dropPoint != null) {
+      _mapController.move(
+        LatLng(widget.dropPoint!.latitude, widget.dropPoint!.longitude),
+        15,
+      );
+      return;
+    }
+    _fitBounds();
+  }
+
+  Widget _buildStatusPanel(List<LatLng> routeCoordinates) {
+    final hasRoute = routeCoordinates.isNotEmpty;
+    final nearbyCount = widget.nearbyDrivers?.length ?? 0;
+    final title = widget.followDriver && widget.driverLocation != null
+        ? 'Live trip tracking'
+        : widget.onMapTap != null
+            ? 'Smart route planner'
+            : hasRoute
+                ? 'Route preview'
+                : 'Service area view';
+    final subtitle = widget.onMapTap != null
+        ? 'Tap to place your ${widget.activeSelection == 'drop' ? 'drop-off' : 'pickup'} point.'
+        : widget.followDriver && widget.driverLocation != null
+            ? 'Driver movement stays centered while the trip updates live.'
+            : hasRoute
+                ? 'Pickup, drop-off and trip path are framed together.'
+                : nearbyCount > 0
+                    ? '$nearbyCount nearby drivers around your selected area.'
+                    : 'Zoom and inspect the current service area.';
+
+    return _buildGlassPanel(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4F46E5), Color(0xFF0EA5E9)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF4F46E5).withValues(alpha: 0.28),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  widget.followDriver && widget.driverLocation != null
+                      ? Icons.radar_rounded
+                      : widget.onMapTap != null
+                          ? Icons.touch_app_rounded
+                          : Icons.map_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        height: 1.35,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF475569),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              if (hasRoute)
+                _buildInfoChip(
+                  icon: Icons.alt_route_rounded,
+                  label: '${routeCoordinates.length} route points',
+                  tint: const Color(0xFF4F46E5),
+                ),
+              if (nearbyCount > 0)
+                _buildInfoChip(
+                  icon: Icons.local_taxi_rounded,
+                  label: '$nearbyCount nearby',
+                  tint: const Color(0xFF0F766E),
+                ),
+              if (widget.followDriver && widget.driverLocation != null)
+                _buildInfoChip(
+                  icon: Icons.radar_rounded,
+                  label: 'Follow mode',
+                  tint: const Color(0xFF059669),
+                ),
+              if (widget.onMapTap != null)
+                _buildInfoChip(
+                  icon: Icons.edit_location_alt_rounded,
+                  label: widget.activeSelection == 'drop'
+                      ? 'Drop-off selection'
+                      : 'Pickup selection',
+                  tint: const Color(0xFFD97706),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildLegendPanel(List<LatLng> routeCoordinates) {
+    final items = <Widget>[];
+
+    if (widget.pickupPoint != null) {
+      items.add(
+        _buildLegendChip(
+          icon: Icons.trip_origin_rounded,
+          label: _compactPointLabel(widget.pickupPoint!, 'Pickup'),
+          tint: const Color(0xFF4F46E5),
+        ),
+      );
+    }
+    if (widget.dropPoint != null) {
+      items.add(
+        _buildLegendChip(
+          icon: Icons.flag_rounded,
+          label: _compactPointLabel(widget.dropPoint!, 'Drop-off'),
+          tint: const Color(0xFF059669),
+        ),
+      );
+    }
+    if (widget.driverLocation != null) {
+      items.add(
+        _buildLegendChip(
+          icon: Icons.directions_car_rounded,
+          label: widget.driverName?.trim().isNotEmpty == true ? widget.driverName!.trim() : 'Driver live',
+          tint: const Color(0xFF0EA5E9),
+        ),
+      );
+    }
+    if (widget.passengerLocation != null) {
+      items.add(
+        _buildLegendChip(
+          icon: Icons.person_pin_circle_rounded,
+          label: widget.passengerName?.trim().isNotEmpty == true ? widget.passengerName!.trim() : 'Passenger live',
+          tint: const Color(0xFFF59E0B),
+        ),
+      );
+    }
+    if (routeCoordinates.isEmpty && widget.nearbyDrivers != null && widget.nearbyDrivers!.isNotEmpty) {
+      items.add(
+        _buildLegendChip(
+          icon: Icons.groups_rounded,
+          label: '${widget.nearbyDrivers!.length} drivers nearby',
+          tint: const Color(0xFF334155),
+        ),
+      );
+    }
+
+    if (items.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return _buildGlassPanel(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: items,
+      ),
+    );
+  }
+
+  Widget _buildMapActionButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback onPressed,
+    bool isHighlighted = false,
+  }) {
+    final backgroundColor = isHighlighted
+        ? const Color(0xFF4F46E5).withValues(alpha: 0.9)
+        : Colors.white.withValues(alpha: 0.9);
+    final iconColor = isHighlighted ? Colors.white : const Color(0xFF0F172A);
+
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        elevation: 0,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Ink(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: isHighlighted ? 0.18 : 0.7),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.12),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: iconColor, size: 22),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassPanel({required EdgeInsetsGeometry padding, required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Container(
+          padding: padding,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.82),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.62)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required Color tint,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: tint.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: tint),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF0F172A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegendChip({
+    required IconData icon,
+    required String label,
+    required Color tint,
+  }) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 34),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: tint.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: tint),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 140),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _compactPointLabel(RidePoint point, String fallback) {
+    final value = point.displayTitle.trim();
+    if (value.isEmpty) {
+      return fallback;
+    }
+    if (value.length <= 22) {
+      return value;
+    }
+    return '${value.substring(0, 22)}...';
   }
 
   List<LatLng> _parseRouteCoordinates() {

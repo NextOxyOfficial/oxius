@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/adsyconnect_service.dart';
@@ -24,6 +26,8 @@ class RidesharePassengerPanel extends StatefulWidget {
 
 class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   with WidgetsBindingObserver {
+  static const String _recentPlacesKey = 'rideshare_recent_places_v2';
+
   final TranslationService _ts = TranslationService();
   String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
 
@@ -40,6 +44,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   Ride? _activeRide;
   List<RidePoint> _pickupSuggestions = [];
   List<RidePoint> _dropSuggestions = [];
+  List<RidePoint> _recentPlaces = [];
   List<NearbyDriver> _nearbyDrivers = [];
   
   // Loading states
@@ -72,6 +77,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   RoutePreview? _activeRoutePreview;
   String _activeRouteSignature = '';
   bool _isLoadingActiveRoute = false;
+  double? _mapSearchLatitude;
+  double? _mapSearchLongitude;
 
   @override
   void initState() {
@@ -79,6 +86,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _ts.addListener(_onTranslationsChanged);
     WidgetsBinding.instance.addObserver(this);
     _startStatusRefreshTimer();
+    _loadRecentPlaces();
     _rideshareNotificationSubscription =
         FCMService.rideshareNotificationEvents.listen(
           _handleRideshareNotificationEvent,
@@ -151,6 +159,116 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final safeHeight = screenHeight - MediaQuery.of(context).padding.vertical;
     final preferredHeight = safeHeight * 0.62;
     return preferredHeight < 320 ? 320 : preferredHeight;
+  }
+
+  Widget _buildMapSectionFrame({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String badge,
+    required Widget child,
+    Color accentColor = const Color(0xFF6366F1),
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: accentColor.withValues(alpha: 0.14)),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [accentColor, accentColor.withValues(alpha: 0.72)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, size: 20, color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        height: 1.35,
+                        color: const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: accentColor.withValues(alpha: 0.14)),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.inter(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: accentColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            height: _mapViewportHeight(context),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.72), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: child,
+          ),
+        ],
+      ),
+    );
   }
 
   String _currentTargetedDriverName(Ride ride) {
@@ -570,6 +688,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       );
 
       if (mounted && result.success && result.data != null) {
+        await _rememberRecentPlace(result.data!);
         setState(() {
           _pickupPoint = result.data;
           _pickupController.text = result.data!.name;
@@ -595,12 +714,17 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   void _onPickupSearch(String query) {
     _searchDebounce?.cancel();
-    if (query.length < 3) {
+    if (query.trim().length < 2) {
       setState(() => _pickupSuggestions = []);
       return;
     }
-    _searchDebounce = Timer(const Duration(milliseconds: 300), () async {
-      final result = await RideshareService.searchLocations(query);
+    _searchDebounce = Timer(const Duration(milliseconds: 250), () async {
+      final result = await RideshareService.searchLocations(
+        query,
+        limit: 7,
+        latitude: _mapSearchLatitude ?? _pickupPoint?.latitude,
+        longitude: _mapSearchLongitude ?? _pickupPoint?.longitude,
+      );
       if (mounted && result.success) {
         setState(() => _pickupSuggestions = result.data ?? []);
       }
@@ -609,19 +733,30 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   void _onDropSearch(String query) {
     _searchDebounce?.cancel();
-    if (query.length < 3) {
+    if (query.trim().length < 2) {
       setState(() => _dropSuggestions = []);
       return;
     }
-    _searchDebounce = Timer(const Duration(milliseconds: 300), () async {
-      final result = await RideshareService.searchLocations(query);
+    _searchDebounce = Timer(const Duration(milliseconds: 250), () async {
+      final result = await RideshareService.searchLocations(
+        query,
+        limit: 7,
+        latitude: _mapSearchLatitude ?? _pickupPoint?.latitude ?? _dropPoint?.latitude,
+        longitude: _mapSearchLongitude ?? _pickupPoint?.longitude ?? _dropPoint?.longitude,
+      );
       if (mounted && result.success) {
         setState(() => _dropSuggestions = result.data ?? []);
       }
     });
   }
 
-  void _selectPickupSuggestion(RidePoint point) {
+  void _onPlannerMapCenterChanged(double latitude, double longitude) {
+    _mapSearchLatitude = latitude;
+    _mapSearchLongitude = longitude;
+  }
+
+  Future<void> _selectPickupSuggestion(RidePoint point) async {
+    await _rememberRecentPlace(point);
     setState(() {
       _pickupPoint = point;
       _pickupController.text = point.name;
@@ -632,13 +767,75 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _requestEstimate();
   }
 
-  void _selectDropSuggestion(RidePoint point) {
+  Future<void> _selectDropSuggestion(RidePoint point) async {
+    await _rememberRecentPlace(point);
     setState(() {
       _dropPoint = point;
       _dropController.text = point.name;
       _dropSuggestions = [];
     });
     _requestEstimate();
+  }
+
+  Future<void> _loadRecentPlaces() async {
+    final prefs = await SharedPreferences.getInstance();
+    final rawItems = prefs.getStringList(_recentPlacesKey) ?? <String>[];
+    final loadedPlaces = <RidePoint>[];
+
+    for (final rawItem in rawItems) {
+      try {
+        final decoded = jsonDecode(rawItem);
+        if (decoded is Map<String, dynamic>) {
+          loadedPlaces.add(RidePoint.fromJson(decoded));
+        }
+      } catch (_) {
+        // Ignore malformed cached entries.
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _recentPlaces = loadedPlaces);
+  }
+
+  Future<void> _rememberRecentPlace(RidePoint point) async {
+    final updatedPlaces = <RidePoint>[
+      point,
+      ..._recentPlaces.where(
+        (existingPoint) =>
+            existingPoint.latitude != point.latitude ||
+            existingPoint.longitude != point.longitude ||
+            existingPoint.name != point.name,
+      ),
+    ].take(8).toList();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _recentPlacesKey,
+      updatedPlaces.map((place) => jsonEncode(place.toJson())).toList(),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _recentPlaces = updatedPlaces);
+  }
+
+  List<RidePoint> _visibleSuggestionsForField(
+    TextEditingController controller,
+    List<RidePoint> suggestions,
+    bool isActive,
+  ) {
+    if (!isActive) {
+      return const <RidePoint>[];
+    }
+    if (controller.text.trim().isEmpty) {
+      return const <RidePoint>[];
+    }
+    return suggestions;
   }
 
   Future<void> _loadNearbyDrivers() async {
@@ -1266,6 +1463,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     if (!mounted || !result.success || result.data == null) return;
     
     final point = result.data!;
+    await _rememberRecentPlace(point);
     setState(() {
       if (_activeInput == 'pickup') {
         _pickupPoint = point;
@@ -1643,21 +1841,17 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           
           const SizedBox(height: 12),
           
-          // Map
-          Container(
-            height: _mapViewportHeight(context),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
+          _buildMapSectionFrame(
+            context: context,
+            icon: ride.isInProgress ? Icons.navigation_rounded : Icons.radar_rounded,
+            title: t('rideshare_live_trip_map', fallback: 'Live Trip Map'),
+            subtitle: ride.isInProgress
+                ? t('rideshare_live_trip_map_subtitle', fallback: 'Track the ride path, your driver and destination in one place.')
+                : t('rideshare_driver_arrival_map_subtitle', fallback: 'Watch your driver approach in real time with the active route preview.'),
+            badge: ride.isInProgress
+                ? t('rideshare_live_badge', fallback: 'Live')
+                : t('rideshare_tracking_badge', fallback: 'Tracking'),
+            accentColor: ride.isInProgress ? const Color(0xFF0F766E) : const Color(0xFF6366F1),
             child: RideshareMapWidget(
               pickupPoint: ride.pickupPoint,
               dropPoint: ride.dropPoint,
@@ -2240,20 +2434,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               ),
             ),
             const SizedBox(height: 12),
-            Container(
-              height: _mapViewportHeight(context),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
+            _buildMapSectionFrame(
+              context: context,
+              icon: Icons.map_rounded,
+              title: t('rideshare_smart_map', fallback: 'Smart Map'),
+              subtitle: t('rideshare_smart_map_subtitle', fallback: 'Set pickup and drop-off visually, then inspect nearby drivers and the best route.'),
+              badge: _activeInput == 'drop'
+                  ? t('rideshare_dropoff_badge', fallback: 'Drop-off')
+                  : t('rideshare_pickup_badge', fallback: 'Pickup'),
               child: RideshareMapWidget(
                 pickupPoint: _pickupPoint,
                 dropPoint: _dropPoint,
@@ -2261,6 +2449,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 nearbyDrivers: _nearbyDrivers,
                 activeSelection: _activeInput,
                 onMapTap: _onMapTap,
+                onCenterChanged: _onPlannerMapCenterChanged,
               ),
             ),
           ],
@@ -2510,6 +2699,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     required Function(RidePoint) onSuggestionTap,
     Widget? trailing,
   }) {
+    final visibleSuggestions = _visibleSuggestionsForField(
+      controller,
+      suggestions,
+      isActive,
+    );
+    final showingRecent = suggestions.isEmpty && visibleSuggestions.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2571,56 +2767,113 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         ),
         
         // Suggestions dropdown
-        if (suggestions.isNotEmpty)
+        if (visibleSuggestions.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(top: 4),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(22),
               border: Border.all(color: const Color(0xFFE2E8F0)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            constraints: const BoxConstraints(maxHeight: 150),
-            child: ListView.builder(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              itemCount: suggestions.length,
-              itemBuilder: (context, index) {
-                final suggestion = suggestions[index];
-                return InkWell(
-                  onTap: () => onSuggestionTap(suggestion),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: Color(0xFF64748B),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            suggestion.name,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: const Color(0xFF1E293B),
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+            constraints: const BoxConstraints(maxHeight: 220),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showingRecent)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+                    child: Text(
+                      'Recent places',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF64748B),
+                        letterSpacing: 0.3,
+                      ),
                     ),
                   ),
-                );
-              },
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: visibleSuggestions.length,
+                    itemBuilder: (context, index) {
+                      final suggestion = visibleSuggestions[index];
+                      final subtitle = suggestion.displaySubtitle;
+                      final isRecentItem = showingRecent;
+                      return InkWell(
+                        onTap: () => onSuggestionTap(suggestion),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(top: 2),
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: isRecentItem
+                                      ? const Color(0xFFF8FAFC)
+                                      : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Icon(
+                                  isRecentItem
+                                      ? Icons.history_rounded
+                                      : Icons.location_on_outlined,
+                                  size: 18,
+                                  color: const Color(0xFF64748B),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      suggestion.displayTitle,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF1E293B),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (subtitle.isNotEmpty) ...[
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        subtitle,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11.5,
+                                          color: const Color(0xFF64748B),
+                                          height: 1.3,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
       ],
