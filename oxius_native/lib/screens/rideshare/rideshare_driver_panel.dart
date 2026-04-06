@@ -1000,6 +1000,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (result.success && result.data != null) {
       setState(() => _driverProfile = result.data);
       _showSuccess(result.message.isNotEmpty ? result.message : t('rideshare_ride_completed_msg', fallback: 'Done!'));
+      // Refresh wallet balance so home/wallet screens show updated amount
+      unawaited(AuthService.refreshUserData());
       await _loadDriverData();
       if (goOnlineAfterPayment && _driverProfile?.isOnline != true) {
         await _toggleOnline();
@@ -1146,6 +1148,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           });
           _loadAvailableRequests();
           _loadDriverData();
+          // Refresh wallet balance after ride completion
+          unawaited(AuthService.refreshUserData());
           _syncRealtimeConnections();
           _showSuccess(
             status == 'completed'
@@ -3273,6 +3277,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           passengerLocation: _passengerLocation,
           passengerName: ride.riderName.isNotEmpty ? ride.riderName : null,
           passengerAvatar: ride.riderAvatar,
+          vehicleType: ride.requestedVehicleType,
           followDriver: ride.isDriverArriving || ride.isInProgress,
         ),
       ),

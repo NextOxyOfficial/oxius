@@ -1980,19 +1980,36 @@ class RideNotificationService:
         return success
 
     @classmethod
-    def notify_ride_status_change(cls, ride, old_status=None):
+    def notify_ride_status_change(cls, ride, old_status=None, cancelled_by=None):
         """Notify relevant parties about ride status change"""
-        # Notify rider
-        cls.send_ride_notification(ride.rider, ride.status, ride)
+        # --- Rider notification ---
+        if ride.status == Ride.STATUS_CANCELLED and cancelled_by == "driver":
+            rider_title = "❌ Ride Cancelled"
+            rider_body = "Your driver cancelled the ride. Please request a new ride."
+            rider_data = {
+                "type": "rideshare_update",
+                "notification_type": ride.status,
+                "ride_id": str(ride.id),
+                "status": ride.status,
+            }
+            for token in cls._get_user_fcm_tokens(ride.rider):
+                send_fcm_notification(token, rider_title, rider_body, rider_data)
+        else:
+            cls.send_ride_notification(ride.rider, ride.status, ride)
 
-        # Notify driver if assigned
+        # --- Driver notification ---
         if ride.assigned_driver and ride.assigned_driver.user:
             driver_title = "🚗 Ride Update"
             driver_body = f"Ride status: {ride.status.replace('_', ' ').title()}"
 
             if ride.status == Ride.STATUS_CANCELLED:
                 driver_title = "❌ Ride Cancelled"
-                driver_body = "The passenger has cancelled the ride."
+                if cancelled_by == "driver":
+                    driver_body = "You cancelled the ride."
+                elif cancelled_by == "admin":
+                    driver_body = "This ride was cancelled by admin."
+                else:
+                    driver_body = "The passenger cancelled this ride."
             elif ride.status == Ride.STATUS_IN_PROGRESS:
                 driver_title = "🛣️ Trip Started"
                 driver_body = "Trip is now in progress."

@@ -24,6 +24,7 @@ class RideshareMapWidget extends StatefulWidget {
   final String? driverName;
   final String? driverAvatar;
   final String? driverVehicleInfo; // e.g. "Honda Shine • DHA-1234"
+  final String? vehicleType; // 'bike', 'car', 'cng'
 
   // Live passenger location (for driver map)
   final RidePoint? passengerLocation;
@@ -47,6 +48,7 @@ class RideshareMapWidget extends StatefulWidget {
     this.driverName,
     this.driverAvatar,
     this.driverVehicleInfo,
+    this.vehicleType,
     this.passengerLocation,
     this.passengerName,
     this.passengerAvatar,
@@ -1040,6 +1042,18 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     );
   }
 
+  String get _vehicleEmoji {
+    switch (widget.vehicleType) {
+      case 'bike':
+        return '🏍️';
+      case 'cng':
+        return '🛺';
+      case 'car':
+      default:
+        return '🚗';
+    }
+  }
+
   Widget _buildDriverMarker() {
     final heading = widget.driverHeading ?? 0;
     return Transform.rotate(
@@ -1058,9 +1072,9 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             ),
           ],
         ),
-        child: const Text(
-          '🚗',
-          style: TextStyle(fontSize: 20),
+        child: Text(
+          _vehicleEmoji,
+          style: const TextStyle(fontSize: 20),
         ),
       ),
     );

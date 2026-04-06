@@ -583,7 +583,7 @@ class RideCancelView(RideshareApiMixin, APIView):
         )
 
         # Send push notification about cancellation
-        RideNotificationService.notify_ride_status_change(ride)
+        RideNotificationService.notify_ride_status_change(ride, cancelled_by=cancelled_by)
 
         return api_success(
             RideSerializer(ride, context={"request": request}).data,
