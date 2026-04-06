@@ -14,6 +14,7 @@ class OngoingCallBar extends StatefulWidget {
 class _OngoingCallBarState extends State<OngoingCallBar> {
   StreamSubscription<bool>? _callStateSub;
   bool _isInCall = false;
+  bool _isAccepted = false;
   DateTime? _callStartedAt;
   Timer? _durationTimer;
   Duration _callDuration = Duration.zero;
@@ -22,25 +23,34 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
   void initState() {
     super.initState();
     _isInCall = AgoraCallService.isInCall;
-    if (_isInCall) {
-      _startTimer();
-    }
+    _syncFromActiveCallInfo();
     _callStateSub = AgoraCallService.callStateStream.listen((inCall) {
       if (!mounted) return;
       setState(() {
         _isInCall = inCall;
       });
-      if (inCall && _callStartedAt == null) {
-        _startTimer();
-      } else if (!inCall) {
+      if (inCall) {
+        _syncFromActiveCallInfo();
+      } else {
         _stopTimer();
       }
     });
   }
 
-  void _startTimer() {
-    _callStartedAt = DateTime.now();
-    _callDuration = Duration.zero;
+  void _syncFromActiveCallInfo() {
+    final info = AgoraCallService.activeCallInfo;
+    _isAccepted = AgoraCallService.activeCallAccepted;
+    final connectedAtMs = AgoraCallService.activeCallConnectedAtMs;
+    if (info == null || connectedAtMs == null) {
+      _stopTimer(resetCallState: false);
+      return;
+    }
+    _startTimer(DateTime.fromMillisecondsSinceEpoch(connectedAtMs));
+  }
+
+  void _startTimer(DateTime startedAt) {
+    _callStartedAt = startedAt;
+    _callDuration = DateTime.now().difference(startedAt);
     _durationTimer?.cancel();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || _callStartedAt == null) return;
@@ -50,11 +60,14 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
     });
   }
 
-  void _stopTimer() {
+  void _stopTimer({bool resetCallState = true}) {
     _durationTimer?.cancel();
     _durationTimer = null;
     _callStartedAt = null;
     _callDuration = Duration.zero;
+    if (resetCallState) {
+      _isAccepted = false;
+    }
   }
 
   String _formatDuration(Duration d) {
@@ -103,79 +116,138 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
     final info = AgoraCallService.activeCallInfo;
     final peerName = info?['peerName'] ?? 'Ongoing call';
     final callType = info?['callType'] ?? 'video';
+    final peerAvatar = info?['peerAvatar']?.toString();
+    final subtitle = _callStartedAt != null
+        ? '${_formatDuration(_callDuration)} • Tap to return'
+        : (_isAccepted ? 'Connecting… tap to return' : 'Ringing… tap to return');
 
-    return GestureDetector(
-      onTap: _returnToCall,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF10B981), Color(0xFF059669)],
-          ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _returnToCall,
+            borderRadius: BorderRadius.circular(24),
+            child: Ink(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF06223B), Color(0xFF0F3A63)],
                 ),
-                child: Icon(
-                  callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      peerName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.none,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      'Tap to return • ${_formatDuration(_callDuration)}',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.85),
-                        fontSize: 12,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Text(
-                  'Return',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    decoration: TextDecoration.none,
+                border: Border.all(color: const Color(0xFF60A5FA).withOpacity(0.24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
                   ),
-                ),
+                ],
               ),
-            ],
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.08),
+                      border: Border.all(color: Colors.white.withOpacity(0.12)),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: peerAvatar != null && peerAvatar.isNotEmpty
+                        ? Image.network(
+                            peerAvatar,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(
+                              callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          )
+                        : Icon(
+                            callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _callStartedAt != null ? const Color(0xFF34D399) : const Color(0xFFFBBF24),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                peerName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  decoration: TextDecoration.none,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.76),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          'Back to call',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

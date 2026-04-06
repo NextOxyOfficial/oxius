@@ -999,6 +999,7 @@ class FCMService {
     if (callkitUuid.isNotEmpty) {
       _acceptedCallkitUuids.add(callkitUuid);
     }
+    AgoraCallService.markCallAccepted();
     
     // Use setCallConnected to mark call as connected (stops ringtone, updates call history on iOS)
     // Then end the CallKit UI - this is the correct flow for accepted calls
@@ -1480,6 +1481,8 @@ class FCMService {
 
     _pendingNavigationAttempts = 0;
     _pendingNavigationTimer = Timer.periodic(const Duration(milliseconds: 350), (timer) {
+      final pendingType = _pendingNavigationData?['type']?.toString();
+      final maxAttempts = pendingType == 'accepted_call' ? 120 : 25;
       final navigator = navigatorKey.currentState;
       if (navigator != null && _pendingNavigationData != null) {
         final data = _pendingNavigationData!;
@@ -1491,7 +1494,7 @@ class FCMService {
       }
 
       _pendingNavigationAttempts += 1;
-      if (_pendingNavigationAttempts >= 25) {
+      if (_pendingNavigationAttempts >= maxAttempts) {
         _log('⚠️ Navigator not ready after waiting. Dropping pending navigation.');
         _pendingNavigationData = null;
         timer.cancel();
@@ -1722,7 +1725,7 @@ class FCMService {
     // CALL STATUS (busy/rejected/cancelled/ended)
     // ============================================
     else if (type == 'call_status') {
-      AgoraCallService.emitCallStatus(data);
+      unawaited(AgoraCallService.handleRemoteCallStatus(data));
     }
     // ============================================
     // ADSYCONNECT MESSAGES

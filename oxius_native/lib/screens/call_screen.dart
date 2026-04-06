@@ -59,6 +59,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   bool _acceptanceSent = false;
   late final AnimationController _pulseController;
 
+  bool get _isCompactLayout => MediaQuery.sizeOf(context).height < 760;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -84,11 +86,18 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     
     if (widget.isReturning) {
       _localUserJoined = true;
-      _callAccepted = true;
-      _isConnecting = false;
+      _callAccepted = AgoraCallService.activeCallAccepted;
+      _isConnecting = !_callAccepted;
       _engine = AgoraCallService.engine;
       _listenForCallStatus();
-      _startCallTimer();
+      final connectedAtMs = AgoraCallService.activeCallConnectedAtMs;
+      if (connectedAtMs != null) {
+        _isConnecting = false;
+        _startCallTimer(
+          connectedAt: DateTime.fromMillisecondsSinceEpoch(connectedAtMs),
+          syncGlobalState: false,
+        );
+      }
       return;
     }
     
@@ -147,6 +156,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       if (!mounted) return;
 
       if (status == 'rejected') {
+        _showOverlayAndClose('Call declined');
+        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'rejected');
+      } else if (status == 'declined') {
         _showOverlayAndClose('Call declined');
         _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'rejected');
       } else if (status == 'busy') {
@@ -337,6 +349,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     }
 
     _acceptanceSent = true;
+    AgoraCallService.markCallAccepted();
     AgoraCallService.sendCallStatus(
       receiverId: widget.calleeId,
       channelName: widget.channelName,
@@ -395,17 +408,28 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     await AgoraCallService.leaveChannel();
     AgoraCallService.setInCall(false);
     if (mounted && _statusOverlay != null) {
-      await Future.delayed(const Duration(milliseconds: 900));
+      await Future.delayed(const Duration(milliseconds: 700));
     }
     if (mounted) {
-      Navigator.pop(context);
+      final navigator = Navigator.of(context, rootNavigator: true);
+      if (navigator.canPop()) {
+        navigator.pop();
+      } else {
+        final fallbackNavigator = FCMService.navigatorKey.currentState;
+        if (fallbackNavigator != null && fallbackNavigator.canPop()) {
+          fallbackNavigator.pop();
+        }
+      }
     }
   }
 
-  void _startCallTimer() {
+  void _startCallTimer({DateTime? connectedAt, bool syncGlobalState = true}) {
     if (_callStartedAt != null) return;
-    _callStartedAt = DateTime.now();
-    _callDuration = Duration.zero;
+    _callStartedAt = connectedAt ?? DateTime.now();
+    _callDuration = DateTime.now().difference(_callStartedAt!);
+    if (syncGlobalState) {
+      AgoraCallService.markCallConnected(_callStartedAt);
+    }
     _durationTimer?.cancel();
     _durationTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || _callStartedAt == null) return;
@@ -611,72 +635,90 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   Widget _buildWaitingView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 110, 24, 210),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildCallTypeBadge(),
-            const SizedBox(height: 28),
-            _buildAnimatedAvatar(size: 156),
-            const SizedBox(height: 30),
-            Text(
-              widget.calleeName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.6,
+    final compact = _isCompactLayout;
+    final bottomReserved = widget.isIncoming && !_callAccepted
+        ? (compact ? 236.0 : 286.0)
+        : (compact ? 158.0 : 214.0);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Align(
+          alignment: Alignment.center,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(24, compact ? 92 : 110, 24, bottomReserved),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: math.max(0, constraints.maxHeight - (compact ? 180 : 220)),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              _primaryStatusText,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.76),
-                fontSize: 16,
-                height: 1.4,
-                letterSpacing: 0.2,
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildSignalIndicator(),
-            const SizedBox(height: 24),
-            _buildGlassPanel(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-              borderRadius: BorderRadius.circular(24),
-              child: Row(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildMetricTile(
-                    icon: Icons.lock_outline_rounded,
-                    title: 'Secure',
-                    subtitle: 'Encrypted route',
+                  _buildCallTypeBadge(),
+                  SizedBox(height: compact ? 20 : 28),
+                  _buildAnimatedAvatar(size: compact ? 126 : 156),
+                  SizedBox(height: compact ? 20 : 30),
+                  Text(
+                    widget.calleeName,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: compact ? 28 : 32,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.6,
+                    ),
                   ),
-                  const SizedBox(width: 14),
-                  _buildMetricTile(
-                    icon: widget.callType == 'video' ? Icons.hd_rounded : Icons.graphic_eq_rounded,
-                    title: widget.callType == 'video' ? 'HD Video' : 'Clear Audio',
-                    subtitle: _callAccepted ? 'Live now' : 'Preparing stream',
+                  SizedBox(height: compact ? 10 : 12),
+                  Text(
+                    _primaryStatusText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.76),
+                      fontSize: compact ? 14 : 16,
+                      height: 1.4,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  SizedBox(height: compact ? 18 : 24),
+                  _buildSignalIndicator(),
+                  SizedBox(height: compact ? 18 : 24),
+                  _buildGlassPanel(
+                    padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 18, vertical: compact ? 14 : 16),
+                    borderRadius: BorderRadius.circular(24),
+                    child: Row(
+                      children: [
+                        _buildMetricTile(
+                          icon: Icons.lock_outline_rounded,
+                          title: 'Secure',
+                          subtitle: 'Encrypted route',
+                        ),
+                        SizedBox(width: compact ? 10 : 14),
+                        _buildMetricTile(
+                          icon: widget.callType == 'video' ? Icons.hd_rounded : Icons.graphic_eq_rounded,
+                          title: widget.callType == 'video' ? 'HD Video' : 'Clear Audio',
+                          subtitle: _callAccepted ? 'Live now' : 'Preparing stream',
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildIncomingCallUI() {
+    final compact = _isCompactLayout;
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 0, 18, 22),
-        child: _buildGlassPanel(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+        padding: EdgeInsets.fromLTRB(18, 0, 18, compact ? 14 : 22),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: _buildGlassPanel(
+          padding: EdgeInsets.fromLTRB(compact ? 18 : 20, compact ? 18 : 22, compact ? 18 : 20, compact ? 16 : 20),
           borderRadius: BorderRadius.circular(32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -694,7 +736,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                 'Incoming ${_callModeLabel.toLowerCase()}',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.72),
-                  fontSize: 15,
+                  fontSize: compact ? 14 : 15,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -704,14 +746,14 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.9),
-                  fontSize: 18,
+                  fontSize: compact ? 16 : 18,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: compact ? 12 : 16),
               _buildSignalIndicator(),
-              const SizedBox(height: 22),
+              SizedBox(height: compact ? 18 : 22),
               Row(
                 children: [
                   Expanded(
@@ -737,30 +779,34 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
               ),
             ],
           ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildCallControls() {
+    final compact = _isCompactLayout;
     return Positioned(
       left: 18,
       right: 18,
-      bottom: 20,
-      child: _buildGlassPanel(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+      bottom: compact ? 12 : 20,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: _buildGlassPanel(
+        padding: EdgeInsets.fromLTRB(compact ? 14 : 18, compact ? 14 : 18, compact ? 14 : 18, compact ? 14 : 18),
         borderRadius: BorderRadius.circular(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_callAccepted && _callStartedAt != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 14),
+                padding: EdgeInsets.only(bottom: compact ? 10 : 14),
                 child: Text(
                   'Connected • ${_formatDuration(_callDuration)}',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.76),
-                    fontSize: 14,
+                    fontSize: compact ? 13 : 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -790,7 +836,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
               ],
             ),
             if (widget.callType == 'video') ...[
-              const SizedBox(height: 14),
+              SizedBox(height: compact ? 10 : 14),
               Row(
                 children: [
                   Expanded(
@@ -814,6 +860,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
             ],
           ],
         ),
+        ),
       ),
     );
   }
@@ -830,7 +877,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Ink(
-          height: 78,
+          height: _isCompactLayout ? 72 : 78,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             color: isActive ? Colors.white.withOpacity(0.12) : Colors.white.withOpacity(0.06),
@@ -975,8 +1022,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   Widget _buildTopPanel() {
+    final compact = _isCompactLayout;
     return Positioned(
-      top: 14,
+      top: compact ? 8 : 14,
       left: 18,
       right: 18,
       child: Row(
@@ -984,13 +1032,13 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         children: [
           Expanded(
             child: _buildGlassPanel(
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+              padding: EdgeInsets.fromLTRB(compact ? 12 : 14, compact ? 12 : 14, compact ? 12 : 14, compact ? 12 : 14),
               borderRadius: BorderRadius.circular(26),
               child: Row(
                 children: [
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: compact ? 40 : 46,
+                    height: compact ? 40 : 46,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white.withOpacity(0.16)),
@@ -1008,9 +1056,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                           widget.calleeName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: compact ? 15 : 16,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.2,
                           ),
@@ -1022,7 +1070,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                               : _callModeLabel.toUpperCase(),
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.62),
-                            fontSize: 11,
+                            fontSize: compact ? 10 : 11,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1.1,
                           ),
@@ -1063,8 +1111,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   Widget _buildLocalPreview() {
+    final compact = _isCompactLayout;
     return Positioned(
-      top: 96,
+      top: compact ? 82 : 96,
       right: 18,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -1073,8 +1122,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
             padding: const EdgeInsets.all(6),
             borderRadius: BorderRadius.circular(26),
             child: Container(
-              width: 116,
-              height: 162,
+              width: compact ? 96 : 116,
+              height: compact ? 136 : 162,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white.withOpacity(0.12)),
@@ -1313,7 +1362,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          padding: EdgeInsets.symmetric(horizontal: _isCompactLayout ? 12 : 16, vertical: _isCompactLayout ? 14 : 18),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
@@ -1329,20 +1378,20 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           child: Column(
             children: [
               Container(
-                width: 54,
-                height: 54,
+                width: _isCompactLayout ? 48 : 54,
+                height: _isCompactLayout ? 48 : 54,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: color.withOpacity(0.22),
                 ),
-                child: Icon(icon, color: Colors.white, size: 24),
+                child: Icon(icon, color: Colors.white, size: _isCompactLayout ? 22 : 24),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: _isCompactLayout ? 10 : 14),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 15,
+                  fontSize: _isCompactLayout ? 14 : 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1352,7 +1401,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.7),
-                  fontSize: 12,
+                  fontSize: _isCompactLayout ? 11 : 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1370,8 +1419,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         onTap: () => _endCall(notifyPeer: true, allowLog: true),
         borderRadius: BorderRadius.circular(28),
         child: Ink(
-          width: 96,
-          height: 96,
+          width: _isCompactLayout ? 84 : 96,
+          height: _isCompactLayout ? 84 : 96,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(

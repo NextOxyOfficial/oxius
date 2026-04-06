@@ -26,6 +26,14 @@ class AgoraCallService {
 
   static Map<String, dynamic>? _activeCallInfo;
   static Map<String, dynamic>? get activeCallInfo => _activeCallInfo;
+  static bool get activeCallAccepted => _activeCallInfo?['accepted'] == true;
+  static int? get activeCallConnectedAtMs {
+    final value = _activeCallInfo?['connectedAt'];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
 
   static final StreamController<bool> _callStateController =
       StreamController<bool>.broadcast();
@@ -66,7 +74,28 @@ class AgoraCallService {
       'peerAvatar': peerAvatar,
       'callType': callType,
       'isIncoming': isIncoming,
+      'accepted': false,
+      'connectedAt': null,
     };
+  }
+
+  static void markCallAccepted() {
+    final info = _activeCallInfo;
+    if (info == null) return;
+    info['accepted'] = true;
+    try {
+      _callStateController.add(_isInCall);
+    } catch (_) {}
+  }
+
+  static void markCallConnected([DateTime? connectedAt]) {
+    final info = _activeCallInfo;
+    if (info == null) return;
+    info['accepted'] = true;
+    info['connectedAt'] = (connectedAt ?? DateTime.now()).millisecondsSinceEpoch;
+    try {
+      _callStateController.add(_isInCall);
+    } catch (_) {}
   }
 
   static void emitCallStatus(Map<String, dynamic> data) {
@@ -75,6 +104,28 @@ class AgoraCallService {
     } catch (_) {
       // Ignore
     }
+  }
+
+  static Future<void> handleRemoteCallStatus(Map<String, dynamic> data) async {
+    emitCallStatus(data);
+
+    final status = data['status']?.toString().toLowerCase();
+    final channelName = data['channel_name']?.toString();
+    final activeChannelName = _activeCallInfo?['channelName']?.toString();
+    const terminalStatuses = {'rejected', 'declined', 'busy', 'cancelled', 'ended'};
+
+    if (status == null || channelName == null || activeChannelName == null) {
+      return;
+    }
+    if (channelName != activeChannelName || !terminalStatuses.contains(status)) {
+      return;
+    }
+    if (_isCallScreenVisible) {
+      return;
+    }
+
+    await leaveChannel();
+    setInCall(false);
   }
   
   /// Initialize Agora RTC Engine
