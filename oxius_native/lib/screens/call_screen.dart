@@ -56,6 +56,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   bool _isMinimizing = false;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
   bool _incomingAlertActive = false;
+  bool _acceptanceSent = false;
   late final AnimationController _pulseController;
 
   @override
@@ -259,6 +260,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         });
       } else if (widget.isIncoming && widget.autoAccept) {
         // Auto-accepted from CallKit - join channel immediately
+        _notifyCallAccepted();
         await _joinChannel();
       } else {
         // Send notification to callee
@@ -322,10 +324,25 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   void _acceptCall() {
+    _notifyCallAccepted();
     _stopIncomingAlert();
     FCMService.cancelCallNotification(); // Cancel the notification
     setState(() => _callAccepted = true);
     _joinChannel();
+  }
+
+  void _notifyCallAccepted() {
+    if (!widget.isIncoming || _acceptanceSent) {
+      return;
+    }
+
+    _acceptanceSent = true;
+    AgoraCallService.sendCallStatus(
+      receiverId: widget.calleeId,
+      channelName: widget.channelName,
+      status: 'accepted',
+      callType: widget.callType,
+    );
   }
 
   void _rejectCall() {

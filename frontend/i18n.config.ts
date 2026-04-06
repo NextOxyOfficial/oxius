@@ -1068,10 +1068,10 @@ export default defineI18nConfig(() => ({
       rideshare_stats_earned: "আয়",
 
       // Rideshare - ride requests (driver)
-      rideshare_ride_requests: "রাইড অনুরোধসমূহ",
+      rideshare_ride_requests: "রাইড রিকুয়েস্টসমূহ",
       rideshare_refresh: "রিফ্রেশ",
-      rideshare_no_requests_yet: "এখনও কোনো অনুরোধ নেই",
-      rideshare_requests_auto_appear: "নতুন রাইড অনুরোধ এখানে দেখাবে।",
+      rideshare_no_requests_yet: "এখনও কোনো রিকুয়েস্ট নেই",
+      rideshare_requests_auto_appear: "নতুন রাইড রিকুয়েস্ট এখানে দেখাবে।",
       rideshare_you_are_offline: "আপনি অফলাইনে আছেন",
       rideshare_expired: "মেয়াদোত্তীর্ণ",
       rideshare_accept_ride: "রাইড একসেপ্ট করুন",

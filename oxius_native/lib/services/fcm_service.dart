@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
 import 'api_service.dart';
+import 'adsyconnect_realtime_service.dart';
 import 'business_network_service.dart';
 import 'agora_call_service.dart';
 import '../firebase_options.dart';
@@ -331,6 +332,8 @@ class FCMService {
   static Timer? _pendingNavigationTimer;
   static int _pendingNavigationAttempts = 0;
   static bool _lifecycleObserverInstalled = false;
+  static StreamSubscription<Map<String, dynamic>>? _adsyConnectRealtimeSubscription;
+  static final Map<String, int> _recentCallSignalTimestamps = <String, int>{};
 
   static bool get _isAppInForeground => _appLifecycleState == AppLifecycleState.resumed;
   static RouteObserver<PageRoute<dynamic>> get routeObserver => _routeObserver;
@@ -353,6 +356,57 @@ class FCMService {
     if (rawValue == null) return null;
     if (rawValue is int) return rawValue;
     return int.tryParse(rawValue.toString());
+  }
+
+  static bool _shouldProcessCallSignal(Map<String, dynamic> data) {
+    final type = data['type']?.toString();
+    if (type != 'incoming_call' && type != 'call' && type != 'call_status') {
+      return true;
+    }
+
+    final channelName = data['channel_name']?.toString();
+    if (channelName == null || channelName.isEmpty) {
+      return true;
+    }
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    _recentCallSignalTimestamps.removeWhere(
+      (_, timestamp) => now - timestamp > 4000,
+    );
+
+    final signalKey = [
+      type,
+      channelName,
+      data['status']?.toString() ?? '',
+      data['caller_id']?.toString() ?? data['sender_id']?.toString() ?? '',
+    ].join('|');
+
+    final previousTimestamp = _recentCallSignalTimestamps[signalKey];
+    if (previousTimestamp != null && now - previousTimestamp <= 4000) {
+      _log('📞 Skipping duplicate call signal: $signalKey');
+      return false;
+    }
+
+    _recentCallSignalTimestamps[signalKey] = now;
+    return true;
+  }
+
+  static void _attachAdsyConnectRealtimeBridge() {
+    _adsyConnectRealtimeSubscription ??=
+        AdsyConnectRealtimeService.instance.events.listen((event) {
+      final type = event['type']?.toString();
+      if (type != 'incoming_call' && type != 'call' && type != 'call_status') {
+        return;
+      }
+
+      final payload = Map<String, dynamic>.from(event);
+      if (!_shouldProcessCallSignal(payload)) {
+        return;
+      }
+
+      _log('📞 Handling AdsyConnect realtime call event: $payload');
+      _navigateBasedOnData(payload);
+    });
   }
 
   static bool _isCallTimestampFresh(int? timestamp) {
@@ -633,6 +687,8 @@ class FCMService {
 
       // Handle foreground messages
       FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+      _attachAdsyConnectRealtimeBridge();
 
       // Handle notification tap when app is in background
       FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
@@ -1237,7 +1293,10 @@ class FCMService {
     // Incoming call: open call screen immediately in foreground
     final type = message.data['type']?.toString();
     if (type == 'incoming_call' || type == 'call' || type == 'call_status') {
-      _navigateBasedOnData(Map<String, dynamic>.from(message.data));
+      final payload = Map<String, dynamic>.from(message.data);
+      if (_shouldProcessCallSignal(payload)) {
+        _navigateBasedOnData(payload);
+      }
       return;
     }
 

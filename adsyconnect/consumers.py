@@ -225,6 +225,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'last_seen': event.get('last_seen')
         }))
 
+    async def incoming_call_event(self, event):
+        """Send incoming call event to WebSocket."""
+        await self.send(text_data=json.dumps(event['payload']))
+
+    async def call_status_event(self, event):
+        """Send call status event to WebSocket."""
+        await self.send(text_data=json.dumps(event['payload']))
+
     # Database operations
     @database_sync_to_async
     def get_user(self, user_id):
