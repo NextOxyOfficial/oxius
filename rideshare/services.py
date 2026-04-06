@@ -1459,7 +1459,6 @@ class WalletService:
         elif payment_method == Ride.PAYMENT_METHOD_CASH:
             transaction_record = Balance.objects.create(
                 user=rider,
-                to_user=driver_user,
                 transaction_type="ride_cash",
                 payment_method="cash",
                 payable_amount=amount,
@@ -1468,7 +1467,7 @@ class WalletService:
                 completed=True,
                 approved=True,
                 bank_status="completed",
-                description=f"Cash ride payment collected by driver for ride {ride.id}",
+                description=f"Cash ride payment collected offline for ride {ride.id}",
             )
             driver_due_amount = platform_fee_amount
             driver_due_settled_at = None

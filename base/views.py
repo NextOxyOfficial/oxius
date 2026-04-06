@@ -2123,9 +2123,12 @@ class ReceivedTransfersView(generics.ListAPIView):
 
     def get_queryset(self):
         """Return all transfers where the current user is the recipient"""
-        # Use Django ORM instead of raw SQL for better compatibility with DRF
         return (
-            Balance.objects.filter(to_user=self.request.user, completed=True)
+            Balance.objects.filter(
+                to_user=self.request.user,
+                completed=True,
+                transaction_type="transfer",
+            )
             .select_related("user")
             .order_by("-updated_at")
         )
