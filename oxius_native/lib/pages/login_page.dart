@@ -659,7 +659,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     return Column(
       children: [
         Text(
-          '© 2025 AdsyClub. All rights reserved.',
+          '© 2026 AdsyClub. All rights reserved.',
           style: AppFonts.roboto(
             fontSize: 10.5,
             color: _mutedTextColor,

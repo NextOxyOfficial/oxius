@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -133,72 +132,35 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _pickImage() async {
     try {
-      FilePickerResult? result;
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
 
-      try {
-        result = await FilePicker.platform.pickFiles(
-          type: FileType.image,
-          allowMultiple: false,
-          withData: true,
-        );
-      } catch (e) {
-        debugPrint('FilePicker error: $e');
-        try {
-          final picker = ImagePicker();
-          final pickedFile = await picker.pickImage(
-            source: ImageSource.gallery,
-            maxWidth: 1024,
-            maxHeight: 1024,
-            imageQuality: 85,
-          );
-
-          if (pickedFile != null) {
-            final bytes = await pickedFile.readAsBytes();
-            setState(() {
-              _profileImageBytes = bytes;
-              _profileImageName = pickedFile.name;
-              _profileImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-            });
-            return;
-          }
-        } catch (imagePickerError) {
-          debugPrint('ImagePicker error: $imagePickerError');
-        }
+      if (pickedFile == null) {
+        return;
       }
 
-      if (result != null && result.files.isNotEmpty) {
-        final file = result.files.first;
-        Uint8List? bytes;
+      final bytes = await pickedFile.readAsBytes();
+      final mimeType = pickedFile.mimeType ?? 'image/jpeg';
 
-        if (file.bytes != null) {
-          bytes = file.bytes;
-        } else if (file.path != null) {
+      setState(() {
+        _profileImageBytes = bytes;
+        _profileImageName = pickedFile.name;
+        _profileImageBase64 = 'data:$mimeType;base64,${base64Encode(bytes)}';
+        if (!kIsWeb) {
           try {
-            bytes = await File(file.path!).readAsBytes();
-          } catch (e) {
-            debugPrint('Error reading file: $e');
+            _profileImageFile = File(pickedFile.path);
+          } catch (_) {
+            _profileImageFile = null;
           }
         }
-
-        if (bytes == null) {
-          throw Exception('Could not read image data');
-        }
-
-        setState(() {
-          _profileImageBytes = bytes;
-          _profileImageName = file.name;
-          _profileImageBase64 = 'data:image/jpeg;base64,${base64Encode(bytes!)}';
-
-          if (file.path != null) {
-            try {
-              _profileImageFile = File(file.path!);
-            } catch (e) {
-              debugPrint('Could not create File object: $e');
-            }
-          }
-        });
-      }
+      });
     } catch (e) {
+      debugPrint('Image pick error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -925,50 +887,53 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildPhotoPreview() {
-    return Stack(
-      children: [
-        Container(
-          width: 84,
-          height: 84,
-          decoration: BoxDecoration(
-            color: _surfaceColor,
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFD6E4FF), width: 2),
-          ),
-          child: ClipOval(
-            child: _profileImageBytes != null
-                ? Image.memory(
-                    _profileImageBytes!,
-                    key: ValueKey(_profileImageName ?? 'image-memory'),
-                    fit: BoxFit.cover,
-                  )
-                : _profileImageFile != null
-                    ? Image.file(
-                        _profileImageFile!,
-                        key: ValueKey(_profileImageFile!.path),
-                        fit: BoxFit.cover,
-                      )
-                    : const Icon(
-                        Icons.person_rounded,
-                        size: 38,
-                        color: _primaryColor,
-                      ),
-          ),
-        ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Container(
-            width: 28,
-            height: 28,
-            decoration: const BoxDecoration(
-              color: _primaryColor,
+    return GestureDetector(
+      onTap: _pickImage,
+      child: Stack(
+        children: [
+          Container(
+            width: 84,
+            height: 84,
+            decoration: BoxDecoration(
+              color: _surfaceColor,
               shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFD6E4FF), width: 2),
             ),
-            child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white),
+            child: ClipOval(
+              child: _profileImageBytes != null
+                  ? Image.memory(
+                      _profileImageBytes!,
+                      key: ValueKey(_profileImageName ?? 'image-memory'),
+                      fit: BoxFit.cover,
+                    )
+                  : _profileImageFile != null
+                      ? Image.file(
+                          _profileImageFile!,
+                          key: ValueKey(_profileImageFile!.path),
+                          fit: BoxFit.cover,
+                        )
+                      : const Icon(
+                          Icons.person_rounded,
+                          size: 38,
+                          color: _primaryColor,
+                        ),
+            ),
           ),
-        ),
-      ],
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Container(
+              width: 28,
+              height: 28,
+              decoration: const BoxDecoration(
+                color: _primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

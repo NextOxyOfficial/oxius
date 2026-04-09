@@ -27,6 +27,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  Map<String, dynamic>? _profileData;
+  bool _isProfileLoading = true;
+  int _mediaRefreshTick = 0;
 
   @override
   void initState() {
@@ -40,6 +43,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       curve: Curves.easeOutCubic,
     );
     _animationController.forward();
+    _loadProfileSummary();
   }
 
   @override
@@ -48,33 +52,161 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     super.dispose();
   }
 
+  Future<void> _loadProfileSummary({bool refreshAuth = false}) async {
+    final user = AuthService.currentUser;
+    if (user == null) {
+      if (mounted) {
+        setState(() => _isProfileLoading = false);
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() => _isProfileLoading = true);
+    }
+
+    try {
+      if (refreshAuth) {
+        await AuthService.refreshUserData();
+      }
+
+      final profile = await BusinessNetworkService.getUserProfile(user.id);
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _profileData = profile;
+        _isProfileLoading = false;
+        _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch;
+      });
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() => _isProfileLoading = false);
+    }
+  }
+
+  String _stringValue(dynamic value) {
+    if (value == null) {
+      return '';
+    }
+
+    final resolved = value is String ? value.trim() : value.toString().trim();
+    if (resolved == 'null' || resolved == 'undefined') {
+      return '';
+    }
+
+    return resolved;
+  }
+
+  int _intValue(dynamic value) {
+    if (value == null) {
+      return 0;
+    }
+
+    if (value is int) {
+      return value;
+    }
+
+    return int.tryParse(_stringValue(value)) ?? 0;
+  }
+
+  String _resolvedName(User? user) {
+    final firstName = _stringValue(_profileData?['first_name']);
+    final lastName = _stringValue(_profileData?['last_name']);
+    final fullName = [firstName, lastName].where((value) => value.isNotEmpty).join(' ');
+    if (fullName.isNotEmpty) {
+      return fullName;
+    }
+    return user?.displayName ?? 'Guest';
+  }
+
+  String _resolvedProfession(User? user) {
+    final profession = _stringValue(_profileData?['profession']);
+    if (profession.isNotEmpty) {
+      return profession;
+    }
+    return (user?.profession ?? '').trim();
+  }
+
+  String _resolvedAddress(User? user) {
+    final address = _stringValue(_profileData?['address']);
+    if (address.isNotEmpty) {
+      return address;
+    }
+    return (user?.address ?? '').trim();
+  }
+
+  bool _resolvedVerified(User? user) {
+    return _profileData?['kyc'] == true || user?.isVerified == true;
+  }
+
+  bool _resolvedPro(User? user) {
+    return _profileData?['is_pro'] == true || user?.isPro == true;
+  }
+
+  String _mediaUrl(String? rawUrl) {
+    final absolute = AppConfig.getAbsoluteUrl(rawUrl);
+    if (absolute.isEmpty) {
+      return '';
+    }
+    final separator = absolute.contains('?') ? '&' : '?';
+    return '$absolute${separator}v=$_mediaRefreshTick';
+  }
+
+  String _resolvedAvatarUrl(User? user) {
+    final profileImage = _stringValue(_profileData?['image']);
+    if (profileImage.isNotEmpty) {
+      return _mediaUrl(profileImage);
+    }
+    return _mediaUrl(user?.profilePicture);
+  }
+
+  String _resolvedBannerUrl() {
+    return _mediaUrl(_stringValue(_profileData?['store_banner']));
+  }
+
+  int _resolvedPostCount() => _intValue(_profileData?['post_count']);
+  int _resolvedFollowersCount() => _intValue(_profileData?['followers_count']);
+  int _resolvedFollowingCount() => _intValue(_profileData?['following_count']);
+  int _resolvedDiamondBalance() => _intValue(_profileData?['diamond_balance']);
+
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
     final user = AuthService.currentUser;
-    final String name = user?.displayName ?? 'Guest';
-    final String? avatarUrl = user?.profilePicture;
-    final String fullAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty
-        ? AppConfig.getAbsoluteUrl(avatarUrl)
-        : '';
-    final bool isVerified = user?.isVerified ?? false;
-    final bool isPro = user?.isPro ?? false;
+    final String name = _resolvedName(user);
+    final String profession = _resolvedProfession(user);
+    final String address = _resolvedAddress(user);
+    final String avatarUrl = _resolvedAvatarUrl(user);
+    final String bannerUrl = _resolvedBannerUrl();
+    final bool isVerified = _resolvedVerified(user);
+    final bool isPro = _resolvedPro(user);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: const Color(0xFFF8FAFC),
-        body: FadeTransition(
-          opacity: _fadeAnimation,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
+        body: RefreshIndicator(
+          color: const Color(0xFF6366F1),
+          onRefresh: () => _loadProfileSummary(refreshAuth: true),
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             slivers: [
               // Premium Gradient Header
               SliverToBoxAdapter(
                 child: _buildPremiumHeader(
                   context,
                   name: name,
-                  avatarUrl: fullAvatarUrl,
+                  profession: profession,
+                  address: address,
+                  avatarUrl: avatarUrl,
+                  bannerUrl: bannerUrl,
                   isVerified: isVerified,
                   isPro: isPro,
                   user: user,
@@ -204,10 +336,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                       label: 'Settings',
                       subtitle: 'App preferences',
                       gradient: const [Color(0xFF78716C), Color(0xFF57534E)],
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                      ),
+                      onTap: () => _openSettings(context),
                     ),
                   ],
                 ),
@@ -223,6 +352,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 child: SizedBox(height: 100),
               ),
             ],
+          ),
           ),
         ),
         bottomNavigationBar: isMobile
@@ -240,153 +370,261 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   Widget _buildPremiumHeader(
     BuildContext context, {
     required String name,
+    required String profession,
+    required String address,
     required String avatarUrl,
+    required String bannerUrl,
     required bool isVerified,
     required bool isPro,
     User? user,
   }) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1E293B),
-            Color(0xFF0F172A),
-          ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
         ),
-      ),
-      child: SafeArea(
-        bottom: false,
+        clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
-            // Top Bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  _buildGlassButton(
-                    icon: Icons.arrow_back_rounded,
-                    onTap: () => Navigator.pop(context),
-                  ),
-                  const Spacer(),
-                  _buildGlassButton(
-                    icon: Icons.share_outlined,
-                    onTap: () => _shareProfile(context),
-                  ),
-                ],
-              ),
-            ),
-
-            // Profile Info
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 16, 12, 32),
-              child: Row(
-                children: [
-                  // Avatar with ring
-                  Stack(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: isPro
-                              ? const LinearGradient(
-                                  colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                                )
-                              : const LinearGradient(
-                                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-                                ),
-                        ),
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF1E293B), width: 3),
-                          ),
-                          child: ClipOval(
-                            child: avatarUrl.isNotEmpty
-                                ? Image.network(
-                                    avatarUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(name),
-                                  )
-                                : _buildAvatarPlaceholder(name),
-                          ),
-                        ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                SizedBox(
+                  height: 142,
+                  width: double.infinity,
+                  child: bannerUrl.isNotEmpty
+                      ? Image.network(
+                          bannerUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _buildHeaderBannerFallback(),
+                        )
+                      : _buildHeaderBannerFallback(),
+                ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.16),
+                          Colors.black.withValues(alpha: 0.28),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(width: 20),
-                  // Name and badges
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
+                    child: Row(
                       children: [
-                        Row(
+                        _buildGlassButton(
+                          icon: Icons.arrow_back_rounded,
+                          onTap: () => Navigator.pop(context),
+                        ),
+                        const Spacer(),
+                        _buildGlassButton(
+                          icon: Icons.share_outlined,
+                          onTap: () => _shareProfile(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 14,
+                  bottom: -34,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: isPro
+                          ? const LinearGradient(colors: [Color(0xFFFACC15), Color(0xFFF59E0B)])
+                          : const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF6366F1)]),
+                    ),
+                    child: Container(
+                      width: 74,
+                      height: 74,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                      ),
+                      child: ClipOval(
+                        child: avatarUrl.isNotEmpty
+                            ? Image.network(
+                                avatarUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(name),
+                              )
+                            : _buildAvatarPlaceholder(name),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 42, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 88),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              child: Text(
-                                name,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: -0.5,
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: [
+                                Text(
+                                  name,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF1E293B),
+                                    letterSpacing: -0.4,
+                                  ),
                                 ),
-                              ),
+                                if (isVerified)
+                                  const Icon(Icons.verified_rounded, color: Color(0xFF3B82F6), size: 18),
+                                if (isPro)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFACC15),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: const Text(
+                                      'PRO',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF1E293B),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                            if (isVerified) ...[
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.verified_rounded,
-                                color: Color(0xFF3B82F6),
-                                size: 20,
+                            if (profession.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                profession,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF475569),
+                                ),
                               ),
                             ],
-                            if (isPro) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Text(
-                                  'PRO',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1E293B),
-                                    letterSpacing: 0.5,
-                                  ),
+                            if (address.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                address,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF64748B),
                                 ),
                               ),
                             ],
                           ],
                         ),
-                        if (((user?.profession ?? '').trim()).isNotEmpty) ...[
-                          const SizedBox(height: 4),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(child: _buildHeaderStat('Posts', _resolvedPostCount())),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildHeaderStat('Followers', _resolvedFollowersCount())),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildHeaderStat('Following', _resolvedFollowingCount())),
+                    ],
+                  ),
+                  if (_resolvedDiamondBalance() > 0) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFDF2F8),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.diamond_outlined, size: 18, color: Color(0xFFDB2777)),
+                          const SizedBox(width: 8),
                           Text(
-                            (user?.profession ?? '').trim(),
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white.withValues(alpha: 0.6),
+                            '${_resolvedDiamondBalance()} Diamonds',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF9D174D),
                             ),
                           ),
                         ],
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderBannerFallback() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderStat(String label, int value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value.toString(),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF64748B),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -398,18 +636,18 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: Colors.white.withValues(alpha: 0.18),
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.15),
+            color: Colors.white.withValues(alpha: 0.22),
           ),
         ),
         child: Icon(
           icon,
-          size: 20,
+          size: 18,
           color: Colors.white.withValues(alpha: 0.9),
         ),
       ),
@@ -569,7 +807,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
 
   Widget _buildQuickActions(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+      padding: const EdgeInsets.fromLTRB(4, 10, 4, 12),
       child: Row(
         children: [
           _buildQuickActionButton(
@@ -603,32 +841,26 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            height: 44,
+            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: gradient,
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: gradient[0].withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+              borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: Colors.white, size: 18),
-              const SizedBox(width: 8),
+                Icon(icon, color: Colors.white, size: 16),
+                const SizedBox(width: 7),
               Flexible(
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 12,
+                      fontSize: 12.5,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
@@ -650,8 +882,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         MaterialPageRoute(builder: (context) => const VerificationScreen()),
       ),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
@@ -664,8 +896,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
                 color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
@@ -676,7 +908,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 size: 26,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -684,7 +916,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                   const Text(
                     'Complete KYC Verification',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF92400E),
                     ),
@@ -693,7 +925,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                   Text(
                     'Unlock all features and start earning',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: const Color(0xFF92400E).withValues(alpha: 0.8),
                     ),
@@ -702,8 +934,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               ),
             ),
             Container(
-              width: 36,
-              height: 36,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: const Color(0xFFF59E0B),
                 borderRadius: BorderRadius.circular(10),
@@ -726,16 +958,16 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     required List<_MenuItem> items,
   }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
             child: Text(
               title,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF64748B),
                 letterSpacing: 0.5,
@@ -746,13 +978,6 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
             ),
             child: Column(
               children: items.asMap().entries.map((entry) {
@@ -780,7 +1005,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               )
             : null,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             border: isLast
                 ? null
@@ -791,19 +1016,19 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
           child: Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: item.gradient,
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(item.icon, color: Colors.white, size: 22),
+                child: Icon(item.icon, color: Colors.white, size: 19),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -811,7 +1036,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                     Text(
                       item.label,
                       style: const TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF1E293B),
                       ),
@@ -820,7 +1045,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                     Text(
                       item.subtitle,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                         color: Colors.grey.shade500,
                       ),
@@ -831,7 +1056,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               Icon(
                 Icons.chevron_right_rounded,
                 color: Colors.grey.shade400,
-                size: 22,
+                size: 20,
               ),
             ],
           ),
@@ -842,14 +1067,14 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
 
   Widget _buildLogoutButton(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showLogoutDialog(context),
           borderRadius: BorderRadius.circular(14),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
               color: const Color(0xFFFEE2E2),
               borderRadius: BorderRadius.circular(14),
@@ -942,8 +1167,15 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         MaterialPageRoute(
           builder: (context) => ProfileScreen(userId: user.id),
         ),
-      );
+      ).then((_) => _loadProfileSummary(refreshAuth: true));
     }
+  }
+
+  void _openSettings(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    ).then((_) => _loadProfileSummary(refreshAuth: true));
   }
 
   Future<void> _openShorts(BuildContext context) async {

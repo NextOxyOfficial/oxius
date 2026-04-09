@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
@@ -47,6 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   bool _isLoadingSaved = false;
   bool _isLoadingGigs = false;
   bool _isContactInfoExpanded = false;
+  int _profileImageRefreshTick = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final WorkspaceService _workspaceService = WorkspaceService();
   
@@ -114,6 +117,28 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     final masked = 'X' * (username.length - 2);
     
     return '$visiblePart$masked@$domain';
+  }
+
+  String _stringValue(dynamic value) {
+    if (value == null) {
+      return '';
+    }
+
+    final resolved = value is String ? value.trim() : value.toString().trim();
+    if (resolved == 'null' || resolved == 'undefined') {
+      return '';
+    }
+
+    return resolved;
+  }
+
+  bool _isFieldVisible(String fieldName, {bool defaultValue = true}) {
+    if (_isOwnProfile()) {
+      return true;
+    }
+
+    final value = _userData?[fieldName];
+    return value is bool ? value : defaultValue;
   }
 
   @override
@@ -426,34 +451,42 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       // Show options: Camera or Gallery
       final source = await showModalBottomSheet<ImageSource>(
         context: context,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        builder: (context) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+        backgroundColor: Colors.transparent,
+        builder: (context) => Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.camera_alt, color: Color(0xFF3B82F6)),
+                    title: const Text('Take Photo'),
+                    onTap: () => Navigator.pop(context, ImageSource.camera),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
+                    title: const Text('Choose from Gallery'),
+                    onTap: () => Navigator.pop(context, ImageSource.gallery),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.camera_alt, color: Color(0xFF3B82F6)),
-                title: const Text('Take Photo'),
-                onTap: () => Navigator.pop(context, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
-                title: const Text('Choose from Gallery'),
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
-              ),
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
         ),
       );
@@ -470,6 +503,34 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
       if (image == null) return;
 
+      final croppedImage = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        compressFormat: ImageCompressFormat.jpg,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop profile photo',
+            toolbarColor: const Color(0xFF3B82F6),
+            toolbarWidgetColor: Colors.white,
+            activeControlsWidgetColor: const Color(0xFF3B82F6),
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop profile photo',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+          WebUiSettings(
+            context: context,
+            presentStyle: WebPresentStyle.dialog,
+            size: const CropperSize(width: 420, height: 520),
+          ),
+        ],
+      );
+
+      if (croppedImage == null) return;
+
       // Show loading
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -481,13 +542,16 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       }
 
       // Upload to server (pass XFile directly for cross-platform support)
-      final success = await BusinessNetworkService.uploadProfilePicture(image);
+      final success = await BusinessNetworkService.uploadProfilePicture(croppedImage);
       
       if (mounted) {
         // Hide loading snackbar
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         
         if (success) {
+          setState(() {
+            _profileImageRefreshTick = DateTime.now().millisecondsSinceEpoch;
+          });
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -545,7 +609,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 maxScale: 4.0,
                 child: Center(
                   child: Image.network(
-                    _userData!['image'],
+                    _getImageUrl(_userData!['image']),
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -614,6 +678,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ),
       ),
     );
+  }
+
+  String _getImageUrl(String? url) {
+    final absoluteUrl = AppConfig.getAbsoluteUrl(url);
+    if (absoluteUrl.isEmpty) return '';
+    final separator = absoluteUrl.contains('?') ? '&' : '?';
+    return '$absoluteUrl${separator}v=$_profileImageRefreshTick';
   }
 
   @override
@@ -922,6 +993,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildProfileHeader(bool isOwnProfile) {
+    final profession = _stringValue(_userData?['profession']);
+    final about = _stringValue(_userData?['about']);
+    final showProfession = profession.isNotEmpty && _isFieldVisible('profession_public');
+    final showAbout = about.isNotEmpty && _isFieldVisible('about_public');
+
     return Container(
       margin: const EdgeInsets.all(4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -986,10 +1062,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       ],
                     ),
                     // Profession
-                    if (_userData?['profession'] != null) ...[
+                    if (showProfession) ...[
                       const SizedBox(height: 2),
                       Text(
-                        _userData!['profession'],
+                        profession,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey.shade600,
@@ -1032,7 +1108,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     child: ClipOval(
                       child: _userData?['image'] != null
                           ? Image.network(
-                              _userData!['image'],
+                            _getImageUrl(_userData!['image']),
                               width: double.infinity,
                               height: double.infinity,
                               fit: BoxFit.cover,
@@ -1169,16 +1245,17 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           ],
           
           // Bio Section
-          if (_userData?['about'] != null || isOwnProfile) ...[
+          if (showAbout ||
+              isOwnProfile) ...[
             const SizedBox(height: 12),
             Divider(color: Colors.grey.shade200, height: 1),
             const SizedBox(height: 10),
             Text(
-              _userData?['about'] ?? 'No bio provided',
+              about.isNotEmpty ? about : 'No bio provided',
               style: TextStyle(
                 fontSize: 13,
-                color: _userData?['about'] != null ? Colors.black87 : Colors.grey.shade500,
-                fontStyle: _userData?['about'] != null ? FontStyle.normal : FontStyle.italic,
+                color: about.isNotEmpty ? Colors.black87 : Colors.grey.shade500,
+                fontStyle: about.isNotEmpty ? FontStyle.normal : FontStyle.italic,
                 height: 1.4,
               ),
               textAlign: TextAlign.center,
@@ -1940,23 +2017,41 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildContactInfo() {
-    final hasContactInfo = _userData?['city'] != null ||
-        _userData?['state'] != null ||
-        _userData?['company'] != null ||
-        _userData?['email'] != null ||
-        _userData?['phone'] != null ||
+    final city = _stringValue(_userData?['city']);
+    final state = _stringValue(_userData?['state']);
+    final company = _stringValue(_userData?['company']);
+    final email = _stringValue(_userData?['email']);
+    final phone = _stringValue(_userData?['phone']);
+    final website = _stringValue(_userData?['website']);
+    final whatsapp = _stringValue(_userData?['whatsapp_link']);
+    final instagram = _stringValue(_userData?['instagram_link']);
+    final facebook = _stringValue(_userData?['face_link']);
+
+    final showCompany = company.isNotEmpty && _isFieldVisible('company_public');
+    final showWebsite = website.isNotEmpty && _isFieldVisible('website_public');
+    final showWhatsapp = whatsapp.isNotEmpty && _isFieldVisible('whatsapp_public');
+    final showInstagram = instagram.isNotEmpty && _isFieldVisible('instagram_public');
+    final showFacebook = facebook.isNotEmpty && _isFieldVisible('facebook_public');
+
+    final hasContactInfo = city.isNotEmpty ||
+        state.isNotEmpty ||
+        email.isNotEmpty ||
+        phone.isNotEmpty ||
         _userData?['date_joined'] != null ||
-        _userData?['website'] != null ||
-        _userData?['whatsapp_link'] != null ||
-        _userData?['instagram_link'] != null;
+        showCompany ||
+        showWebsite ||
+        showWhatsapp ||
+        showInstagram ||
+        showFacebook;
 
     if (!hasContactInfo) return const SizedBox.shrink();
 
-    final hasAdditionalInfo = _userData?['email'] != null ||
-        _userData?['phone'] != null ||
-        _userData?['website'] != null ||
-        _userData?['whatsapp_link'] != null ||
-        _userData?['instagram_link'] != null ||
+    final hasAdditionalInfo = email.isNotEmpty ||
+        phone.isNotEmpty ||
+        showWebsite ||
+        showWhatsapp ||
+        showInstagram ||
+        showFacebook ||
         _userData?['date_joined'] != null;
 
     final userName = _userData?['first_name'] ?? _userData?['username'] ?? 'User';
@@ -1966,35 +2061,34 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       children: [
         const SizedBox(height: 12),
         
-        // Always visible: Location, Company, and Joined Date
-        if ((_userData?['city'] != null && _userData!['city'].toString().trim().isNotEmpty) || 
-            (_userData?['state'] != null && _userData!['state'].toString().trim().isNotEmpty))
+        // Always visible: Location and Joined Date
+        if (city.isNotEmpty || state.isNotEmpty)
           _buildContactItem(
             Icons.location_on,
-            '${_userData?['city'] ?? ''}${_userData?['city'] != null && _userData?['state'] != null ? ', ' : ''}${_userData?['state'] ?? ''}',
+            '$city${city.isNotEmpty && state.isNotEmpty ? ', ' : ''}$state',
             Colors.blue.shade500,
           ),
         
-        if (_userData?['company'] != null && _userData!['company'].toString().trim().isNotEmpty)
+        if (showCompany)
           _buildContactItem(
             Icons.business,
-            _userData!['company'],
+            company,
             Colors.purple.shade500,
           ),
         
         // Email (with privacy masking)
-        if (_userData?['email'] != null && _userData!['email'].toString().trim().isNotEmpty)
+        if (email.isNotEmpty)
           _buildContactItem(
             Icons.email,
-            _maskEmail(_userData!['email'], _userData?['email_public']),
+            _maskEmail(email, _userData?['email_public']),
             Colors.orange.shade600,
           ),
         
         // Phone (with privacy masking)
-        if (_userData?['phone'] != null && _userData!['phone'].toString().trim().isNotEmpty)
+        if (phone.isNotEmpty)
           _buildContactItem(
             Icons.phone,
-            _maskPhoneNumber(_userData!['phone'], _userData?['phone_public']),
+            _maskPhoneNumber(phone, _userData?['phone_public']),
             Colors.red.shade500,
           ),
         
@@ -2010,26 +2104,33 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         if (_isContactInfoExpanded == true) ...[
           
           // Website
-          if (_userData?['website'] != null && _userData!['website'].toString().isNotEmpty)
+          if (showWebsite)
             _buildContactItem(
               Icons.link,
-              _userData!['website'],
+              website,
               Colors.blue.shade600,
             ),
           
           // WhatsApp
-          if (_userData?['whatsapp_link'] != null && _userData!['whatsapp_link'].toString().isNotEmpty)
+          if (showWhatsapp)
             _buildContactItem(
               Icons.message,
-              _userData!['whatsapp_link'],
+              whatsapp,
               Colors.green.shade600,
+            ),
+
+          if (showFacebook)
+            _buildContactItem(
+              Icons.facebook_rounded,
+              facebook,
+              Colors.indigo.shade500,
             ),
           
           // Instagram
-          if (_userData?['instagram_link'] != null && _userData!['instagram_link'].toString().isNotEmpty)
+          if (showInstagram)
             _buildContactItem(
               Icons.camera_alt,
-              _userData!['instagram_link'],
+              instagram,
               Colors.pink.shade600,
             ),
         ],
@@ -2087,6 +2188,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Widget _buildSocialLinks() {
     if (_userData == null) return const SizedBox.shrink();
+
+    if (!_isFieldVisible('website_public')) {
+      return const SizedBox.shrink();
+    }
     
     // Only show website link
     if (_userData!['website'] == null || _userData!['website'].toString().isEmpty) {
@@ -2290,9 +2395,7 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
   }
 
   String _getImageUrl(String? url) {
-    if (url == null || url.isEmpty) return '';
-    if (url.startsWith('http')) return url;
-    return 'http://127.0.0.1:8000$url';
+    return AppConfig.getAbsoluteUrl(url);
   }
 
   @override
@@ -2430,7 +2533,10 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                           }
                           
                           // Get profession/headline
-                          final String? profession = userData['profession']?.toString() ?? userData['headline']?.toString();
+                            final bool showProfession = userData['profession_public'] != false;
+                            final String? profession = showProfession
+                              ? userData['profession']?.toString() ?? userData['headline']?.toString()
+                              : null;
                           
                           return InkWell(
                             onTap: () => widget.onUserTap(userData['id']?.toString() ?? ''),

@@ -1,16 +1,24 @@
-import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import '../services/settings_service.dart';
-import '../services/translation_service.dart';
-import '../services/user_state_service.dart';
-import '../services/geo_location_service.dart';
-import '../models/user_profile.dart';
-import '../models/geo_location.dart';
-import '../config/app_config.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:convert';
-import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../config/app_config.dart';
+import '../models/geo_location.dart';
+import '../models/user_profile.dart';
+import '../services/auth_service.dart';
+import '../services/geo_location_service.dart';
+import '../services/settings_service.dart';
+import '../services/user_state_service.dart';
+import '../utils/app_fonts.dart';
+
+enum _SettingsTab { profile, privacy, security }
+
+enum _ProfileMediaTab { photo, banner }
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -20,1100 +28,648 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final TranslationService _translationService = TranslationService();
-  final _formKey = GlobalKey<FormState>();
+  static const _pageBackgroundColor = Color(0xFFF8FAFC);
+  static const _surfaceColor = Color(0xFFFFFFFF);
+  static const _softSurfaceColor = Color(0xFFF8FAFF);
+  static const _surfaceMutedColor = Color(0xFFF1F5F9);
+  static const _cardBorderColor = Color(0xFFE2E8F0);
+  static const _primaryColor = Color(0xFF6366F1);
+  static const _primaryDarkColor = Color(0xFF4F46E5);
+  static const _primaryAccentColor = Color(0xFF8B5CF6);
+  static const _primarySoftColor = Color(0xFFEEF2FF);
+  static const _headingTextColor = Color(0xFF1E293B);
+  static const _bodyTextColor = Color(0xFF475569);
+  static const _mutedTextColor = Color(0xFF64748B);
+  static const _dangerColor = Color(0xFFDC2626);
+  static const _successColor = Color(0xFF059669);
+  static const _warningColor = Color(0xFFF59E0B);
+
   final _profileFormKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  
-  String _activeTab = 'profile';
-  UserProfile? _userProfile;
-  UserProfile? _originalProfile;
-  bool _isLoading = false;
-  bool _passwordLoading = false;
-  bool _showDeleteImageModal = false;
-  bool _showDeleteBannerModal = false;
-  bool _isProcessing = false;
-  bool _formDirty = false;
-  bool _showStickyButton = true;
-  double _lastScrollPosition = 0;
-  
-  final _oldPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  
-  // Form controllers
+  final _securityFormKey = GlobalKey<FormState>();
+
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _cityController = TextEditingController();
-  final _stateController = TextEditingController();
-  final _zipController = TextEditingController();
-  final _facebookController = TextEditingController();
-  final _instagramController = TextEditingController();
-  final _whatsappController = TextEditingController();
   final _professionController = TextEditingController();
   final _companyController = TextEditingController();
   final _websiteController = TextEditingController();
+  final _facebookController = TextEditingController();
+  final _instagramController = TextEditingController();
+  final _whatsappController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _zipController = TextEditingController();
   final _aboutController = TextEditingController();
-  
-  // Geo location
+  final _oldPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   late final GeoLocationService _geoService;
+
+  _SettingsTab _activeTab = _SettingsTab.profile;
+  _ProfileMediaTab _activeMediaTab = _ProfileMediaTab.photo;
+  UserProfile? _userProfile;
+  UserProfile? _originalProfile;
+
   List<Region> _divisions = [];
   List<City> _cities = [];
   List<Upazila> _upazilas = [];
   String? _selectedDivision;
   String? _selectedCity;
   String? _selectedUpazila;
+
+  bool _isInitialLoading = true;
   bool _isLoadingDivisions = false;
   bool _isLoadingCities = false;
   bool _isLoadingUpazilas = false;
-  
-  final ScrollController _scrollController = ScrollController();
+  bool _isSavingProfile = false;
+  bool _isSavingPrivacy = false;
+  bool _isChangingPassword = false;
+  bool _isUploadingMedia = false;
+  bool _showOldPassword = false;
+  bool _showNewPassword = false;
+  bool _showConfirmPassword = false;
+  int _mediaRefreshTick = 0;
 
   @override
   void initState() {
     super.initState();
     _geoService = GeoLocationService(baseUrl: '${AppConfig.mediaBaseUrl}/api');
-    _loadUserProfile();
-    _loadDivisions();
-    _scrollController.addListener(_handleScroll);
+    _attachControllerListeners();
+    _initialize();
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_handleScroll);
-    _scrollController.dispose();
-    _oldPasswordController.dispose();
-    _newPasswordController.dispose();
-    _emailController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
-    _addressController.dispose();
-    _cityController.dispose();
-    _stateController.dispose();
-    _zipController.dispose();
-    _facebookController.dispose();
-    _instagramController.dispose();
-    _whatsappController.dispose();
     _professionController.dispose();
     _companyController.dispose();
     _websiteController.dispose();
+    _facebookController.dispose();
+    _instagramController.dispose();
+    _whatsappController.dispose();
+    _addressController.dispose();
+    _zipController.dispose();
     _aboutController.dispose();
+    _oldPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  String t(String key) {
-    return _translationService.t(key, fallback: key);
-  }
-
-  void _handleScroll() {
-    final currentScroll = _scrollController.position.pixels;
-    
-    if (currentScroll < 100) {
-      setState(() => _showStickyButton = true);
-    } else if (currentScroll < _lastScrollPosition) {
-      setState(() => _showStickyButton = true);
-    } else if (currentScroll > _lastScrollPosition) {
-      setState(() => _showStickyButton = false);
+  void _attachControllerListeners() {
+    for (final controller in [
+      _firstNameController,
+      _lastNameController,
+      _emailController,
+      _phoneController,
+      _professionController,
+      _companyController,
+      _websiteController,
+      _facebookController,
+      _instagramController,
+      _whatsappController,
+      _addressController,
+      _zipController,
+      _aboutController,
+    ]) {
+      controller.addListener(_handleDraftChanged);
     }
-    
-    _lastScrollPosition = currentScroll;
   }
 
-  void _checkFormChanges() {
-    if (_originalProfile == null) return;
-    
-    // Compare controller values with original profile data
-    final hasChanges = 
-        _firstNameController.text != (_originalProfile!.firstName ?? '') ||
-        _lastNameController.text != (_originalProfile!.lastName ?? '') ||
-        _phoneController.text != (_originalProfile!.phone ?? '') ||
-        _addressController.text != (_originalProfile!.address ?? '') ||
-        _cityController.text != (_originalProfile!.city ?? '') ||
-        _stateController.text != (_originalProfile!.state ?? '') ||
-        _zipController.text != (_originalProfile!.zip ?? '') ||
-        _facebookController.text != (_originalProfile!.faceLink ?? '') ||
-        _instagramController.text != (_originalProfile!.instagramLink ?? '') ||
-        _whatsappController.text != (_originalProfile!.whatsappLink ?? '') ||
-        _professionController.text != (_originalProfile!.profession ?? '') ||
-        _companyController.text != (_originalProfile!.company ?? '') ||
-        _websiteController.text != (_originalProfile!.website ?? '') ||
-        _aboutController.text != (_originalProfile!.about ?? '') ||
-        (_userProfile?.image != _originalProfile!.image) ||
-        (_userProfile?.storeBanner != _originalProfile!.storeBanner);
-    
-    setState(() {
-      _formDirty = hasChanges;
-    });
+  void _handleDraftChanged() {
+    if (!mounted || _originalProfile == null) {
+      return;
+    }
+    setState(() {});
+  }
+
+  Future<void> _initialize() async {
+    await _loadDivisions();
+    await _loadUserProfile();
+  }
+
+  Future<void> _handleRefresh() async {
+    await _loadUserProfile();
   }
 
   Future<void> _loadUserProfile() async {
     final user = AuthService.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      if (mounted) {
+        setState(() => _isInitialLoading = false);
+      }
+      return;
+    }
 
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isInitialLoading = true);
+    }
 
     try {
       final profile = await SettingsService.getUserProfile(user.email);
-      if (profile != null) {
-        setState(() {
-          _userProfile = profile;
-          _originalProfile = UserProfile.fromJson(json.decode(json.encode(profile.toJson())));
-        });
-        await _populateControllers();
+      if (!mounted) {
+        return;
       }
-    } catch (e) {
-      _showSnackBar('Error loading profile', isError: true);
+
+      if (profile != null) {
+        _userProfile = profile;
+        _originalProfile = profile;
+        await _populateControllers(profile);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showSnackBar('Failed to load settings', isError: true);
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isInitialLoading = false);
+      }
     }
   }
 
-  Future<void> _populateControllers() async {
-    if (_userProfile == null) return;
-    
-    _emailController.text = _userProfile!.email;
-    _firstNameController.text = _userProfile!.firstName ?? '';
-    _lastNameController.text = _userProfile!.lastName ?? '';
-    _phoneController.text = _userProfile!.phone ?? '';
-    _addressController.text = _userProfile!.address ?? '';
-    _cityController.text = _userProfile!.city ?? '';
-    _stateController.text = _userProfile!.state ?? '';
-    _zipController.text = _userProfile!.zip ?? '';
-    _facebookController.text = _userProfile!.faceLink ?? '';
-    _instagramController.text = _userProfile!.instagramLink ?? '';
-    _whatsappController.text = _userProfile!.whatsappLink ?? '';
-    _professionController.text = _userProfile!.profession ?? '';
-    _companyController.text = _userProfile!.company ?? '';
-    _websiteController.text = _userProfile!.website ?? '';
-    _aboutController.text = _userProfile!.about ?? '';
-    
-    // Set selected geo location values
-    _selectedDivision = _userProfile!.state;
-    _selectedCity = _userProfile!.city;
-    _selectedUpazila = _userProfile!.upazila;
-    
-    // Load cities and upazilas if division/city are set
-    if (_selectedDivision != null && _selectedDivision!.isNotEmpty) {
-      await _loadCities(_selectedDivision!);
+  Future<void> _populateControllers(UserProfile profile) async {
+    _emailController.text = profile.email;
+    _firstNameController.text = profile.firstName ?? '';
+    _lastNameController.text = profile.lastName ?? '';
+    _phoneController.text = profile.phone ?? '';
+    _professionController.text = profile.profession ?? '';
+    _companyController.text = profile.company ?? '';
+    _websiteController.text = profile.website ?? '';
+    _facebookController.text = profile.faceLink ?? '';
+    _instagramController.text = profile.instagramLink ?? '';
+    _whatsappController.text = profile.whatsappLink ?? '';
+    _addressController.text = profile.address ?? '';
+    _zipController.text = profile.zip ?? '';
+    _aboutController.text = profile.about ?? '';
+
+    _selectedDivision = _normalizeNullable(profile.state);
+    _selectedCity = _normalizeNullable(profile.city);
+    _selectedUpazila = _normalizeNullable(profile.upazila);
+
+    if (_selectedDivision != null) {
+      await _loadCities(_selectedDivision!, resetSelection: false);
     }
-    if (_selectedCity != null && _selectedCity!.isNotEmpty) {
-      await _loadUpazilas(_selectedCity!);
+    if (_selectedCity != null) {
+      await _loadUpazilas(_selectedCity!, resetSelection: false);
+    }
+
+    if (mounted) {
+      setState(() {});
     }
   }
 
   Future<void> _loadDivisions() async {
-    print('📍 Settings: Starting to load divisions...');
-    setState(() => _isLoadingDivisions = true);
+    if (mounted) {
+      setState(() => _isLoadingDivisions = true);
+    }
     try {
-      print('📍 Settings: Calling _geoService.fetchRegions()...');
       final divisions = await _geoService.fetchRegions();
-      print('📍 Settings: Loaded ${divisions.length} divisions');
-      for (var division in divisions) {
-        print('📍 Settings: Division - ID: ${division.id}, Name: ${division.nameEng}');
+      if (!mounted) {
+        return;
       }
+      setState(() => _divisions = divisions);
+    } catch (_) {
       if (mounted) {
-        setState(() {
-          _divisions = divisions;
-          _isLoadingDivisions = false;
-        });
-        print('📍 Settings: State updated with ${_divisions.length} divisions');
+        _showSnackBar('Failed to load divisions', isError: true);
       }
-    } catch (e) {
-      print('❌ Settings: Error loading divisions: $e');
+    } finally {
       if (mounted) {
         setState(() => _isLoadingDivisions = false);
       }
     }
   }
 
-  Future<void> _loadCities(String divisionName) async {
-    print('🏙️ Settings: Starting to load cities for division: $divisionName');
-    setState(() {
-      _isLoadingCities = true;
-      _cities = [];
-      _upazilas = [];
-      _selectedCity = null;
-      _selectedUpazila = null;
-    });
-    
+  Future<void> _loadCities(String divisionName, {bool resetSelection = true}) async {
+    if (mounted) {
+      setState(() {
+        _isLoadingCities = true;
+        _cities = [];
+        if (resetSelection) {
+          _selectedCity = null;
+          _upazilas = [];
+          _selectedUpazila = null;
+        }
+      });
+    }
+
     try {
-      print('🏙️ Settings: Calling _geoService.fetchCities(regionName: $divisionName)...');
       final cities = await _geoService.fetchCities(regionName: divisionName);
-      print('🏙️ Settings: Loaded ${cities.length} cities');
-      for (var city in cities) {
-        print('🏙️ Settings: City - ID: ${city.id}, Name: ${city.nameEng}');
+      if (!mounted) {
+        return;
       }
+      setState(() => _cities = cities);
+    } catch (_) {
       if (mounted) {
-        setState(() {
-          _cities = cities;
-          _isLoadingCities = false;
-        });
-        print('🏙️ Settings: State updated with ${_cities.length} cities');
+        _showSnackBar('Failed to load cities', isError: true);
       }
-    } catch (e) {
-      print('❌ Settings: Error loading cities: $e');
+    } finally {
       if (mounted) {
         setState(() => _isLoadingCities = false);
       }
     }
   }
 
-  Future<void> _loadUpazilas(String cityName) async {
-    print('🏘️ Settings: Starting to load upazilas for city: $cityName');
-    setState(() {
-      _isLoadingUpazilas = true;
-      _upazilas = [];
-      _selectedUpazila = null;
-    });
-    
+  Future<void> _loadUpazilas(String cityName, {bool resetSelection = true}) async {
+    if (mounted) {
+      setState(() {
+        _isLoadingUpazilas = true;
+        _upazilas = [];
+        if (resetSelection) {
+          _selectedUpazila = null;
+        }
+      });
+    }
+
     try {
-      print('🏘️ Settings: Calling _geoService.fetchUpazilas(cityName: $cityName)...');
       final upazilas = await _geoService.fetchUpazilas(cityName: cityName);
-      print('🏘️ Settings: Loaded ${upazilas.length} upazilas');
-      for (var upazila in upazilas) {
-        print('🏘️ Settings: Upazila - ID: ${upazila.id}, Name: ${upazila.nameEng}');
+      if (!mounted) {
+        return;
       }
+      setState(() => _upazilas = upazilas);
+    } catch (_) {
       if (mounted) {
-        setState(() {
-          _upazilas = upazilas;
-          _isLoadingUpazilas = false;
-        });
-        print('🏘️ Settings: State updated with ${_upazilas.length} upazilas');
+        _showSnackBar('Failed to load upazilas', isError: true);
       }
-    } catch (e) {
-      print('❌ Settings: Error loading upazilas: $e');
+    } finally {
       if (mounted) {
         setState(() => _isLoadingUpazilas = false);
       }
     }
   }
 
-  void _showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
+  bool get _isKycLocked => _userProfile?.kyc ?? false;
 
-  int _getPasswordStrength(String password) {
-    if (password.isEmpty) return 0;
-    if (password.length < 8) return 1;
-    if (password.length >= 8 && password.length < 12) return 2;
-    if (password.length >= 12 && 
-        RegExp(r'[A-Z]').hasMatch(password) && 
-        RegExp(r'[0-9]').hasMatch(password)) {
-      return 3;
-    }
-    return 2;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Modern Header (no AppBar)
-            _buildModernHeader(),
-            
-            // Tab Bar
-            _buildCompactTabBar(),
-            
-            // Content
-            Expanded(
-              child: _activeTab == 'profile'
-                  ? _buildProfileContent()
-                  : _buildPasswordContent(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModernHeader() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(4, 12, 4, 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_rounded, size: 22),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            color: const Color(0xFF374151),
-          ),
-          const SizedBox(width: 12),
-          const Text(
-            'Settings',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-              letterSpacing: -0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactTabBar() {
-    return Container(
-      margin: const EdgeInsets.all(4),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildCompactTab('profile', 'Profile', Icons.person_rounded),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _buildCompactTab('password', 'Password', Icons.lock_rounded),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactTab(String tab, String label, IconData icon) {
-    final isActive = _activeTab == tab;
-    return GestureDetector(
-      onTap: () => setState(() => _activeTab = tab),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF10B981) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isActive ? Colors.white : Colors.grey.shade600,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : Colors.grey.shade600,
-                letterSpacing: -0.1,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileContent() {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF10B981)),
-      );
+  bool get _hasProfileChanges {
+    final original = _originalProfile;
+    if (original == null) {
+      return false;
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profile Image Section
-          _buildCompactImageSection(),
-          const SizedBox(height: 8),
-          
-          // Personal Info
-          _buildCompactSection(
-            'Personal Information',
-            Icons.person_outline,
-            [
-              _buildCompactField('First Name', _firstNameController, Icons.person_rounded),
-              _buildCompactField('Last Name', _lastNameController, Icons.person_rounded),
-              _buildCompactField('Phone', _phoneController, Icons.phone_rounded),
-              _buildCompactField('Profession', _professionController, Icons.work_outline_rounded),
-              _buildCompactField('Company', _companyController, Icons.business_rounded),
-              _buildCompactField('Website', _websiteController, Icons.link_rounded),
-            ],
-          ),
-          const SizedBox(height: 8),
-          
-          // Address Info
-          _buildCompactGeoSection(),
-          const SizedBox(height: 8),
-          
-          // Social Media
-          _buildCompactSection(
-            'Social Media',
-            Icons.share_rounded,
-            [
-              _buildCompactField('Facebook', _facebookController, Icons.facebook),
-              _buildCompactField('Instagram', _instagramController, Icons.camera_alt_rounded),
-              _buildCompactField('WhatsApp', _whatsappController, Icons.chat_rounded),
-            ],
-          ),
-          const SizedBox(height: 8),
-          
-          // About
-          _buildCompactSection(
-            'About Me',
-            Icons.description_outlined,
-            [
-              _buildCompactField('About', _aboutController, Icons.text_fields, maxLines: 3),
-            ],
-          ),
-          const SizedBox(height: 12),
-          
-          // Save Button
-          _buildSaveButton(),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
+    return _normalized(_firstNameController.text) != _normalized(original.firstName) ||
+        _normalized(_lastNameController.text) != _normalized(original.lastName) ||
+        _normalized(_phoneController.text) != _normalized(original.phone) ||
+        _normalized(_professionController.text) != _normalized(original.profession) ||
+        _normalized(_companyController.text) != _normalized(original.company) ||
+        _normalized(_websiteController.text) != _normalized(original.website) ||
+        _normalized(_facebookController.text) != _normalized(original.faceLink) ||
+        _normalized(_instagramController.text) != _normalized(original.instagramLink) ||
+        _normalized(_whatsappController.text) != _normalized(original.whatsappLink) ||
+        _normalized(_addressController.text) != _normalized(original.address) ||
+        _normalized(_zipController.text) != _normalized(original.zip) ||
+        _normalized(_aboutController.text) != _normalized(original.about) ||
+        _normalized(_selectedDivision) != _normalized(original.state) ||
+        _normalized(_selectedCity) != _normalized(original.city) ||
+        _normalized(_selectedUpazila) != _normalized(original.upazila);
   }
 
-  Widget _buildPasswordContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(4),
-      child: Column(
-        children: [
-          _buildCompactSection(
-            'Change Password',
-            Icons.lock_outline,
-            [
-              _buildCompactField('Current Password', _oldPasswordController, Icons.lock_rounded, isPassword: true),
-              _buildCompactField('New Password', _newPasswordController, Icons.lock_rounded, isPassword: true),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _buildChangePasswordButton(),
-          const SizedBox(height: 100),
-        ],
-      ),
-    );
+  bool get _hasPrivacyChanges {
+    final original = _originalProfile;
+    final current = _userProfile;
+    if (original == null || current == null) {
+      return false;
+    }
+
+    return (current.emailPublic ?? false) != (original.emailPublic ?? false) ||
+        (current.phonePublic ?? false) != (original.phonePublic ?? false) ||
+        (current.professionPublic ?? true) != (original.professionPublic ?? true) ||
+        (current.companyPublic ?? true) != (original.companyPublic ?? true) ||
+        (current.websitePublic ?? true) != (original.websitePublic ?? true) ||
+        (current.facebookPublic ?? true) != (original.facebookPublic ?? true) ||
+        (current.instagramPublic ?? true) != (original.instagramPublic ?? true) ||
+        (current.whatsappPublic ?? true) != (original.whatsappPublic ?? true) ||
+        (current.aboutPublic ?? true) != (original.aboutPublic ?? true);
   }
 
-  Widget _buildCompactImageSection() {
-    return Column(
-      children: [
-        // Profile Image Card
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.grey.shade50],
-            ),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Profile Image with gradient border
-              Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF059669)],
-                  ),
-                ),
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  child: ClipOval(
-                    child: _userProfile?.image != null
-                        ? CachedNetworkImage(
-                            key: ValueKey(_userProfile!.image!),
-                            imageUrl: _userProfile!.image!,
-                            fit: BoxFit.cover,
-                            errorWidget: (context, url, error) => const Icon(Icons.person, size: 28, color: Colors.grey),
-                          )
-                        : const Icon(Icons.person, size: 28, color: Colors.grey),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${_userProfile?.firstName ?? ''} ${_userProfile?.lastName ?? ''}'.trim(),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _userProfile?.email ?? '',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: IconButton(
-                  onPressed: _pickProfileImage,
-                  icon: const Icon(Icons.camera_alt_rounded, size: 18),
-                  color: const Color(0xFF10B981),
-                  padding: const EdgeInsets.all(8),
-                  constraints: const BoxConstraints(),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        
-        // Banner Upload Card
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.image_rounded, size: 14, color: Colors.grey.shade700),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Store Banner',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
-                      letterSpacing: -0.1,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: _pickBannerImage,
-                child: Container(
-                  width: double.infinity,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.grey.shade300,
-                      style: BorderStyle.solid,
-                    ),
-                  ),
-                  child: _userProfile?.storeBanner != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Stack(
-                            children: [
-                              CachedNetworkImage(
-                                key: ValueKey(_userProfile!.storeBanner!),
-                                imageUrl: _userProfile!.storeBanner!,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                errorWidget: (context, url, error) => _buildBannerPlaceholder(),
-                              ),
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  padding: const EdgeInsets.all(6),
-                                  child: const Icon(Icons.edit, size: 14, color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      : _buildBannerPlaceholder(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  int get _passwordStrength {
+    final password = _newPasswordController.text;
+    if (password.isEmpty) {
+      return 0;
+    }
+
+    var score = 0;
+    if (password.length >= 8) {
+      score++;
+    }
+    if (RegExp(r'[A-Z]').hasMatch(password) && RegExp(r'[a-z]').hasMatch(password)) {
+      score++;
+    }
+    if (RegExp(r'[0-9]').hasMatch(password) || RegExp(r'[^A-Za-z0-9]').hasMatch(password)) {
+      score++;
+    }
+    return score;
   }
 
-  Widget _buildBannerPlaceholder() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.add_photo_alternate_outlined, size: 32, color: Colors.grey.shade400),
-        const SizedBox(height: 4),
-        Text(
-          'Upload Banner',
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
+  String _normalized(String? value) => value?.trim() ?? '';
+
+  String? _normalizeNullable(String? value) {
+    final normalized = _normalized(value);
+    return normalized.isEmpty ? null : normalized;
   }
 
-  Widget _buildCompactSection(String title, IconData icon, List<Widget> children) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: const Color(0xFF10B981)),
-              const SizedBox(width: 6),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
-                  letterSpacing: -0.1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ...children,
-        ],
-      ),
-    );
+  String _maskEmail(String email, bool isPublic) {
+    if (isPublic || email.trim().isEmpty) {
+      return email;
+    }
+
+    final parts = email.split('@');
+    if (parts.length != 2) {
+      return email;
+    }
+
+    final username = parts[0];
+    if (username.length <= 2) {
+      return '${username}XX@${parts[1]}';
+    }
+
+    return '${username.substring(0, 2)}${'X' * (username.length - 2)}@${parts[1]}';
   }
 
-  Widget _buildCompactField(
-    String label,
-    TextEditingController controller,
-    IconData icon, {
-    int maxLines = 1,
-    bool isPassword = false,
+  String _maskPhone(String phone, bool isPublic) {
+    if (isPublic || phone.trim().isEmpty) {
+      return phone;
+    }
+
+    if (phone.length <= 5) {
+      return phone;
+    }
+
+    return '${phone.substring(0, 3)}${'X' * (phone.length - 5)}${phone.substring(phone.length - 2)}';
+  }
+
+  bool get _areProfessionalFieldsPublic {
+    final profile = _userProfile;
+    if (profile == null) {
+      return true;
+    }
+
+    return (profile.professionPublic ?? true) &&
+        (profile.companyPublic ?? true) &&
+        (profile.websitePublic ?? true) &&
+        (profile.facebookPublic ?? true) &&
+        (profile.instagramPublic ?? true) &&
+        (profile.whatsappPublic ?? true) &&
+        (profile.aboutPublic ?? true);
+  }
+
+  String _visibilityPreview(
+    String? value,
+    bool isPublic, {
+    required String emptyLabel,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        maxLines: maxLines,
-        style: const TextStyle(fontSize: 13),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(fontSize: 12),
-          prefixIcon: Icon(icon, size: 18, color: Colors.grey.shade600),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF10B981)),
-          ),
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        ),
-      ),
-    );
+    final normalized = _normalized(value);
+    if (normalized.isEmpty) {
+      return emptyLabel;
+    }
+
+    return isPublic ? normalized : 'Hidden on Business Network profile';
   }
 
-  Widget _buildSaveButton() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: ElevatedButton(
-        onPressed: _isProcessing ? null : _saveProfile,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF10B981),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          elevation: 0,
-        ),
-        child: _isProcessing
-            ? const SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Text('Save Profile', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-      ),
-    );
+  Future<void> _refreshUserCaches() async {
+    await AuthService.refreshUserData();
+    await UserStateService().refreshUserData();
   }
 
-  Widget _buildChangePasswordButton() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: ElevatedButton(
-        onPressed: _passwordLoading ? null : _changePassword,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF10B981),
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          elevation: 0,
-        ),
-        child: _passwordLoading
-            ? const SizedBox(
-                height: 18,
-                width: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-              )
-            : const Text('Change Password', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-      ),
-    );
+  Future<void> _applyUpdatedProfile(
+    Map<String, dynamic> data, {
+    required String successMessage,
+  }) async {
+    final updated = UserProfile.fromJson(data);
+    _userProfile = updated;
+    _originalProfile = updated;
+    await _populateControllers(updated);
+    await _refreshUserCaches();
+
+    if (mounted) {
+      setState(() {});
+      _showSnackBar(successMessage);
+    }
   }
 
-  Widget _buildCompactGeoSection() {
-    final bool isKycVerified = _userProfile?.kyc ?? false;
-    
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.location_on_outlined, size: 16, color: const Color(0xFF10B981)),
-              const SizedBox(width: 6),
-              const Text(
-                'Address',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF111827),
-                  letterSpacing: -0.1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          
-          // Address Line
-          _buildCompactField('Address', _addressController, Icons.home_rounded),
-          
-          // Division Dropdown
-          _buildCompactGeoDropdown(
-            label: 'Division',
-            value: _selectedDivision,
-            items: _divisions.map((d) => d.nameEng).toList(),
-            isLoading: _isLoadingDivisions,
-            enabled: !isKycVerified,
-            icon: Icons.map_rounded,
-            onChanged: (value) {
-              setState(() {
-                _selectedDivision = value;
-                _formDirty = true;
-              });
-              if (value != null) {
-                _loadCities(value);
-              }
-            },
-          ),
-          
-          // City Dropdown
-          _buildCompactGeoDropdown(
-            label: 'City',
-            value: _selectedCity,
-            items: _cities.map((c) => c.nameEng).toList(),
-            isLoading: _isLoadingCities,
-            enabled: !isKycVerified && _selectedDivision != null,
-            icon: Icons.location_city_rounded,
-            onChanged: (value) {
-              setState(() {
-                _selectedCity = value;
-                _formDirty = true;
-              });
-              if (value != null) {
-                _loadUpazilas(value);
-              }
-            },
-          ),
-          
-          // Upazila Dropdown
-          _buildCompactGeoDropdown(
-            label: 'Upazila/Area',
-            value: _selectedUpazila,
-            items: _upazilas.map((u) => u.nameEng).toList(),
-            isLoading: _isLoadingUpazilas,
-            enabled: !isKycVerified && _selectedCity != null,
-            icon: Icons.place_rounded,
-            onChanged: (value) {
-              setState(() {
-                _selectedUpazila = value;
-                _formDirty = true;
-              });
-            },
-          ),
-          
-          // ZIP Code
-          _buildCompactField('ZIP', _zipController, Icons.pin_drop_rounded),
-        ],
-      ),
-    );
+  String _mediaUrl(String? url) {
+    final value = (url ?? '').trim();
+    if (value.isEmpty) {
+      return '';
+    }
+
+    final separator = value.contains('?') ? '&' : '?';
+    return '$value${separator}v=$_mediaRefreshTick';
   }
 
-  Widget _buildCompactGeoDropdown({
-    required String label,
-    required String? value,
-    required List<String> items,
-    required bool isLoading,
-    required bool enabled,
-    required IconData icon,
-    required void Function(String?) onChanged,
+  Future<ImageSource?> _selectImageSource({
+    required String title,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
-                letterSpacing: -0.1,
-              ),
-            ),
-          ),
-          Container(
-            height: 48,
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+          child: Container(
             decoration: BoxDecoration(
-              color: enabled ? Colors.grey.shade50 : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: enabled ? Colors.grey.shade300 : Colors.grey.shade200,
-                width: 1,
-              ),
+              color: _surfaceColor,
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: isLoading
-                ? Center(
-                    child: SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.grey.shade400,
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 10),
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: _cardBorderColor,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 6),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        title,
+                        style: AppFonts.roboto(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: _headingTextColor,
                         ),
                       ),
                     ),
-                  )
-                : DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: (value != null && items.contains(value)) ? value : null,
-                      isExpanded: true,
-                      isDense: false,
-                      hint: Row(
-                        children: [
-                          Icon(icon, size: 18, color: Colors.grey.shade400),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Select $label',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade500,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      icon: Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 22,
-                        color: enabled ? Colors.grey.shade600 : Colors.grey.shade400,
-                      ),
-                      selectedItemBuilder: (BuildContext context) {
-                        return items.map<Widget>((String item) {
-                          return Row(
-                            children: [
-                              Icon(icon, size: 18, color: const Color(0xFF10B981)),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  item,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF111827),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList();
-                      },
-                      items: items.isEmpty
-                          ? null
-                          : items.map((item) {
-                              return DropdownMenuItem<String>(
-                                value: item,
-                                child: Text(
-                                  item,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF111827),
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              );
-                            }).toList(),
-                      onChanged: enabled ? onChanged : null,
-                      dropdownColor: Colors.white,
-                      elevation: 8,
-                      borderRadius: BorderRadius.circular(8),
-                      menuMaxHeight: 300,
-                    ),
                   ),
+                  _buildImageSourceAction(
+                    icon: Icons.photo_library_outlined,
+                    label: 'Choose from gallery',
+                    onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+                  ),
+                  _buildImageSourceAction(
+                    icon: Icons.camera_alt_outlined,
+                    label: 'Take photo',
+                    onTap: () => Navigator.of(context).pop(ImageSource.camera),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
           ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildImageSourceAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      dense: true,
+      leading: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: _primarySoftColor,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, size: 18, color: _primaryColor),
+      ),
+      title: Text(
+        label,
+        style: AppFonts.roboto(
+          fontSize: 13.5,
+          fontWeight: FontWeight.w600,
+          color: _headingTextColor,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: AppFonts.roboto(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: isError ? _dangerColor : _successColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
 
   Future<void> _saveProfile() async {
-    if (_userProfile == null) return;
-    
-    // Don't proceed if already processing
-    if (_isProcessing) {
-      _showSnackBar('Please wait, processing...', isError: false);
+    if (_userProfile == null || !_hasProfileChanges) {
       return;
     }
-    
-    setState(() => _isProcessing = true);
-    
+    if (!_profileFormKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() => _isSavingProfile = true);
+
     try {
-      final profileData = {
-        'first_name': _firstNameController.text.trim(),
-        'last_name': _lastNameController.text.trim(),
+      final payload = {
         'phone': _phoneController.text.trim(),
-        'address': _addressController.text.trim(),
-        'city': _selectedCity ?? _cityController.text.trim(),
-        'state': _selectedDivision ?? _stateController.text.trim(),
-        'zip': _zipController.text.trim(),
-        'upazila': _selectedUpazila,
-        'face_link': _facebookController.text.trim(),
-        'instagram_link': _instagramController.text.trim(),
-        'whatsapp_link': _whatsappController.text.trim(),
         'profession': _professionController.text.trim(),
         'company': _companyController.text.trim(),
         'website': _websiteController.text.trim(),
+        'face_link': _facebookController.text.trim(),
+        'instagram_link': _instagramController.text.trim(),
+        'whatsapp_link': _whatsappController.text.trim(),
         'about': _aboutController.text.trim(),
         'email_public': _userProfile?.emailPublic ?? false,
         'phone_public': _userProfile?.phonePublic ?? false,
+        'professional_details_public': _areProfessionalFieldsPublic,
+        'profession_public': _userProfile?.professionPublic ?? true,
+        'company_public': _userProfile?.companyPublic ?? true,
+        'website_public': _userProfile?.websitePublic ?? true,
+        'facebook_public': _userProfile?.facebookPublic ?? true,
+        'instagram_public': _userProfile?.instagramPublic ?? true,
+        'whatsapp_public': _userProfile?.whatsappPublic ?? true,
+        'about_public': _userProfile?.aboutPublic ?? true,
       };
 
-      print('📝 Saving profile data: $profileData');
-
-      final result = await SettingsService.updateProfile(_userProfile!.email, profileData);
-
-      print('✅ Profile save result: ${result['success']}');
-
-      if (result['success'] == true) {
-        _showSnackBar('Profile updated successfully');
-        
-        // Update local user data and notify all listeners
-        await AuthService.refreshUserData();
-        await UserStateService().refreshUserData();
-        
-        // Reload profile
-        await _loadUserProfile();
-      } else {
-        final errorMsg = result['message'] ?? 'Failed to update profile';
-        print('❌ Profile save failed: $errorMsg');
-        _showSnackBar(errorMsg, isError: true);
+      if (!_isKycLocked) {
+        payload.addAll({
+          'first_name': _firstNameController.text.trim(),
+          'last_name': _lastNameController.text.trim(),
+          'address': _addressController.text.trim(),
+          'state': _selectedDivision ?? '',
+          'city': _selectedCity ?? '',
+          'upazila': _selectedUpazila ?? '',
+          'zip': _zipController.text.trim(),
+        });
       }
-    } catch (e, stackTrace) {
-      print('❌ Profile save error: $e');
-      print('Stack trace: $stackTrace');
-      _showSnackBar('Failed to update profile: ${e.toString()}', isError: true);
+
+      final result = await SettingsService.updateProfile(_userProfile!.email, payload);
+      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+        await _applyUpdatedProfile(
+          Map<String, dynamic>.from(result['data']),
+          successMessage: 'Profile updated successfully',
+        );
+      } else {
+        _showSnackBar(result['message'] ?? 'Failed to update profile', isError: true);
+      }
+    } catch (_) {
+      _showSnackBar('Failed to update profile', isError: true);
     } finally {
       if (mounted) {
-        setState(() => _isProcessing = false);
+        setState(() => _isSavingProfile = false);
+      }
+    }
+  }
+
+  Future<void> _savePrivacy() async {
+    if (_userProfile == null || !_hasPrivacyChanges) {
+      return;
+    }
+
+    setState(() => _isSavingPrivacy = true);
+
+    try {
+      final payload = {
+        'email_public': _userProfile?.emailPublic ?? false,
+        'phone_public': _userProfile?.phonePublic ?? false,
+        'professional_details_public': _areProfessionalFieldsPublic,
+        'profession_public': _userProfile?.professionPublic ?? true,
+        'company_public': _userProfile?.companyPublic ?? true,
+        'website_public': _userProfile?.websitePublic ?? true,
+        'facebook_public': _userProfile?.facebookPublic ?? true,
+        'instagram_public': _userProfile?.instagramPublic ?? true,
+        'whatsapp_public': _userProfile?.whatsappPublic ?? true,
+        'about_public': _userProfile?.aboutPublic ?? true,
+      };
+
+      final result = await SettingsService.updateProfile(_userProfile!.email, payload);
+      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+        await _applyUpdatedProfile(
+          Map<String, dynamic>.from(result['data']),
+          successMessage: 'Business Network privacy updated',
+        );
+      } else {
+        _showSnackBar(result['message'] ?? 'Failed to update privacy', isError: true);
+      }
+    } catch (_) {
+      _showSnackBar('Failed to update privacy', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isSavingPrivacy = false);
       }
     }
   }
 
   Future<void> _changePassword() async {
-    if (_oldPasswordController.text.isEmpty || _newPasswordController.text.isEmpty) {
-      _showSnackBar('Please fill all fields', isError: true);
+    if (!_securityFormKey.currentState!.validate()) {
       return;
     }
 
-    if (_newPasswordController.text.length < 8) {
-      _showSnackBar('Password must be at least 8 characters', isError: true);
-      return;
-    }
-
-    setState(() => _passwordLoading = true);
+    setState(() => _isChangingPassword = true);
 
     try {
       final result = await SettingsService.changePassword(
@@ -1121,206 +677,488 @@ class _SettingsScreenState extends State<SettingsScreen> {
         newPassword: _newPasswordController.text,
       );
 
-      if (result['success'] == true) {
+      if ((result['success'] ?? false) == true) {
         _oldPasswordController.clear();
         _newPasswordController.clear();
-        _showSnackBar('Password changed successfully');
+        _confirmPasswordController.clear();
+        setState(() {});
+        _showSnackBar(result['message'] ?? 'Password changed successfully');
       } else {
         _showSnackBar(result['message'] ?? 'Failed to change password', isError: true);
       }
-    } catch (e) {
+    } catch (_) {
       _showSnackBar('Failed to change password', isError: true);
     } finally {
-      setState(() => _passwordLoading = false);
+      if (mounted) {
+        setState(() => _isChangingPassword = false);
+      }
     }
   }
 
-  // Old methods below - can be removed later
-  Widget _buildUserInfoSummary(bool isSmallMobile) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Profile Image
-        Container(
-          width: isSmallMobile ? 64 : 80,
-          height: isSmallMobile ? 64 : 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-              ),
-            ],
-          ),
-          child: ClipOval(
-            child: _userProfile!.image != null && _userProfile!.image!.isNotEmpty
-                ? CachedNetworkImage(
-                    key: ValueKey(_userProfile!.image!),
-                    imageUrl: _userProfile!.image!,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: const Color(0xFFF3F4F6),
-                      child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => _buildPlaceholderAvatar(),
-                  )
-                : _buildPlaceholderAvatar(),
-          ),
+  Future<void> _pickProfileImage() async {
+    await _pickAndUploadImage(
+      fieldName: 'image',
+      successMessage: 'Profile photo updated',
+      targetWidth: 500,
+      quality: 86,
+      maxFileSizeBytes: 6 * 1024 * 1024,
+      enableCropper: true,
+    );
+  }
+
+  Future<void> _pickBannerImage() async {
+    await _pickAndUploadImage(
+      fieldName: 'store_banner',
+      successMessage: 'Store banner updated',
+      targetWidth: 1400,
+      quality: 82,
+      maxFileSizeBytes: 8 * 1024 * 1024,
+      enableCropper: true,
+    );
+  }
+
+  Future<void> _pickAndUploadImage({
+    required String fieldName,
+    required String successMessage,
+    required int targetWidth,
+    required int quality,
+    required int maxFileSizeBytes,
+    required bool enableCropper,
+  }) async {
+    if (_userProfile == null || _isUploadingMedia) {
+      return;
+    }
+
+    final picker = ImagePicker();
+    final source = await _selectImageSource(
+      title: fieldName == 'image' ? 'Profile photo' : 'Banner image',
+    );
+
+    if (source == null) {
+      return;
+    }
+
+    final image = await picker.pickImage(
+      source: source,
+      maxWidth: fieldName == 'image' ? 1200 : 2000,
+      imageQuality: 92,
+    );
+
+    if (image == null) {
+      return;
+    }
+
+    final bytes = await _prepareUploadBytes(
+      image: image,
+      enableCropper: enableCropper,
+      fieldName: fieldName,
+    );
+
+    if (bytes == null) {
+      return;
+    }
+
+    setState(() => _isUploadingMedia = true);
+
+    try {
+      if (bytes.length > maxFileSizeBytes) {
+        _showSnackBar('Selected image is too large', isError: true);
+        return;
+      }
+
+      final decoded = img.decodeImage(bytes);
+      if (decoded == null) {
+        _showSnackBar('Failed to process selected image', isError: true);
+        return;
+      }
+
+      final resized = decoded.width > targetWidth
+          ? img.copyResize(decoded, width: targetWidth)
+          : decoded;
+      final compressed = img.encodeJpg(resized, quality: quality);
+      final payload = 'data:image/jpeg;base64,${base64Encode(compressed)}';
+
+      final previousImageUrl = fieldName == 'image' ? _userProfile?.image : _userProfile?.storeBanner;
+      final result = await SettingsService.updateProfile(
+        _userProfile!.email,
+        {fieldName: payload},
+      );
+
+      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+        final updatedData = Map<String, dynamic>.from(result['data']);
+        final cacheStamp = DateTime.now().millisecondsSinceEpoch.toString();
+        final rawValue = updatedData[fieldName]?.toString();
+        if (rawValue != null && rawValue.trim().isNotEmpty) {
+          updatedData[fieldName] = AppConfig.getAbsoluteUrl(rawValue);
+          final separator = updatedData[fieldName].toString().contains('?') ? '&' : '?';
+          updatedData[fieldName] = '${updatedData[fieldName]}${separator}v=$cacheStamp';
+        }
+        if (previousImageUrl != null && previousImageUrl.isNotEmpty) {
+          await CachedNetworkImage.evictFromCache(previousImageUrl);
+        }
+        if (mounted) {
+          setState(() => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
+        }
+        await _applyUpdatedProfile(
+          updatedData,
+          successMessage: successMessage,
+        );
+      } else {
+        _showSnackBar(result['message'] ?? 'Failed to upload image', isError: true);
+      }
+    } catch (_) {
+      _showSnackBar('Failed to upload image', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingMedia = false);
+      }
+    }
+  }
+
+  Future<Uint8List?> _prepareUploadBytes({
+    required XFile image,
+    required bool enableCropper,
+    required String fieldName,
+  }) async {
+    if (!enableCropper) {
+      return image.readAsBytes();
+    }
+
+    final isProfilePhoto = fieldName == 'image';
+    final title = isProfilePhoto ? 'Crop profile photo' : 'Crop banner image';
+
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      compressFormat: ImageCompressFormat.jpg,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: title,
+          toolbarColor: _primaryColor,
+          toolbarWidgetColor: Colors.white,
+          activeControlsWidgetColor: _primaryColor,
+          initAspectRatio: isProfilePhoto ? CropAspectRatioPreset.square : CropAspectRatioPreset.ratio16x9,
+          lockAspectRatio: true,
+          hideBottomControls: false,
         ),
-        const SizedBox(width: 12),
-        // User Info
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  '${_userProfile!.firstName ?? ''} ${_userProfile!.lastName ?? ''}'.trim(),
-                  style: TextStyle(
-                    fontSize: isSmallMobile ? 16 : 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (_userProfile!.kyc == true) ...[
-                  const SizedBox(width: 6),
-                  Icon(
-                    Icons.verified,
-                    color: Colors.green[600],
-                    size: 20,
-                  ),
-                ],
-              ],
+        IOSUiSettings(
+          title: title,
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+        WebUiSettings(
+          context: context,
+          presentStyle: WebPresentStyle.dialog,
+          size: const CropperSize(width: 420, height: 520),
+        ),
+      ],
+      aspectRatio: isProfilePhoto
+          ? const CropAspectRatio(ratioX: 1, ratioY: 1)
+          : const CropAspectRatio(ratioX: 16, ratioY: 9),
+    );
+
+    if (cropped == null) {
+      return null;
+    }
+
+    return cropped.readAsBytes();
+  }
+
+  Future<void> _removeProfileImage() async {
+    if (_userProfile == null || _isUploadingMedia) {
+      return;
+    }
+
+    final confirmed = await _confirmAction(
+      title: 'Remove profile photo?',
+      message: 'Your profile will fall back to the default avatar until you upload a new photo.',
+      actionLabel: 'Remove',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setState(() => _isUploadingMedia = true);
+
+    try {
+      final success = await SettingsService.deleteProfileImage(_userProfile!.email);
+      if (success) {
+        if (mounted) {
+          setState(() => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
+        }
+        await _loadUserProfile();
+        await _refreshUserCaches();
+        _showSnackBar('Profile photo removed');
+      } else {
+        _showSnackBar('Failed to remove profile photo', isError: true);
+      }
+    } catch (_) {
+      _showSnackBar('Failed to remove profile photo', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingMedia = false);
+      }
+    }
+  }
+
+  Future<void> _removeBannerImage() async {
+    if (_userProfile == null || _isUploadingMedia) {
+      return;
+    }
+
+    final confirmed = await _confirmAction(
+      title: 'Remove banner image?',
+      message: 'This will clear your business banner from the profile header.',
+      actionLabel: 'Remove',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setState(() => _isUploadingMedia = true);
+
+    try {
+      final result = await SettingsService.updateProfile(
+        _userProfile!.email,
+        {'store_banner': ''},
+      );
+
+      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+        if (mounted) {
+          setState(() => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
+        }
+        await _applyUpdatedProfile(
+          Map<String, dynamic>.from(result['data']),
+          successMessage: 'Banner removed',
+        );
+      } else {
+        _showSnackBar(result['message'] ?? 'Failed to remove banner', isError: true);
+      }
+    } catch (_) {
+      _showSnackBar('Failed to remove banner', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingMedia = false);
+      }
+    }
+  }
+
+  Future<bool> _confirmAction({
+    required String title,
+    required String message,
+    required String actionLabel,
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            title,
+            style: AppFonts.roboto(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: _headingTextColor,
             ),
-            const SizedBox(height: 4),
-            Text(
-              _userProfile!.email,
-              style: TextStyle(
-                fontSize: isSmallMobile ? 13 : 14,
-                color: Colors.grey[600],
+          ),
+          content: Text(
+            message,
+            style: AppFonts.roboto(fontSize: 14, color: _bodyTextColor, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'Cancel',
+                style: AppFonts.roboto(fontWeight: FontWeight.w600, color: _mutedTextColor),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(backgroundColor: _dangerColor),
+              child: Text(
+                actionLabel,
+                style: AppFonts.roboto(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _pageBackgroundColor,
+      appBar: _buildAppBar(),
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            _buildTabSelector(),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: child,
+                ),
+                layoutBuilder: (currentChild, previousChildren) {
+                  return Stack(
+                    fit: StackFit.expand,
+                    alignment: Alignment.topCenter,
+                    children: [
+                      ...previousChildren,
+                      if (currentChild != null) currentChild,
+                    ],
+                  );
+                },
+                child: _buildBody(),
               ),
             ),
           ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildPlaceholderAvatar() {
-    // Safely get first character of names
-    String getInitial(String? name) {
-      if (name == null || name.isEmpty) return '';
-      return name.substring(0, 1);
-    }
-    
-    final firstInitial = getInitial(_userProfile!.firstName);
-    final lastInitial = getInitial(_userProfile!.lastName);
-    final initials = '$firstInitial$lastInitial'.toUpperCase();
-    
-    return Container(
-      color: Colors.green[50],
-      child: Center(
-        child: initials.isNotEmpty
-            ? Text(
-                initials,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF10B981),
-                ),
-              )
-            : Icon(
-                Icons.person,
-                size: 32,
-                color: Colors.green[300],
-              ),
       ),
     );
   }
 
-  Widget _buildSettingsContent(bool isSmallMobile, bool isMobile) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Tab Navigation
-          Container(
-            padding: const EdgeInsets.all(4),
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      surfaceTintColor: Colors.white,
+      centerTitle: false,
+      leadingWidth: 56,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: Container(
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey[100]!,
-                  width: 1,
-                ),
-              ),
+              color: _surfaceMutedColor,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildTabButton('profile', 'Profile', Icons.person, isSmallMobile),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildTabButton('password', 'Password', Icons.lock, isSmallMobile),
-                ),
-              ],
+            child: const Icon(
+              Icons.arrow_back_rounded,
+              size: 20,
+              color: _headingTextColor,
             ),
           ),
-          
-          // Tab Content
+        ),
+      ),
+      titleSpacing: 4,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Container(
-            padding: EdgeInsets.all(isSmallMobile ? 12 : 16),
-            child: _activeTab == 'profile'
-                ? _buildProfileTab(isSmallMobile, isMobile)
-                : _buildPasswordTab(isSmallMobile),
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [_primaryColor, _primaryAccentColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: const Icon(
+              Icons.settings_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Settings',
+            style: AppFonts.roboto(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: _headingTextColor,
+            ),
           ),
         ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          height: 1,
+          color: _cardBorderColor,
+        ),
       ),
     );
   }
 
-  Widget _buildTabButton(String tab, String label, IconData icon, bool isSmallMobile) {
-    final isActive = _activeTab == tab;
-    return InkWell(
-      onTap: () => setState(() => _activeTab = tab),
-      borderRadius: BorderRadius.circular(8),
+  Widget _buildAvatarFallback() {
+    return Container(
+      color: _primarySoftColor,
+      child: const Icon(Icons.person_rounded, color: _primaryColor, size: 28),
+    );
+  }
+
+  Widget _buildTabSelector() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
       child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: isSmallMobile ? 10 : 12,
-          horizontal: isSmallMobile ? 12 : 16,
-        ),
+        padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF10B981) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: _surfaceMutedColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(child: _buildTabChip(_SettingsTab.profile, 'Profile', Icons.badge_rounded)),
+            const SizedBox(width: 6),
+            Expanded(child: _buildTabChip(_SettingsTab.privacy, 'Privacy', Icons.privacy_tip_rounded)),
+            const SizedBox(width: 6),
+            Expanded(child: _buildTabChip(_SettingsTab.security, 'Security', Icons.lock_rounded)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabChip(_SettingsTab tab, String label, IconData icon) {
+    final isActive = _activeTab == tab;
+    return GestureDetector(
+      onTap: () => setState(() => _activeTab = tab),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(
+          gradient: isActive
+              ? const LinearGradient(
+                  colors: [_primaryColor, _primaryAccentColor],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isActive ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: _primaryColor.withValues(alpha: 0.22),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: isSmallMobile ? 16 : 18,
-              color: isActive ? Colors.white : Colors.grey[600],
-            ),
-            const SizedBox(width: 8),
+            Icon(icon, size: 16, color: isActive ? Colors.white : _mutedTextColor),
+            const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
-                fontSize: isSmallMobile ? 13 : 14,
+              style: AppFonts.roboto(
+                fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : Colors.grey[600],
+                color: isActive ? Colors.white : _mutedTextColor,
               ),
             ),
           ],
@@ -1329,1923 +1167,1260 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildProfileTab(bool isSmallMobile, bool isMobile) {
-    if (_userProfile == null) {
-      return const Center(child: CircularProgressIndicator());
+  Widget _buildBody() {
+    if (_isInitialLoading) {
+      return const Center(child: CircularProgressIndicator(color: _primaryColor));
     }
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: isMobile ? 12 : 16,
-          vertical: 16,
-        ),
-        child: Form(
-          key: _profileFormKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Section Header
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFECFDF5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.person_outline,
-                        color: Color(0xFF10B981),
-                        size: 22,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Profile Information',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Profile Image Upload
-              _buildImageUploadSection(),
-              const SizedBox(height: 16),
-
-              // Store Banner Upload
-              _buildBannerUploadSection(),
-              const SizedBox(height: 16),
-
-              // Personal Information
-              _buildPersonalInfoSection(),
-              const SizedBox(height: 16),
-
-              // Privacy Settings
-              _buildPrivacySection(),
-              const SizedBox(height: 16),
-
-              // Address Information
-              _buildAddressSection(),
-              const SizedBox(height: 16),
-
-              // Social Media
-              _buildSocialMediaSection(),
-              const SizedBox(height: 16),
-
-              // About Me
-              _buildAboutSection(),
-              const SizedBox(height: 100), // Space for sticky button
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImageUploadSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Profile Image',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-              letterSpacing: -0.2,
+    if (_userProfile == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: _surfaceColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: _cardBorderColor),
             ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              // Current image or placeholder - Always show
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.06),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: (_userProfile?.image != null && _userProfile!.image!.isNotEmpty)
-                          ? CachedNetworkImage(
-                              key: ValueKey(_userProfile!.image!),
-                              imageUrl: _userProfile!.image!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: const Color(0xFFF3F4F6),
-                                child: const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) {
-                                return Container(
-                                  color: const Color(0xFFF3F4F6),
-                                  child: const Icon(
-                                    Icons.person_outline,
-                                    size: 40,
-                                    color: Color(0xFF9CA3AF),
-                                  ),
-                                );
-                              },
-                            )
-                          : Container(
-                              color: const Color(0xFFF3F4F6),
-                              child: const Icon(
-                                Icons.person_outline,
-                                size: 40,
-                                color: Color(0xFF9CA3AF),
-                              ),
-                            ),
-                    ),
-                  ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => _showDeleteImageDialog(),
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: const Color(0xFFE5E7EB)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              size: 14,
-                              color: Color(0xFFEF4444),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              const SizedBox(width: 16),
-
-              // Upload button
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Upload Profile Picture',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF374151),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'JPG, PNG or GIF. Max size 5MB',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _pickProfileImage,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF10B981).withOpacity(0.2),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.upload_outlined,
-                                size: 18,
-                                color: Colors.white,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Choose Image',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBannerUploadSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Store/For Sale Banner',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Current banner or placeholder
-          if (_userProfile?.storeBanner != null && _userProfile!.storeBanner!.isNotEmpty)
-            Stack(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: double.infinity,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                const Icon(Icons.settings_outlined, size: 42, color: _primaryColor),
+                const SizedBox(height: 14),
+                Text(
+                  'Unable to load settings',
+                  style: AppFonts.roboto(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: _headingTextColor,
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      _userProfile!.storeBanner!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: const Color(0xFFF3F4F6),
-                          child: const Center(
-                            child: Icon(
-                              Icons.image_outlined,
-                              size: 48,
-                              color: Color(0xFF9CA3AF),
-                            ),
-                          ),
-                        );
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Try loading your account again. If the problem continues, check authentication and network status.',
+                  textAlign: TextAlign.center,
+                  style: AppFonts.roboto(fontSize: 13, color: _bodyTextColor, height: 1.5),
+                ),
+                const SizedBox(height: 18),
+                FilledButton(
+                  onPressed: _loadUserProfile,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _primaryColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text(
+                    'Retry',
+                    style: AppFonts.roboto(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    switch (_activeTab) {
+      case _SettingsTab.profile:
+        return _buildProfileTab();
+      case _SettingsTab.privacy:
+        return _buildPrivacyTab();
+      case _SettingsTab.security:
+        return _buildSecurityTab();
+    }
+  }
+
+  Widget _buildProfileTab() {
+    return _buildRefreshableTab(
+      key: const ValueKey('profile-tab'),
+      child: Form(
+        key: _profileFormKey,
+        child: Column(
+          children: [
+            _buildProfileHero(),
+            if (_isKycLocked) ...[
+              _buildInfoNotice(
+                icon: Icons.verified_user_rounded,
+                color: _warningColor,
+                title: 'KYC lock active',
+                message: 'After KYC verification, name and address details are locked. Other profile details remain editable.',
+              ),
+              const SizedBox(height: 10),
+            ],
+            _buildSectionCard(
+              title: 'Identity & contact',
+              subtitle: 'Basic account details.',
+              icon: Icons.person_outline_rounded,
+              child: Column(
+                children: [
+                  _buildResponsivePair(
+                    left: _buildTextField(
+                      controller: _firstNameController,
+                      label: 'First name',
+                      hintText: 'Enter your first name',
+                      icon: Icons.badge_outlined,
+                      enabled: !_isKycLocked,
+                      validator: (value) => _normalized(value).isEmpty ? 'First name is required' : null,
+                    ),
+                    right: _buildTextField(
+                      controller: _lastNameController,
+                      label: 'Last name',
+                      hintText: 'Enter your last name',
+                      icon: Icons.person_outline_rounded,
+                      enabled: !_isKycLocked,
+                      validator: (value) => _normalized(value).isEmpty ? 'Last name is required' : null,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildResponsivePair(
+                    left: _buildTextField(
+                      controller: _emailController,
+                      label: 'Email address',
+                      hintText: 'Primary account email',
+                      icon: Icons.alternate_email_rounded,
+                      enabled: false,
+                    ),
+                    right: _buildTextField(
+                      controller: _phoneController,
+                      label: 'Phone number',
+                      hintText: '01XXXXXXXXX',
+                      icon: Icons.phone_outlined,
+                      enabled: !_isKycLocked,
+                      keyboardType: TextInputType.phone,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildSectionCard(
+              title: 'Location details',
+              subtitle: 'Address and area info.',
+              icon: Icons.map_outlined,
+              child: Column(
+                children: [
+                  _buildTextField(
+                    controller: _addressController,
+                    label: 'Address',
+                    hintText: 'House, road, area, landmark',
+                    icon: Icons.home_outlined,
+                    enabled: !_isKycLocked,
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildResponsivePair(
+                    left: _buildDropdownField(
+                      label: 'Division',
+                      hintText: 'Select division',
+                      icon: Icons.flag_outlined,
+                      value: _selectedDivision,
+                      items: _divisions.map((item) => item.nameEng).toList(),
+                      isLoading: _isLoadingDivisions,
+                      enabled: !_isKycLocked,
+                      onChanged: (value) {
+                        setState(() => _selectedDivision = value);
+                        if (value != null) {
+                          _loadCities(value);
+                        }
+                      },
+                    ),
+                    right: _buildDropdownField(
+                      label: 'City',
+                      hintText: 'Select city',
+                      icon: Icons.location_city_outlined,
+                      value: _selectedCity,
+                      items: _cities.map((item) => item.nameEng).toList(),
+                      isLoading: _isLoadingCities,
+                      enabled: !_isKycLocked && _selectedDivision != null,
+                      onChanged: (value) {
+                        setState(() => _selectedCity = value);
+                        if (value != null) {
+                          _loadUpazilas(value);
+                        }
                       },
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _showDeleteBannerDialog(),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          size: 16,
-                          color: Color(0xFFEF4444),
-                        ),
-                      ),
+                  const SizedBox(height: 10),
+                  _buildResponsivePair(
+                    left: _buildDropdownField(
+                      label: 'Upazila / area',
+                      hintText: 'Select upazila',
+                      icon: Icons.place_outlined,
+                      value: _selectedUpazila,
+                      items: _upazilas.map((item) => item.nameEng).toList(),
+                      isLoading: _isLoadingUpazilas,
+                      enabled: !_isKycLocked && _selectedCity != null,
+                      onChanged: (value) => setState(() => _selectedUpazila = value),
                     ),
+                    right: _buildTextField(
+                      controller: _zipController,
+                      label: 'Postal code',
+                      hintText: 'ZIP / postal code',
+                      icon: Icons.markunread_mailbox_outlined,
+                        enabled: !_isKycLocked,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildSectionCard(
+              title: 'Professional details',
+              subtitle: 'Business and social links.',
+              icon: Icons.work_outline_rounded,
+              child: Column(
+                children: [
+                  _buildResponsivePair(
+                    left: _buildTextField(
+                      controller: _professionController,
+                      label: 'Profession',
+                      hintText: 'Designer, retailer, consultant...',
+                      icon: Icons.work_outline_rounded,
+                    ),
+                    right: _buildTextField(
+                      controller: _companyController,
+                      label: 'Company / brand',
+                      hintText: 'Business or brand name',
+                      icon: Icons.apartment_rounded,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _websiteController,
+                    label: 'Website',
+                    hintText: 'https://yourwebsite.com',
+                    icon: Icons.language_rounded,
+                    keyboardType: TextInputType.url,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildResponsivePair(
+                    left: _buildTextField(
+                      controller: _facebookController,
+                      label: 'Facebook',
+                      hintText: 'Facebook profile or page link',
+                      icon: Icons.facebook_rounded,
+                      keyboardType: TextInputType.url,
+                    ),
+                    right: _buildTextField(
+                      controller: _instagramController,
+                      label: 'Instagram',
+                      hintText: 'Instagram profile link',
+                      icon: Icons.camera_alt_outlined,
+                      keyboardType: TextInputType.url,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildTextField(
+                    controller: _whatsappController,
+                    label: 'WhatsApp',
+                    hintText: 'WhatsApp number or wa.me link',
+                    icon: Icons.chat_bubble_outline_rounded,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            _buildSectionCard(
+              title: 'About you',
+              subtitle: 'Short profile summary.',
+              icon: Icons.edit_note_rounded,
+              child: _buildTextField(
+                controller: _aboutController,
+                label: 'Bio / about',
+                hintText: 'Describe your work, business focus, and what people can expect from your profile.',
+                icon: Icons.subject_rounded,
+                maxLines: 5,
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildPrimaryButton(
+              label: _hasProfileChanges ? 'Save profile changes' : 'Profile is up to date',
+              icon: Icons.save_rounded,
+              isBusy: _isSavingProfile,
+              enabled: _hasProfileChanges && !_isSavingProfile,
+              onPressed: _saveProfile,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHero() {
+    final profile = _userProfile!;
+    final isPhotoTab = _activeMediaTab == _ProfileMediaTab.photo;
+
+    return _buildSectionCard(
+      title: 'Profile media',
+      subtitle: 'Manage photo and banner in one place.',
+      icon: Icons.photo_library_outlined,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: _surfaceMutedColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildMediaTabChip(
+                    tab: _ProfileMediaTab.photo,
+                    label: 'Photo',
+                    icon: Icons.person_rounded,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: _buildMediaTabChip(
+                    tab: _ProfileMediaTab.banner,
+                    label: 'Banner',
+                    icon: Icons.photo_size_select_large_rounded,
                   ),
                 ),
               ],
-            )
-          else
-            Container(
-              width: double.infinity,
-              height: 140,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: const Color(0xFFE5E7EB),
-                  width: 1.5,
-                  style: BorderStyle.solid,
-                ),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.image_outlined,
-                      size: 48,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'No banner uploaded',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6B7280),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          const SizedBox(height: 14),
-
-          // Upload button and description
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _pickBannerImage,
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981),
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF10B981).withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.cloud_upload_outlined,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      'Upload Banner Image',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'Recommended: 1600×400px • Max 10MB • JPG, PNG',
-            style: TextStyle(
-              fontSize: 11,
-              color: Color(0xFF6B7280),
-            ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            child: isPhotoTab
+                ? _buildCompactMediaPanel(
+                    key: const ValueKey('profile-photo-panel'),
+                    title: 'Profile photo',
+                    subtitle: 'Shown in the app and profile.',
+                    preview: Container(
+                      width: 78,
+                      height: 78,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _primarySoftColor,
+                      ),
+                      child: ClipOval(
+                        child: profile.image != null && profile.image!.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: _mediaUrl(profile.image),
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) => _buildAvatarFallback(),
+                              )
+                            : _buildAvatarFallback(),
+                      ),
+                    ),
+                    primaryLabel: profile.image != null && profile.image!.isNotEmpty ? 'Change photo' : 'Upload photo',
+                    primaryAction: _pickProfileImage,
+                    secondaryLabel: profile.image != null && profile.image!.isNotEmpty ? 'Remove' : null,
+                    secondaryAction: profile.image != null && profile.image!.isNotEmpty ? _removeProfileImage : null,
+                  )
+                : _buildCompactMediaPanel(
+                    key: const ValueKey('profile-banner-panel'),
+                    title: 'Business banner',
+                    subtitle: 'Wide cover for your public profile.',
+                    preview: Container(
+                      height: 90,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: _primarySoftColor,
+                        image: profile.storeBanner != null && profile.storeBanner!.isNotEmpty
+                            ? DecorationImage(
+                                image: CachedNetworkImageProvider(_mediaUrl(profile.storeBanner)),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: profile.storeBanner != null && profile.storeBanner!.isNotEmpty
+                          ? null
+                          : const Center(
+                              child: Icon(Icons.add_photo_alternate_outlined, size: 24, color: _primaryColor),
+                            ),
+                    ),
+                    primaryLabel: profile.storeBanner != null && profile.storeBanner!.isNotEmpty ? 'Change banner' : 'Upload banner',
+                    primaryAction: _pickBannerImage,
+                    secondaryLabel: profile.storeBanner != null && profile.storeBanner!.isNotEmpty ? 'Remove' : null,
+                    secondaryAction: profile.storeBanner != null && profile.storeBanner!.isNotEmpty ? _removeBannerImage : null,
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPersonalInfoSection() {
-    final bool isKycVerified = _userProfile?.kyc ?? false;
+  Widget _buildMediaTabChip({
+    required _ProfileMediaTab tab,
+    required String label,
+    required IconData icon,
+  }) {
+    final isActive = _activeMediaTab == tab;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Personal Information',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 768;
-            
-            if (isMobile) {
-              return Column(
-                children: [
-                  _buildTextField(
-                    label: 'First Name',
-                    controller: _firstNameController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Last Name',
-                    controller: _lastNameController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Email',
-                    controller: _emailController,
-                    enabled: false,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Phone',
-                    controller: _phoneController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ],
-              );
-            }
-            
-            return Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                        label: 'First Name',
-                        controller: _firstNameController,
-                        enabled: !isKycVerified,
-                        onChanged: (_) => _checkFormChanges(),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTextField(
-                        label: 'Last Name',
-                        controller: _lastNameController,
-                        enabled: !isKycVerified,
-                        onChanged: (_) => _checkFormChanges(),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                        label: 'Email',
-                        controller: _emailController,
-                        enabled: false,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTextField(
-                        label: 'Phone',
-                        controller: _phoneController,
-                        enabled: !isKycVerified,
-                        onChanged: (_) => _checkFormChanges(),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: () => setState(() => _activeMediaTab = tab),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? _surfaceColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
         ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrivacySection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFDE68A)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.privacy_tip_rounded, size: 20, color: Colors.amber.shade700),
-              const SizedBox(width: 8),
-              Text(
-                'Privacy Settings',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.amber.shade900,
-                ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: isActive ? _primaryColor : _mutedTextColor),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppFonts.roboto(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: isActive ? _headingTextColor : _mutedTextColor,
               ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Control who can see your contact information in Business Network',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.amber.shade800,
             ),
-          ),
-          const SizedBox(height: 16),
-          
-          // Email Privacy Toggle
-          _buildPrivacyToggle(
-            'Email Address',
-            'Show email in your Business Network profile',
-            _userProfile?.emailPublic ?? false,
-            (value) {
-              setState(() {
-                _userProfile = _userProfile?.copyWith(emailPublic: value);
-                _formDirty = true;
-              });
-            },
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Phone Privacy Toggle
-          _buildPrivacyToggle(
-            'Phone Number',
-            'Show phone number in your Business Network profile',
-            _userProfile?.phonePublic ?? false,
-            (value) {
-              setState(() {
-                _userProfile = _userProfile?.copyWith(phonePublic: value);
-                _formDirty = true;
-              });
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildPrivacyToggle(
-    String title,
-    String description,
-    bool value,
-    Function(bool) onChanged,
-  ) {
+  Widget _buildCompactMediaPanel({
+    required Key key,
+    required String title,
+    required String subtitle,
+    required Widget preview,
+    required String primaryLabel,
+    required VoidCallback primaryAction,
+    String? secondaryLabel,
+    VoidCallback? secondaryAction,
+  }) {
     return Container(
+      key: key,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: _softSurfaceColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 640;
+          final details = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppFonts.roboto(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: _headingTextColor,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: AppFonts.roboto(fontSize: 12, color: _bodyTextColor, height: 1.4),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.tonal(
+                    onPressed: _isUploadingMedia ? null : primaryAction,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _primarySoftColor,
+                      foregroundColor: _primaryDarkColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      minimumSize: const Size(0, 40),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(
+                      primaryLabel,
+                      style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  if (secondaryLabel != null && secondaryAction != null)
+                    TextButton(
+                      onPressed: _isUploadingMedia ? null : secondaryAction,
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(0, 40),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                      ),
+                      child: Text(
+                        secondaryLabel,
+                        style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w700, color: _dangerColor),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          );
+
+          if (isWide) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(width: 132, child: Center(child: preview)),
+                const SizedBox(width: 14),
+                Expanded(child: details),
+              ],
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: preview),
+              const SizedBox(height: 10),
+              details,
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPrivacyTab() {
+    final profile = _userProfile!;
+    final emailPublic = profile.emailPublic ?? false;
+    final phonePublic = profile.phonePublic ?? false;
+    final professionPublic = profile.professionPublic ?? true;
+    final companyPublic = profile.companyPublic ?? true;
+    final websitePublic = profile.websitePublic ?? true;
+    final facebookPublic = profile.facebookPublic ?? true;
+    final instagramPublic = profile.instagramPublic ?? true;
+    final whatsappPublic = profile.whatsappPublic ?? true;
+    final aboutPublic = profile.aboutPublic ?? true;
+    final phonePreview = _maskPhone(profile.phone ?? '', phonePublic);
+
+    return _buildRefreshableTab(
+      key: const ValueKey('privacy-tab'),
+      child: Column(
+        children: [
+          _buildSectionCard(
+            title: 'Contact visibility',
+            subtitle: 'Control how core contact details appear on your Business Network profile.',
+            icon: Icons.visibility_outlined,
+            child: Column(
+              children: [
+                _buildPrivacyTile(
+                  icon: Icons.alternate_email_rounded,
+                  title: 'Show email address',
+                  description: 'Allow people to see your full email on your Business Network profile.',
+                  previewLabel: _maskEmail(profile.email, emailPublic),
+                  value: emailPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(emailPublic: value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPrivacyTile(
+                  icon: Icons.phone_outlined,
+                  title: 'Show phone number',
+                  description: 'Display your contact number to network visitors and potential leads.',
+                  previewLabel: phonePreview.isEmpty ? 'No phone added yet' : phonePreview,
+                  value: phonePublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(phonePublic: value);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          _buildSectionCard(
+            title: 'Professional profile fields',
+            subtitle: 'Set visibility for each business detail separately.',
+            icon: Icons.work_outline_rounded,
+            child: Column(
+              children: [
+                _buildPrivacyTile(
+                  icon: Icons.badge_outlined,
+                  title: 'Show profession',
+                  description: 'Display your profession or role under your name.',
+                  previewLabel: _visibilityPreview(
+                    profile.profession,
+                    professionPublic,
+                    emptyLabel: 'No profession added yet',
+                  ),
+                  value: professionPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(professionPublic: value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPrivacyTile(
+                  icon: Icons.business_rounded,
+                  title: 'Show company / brand',
+                  description: 'Keep your company or brand visible on the profile summary.',
+                  previewLabel: _visibilityPreview(
+                    profile.company,
+                    companyPublic,
+                    emptyLabel: 'No company added yet',
+                  ),
+                  value: companyPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(companyPublic: value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPrivacyTile(
+                  icon: Icons.language_rounded,
+                  title: 'Show website',
+                  description: 'Let visitors open your business website directly from the profile.',
+                  previewLabel: _visibilityPreview(
+                    profile.website,
+                    websitePublic,
+                    emptyLabel: 'No website added yet',
+                  ),
+                  value: websitePublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(websitePublic: value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPrivacyTile(
+                  icon: Icons.facebook_rounded,
+                  title: 'Show Facebook link',
+                  description: 'Make your Facebook page or profile link public.',
+                  previewLabel: _visibilityPreview(
+                    profile.faceLink,
+                    facebookPublic,
+                    emptyLabel: 'No Facebook link added yet',
+                  ),
+                  value: facebookPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(facebookPublic: value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPrivacyTile(
+                  icon: Icons.camera_alt_outlined,
+                  title: 'Show Instagram link',
+                  description: 'Display your Instagram profile link in the contact section.',
+                  previewLabel: _visibilityPreview(
+                    profile.instagramLink,
+                    instagramPublic,
+                    emptyLabel: 'No Instagram link added yet',
+                  ),
+                  value: instagramPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(instagramPublic: value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPrivacyTile(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: 'Show WhatsApp link',
+                  description: 'Allow direct WhatsApp contact from your Business Network profile.',
+                  previewLabel: _visibilityPreview(
+                    profile.whatsappLink,
+                    whatsappPublic,
+                    emptyLabel: 'No WhatsApp contact added yet',
+                  ),
+                  value: whatsappPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(whatsappPublic: value);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildPrivacyTile(
+                  icon: Icons.subject_rounded,
+                  title: 'Show bio / about',
+                  description: 'Control whether your profile summary and business intro are visible.',
+                  previewLabel: _visibilityPreview(
+                    profile.about,
+                    aboutPublic,
+                    emptyLabel: 'No bio added yet',
+                  ),
+                  value: aboutPublic,
+                  onChanged: (value) {
+                    setState(() {
+                      _userProfile = _userProfile?.copyWith(aboutPublic: value);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _buildPrimaryButton(
+            label: _hasPrivacyChanges ? 'Apply privacy settings' : 'Privacy is up to date',
+            icon: Icons.shield_outlined,
+            isBusy: _isSavingPrivacy,
+            enabled: _hasPrivacyChanges && !_isSavingPrivacy,
+            onPressed: _savePrivacy,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrivacyTile({
+    required IconData icon,
+    required String title,
+    required String description,
+    required String previewLabel,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _softSurfaceColor,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: _surfaceColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: _primaryColor, size: 20),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
+                  style: AppFonts.roboto(fontSize: 15, fontWeight: FontWeight.w700, color: _headingTextColor),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: AppFonts.roboto(fontSize: 12.5, color: _bodyTextColor, height: 1.35),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  previewLabel,
+                  style: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: _primaryDarkColor),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 12),
-          Switch(
+          Switch.adaptive(
             value: value,
+            activeThumbColor: _primaryColor,
             onChanged: onChanged,
-            activeColor: const Color(0xFF10B981),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAddressSection() {
-    final bool isKycVerified = _userProfile?.kyc ?? false;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Address Information',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
-            letterSpacing: -0.2,
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildTextField(
-          label: 'Address',
-          controller: _addressController,
-          enabled: !isKycVerified,
-          onChanged: (_) => _checkFormChanges(),
-        ),
-        const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 768;
-            
-            if (isMobile) {
-              return Column(
+  Widget _buildSecurityTab() {
+    return _buildRefreshableTab(
+      key: const ValueKey('security-tab'),
+      child: Form(
+        key: _securityFormKey,
+        child: Column(
+          children: [
+            _buildSectionCard(
+              title: 'Change password',
+              subtitle: 'Use at least 8 characters.',
+              icon: Icons.password_rounded,
+              child: Column(
                 children: [
-                  _buildGeoDropdown(
-                    label: 'Division',
-                    value: _selectedDivision,
-                    items: _divisions.map((d) => d.nameEng).toList(),
-                    isLoading: _isLoadingDivisions,
-                    enabled: !isKycVerified,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedDivision = value;
-                        _formDirty = true;
-                      });
-                      if (value != null) {
-                        _loadCities(value);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildGeoDropdown(
-                    label: 'City',
-                    value: _selectedCity,
-                    items: _cities.map((c) => c.nameEng).toList(),
-                    isLoading: _isLoadingCities,
-                    enabled: !isKycVerified && _selectedDivision != null,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCity = value;
-                        _formDirty = true;
-                      });
-                      if (value != null) {
-                        _loadUpazilas(value);
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildGeoDropdown(
-                    label: 'Upazila/Area',
-                    value: _selectedUpazila,
-                    items: _upazilas.map((u) => u.nameEng).toList(),
-                    isLoading: _isLoadingUpazilas,
-                    enabled: !isKycVerified && _selectedCity != null,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedUpazila = value;
-                        _formDirty = true;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
                   _buildTextField(
-                    label: 'Zip',
-                    controller: _zipController,
-                    enabled: !isKycVerified,
-                    onChanged: (_) => _checkFormChanges(),
+                    controller: _oldPasswordController,
+                    label: 'Current password',
+                    hintText: 'Enter current password',
+                    icon: Icons.lock_outline_rounded,
+                    isPassword: true,
+                    isVisible: _showOldPassword,
+                    onToggleVisibility: () => setState(() => _showOldPassword = !_showOldPassword),
+                    validator: (value) => _normalized(value).isEmpty ? 'Current password is required' : null,
                   ),
+                  const SizedBox(height: 10),
+                  _buildResponsivePair(
+                    left: _buildTextField(
+                      controller: _newPasswordController,
+                      label: 'New password',
+                      hintText: 'Create a strong password',
+                      icon: Icons.lock_reset_rounded,
+                      isPassword: true,
+                      isVisible: _showNewPassword,
+                      onToggleVisibility: () => setState(() => _showNewPassword = !_showNewPassword),
+                      validator: (value) {
+                        if (_normalized(value).isEmpty) {
+                          return 'New password is required';
+                        }
+                        if ((value ?? '').length < 8) {
+                          return 'Minimum 8 characters required';
+                        }
+                        return null;
+                      },
+                    ),
+                    right: _buildTextField(
+                      controller: _confirmPasswordController,
+                      label: 'Confirm password',
+                      hintText: 'Re-enter the new password',
+                      icon: Icons.verified_user_outlined,
+                      isPassword: true,
+                      isVisible: _showConfirmPassword,
+                      onToggleVisibility: () => setState(() => _showConfirmPassword = !_showConfirmPassword),
+                      validator: (value) {
+                        if (_normalized(value).isEmpty) {
+                          return 'Please confirm the password';
+                        }
+                        if ((value ?? '') != _newPasswordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildPasswordStrengthCard(),
                 ],
-              );
-            }
-            
-            return Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildGeoDropdown(
-                        label: 'Division',
-                        value: _selectedDivision,
-                        items: _divisions.map((d) => d.nameEng).toList(),
-                        isLoading: _isLoadingDivisions,
-                        enabled: !isKycVerified,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedDivision = value;
-                            _formDirty = true;
-                          });
-                          if (value != null) {
-                            _loadCities(value);
-                          }
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildGeoDropdown(
-                        label: 'City',
-                        value: _selectedCity,
-                        items: _cities.map((c) => c.nameEng).toList(),
-                        isLoading: _isLoadingCities,
-                        enabled: !isKycVerified && _selectedDivision != null,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedCity = value;
-                            _formDirty = true;
-                          });
-                          if (value != null) {
-                            _loadUpazilas(value);
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildGeoDropdown(
-                        label: 'Upazila/Area',
-                        value: _selectedUpazila,
-                        items: _upazilas.map((u) => u.nameEng).toList(),
-                        isLoading: _isLoadingUpazilas,
-                        enabled: !isKycVerified && _selectedCity != null,
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedUpazila = value;
-                            _formDirty = true;
-                          });
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTextField(
-                        label: 'Zip',
-                        controller: _zipController,
-                        enabled: !isKycVerified,
-                        onChanged: (_) => _checkFormChanges(),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+              ),
+            ),
+            const SizedBox(height: 14),
+            _buildPrimaryButton(
+              label: 'Change password',
+              icon: Icons.lock_reset_rounded,
+              isBusy: _isChangingPassword,
+              enabled: !_isChangingPassword,
+              onPressed: _changePassword,
+            ),
+          ],
         ),
-        ],
       ),
     );
   }
 
-  Widget _buildSocialMediaSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+  Widget _buildRefreshableTab({
+    required Key key,
+    required Widget child,
+  }) {
+    return RefreshIndicator(
+      key: key,
+      color: _primaryColor,
+      onRefresh: _handleRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 880),
+            child: child,
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordStrengthCard() {
+    final labels = ['Too weak', 'Fair', 'Strong', 'Excellent'];
+    final colors = [const Color(0xFFE5E7EB), const Color(0xFFEF4444), const Color(0xFFF59E0B), const Color(0xFF10B981)];
+    final currentScore = _passwordStrength;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _softSurfaceColor,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Social Media & Professional',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-              letterSpacing: -0.2,
+          Text(
+            'Password strength',
+            style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w700, color: _headingTextColor),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: List.generate(3, (index) {
+              final isActive = currentScore > index;
+              final color = currentScore == 0 ? colors[0] : colors[currentScore];
+              return Expanded(
+                child: Container(
+                  height: 8,
+                  margin: EdgeInsets.only(right: index == 2 ? 0 : 8),
+                  decoration: BoxDecoration(
+                    color: isActive ? color : const Color(0xFFE5E7EB),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            labels[currentScore],
+            style: AppFonts.roboto(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: currentScore == 0 ? _mutedTextColor : colors[currentScore],
             ),
           ),
-          const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 768;
-            
-            if (isMobile) {
-              return Column(
-                children: [
-                  _buildTextField(
-                    label: 'Facebook URL',
-                    controller: _facebookController,
-                    prefixIcon: Icons.facebook,
-                    prefixIconColor: const Color(0xFF1877F2),
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Instagram URL',
-                    controller: _instagramController,
-                    prefixIcon: Icons.camera_alt,
-                    prefixIconColor: const Color(0xFFE4405F),
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'WhatsApp #',
-                    controller: _whatsappController,
-                    prefixIcon: Icons.phone,
-                    prefixIconColor: const Color(0xFF25D366),
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ],
-              );
-            }
-            
-            return Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    label: 'Facebook URL',
-                    controller: _facebookController,
-                    prefixIcon: Icons.facebook,
-                    prefixIconColor: const Color(0xFF1877F2),
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    label: 'Instagram URL',
-                    controller: _instagramController,
-                    prefixIcon: Icons.camera_alt,
-                    prefixIconColor: const Color(0xFFE4405F),
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    label: 'WhatsApp #',
-                    controller: _whatsappController,
-                    prefixIcon: Icons.phone,
-                    prefixIconColor: const Color(0xFF25D366),
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isMobile = constraints.maxWidth < 768;
-            
-            if (isMobile) {
-              return Column(
-                children: [
-                  _buildTextField(
-                    label: 'Profession',
-                    controller: _professionController,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Company Name',
-                    controller: _companyController,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    label: 'Website',
-                    controller: _websiteController,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ],
-              );
-            }
-            
-            return Row(
-              children: [
-                Expanded(
-                  child: _buildTextField(
-                    label: 'Profession',
-                    controller: _professionController,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    label: 'Company Name',
-                    controller: _companyController,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildTextField(
-                    label: 'Website',
-                    controller: _websiteController,
-                    onChanged: (_) => _checkFormChanges(),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
         ],
       ),
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildSectionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Widget child,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: _surfaceColor,
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'About Me',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF111827),
-              letterSpacing: -0.2,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  color: _primarySoftColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 18, color: _primaryColor),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppFonts.roboto(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: _headingTextColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: AppFonts.roboto(fontSize: 12, color: _bodyTextColor, height: 1.35),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _aboutController,
-            maxLines: 5,
-            minLines: 5,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF111827),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoNotice({
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String message,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w700, color: _headingTextColor),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  message,
+                  style: AppFonts.roboto(fontSize: 12.5, color: _bodyTextColor, height: 1.35),
+                ),
+              ],
             ),
-            decoration: InputDecoration(
-              hintText: 'Tell us about yourself, your profession, and services...',
-              hintStyle: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF9CA3AF),
-              ),
-              filled: true,
-              fillColor: const Color(0xFFFAFAFA),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
-              ),
-              contentPadding: const EdgeInsets.all(14),
-            ),
-            onChanged: (_) => _checkFormChanges(),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildResponsivePair({required Widget left, required Widget right}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 720;
+        if (!isWide) {
+          return Column(
+            children: [
+              left,
+              const SizedBox(height: 10),
+              right,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: left),
+            const SizedBox(width: 10),
+            Expanded(child: right),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildTextField({
-    required String label,
     required TextEditingController controller,
+    required String label,
+    required String hintText,
+    required IconData icon,
     bool enabled = true,
-    IconData? prefixIcon,
-    Color? prefixIconColor,
-    void Function(String)? onChanged,
+    int maxLines = 1,
+    bool isPassword = false,
+    bool isVisible = false,
+    VoidCallback? onToggleVisibility,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            if (prefixIcon != null) ...[
-              Icon(prefixIcon, size: 15, color: prefixIconColor),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF374151),
-                letterSpacing: -0.1,
-              ),
-            ),
-          ],
+    return TextFormField(
+      controller: controller,
+      enabled: enabled,
+      maxLines: isPassword && !isVisible ? 1 : maxLines,
+      obscureText: isPassword && !isVisible,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: AppFonts.roboto(fontSize: 14, color: _headingTextColor),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hintText,
+        hintStyle: AppFonts.roboto(fontSize: 13, color: _mutedTextColor),
+        labelStyle: AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
+        prefixIcon: Icon(icon, color: enabled ? _primaryColor : _mutedTextColor, size: 20),
+        suffixIcon: isPassword
+            ? IconButton(
+                onPressed: onToggleVisibility,
+                icon: Icon(
+                  isVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  color: _mutedTextColor,
+                ),
+              )
+            : null,
+        filled: true,
+        fillColor: enabled ? _softSurfaceColor : const Color(0xFFF1F5F9),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _cardBorderColor),
         ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          enabled: enabled,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF111827),
-          ),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: enabled ? Colors.white : const Color(0xFFF9FAFB),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-            ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          ),
-          onChanged: onChanged,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _cardBorderColor),
         ),
-      ],
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _primaryColor, width: 1.4),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _dangerColor),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _dangerColor, width: 1.4),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      ),
     );
   }
 
-  Widget _buildGeoDropdown({
+  Widget _buildDropdownField({
     required String label,
+    required String hintText,
+    required IconData icon,
     required String? value,
     required List<String> items,
     required bool isLoading,
     required bool enabled,
-    required void Function(String?) onChanged,
+    required ValueChanged<String?> onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF374151),
-            letterSpacing: -0.1,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          height: 50,
-          decoration: BoxDecoration(
-            color: enabled ? Colors.white : const Color(0xFFF9FAFB),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: const Color(0xFFE5E7EB),
-              width: 1.5,
+    final uniqueItems = <String>[];
+    final seenItems = <String>{};
+
+    for (final item in items) {
+      final normalizedItem = item.trim();
+      if (normalizedItem.isEmpty || !seenItems.add(normalizedItem)) {
+        continue;
+      }
+      uniqueItems.add(normalizedItem);
+    }
+
+    final normalizedValue = value?.trim();
+    final effectiveValue = normalizedValue != null && seenItems.contains(normalizedValue)
+        ? normalizedValue
+        : null;
+
+    return DropdownButtonFormField<String>(
+      initialValue: effectiveValue,
+      items: uniqueItems
+          .map(
+            (item) => DropdownMenuItem<String>(
+              value: item,
+              child: Text(
+                item,
+                style: AppFonts.roboto(fontSize: 14, color: _headingTextColor),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-          ),
-          child: isLoading
-              ? Center(
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.grey.shade400,
+          )
+          .toList(),
+      onChanged: enabled && !isLoading ? onChanged : null,
+      icon: isLoading
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2, color: _primaryColor),
+            )
+          : Icon(Icons.keyboard_arrow_down_rounded, color: enabled ? _mutedTextColor : const Color(0xFF94A3B8)),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hintText,
+        hintStyle: AppFonts.roboto(fontSize: 13, color: _mutedTextColor),
+        labelStyle: AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
+        prefixIcon: Icon(icon, color: enabled ? _primaryColor : _mutedTextColor, size: 20),
+        filled: true,
+        fillColor: enabled ? _softSurfaceColor : const Color(0xFFF1F5F9),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _cardBorderColor),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _cardBorderColor),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: _primaryColor, width: 1.4),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      ),
+      borderRadius: BorderRadius.circular(14),
+      dropdownColor: Colors.white,
+      menuMaxHeight: 340,
+      style: AppFonts.roboto(fontSize: 14, color: _headingTextColor),
+    );
+  }
+
+  Widget _buildPrimaryButton({
+    required String label,
+    required IconData icon,
+    required bool isBusy,
+    required bool enabled,
+    required VoidCallback onPressed,
+  }) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 220),
+        child: SizedBox(
+          width: double.infinity,
+          height: 46,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: enabled
+                  ? const LinearGradient(
+                      colors: [_primaryColor, _primaryAccentColor],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    )
+                  : null,
+              color: enabled ? null : const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ElevatedButton(
+              onPressed: enabled && !isBusy ? onPressed : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                disabledBackgroundColor: Colors.transparent,
+                foregroundColor: enabled ? Colors.white : const Color(0xFF94A3B8),
+                disabledForegroundColor: const Color(0xFF94A3B8),
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: isBusy
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
-                    ),
-                  ),
-                )
-              : DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: (value != null && items.contains(value)) ? value : null,
-                    isExpanded: true,
-                    isDense: false,
-                    hint: Text(
-                      'Select $label',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade500,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    icon: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 24,
-                      color: enabled ? Colors.grey.shade600 : Colors.grey.shade400,
-                    ),
-                    selectedItemBuilder: (BuildContext context) {
-                      return items.map<Widget>((String item) {
-                        return Align(
-                          alignment: Alignment.centerLeft,
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icon, color: Colors.white, size: 16),
+                        const SizedBox(width: 7),
+                        Flexible(
                           child: Text(
-                            item,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF111827),
-                              fontWeight: FontWeight.w500,
-                            ),
+                            label,
                             overflow: TextOverflow.ellipsis,
+                            style: AppFonts.roboto(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
-                        );
-                      }).toList();
-                    },
-                    items: items.isEmpty
-                        ? null
-                        : items.map((item) {
-                            return DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(
-                                item,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF111827),
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }).toList(),
-                    onChanged: enabled ? onChanged : null,
-                    dropdownColor: Colors.white,
-                    elevation: 8,
-                    borderRadius: BorderRadius.circular(10),
-                    menuMaxHeight: 350,
-                  ),
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordTab(bool isSmallMobile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.green[100],
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.lock,
-                color: Colors.green[600],
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'পাসওয়ার্ড পরিবর্তন',
-              style: TextStyle(
-                fontSize: isSmallMobile ? 18 : 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        // Info box
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.green[50],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.green[100]!),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info, color: Colors.green[700], size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Choose a strong password that\'s at least 8 characters long with letters, numbers, and symbols.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.green[800],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        // Old Password
-        Text(
-          'পুরাতন পাসওয়ার্ড',
-          style: TextStyle(
-            fontSize: isSmallMobile ? 13 : 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _oldPasswordController,
-          obscureText: true,
-          decoration: InputDecoration(
-            hintText: '********',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF10B981)),
-            ),
-            suffixIcon: Icon(Icons.key, color: Colors.grey[600]),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // New Password
-        Text(
-          'নতুন পাসওয়ার্ড',
-          style: TextStyle(
-            fontSize: isSmallMobile ? 13 : 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _newPasswordController,
-          obscureText: true,
-          onChanged: (value) => setState(() {}),
-          decoration: InputDecoration(
-            hintText: '********',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF10B981)),
-            ),
-            suffixIcon: Icon(Icons.shield, color: Colors.grey[600]),
-          ),
-        ),
-        if (_newPasswordController.text.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _buildPasswordStrength(),
-        ],
-        const SizedBox(height: 24),
-        // Submit Button
-        Align(
-          alignment: Alignment.centerRight,
-          child: ElevatedButton.icon(
-            onPressed: _passwordLoading ? null : _handlePasswordChange,
-            icon: _passwordLoading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ],
                     ),
-                  )
-                : const Icon(Icons.check),
-            label: const Text('Save Password'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
             ),
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildPasswordStrength() {
-    final strength = _getPasswordStrength(_newPasswordController.text);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Password strength',
-          style: TextStyle(fontSize: 12, color: Colors.grey),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  color: strength >= 1 ? _getStrengthColor(strength) : Colors.grey[200],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  color: strength >= 2 ? _getStrengthColor(strength) : Colors.grey[200],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  color: strength >= 3 ? _getStrengthColor(strength) : Colors.grey[200],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Color _getStrengthColor(int strength) {
-    switch (strength) {
-      case 1:
-        return Colors.red;
-      case 2:
-        return Colors.amber;
-      case 3:
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Future<void> _handlePasswordChange() async {
-    if (_oldPasswordController.text.isEmpty || _newPasswordController.text.isEmpty) {
-      _showSnackBar('Both password fields are required', isError: true);
-      return;
-    }
-
-    setState(() => _passwordLoading = true);
-
-    try {
-      final result = await SettingsService.changePassword(
-        oldPassword: _oldPasswordController.text,
-        newPassword: _newPasswordController.text,
-      );
-
-      if (result['success']) {
-        _showSnackBar(result['message']);
-        _oldPasswordController.clear();
-        _newPasswordController.clear();
-      } else {
-        _showSnackBar(result['message'], isError: true);
-      }
-    } catch (e) {
-      _showSnackBar('Failed to change password', isError: true);
-    } finally {
-      setState(() => _passwordLoading = false);
-    }
-  }
-
-  Widget _buildStickyButton(bool isSmallMobile) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: isSmallMobile ? 16 : 24),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.edit, size: 16, color: Colors.grey[600]),
-              const SizedBox(width: 8),
-              Text(
-                'Profile has unsaved changes',
-                style: TextStyle(
-                  fontSize: isSmallMobile ? 13 : 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-          ElevatedButton.icon(
-            onPressed: (_isLoading || !_formDirty) ? null : _handleProfileSubmit,
-            icon: _isLoading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : const Icon(Icons.check, size: 18),
-            label: Text(isSmallMobile ? 'Save' : 'Save Profile'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: isSmallMobile ? 16 : 24,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
-
-  // Image and banner upload methods
-  Future<void> _pickProfileImage() async {
-    if (_userProfile == null) return;
-
-    // Don't proceed if already processing
-    if (_isProcessing) return;
-
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image == null) return;
-
-    setState(() => _isProcessing = true);
-
-    try {
-      // Use XFile.readAsBytes() for web compatibility
-      final bytes = await image.readAsBytes();
-      
-      // Check file size (max 5MB)
-      if (bytes.length > 5 * 1024 * 1024) {
-        _showSnackBar('Image too large. Max size is 5MB', isError: true);
-        setState(() => _isProcessing = false);
-        return;
-      }
-      
-      // Decode the image
-      img.Image? originalImage = img.decodeImage(bytes);
-      if (originalImage == null) {
-        _showSnackBar('Failed to process image', isError: true);
-        setState(() => _isProcessing = false);
-        return;
-      }
-
-      // Resize to 300x300 for profile image
-      img.Image resized = img.copyResize(originalImage, width: 300, height: 300);
-
-      // Encode as JPEG with 85% quality
-      final compressed = img.encodeJpg(resized, quality: 85);
-      
-      print('Profile image size: ${compressed.length} bytes');
-      
-      // Convert to base64
-      final base64Image = base64Encode(compressed);
-      final dataUri = 'data:image/jpeg;base64,$base64Image';
-      
-      print('Uploading profile image to server...');
-      
-      // Upload to server
-      final result = await SettingsService.updateProfile(
-        _userProfile!.email,
-        {'image': dataUri},
-      );
-
-      print('Upload result: ${result['success']}');
-
-      if (result['success'] == true) {
-        setState(() {
-          _userProfile = UserProfile.fromJson(result['data']);
-          _originalProfile = UserProfile.fromJson(json.decode(json.encode(result['data'])));
-        });
-        
-        // Update global user state
-        await AuthService.refreshUserData();
-        await UserStateService().refreshUserData();
-        
-        _showSnackBar('Profile image uploaded successfully');
-      } else {
-        final errorMsg = result['message'] ?? 'Failed to upload image';
-        print('Upload failed: $errorMsg');
-        _showSnackBar(errorMsg, isError: true);
-      }
-    } catch (e, stackTrace) {
-      print('Profile image upload error: $e');
-      print('Stack trace: $stackTrace');
-      _showSnackBar('Failed to upload image: ${e.toString()}', isError: true);
-    } finally {
-      setState(() => _isProcessing = false);
-    }
-  }
-
-  Future<void> _pickBannerImage() async {
-    if (_userProfile == null) return;
-
-    // Don't proceed if already processing
-    if (_isProcessing) return;
-
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (image == null) return;
-
-    setState(() => _isProcessing = true);
-
-    try {
-      // Use XFile.readAsBytes() for web compatibility
-      final bytes = await image.readAsBytes();
-      
-      // Check file size (max 5MB)
-      if (bytes.length > 5 * 1024 * 1024) {
-        _showSnackBar('Image too large. Max size is 5MB', isError: true);
-        setState(() => _isProcessing = false);
-        return;
-      }
-      
-      // Decode the image
-      img.Image? originalImage = img.decodeImage(bytes);
-      if (originalImage == null) {
-        _showSnackBar('Failed to process banner image', isError: true);
-        setState(() => _isProcessing = false);
-        return;
-      }
-
-      // Resize to max 800x300 while maintaining aspect ratio
-      img.Image resized;
-      if (originalImage.width > 800) {
-        resized = img.copyResize(originalImage, width: 800);
-      } else if (originalImage.height > 300) {
-        resized = img.copyResize(originalImage, height: 300);
-      } else {
-        resized = originalImage;
-      }
-
-      // Encode as JPEG with 80% quality for smaller size
-      final compressed = img.encodeJpg(resized, quality: 80);
-      
-      print('Banner image size: ${compressed.length} bytes');
-      
-      // Convert to base64
-      final base64Image = base64Encode(compressed);
-      final dataUri = 'data:image/jpeg;base64,$base64Image';
-      
-      print('Uploading banner to server...');
-      
-      // Upload to server
-      final result = await SettingsService.updateProfile(
-        _userProfile!.email,
-        {'store_banner': dataUri},
-      );
-
-      print('Upload result: ${result['success']}');
-
-      if (result['success'] == true) {
-        // Clear image cache for the new banner
-        if (_userProfile?.storeBanner != null) {
-          await CachedNetworkImage.evictFromCache(_userProfile!.storeBanner!);
-        }
-        
-        setState(() {
-          _userProfile = UserProfile.fromJson(result['data']);
-          _originalProfile = UserProfile.fromJson(json.decode(json.encode(result['data'])));
-        });
-        
-        // Update AuthService and UserStateService to reflect changes across the app
-        await AuthService.refreshUserData();
-        await UserStateService().refreshUserData();
-        
-        // Force rebuild after a short delay to ensure cache is cleared
-        await Future.delayed(const Duration(milliseconds: 100));
-        if (mounted) {
-          setState(() {});
-        }
-        
-        _showSnackBar('Banner uploaded successfully');
-      } else {
-        final errorMsg = result['message'] ?? 'Failed to upload banner';
-        print('Upload failed: $errorMsg');
-        _showSnackBar(errorMsg, isError: true);
-      }
-    } catch (e, stackTrace) {
-      print('Banner upload error: $e');
-      print('Stack trace: $stackTrace');
-      _showSnackBar('Failed to upload banner: ${e.toString()}', isError: true);
-    } finally {
-      setState(() => _isProcessing = false);
-    }
-  }
-
-  void _showDeleteImageDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: Color(0xFFEF4444)),
-            SizedBox(width: 8),
-            Text('Confirm Deletion'),
-          ],
-        ),
-        content: const Text('Are you sure you want to delete profile image?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteProfileImage();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteBannerDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: Color(0xFFEF4444)),
-            SizedBox(width: 8),
-            Text('Confirm Deletion'),
-          ],
-        ),
-        content: const Text('Are you sure you want to delete the banner image?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteBannerImage();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _deleteProfileImage() async {
-    setState(() => _isProcessing = true);
-    
-    try {
-      final user = AuthService.currentUser;
-      if (user == null) return;
-
-      final success = await SettingsService.deleteProfileImage(user.email);
-      
-      if (success) {
-        setState(() {
-          _userProfile = _userProfile?.copyWith(image: '');
-          _checkFormChanges();
-        });
-        
-        // Update AuthService and UserStateService to reflect changes across the app
-        await AuthService.refreshUserData();
-        await UserStateService().refreshUserData();
-        
-        _showSnackBar('Image removed successfully');
-      } else {
-        _showSnackBar('Failed to remove image', isError: true);
-      }
-    } catch (e) {
-      _showSnackBar('Error removing image', isError: true);
-    } finally {
-      setState(() => _isProcessing = false);
-    }
-  }
-
-  Future<void> _deleteBannerImage() async {
-    setState(() => _isProcessing = true);
-    
-    try {
-      setState(() {
-        _userProfile = _userProfile?.copyWith(storeBanner: '');
-        _checkFormChanges();
-      });
-      
-      // Update AuthService and UserStateService to reflect changes across the app
-      await AuthService.refreshUserData();
-      await UserStateService().refreshUserData();
-      
-      _showSnackBar('Banner removed successfully');
-    } catch (e) {
-      _showSnackBar('Error removing banner', isError: true);
-    } finally {
-      setState(() => _isProcessing = false);
-    }
-  }
-
-  Future<void> _handleProfileSubmit() async {
-    if (_userProfile == null) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      // Collect form data
-      final Map<String, dynamic> profileData = {
-        'first_name': _firstNameController.text.trim(),
-        'last_name': _lastNameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'address': _addressController.text.trim(),
-        'city': _cityController.text.trim(),
-        'state': _stateController.text.trim(),
-        'zip': _zipController.text.trim(),
-        'face_link': _facebookController.text.trim(),
-        'instagram_link': _instagramController.text.trim(),
-        'whatsapp_link': _whatsappController.text.trim(),
-        'profession': _professionController.text.trim(),
-        'company': _companyController.text.trim(),
-        'website': _websiteController.text.trim(),
-        'about': _aboutController.text.trim(),
-      };
-
-      // Handle images
-      if (_userProfile!.image != null && _userProfile!.image!.startsWith('data:image')) {
-        profileData['image'] = _userProfile!.image;
-      }
-      
-      if (_userProfile!.storeBanner != null && _userProfile!.storeBanner!.startsWith('data:image')) {
-        profileData['store_banner'] = _userProfile!.storeBanner;
-      }
-
-      final result = await SettingsService.updateProfile(
-        _emailController.text.trim(),
-        profileData,
-      );
-
-      if (result['success']) {
-        _showSnackBar('Profile updated successfully');
-        
-        // Reload profile to get updated data from server
-        await _loadUserProfile();
-        
-        setState(() {
-          _formDirty = false;
-        });
-      } else {
-        _showSnackBar(result['message'] ?? 'Failed to update profile', isError: true);
-      }
-    } catch (e) {
-      _showSnackBar('Failed to update profile', isError: true);
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
 }

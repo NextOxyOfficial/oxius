@@ -1,3 +1,5 @@
+import '../config/app_config.dart';
+
 class UserProfile {
   final String? id;
   final String email;
@@ -26,6 +28,14 @@ class UserProfile {
   final bool isVerified;
   final bool? emailPublic;
   final bool? phonePublic;
+  final bool? professionalDetailsPublic;
+  final bool? professionPublic;
+  final bool? companyPublic;
+  final bool? websitePublic;
+  final bool? facebookPublic;
+  final bool? instagramPublic;
+  final bool? whatsappPublic;
+  final bool? aboutPublic;
 
   UserProfile({
     this.id,
@@ -55,6 +65,14 @@ class UserProfile {
     this.isVerified = false,
     this.emailPublic,
     this.phonePublic,
+    this.professionalDetailsPublic,
+    this.professionPublic,
+    this.companyPublic,
+    this.websitePublic,
+    this.facebookPublic,
+    this.instagramPublic,
+    this.whatsappPublic,
+    this.aboutPublic,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -69,8 +87,8 @@ class UserProfile {
       state: json['state'],
       upazila: json['upazila'],
       zip: json['zip'],
-      image: json['image'],
-      storeBanner: json['store_banner'],
+      image: AppConfig.getAbsoluteUrl(json['image']?.toString()),
+      storeBanner: AppConfig.getAbsoluteUrl(json['store_banner']?.toString()),
       faceLink: json['face_link'],
       instagramLink: json['instagram_link'],
       whatsappLink: json['whatsapp_link'],
@@ -86,6 +104,14 @@ class UserProfile {
       isVerified: json['kyc'] ?? false,
       emailPublic: json['email_public'],
       phonePublic: json['phone_public'],
+      professionalDetailsPublic: json['professional_details_public'],
+      professionPublic: json['profession_public'],
+      companyPublic: json['company_public'],
+      websitePublic: json['website_public'],
+      facebookPublic: json['facebook_public'],
+      instagramPublic: json['instagram_public'],
+      whatsappPublic: json['whatsapp_public'],
+      aboutPublic: json['about_public'],
     );
   }
 
@@ -118,6 +144,14 @@ class UserProfile {
       'is_verified': isVerified,
       if (emailPublic != null) 'email_public': emailPublic,
       if (phonePublic != null) 'phone_public': phonePublic,
+      if (professionalDetailsPublic != null) 'professional_details_public': professionalDetailsPublic,
+      if (professionPublic != null) 'profession_public': professionPublic,
+      if (companyPublic != null) 'company_public': companyPublic,
+      if (websitePublic != null) 'website_public': websitePublic,
+      if (facebookPublic != null) 'facebook_public': facebookPublic,
+      if (instagramPublic != null) 'instagram_public': instagramPublic,
+      if (whatsappPublic != null) 'whatsapp_public': whatsappPublic,
+      if (aboutPublic != null) 'about_public': aboutPublic,
       'name': '${firstName ?? ''} ${lastName ?? ''}'.trim(),
     };
   }
@@ -150,6 +184,14 @@ class UserProfile {
     bool? isVerified,
     bool? emailPublic,
     bool? phonePublic,
+    bool? professionalDetailsPublic,
+    bool? professionPublic,
+    bool? companyPublic,
+    bool? websitePublic,
+    bool? facebookPublic,
+    bool? instagramPublic,
+    bool? whatsappPublic,
+    bool? aboutPublic,
   }) {
     return UserProfile(
       id: id ?? this.id,
@@ -179,6 +221,14 @@ class UserProfile {
       isVerified: isVerified ?? this.isVerified,
       emailPublic: emailPublic ?? this.emailPublic,
       phonePublic: phonePublic ?? this.phonePublic,
+      professionalDetailsPublic: professionalDetailsPublic ?? this.professionalDetailsPublic,
+      professionPublic: professionPublic ?? this.professionPublic,
+      companyPublic: companyPublic ?? this.companyPublic,
+      websitePublic: websitePublic ?? this.websitePublic,
+      facebookPublic: facebookPublic ?? this.facebookPublic,
+      instagramPublic: instagramPublic ?? this.instagramPublic,
+      whatsappPublic: whatsappPublic ?? this.whatsappPublic,
+      aboutPublic: aboutPublic ?? this.aboutPublic,
     );
   }
 }

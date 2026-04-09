@@ -17,7 +17,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from rest_framework import filters, generics, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -211,22 +211,64 @@ def update_user(request, email):
     if "email" in data and data["email"] == user.email:
         data.pop("email")
 
+    if user.kyc:
+        protected_fields = {
+            "first_name": user.first_name or "",
+            "last_name": user.last_name or "",
+            "address": user.address or "",
+            "state": user.state or "",
+            "city": user.city or "",
+            "upazila": user.upazila or "",
+            "zip": user.zip or "",
+        }
+        attempted_locked_changes = []
+        for field_name, current_value in protected_fields.items():
+            if field_name not in data:
+                continue
+            incoming_value = data.get(field_name)
+            normalized_incoming = "" if incoming_value is None else str(incoming_value).strip()
+            if normalized_incoming != str(current_value).strip():
+                attempted_locked_changes.append(field_name)
+
+        if attempted_locked_changes:
+            return Response(
+                {
+                    "message": "Name and address details cannot be changed after KYC verification.",
+                    "locked_fields": attempted_locked_changes,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
     if "image" in data:
-        try:
-            data["image"] = base64ToFile(data["image"])
-        except Exception as e:
-            return Response(
-                {"message": "Failed to process image", "error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        image_value = data.get("image")
+        if image_value in [None, ""]:
+            if user.image:
+                user.image.delete(save=False)
+            user.image = None
+            data["image"] = None
+        else:
+            try:
+                data["image"] = base64ToFile(image_value)
+            except Exception as e:
+                return Response(
+                    {"message": "Failed to process image", "error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
     if "store_banner" in data:
-        try:
-            data["store_banner"] = base64ToFile(data["store_banner"])
-        except Exception as e:
-            return Response(
-                {"message": "Failed to process store banner", "error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        banner_value = data.get("store_banner")
+        if banner_value in [None, ""]:
+            if user.store_banner:
+                user.store_banner.delete(save=False)
+            user.store_banner = None
+            data["store_banner"] = None
+        else:
+            try:
+                data["store_banner"] = base64ToFile(banner_value)
+            except Exception as e:
+                return Response(
+                    {"message": "Failed to process store banner", "error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
     data["id"] = user.id
     serializer = UserSerializer(user, data=data, partial=True)
 
@@ -1458,13 +1500,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         try:
             serializer.is_valid(raise_exception=True)
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
-        except Exception:
-            # Extract error details
+        except ValidationError:
             error_message = serializer.errors.get(
                 "non_field_errors", ["Invalid credentials"]
             )[0]
             return Response(
                 {"error": error_message}, status=status.HTTP_401_UNAUTHORIZED
+            )
+        except Exception as exc:
+            return Response(
+                {"error": str(exc) or "Login failed due to a server error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
