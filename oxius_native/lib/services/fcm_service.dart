@@ -8,6 +8,7 @@ import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
@@ -105,6 +106,10 @@ String _resolveRideshareMode(
   }
 
   return 'passenger';
+}
+
+Int64List _buildRideRequestVibrationPattern() {
+  return Int64List.fromList([0, 500, 250, 700, 250, 900]);
 }
 
 class _CallkitLifecycleObserver extends WidgetsBindingObserver {
@@ -269,13 +274,14 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
   await plugin.initialize(const InitializationSettings(android: androidInit));
 
   final androidPlugin = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-  await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
+  await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
     'oxius_ride_requests',
     'Ride Requests',
     description: 'New ride request alerts for drivers',
     importance: Importance.max,
     playSound: true,
     enableVibration: true,
+    vibrationPattern: Int64List.fromList([0, 500, 250, 700, 250, 900]),
   ));
 
   final details = AndroidNotificationDetails(
@@ -292,6 +298,7 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
     icon: '@mipmap/ic_launcher',
     timeoutAfter: timeoutSec * 1000,
     autoCancel: true,
+    vibrationPattern: _buildRideRequestVibrationPattern(),
   );
 
   await plugin.show(
@@ -347,6 +354,35 @@ class FCMService {
     if (!_rideshareNotificationController.isClosed) {
       _rideshareNotificationController.add(payload);
     }
+  }
+
+  static void _emitRideshareEventFromData(Map<String, dynamic> data) {
+    final type = data['type']?.toString();
+    final notificationType =
+        data['notification_type']?.toString() ?? data['status']?.toString();
+
+    if (!_isRideshareNotification(
+      data,
+      type: type,
+      notificationType: notificationType,
+    )) {
+      return;
+    }
+
+    final mode = _resolveRideshareMode(
+      data,
+      type: type,
+      notificationType: notificationType,
+    );
+    final rideId = data['ride_id']?.toString();
+
+    _emitRideshareNotificationEvent({
+      'mode': mode,
+      if (rideId != null && rideId.isNotEmpty) 'ride_id': rideId,
+      if (type != null && type.isNotEmpty) 'type': type,
+      if (notificationType != null && notificationType.isNotEmpty)
+        'notification_type': notificationType,
+    });
   }
 
   static String _buildCallId(String callerId, String channelName) {
@@ -863,7 +899,7 @@ class FCMService {
     );
 
     // High-priority channel for ride requests (heads-up, sound, vibration)
-    const AndroidNotificationChannel rideChannel = AndroidNotificationChannel(
+    final AndroidNotificationChannel rideChannel = AndroidNotificationChannel(
       'oxius_ride_requests', // id
       'Ride Requests', // name
       description: 'New ride request alerts for drivers',
@@ -872,6 +908,7 @@ class FCMService {
       enableVibration: true,
       enableLights: true,
       showBadge: true,
+      vibrationPattern: Int64List.fromList([0, 500, 250, 700, 250, 900]),
     );
 
     final androidPlugin = _localNotifications
@@ -1310,12 +1347,23 @@ class FCMService {
 
     // Incoming call: open call screen immediately in foreground
     final type = message.data['type']?.toString();
+    final notificationType =
+        message.data['notification_type']?.toString() ??
+        message.data['status']?.toString();
     if (type == 'incoming_call' || type == 'call' || type == 'call_status') {
       final payload = Map<String, dynamic>.from(message.data);
       if (_shouldProcessCallSignal(payload)) {
         _navigateBasedOnData(payload);
       }
       return;
+    }
+
+    if (_isRideshareNotification(
+      message.data,
+      type: type,
+      notificationType: notificationType,
+    )) {
+      _emitRideshareEventFromData(Map<String, dynamic>.from(message.data));
     }
 
     // Ride request for driver: show high-priority heads-up notification
@@ -1354,6 +1402,7 @@ class FCMService {
       icon: '@mipmap/ic_launcher',
       timeoutAfter: timeoutSec * 1000,
       autoCancel: true,
+      vibrationPattern: _buildRideRequestVibrationPattern(),
       styleInformation: BigTextStyleInformation(
         body,
         contentTitle: title,

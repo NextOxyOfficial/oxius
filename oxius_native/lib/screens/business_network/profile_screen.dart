@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
@@ -16,6 +15,7 @@ import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
+
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
 import '../adsy_connect_chat_interface.dart';
@@ -496,40 +496,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(
         source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 96,
       );
 
       if (image == null) return;
-
-      final croppedImage = await ImageCropper().cropImage(
-        sourcePath: image.path,
-        compressFormat: ImageCompressFormat.jpg,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop profile photo',
-            toolbarColor: const Color(0xFF3B82F6),
-            toolbarWidgetColor: Colors.white,
-            activeControlsWidgetColor: const Color(0xFF3B82F6),
-            initAspectRatio: CropAspectRatioPreset.square,
-            lockAspectRatio: true,
-          ),
-          IOSUiSettings(
-            title: 'Crop profile photo',
-            aspectRatioLockEnabled: true,
-            resetAspectRatioEnabled: false,
-          ),
-          WebUiSettings(
-            context: context,
-            presentStyle: WebPresentStyle.dialog,
-            size: const CropperSize(width: 420, height: 520),
-          ),
-        ],
-      );
-
-      if (croppedImage == null) return;
 
       // Show loading
       if (mounted) {
@@ -542,7 +514,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       }
 
       // Upload to server (pass XFile directly for cross-platform support)
-      final success = await BusinessNetworkService.uploadProfilePicture(croppedImage);
+      final success = await BusinessNetworkService.uploadProfilePicture(image);
       
       if (mounted) {
         // Hide loading snackbar

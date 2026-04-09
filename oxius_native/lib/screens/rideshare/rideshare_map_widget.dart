@@ -17,6 +17,7 @@ class RideshareMapWidget extends StatefulWidget {
   final Function(double latitude, double longitude)? onMapTap;
   final Function(double latitude, double longitude)? onCenterChanged;
   final bool followDriver;
+  final bool showNearbyDriverMarkers;
 
   // Profile info for rich markers
   final String? riderName;
@@ -43,6 +44,7 @@ class RideshareMapWidget extends StatefulWidget {
     this.onMapTap,
     this.onCenterChanged,
     this.followDriver = false,
+    this.showNearbyDriverMarkers = false,
     this.riderName,
     this.riderAvatar,
     this.driverName,
@@ -355,7 +357,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             : hasRoute
                 ? 'Pickup, drop-off and trip path are framed together.'
                 : nearbyCount > 0
-                    ? '$nearbyCount nearby drivers around your selected area.'
+                  ? '$nearbyCount online drivers available around your selected area.'
                     : 'Zoom and inspect the current service area.';
 
     return _buildGlassPanel(
@@ -438,7 +440,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
               if (nearbyCount > 0)
                 _buildInfoChip(
                   icon: Icons.local_taxi_rounded,
-                  label: '$nearbyCount nearby',
+                  label: '$nearbyCount online nearby',
                   tint: const Color(0xFF0F766E),
                 ),
               if (widget.followDriver && widget.driverLocation != null)
@@ -505,7 +507,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       items.add(
         _buildLegendChip(
           icon: Icons.groups_rounded,
-          label: '${widget.nearbyDrivers!.length} drivers nearby',
+          label: '${widget.nearbyDrivers!.length} online drivers nearby',
           tint: const Color(0xFF334155),
         ),
       );
@@ -795,8 +797,9 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       );
     }
 
-    // Nearby drivers
-    if (widget.nearbyDrivers != null) {
+    // Nearby drivers are represented as a count overlay by default. Showing
+    // individual live positions would leak driver whereabouts before a ride is assigned.
+    if (widget.showNearbyDriverMarkers && widget.nearbyDrivers != null) {
       for (final driver in widget.nearbyDrivers!) {
         markers.add(
           Marker(

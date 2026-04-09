@@ -38,6 +38,7 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   bool _isSubmitting = false;
   String? _errorMessage;
   bool _isKYCPending = false;
+  bool _needsDriverApproval = false;
   List<Vehicle> _vehicles = const [];
   DriverProfile? _driverProfile;
 
@@ -58,12 +59,20 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
     if (mounted) setState(() {});
   }
 
+  bool _isNotFoundMessage(String? message) {
+    final normalized = message?.toLowerCase() ?? '';
+    return normalized.contains('not found') ||
+        normalized.contains('resource not found') ||
+        normalized.contains('404');
+  }
+
   Future<void> _loadVehicles() async {
     if (!AuthService.isAuthenticated) {
       setState(() {
         _isLoading = false;
         _errorMessage = 'Please log in to manage your vehicles.';
         _isKYCPending = false;
+        _needsDriverApproval = false;
       });
       return;
     }
@@ -72,29 +81,44 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       _isLoading = true;
       _errorMessage = null;
       _isKYCPending = false;
+      _needsDriverApproval = false;
     });
 
-    final vehicleFuture = RideshareService.listVehicles();
-    final profileFuture = RideshareService.getDriverProfile();
-    final vehicleResult = await vehicleFuture;
-    final profileResult = await profileFuture;
+    final profileResult = await RideshareService.getDriverProfile();
     if (!mounted) return;
+
+    RideshareApiResult<List<Vehicle>>? vehicleResult;
+    final driverProfile = profileResult.data;
+    final profileIsMissing = driverProfile == null &&
+        (!profileResult.success || _isNotFoundMessage(profileResult.message));
+
+    if (driverProfile?.isApproved == true) {
+      vehicleResult = await RideshareService.listVehicles();
+      if (!mounted) return;
+    }
 
     setState(() {
       _isLoading = false;
-      _driverProfile = profileResult.data;
+      _driverProfile = driverProfile;
       
-      // Check if driver profile exists and is pending
-      if (profileResult.data != null && profileResult.data!.isPending) {
+      if (driverProfile != null && driverProfile.isPending) {
         _isKYCPending = true;
+        _needsDriverApproval = false;
         _errorMessage = null;
         _vehicles = const [];
-      } else if (vehicleResult.success) {
+      } else if ((driverProfile != null && !driverProfile.isApproved) || profileIsMissing) {
         _isKYCPending = false;
-        _vehicles = vehicleResult.data ?? const [];
+        _needsDriverApproval = true;
+        _errorMessage = null;
+        _vehicles = const [];
+      } else if (vehicleResult?.success == true) {
+        _isKYCPending = false;
+        _needsDriverApproval = false;
+        _vehicles = vehicleResult?.data ?? const [];
       } else {
         _isKYCPending = false;
-        _errorMessage = vehicleResult.message;
+        _needsDriverApproval = false;
+        _errorMessage = vehicleResult?.message ?? profileResult.message;
       }
     });
   }
@@ -1172,20 +1196,82 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: _primary,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ],
+              ),
+            )
+          else if (_needsDriverApproval)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _line),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: _warningSoft,
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    onPressed: _loadVehicles,
-                    child: Text(
-                      t('refresh', fallback: 'Refresh Status'),
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14),
+                    child: const Icon(
+                      Icons.pending_actions_rounded,
+                      color: _warning,
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    t('rideshare_driver_not_approved_title', fallback: 'ড্রাইভার অনুমোদন এখনো মেলেনি'),
+                    style: GoogleFonts.inter(
+                      color: _textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    t(
+                      'rideshare_driver_not_approved_desc',
+                      fallback: 'আপনার ড্রাইভার প্রোফাইল এখনো অনুমোদিত হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন সম্পন্ন করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: _textSecondary,
+                      fontSize: 13,
+                      height: 1.6,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _warningSoft,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _warning.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline_rounded, color: _warning, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            t(
+                              'rideshare_driver_not_approved_hint',
+                              fallback: 'অনুমোদন হয়ে গেলে এই পেইজে আপনার গাড়ির তালিকা দেখা যাবে।',
+                            ),
+                            style: GoogleFonts.inter(
+                              color: _warning,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

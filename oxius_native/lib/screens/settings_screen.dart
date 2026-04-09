@@ -4,7 +4,6 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../config/app_config.dart';
@@ -15,6 +14,7 @@ import '../services/geo_location_service.dart';
 import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/app_fonts.dart';
+
 
 enum _SettingsTab { profile, privacy, security }
 
@@ -699,8 +699,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _pickAndUploadImage(
       fieldName: 'image',
       successMessage: 'Profile photo updated',
-      targetWidth: 500,
-      quality: 86,
+      targetWidth: 1080,
+      quality: 94,
       maxFileSizeBytes: 6 * 1024 * 1024,
       enableCropper: true,
     );
@@ -740,8 +740,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final image = await picker.pickImage(
       source: source,
-      maxWidth: fieldName == 'image' ? 1200 : 2000,
-      imageQuality: 92,
+      maxWidth: fieldName == 'image' ? 2048 : 2400,
+      maxHeight: fieldName == 'image' ? 2048 : 1800,
+      imageQuality: fieldName == 'image' ? 96 : 94,
     );
 
     if (image == null) {
@@ -772,7 +773,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
 
-      final resized = decoded.width > targetWidth
+        final shouldResize = decoded.width > targetWidth;
+        final resized = shouldResize
           ? img.copyResize(decoded, width: targetWidth)
           : decoded;
       final compressed = img.encodeJpg(resized, quality: quality);
@@ -820,47 +822,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required bool enableCropper,
     required String fieldName,
   }) async {
-    if (!enableCropper) {
-      return image.readAsBytes();
-    }
-
-    final isProfilePhoto = fieldName == 'image';
-    final title = isProfilePhoto ? 'Crop profile photo' : 'Crop banner image';
-
-    final cropped = await ImageCropper().cropImage(
-      sourcePath: image.path,
-      compressFormat: ImageCompressFormat.jpg,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: title,
-          toolbarColor: _primaryColor,
-          toolbarWidgetColor: Colors.white,
-          activeControlsWidgetColor: _primaryColor,
-          initAspectRatio: isProfilePhoto ? CropAspectRatioPreset.square : CropAspectRatioPreset.ratio16x9,
-          lockAspectRatio: true,
-          hideBottomControls: false,
-        ),
-        IOSUiSettings(
-          title: title,
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
-        ),
-        WebUiSettings(
-          context: context,
-          presentStyle: WebPresentStyle.dialog,
-          size: const CropperSize(width: 420, height: 520),
-        ),
-      ],
-      aspectRatio: isProfilePhoto
-          ? const CropAspectRatio(ratioX: 1, ratioY: 1)
-          : const CropAspectRatio(ratioX: 16, ratioY: 9),
-    );
-
-    if (cropped == null) {
-      return null;
-    }
-
-    return cropped.readAsBytes();
+    return image.readAsBytes();
   }
 
   Future<void> _removeProfileImage() async {

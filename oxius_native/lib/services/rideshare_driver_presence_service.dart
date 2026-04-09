@@ -311,9 +311,13 @@ class RideshareDriverPresenceService {
 
   static bool get isRunning => _isRunning;
 
+  static bool isForegroundPermissionGranted(LocationPermission permission) {
+    return permission != LocationPermission.denied &&
+        permission != LocationPermission.deniedForever;
+  }
+
   static bool isBackgroundPermissionGranted(LocationPermission permission) {
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+    if (!isForegroundPermissionGranted(permission)) {
       return false;
     }
 

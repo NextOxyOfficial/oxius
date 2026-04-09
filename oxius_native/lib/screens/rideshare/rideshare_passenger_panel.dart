@@ -79,6 +79,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   bool _isLoadingActiveRoute = false;
   double? _mapSearchLatitude;
   double? _mapSearchLongitude;
+  bool _hideDropSuggestionsUntilEdit = false;
 
   @override
   void initState() {
@@ -122,7 +123,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         setState(() {});
       }
       _statusRefreshTick += 1;
-      if (_statusRefreshTick % 4 == 0) {
+      if (_statusRefreshTick % 12 == 0) {
         _refreshActiveRideSilently();
       }
     });
@@ -495,7 +496,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   String _deriveSearchStatusMessage(Ride? ride) {
     if (ride == null) {
-      return t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...');
+      return _localizeDisplayMessage(
+        t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...'),
+      );
     }
 
     for (final entry in ride.statusHistory.reversed) {
@@ -505,21 +508,23 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       }
       final message = entry.metadata['status_text'] ?? entry.metadata['message'];
       if (message is String && message.trim().isNotEmpty) {
-        return message.trim();
+        return _localizeDisplayMessage(message.trim());
       }
     }
 
     final targetedDriverName = _currentTargetedDriverName(ride);
     if (ride.isSearching && targetedDriverName.isNotEmpty) {
-      return 'Request sent to $targetedDriverName';
+      return 'রিকোয়েস্ট পাঠানো হয়েছে: $targetedDriverName';
     }
     if (ride.isSearching) {
-      return t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...');
+      return _localizeDisplayMessage(
+        t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...'),
+      );
     }
     if (ride.isCancelled && (ride.cancellationReason?.isNotEmpty ?? false)) {
-      return ride.cancellationReason!;
+      return _localizeDisplayMessage(ride.cancellationReason!);
     }
-    return ride.statusDisplay;
+    return _localizeDisplayMessage(ride.statusDisplay);
   }
 
   void _syncRideRealtimeConnection() {
@@ -596,7 +601,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
       setState(() {
         if (message != null && message.isNotEmpty) {
-          _searchStatusMessage = message;
+          _searchStatusMessage = _localizeDisplayMessage(message);
         }
         _noDriversInRange = noDrivers;
         _driverResponseTimeoutSeconds = timeoutSeconds;
@@ -609,6 +614,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             ? null
             : targetedAt;
       });
+      return;
     }
 
     if (type == 'ride.event') {
@@ -720,6 +726,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   void _onDropSearch(String query) {
     _searchDebounce?.cancel();
+    _hideDropSuggestionsUntilEdit = false;
     if (query.trim().length < 2) {
       setState(() => _dropSuggestions = []);
       return;
@@ -760,8 +767,24 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       _dropPoint = point;
       _dropController.text = point.name;
       _dropSuggestions = [];
+      _hideDropSuggestionsUntilEdit = true;
+      _activeInput = '';
     });
     _requestEstimate();
+  }
+
+  void _dismissDropSuggestions() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _dropSuggestions = [];
+      _hideDropSuggestionsUntilEdit = true;
+      if (_activeInput == 'drop') {
+        _activeInput = '';
+      }
+    });
   }
 
   Future<void> _loadRecentPlaces() async {
@@ -1455,11 +1478,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       if (_activeInput == 'pickup') {
         _pickupPoint = point;
         _pickupController.text = point.name;
+        _pickupSuggestions = [];
         _activeInput = 'drop';
         _loadNearbyDrivers();
       } else {
         _dropPoint = point;
         _dropController.text = point.name;
+        _dropSuggestions = [];
+        _hideDropSuggestionsUntilEdit = true;
+        _activeInput = '';
       }
     });
     _requestEstimate();
@@ -1467,7 +1494,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   void _showError(String message) {
     if (!mounted) return;
-    final resolvedMessage = _resolveErrorMessage(message);
+    final resolvedMessage = _localizeDisplayMessage(_resolveErrorMessage(message));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(resolvedMessage, style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: Colors.red.shade600,
@@ -1477,10 +1504,25 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     ));
   }
 
+  String? _driverMapVehicleInfo(Ride ride) {
+    final driver = ride.assignedDriver;
+    final vehicle = ride.vehicle ?? driver?.defaultVehicle;
+    if (driver == null || vehicle == null) {
+      return null;
+    }
+
+    final registration = vehicle.registrationNumber.trim();
+    if (registration.isEmpty) {
+      return vehicle.displayName;
+    }
+
+    return '${vehicle.vehicleIcon} $registration';
+  }
+
   String _resolveErrorMessage(String message) {
     final raw = message.trim();
     if (raw.isEmpty) {
-      return 'Something went wrong. Please try again.';
+      return 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।';
     }
 
     final lower = raw.toLowerCase();
@@ -1510,10 +1552,73 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     return raw;
   }
 
+  String _localizeDisplayMessage(String message) {
+    final raw = message.trim();
+    if (raw.isEmpty) {
+      return 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    }
+
+    final lower = raw.toLowerCase();
+
+    const exactMessages = {
+      'connection error. please check your internet connection.': 'ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।',
+      'unable to process response. please try again.': 'রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।',
+      'connection timeout. please try again.': 'সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'network connection issue. please check your internet.': 'নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।',
+      'request timed out. please try again.': 'রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'session expired. please log in again.': 'সেশন শেষ হয়েছে। আবার লগইন করুন।',
+      "you don't have permission to perform this action.": 'এই কাজটি করার অনুমতি আপনার নেই।',
+      'requested resource not found.': 'চাওয়া তথ্য পাওয়া যায়নি।',
+      'server error. please try again later.': 'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
+      'service temporarily unavailable. please try again later.': 'সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।',
+      'something went wrong. please try again.': 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+      'location service is off. please enable gps to use rideshare.': 'রাইডশেয়ার ব্যবহার করতে জিপিএস চালু করুন।',
+      'location service is off. please enable gps to continue.': 'চালিয়ে যেতে জিপিএস চালু করুন।',
+      'location permission is required for rideshare.': 'রাইডশেয়ার ব্যবহারের জন্য লোকেশন অনুমতি প্রয়োজন।',
+      'location permission denied': 'লোকেশন অনুমতি দেওয়া হয়নি।',
+      'location permission permanently denied. please enable it in app settings.': 'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।',
+      'location permission permanently denied. please enable in settings.': 'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। সেটিংস থেকে চালু করুন।',
+      'location enabled. pickup set from your current location.': 'লোকেশন চালু হয়েছে। আপনার বর্তমান অবস্থান থেকে পিকআপ সেট করা হয়েছে।',
+      'location found': 'লোকেশন পাওয়া গেছে।',
+      'could not resolve location': 'লোকেশনের ঠিকানা বের করা যায়নি।',
+      'no drivers available, please try again.': 'কাছাকাছি কোনো ড্রাইভার পাওয়া যায়নি। আবার চেষ্টা করুন।',
+      'driver chat is unavailable right now.': 'ড্রাইভারের সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
+      'unable to open driver chat right now.': 'ড্রাইভার চ্যাট এখন খোলা যাচ্ছে না।',
+      'driver report submitted successfully.': 'ড্রাইভারের রিপোর্ট সফলভাবে পাঠানো হয়েছে।',
+      'ride cancelled': 'রাইড বাতিল হয়েছে।',
+      'looking for nearby drivers...': 'কাছাকাছি ড্রাইভার খোঁজা হচ্ছে...',
+      'looking for a driver': 'ড্রাইভার খোঁজা হচ্ছে।',
+      'driver confirmed': 'ড্রাইভার নিশ্চিত হয়েছে।',
+      'ride requested! looking for a driver...': 'রাইড রিকোয়েস্ট করা হয়েছে। ড্রাইভার খোঁজা হচ্ছে...',
+      'ride complete. please pay the driver in cash.': 'রাইড সম্পন্ন। ড্রাইভারকে নগদ পরিশোধ করুন।',
+      'ride complete and wallet payment confirmed.': 'রাইড সম্পন্ন এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।',
+      'you already have an active ride.': 'আপনার ইতোমধ্যে একটি সক্রিয় রাইড আছে।',
+      'ride requested successfully.': 'রাইড রিকোয়েস্ট সফলভাবে করা হয়েছে।',
+      'no drivers available. ride cancelled automatically.': 'কোনো ড্রাইভার পাওয়া যায়নি। রাইড স্বয়ংক্রিয়ভাবে বাতিল হয়েছে।',
+    };
+
+    final exact = exactMessages[lower];
+    if (exact != null) {
+      return exact;
+    }
+
+    if (lower.startsWith('failed to enable location')) {
+      return 'লোকেশন চালু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    }
+    if (lower.startsWith('failed to get location')) {
+      return 'লোকেশন নিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    }
+    if (lower.startsWith('request sent to ')) {
+      return 'রিকোয়েস্ট পাঠানো হয়েছে: ${raw.substring('Request sent to '.length)}';
+    }
+
+    return raw;
+  }
+
   void _showSuccess(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: GoogleFonts.inter(fontSize: 13)),
+      content: Text(_localizeDisplayMessage(message), style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: const Color(0xFF10B981),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1845,6 +1950,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               routeGeometry: _currentPassengerRouteGeometry(ride),
               driverLocation: _currentDriverPoint(ride),
               driverHeading: ride.latestDriverLocation?.heading,
+              driverName: ride.assignedDriver?.userName,
+              driverAvatar: ride.assignedDriver?.userAvatar,
+              driverVehicleInfo: _driverMapVehicleInfo(ride),
               vehicleType: ride.requestedVehicleType,
               followDriver: ride.isDriverArriving || ride.isInProgress,
               onMapTap: null,
@@ -2426,7 +2534,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               context: context,
               icon: Icons.map_rounded,
               title: t('rideshare_smart_map', fallback: 'Smart Map'),
-              subtitle: t('rideshare_smart_map_subtitle', fallback: 'Set pickup and drop-off visually, then inspect nearby drivers and the best route.'),
+              subtitle: t('rideshare_smart_map_subtitle', fallback: 'Set pickup and drop-off visually, then view online driver count and the best route.'),
               badge: _activeInput == 'drop'
                   ? t('rideshare_dropoff_badge', fallback: 'Drop-off')
                   : t('rideshare_pickup_badge', fallback: 'Pickup'),
@@ -2665,10 +2773,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 label: t('rideshare_drop_location', fallback: 'Drop Location'),
                 hint: t('rideshare_search_drop', fallback: 'Search drop...').toString(),
                 isActive: _activeInput == 'drop',
-                onTap: () => setState(() => _activeInput = 'drop'),
+                onTap: () => setState(() {
+                  _activeInput = 'drop';
+                  _hideDropSuggestionsUntilEdit = false;
+                }),
                 onChanged: _onDropSearch,
                 suggestions: _dropSuggestions,
                 onSuggestionTap: _selectDropSuggestion,
+                hideSuggestions: _hideDropSuggestionsUntilEdit,
+                onSubmitted: (_) => _dismissDropSuggestions(),
               ),
             ],
           ),
@@ -2686,14 +2799,16 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     required Function(String) onChanged,
     required List<RidePoint> suggestions,
     required Function(RidePoint) onSuggestionTap,
+    bool hideSuggestions = false,
+    ValueChanged<String>? onSubmitted,
     Widget? trailing,
   }) {
     final visibleSuggestions = _visibleSuggestionsForField(
       controller,
-      suggestions,
+      hideSuggestions ? const <RidePoint>[] : suggestions,
       isActive,
     );
-    final showingRecent = suggestions.isEmpty && visibleSuggestions.isNotEmpty;
+    final showingRecent = !hideSuggestions && suggestions.isEmpty && visibleSuggestions.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2730,6 +2845,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                         controller: controller,
                         onChanged: onChanged,
                         onTap: onTap,
+                        onSubmitted: onSubmitted,
+                        textInputAction: onSubmitted != null ? TextInputAction.search : TextInputAction.next,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,

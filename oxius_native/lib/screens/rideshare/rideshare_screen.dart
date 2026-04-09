@@ -20,12 +20,15 @@ class _RideshareScreenState extends State<RideshareScreen> {
   final TranslationService _ts = TranslationService();
   bool _didApplyRouteArgs = false;
   StreamSubscription<Map<String, dynamic>>? _rideshareNotificationSubscription;
+  Widget? _passengerPanel;
+  Widget? _driverPanel;
 
   String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
 
   @override
   void initState() {
     super.initState();
+    _ensureModePanel('passenger');
     _ts.addListener(_onTranslationsChanged);
     _rideshareNotificationSubscription =
         FCMService.rideshareNotificationEvents.listen(_handleRideshareEvent);
@@ -57,9 +60,28 @@ class _RideshareScreenState extends State<RideshareScreen> {
 
     if (requestedMode == 'driver' || requestedMode == 'passenger') {
       _mode = requestedMode!;
+      _ensureModePanel(_mode);
     }
 
     _didApplyRouteArgs = true;
+  }
+
+  void _ensureModePanel(String mode) {
+    if (mode == 'driver') {
+      _driverPanel ??= const RideshareDriverPanel();
+      return;
+    }
+
+    _passengerPanel ??= const RidesharePassengerPanel();
+  }
+
+  void _setMode(String mode) {
+    if (_mode == mode) {
+      return;
+    }
+
+    _ensureModePanel(mode);
+    setState(() => _mode = mode);
   }
 
   void _onTranslationsChanged() {
@@ -73,7 +95,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
     }
 
     if (_mode != requestedMode) {
-      setState(() => _mode = requestedMode!);
+      _setMode(requestedMode!);
     }
   }
 
@@ -88,9 +110,13 @@ class _RideshareScreenState extends State<RideshareScreen> {
           _buildModeSwitch(),
           const SizedBox(height: 4),
           Expanded(
-            child: _mode == 'passenger'
-                ? const RidesharePassengerPanel()
-                : const RideshareDriverPanel(),
+            child: IndexedStack(
+              index: _mode == 'passenger' ? 0 : 1,
+              children: [
+                _passengerPanel ?? const SizedBox.shrink(),
+                _driverPanel ?? const SizedBox.shrink(),
+              ],
+            ),
           ),
         ],
       ),
@@ -229,7 +255,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
               label: t('rideshare_passenger_mode', fallback: 'Passenger'),
               icon: Icons.person_rounded,
               isActive: _mode == 'passenger',
-              onTap: () => setState(() => _mode = 'passenger'),
+              onTap: () => _setMode('passenger'),
             ),
           ),
           const SizedBox(width: 4),
@@ -238,7 +264,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
               label: t('rideshare_driver_mode', fallback: 'Driver'),
               icon: Icons.badge_rounded,
               isActive: _mode == 'driver',
-              onTap: () => setState(() => _mode = 'driver'),
+              onTap: () => _setMode('driver'),
             ),
           ),
         ],

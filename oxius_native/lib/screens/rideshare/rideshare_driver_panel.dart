@@ -59,8 +59,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   bool _isAuthError = false;
   bool _isSavingProfile = false;
   bool _locationGranted = false;
+  bool _hasForegroundLocationPermission = false;
+  bool _needsBackgroundLocationUpgrade = false;
   bool _isCheckingLocationPermission = true;
   bool _isRequestingLocationPermission = false;
+  bool _pendingOnlineAfterPermission = false;
   bool _isProfileExpanded = true;
   bool _profileExpansionInitialized = false;
 
@@ -340,7 +343,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       // App came back to foreground — refresh location permission,
       // reconnect WebSocket, and reload pending ride requests so the
       // driver sees requests that arrived while the app was backgrounded.
-      _refreshLocationPermissionStatus();
+      _refreshLocationPermissionStatus().then((_) {
+        if (mounted) {
+          unawaited(_resumePendingOnlineIfReady());
+        }
+      });
       if (_driverProfile?.isOnline == true) {
         _syncRealtimeConnections();
         _loadAvailableRequests();
@@ -390,11 +397,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       final permission = await RideshareDriverPresenceService.getLocationPermission();
+      final hasForegroundPermission = serviceEnabled &&
+          RideshareDriverPresenceService.isForegroundPermissionGranted(permission);
       final granted = serviceEnabled &&
           RideshareDriverPresenceService.isBackgroundPermissionGranted(permission);
 
       if (mounted) {
         setState(() {
+          _hasForegroundLocationPermission = hasForegroundPermission;
+          _needsBackgroundLocationUpgrade = hasForegroundPermission && !granted;
           _locationGranted = granted;
           _isCheckingLocationPermission = false;
         });
@@ -410,6 +421,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     } catch (_) {
       if (mounted) {
         setState(() {
+          _hasForegroundLocationPermission = false;
+          _needsBackgroundLocationUpgrade = false;
           _locationGranted = false;
           _isCheckingLocationPermission = false;
         });
@@ -417,6 +430,149 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       _stopLocationTracking();
       return false;
     }
+  }
+
+  Future<bool> _showDriverLocationGuide({required bool goOnlineAfterSetup}) async {
+    if (!mounted) {
+      return false;
+    }
+
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'লোকেশন সেটআপ সম্পন্ন করুন',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: _slate800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'অ্যাপ ব্যাকগ্রাউন্ডে থাকলেও অনলাইনে থাকতে এবং রাইড রিকোয়েস্ট পেতে অ্যাপ সেটিংস থেকে সবসময় লোকেশন অনুমতি দিন।',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: _slate500,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: _slate50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _slate200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'দ্রুত ধাপ',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '১. অ্যাপ সেটিংস খুলুন\n২. Location এ চাপুন\n৩. সবসময় অনুমতি দিন\n৪. আবার এখানে ফিরে আসুন',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: _slate600,
+                        height: 1.55,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(false),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: _slate200),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'এখন নয়',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          color: _slate600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(true),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _indigo,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        goOnlineAfterSetup ? 'সেটিংস খুলুন' : 'সেটআপ সম্পন্ন করুন',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return result ?? false;
+  }
+
+  Future<void> _openDriverLocationSettingsGuide({
+    bool goOnlineAfterSetup = false,
+  }) async {
+    final shouldOpenSettings = await _showDriverLocationGuide(
+      goOnlineAfterSetup: goOnlineAfterSetup,
+    );
+    if (!shouldOpenSettings) {
+      return;
+    }
+
+    _pendingOnlineAfterPermission = goOnlineAfterSetup;
+    await Geolocator.openAppSettings();
+  }
+
+  Future<void> _resumePendingOnlineIfReady() async {
+    if (!_pendingOnlineAfterPermission ||
+        _isTogglingOnline ||
+        _driverProfile == null ||
+        _driverProfile!.isOnline ||
+        !_locationGranted) {
+      return;
+    }
+
+    _pendingOnlineAfterPermission = false;
+    await _toggleOnline(skipPermissionCheck: true);
   }
 
   Future<bool> _requestLocationPermission() async {
@@ -449,19 +605,21 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       }
 
       if (!RideshareDriverPresenceService.isBackgroundPermissionGranted(permission)) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (!RideshareDriverPresenceService.isBackgroundPermissionGranted(permission)) {
-        _showError(
-          'Allow background location ("Always allow") so you stay online and receive ride requests while the app is in your pocket.',
-        );
-        await Geolocator.openAppSettings();
+        setState(() {
+          _hasForegroundLocationPermission = true;
+          _needsBackgroundLocationUpgrade = true;
+          _locationGranted = false;
+        });
+        await _openDriverLocationSettingsGuide(goOnlineAfterSetup: true);
         return false;
       }
 
       if (mounted) {
-        setState(() => _locationGranted = true);
+        setState(() {
+          _hasForegroundLocationPermission = true;
+          _needsBackgroundLocationUpgrade = false;
+          _locationGranted = true;
+        });
       }
       return true;
     } catch (e) {
@@ -482,7 +640,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   void _startRefreshTimer() {
-    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 20), (_) {
       if (mounted && _driverProfile?.isOnline == true && _activeRide == null) {
         _loadAvailableRequests();
       }
@@ -496,7 +654,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   void _startActiveRideRefreshTimer() {
     _activeRideRefreshTimer?.cancel();
-    _activeRideRefreshTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+    _activeRideRefreshTimer = Timer.periodic(const Duration(seconds: 12), (_) {
       if (!mounted || _activeRide == null || _isUpdatingStatus || _isAcceptingRide) {
         return;
       }
@@ -561,6 +719,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final mode = payload['mode']?.toString();
     if (mode != 'driver') {
       return;
+    }
+
+    final type = payload['type']?.toString() ??
+        payload['notification_type']?.toString() ??
+        '';
+    if (_activeRide == null &&
+        (type == 'targeted_ride_request' || type == 'new_ride_request')) {
+      unawaited(_playIncomingRideAlert());
     }
 
     final rideId = payload['ride_id']?.toString() ?? '';
@@ -919,7 +1085,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     });
   }
 
-  Future<void> _toggleOnline() async {
+  Future<void> _toggleOnline({bool skipPermissionCheck = false}) async {
     if (_driverProfile == null) return;
     final newStatus = !_driverProfile!.isOnline;
 
@@ -937,7 +1103,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     setState(() => _isTogglingOnline = true);
 
-    if (newStatus) {
+    if (newStatus && !skipPermissionCheck) {
       final granted = await _requestLocationPermission();
       if (!granted) {
         if (mounted) {
@@ -1038,7 +1204,6 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _stopIncomingRideAlert();
     _ringtonePlayer.stop();
     _syncRealtimeConnections();
-    _refreshSmartRoutePreview(force: true);
 
     final result = await RideshareService.acceptRide(ride.id);
     if (mounted) {
@@ -1388,7 +1553,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   void _showError(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(NetworkErrorHandler.getErrorMessage(msg), style: GoogleFonts.inter(fontSize: 13)),
+      content: Text(_localizeDriverMessage(_resolveDriverErrorMessage(msg)), style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: Colors.red.shade600,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1396,15 +1561,105 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     ));
   }
 
+  String _resolveDriverErrorMessage(String message) {
+    final raw = message.trim();
+    if (raw.isEmpty) {
+      return 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    }
+
+    final lower = raw.toLowerCase();
+    const technicalHints = [
+      'exception',
+      'clientexception',
+      'formatexception',
+      'socket',
+      'network',
+      'timeout',
+      'unauthorized',
+      'forbidden',
+      'not found',
+      'server error',
+      'service unavailable',
+      '401',
+      '403',
+      '404',
+      '500',
+      '503',
+    ];
+
+    if (technicalHints.any(lower.contains)) {
+      return NetworkErrorHandler.getErrorMessage(raw);
+    }
+
+    return raw;
+  }
+
   void _showSuccess(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: GoogleFonts.inter(fontSize: 13)),
+      content: Text(_localizeDriverMessage(msg), style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: _emerald,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       margin: const EdgeInsets.all(12),
     ));
+  }
+
+  String _localizeDriverMessage(String message) {
+    final raw = message.trim();
+    if (raw.isEmpty) {
+      return 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    }
+
+    final lower = raw.toLowerCase();
+
+    const exactMessages = {
+      'connection error. please check your internet connection.': 'ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।',
+      'unable to process response. please try again.': 'রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।',
+      'connection timeout. please try again.': 'সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'network connection issue. please check your internet.': 'নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।',
+      'request timed out. please try again.': 'রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'session expired. please log in again.': 'সেশন শেষ হয়েছে। আবার লগইন করুন।',
+      "you don't have permission to perform this action.": 'এই কাজটি করার অনুমতি আপনার নেই।',
+      'requested resource not found.': 'চাওয়া তথ্য পাওয়া যায়নি।',
+      'server error. please try again later.': 'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
+      'service temporarily unavailable. please try again later.': 'সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।',
+      'something went wrong. please try again.': 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+      'location service is off. please enable gps before going online.': 'অনলাইনে যেতে আগে জিপিএস চালু করুন।',
+      'location permission is required to use driver mode.': 'ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।',
+      'location permission permanently denied. please enable it in app settings.': 'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।',
+      'new ride request received.': 'নতুন রাইড রিকোয়েস্ট এসেছে।',
+      'unable to open chat': 'চ্যাট খোলা যাচ্ছে না।',
+      'passenger chat is unavailable': 'যাত্রীর সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
+      'ride completed!': 'রাইড সম্পন্ন হয়েছে!',
+      'ride cancelled': 'রাইড বাতিল হয়েছে।',
+      'application submitted! wait for admin approval.': 'আবেদন জমা হয়েছে। এখন অ্যাডমিন অনুমোদনের জন্য অপেক্ষা করুন।',
+      'profile saved': 'প্রোফাইল সংরক্ষণ করা হয়েছে।',
+      'you are now online': 'আপনি এখন অনলাইনে আছেন।',
+      'you are now offline': 'আপনি এখন অফলাইনে আছেন।',
+      'done!': 'সম্পন্ন হয়েছে!',
+      'this ride request has expired.': 'এই রাইড রিকোয়েস্টের সময় শেষ হয়েছে।',
+      'ride accepted!': 'রাইড গ্রহণ করা হয়েছে!',
+      'ride skipped.': 'রাইডটি স্কিপ করা হয়েছে।',
+      'passenger confirmation requested for early completion.': 'আগাম সম্পন্নের জন্য যাত্রীর অনুমোদন চাওয়া হয়েছে।',
+      'could not pick documents right now.': 'এই মুহূর্তে ডকুমেন্ট নেওয়া যাচ্ছে না।',
+      'you can upload up to 10 additional documents.': 'সর্বোচ্চ ১০টি অতিরিক্ত ডকুমেন্ট আপলোড করা যাবে।',
+      'ride is no longer available.': 'রাইডটি আর উপলভ্য নেই।',
+      'this ride is currently assigned to another driver.': 'এই রাইডটি বর্তমানে অন্য একজন ড্রাইভারের জন্য নির্ধারিত।',
+      'you already have an active ride. complete it before accepting a new one.': 'আপনার ইতোমধ্যে একটি সক্রিয় রাইড আছে। নতুনটি নেওয়ার আগে সেটি শেষ করুন।',
+      'ride accepted successfully.': 'রাইড সফলভাবে গ্রহণ করা হয়েছে।',
+    };
+
+    final exact = exactMessages[lower];
+    if (exact != null) {
+      return exact;
+    }
+
+    if (lower.startsWith('failed to enable location')) {
+      return 'লোকেশন চালু করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।';
+    }
+
+    return raw;
   }
 
   Future<void> _openPassengerChat(Ride ride) async {
@@ -1488,7 +1743,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!_locationGranted) ...[
+            if ((_driverProfile?.isOnline == true) && !_locationGranted) ...[
               _buildLocationRequiredCard(),
               const SizedBox(height: 12),
             ],
@@ -1579,6 +1834,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Widget _buildLocationRequiredCard() {
     final isBusy = _isCheckingLocationPermission || _isRequestingLocationPermission;
+    final needsUpgrade = _needsBackgroundLocationUpgrade;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
@@ -1604,9 +1860,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.location_disabled_rounded,
-                  color: Color(0xFFDC2626),
+                child: Icon(
+                  needsUpgrade
+                      ? Icons.settings_accessibility_rounded
+                      : Icons.location_disabled_rounded,
+                  color: const Color(0xFFDC2626),
                   size: 24,
                 ),
               ),
@@ -1616,7 +1874,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      t('rideshare_location_mandatory', fallback: 'Location Sharing Required'),
+                      needsUpgrade
+                          ? 'Finish location setup'
+                          : t('rideshare_location_mandatory', fallback: 'Location Sharing Required'),
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -1625,7 +1885,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      t('rideshare_location_mandatory_driver_desc', fallback: 'You must enable location sharing to receive ride requests and go online as a driver.'),
+                      needsUpgrade
+                          ? 'Choose Allow all the time in app settings so you keep receiving requests while the app is in the background.'
+                          : t('rideshare_location_mandatory_driver_desc', fallback: 'You must enable location sharing to receive ride requests and go online as a driver.'),
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: const Color(0xFF7F1D1D),
@@ -1641,7 +1903,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              onPressed: isBusy ? null : _requestLocationPermission,
+              onPressed: isBusy
+                  ? null
+                  : () {
+                      if (needsUpgrade) {
+                        _openDriverLocationSettingsGuide();
+                        return;
+                      }
+                      _requestLocationPermission();
+                    },
               icon: isBusy
                   ? const SizedBox(
                       width: 14,
@@ -1651,9 +1921,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.my_location_rounded, size: 16),
+                  : Icon(
+                      needsUpgrade
+                          ? Icons.open_in_new_rounded
+                          : Icons.my_location_rounded,
+                      size: 16,
+                    ),
               label: Text(
-                isBusy ? t('rideshare_checking', fallback: 'Checking...') : t('rideshare_enable_location', fallback: 'Enable Location'),
+                isBusy
+                    ? t('rideshare_checking', fallback: 'Checking...')
+                    : (needsUpgrade ? 'Open settings' : t('rideshare_enable_location', fallback: 'Enable Location')),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w700),
               ),
               style: FilledButton.styleFrom(
@@ -1692,10 +1969,40 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     );
   }
 
+  Future<void> _handleOnlineToggleTap() async {
+    if (_driverProfile == null || _isTogglingOnline || _isCheckingLocationPermission) {
+      return;
+    }
+
+    if (_driverProfile!.isOnline) {
+      await _toggleOnline(skipPermissionCheck: true);
+      return;
+    }
+
+    if (_needsBackgroundLocationUpgrade) {
+      await _openDriverLocationSettingsGuide(goOnlineAfterSetup: true);
+      return;
+    }
+
+    await _toggleOnline();
+  }
+
   Widget _buildOnlineToggleCard() {
     final isOnline = _driverProfile?.isOnline == true;
     final isApproved = _driverProfile?.isApproved == true;
     final dueLimitReached = _driverProfile?.cashDueLimitReached == true;
+    final locationSubtitle = !isApproved
+        ? 'Complete approval to start driving'
+        : dueLimitReached
+            ? t('rideshare_pay_due_to_go_online', fallback: 'Pay cash dues to go online again')
+            : isOnline
+                ? t('rideshare_requests_will_appear', fallback: 'Requests will appear below')
+                : _needsBackgroundLocationUpgrade
+                    ? 'Finish one-time location setup to stay online in background'
+                    : !_hasForegroundLocationPermission
+                        ? 'Tap once to enable location and go online'
+                        : t('rideshare_go_online_for_requests', fallback: 'Go online to get requests');
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -1726,20 +2033,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           Text(isOnline ? t('rideshare_online_status', fallback: 'Online — Accepting Rides') : t('rideshare_offline_status', fallback: 'Offline'),
               style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
                   color: isOnline ? Colors.white : _slate800)),
-            Text(
-              !_locationGranted
-                ? t('rideshare_location_for_rides', fallback: 'Enable location to receive ride requests')
-                : dueLimitReached
-                  ? t('rideshare_pay_due_to_go_online', fallback: 'Pay cash dues to go online again')
-                : isOnline
-                  ? t('rideshare_requests_will_appear', fallback: 'Requests will appear below')
-                  : t('rideshare_go_online_for_requests', fallback: 'Go online to get requests'),
+          Text(
+              locationSubtitle,
               style: GoogleFonts.inter(fontSize: 11,
                   color: isOnline ? Colors.white.withValues(alpha: 0.8) : _slate500)),
         ])),
         GestureDetector(
             onTap: (isApproved && !_isTogglingOnline && !_isCheckingLocationPermission)
-              ? _toggleOnline
+              ? _handleOnlineToggleTap
               : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
