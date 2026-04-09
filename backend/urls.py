@@ -20,7 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include, re_path
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from base.views import index, assetlinks_json
+from base.views import index, assetlinks_json, apple_app_site_association
 
 # First set up the media files
 urlpatterns = static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
@@ -56,6 +56,11 @@ urlpatterns = urlpatterns + [
     path("api/raise-up/", include("raise_up.urls")),
     # Android App Links - Digital Asset Links verification
     path(".well-known/assetlinks.json", assetlinks_json, name="assetlinks"),
+    path(
+        ".well-known/apple-app-site-association",
+        apple_app_site_association,
+        name="apple-app-site-association",
+    ),
     # for frontend
     path("", index, name="index"),
     path("<str:param>", index, name="index2"),

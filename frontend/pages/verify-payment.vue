@@ -11,6 +11,13 @@
         <div class="flex justify-center">
           <div class="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
+        <button
+          type="button"
+          class="mt-6 inline-flex items-center justify-center rounded-xl border border-emerald-200 px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+          @click="openInApp"
+        >
+          Open in AdsyClub app
+        </button>
       </div>
 
       <!-- Success State -->
@@ -162,6 +169,20 @@ const loader = ref(true);
 const countdown = ref(5);
 let countdownInterval = null;
 
+const orderId = computed(() =>
+  route.query.order_id?.toString() ||
+  route.query.sp_order_id?.toString() ||
+  route.query.merchant_invoice_no?.toString() ||
+  ''
+);
+const paymentRef = computed(
+  () =>
+    route.query.payment_ref?.toString() ||
+    route.query.payment_state?.toString() ||
+    ''
+);
+const openInAppUrl = computed(() => `adsyclub://${route.fullPath.replace(/^\//, '')}`);
+
 // Start countdown and redirect
 function startCountdown() {
   countdownInterval = setInterval(() => {
@@ -219,9 +240,61 @@ async function addBalance() {
   loader.value = false;
 }
 
+function openInApp() {
+  if (!process.client) {
+    return;
+  }
+
+  window.location.href = openInAppUrl.value;
+}
+
+async function finalizePaymentWithState() {
+  const res = await post('/verify-pay/finalize/', {
+    payment_ref: paymentRef.value,
+    sp_order_id: orderId.value,
+  });
+
+  if (res.data?.success && res.data?.status === 'success') {
+    verifyPaymentDetails.value = res.data.payment_details || {};
+    toast.add({
+      title: 'Payment Successful!',
+      description: `৳${verifyPaymentDetails.value.amount || '0'} has been added to your balance.`,
+      color: 'green',
+      icon: 'i-heroicons-check-circle',
+    });
+
+    try {
+      await jwtLogin();
+    } catch (_) {}
+
+    loader.value = false;
+    startCountdown();
+    return;
+  }
+
+  if (res.data?.status === 'pending') {
+    toast.add({
+      title: 'Payment is still processing',
+      description: res.data?.message || 'Please wait a bit and try again.',
+      color: 'amber',
+      icon: 'i-heroicons-clock',
+    });
+  } else {
+    toast.add({
+      title: 'Payment Failed',
+      description: res.data?.message || res.error?.data?.error || 'Could not finalize payment',
+      color: 'red',
+      icon: 'i-heroicons-x-circle',
+    });
+    showError.value = true;
+  }
+
+  loader.value = false;
+}
+
 async function VerifyPayment() {
   const response = await get(
-    "/verify-pay/?sp_order_id=" + route.query.order_id
+    "/verify-pay/?sp_order_id=" + orderId.value
   );
 
   if (response.data) {
@@ -238,10 +311,19 @@ async function VerifyPayment() {
 }
 
 onMounted(() => {
+  if (paymentRef.value && orderId.value) {
+    finalizePaymentWithState();
+    return;
+  }
+
   VerifyPayment();
 });
 
 watch(verifyPaymentDetails, () => {
+  if (paymentRef.value) {
+    return;
+  }
+
   if (verifyPaymentDetails.value?.shurjopay_message === "Success") {
     addBalance();
   } else if (Object.keys(verifyPaymentDetails.value).length > 0) {

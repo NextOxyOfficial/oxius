@@ -564,7 +564,7 @@
         </div>
 
         <!-- Desktop Navigation Menu -->
-        <nav class="hidden md:block sm:text-xs lg:text-base">
+        <nav class="hidden md:block sm:text-xs lg:text-sm">
           <div class="flex items-center gap-1 border-b border-transparent">
             <NuxtLink
               to="/#home"
@@ -629,23 +629,6 @@
                 :class="{ 'scale-x-100': $route.path === '/courses' }"
               ></div>
             </NuxtLink>
-
-            <NuxtLink
-              to="/rideshare"
-              class="relative flex items-center gap-2 py-1 px-2 font-medium text-teal-600 hover:text-teal-800 transition-all duration-300"
-              :class="{ active: $route.path.startsWith('/rideshare') }"
-            >
-              <UIcon
-                name="i-heroicons-map"
-                class="w-5 h-5 transition-transform duration-200 hover:scale-110"
-              />
-              <span>Ride Share</span>
-              <div
-                class="absolute bottom-0 left-0 w-full h-0.5 bg-teal-500 transform scale-x-0 origin-left transition-transform duration-300 group-hover:scale-x-100"
-                :class="{ 'scale-x-100': $route.path.startsWith('/rideshare') }"
-              ></div>
-            </NuxtLink>
-
             <NuxtLink
               to="/#micro-gigs"
               class="relative flex items-center gap-2 py-1 px-2 font-medium text-red-600 hover:text-red-800 transition-all duration-300"

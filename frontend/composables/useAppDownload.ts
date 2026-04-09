@@ -81,7 +81,7 @@ export function useAppDownload() {
     }
   };  // Download the Android app
   const downloadApp = async () => {
-    console.log('Starting APK download...');
+    console.log('Starting download...');
     
     try {
       // Get the latest download URL if we don't have it yet

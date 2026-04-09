@@ -153,6 +153,7 @@ urlpatterns = [
     path("pay/", makePayment),
     # ?amount=1000&order_id=001&currency=BDT&customer_name=Mahabubul+Hasan&customer_address=Mohakhali&customer_phone=01311310975&customer_city=Dhaka&customer_post_code=1229
     path("verify-pay/", verifyPayment),
+    path("verify-pay/finalize/", finalizePaymentWithState),
     # ?sp_order_id=ADSYCLUB_67613e32050d9
     path("cities-light/", include(router.urls)),
     path("thana/", police_station, name="thana"),

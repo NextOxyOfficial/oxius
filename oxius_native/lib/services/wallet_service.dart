@@ -91,6 +91,49 @@ class WalletService {
     return null;
   }
 
+  static String? extractCheckoutUrl(Map<String, dynamic>? response) {
+    if (response == null) {
+      return null;
+    }
+
+    final explicitCandidates = [
+      response['checkout_url'],
+      response['payment_url'],
+      response['redirect_url'],
+      response['bank_page_url'],
+      response['gateway_url'],
+      response['url'],
+      response['checkoutUrl'],
+      response['redirectUrl'],
+      response['link'],
+    ];
+
+    for (final candidate in explicitCandidates) {
+      final value = candidate?.toString();
+      if (value != null && (value.startsWith('http://') || value.startsWith('https://'))) {
+        return value;
+      }
+    }
+
+    for (final value in response.values) {
+      if (value is Map<String, dynamic>) {
+        final nested = extractCheckoutUrl(value);
+        if (nested != null && nested.isNotEmpty) {
+          return nested;
+        }
+      } else if (value is Map) {
+        final nested = extractCheckoutUrl(
+          value.map((key, nestedValue) => MapEntry(key.toString(), nestedValue)),
+        );
+        if (nested != null && nested.isNotEmpty) {
+          return nested;
+        }
+      }
+    }
+
+    return null;
+  }
+
   static Future<void> cachePendingPaymentSession({
     required String orderId,
     required String verificationOrderId,
@@ -287,6 +330,7 @@ class WalletService {
         data['verification_order_id'] ??= data['sp_order_id'] ??
             data['shurjopay_order_id'] ??
             data['order_id'];
+        data['checkout_url'] ??= extractCheckoutUrl(data);
         
         if (data['checkout_url'] != null) {
           return data; // Contains checkout_url for Surjopay gateway

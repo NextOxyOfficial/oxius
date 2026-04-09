@@ -125,7 +125,7 @@
             <ul class="flex gap-2 flex-1 max-md:justify-center">
               <li class="w-[117px]">
                 <nuxt-link
-                  to="/coming-soon/"
+                  to="/download/"
                   class="transition-transform hover:scale-105 duration-300 block"
                 >
                   <img

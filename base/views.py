@@ -4864,6 +4864,39 @@ def assetlinks_json(request):
     return HttpResponse(data, content_type='application/json')
 
 
+def apple_app_site_association(request):
+    """
+    Serve apple-app-site-association for iOS Universal Links verification.
+    """
+    ios_team_id = getattr(settings, "IOS_APP_TEAM_ID", "").strip()
+    details = []
+
+    if ios_team_id:
+        details.append(
+            {
+                "appID": f"{ios_team_id}.com.oxius.app",
+                "paths": [
+                    "/verify-payment*",
+                    "/deposit-withdraw*",
+                    "/business-network*",
+                    "/classified-details*",
+                    "/sale*",
+                    "/food-zone*",
+                ],
+            }
+        )
+
+    data = json.dumps(
+        {
+            "applinks": {
+                "apps": [],
+                "details": details,
+            }
+        }
+    )
+    return HttpResponse(data, content_type="application/json")
+
+
 # for frontend
 
 

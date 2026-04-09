@@ -99,6 +99,14 @@ class DeepLinkService {
       return;
     }
 
+    if (segments[0] == 'verify-payment' ||
+        segments[0] == 'deposit-withdraw' ||
+        segments[0] == 'payment-callback.html') {
+      final paymentRoute = _buildWalletRouteFromUri(uri, segments);
+      navigator.pushNamed(paymentRoute);
+      return;
+    }
+
     if (segments[0] == 'classified-details' && segments.length >= 2) {
       final slug = segments[1];
       navigator.pushNamed(
@@ -124,6 +132,37 @@ class DeepLinkService {
       navigator.pushNamed('/food-zone');
       return;
     }
+  }
+
+  String _buildWalletRouteFromUri(Uri uri, List<String> segments) {
+    final hasPaymentCallbackData = uri.queryParameters.containsKey('sp_order_id') ||
+        uri.queryParameters.containsKey('order_id') ||
+        uri.queryParameters.containsKey('merchant_invoice_no') ||
+        uri.queryParameters.containsKey('payment_state');
+
+    if (!hasPaymentCallbackData && segments[0] == 'deposit-withdraw') {
+      return '/deposit-withdraw';
+    }
+
+    final callbackUrl = _buildWebCallbackUrl(uri, segments);
+    return Uri(
+      path: '/deposit-withdraw',
+      queryParameters: {
+        'payment_callback_url': callbackUrl,
+      },
+    ).toString();
+  }
+
+  String _buildWebCallbackUrl(Uri uri, List<String> segments) {
+    if (uri.scheme == 'https') {
+      return uri.toString();
+    }
+
+    return Uri.https(
+      'adsyclub.com',
+      '/${segments.join('/')}',
+      uri.queryParameters.isEmpty ? null : uri.queryParameters,
+    ).toString();
   }
 
   void _retryPending() {
