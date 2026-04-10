@@ -840,23 +840,17 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
           final screenWidth = MediaQuery.of(context).size.width;
-          final isSmallScreen = screenWidth < 360;
-          final isLargeScreen = screenWidth > 600;
           const crossAxisCount = 2;
           const crossAxisSpacing = 10.0;
           const mainAxisSpacing = 10.0;
-          final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-          final available = (constraints.crossAxisExtent - totalSpacing).clamp(0.0, double.infinity);
-          final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
-          final detailsHeight = isSmallScreen ? 108.0 : isLargeScreen ? 126.0 : 114.0;
-          final cardHeight = cellWidth > 0 ? cellWidth + detailsHeight : 290.0;
 
           return SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: ProductCardLayout.buildGridDelegate(
+              availableWidth: constraints.crossAxisExtent,
+              screenWidth: screenWidth,
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: crossAxisSpacing,
               mainAxisSpacing: mainAxisSpacing,
-              mainAxisExtent: cardHeight,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) => ProductCard(

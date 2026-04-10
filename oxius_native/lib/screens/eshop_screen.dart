@@ -21,7 +21,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   final TranslationService _translationService = TranslationService();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   bool _isSearchActive = false;
   bool _isLoading = true;
   bool _isSearching = false;
@@ -1063,23 +1063,23 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildSearchResults() {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 80),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.60,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
+    return LayoutBuilder(
+      builder: (context, constraints) => GridView.builder(
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 80),
+        gridDelegate: ProductCardLayout.buildGridDelegate(
+          availableWidth: constraints.maxWidth,
+          screenWidth: MediaQuery.of(context).size.width,
+        ),
+        itemCount: _searchResults.length,
+        itemBuilder: (context, index) {
+          return ProductCard(
+            product: _searchResults[index],
+            isLoading: false,
+            onBuyNow: () => _navigateToCheckout(_searchResults[index]),
+            // onTap removed to use default navigation from ProductCard
+          );
+        },
       ),
-      itemCount: _searchResults.length,
-      itemBuilder: (context, index) {
-        return ProductCard(
-          product: _searchResults[index],
-          isLoading: false,
-          onBuyNow: () => _navigateToCheckout(_searchResults[index]),
-          // onTap removed to use default navigation from ProductCard
-        );
-      },
     );
   }
 
@@ -1213,20 +1213,15 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              const spacing = 8.0;
-              final availableWidth = constraints.maxWidth;
-              final idealWidth = (availableWidth - spacing) / 2;
               final displayProducts = _products;
               
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 padding: EdgeInsets.zero,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.57,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
+                gridDelegate: ProductCardLayout.buildGridDelegate(
+                  availableWidth: constraints.maxWidth,
+                  screenWidth: MediaQuery.of(context).size.width,
                 ),
                 itemCount: displayProducts.length,
                 itemBuilder: (context, index) {

@@ -65,30 +65,13 @@ class SponsoredProductsCard extends StatelessWidget {
               const crossAxisSpacing = 8.0;
               const mainAxisSpacing = 8.0;
 
-              final isLargeScreen = screenWidth > 600;
-              // Increased details height to accommodate all elements including Buy Now button
-              // Button: 36-44px, Price: ~20px, Title: ~16px, Store: ~24px, Spacing: ~20px
-              final detailsHeight = isSmallScreen
-                  ? 130.0
-                  : isLargeScreen
-                      ? 155.0
-                      : 140.0;
-
-              final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-              final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
-              final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
-
-              // ProductCard uses a square image (height == width) + fixed-ish details block.
-              // Keep cell height aligned with that to avoid blank space on different devices.
-              final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.55;
-
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: ProductCardLayout.buildGridDelegate(
+                  availableWidth: constraints.maxWidth,
+                  screenWidth: screenWidth,
                   crossAxisCount: crossAxisCount,
-                  // Responsive aspect ratio: increased to prevent overflow
-                  childAspectRatio: childAspectRatio,
                   crossAxisSpacing: crossAxisSpacing,
                   mainAxisSpacing: mainAxisSpacing,
                 ),

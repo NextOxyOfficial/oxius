@@ -6,6 +6,7 @@ import '../services/eshop_service.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/product_details_screen.dart';
 import '../models/cart_item.dart';
+import 'product_card.dart';
 import 'hot_deals_section.dart';
 import 'hot_arrivals_section.dart';
 import 'mobile_banner.dart';
@@ -380,11 +381,10 @@ class _EshopSectionState extends State<EshopSection> {
         
         // Ensure minimum and maximum card widths
         final constrainedCardWidth = cardWidth.clamp(143.0, isLargeScreen ? 200.0 : 180.0);
-        
-        // Calculate card height based on content
-        final imageHeight = constrainedCardWidth; // Square aspect ratio
-        final detailsMinHeight = isSmallScreen ? 143.0 : isLargeScreen ? 153.0 : 148.0;
-        final cardHeight = imageHeight + detailsMinHeight;
+        final cardHeight = ProductCardLayout.horizontalCardHeight(
+          screenWidth,
+          cardWidth: constrainedCardWidth,
+        );
         
         Widget buildRow(List<Map<String, dynamic>> data) {
           return SizedBox(
@@ -399,15 +399,13 @@ class _EshopSectionState extends State<EshopSection> {
                 final id = (product['id'] ?? idx).toString();
                 return SizedBox(
                   width: constrainedCardWidth,
-                  child: _EshopProductCard(
+                  child: ProductCard(
                     product: product,
                     isLoading: _buyLoading.contains(id),
-                    width: constrainedCardWidth,
-                    height: cardHeight,
                     onBuyNow: () {
                       _navigateToCheckout(product);
                     },
-                    // onTap removed to use default navigation from _EshopProductCard
+                    // onTap removed to use default navigation from ProductCard
                   ),
                 );
               },

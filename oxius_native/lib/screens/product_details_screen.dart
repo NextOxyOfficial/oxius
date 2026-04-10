@@ -1490,27 +1490,20 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           const SizedBox(height: 12),
           LayoutBuilder(
             builder: (context, constraints) {
-              final screenWidth = MediaQuery.of(context).size.width;
-              final isSmallScreen = screenWidth < 360;
-              final isLargeScreen = screenWidth > 600;
-              final detailsHeight = isSmallScreen ? 132.0 : isLargeScreen ? 148.0 : 140.0;
               const crossAxisCount = 2;
               const crossAxisSpacing = 8.0;
               const mainAxisSpacing = 8.0;
-              final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-              final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
-              final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
-              final cardHeight = cellWidth > 0 ? cellWidth + detailsHeight : 260.0;
 
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 padding: EdgeInsets.zero,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: ProductCardLayout.buildGridDelegate(
+                  availableWidth: constraints.maxWidth,
+                  screenWidth: MediaQuery.of(context).size.width,
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: crossAxisSpacing,
                   mainAxisSpacing: mainAxisSpacing,
-                  mainAxisExtent: cardHeight,
                 ),
                 itemCount: _similarProducts.length,
                 itemBuilder: (context, index) {

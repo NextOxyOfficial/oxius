@@ -3,6 +3,51 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
 
+class ProductCardLayout {
+  static double detailsHeight(double screenWidth) {
+    if (screenWidth < 360) return 112.0;
+    if (screenWidth > 600) return 128.0;
+    return 120.0;
+  }
+
+  static double cardHeight({
+    required double cardWidth,
+    required double screenWidth,
+  }) {
+    return cardWidth + detailsHeight(screenWidth);
+  }
+
+  static SliverGridDelegate buildGridDelegate({
+    required double availableWidth,
+    required double screenWidth,
+    int crossAxisCount = 2,
+    double crossAxisSpacing = 8,
+    double mainAxisSpacing = 8,
+  }) {
+    final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
+    final usableWidth = (availableWidth - totalSpacing).clamp(0.0, double.infinity);
+    final cardWidth = (usableWidth / crossAxisCount).clamp(0.0, double.infinity);
+
+    return SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: crossAxisCount,
+      crossAxisSpacing: crossAxisSpacing,
+      mainAxisSpacing: mainAxisSpacing,
+      mainAxisExtent: cardHeight(cardWidth: cardWidth, screenWidth: screenWidth),
+    );
+  }
+
+  static double horizontalCardWidth(double screenWidth) {
+    if (screenWidth < 360) return 172.0;
+    if (screenWidth > 600) return 212.0;
+    return 188.0;
+  }
+
+  static double horizontalCardHeight(double screenWidth, {double? cardWidth}) {
+    final width = cardWidth ?? horizontalCardWidth(screenWidth);
+    return cardHeight(cardWidth: width, screenWidth: screenWidth);
+  }
+}
+
 class ProductCard extends StatefulWidget {
   final Map<String, dynamic> product;
   final bool isLoading;
@@ -222,7 +267,7 @@ class _ProductCardState extends State<ProductCard> {
               // Details - Reduced padding for more compact layout
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 6),
+                  padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
@@ -305,7 +350,7 @@ class _ProductCardState extends State<ProductCard> {
 
                     // Store Link - Moved below product name (Vue: mb-3) - EXACT MATCH
                     Container(
-                      margin: const EdgeInsets.only(bottom: 4),
+                      margin: const EdgeInsets.only(bottom: 2),
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade50,
@@ -357,7 +402,7 @@ class _ProductCardState extends State<ProductCard> {
                     // End of product info InkWell
 
                     const Spacer(),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 2),
 
                     // Full Width Buy Now Button
                     SizedBox(

@@ -216,28 +216,39 @@ class _BatchProductsState extends State<BatchProducts> {
 
           // Products horizontal scroll
           if (!_loading && _error == null && _products.isNotEmpty)
-            SizedBox(
-              height: 292,
-              child: ListView.builder(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                itemCount: _randomizedProducts.length,
-                itemBuilder: (context, index) {
-                  final product = _randomizedProducts[index];
-                  return Container(
-                    width: 200,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ProductCard(
-                      product: product,
-                      isLoading: false,
-                      onBuyNow: () {
-                        _navigateToCheckout(context, product);
-                      },
-                    ),
-                  );
-                },
-              ),
+            Builder(
+              builder: (context) {
+                final screenWidth = MediaQuery.of(context).size.width;
+                final cardWidth = ProductCardLayout.horizontalCardWidth(screenWidth);
+                final cardHeight = ProductCardLayout.horizontalCardHeight(
+                  screenWidth,
+                  cardWidth: cardWidth,
+                );
+
+                return SizedBox(
+                  height: cardHeight,
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    itemCount: _randomizedProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = _randomizedProducts[index];
+                      return Container(
+                        width: cardWidth,
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ProductCard(
+                          product: product,
+                          isLoading: false,
+                          onBuyNow: () {
+                            _navigateToCheckout(context, product);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
 
           // View all link
