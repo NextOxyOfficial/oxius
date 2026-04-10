@@ -16,19 +16,19 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   final TranslationService _translationService = TranslationService();
   final TextEditingController _phoneController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   String t(String key) => _translationService.translate(key);
-  
+
   String _selectedOperator = 'all';
   String _activeFilter = 'all';
   bool _isLoading = true;
   List<Map<String, dynamic>> _packages = [];
   List<Map<String, dynamic>> _operators = [];
-  
+
   // Balance state
   WalletBalance? _walletBalance;
   bool _isBalanceLoading = false;
-  
+
   @override
   void initState() {
     super.initState();
@@ -37,13 +37,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    
+
     await Future.wait([
       _loadOperators(),
       _loadPackages(),
       _loadBalance(),
     ]);
-    
+
     setState(() => _isLoading = false);
   }
 
@@ -62,7 +62,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   Future<void> _loadPackages() async {
     // Don't send filter if "all" is selected
     // Backend expects operator as integer ID, not string
-    final operatorFilter = _selectedOperator == 'all' ? null : _selectedOperator;
+    final operatorFilter =
+        _selectedOperator == 'all' ? null : _selectedOperator;
     final typeFilter = _activeFilter == 'all' ? null : _activeFilter;
 
     final result = await MobileRechargeService.getPackages(
@@ -72,7 +73,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
     if (mounted) {
       if (result['success'] == true) {
-        final packages = List<Map<String, dynamic>>.from(result['results'] ?? []);
+        final packages =
+            List<Map<String, dynamic>>.from(result['results'] ?? []);
 
         setState(() {
           _packages = packages;
@@ -87,9 +89,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
   Future<void> _loadBalance() async {
     if (!mounted) return;
-    
+
     setState(() => _isBalanceLoading = true);
-    
+
     try {
       final balance = await WalletService.getBalance();
       if (mounted) {
@@ -112,7 +114,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       _loadBalance(),
     ]);
   }
-  
+
   final List<Map<String, String>> _filters = [
     {'value': 'all', 'label': 'All'},
     {'value': 'balance', 'label': 'Balance'},
@@ -120,38 +122,38 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     {'value': 'voice', 'label': 'Voice'},
     {'value': 'combo', 'label': 'Combo'},
   ];
-  
-  
+
   List<Map<String, dynamic>> get _popularPackages {
     return _packages.where((p) => p['popular'] == true).toList();
   }
-  
+
   List<Map<String, dynamic>> get _filteredPackages {
     // Server-side filtering is already applied in _loadPackages()
     // No need for additional client-side filtering since backend handles it
     // Just return all packages from the API response
     return _packages;
   }
-  
+
   @override
   void dispose() {
     _phoneController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallMobile = screenWidth < 640;
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: Stack(
         children: [
           SafeArea(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF10B981)))
                 : RefreshIndicator(
                     onRefresh: _refreshData,
                     color: const Color(0xFF10B981),
@@ -169,14 +171,17 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 border: Border(
-                                  bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+                                  bottom: BorderSide(
+                                      color: Colors.grey.shade200, width: 1),
                                 ),
                               ),
                               child: Row(
                                 children: [
                                   IconButton(
-                                    onPressed: () => Navigator.of(context).pop(),
-                                    icon: const Icon(Icons.arrow_back_rounded, size: 20),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    icon: const Icon(Icons.arrow_back_rounded,
+                                        size: 20),
                                     padding: EdgeInsets.zero,
                                     constraints: const BoxConstraints(),
                                     color: const Color(0xFF374151),
@@ -184,7 +189,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         const Text(
                                           'Mobile Recharge',
@@ -195,7 +201,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                             letterSpacing: -0.3,
                                           ),
                                         ),
-                                        if (_walletBalance != null && !_isBalanceLoading)
+                                        if (_walletBalance != null &&
+                                            !_isBalanceLoading)
                                           Text(
                                             'Balance: ৳${_walletBalance!.balance.toStringAsFixed(2)}',
                                             style: const TextStyle(
@@ -210,26 +217,28 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                             width: 12,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                      Color(0xFF10B981)),
                                             ),
                                           ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                            
+
                             // Operator Filter
                             _buildOperatorFilter(isSmallMobile),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Type Filter
                             _buildTypeFilter(isSmallMobile),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             // Popular Packages
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -243,23 +252,26 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   ),
                                 ),
                                 TextButton.icon(
-                                  onPressed: () => _showRechargeHistoryBottomSheet(context),
-                                  icon: const Icon(Icons.history_rounded, size: 18),
+                                  onPressed: () =>
+                                      _showRechargeHistoryBottomSheet(context),
+                                  icon: const Icon(Icons.history_rounded,
+                                      size: 18),
                                   label: const Text('History'),
                                   style: TextButton.styleFrom(
                                     foregroundColor: const Color(0xFF3B82F6),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
                                   ),
                                 ),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             _buildPackageGrid(_popularPackages, isSmallMobile),
-                            
+
                             const SizedBox(height: 32),
-                            
+
                             // All Packages
                             Text(
                               t('all_packages'),
@@ -269,19 +281,20 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 color: const Color(0xFF111827),
                               ),
                             ),
-                            
+
                             const SizedBox(height: 16),
-                            
+
                             _buildPackageGrid(_filteredPackages, isSmallMobile),
-                            
-                            const SizedBox(height: 100), // Bottom padding for sticky nav
+
+                            const SizedBox(
+                                height: 100), // Bottom padding for sticky nav
                           ],
                         ),
                       ),
                     ),
                   ),
           ),
-          
+
           // Mobile Sticky Navigation
           Positioned(
             left: 0,
@@ -296,10 +309,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       ),
     );
   }
-  
+
   Widget _buildOperatorFilter(bool isSmallMobile) {
     if (_operators.isEmpty) return const SizedBox.shrink();
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       padding: const EdgeInsets.all(8),
@@ -313,7 +326,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.sim_card_rounded, size: 16, color: Color(0xFF10B981)),
+              const Icon(Icons.sim_card_rounded,
+                  size: 16, color: Color(0xFF10B981)),
               const SizedBox(width: 6),
               const Text(
                 'Select Operator',
@@ -332,20 +346,27 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
             runSpacing: 6,
             children: _operators.map((operator) {
               // Convert ID to string for comparison (backend returns int, 'all' is string)
-              final operatorId = operator['id']?.toString() ?? operator['code']?.toString() ?? '';
+              final operatorId = operator['id']?.toString() ??
+                  operator['code']?.toString() ??
+                  '';
               final isSelected = _selectedOperator == operatorId;
               final operatorName = operator['name'] as String;
               return InkWell(
                 onTap: () {
-                  final selectedOpId = operator['id']?.toString() ?? operator['code']?.toString() ?? '';
+                  final selectedOpId = operator['id']?.toString() ??
+                      operator['code']?.toString() ??
+                      '';
                   setState(() => _selectedOperator = selectedOpId);
                   _loadPackages();
                 },
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade100,
+                    color: isSelected
+                        ? const Color(0xFF10B981)
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -355,13 +376,14 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         width: 24,
                         height: 24,
                         decoration: BoxDecoration(
-                          color: isSelected 
+                          color: isSelected
                               ? Colors.white.withValues(alpha: 0.2)
                               : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         padding: const EdgeInsets.all(4),
-                        child: operator['icon'] != null && operator['icon'].toString().isNotEmpty
+                        child: operator['icon'] != null &&
+                                operator['icon'].toString().isNotEmpty
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(3),
                                 child: Image.network(
@@ -373,10 +395,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                     return Icon(
                                       _getOperatorIcon(operatorName),
                                       size: 14,
-                                      color: isSelected ? Colors.white : _getOperatorColor(operatorName),
+                                      color: isSelected
+                                          ? Colors.white
+                                          : _getOperatorColor(operatorName),
                                     );
                                   },
-                                  loadingBuilder: (context, child, loadingProgress) {
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
                                     if (loadingProgress == null) return child;
                                     return Center(
                                       child: SizedBox(
@@ -384,8 +409,11 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                         height: 12,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 1.5,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            isSelected ? Colors.white : const Color(0xFF10B981),
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            isSelected
+                                                ? Colors.white
+                                                : const Color(0xFF10B981),
                                           ),
                                         ),
                                       ),
@@ -396,7 +424,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             : Icon(
                                 _getOperatorIcon(operatorName),
                                 size: 14,
-                                color: isSelected ? Colors.white : _getOperatorColor(operatorName),
+                                color: isSelected
+                                    ? Colors.white
+                                    : _getOperatorColor(operatorName),
                               ),
                       ),
                       const SizedBox(width: 6),
@@ -405,7 +435,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isSelected ? Colors.white : const Color(0xFF374151),
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF374151),
                         ),
                       ),
                     ],
@@ -418,7 +450,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       ),
     );
   }
-  
+
   Widget _buildTypeFilter(bool isSmallMobile) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -439,7 +471,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                 color: isActive ? const Color(0xFF10B981) : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isActive ? const Color(0xFF10B981) : Colors.grey.shade300,
+                  color:
+                      isActive ? const Color(0xFF10B981) : Colors.grey.shade300,
                 ),
               ),
               child: Text(
@@ -457,13 +490,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       ),
     );
   }
-  
-  Widget _buildPackageGrid(List<Map<String, dynamic>> packages, bool isSmallMobile) {
+
+  Widget _buildPackageGrid(
+      List<Map<String, dynamic>> packages, bool isSmallMobile) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final cardHeight = isSmallMobile
-      ? (screenWidth < 380 ? 244.0 : 232.0)
-      : 224.0;
-    
+    final cardHeight =
+        isSmallMobile ? (screenWidth < 380 ? 222.0 : 210.0) : 214.0;
+
     if (packages.isEmpty) {
       return Center(
         child: Padding(
@@ -508,7 +541,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         ),
       );
     }
-    
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -525,7 +558,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       },
     );
   }
-  
+
   Widget _buildPackageCard(Map<String, dynamic> package, bool isSmallMobile) {
     return InkWell(
       onTap: () => _selectPackage(package),
@@ -548,7 +581,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 2),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -558,7 +591,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       children: [
                         Flexible(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: _getTagColor(package['type']),
                               borderRadius: BorderRadius.circular(12),
@@ -578,7 +612,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         if (package['popular'] == true) ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFEF3C7),
                               borderRadius: BorderRadius.circular(12),
@@ -596,7 +631,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
 
                     // Price and operator icon
                     Row(
@@ -630,7 +665,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                     width: 20,
                                     height: 20,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
                                       Icons.phone_android,
                                       size: 14,
                                       color: Color(0xFF6B7280),
@@ -646,19 +683,22 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
 
                     // Package details
-                    _buildPackageDetail(Icons.wifi, package['data'], isSmallMobile),
-                    const SizedBox(height: 6),
-                    _buildPackageDetail(Icons.calendar_today, package['validity'], isSmallMobile),
-                    const SizedBox(height: 6),
-                    _buildPackageDetail(Icons.phone, package['calls'], isSmallMobile),
+                    _buildPackageDetail(
+                        Icons.wifi, package['data'], isSmallMobile),
+                    const SizedBox(height: 4),
+                    _buildPackageDetail(Icons.calendar_today,
+                        package['validity'], isSmallMobile),
+                    const SizedBox(height: 4),
+                    _buildPackageDetail(
+                        Icons.phone, package['calls'], isSmallMobile),
                   ],
                 ),
               ),
             ),
-            
+
             // Recharge button
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
@@ -669,7 +709,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 9),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -697,7 +737,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       ),
     );
   }
-  
+
   Widget _buildPackageDetail(IconData icon, String text, bool isSmallMobile) {
     return Row(
       children: [
@@ -716,7 +756,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       ],
     );
   }
-  
+
   Color _getTagColor(String type) {
     switch (type) {
       case 'data':
@@ -731,7 +771,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         return const Color(0xFFF3F4F6);
     }
   }
-  
+
   Color _getTagTextColor(String type) {
     switch (type) {
       case 'data':
@@ -746,45 +786,54 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         return const Color(0xFF374151);
     }
   }
-  
+
   String _capitalizeFirst(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1);
   }
-  
+
   IconData _getOperatorIcon(String operatorName) {
     final name = operatorName.toLowerCase();
     if (name == 'all') return Icons.grid_view_rounded;
-    if (name.contains('gp') || name.contains('grameenphone')) return Icons.phone_android_rounded;
+    if (name.contains('gp') || name.contains('grameenphone'))
+      return Icons.phone_android_rounded;
     if (name.contains('robi')) return Icons.signal_cellular_alt_rounded;
-    if (name.contains('bl') || name.contains('banglalink')) return Icons.network_cell_rounded;
+    if (name.contains('bl') || name.contains('banglalink'))
+      return Icons.network_cell_rounded;
     if (name.contains('airtel')) return Icons.cell_tower_rounded;
     return Icons.sim_card_rounded;
   }
-  
+
   Color _getOperatorColor(String operatorName) {
     final name = operatorName.toLowerCase();
     if (name == 'all') return const Color(0xFF10B981); // Green
-    if (name.contains('gp') || name.contains('grameenphone')) return const Color(0xFF00A651); // GP Green
+    if (name.contains('gp') || name.contains('grameenphone'))
+      return const Color(0xFF00A651); // GP Green
     if (name.contains('robi')) return const Color(0xFFE60012); // Robi Red
-    if (name.contains('bl') || name.contains('banglalink')) return const Color(0xFFFF6600); // Banglalink Orange
+    if (name.contains('bl') || name.contains('banglalink'))
+      return const Color(0xFFFF6600); // Banglalink Orange
     if (name.contains('airtel')) return const Color(0xFFDC143C); // Airtel Red
     return const Color(0xFF6B7280); // Default Gray
   }
-  
+
   void _selectPackage(Map<String, dynamic> package) {
     _showRechargeDialog(package);
   }
-  
+
   void _showRechargeDialog(Map<String, dynamic> package) {
     final userBalance = _walletBalance?.balance ?? 0.0;
-    final packagePrice = (package['price'] ?? package['amount'] ?? 0.0) is String
-        ? double.tryParse((package['price'] ?? package['amount'] ?? '0').toString().replaceAll('৳', '').trim()) ?? 0.0
-        : (package['price'] ?? package['amount'] ?? 0.0).toDouble();
+    final packagePrice =
+        (package['price'] ?? package['amount'] ?? 0.0) is String
+            ? double.tryParse((package['price'] ?? package['amount'] ?? '0')
+                    .toString()
+                    .replaceAll('৳', '')
+                    .trim()) ??
+                0.0
+            : (package['price'] ?? package['amount'] ?? 0.0).toDouble();
     final hasSufficientBalance = userBalance >= packagePrice;
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 640;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -809,7 +858,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   gradient: const LinearGradient(
                     colors: [Color(0xFF10B981), Color(0xFF059669)],
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                 ),
                 child: Row(
                   children: [
@@ -819,7 +869,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.bolt, color: Colors.white, size: 24),
+                      child:
+                          const Icon(Icons.bolt, color: Colors.white, size: 24),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
@@ -848,14 +899,15 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close_rounded, color: Colors.white),
+                      icon:
+                          const Icon(Icons.close_rounded, color: Colors.white),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
               ),
-              
+
               // Content
               Flexible(
                 child: SingleChildScrollView(
@@ -868,12 +920,14 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF0FDF4),
-                          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                          border: Border.all(
+                              color: const Color(0xFF10B981)
+                                  .withValues(alpha: 0.3)),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.account_balance_wallet_rounded, 
+                            const Icon(Icons.account_balance_wallet_rounded,
                                 color: Color(0xFF10B981), size: 20),
                             const SizedBox(width: 8),
                             Expanded(
@@ -882,7 +936,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 children: [
                                   const Text(
                                     'Available Balance',
-                                    style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                                    style: TextStyle(
+                                        fontSize: 11, color: Color(0xFF6B7280)),
                                   ),
                                   Text(
                                     '৳${userBalance.toStringAsFixed(2)}',
@@ -898,9 +953,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Package Details
                       const Text(
                         'Package Details',
@@ -920,23 +975,29 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                         child: Column(
                           children: [
-                            _buildDetailRow('Type', _capitalizeFirst(package['type'] ?? 'N/A')),
+                            _buildDetailRow('Type',
+                                _capitalizeFirst(package['type'] ?? 'N/A')),
                             const Divider(height: 16),
-                            _buildDetailRow('Amount', '৳${packagePrice.toStringAsFixed(0)}'),
+                            _buildDetailRow('Amount',
+                                '৳${packagePrice.toStringAsFixed(0)}'),
                             const Divider(height: 16),
-                            _buildDetailRow('Data', package['data']?.toString() ?? 'N/A'),
+                            _buildDetailRow(
+                                'Data', package['data']?.toString() ?? 'N/A'),
                             const Divider(height: 16),
-                            _buildDetailRow('Validity', package['validity']?.toString() ?? 'N/A'),
-                            if (package['calls'] != null && package['calls'] != 'N/A') ...[
+                            _buildDetailRow('Validity',
+                                package['validity']?.toString() ?? 'N/A'),
+                            if (package['calls'] != null &&
+                                package['calls'] != 'N/A') ...[
                               const Divider(height: 16),
-                              _buildDetailRow('Calls', package['calls'].toString()),
+                              _buildDetailRow(
+                                  'Calls', package['calls'].toString()),
                             ],
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Phone Number Input or Balance Warning
                       if (!hasSufficientBalance)
                         Container(
@@ -950,7 +1011,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             children: [
                               const Row(
                                 children: [
-                                  Icon(Icons.warning_amber_rounded, 
+                                  Icon(Icons.warning_amber_rounded,
                                       color: Color(0xFFDC2626), size: 20),
                                   SizedBox(width: 8),
                                   Expanded(
@@ -986,7 +1047,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF10B981),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
@@ -1013,21 +1075,26 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           style: const TextStyle(fontSize: 14),
                           decoration: InputDecoration(
                             hintText: '01XXXXXXXXX',
-                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                            prefixIcon: const Icon(Icons.phone_android_rounded, size: 20),
+                            hintStyle: TextStyle(
+                                color: Colors.grey.shade400, fontSize: 14),
+                            prefixIcon: const Icon(Icons.phone_android_rounded,
+                                size: 20),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFF10B981), width: 2),
                             ),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -1049,13 +1116,14 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   ),
                 ),
               ),
-              
+
               // Footer Buttons
               if (hasSufficientBalance)
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                    border:
+                        Border(top: BorderSide(color: Colors.grey.shade200)),
                   ),
                   child: Row(
                     children: [
@@ -1083,7 +1151,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       Expanded(
                         flex: 2,
                         child: ElevatedButton(
-                          onPressed: _isLoading ? null : () => _handleRecharge(package),
+                          onPressed: _isLoading
+                              ? null
+                              : () => _handleRecharge(package),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
@@ -1105,7 +1175,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(Icons.check_circle_rounded, size: 18),
+                                    const Icon(Icons.check_circle_rounded,
+                                        size: 18),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Confirm Recharge',
@@ -1127,7 +1198,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       ),
     );
   }
-  
+
   Widget _buildDetailRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1150,7 +1221,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       ],
     );
   }
-  
+
   Future<void> _handleRecharge(Map<String, dynamic> package) async {
     // Validate phone number
     final phoneRegex = RegExp(r'^(?:\+?88)?01[3-9]\d{8}$');
@@ -1163,29 +1234,29 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       );
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       // Get operator ID (it's an integer from the API)
       final operatorId = package['operator'] as int;
-      
+
       // Parse amount - it might be string or number from API
       final priceValue = package['price'] ?? package['amount'] ?? 0;
-      final amount = priceValue is String 
-          ? double.parse(priceValue) 
+      final amount = priceValue is String
+          ? double.parse(priceValue)
           : (priceValue is int ? priceValue.toDouble() : priceValue as double);
-      
+
       final result = await MobileRechargeService.submitRecharge(
         packageId: package['id'],
         phoneNumber: _phoneController.text,
         operator: operatorId,
         amount: amount,
       );
-      
+
       if (mounted) {
         Navigator.pop(context);
-        
+
         if (result['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1218,7 +1289,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       }
     }
   }
-  
+
   void _showRechargeHistoryBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -1245,7 +1316,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               // Header
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
@@ -1284,12 +1355,12 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   ],
                 ),
               ),
-              
+
               Container(
                 height: 1,
                 color: Colors.grey.shade200,
               ),
-              
+
               // History List
               Expanded(
                 child: FutureBuilder<Map<String, dynamic>>(
@@ -1307,12 +1378,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                       );
                     }
-                    
-                    if (snapshot.hasError || snapshot.data?['success'] != true) {
-                      final errorMessage = snapshot.data?['message'] ?? 
-                                          snapshot.error?.toString() ?? 
-                                          'Failed to load history';
-                      
+
+                    if (snapshot.hasError ||
+                        snapshot.data?['success'] != true) {
+                      final errorMessage = snapshot.data?['message'] ??
+                          snapshot.error?.toString() ??
+                          'Failed to load history';
+
                       return Center(
                         child: Padding(
                           padding: const EdgeInsets.all(20),
@@ -1354,9 +1426,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                       );
                     }
-                    
-                    final List<dynamic> recharges = snapshot.data!['results'] ?? [];
-                    
+
+                    final List<dynamic> recharges =
+                        snapshot.data!['results'] ?? [];
+
                     if (recharges.isEmpty) {
                       return Center(
                         child: Column(
@@ -1395,12 +1468,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                       );
                     }
-                    
+
                     return ListView.separated(
                       controller: scrollController,
                       padding: const EdgeInsets.all(10),
                       itemCount: recharges.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 8),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final recharge = recharges[index];
                         final status = recharge['status'] ?? 'pending';
@@ -1409,7 +1483,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             : status == 'failed'
                                 ? const Color(0xFFEF4444)
                                 : const Color(0xFFF59E0B);
-                        
+
                         return Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
@@ -1436,7 +1510,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              
+
                               // Content
                               Expanded(
                                 child: Column(
@@ -1444,7 +1518,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   children: [
                                     // Phone and status
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(
                                           children: [
@@ -1471,8 +1546,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                             vertical: 2,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: statusColor.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: statusColor.withValues(
+                                                alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                           child: Text(
                                             status.toUpperCase(),
@@ -1486,12 +1563,13 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                         ),
                                       ],
                                     ),
-                                    
+
                                     const SizedBox(height: 6),
-                                    
+
                                     // Operator and Date
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         if (recharge['operator'] != null)
                                           Container(
@@ -1500,11 +1578,15 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                               vertical: 2,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                                              borderRadius: BorderRadius.circular(3),
+                                              color: const Color(0xFF10B981)
+                                                  .withValues(alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(3),
                                             ),
                                             child: Text(
-                                              recharge['operator'].toString().toUpperCase(),
+                                              recharge['operator']
+                                                  .toString()
+                                                  .toUpperCase(),
                                               style: const TextStyle(
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.w600,
@@ -1525,9 +1607,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   ],
                                 ),
                               ),
-                              
+
                               const SizedBox(width: 10),
-                              
+
                               // Amount
                               Text(
                                 '৳${recharge['amount'] ?? '0'}',
