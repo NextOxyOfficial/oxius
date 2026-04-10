@@ -1493,7 +1493,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               final screenWidth = MediaQuery.of(context).size.width;
               final isSmallScreen = screenWidth < 360;
               final isLargeScreen = screenWidth > 600;
-              final detailsHeight = isSmallScreen ? 108.0 : isLargeScreen ? 126.0 : 114.0;
+              final detailsHeight = isSmallScreen ? 132.0 : isLargeScreen ? 148.0 : 140.0;
               const crossAxisCount = 2;
               const crossAxisSpacing = 8.0;
               const mainAxisSpacing = 8.0;

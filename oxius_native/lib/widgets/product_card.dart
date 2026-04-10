@@ -356,6 +356,7 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                     // End of product info InkWell
 
+                    const Spacer(),
                     const SizedBox(height: 6),
 
                     // Full Width Buy Now Button

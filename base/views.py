@@ -2503,10 +2503,16 @@ class ProductByIdView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = "id"
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.request.method in ["GET", "HEAD", "OPTIONS"]:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
-        """Only allow users to update their own products"""
+        """Allow public reads but restrict mutations to the owner/admin scope."""
+        if self.request.method in ["GET", "HEAD", "OPTIONS"]:
+            return Product.objects.all()
         return Product.objects.filter(owner=self.request.user)
 
     def update(self, request, *args, **kwargs):

@@ -254,22 +254,15 @@ class EshopService {
     final idValue = productId?.toString();
     if (idValue != null && idValue.isNotEmpty) {
       candidates.add(Uri.parse('$baseUrl/products/$idValue/'));
-      candidates.add(
-        Uri.parse('$baseUrl/products/').replace(
-          queryParameters: {
-            'id': idValue,
-            'page_size': '1',
-          },
-        ),
-      );
     }
 
     if (slug != null && slug.isNotEmpty) {
+      candidates.add(Uri.parse('$baseUrl/products/$slug/'));
       candidates.add(
         Uri.parse('$baseUrl/products/').replace(
           queryParameters: {
-            'slug': slug,
-            'page_size': '1',
+            'search': slug,
+            'page_size': '20',
           },
         ),
       );
@@ -292,6 +285,22 @@ class EshopService {
         final data = json.decode(response.body);
         final products = _extractProductList(data);
         if (products.isNotEmpty) {
+          if (slug != null && slug.isNotEmpty) {
+            for (final product in products) {
+              if (product['slug']?.toString() == slug) {
+                return product;
+              }
+            }
+          }
+
+          if (idValue != null && idValue.isNotEmpty) {
+            for (final product in products) {
+              if (product['id']?.toString() == idValue) {
+                return product;
+              }
+            }
+          }
+
           return products.first;
         }
       } catch (_) {
