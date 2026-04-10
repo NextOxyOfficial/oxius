@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import 'all_gigs_tab.dart';
@@ -8,9 +9,17 @@ import 'orders_received_tab.dart';
 import 'gigs_ordered_tab.dart';
 import 'create_gig_screen.dart';
 
+const _indigo = Color(0xFF6366F1);
+const _violet = Color(0xFF8B5CF6);
+const _slate50 = Color(0xFFF8FAFC);
+const _slate100 = Color(0xFFF1F5F9);
+const _slate200 = Color(0xFFE2E8F0);
+const _slate500 = Color(0xFF64748B);
+const _slate800 = Color(0xFF1E293B);
+
 class WorkspaceScreen extends StatefulWidget {
   final int initialTab;
-  
+
   const WorkspaceScreen({
     super.key,
     this.initialTab = 0,
@@ -20,10 +29,11 @@ class WorkspaceScreen extends StatefulWidget {
   State<WorkspaceScreen> createState() => _WorkspaceScreenState();
 }
 
-class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProviderStateMixin {
+class _WorkspaceScreenState extends State<WorkspaceScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final WorkspaceService _workspaceService = WorkspaceService();
-  
+
   List<Map<String, dynamic>> _banners = [];
   int _currentBannerIndex = 0;
   final PageController _bannerController = PageController();
@@ -77,7 +87,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: _slate50,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -85,10 +95,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
             SliverAppBar(
               backgroundColor: Colors.white,
               elevation: 0,
+              surfaceTintColor: Colors.white,
               floating: false,
               pinned: true,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                icon: const Icon(Icons.arrow_back_rounded, color: _slate800),
                 onPressed: () => Navigator.pop(context),
               ),
               title: Row(
@@ -97,20 +108,20 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-                      ),
-                      borderRadius: BorderRadius.circular(8),
+                      gradient:
+                          const LinearGradient(colors: [_indigo, _violet]),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.star, color: Colors.white, size: 18),
+                    child: const Icon(Icons.workspaces_rounded,
+                        color: Colors.white, size: 18),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
+                  Text(
                     'Workspaces',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                    style: GoogleFonts.inter(
+                      color: _slate800,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 18,
                     ),
                   ),
                 ],
@@ -126,29 +137,36 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                     )
                   : null,
               bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(44),
+                preferredSize: const Size.fromHeight(52),
                 child: Container(
                   color: Colors.white,
                   child: TabBar(
                     controller: _tabController,
                     isScrollable: true,
-                    labelColor: const Color(0xFF8B5CF6),
-                    unselectedLabelColor: Colors.grey[600],
-                    indicatorColor: const Color(0xFF8B5CF6),
-                    indicatorWeight: 2,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                    labelColor: _indigo,
+                    unselectedLabelColor: _slate500,
+                    indicator: BoxDecoration(
+                      color: const Color(0xFFEEF2FF),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: _slate200),
+                    ),
+                    dividerColor: Colors.transparent,
+                    splashBorderRadius: BorderRadius.circular(12),
+                    labelStyle: GoogleFonts.inter(
+                        fontWeight: FontWeight.w700, fontSize: 12),
+                    unselectedLabelStyle: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600, fontSize: 12),
                     tabAlignment: TabAlignment.start,
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
                     tabs: const [
                       Tab(
                         height: 40,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.explore, size: 16),
-                            SizedBox(width: 4),
+                            Icon(Icons.explore_rounded, size: 15),
+                            SizedBox(width: 5),
                             Text('All Gigs'),
                           ],
                         ),
@@ -158,8 +176,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.person_outline, size: 16),
-                            SizedBox(width: 4),
+                            Icon(Icons.person_outline_rounded, size: 15),
+                            SizedBox(width: 5),
                             Text('My Gigs'),
                           ],
                         ),
@@ -169,8 +187,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.inbox, size: 16),
-                            SizedBox(width: 4),
+                            Icon(Icons.inbox_rounded, size: 15),
+                            SizedBox(width: 5),
                             Text('Orders Received'),
                           ],
                         ),
@@ -180,8 +198,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.shopping_bag_outlined, size: 16),
-                            SizedBox(width: 4),
+                            Icon(Icons.shopping_bag_outlined, size: 15),
+                            SizedBox(width: 5),
                             Text('Gigs Ordered'),
                           ],
                         ),
@@ -191,8 +209,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.add_circle_outline, size: 16),
-                            SizedBox(width: 4),
+                            Icon(Icons.add_circle_outline_rounded, size: 15),
+                            SizedBox(width: 5),
                             Text('Post a Gig'),
                           ],
                         ),
@@ -239,7 +257,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
               itemBuilder: (context, index) {
                 final banner = _banners[index];
                 return CachedNetworkImage(
-                  imageUrl: _getImageUrl(banner['image_url'] ?? banner['image']),
+                  imageUrl:
+                      _getImageUrl(banner['image_url'] ?? banner['image']),
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: Colors.grey[200],
@@ -247,7 +266,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> with SingleTickerProv
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[200],
-                    child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                    child:
+                        const Icon(Icons.image, size: 40, color: Colors.grey),
                   ),
                 );
               },
