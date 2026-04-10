@@ -22,7 +22,8 @@ class ProductDetailsScreen extends StatefulWidget {
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
 }
 
-class _ProductDetailsScreenState extends State<ProductDetailsScreen> with SingleTickerProviderStateMixin {
+class _ProductDetailsScreenState extends State<ProductDetailsScreen>
+    with SingleTickerProviderStateMixin {
   static const _slate50 = Color(0xFFF8FAFC);
   static const _slate100 = Color(0xFFF1F5F9);
   static const _slate200 = Color(0xFFE2E8F0);
@@ -30,28 +31,30 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   static const _slate800 = Color(0xFF1E293B);
   static const _emerald = Color(0xFF059669);
   static const _indigo = Color(0xFF6366F1);
+  static const _rose = Color(0xFFEF4444);
+  static const _surface = Colors.white;
 
   int _selectedImageIndex = 0;
   int _quantity = 1;
   bool _isLoading = true;
   bool _isLoadingStoreProducts = false;
-  
+
   Map<String, dynamic>? _productDetails;
   List<Map<String, dynamic>> _similarProducts = [];
   List<Map<String, dynamic>> _storeProducts = [];
-  
+
   // Pagination for similar products
   int _similarProductsPage = 1;
   bool _hasMoreSimilarProducts = true;
   bool _isLoadingMoreSimilarProducts = false;
-  
+
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     _scrollController.addListener(_handlePageScroll);
     _loadProductDetails();
   }
@@ -65,7 +68,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   void _handlePageScroll() {
-    if (!_scrollController.hasClients || _isLoadingMoreSimilarProducts || !_hasMoreSimilarProducts) {
+    if (!_scrollController.hasClients ||
+        _isLoadingMoreSimilarProducts ||
+        !_hasMoreSimilarProducts) {
       return;
     }
 
@@ -82,15 +87,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     if (stock > 0 && _quantity > stock) {
       setState(() => _quantity = stock);
     }
-    
+
     // Convert product map to Product object
     final cartProduct = Product(
       id: product['id'], // Can be int or String (UUID)
       name: product['name'] ?? product['title'] ?? 'Product',
       description: product['description'],
       regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
-      salePrice: product['sale_price'] != null 
-          ? _parseDouble(product['sale_price']) 
+      salePrice: product['sale_price'] != null
+          ? _parseDouble(product['sale_price'])
           : null,
       quantity: _parseInt(product['quantity'], fallback: 999),
       isFreeDelivery: product['is_free_delivery'] as bool?,
@@ -131,9 +136,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         id: product['id'],
         name: product['name'] ?? product['title'] ?? 'Product',
         description: product['description'],
-        regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
-        salePrice: product['sale_price'] != null 
-            ? _parseDouble(product['sale_price']) 
+        regularPrice:
+            _parseDouble(product['regular_price'] ?? product['price']),
+        salePrice: product['sale_price'] != null
+            ? _parseDouble(product['sale_price'])
             : null,
         quantity: _parseInt(product['quantity'], fallback: 999),
         isFreeDelivery: product['is_free_delivery'] as bool?,
@@ -145,7 +151,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             : null,
         imageDetails: product['image_details'] != null
             ? (product['image_details'] as List)
-                .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+                .map(
+                    (img) => ProductImage.fromJson(img as Map<String, dynamic>))
                 .toList()
             : null,
       );
@@ -294,7 +301,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
 
   Future<void> _loadProductDetails() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final fetchedDetails = await EshopService.fetchProductDetails(
         productId: widget.product['id'],
@@ -302,7 +309,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
       );
 
       _productDetails = fetchedDetails ?? widget.product;
-      
+
       // Load similar products and store products in parallel
       await Future.wait([
         _loadSimilarProducts(),
@@ -322,7 +329,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
       _similarProductsPage = 1;
       _hasMoreSimilarProducts = true;
     });
-    
+
     try {
       final product = _activeProduct;
       final categorySlug = _resolvePrimaryCategorySlug(product);
@@ -334,7 +341,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         categorySlug: categorySlug,
         categoryId: categorySlug == null ? categoryId : null,
       );
-      
+
       setState(() {
         // Filter out current product
         final currentProductId = _activeProduct['id']?.toString();
@@ -355,9 +362,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
 
   Future<void> _loadMoreSimilarProducts() async {
     if (_isLoadingMoreSimilarProducts || !_hasMoreSimilarProducts) return;
-    
+
     setState(() => _isLoadingMoreSimilarProducts = true);
-    
+
     try {
       final nextPage = _similarProductsPage + 1;
       final product = _activeProduct;
@@ -370,7 +377,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         categorySlug: categorySlug,
         categoryId: categorySlug == null ? categoryId : null,
       );
-      
+
       setState(() {
         // Filter out current product and add to list
         final currentProductId = _activeProduct['id']?.toString();
@@ -394,7 +401,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
 
   Future<void> _loadStoreProducts() async {
     setState(() => _isLoadingStoreProducts = true);
-    
+
     try {
       final storeIdentity = _resolveStoreIdentity(_activeProduct);
       if (storeIdentity == null || storeIdentity.isEmpty) {
@@ -409,7 +416,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         page: 1,
         pageSize: 10,
       );
-      final products = List<Map<String, dynamic>>.from(result['products'] as List? ?? []);
+      final products =
+          List<Map<String, dynamic>>.from(result['products'] as List? ?? []);
 
       if (mounted) {
         final currentProductId = _activeProduct['id']?.toString();
@@ -433,29 +441,46 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     }
   }
 
-  String _getImageUrl(int index) {
-    try {
-      final imageDetails = _productDetails?['image_details'];
-      if (imageDetails is List && imageDetails.length > index) {
-        return AppConfig.getAbsoluteUrl(imageDetails[index]['image']?.toString());
+  List<String> get _productImageUrls {
+    final product = _activeProduct;
+    final urls = <String>[];
+    final imageDetails = product['image_details'];
+
+    if (imageDetails is List) {
+      for (final entry in imageDetails) {
+        if (entry is Map) {
+          final imageUrl = AppConfig.getAbsoluteUrl(entry['image']?.toString());
+          if (imageUrl.isNotEmpty) {
+            urls.add(imageUrl);
+          }
+        }
       }
-      return AppConfig.getAbsoluteUrl(_productDetails?['image']?.toString());
-    } catch (e) {
-      return '';
     }
+
+    if (urls.isNotEmpty) {
+      return urls;
+    }
+
+    final primaryImageUrl =
+        AppConfig.getAbsoluteUrl(product['image']?.toString());
+    if (primaryImageUrl.isNotEmpty) {
+      urls.add(primaryImageUrl);
+    }
+
+    return urls;
   }
 
-  int get _imageCount {
-    try {
-      final imageDetails = _productDetails?['image_details'];
-      if (imageDetails is List) {
-        return imageDetails.length;
-      }
-      return 1;
-    } catch (e) {
-      return 1;
+  bool get _hasProductImages => _productImageUrls.isNotEmpty;
+
+  String _getImageUrl(int index) {
+    final imageUrls = _productImageUrls;
+    if (index >= 0 && index < imageUrls.length) {
+      return imageUrls[index];
     }
+    return '';
   }
+
+  int get _imageCount => _productImageUrls.length;
 
   num? _toNum(dynamic v) {
     if (v == null) return null;
@@ -471,9 +496,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     final n = _toNum(v);
     if (n == null) return '';
     return n.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (m) => '${m[1]},',
-    );
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (m) => '${m[1]},',
+        );
   }
 
   int _calcDiscount(dynamic sale, dynamic regular) {
@@ -482,6 +507,96 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     if (s == null || r == null) return 0;
     if (r <= 0 || s >= r) return 0;
     return (((r - s) / r) * 100).round();
+  }
+
+  Future<void> _shareActiveProduct() async {
+    final product = _activeProduct;
+    final productTitle = product['name'] ?? product['title'] ?? 'Product';
+    final productSlug = product['slug'] ?? product['id'];
+    final shareText =
+        'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/products/$productSlug';
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    try {
+      await Share.share(shareText);
+    } catch (_) {
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Unable to share this product right now.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildChromeActionButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: _slate100,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: 36,
+          height: 36,
+          child: Icon(icon, color: _slate800, size: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required Widget child,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(14),
+    bool showDivider = true,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: padding,
+          child: child,
+        ),
+        if (showDivider)
+          Container(
+            height: 1,
+            color: _slate200,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildHeroBadge({
+    required IconData icon,
+    required String label,
+    required Color color,
+    Color? background,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: background ?? color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppFonts.roboto(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -493,7 +608,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
+            icon: const Icon(Icons.arrow_back_rounded,
+                color: Color(0xFF1F2937), size: 22),
             onPressed: () => Navigator.pop(context),
           ),
           bottom: PreferredSize(
@@ -516,87 +632,94 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     final discount = _calcDiscount(sale, regular);
     final isFreeDelivery = product['is_free_delivery'] == true;
     final shortDescription = product['short_description'] ?? '';
+    final hasGallery = _hasProductImages;
 
     final stock = int.tryParse((product['quantity'] ?? 0).toString()) ?? 0;
 
     return Scaffold(
-      backgroundColor: _slate50,
+      backgroundColor: Colors.white,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
           SliverAppBar(
             pinned: true,
-            stretch: true,
-            expandedHeight: 380,
+            stretch: hasGallery,
+            expandedHeight: hasGallery ? 404 : null,
             backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
             elevation: 0,
             automaticallyImplyLeading: false,
-            titleSpacing: 0,
+            titleSpacing: 4,
+            leadingWidth: 52,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: _buildChromeActionButton(
+                icon: Icons.arrow_back_rounded,
+                onTap: () => Navigator.pop(context),
+              ),
+            ),
             title: Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF111827), size: 22),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: AppFonts.roboto(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                      color: const Color(0xFF111827),
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    borderRadius: BorderRadius.circular(9),
                   ),
+                  child: const Icon(
+                    Icons.shopping_bag_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Product details',
+                      style: AppFonts.roboto(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800,
+                      ),
+                    ),
+                    Text(
+                      'Shop item overview',
+                      style: AppFonts.roboto(
+                        fontSize: 11,
+                        color: _slate500,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
             actions: [
-              IconButton(
-                icon: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: _slate100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.share_rounded, color: Color(0xFF111827), size: 18),
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: _buildChromeActionButton(
+                  icon: Icons.share_outlined,
+                  onTap: _shareActiveProduct,
                 ),
-                onPressed: () async {
-                  final product = _activeProduct;
-                  final productTitle = product['name'] ?? product['title'] ?? 'Product';
-                  final productSlug = product['slug'] ?? product['id'];
-                  final shareText = 'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/products/$productSlug';
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-                  try {
-                    await Share.share(shareText);
-                  } catch (_) {
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Unable to share this product right now.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
               ),
-              const SizedBox(width: 4),
             ],
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: _buildImageGallery(product),
-            ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(1),
-              child: Container(height: 1, color: Colors.grey.shade200),
-            ),
+            flexibleSpace: hasGallery
+                ? FlexibleSpaceBar(
+                    collapseMode: CollapseMode.pin,
+                    background: _buildImageGallery(product),
+                  )
+                : null,
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(4, 18, 4, 84),
+              padding: EdgeInsets.fromLTRB(4, hasGallery ? 0 : 8, 4, 104),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -610,14 +733,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     stock: stock,
                     product: product,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   _buildStoreInfo(product),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   _buildDescriptionTabs(product),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   _buildStoreProducts(product),
                   if (_similarProducts.isNotEmpty) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 6),
                     _buildSimilarProducts(),
                   ],
                 ],
@@ -640,94 +763,87 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     required int stock,
     required Map<String, dynamic> product,
   }) {
-    final hasDiscount = sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!;
+    final hasDiscount = sale != null &&
+        _toNum(sale) != null &&
+        regular != null &&
+        _toNum(regular) != null &&
+        _toNum(sale)! < _toNum(regular)!;
     final views = _parseInt(product['views']);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    return _buildSectionCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              _buildHeroBadge(
+                icon: stock > 0
+                    ? Icons.check_circle_rounded
+                    : Icons.remove_shopping_cart_rounded,
+                label: stock > 0 ? 'In stock' : 'Unavailable',
+                color: stock > 0 ? _emerald : _rose,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
           Text(
             title,
             style: AppFonts.roboto(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1F2937),
-              height: 1.3,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: _slate800,
+              height: 1.26,
             ),
           ),
           const SizedBox(height: 10),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
                 '\u09f3${_formatPrice(sale ?? regular)}',
                 style: AppFonts.roboto(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF059669),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: _emerald,
                   height: 1,
                 ),
               ),
               if (hasDiscount) ...[
-                const SizedBox(width: 8),
-                Text(
-                  '\u09f3${_formatPrice(regular)}',
-                  style: AppFonts.roboto(
-                    fontSize: 13,
-                    color: const Color(0xFF9CA3AF),
-                    decoration: TextDecoration.lineThrough,
+                const SizedBox(width: 10),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 3),
+                  child: Text(
+                    '\u09f3${_formatPrice(regular)}',
+                    style: AppFonts.roboto(
+                      fontSize: 13,
+                      color: const Color(0xFF94A3B8),
+                      decoration: TextDecoration.lineThrough,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    '-$discount%',
-                    style: AppFonts.roboto(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF059669),
-                    ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: _buildHeroBadge(
+                    icon: Icons.bolt_rounded,
+                    label: '$discount% OFF',
+                    color: _rose,
+                    background: const Color(0xFFFFE4E6),
                   ),
                 ),
               ],
-              const Spacer(),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    stock > 0 ? Icons.check_circle : Icons.info_outline,
-                    size: 14,
-                    color: stock > 0 ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    stock > 0 ? 'In Stock' : 'Out of Stock',
-                    style: AppFonts.roboto(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: stock > 0 ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 6,
+            runSpacing: 6,
             children: [
               _buildMetaPill(
                 icon: Icons.inventory_2_outlined,
-                label: stock > 0 ? '$stock available' : 'Out of stock',
-                color: stock > 0 ? _emerald : Colors.red,
+                label: stock > 0 ? '$stock in stock' : 'Currently unavailable',
+                color: stock > 0 ? _emerald : _rose,
               ),
               if (isFreeDelivery)
                 _buildMetaPill(
@@ -737,28 +853,23 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 ),
               if (views > 0)
                 _buildMetaPill(
-                  icon: Icons.visibility_outlined,
+                  icon: Icons.insights_outlined,
                   label: '$views views',
                   color: _indigo,
                 ),
             ],
           ),
-          if (isFreeDelivery) ...[
-            const SizedBox(height: 2),
-          ],
           if (shortDescription.trim().isNotEmpty) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             Text(
               shortDescription,
               style: AppFonts.roboto(
-                fontSize: 13,
+                fontSize: 12,
                 color: _slate500,
                 height: 1.5,
               ),
             ),
           ],
-          const SizedBox(height: 18),
-          Divider(color: _slate200, height: 1),
         ],
       ),
     );
@@ -770,7 +881,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
@@ -783,7 +894,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
           Text(
             label,
             style: AppFonts.roboto(
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               color: color,
             ),
@@ -794,100 +905,119 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Widget _buildBottomActionBar({required int stock}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: _slate200)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Row(
-            children: [
-              // Quantity Selector
-              Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    InkWell(
-                      onTap: _quantity > 1 ? () => setState(() => _quantity--) : null,
-                      child: Container(
-                        width: 36,
-                        height: 44,
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(4, 6, 4, 4),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _slate200),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+            child: Row(
+              children: [
+                Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: _slate100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: _quantity > 1
+                            ? () => setState(() => _quantity--)
+                            : null,
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          width: 34,
+                          height: 42,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.remove_rounded,
+                            size: 17,
+                            color: _quantity > 1
+                                ? _slate800
+                                : const Color(0xFFCBD5E1),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 38,
+                        height: 28,
                         alignment: Alignment.center,
-                        child: Icon(
-                          Icons.remove,
-                          size: 18,
-                          color: _quantity > 1 ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
+                        decoration: BoxDecoration(
+                          color: _surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '$_quantity',
+                          style: AppFonts.roboto(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: _slate800,
+                          ),
                         ),
                       ),
-                    ),
-                    Container(
-                      width: 40,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.symmetric(
-                          vertical: BorderSide(color: const Color(0xFFE5E7EB)),
+                      InkWell(
+                        onTap: (stock <= 0 || _quantity < stock)
+                            ? () => setState(() => _quantity++)
+                            : null,
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          width: 34,
+                          height: 42,
+                          alignment: Alignment.center,
+                          child: Icon(
+                            Icons.add_rounded,
+                            size: 17,
+                            color: (stock <= 0 || _quantity < stock)
+                                ? _slate800
+                                : const Color(0xFFCBD5E1),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        '$_quantity',
-                        style: AppFonts.roboto(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1F2937),
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: (stock <= 0 || _quantity < stock) ? () => setState(() => _quantity++) : null,
-                      child: Container(
-                        width: 36,
-                        height: 44,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.add,
-                          size: 18,
-                          color: (stock <= 0 || _quantity < stock) ? const Color(0xFF374151) : const Color(0xFFD1D5DB),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Buy Now Button
-              Expanded(
-                child: SizedBox(
-                  height: 44,
-                  child: ElevatedButton(
-                    onPressed: stock > 0 ? _handleBuyNow : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: _emerald,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: SizedBox(
+                    height: 42,
+                    child: ElevatedButton(
+                      onPressed: stock > 0 ? _handleBuyNow : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _emerald,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      stock > 0 ? 'Buy Now' : 'Unavailable',
-                      style: AppFonts.roboto(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.shopping_bag_outlined, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            stock > 0 ? 'Buy Now' : 'Unavailable',
+                            style: AppFonts.roboto(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -895,78 +1025,124 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Widget _buildImageGallery(Map<String, dynamic> product) {
-    // Get the AppBar height to add as top padding
-    final appBarHeight = kToolbarHeight + MediaQuery.of(context).padding.top;
-    
+    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 14;
+    final discount = _calcDiscount(
+        product['sale_price'], product['regular_price'] ?? product['price']);
+    final isFreeDelivery = product['is_free_delivery'] == true;
+
     return Container(
-      color: const Color(0xFFF9FAFB),
-      padding: EdgeInsets.only(top: appBarHeight),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFE9F1FF), Color(0xFFF6F9FE)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(4, topInset, 4, 0),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth.clamp(0.0, double.infinity);
           final height = constraints.maxHeight.clamp(0.0, double.infinity);
-          final galleryHeight = height > 0 ? height : width;
+          final galleryHeight = height > 0 ? height : width + 40;
 
           return SizedBox(
             width: width,
             height: galleryHeight,
             child: Stack(
-              fit: StackFit.expand,
               children: [
-                // Main Image
-                PageView.builder(
-                  itemCount: _imageCount,
-                  onPageChanged: (index) {
-                    setState(() => _selectedImageIndex = index);
-                  },
-                  itemBuilder: (context, index) {
-                    final imageUrl = _getImageUrl(index);
-                    return Container(
-                      color: const Color(0xFFF9FAFB),
-                      child: imageUrl.isNotEmpty
-                          ? Image.network(
-                              imageUrl,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    Icons.image_outlined,
-                                    size: 48,
-                                    color: Colors.grey.shade300,
-                                  ),
-                                );
-                              },
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.image_outlined,
-                                size: 48,
-                                color: Colors.grey.shade300,
-                              ),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _surface,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 10),
+                      child: PageView.builder(
+                        itemCount: _imageCount,
+                        onPageChanged: (index) {
+                          setState(() => _selectedImageIndex = index);
+                        },
+                        itemBuilder: (context, index) {
+                          final imageUrl = _getImageUrl(index);
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF7FAFC),
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                    );
-                  },
+                            child: imageUrl.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.contain,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Center(
+                                          child: Icon(
+                                            Icons.image_outlined,
+                                            size: 48,
+                                            color: Colors.grey.shade300,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : Center(
+                                    child: Icon(
+                                      Icons.image_outlined,
+                                      size: 48,
+                                      color: Colors.grey.shade300,
+                                    ),
+                                  ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
                 ),
-
-                // Image Counter
+                if (discount > 0)
+                  Positioned(
+                    top: 14,
+                    left: 14,
+                    child: _buildHeroBadge(
+                      icon: Icons.local_offer_rounded,
+                      label: '$discount% OFF',
+                      color: _rose,
+                      background: const Color(0xFFFFE4E6),
+                    ),
+                  ),
+                if (isFreeDelivery)
+                  Positioned(
+                    top: 14,
+                    right: 14,
+                    child: _buildHeroBadge(
+                      icon: Icons.local_shipping_outlined,
+                      label: 'Free delivery',
+                      color: _emerald,
+                      background: const Color(0xFFECFDF5),
+                    ),
+                  ),
                 if (_imageCount > 1)
                   Positioned(
-                    bottom: 16,
-                    right: 16,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        '${_selectedImageIndex + 1}/$_imageCount',
-                        style: AppFonts.roboto(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
+                    left: 0,
+                    right: 0,
+                    bottom: 4,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_imageCount, (index) {
+                        final isActive = index == _selectedImageIndex;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          width: isActive ? 18 : 6,
+                          height: 6,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          decoration: BoxDecoration(
+                            color: isActive ? _indigo : const Color(0xFFCBD5E1),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        );
+                      }),
                     ),
                   ),
               ],
@@ -980,33 +1156,44 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   Widget _buildStoreInfo(Map<String, dynamic> product) {
     final ownerDetails = product['owner_details'];
     final storeName = ownerDetails is Map
-        ? (ownerDetails['store_name']?.toString() ?? ownerDetails['name']?.toString() ?? 'Store')
+        ? (ownerDetails['store_name']?.toString() ??
+            ownerDetails['name']?.toString() ??
+            'Store')
         : 'Store';
-    
-    final isVerified = ownerDetails is Map ? (ownerDetails['kyc'] == true || ownerDetails['is_verified'] == true) : false;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    final isVerified = ownerDetails is Map
+        ? (ownerDetails['kyc'] == true || ownerDetails['is_verified'] == true)
+        : false;
+
+    return _buildSectionCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildSectionTitle('Storefront'),
+          const SizedBox(height: 10),
           Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 46,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFDBEAFE), Color(0xFFEDE9FE)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Center(
                   child: Icon(
-                    Icons.storefront_outlined,
-                    size: 22,
-                    color: Color(0xFF6B7280),
+                    Icons.storefront_rounded,
+                    size: 20,
+                    color: _indigo,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1018,8 +1205,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                             storeName,
                             style: AppFonts.roboto(
                               fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1F2937),
+                              fontWeight: FontWeight.w700,
+                              color: _slate800,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1027,50 +1214,49 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         ),
                         if (isVerified) ...[
                           const SizedBox(width: 4),
-                          const Icon(
-                            Icons.verified,
-                            size: 14,
-                            color: Color(0xFF3B82F6),
-                          ),
+                          const Icon(Icons.verified_rounded,
+                              size: 15, color: _indigo),
                         ],
                       ],
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
-                      'View store',
+                      'Verified seller profile and store catalog',
                       style: AppFonts.roboto(
-                        fontSize: 12,
-                        color: const Color(0xFF6B7280),
+                        fontSize: 11,
+                        color: _slate500,
+                        height: 1.4,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              TextButton(
-                onPressed: () => _openStore(_resolveStoreIdentity(product), storeName),
-                style: TextButton.styleFrom(
-                  foregroundColor: _emerald,
-                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Visit',
-                      style: AppFonts.roboto(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.arrow_forward_ios, size: 12),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          Divider(color: _slate200, height: 1),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () =>
+                  _openStore(_resolveStoreIdentity(product), storeName),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _slate800,
+                side: BorderSide(color: _slate200),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              icon: const Icon(Icons.store_mall_directory_outlined, size: 16),
+              label: Text(
+                'Open store',
+                style: AppFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1079,105 +1265,131 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   Widget _buildDescriptionTabs(Map<String, dynamic> product) {
     final description = product['description']?.toString() ?? '';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Product details'),
-        Container(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: _slate200),
+    return _buildSectionCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('About this product'),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: _slate100,
+              borderRadius: BorderRadius.circular(12),
             ),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            labelColor: const Color(0xFF1F2937),
-            unselectedLabelColor: const Color(0xFF9CA3AF),
-            indicatorColor: const Color(0xFF059669),
-            indicatorWeight: 2,
-            labelStyle: AppFonts.roboto(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: AppFonts.roboto(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-            tabs: const [
-              Tab(text: 'Description'),
-              Tab(text: 'Delivery'),
-              Tab(text: 'Reviews'),
-            ],
-          ),
-        ),
-        SizedBox(
-          height: 250,
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: description.isNotEmpty
-                    ? Html(
-                        data: description,
-                        onLinkTap: (url, attributes, element) {
-                          UrlLauncherUtils.launchExternalUrl(url);
-                        },
-                        style: {
-                          '*': Style(
-                            margin: Margins.zero,
-                            padding: HtmlPaddings.zero,
-                            fontSize: FontSize(13),
-                            color: const Color(0xFF4B5563),
-                            lineHeight: const LineHeight(1.6),
-                          ),
-                        },
-                      )
-                    : Text(
-                        'No description available',
-                        style: AppFonts.roboto(
-                          fontSize: 13,
-                          color: const Color(0xFF9CA3AF),
-                        ),
-                      ),
+            child: TabBar(
+              controller: _tabController,
+              onTap: (_) => setState(() {}),
+              dividerColor: Colors.transparent,
+              labelColor: Colors.white,
+              unselectedLabelColor: _slate500,
+              indicator: BoxDecoration(
+                color: _slate800,
+                borderRadius: BorderRadius.circular(10),
               ),
-              _buildDeliveryTab(product),
-              _buildReviewsTab(product),
-            ],
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelStyle: AppFonts.roboto(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+              unselectedLabelStyle: AppFonts.roboto(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+              tabs: const [
+                Tab(text: 'Overview'),
+                Tab(text: 'Delivery'),
+                Tab(text: 'Reviews'),
+              ],
+            ),
           ),
-        ),
-        Divider(color: _slate200, height: 1),
-      ],
+          const SizedBox(height: 8),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            child: _buildDescriptionTabContent(
+              product: product,
+              description: description,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDescriptionTabContent({
+    required Map<String, dynamic> product,
+    required String description,
+  }) {
+    final tabIndex = _tabController.index;
+
+    if (tabIndex == 1) {
+      return _buildDeliveryTab(product);
+    }
+
+    if (tabIndex == 2) {
+      return _buildReviewsTab(product);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: description.isNotEmpty
+          ? Html(
+              data: description,
+              onLinkTap: (url, attributes, element) {
+                UrlLauncherUtils.launchExternalUrl(url);
+              },
+              style: {
+                '*': Style(
+                  margin: Margins.zero,
+                  padding: HtmlPaddings.zero,
+                  fontSize: FontSize(12),
+                  color: const Color(0xFF475569),
+                  lineHeight: const LineHeight(1.6),
+                ),
+              },
+            )
+          : Text(
+              'No description available',
+              style: AppFonts.roboto(
+                fontSize: 12,
+                color: const Color(0xFF9CA3AF),
+              ),
+            ),
     );
   }
 
   Widget _buildDeliveryTab(Map<String, dynamic> product) {
-    final feeInsideDhaka = product['delivery_fee_inside_dhaka']?.toString() ?? '100';
-    final feeOutsideDhaka = product['delivery_fee_outside_dhaka']?.toString() ?? '150';
+    final feeInsideDhaka =
+        product['delivery_fee_inside_dhaka']?.toString() ?? '100';
+    final feeOutsideDhaka =
+        product['delivery_fee_outside_dhaka']?.toString() ?? '150';
     final isFreeDelivery = product['is_free_delivery'] == true;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isFreeDelivery)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              margin: const EdgeInsets.only(bottom: 10),
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.local_shipping_outlined, size: 18, color: Color(0xFF10B981)),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.local_shipping_outlined,
+                      size: 16, color: Color(0xFF10B981)),
+                  const SizedBox(width: 6),
                   Text(
                     'Free delivery available',
                     style: AppFonts.roboto(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF10B981),
                     ),
@@ -1194,23 +1406,28 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Widget _buildDeliveryRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: AppFonts.roboto(
-              fontSize: 13,
+              fontSize: 12,
               color: const Color(0xFF6B7280),
             ),
           ),
           Text(
             value,
             style: AppFonts.roboto(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
               color: const Color(0xFF1F2937),
             ),
           ),
@@ -1220,44 +1437,55 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Widget _buildReviewsTab(Map<String, dynamic> product) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
       child: Column(
         children: [
-          const SizedBox(height: 20),
           Icon(
             Icons.rate_review_outlined,
-            size: 40,
+            size: 34,
             color: const Color(0xFFD1D5DB),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             'No reviews yet',
             style: AppFonts.roboto(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
               color: const Color(0xFF6B7280),
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Be the first to review',
+            'Be the first to review this product and help other buyers.',
             style: AppFonts.roboto(
-              fontSize: 12,
+              fontSize: 11,
               color: const Color(0xFF9CA3AF),
+              height: 1.4,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: () => _showWriteReviewDialog(product),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF059669),
-            ),
-            child: Text(
-              'Write a review',
-              style: AppFonts.roboto(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showWriteReviewDialog(product),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _slate800,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              icon: const Icon(Icons.edit_outlined, size: 16),
+              label: Text(
+                'Write a review',
+                style: AppFonts.roboto(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
@@ -1270,7 +1498,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     final ownerDetails = product['owner_details'];
     final ownerId = ownerDetails is Map ? ownerDetails['id']?.toString() : null;
     final currentUserId = AuthService.currentUser?.id;
-    
+
     if (ownerId != null && ownerId == currentUserId) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1325,7 +1553,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                     const SizedBox(height: 18),
                     Row(
                       children: [
-                        const Icon(Icons.rate_review, color: Color(0xFF10B981), size: 20),
+                        const Icon(Icons.rate_review,
+                            color: Color(0xFF10B981), size: 20),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -1359,10 +1588,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                             });
                           },
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+                          constraints: const BoxConstraints.tightFor(
+                              width: 40, height: 40),
                           iconSize: 30,
                           icon: Icon(
-                            index < rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                            index < rating
+                                ? Icons.star_rounded
+                                : Icons.star_outline_rounded,
                             color: Colors.amber,
                           ),
                         );
@@ -1378,7 +1610,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12),
                         counterStyle: AppFonts.roboto(fontSize: 10),
                       ),
                       style: AppFonts.roboto(fontSize: 13),
@@ -1442,7 +1675,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                           'Thank you for your review!',
                                           style: AppFonts.roboto(fontSize: 13),
                                         ),
-                                        backgroundColor: const Color(0xFF10B981),
+                                        backgroundColor:
+                                            const Color(0xFF10B981),
                                       ),
                                     );
                                   }
@@ -1481,13 +1715,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
   }
 
   Widget _buildSimilarProducts() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 6),
+    return _buildSectionCard(
+      padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionTitle('You may also like'),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           LayoutBuilder(
             builder: (context, constraints) {
               const crossAxisCount = 2;
@@ -1510,7 +1744,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   return ProductCard(
                     product: _similarProducts[index],
                     isLoading: false,
-                    onBuyNow: () => _handleBuyNowForProduct(_similarProducts[index]),
+                    onBuyNow: () =>
+                        _handleBuyNowForProduct(_similarProducts[index]),
                     onTap: () => _openProductDetails(_similarProducts[index]),
                   );
                 },
@@ -1526,13 +1761,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
                   ),
                 ),
               ),
             ),
-          const SizedBox(height: 8),
-          Divider(color: _slate200, height: 1),
         ],
       ),
     );
@@ -1544,13 +1778,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
         ? (ownerDetails['store_name']?.toString() ?? 'Store')
         : 'Store';
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 6),
+    return _buildSectionCard(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionTitle('More from $storeName'),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           if (_isLoadingStoreProducts)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
@@ -1563,7 +1797,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             )
           else if (_storeProducts.isEmpty)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 'No other products',
                 style: AppFonts.roboto(
@@ -1577,33 +1811,42 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _storeProducts.length,
-              separatorBuilder: (_, __) => Divider(color: _slate100, height: 1),
+              separatorBuilder: (_, __) => const SizedBox(height: 2),
               itemBuilder: (context, index) {
                 return _buildInlineProductRow(
                   product: _storeProducts[index],
                   onTap: () => _openProductDetails(_storeProducts[index]),
-                  onBuyNow: () => _handleBuyNowForProduct(_storeProducts[index]),
+                  onBuyNow: () =>
+                      _handleBuyNowForProduct(_storeProducts[index]),
                 );
               },
             ),
-          const SizedBox(height: 8),
-          Divider(color: _slate200, height: 1),
         ],
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Text(
-        title,
-        style: AppFonts.roboto(
-          fontSize: 15,
-          fontWeight: FontWeight.w700,
-          color: _slate800,
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: const BoxDecoration(
+            color: _indigo,
+            shape: BoxShape.circle,
+          ),
         ),
-      ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: AppFonts.roboto(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: _slate800,
+          ),
+        ),
+      ],
     );
   }
 
@@ -1612,16 +1855,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
     required VoidCallback onTap,
     required VoidCallback onBuyNow,
   }) {
-    final title = product['name']?.toString() ?? product['title']?.toString() ?? 'Product';
+    final title = product['name']?.toString() ??
+        product['title']?.toString() ??
+        'Product';
     final sale = product['sale_price'];
     final regular = product['regular_price'] ?? product['price'];
     final price = sale ?? regular;
     final storeName = _resolveStoreName(product);
     final imageUrl = _resolveProductImage(product);
-    final hasDiscount = sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!;
+    final hasDiscount = sale != null &&
+        _toNum(sale) != null &&
+        regular != null &&
+        _toNum(regular) != null &&
+        _toNum(sale)! < _toNum(regular)!;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1632,15 +1881,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(16),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 1),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(10),
                         child: Container(
-                          width: 74,
-                          height: 74,
+                          width: 62,
+                          height: 62,
                           color: _slate100,
                           child: imageUrl.isNotEmpty
                               ? Image.network(
@@ -1659,7 +1908,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1672,40 +1921,40 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppFonts.roboto(
-                                  fontSize: 14,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: _slate800,
-                                  height: 1.35,
+                                  height: 1.25,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 5),
+                            const SizedBox(height: 3),
                             Text(
                               storeName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppFonts.roboto(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: _slate500,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 5),
                             Row(
                               children: [
                                 Text(
                                   '৳${_formatPrice(price)}',
                                   style: AppFonts.roboto(
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w700,
                                     color: _emerald,
                                   ),
                                 ),
                                 if (hasDiscount) ...[
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
                                   Text(
                                     '৳${_formatPrice(regular)}',
                                     style: AppFonts.roboto(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: _slate500,
                                       decoration: TextDecoration.lineThrough,
                                     ),
@@ -1727,12 +1976,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
             onPressed: onBuyNow,
             style: TextButton.styleFrom(
               foregroundColor: _emerald,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              minimumSize: const Size(0, 30),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             ),
             child: Text(
               'Buy',
               style: AppFonts.roboto(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1772,5 +2023,4 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> with Single
       product['image']?.toString() ?? product['featured_image']?.toString(),
     );
   }
-
 }
