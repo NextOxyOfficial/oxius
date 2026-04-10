@@ -4426,6 +4426,123 @@ def ai_business_finder(request):
                 return None
             return s
 
+        def _tokenize_text(value: str):
+            return {
+                token
+                for token in re.findall(r"[a-z0-9]+", (value or "").lower())
+                if len(token) > 1
+            }
+
+        def _contains_placeholder_text(value: str) -> bool:
+            low = (value or "").strip().lower()
+            if not low:
+                return True
+            placeholder_phrases = {
+                "business name",
+                "company name",
+                "shop name",
+                "service provider",
+                "sample business",
+                "example business",
+                "dummy business",
+                "placeholder",
+                "lorem ipsum",
+                "brief description of the business",
+                "description of the business",
+                "to be updated",
+                "coming soon",
+            }
+            return any(phrase in low for phrase in placeholder_phrases)
+
+        def _is_generic_business_name(name: str) -> bool:
+            low = name.strip().lower()
+            if not low or _contains_placeholder_text(low):
+                return True
+
+            bt_tokens = _tokenize_text(business_type)
+            loc_tokens = _tokenize_text(location_str)
+            name_tokens = _tokenize_text(name)
+            generic_tokens = {
+                "bangladesh",
+                "bd",
+                "service",
+                "services",
+                "shop",
+                "store",
+                "mart",
+                "center",
+                "centre",
+                "solution",
+                "solutions",
+                "agency",
+                "traders",
+                "enterprise",
+                "enterprises",
+                "business",
+                "company",
+                "co",
+                "limited",
+                "ltd",
+                "house",
+                "point",
+                "hub",
+                "world",
+                "best",
+                "top",
+                "local",
+                "trusted",
+                "professional",
+            }
+
+            if bt_tokens and name_tokens and name_tokens.issubset(bt_tokens | loc_tokens | generic_tokens):
+                return True
+
+            return False
+
+        def _is_generic_description(description: str) -> bool:
+            low = description.strip().lower()
+            if not low:
+                return True
+            if _contains_placeholder_text(low):
+                return True
+
+            generic_phrases = {
+                "provides various services",
+                "offers various services",
+                "offers a wide range of services",
+                "known for quality service",
+                "serves the local area",
+                "located in bangladesh",
+                "contact for more details",
+                "more information available on request",
+            }
+            return any(phrase in low for phrase in generic_phrases)
+
+        def _is_generic_address(address: str) -> bool:
+            low = address.strip().lower()
+            if not low:
+                return True
+            if _contains_placeholder_text(low):
+                return True
+
+            normalized_locations = {
+                (country or "").strip().lower(),
+                (state or "").strip().lower(),
+                (city or "").strip().lower(),
+                (upazila or "").strip().lower(),
+                (location_str or "").strip().lower(),
+            }
+            normalized_locations.discard("")
+            if low in normalized_locations:
+                return True
+
+            address_tokens = _tokenize_text(address)
+            loc_tokens = _tokenize_text(location_str)
+            if address_tokens and address_tokens.issubset(loc_tokens | {"bangladesh", "road", "area", "city"}):
+                return True
+
+            return False
+
         def _is_valid_bd_phone(phone: str) -> bool:
             p = phone.strip()
             if not p:
@@ -4494,20 +4611,27 @@ def ai_business_finder(request):
 
         def _sanitize_businesses(businesses):
             cleaned = []
+            seen_names = set()
             for b in businesses or []:
                 if not isinstance(b, dict):
                     continue
                 name = _clean_str(b.get("name"))
-                if not name:
+                if not name or _is_generic_business_name(name):
                     continue
+
+                normalized_name = re.sub(r"\s+", " ", name.lower()).strip()
+                if normalized_name in seen_names:
+                    continue
+                seen_names.add(normalized_name)
+
                 item = {"name": name}
 
                 description = _clean_str(b.get("description"))
-                if description:
+                if description and not _is_generic_description(description):
                     item["description"] = description
 
                 address = _clean_str(b.get("address"))
-                if address:
+                if address and not _is_generic_address(address):
                     item["address"] = address
 
                 phone = _clean_str(b.get("phone"))
@@ -4524,6 +4648,9 @@ def ai_business_finder(request):
 
                 if not _is_website_consistent(item.get("email"), item.get("website")):
                     item.pop("website", None)
+
+                if not any(item.get(field) for field in ("address", "phone", "email", "website")):
+                    continue
 
                 cleaned.append(item)
 
@@ -4608,10 +4735,14 @@ Return a JSON array of businesses with the following structure:
 
 CRITICAL INSTRUCTIONS:
 - Return ONLY the JSON array, no other text or markdown
-- Include up to 5 real, well-known businesses that actually exist in that area
+- Include up to 5 real businesses that actually exist in that area
 - For phone numbers: Use realistic Bangladesh mobile format like +8801712345678 or landline like +880-2-1234567. DO NOT use placeholder X characters.
 - If you genuinely don't know a specific detail, use null instead of fake/placeholder data
-- Focus on actual businesses you have knowledge about from your training data
+- Do NOT invent business names, addresses, websites, phone numbers, or emails
+- If a business cannot be supported by at least one real contact/detail field (address, phone, email, or website), omit it completely
+- Never return generic example names like "Best {business_type}", "Local {business_type} Service", "Business Name", or similar placeholders
+- If you are uncertain about all candidates, return an empty JSON array []
+- Focus only on businesses you have high confidence about from prior knowledge
 - Include real website URLs if you know them, otherwise use null"""
 
                 payload = {
@@ -4620,7 +4751,7 @@ CRITICAL INSTRUCTIONS:
                         {"role": "system", "content": "You are a local business finder assistant. Always respond with valid JSON arrays only."},
                         {"role": "user", "content": prompt}
                     ],
-                    "temperature": 0.2,
+                    "temperature": 0.0,
                     "max_tokens": 1500
                 }
                 

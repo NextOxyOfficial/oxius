@@ -29,17 +29,19 @@ class ClassifiedPostDetailsScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ClassifiedPostDetailsScreen> createState() => _ClassifiedPostDetailsScreenState();
+  State<ClassifiedPostDetailsScreen> createState() =>
+      _ClassifiedPostDetailsScreenState();
 }
 
-class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScreen> {
+class _ClassifiedPostDetailsScreenState
+    extends State<ClassifiedPostDetailsScreen> {
   late final ClassifiedPostService _postService;
-  
+
   ClassifiedPost? _post;
   bool _isLoading = true;
   bool _showPhone = false;
   int _currentImageIndex = 0;
-  
+
   final PageController _pageController = PageController();
 
   bool _aiUserChoice = false;
@@ -53,23 +55,140 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     final text = value.toString().trim();
     if (text.isEmpty) return null;
     final lower = text.toLowerCase();
-    if (lower == 'null' || lower == 'n/a' || lower == 'na' || lower == 'none' || lower == 'unknown') {
+    if (lower == 'null' ||
+        lower == 'n/a' ||
+        lower == 'na' ||
+        lower == 'none' ||
+        lower == 'unknown') {
       return null;
     }
     return text;
+  }
+
+  Set<String> _tokenizeAiText(String value) {
+    return RegExp(r'[a-z0-9]+')
+        .allMatches(value.toLowerCase())
+        .map((match) => match.group(0) ?? '')
+        .where((token) => token.length > 1)
+        .toSet();
+  }
+
+  bool _containsAiPlaceholderText(String value) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty) return true;
+    const phrases = {
+      'business name',
+      'company name',
+      'shop name',
+      'service provider',
+      'sample business',
+      'example business',
+      'dummy business',
+      'placeholder',
+      'lorem ipsum',
+      'brief description of the business',
+      'description of the business',
+      'to be updated',
+      'coming soon',
+    };
+    return phrases.any(lower.contains);
+  }
+
+  bool _isGenericAiBusinessName(String value,
+      {String? businessType, String? locationText}) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty || _containsAiPlaceholderText(lower)) return true;
+
+    final nameTokens = _tokenizeAiText(value);
+    final typeTokens = _tokenizeAiText(businessType ?? '');
+    final locationTokens = _tokenizeAiText(locationText ?? '');
+    const genericTokens = {
+      'bangladesh',
+      'bd',
+      'service',
+      'services',
+      'shop',
+      'store',
+      'mart',
+      'center',
+      'centre',
+      'solution',
+      'solutions',
+      'agency',
+      'traders',
+      'enterprise',
+      'enterprises',
+      'business',
+      'company',
+      'limited',
+      'ltd',
+      'house',
+      'point',
+      'hub',
+      'best',
+      'top',
+      'local',
+      'trusted',
+      'professional',
+    };
+
+    return typeTokens.isNotEmpty &&
+        nameTokens.isNotEmpty &&
+        nameTokens
+            .difference(typeTokens.union(locationTokens).union(genericTokens))
+            .isEmpty;
+  }
+
+  bool _isGenericAiDescription(String value) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty || _containsAiPlaceholderText(lower)) return true;
+    const phrases = {
+      'provides various services',
+      'offers various services',
+      'offers a wide range of services',
+      'known for quality service',
+      'serves the local area',
+      'located in bangladesh',
+      'contact for more details',
+      'more information available on request',
+    };
+    return phrases.any(lower.contains);
+  }
+
+  bool _isGenericAiAddress(String value, {String? locationText}) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty || _containsAiPlaceholderText(lower)) return true;
+    final locationLower = locationText?.trim().toLowerCase();
+    if (locationLower != null &&
+        locationLower.isNotEmpty &&
+        lower == locationLower) {
+      return true;
+    }
+
+    final addressTokens = _tokenizeAiText(value);
+    final locationTokens = _tokenizeAiText(locationText ?? '');
+    return addressTokens.isNotEmpty &&
+        addressTokens
+            .difference(
+                locationTokens.union({'bangladesh', 'road', 'area', 'city'}))
+            .isEmpty;
   }
 
   bool _isValidBangladeshPhone(String value) {
     final compact = value.replaceAll(RegExp(r'[\s\-()]'), '');
     if (compact.isEmpty) return false;
     if (compact.toLowerCase().contains('x')) return false;
-    if (compact.contains('1234567') || compact.contains('12345678')) return false;
+    if (compact.contains('1234567') || compact.contains('12345678'))
+      return false;
 
     final mobileIntl = RegExp(r'^\+8801\d{9}$');
     final mobileLocal = RegExp(r'^01\d{9}$');
     final landlineIntl = RegExp(r'^\+880\d{1,2}\d{6,8}$');
     final landlineIntlDash = RegExp(r'^\+880\-?\d{1,2}\-?\d{6,8}$');
-    return mobileIntl.hasMatch(compact) || mobileLocal.hasMatch(compact) || landlineIntl.hasMatch(compact) || landlineIntlDash.hasMatch(value);
+    return mobileIntl.hasMatch(compact) ||
+        mobileLocal.hasMatch(compact) ||
+        landlineIntl.hasMatch(compact) ||
+        landlineIntlDash.hasMatch(value);
   }
 
   bool _isValidEmail(String value) {
@@ -84,13 +203,18 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     if (text.isEmpty) return false;
     if (text.contains(' ')) return false;
     final lower = text.toLowerCase();
-    if (lower.contains('example.com') || lower.contains('test.com')) return false;
-    return lower.contains('.') && (lower.startsWith('http://') || lower.startsWith('https://') || RegExp(r'^[a-z0-9\-_.]+\.[a-z]{2,}').hasMatch(lower));
+    if (lower.contains('example.com') || lower.contains('test.com'))
+      return false;
+    return lower.contains('.') &&
+        (lower.startsWith('http://') ||
+            lower.startsWith('https://') ||
+            RegExp(r'^[a-z0-9\-_.]+\.[a-z]{2,}').hasMatch(lower));
   }
 
   String _normalizeUrlForLaunch(String url) {
     final trimmed = url.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://'))
+      return trimmed;
     return 'https://$trimmed';
   }
 
@@ -114,26 +238,38 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     final emailDomain = _extractEmailDomain(email);
     final websiteHost = _extractHostFromWebsite(website);
     if (emailDomain == null || websiteHost == null) return false;
-    final cleanEmailDomain = emailDomain.startsWith('www.') ? emailDomain.substring(4) : emailDomain;
-    return websiteHost == cleanEmailDomain || websiteHost.endsWith('.$cleanEmailDomain') || cleanEmailDomain.endsWith('.$websiteHost');
+    final cleanEmailDomain =
+        emailDomain.startsWith('www.') ? emailDomain.substring(4) : emailDomain;
+    return websiteHost == cleanEmailDomain ||
+        websiteHost.endsWith('.$cleanEmailDomain') ||
+        cleanEmailDomain.endsWith('.$websiteHost');
   }
 
-  Map<String, dynamic> _sanitizeAiBusiness(Map<String, dynamic> business) {
+  Map<String, dynamic> _sanitizeAiBusiness(
+    Map<String, dynamic> business, {
+    String? businessType,
+    String? locationText,
+  }) {
     final sanitized = Map<String, dynamic>.from(business);
 
     final name = _sanitizeAiValue(sanitized['name']);
-    if (name == null) return <String, dynamic>{};
+    if (name == null ||
+        _isGenericAiBusinessName(name,
+            businessType: businessType, locationText: locationText)) {
+      return <String, dynamic>{};
+    }
     sanitized['name'] = name;
 
     final description = _sanitizeAiValue(sanitized['description']);
-    if (description == null) {
+    if (description == null || _isGenericAiDescription(description)) {
       sanitized.remove('description');
     } else {
       sanitized['description'] = description;
     }
 
     final address = _sanitizeAiValue(sanitized['address']);
-    if (address == null) {
+    if (address == null ||
+        _isGenericAiAddress(address, locationText: locationText)) {
       sanitized.remove('address');
     } else {
       sanitized['address'] = address;
@@ -162,14 +298,23 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
     final finalEmail = sanitized['email'] as String?;
     final finalWebsite = sanitized['website'] as String?;
-    if (!_isWebsiteConsistentWithEmail(email: finalEmail, website: finalWebsite)) {
+    if (!_isWebsiteConsistentWithEmail(
+        email: finalEmail, website: finalWebsite)) {
       sanitized.remove('website');
+    }
+
+    if ((sanitized['address'] == null) &&
+        (sanitized['phone'] == null) &&
+        (sanitized['email'] == null) &&
+        (sanitized['website'] == null)) {
+      return <String, dynamic>{};
     }
 
     return sanitized;
   }
 
-  List<Map<String, dynamic>> _dropRepeatedFieldsAcrossAiResults(List<Map<String, dynamic>> items) {
+  List<Map<String, dynamic>> _dropRepeatedFieldsAcrossAiResults(
+      List<Map<String, dynamic>> items) {
     final phoneCount = <String, int>{};
     final websiteCount = <String, int>{};
 
@@ -242,7 +387,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               value,
               style: TextStyle(
                 fontSize: 13,
-                color: isLink ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+                color:
+                    isLink ? const Color(0xFF10B981) : const Color(0xFF6B7280),
               ),
             ),
           ),
@@ -262,7 +408,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   Future<void> _loadPost() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final post = await _postService.fetchPostById(widget.postSlug);
       if (mounted && post != null) {
@@ -277,7 +423,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
       setState(() => _isLoading = false);
       if (mounted) {
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           onRetry: () => _loadPost(),
         );
@@ -288,6 +434,11 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   Future<void> _startAISearch() async {
     final post = _post;
     final businessType = post?.categoryDetails?.businessType;
+    final locationText = [post?.upazila, post?.city, post?.state, post?.country]
+        .whereType<String>()
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .join(', ');
 
     if (post == null || businessType == null || businessType.isEmpty) return;
 
@@ -319,11 +470,18 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        if (decoded is Map && decoded['businesses'] is List) {
-          businesses = (decoded['businesses'] as List)
-              .whereType<Map>()
-              .map((e) => Map<String, dynamic>.from(e))
-              .toList();
+        if (decoded is Map) {
+          final dynamic dataNode = decoded['data'];
+          final dynamic businessesNode = decoded['businesses'] ??
+              (dataNode is Map ? dataNode['businesses'] : null) ??
+              (dataNode is Map ? dataNode['data'] : null);
+
+          if (businessesNode is List) {
+            businesses = businessesNode
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
+          }
         } else if (decoded is List) {
           businesses = decoded
               .whereType<Map>()
@@ -350,7 +508,16 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
       if (!mounted) return;
       setState(() {
         _aiSearching = false;
-        final cleaned = businesses.map(_sanitizeAiBusiness).where((e) => e.isNotEmpty).toList();
+        final cleaned = businesses
+            .map(
+              (business) => _sanitizeAiBusiness(
+                business,
+                businessType: businessType,
+                locationText: locationText,
+              ),
+            )
+            .where((e) => e.isNotEmpty)
+            .toList();
         _aiResults = _dropRepeatedFieldsAcrossAiResults(cleaned);
         _aiErrorMessage = errorMessage;
       });
@@ -423,9 +590,11 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF10B981).withOpacity(0.25)),
+                border: Border.all(
+                    color: const Color(0xFF10B981).withOpacity(0.25)),
               ),
-              child: const Icon(Icons.smart_toy_rounded, size: 34, color: Color(0xFF10B981)),
+              child: const Icon(Icons.smart_toy_rounded,
+                  size: 34, color: Color(0xFF10B981)),
             ),
             const SizedBox(height: 12),
             const Text(
@@ -449,11 +618,13 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                     child: const Text(
                       'হ্যাঁ',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -466,11 +637,13 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       backgroundColor: const Color(0xFF111827),
                       side: BorderSide(color: Colors.grey.shade800),
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                     child: const Text(
                       'না',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
                     ),
                   ),
                 ),
@@ -484,7 +657,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF10B981).withOpacity(0.25)),
+                border: Border.all(
+                    color: const Color(0xFF10B981).withOpacity(0.25)),
               ),
               child: const Center(
                 child: SizedBox(
@@ -510,7 +684,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             ),
           ],
           if (_aiSearchDeclined) ...[
-            const Icon(Icons.smart_toy_rounded, size: 44, color: Color(0xFF6B7280)),
+            const Icon(Icons.smart_toy_rounded,
+                size: 44, color: Color(0xFF6B7280)),
             const SizedBox(height: 12),
             const Text(
               'আমি AdsyAI Bot\nঠিক আছে, আপনি যখন চাইবেন তখন আমি তথ্য খুঁজে দেখাবো।',
@@ -623,7 +798,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       _buildInfoRow(
                         icon: Icons.phone,
                         value: phone,
-                        onTap: () => UrlLauncherUtils.launchExternalUrl('tel:$phone'),
+                        onTap: () =>
+                            UrlLauncherUtils.launchExternalUrl('tel:$phone'),
                       ),
                     ],
                     if (email != null) ...[
@@ -631,7 +807,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       _buildInfoRow(
                         icon: Icons.email,
                         value: email,
-                        onTap: () => UrlLauncherUtils.launchExternalUrl('mailto:$email'),
+                        onTap: () =>
+                            UrlLauncherUtils.launchExternalUrl('mailto:$email'),
                       ),
                     ],
                     if (website != null) ...[
@@ -640,7 +817,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                         icon: Icons.language,
                         value: website,
                         isLink: true,
-                        onTap: () => UrlLauncherUtils.launchExternalUrl(_normalizeUrlForLaunch(website)),
+                        onTap: () => UrlLauncherUtils.launchExternalUrl(
+                            _normalizeUrlForLaunch(website)),
                       ),
                     ],
                   ],
@@ -648,7 +826,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               );
             }),
           ],
-          if (_aiUserChoice && !_aiSearching && !_aiSearchDeclined && _aiResults.isEmpty) ...[
+          if (_aiUserChoice &&
+              !_aiSearching &&
+              !_aiSearchDeclined &&
+              _aiResults.isEmpty) ...[
             const Text(
               'আমি AdsyAI Bot\nদুঃখিত, আপনার জন্য ইন্টারনেট থেকে কোনো তথ্য খুঁজে পাইনি।',
               textAlign: TextAlign.center,
@@ -710,7 +891,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     print('🔵 Chat button tapped!');
     print('🔵 Post data: ${_post?.id}');
     print('🔵 User ID: ${_post?.user?.id}');
-    
+
     if (_post?.user?.id == null) {
       print('🔴 Seller information not available');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -794,14 +975,15 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
     } catch (e, stackTrace) {
       print('🔴 Error opening chat: $e');
       print('🔴 Stack trace: $stackTrace');
-      
+
       // Close loading indicator if still showing
       if (mounted) {
         Navigator.pop(context);
       }
-      
+
       // Check if it's an authentication error
-      if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+      if (e.toString().contains('401') ||
+          e.toString().contains('Unauthorized')) {
         if (mounted) {
           _showLoginRequiredDialog();
         }
@@ -818,11 +1000,11 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   String _getSellerName() {
     if (_post?.user == null) return 'Seller';
-    
+
     final firstName = _post!.user!.firstName ?? '';
     final lastName = _post!.user!.lastName ?? '';
     final username = _post!.user!.username ?? 'Seller';
-    
+
     if (firstName.isNotEmpty && lastName.isNotEmpty) {
       return '$firstName $lastName';
     } else if (firstName.isNotEmpty) {
@@ -849,27 +1031,28 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   String _getNumericServiceId() {
     if (_post == null) return '';
-    
+
     int hash = 0;
     final str = _post!.id.toString();
-    
+
     for (int i = 0; i < str.length; i++) {
       final char = str.codeUnitAt(i);
       hash = ((hash << 5) - hash) + char;
       hash = hash & hash;
     }
-    
+
     final positiveHash = hash.abs();
     final numericId = positiveHash.toString().padLeft(10, '0');
-    
+
     // Ensure we only return up to 10 digits
     return numericId.length > 10 ? numericId.substring(0, 10) : numericId;
   }
 
   void _sharePost() {
     if (_post == null) return;
-    
-    final shareUrl = 'https://adsyclub.com/classified-categories/details/${_post!.slug ?? _post!.id}';
+
+    final shareUrl =
+        'https://adsyclub.com/classified-categories/details/${_post!.slug ?? _post!.id}';
     Share.share(
       '${_post!.title}\n\n$shareUrl',
       subject: _post!.title,
@@ -878,9 +1061,10 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   void _showShareDialog() {
     if (_post == null) return;
-    
-    final shareUrl = 'https://adsyclub.com/classified-categories/details/${_post!.slug ?? _post!.id}';
-    
+
+    final shareUrl =
+        'https://adsyclub.com/classified-categories/details/${_post!.slug ?? _post!.id}';
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -910,7 +1094,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: shareUrl));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Link copied to clipboard')),
+                        const SnackBar(
+                            content: Text('Link copied to clipboard')),
                       );
                       Navigator.pop(context);
                     },
@@ -919,22 +1104,26 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Share via', style: TextStyle(fontWeight: FontWeight.w600)),
+            const Text('Share via',
+                style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 _buildShareButton('Facebook', Icons.facebook, () {
-                  launchUrl(Uri.parse('https://www.facebook.com/sharer/sharer.php?u=$shareUrl'));
+                  launchUrl(Uri.parse(
+                      'https://www.facebook.com/sharer/sharer.php?u=$shareUrl'));
                   Navigator.pop(context);
                 }),
                 _buildShareButton('WhatsApp', Icons.message, () {
-                  launchUrl(Uri.parse('https://api.whatsapp.com/send?text=${_post!.title} $shareUrl'));
+                  launchUrl(Uri.parse(
+                      'https://api.whatsapp.com/send?text=${_post!.title} $shareUrl'));
                   Navigator.pop(context);
                 }),
                 _buildShareButton('Email', Icons.email, () {
-                  launchUrl(Uri.parse('mailto:?subject=${_post!.title}&body=$shareUrl'));
+                  launchUrl(Uri.parse(
+                      'mailto:?subject=${_post!.title}&body=$shareUrl'));
                   Navigator.pop(context);
                 }),
               ],
@@ -975,7 +1164,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   void _showReportDialog() {
     String? reportReason;
     final TextEditingController detailsController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -994,31 +1183,38 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 RadioListTile<String>(
                   value: 'spam',
                   groupValue: reportReason,
-                  onChanged: (value) => setDialogState(() => reportReason = value),
-                  title: const Text('Spam or misleading', style: TextStyle(fontSize: 14)),
+                  onChanged: (value) =>
+                      setDialogState(() => reportReason = value),
+                  title: const Text('Spam or misleading',
+                      style: TextStyle(fontSize: 14)),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
                 RadioListTile<String>(
                   value: 'inappropriate',
                   groupValue: reportReason,
-                  onChanged: (value) => setDialogState(() => reportReason = value),
-                  title: const Text('Inappropriate content', style: TextStyle(fontSize: 14)),
+                  onChanged: (value) =>
+                      setDialogState(() => reportReason = value),
+                  title: const Text('Inappropriate content',
+                      style: TextStyle(fontSize: 14)),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
                 RadioListTile<String>(
                   value: 'fraud',
                   groupValue: reportReason,
-                  onChanged: (value) => setDialogState(() => reportReason = value),
-                  title: const Text('Fraudulent or scam', style: TextStyle(fontSize: 14)),
+                  onChanged: (value) =>
+                      setDialogState(() => reportReason = value),
+                  title: const Text('Fraudulent or scam',
+                      style: TextStyle(fontSize: 14)),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                 ),
                 RadioListTile<String>(
                   value: 'other',
                   groupValue: reportReason,
-                  onChanged: (value) => setDialogState(() => reportReason = value),
+                  onChanged: (value) =>
+                      setDialogState(() => reportReason = value),
                   title: const Text('Other', style: TextStyle(fontSize: 14)),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
@@ -1046,7 +1242,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Report submitted. We will review it shortly.'),
+                      content:
+                          Text('Report submitted. We will review it shortly.'),
                       backgroundColor: Color(0xFF10B981),
                     ),
                   );
@@ -1065,9 +1262,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   void _contactProvider() {
     if (_post?.user == null) return;
-    
+
     final user = _post!.user!;
-    
+
     if (user.phone != null) {
       launchUrl(Uri.parse('tel:${user.phone}'));
     } else if (user.email != null) {
@@ -1153,12 +1350,14 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Image Gallery at Top (only if images exist)
-            if (_post!.medias != null && _post!.medias!.any((m) => m.image != null))
+            if (_post!.medias != null &&
+                _post!.medias!.any((m) => m.image != null))
               _buildImageGallery(),
-            
-            if (_post!.medias != null && _post!.medias!.any((m) => m.image != null))
+
+            if (_post!.medias != null &&
+                _post!.medias!.any((m) => m.image != null))
               const SizedBox(height: 8),
-            
+
             // Price and Title Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -1176,9 +1375,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       height: 1.2,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 10),
-                  
+
                   // Title
                   Text(
                     _post!.title,
@@ -1190,9 +1389,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       height: 1.3,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 10),
-                  
+
                   // Meta info row
                   Wrap(
                     spacing: 8,
@@ -1202,7 +1401,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.location_on_rounded, size: 14, color: Colors.grey.shade600),
+                          Icon(Icons.location_on_rounded,
+                              size: 14, color: Colors.grey.shade600),
                           const SizedBox(width: 4),
                           Text(
                             [_post!.city, _post!.state]
@@ -1220,7 +1420,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.visibility_rounded, size: 14, color: Colors.grey.shade600),
+                          Icon(Icons.visibility_rounded,
+                              size: 14, color: Colors.grey.shade600),
                           const SizedBox(width: 4),
                           Text(
                             '${_post!.viewsCount}',
@@ -1236,7 +1437,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.schedule_rounded, size: 14, color: Colors.grey.shade600),
+                          Icon(Icons.schedule_rounded,
+                              size: 14, color: Colors.grey.shade600),
                           const SizedBox(width: 4),
                           Text(
                             _post!.getRelativeTime(),
@@ -1250,15 +1452,16 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 10),
-                  
+
                   // Report button
                   InkWell(
                     onTap: _showReportDialog,
                     borderRadius: BorderRadius.circular(8),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF2F2),
                         borderRadius: BorderRadius.circular(8),
@@ -1267,7 +1470,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.flag_outlined, size: 14, color: Color(0xFFDC2626)),
+                          const Icon(Icons.flag_outlined,
+                              size: 14, color: Color(0xFFDC2626)),
                           const SizedBox(width: 6),
                           const Text(
                             'Report this listing',
@@ -1284,12 +1488,13 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 ],
               ),
             ),
-            
+
             // Description Section
             if (_post!.instructions != null) ...[
               Container(height: 1, color: Colors.grey.shade200),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1327,15 +1532,15 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 ),
               ),
             ],
-            
+
             // Seller Information Section
             Container(height: 1, color: Colors.grey.shade200),
             _buildProviderSection(),
-            
+
             // Safety Tips Section
             Container(height: 1, color: Colors.grey.shade200),
             _buildSafetyTipsSection(),
-            
+
             const SizedBox(height: 80), // Bottom padding for contact bar
           ],
         ),
@@ -1347,7 +1552,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
   Widget _buildImageGallery() {
     final images = _post!.medias?.where((m) => m.image != null).toList() ?? [];
     final hasImages = images.isNotEmpty;
-    
+
     return Container(
       color: Colors.black,
       child: Column(
@@ -1393,31 +1598,36 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       final rawImageUrl = hasImages
                           ? images[index].image!
                           : _post!.categoryDetails!.image!;
-                      
+
                       // Convert to absolute URL using AppConfig
                       final imageUrl = AppConfig.getAbsoluteUrl(rawImageUrl);
-                      print('🖼️ Classified Details - Raw: $rawImageUrl → Absolute: $imageUrl');
-                      
+                      print(
+                          '🖼️ Classified Details - Raw: $rawImageUrl → Absolute: $imageUrl');
+
                       return CachedNetworkImage(
                         imageUrl: imageUrl,
                         fit: BoxFit.contain,
                         placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.grey[400]!),
                           ),
                         ),
                         errorWidget: (context, url, error) {
-                          print('❌ Classified Details - Image load error for $url: $error');
+                          print(
+                              '❌ Classified Details - Image load error for $url: $error');
                           return Container(
                             color: Colors.grey[800],
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.broken_image_rounded, color: Colors.grey[400], size: 48),
+                                Icon(Icons.broken_image_rounded,
+                                    color: Colors.grey[400], size: 48),
                                 const SizedBox(height: 8),
                                 Text(
                                   'Image failed to load',
-                                  style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                  style: TextStyle(
+                                      color: Colors.grey[400], fontSize: 12),
                                 ),
                               ],
                             ),
@@ -1426,7 +1636,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                       );
                     },
                   ),
-                
+
                 // Navigation buttons
                 if (images.length > 1) ...[
                   Positioned(
@@ -1448,7 +1658,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                               );
                             }
                           },
-                          icon: const Icon(Icons.chevron_left, color: Colors.white),
+                          icon: const Icon(Icons.chevron_left,
+                              color: Colors.white),
                         ),
                       ),
                     ),
@@ -1472,12 +1683,13 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                               );
                             }
                           },
-                          icon: const Icon(Icons.chevron_right, color: Colors.white),
+                          icon: const Icon(Icons.chevron_right,
+                              color: Colors.white),
                         ),
                       ),
                     ),
                   ),
-                  
+
                   // Page indicator (bottom center)
                   Positioned(
                     bottom: 16,
@@ -1485,7 +1697,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     right: 0,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(16),
@@ -1630,7 +1843,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               child: ElevatedButton.icon(
                 onPressed: _contactProvider,
                 icon: const Icon(Icons.phone_rounded, size: 18),
-                label: const Text('Call Now', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                label: const Text('Call Now',
+                    style:
+                        TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
@@ -1681,7 +1896,6 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
       ),
     );
   }
-
 
   Widget _buildSafetyTipsSection() {
     return Container(
@@ -1749,14 +1963,14 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
 
   Widget _buildProviderSection() {
     final user = _post!.user;
-    
+
     if (user == null) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: const Text('Seller information not available'),
       );
     }
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: Column(
@@ -1772,7 +1986,7 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
             ),
           ),
           const SizedBox(height: 10),
-          
+
           // Profile header with name and posted date
           Row(
             children: [
@@ -1784,10 +1998,13 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                   color: const Color(0xFF10B981).withOpacity(0.1),
                 ),
                 child: () {
-                  final avatarUrl = AppConfig.getAbsoluteUrl(user.profilePicture);
+                  final avatarUrl =
+                      AppConfig.getAbsoluteUrl(user.profilePicture);
 
                   Widget fallback() {
-                    final initial = user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : 'U';
+                    final initial = user.displayName.isNotEmpty
+                        ? user.displayName[0].toUpperCase()
+                        : 'U';
                     return Center(
                       child: Text(
                         initial,
@@ -1873,9 +2090,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
               ),
             ],
           ),
-          
+
           const SizedBox(height: 10),
-          
+
           // Contact details in compact rows
           Column(
             children: [
@@ -1889,7 +2106,8 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Icon(Icons.phone_outlined, size: 16, color: Colors.grey.shade600),
+                    Icon(Icons.phone_outlined,
+                        size: 16, color: Colors.grey.shade600),
                     const SizedBox(width: 8),
                     Text(
                       _showPhone ? user.phone! : user.maskedPhone,
@@ -1902,7 +2120,9 @@ class _ClassifiedPostDetailsScreenState extends State<ClassifiedPostDetailsScree
                     InkWell(
                       onTap: () => setState(() => _showPhone = !_showPhone),
                       child: Icon(
-                        _showPhone ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        _showPhone
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         size: 16,
                         color: Colors.grey.shade600,
                       ),

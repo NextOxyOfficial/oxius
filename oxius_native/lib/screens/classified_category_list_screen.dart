@@ -27,34 +27,36 @@ class ClassifiedCategoryListScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ClassifiedCategoryListScreen> createState() => _ClassifiedCategoryListScreenState();
+  State<ClassifiedCategoryListScreen> createState() =>
+      _ClassifiedCategoryListScreenState();
 }
 
-class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScreen> {
+class _ClassifiedCategoryListScreenState
+    extends State<ClassifiedCategoryListScreen> {
   late final ClassifiedPostService _postService;
   late final GeoLocationService _geoService;
-  
+
   CategoryDetails? _categoryDetails;
   GeoLocation? _location;
-  
+
   List<ClassifiedPost> _posts = [];
   List<ClassifiedPost> _nearbyPosts = [];
   List<ClassifiedPost> _descriptionPosts = [];
-  
+
   bool _isLoading = false;
   bool _isNearbyLoading = false;
   bool _isDescriptionLoading = false;
   bool _searchError = false;
-  
+
   int _currentPage = 1;
   int _totalPages = 1;
   int _totalCount = 0;
-  
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isSearchActive = false;
   Timer? _debounce;
-  
+
   // AdsyAI Bot state
   bool _aiUserChoice = false;
   bool _aiSearching = false;
@@ -67,23 +69,140 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     final text = value.toString().trim();
     if (text.isEmpty) return null;
     final lower = text.toLowerCase();
-    if (lower == 'null' || lower == 'n/a' || lower == 'na' || lower == 'none' || lower == 'unknown') {
+    if (lower == 'null' ||
+        lower == 'n/a' ||
+        lower == 'na' ||
+        lower == 'none' ||
+        lower == 'unknown') {
       return null;
     }
     return text;
+  }
+
+  Set<String> _tokenizeAiText(String value) {
+    return RegExp(r'[a-z0-9]+')
+        .allMatches(value.toLowerCase())
+        .map((match) => match.group(0) ?? '')
+        .where((token) => token.length > 1)
+        .toSet();
+  }
+
+  bool _containsAiPlaceholderText(String value) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty) return true;
+    const phrases = {
+      'business name',
+      'company name',
+      'shop name',
+      'service provider',
+      'sample business',
+      'example business',
+      'dummy business',
+      'placeholder',
+      'lorem ipsum',
+      'brief description of the business',
+      'description of the business',
+      'to be updated',
+      'coming soon',
+    };
+    return phrases.any(lower.contains);
+  }
+
+  bool _isGenericAiBusinessName(String value,
+      {String? businessType, String? locationText}) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty || _containsAiPlaceholderText(lower)) return true;
+
+    final nameTokens = _tokenizeAiText(value);
+    final typeTokens = _tokenizeAiText(businessType ?? '');
+    final locationTokens = _tokenizeAiText(locationText ?? '');
+    const genericTokens = {
+      'bangladesh',
+      'bd',
+      'service',
+      'services',
+      'shop',
+      'store',
+      'mart',
+      'center',
+      'centre',
+      'solution',
+      'solutions',
+      'agency',
+      'traders',
+      'enterprise',
+      'enterprises',
+      'business',
+      'company',
+      'limited',
+      'ltd',
+      'house',
+      'point',
+      'hub',
+      'best',
+      'top',
+      'local',
+      'trusted',
+      'professional',
+    };
+
+    return typeTokens.isNotEmpty &&
+        nameTokens.isNotEmpty &&
+        nameTokens
+            .difference(typeTokens.union(locationTokens).union(genericTokens))
+            .isEmpty;
+  }
+
+  bool _isGenericAiDescription(String value) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty || _containsAiPlaceholderText(lower)) return true;
+    const phrases = {
+      'provides various services',
+      'offers various services',
+      'offers a wide range of services',
+      'known for quality service',
+      'serves the local area',
+      'located in bangladesh',
+      'contact for more details',
+      'more information available on request',
+    };
+    return phrases.any(lower.contains);
+  }
+
+  bool _isGenericAiAddress(String value, {String? locationText}) {
+    final lower = value.trim().toLowerCase();
+    if (lower.isEmpty || _containsAiPlaceholderText(lower)) return true;
+    final locationLower = locationText?.trim().toLowerCase();
+    if (locationLower != null &&
+        locationLower.isNotEmpty &&
+        lower == locationLower) {
+      return true;
+    }
+
+    final addressTokens = _tokenizeAiText(value);
+    final locationTokens = _tokenizeAiText(locationText ?? '');
+    return addressTokens.isNotEmpty &&
+        addressTokens
+            .difference(
+                locationTokens.union({'bangladesh', 'road', 'area', 'city'}))
+            .isEmpty;
   }
 
   bool _isValidBangladeshPhone(String value) {
     final compact = value.replaceAll(RegExp(r'[\s\-()]'), '');
     if (compact.isEmpty) return false;
     if (compact.toLowerCase().contains('x')) return false;
-    if (compact.contains('1234567') || compact.contains('12345678')) return false;
+    if (compact.contains('1234567') || compact.contains('12345678'))
+      return false;
 
     final mobileIntl = RegExp(r'^\+8801\d{9}$');
     final mobileLocal = RegExp(r'^01\d{9}$');
     final landlineIntl = RegExp(r'^\+880\d{1,2}\d{6,8}$');
     final landlineIntlDash = RegExp(r'^\+880\-?\d{1,2}\-?\d{6,8}$');
-    return mobileIntl.hasMatch(compact) || mobileLocal.hasMatch(compact) || landlineIntl.hasMatch(compact) || landlineIntlDash.hasMatch(value);
+    return mobileIntl.hasMatch(compact) ||
+        mobileLocal.hasMatch(compact) ||
+        landlineIntl.hasMatch(compact) ||
+        landlineIntlDash.hasMatch(value);
   }
 
   bool _isValidEmail(String value) {
@@ -98,13 +217,18 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     if (text.isEmpty) return false;
     if (text.contains(' ')) return false;
     final lower = text.toLowerCase();
-    if (lower.contains('example.com') || lower.contains('test.com')) return false;
-    return lower.contains('.') && (lower.startsWith('http://') || lower.startsWith('https://') || RegExp(r'^[a-z0-9\-_.]+\.[a-z]{2,}').hasMatch(lower));
+    if (lower.contains('example.com') || lower.contains('test.com'))
+      return false;
+    return lower.contains('.') &&
+        (lower.startsWith('http://') ||
+            lower.startsWith('https://') ||
+            RegExp(r'^[a-z0-9\-_.]+\.[a-z]{2,}').hasMatch(lower));
   }
 
   String _normalizeUrlForLaunch(String url) {
     final trimmed = url.trim();
-    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://'))
+      return trimmed;
     return 'https://$trimmed';
   }
 
@@ -128,11 +252,15 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     final emailDomain = _extractEmailDomain(email);
     final websiteHost = _extractHostFromWebsite(website);
     if (emailDomain == null || websiteHost == null) return false;
-    final cleanEmailDomain = emailDomain.startsWith('www.') ? emailDomain.substring(4) : emailDomain;
-    return websiteHost == cleanEmailDomain || websiteHost.endsWith('.$cleanEmailDomain') || cleanEmailDomain.endsWith('.$websiteHost');
+    final cleanEmailDomain =
+        emailDomain.startsWith('www.') ? emailDomain.substring(4) : emailDomain;
+    return websiteHost == cleanEmailDomain ||
+        websiteHost.endsWith('.$cleanEmailDomain') ||
+        cleanEmailDomain.endsWith('.$websiteHost');
   }
 
-  List<Map<String, dynamic>> _dropRepeatedFieldsAcrossAiResults(List<Map<String, dynamic>> items) {
+  List<Map<String, dynamic>> _dropRepeatedFieldsAcrossAiResults(
+      List<Map<String, dynamic>> items) {
     final phoneCount = <String, int>{};
     final websiteCount = <String, int>{};
 
@@ -161,22 +289,31 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     return items;
   }
 
-  Map<String, dynamic> _sanitizeAiBusiness(Map<String, dynamic> business) {
+  Map<String, dynamic> _sanitizeAiBusiness(
+    Map<String, dynamic> business, {
+    String? businessType,
+    String? locationText,
+  }) {
     final sanitized = Map<String, dynamic>.from(business);
 
     final name = _sanitizeAiValue(sanitized['name']);
-    if (name == null) return <String, dynamic>{};
+    if (name == null ||
+        _isGenericAiBusinessName(name,
+            businessType: businessType, locationText: locationText)) {
+      return <String, dynamic>{};
+    }
     sanitized['name'] = name;
 
     final description = _sanitizeAiValue(sanitized['description']);
-    if (description == null) {
+    if (description == null || _isGenericAiDescription(description)) {
       sanitized.remove('description');
     } else {
       sanitized['description'] = description;
     }
 
     final address = _sanitizeAiValue(sanitized['address']);
-    if (address == null) {
+    if (address == null ||
+        _isGenericAiAddress(address, locationText: locationText)) {
       sanitized.remove('address');
     } else {
       sanitized['address'] = address;
@@ -205,8 +342,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
     final finalEmail = sanitized['email'] as String?;
     final finalWebsite = sanitized['website'] as String?;
-    if (!_isWebsiteConsistentWithEmail(email: finalEmail, website: finalWebsite)) {
+    if (!_isWebsiteConsistentWithEmail(
+        email: finalEmail, website: finalWebsite)) {
       sanitized.remove('website');
+    }
+
+    if ((sanitized['address'] == null) &&
+        (sanitized['phone'] == null) &&
+        (sanitized['email'] == null) &&
+        (sanitized['website'] == null)) {
+      return <String, dynamic>{};
     }
 
     return sanitized;
@@ -230,7 +375,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   Future<void> _initialize() async {
     // Load saved location
     _location = await _geoService.getSavedLocation();
-    
+
     // Show location selector if no location is set
     if (_location == null && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -245,7 +390,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   }
 
   Future<void> _loadCategoryDetails() async {
-    final details = await _postService.fetchCategoryDetails(widget.categorySlug);
+    final details =
+        await _postService.fetchCategoryDetails(widget.categorySlug);
     if (mounted && details != null) {
       setState(() => _categoryDetails = details);
     }
@@ -253,7 +399,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Future<void> _filterSearch({int page = 1}) async {
     if (_location == null) return;
-    
+
     setState(() {
       if (page == 1) {
         _posts = [];
@@ -298,15 +444,15 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Future<void> _fetchNearbyAds() async {
     if (_location == null || _location!.allOverBangladesh) return;
-    
+
     setState(() => _isNearbyLoading = true);
-    
+
     try {
       final nearby = await _postService.fetchNearbyPosts(
         categoryId: widget.categoryId,
         location: _location!,
       );
-      
+
       if (mounted) {
         setState(() {
           _nearbyPosts = nearby;
@@ -358,16 +504,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
 
   Future<void> _fetchDescriptionResults() async {
     if (_location == null || _searchQuery.isEmpty) return;
-    
+
     setState(() => _isDescriptionLoading = true);
-    
+
     try {
       final results = await _postService.searchByDescription(
         categoryId: widget.categoryId,
         searchQuery: _searchQuery,
         location: _location!,
       );
-      
+
       if (mounted) {
         setState(() {
           // Filter out posts that are already in main results (title matches)
@@ -375,7 +521,10 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
           _descriptionPosts = results.where((post) {
             // Only show if not already in main results AND actually matches in description
             final notInMain = !mainPostIds.contains(post.id);
-            final matchesDesc = post.instructions?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false;
+            final matchesDesc = post.instructions
+                    ?.toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ??
+                false;
             return notInMain && matchesDesc;
           }).toList();
           _isDescriptionLoading = false;
@@ -430,13 +579,13 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
         children: [
           // Location breadcrumb
           if (_location != null) _buildLocationBreadcrumb(),
-          
+
           // Search bar (collapsible)
           if (_isSearchActive) _buildSearchBar(),
-          
+
           // Results count
           if (!_isLoading && _posts.isNotEmpty) _buildResultsCount(),
-          
+
           // Content
           Expanded(
             child: _isLoading && _posts.isEmpty
@@ -449,106 +598,117 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                        // Search results
-                        if (_posts.isNotEmpty) ...[
-                          _buildPostsList(_posts),
-                          
-                          // Pagination
-                          if (_totalPages > 1) _buildPagination(),
-                          
-                          const SizedBox(height: 16),
-                        ],
-                        
-                        // Empty state
-                        if (_searchError) _buildEmptyState(),
-                        
-                        // Nearby Location Ads Section
-                        if (_location != null && !_location!.allOverBangladesh) ...[
-                          if (_nearbyPosts.isNotEmpty) ...[
+                          // Search results
+                          if (_posts.isNotEmpty) ...[
+                            _buildPostsList(_posts),
+
+                            // Pagination
+                            if (_totalPages > 1) _buildPagination(),
+
                             const SizedBox(height: 16),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-                              color: const Color(0xFFECFDF5),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8),
-                                child: Text(
-                                  'Nearby Location Ads',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF065F46),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            _buildPostsList(_nearbyPosts, isNearby: true),
-                          ] else if (_isNearbyLoading) ...[
-                            const SizedBox(height: 16),
-                            const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(20.0),
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-                                ),
-                              ),
-                            ),
                           ],
-                        ],
-                        
-                        // Description Matches Section
-                        if (_searchQuery.isNotEmpty && _descriptionPosts.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          _buildDescriptionMatchesSection(),
-                        ] else if (_searchQuery.isNotEmpty && _isDescriptionLoading) ...[
-                          const SizedBox(height: 16),
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(20.0),
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
-                              ),
-                            ),
-                          ),
-                        ],
-                        
-                        // AdsyAI Bot Section
-                        if (_location != null && ((_location!.city != null && _location!.city!.isNotEmpty) || _location!.allOverBangladesh)) ...[
-                          const SizedBox(height: 24),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-                            color: const Color(0xFFF9FAFB),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: Row(
-                                children: const [
-                                  Text(
-                                    'AdsyAI Bot',
+
+                          // Empty state
+                          if (_searchError) _buildEmptyState(),
+
+                          // Nearby Location Ads Section
+                          if (_location != null &&
+                              !_location!.allOverBangladesh) ...[
+                            if (_nearbyPosts.isNotEmpty) ...[
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 12),
+                                color: const Color(0xFFECFDF5),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                  child: Text(
+                                    'Nearby Location Ads',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF065F46),
                                     ),
                                   ),
-                                  SizedBox(width: 6),
-                                  Icon(
-                                    Icons.smart_toy,
-                                    size: 24,
-                                    color: Color(0xFF10B981),
+                                ),
+                              ),
+                              _buildPostsList(_nearbyPosts, isNearby: true),
+                            ] else if (_isNearbyLoading) ...[
+                              const SizedBox(height: 16),
+                              const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(20.0),
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF10B981)),
                                   ),
-                                ],
+                                ),
+                              ),
+                            ],
+                          ],
+
+                          // Description Matches Section
+                          if (_searchQuery.isNotEmpty &&
+                              _descriptionPosts.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            _buildDescriptionMatchesSection(),
+                          ] else if (_searchQuery.isNotEmpty &&
+                              _isDescriptionLoading) ...[
+                            const SizedBox(height: 16),
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFF59E0B)),
+                                ),
                               ),
                             ),
-                          ),
-                          _buildAdsyAIBot(),
+                          ],
+
+                          // AdsyAI Bot Section
+                          if (_location != null &&
+                              ((_location!.city != null &&
+                                      _location!.city!.isNotEmpty) ||
+                                  _location!.allOverBangladesh)) ...[
+                            const SizedBox(height: 24),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 12),
+                              color: const Color(0xFFF9FAFB),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Row(
+                                  children: const [
+                                    Text(
+                                      'AdsyAI Bot',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF065F46),
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Icon(
+                                      Icons.smart_toy,
+                                      size: 24,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            _buildAdsyAIBot(),
+                          ],
+
+                          const SizedBox(height: 80),
                         ],
-                        
-                        const SizedBox(height: 80),
-                      ],
-                    ),
                       ),
                     ),
+                  ),
           ),
         ],
       ),
@@ -573,11 +733,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
           ),
         ),
         elevation: 3,
-        extendedPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+        extendedPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       ),
     );
   }
-  
+
   Widget _buildResultsCount() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -693,7 +854,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                   borderRadius: BorderRadius.circular(8),
                 ),
                 elevation: 0,
-                disabledBackgroundColor: const Color(0xFF10B981).withOpacity(0.5),
+                disabledBackgroundColor:
+                    const Color(0xFF10B981).withOpacity(0.5),
               ),
               child: _isLoading
                   ? const SizedBox(
@@ -725,7 +887,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       itemCount: posts.length,
-      separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1),
+      separatorBuilder: (context, index) =>
+          const Divider(height: 1, thickness: 1),
       itemBuilder: (context, index) {
         final post = posts[index];
         return _buildPostCard(post, isNearby: isNearby);
@@ -767,22 +930,23 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                             print('🖼️ Classified List - Image URL: $imageUrl');
                             return CachedNetworkImage(
                               imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => const Center(
-                            child: SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                child: SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF10B981)),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => const Icon(
-                            Icons.image_outlined,
-                            color: Color(0xFF9CA3AF),
-                            size: 28,
-                          ),
+                              errorWidget: (context, url, error) => const Icon(
+                                Icons.image_outlined,
+                                color: Color(0xFF9CA3AF),
+                                size: 28,
+                              ),
                             );
                           },
                         )
@@ -837,9 +1001,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                             ),
                 ),
               ),
-              
+
               const SizedBox(width: 8),
-              
+
               // Content
               Expanded(
                 child: Column(
@@ -858,9 +1022,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // Price and Time Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -879,9 +1043,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        
+
                         const SizedBox(width: 6),
-                        
+
                         // Time
                         Text(
                           post.getRelativeTime(),
@@ -893,9 +1057,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // Location
                     Row(
                       children: [
@@ -947,19 +1111,25 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               color: _currentPage > 1 ? Colors.white : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: _currentPage > 1 ? const Color(0xFF10B981) : const Color(0xFFE5E7EB),
+                color: _currentPage > 1
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFE5E7EB),
               ),
             ),
             child: IconButton(
-              onPressed: _currentPage > 1 ? () => _filterSearch(page: _currentPage - 1) : null,
+              onPressed: _currentPage > 1
+                  ? () => _filterSearch(page: _currentPage - 1)
+                  : null,
               icon: const Icon(Icons.chevron_left, size: 20),
-              color: _currentPage > 1 ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+              color: _currentPage > 1
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF9CA3AF),
               padding: EdgeInsets.zero,
             ),
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Page numbers
           ...List.generate(
             _totalPages > 5 ? 5 : _totalPages,
@@ -971,7 +1141,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 int start = (_currentPage - 2).clamp(1, _totalPages - 4);
                 pageNum = start + index;
               }
-              
+
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: InkWell(
@@ -1011,18 +1181,22 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               );
             },
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Next button
           Container(
             height: 36,
             width: 36,
             decoration: BoxDecoration(
-              color: _currentPage < _totalPages ? Colors.white : const Color(0xFFF3F4F6),
+              color: _currentPage < _totalPages
+                  ? Colors.white
+                  : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: _currentPage < _totalPages ? const Color(0xFF10B981) : const Color(0xFFE5E7EB),
+                color: _currentPage < _totalPages
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFE5E7EB),
               ),
             ),
             child: IconButton(
@@ -1030,7 +1204,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                   ? () => _filterSearch(page: _currentPage + 1)
                   : null,
               icon: const Icon(Icons.chevron_right, size: 20),
-              color: _currentPage < _totalPages ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+              color: _currentPage < _totalPages
+                  ? const Color(0xFF10B981)
+                  : const Color(0xFF9CA3AF),
               padding: EdgeInsets.zero,
             ),
           ),
@@ -1139,7 +1315,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 color: Color(0xFF10B981),
               ),
             ),
-            
+
             // Message
             const Text(
               'আমি AdsyAI Bot 🤖\nআমি কি আপনার জন্য বিভিন্ন ওয়েবসাইট থেকে তথ্য খুঁজে বের করবো?',
@@ -1151,9 +1327,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 height: 1.5,
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1182,9 +1358,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                     elevation: 4,
                   ),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
+
                 // No Button
                 OutlinedButton.icon(
                   onPressed: _declineAISearch,
@@ -1214,7 +1390,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               ],
             ),
           ],
-          
+
           // Searching
           if (_aiSearching) ...[
             // Animated Bot Icon
@@ -1232,7 +1408,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 color: Color(0xFF10B981),
               ),
             ),
-            
+
             const Text(
               'আমি AdsyAI Bot 🤖\nআপনার জন্য ইন্টারনেটে বিভিন্ন ওয়েবসাইট এ তথ্য খুঁজছি, একটু অপেক্ষা করুন...',
               textAlign: TextAlign.center,
@@ -1243,15 +1419,15 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 height: 1.5,
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Text(
               'Finding information in ${_location?.displayLocation ?? "your area"}',
               style: const TextStyle(
@@ -1260,7 +1436,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               ),
             ),
           ],
-          
+
           // Search Declined
           if (_aiSearchDeclined) ...[
             const Icon(
@@ -1268,9 +1444,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               size: 48,
               color: Color(0xFF6B7280),
             ),
-            
             const SizedBox(height: 16),
-            
             const Text(
               'আমি AdsyAI Bot 🤖\nঠিক আছে, আপনি যখন চাইবেন তখন আমি তথ্য খুঁজে দেখাবো।',
               textAlign: TextAlign.center,
@@ -1281,9 +1455,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 height: 1.5,
               ),
             ),
-            
             const SizedBox(height: 16),
-            
             TextButton.icon(
               onPressed: () {
                 setState(() {
@@ -1300,7 +1472,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               ),
             ),
           ],
-          
+
           // Results
           if (_aiResults.isNotEmpty) ...[
             const Text(
@@ -1313,11 +1485,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 height: 1.5,
               ),
             ),
-            
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 12),
-            
             ..._aiResults.asMap().entries.map((entry) {
               final index = entry.key;
               final result = entry.value;
@@ -1338,7 +1508,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                 if (email != null) email,
                 if (website != null) website,
               ].join('\n');
-              
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(10),
@@ -1388,7 +1558,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       _buildInfoRow(
                         icon: Icons.phone,
                         value: phone,
-                        onTap: () => UrlLauncherUtils.launchExternalUrl('tel:$phone'),
+                        onTap: () =>
+                            UrlLauncherUtils.launchExternalUrl('tel:$phone'),
                       ),
                     ],
                     if (email != null) ...[
@@ -1396,7 +1567,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       _buildInfoRow(
                         icon: Icons.email,
                         value: email,
-                        onTap: () => UrlLauncherUtils.launchExternalUrl('mailto:$email'),
+                        onTap: () =>
+                            UrlLauncherUtils.launchExternalUrl('mailto:$email'),
                       ),
                     ],
                     if (website != null) ...[
@@ -1405,7 +1577,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                         icon: Icons.language,
                         value: website,
                         isLink: true,
-                        onTap: () => UrlLauncherUtils.launchExternalUrl(_normalizeUrlForLaunch(website)),
+                        onTap: () => UrlLauncherUtils.launchExternalUrl(
+                            _normalizeUrlForLaunch(website)),
                       ),
                     ],
                   ],
@@ -1413,9 +1586,12 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               );
             }).toList(),
           ],
-          
+
           // No results
-          if (_aiUserChoice && !_aiSearching && !_aiSearchDeclined && _aiResults.isEmpty) ...[
+          if (_aiUserChoice &&
+              !_aiSearching &&
+              !_aiSearchDeclined &&
+              _aiResults.isEmpty) ...[
             const Text(
               'আমি AdsyAI Bot 🤖\nদুঃখিত, আপনার জন্য ইন্টারনেট থেকে কোনো তথ্য খুঁজে পাইনি।',
               textAlign: TextAlign.center,
@@ -1464,9 +1640,10 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   Future<void> _startAISearch() async {
     final location = _location;
     final businessType = _categoryDetails?.businessType;
-    final effectiveBusinessType = (businessType != null && businessType.trim().isNotEmpty)
-        ? businessType.trim()
-        : (_categoryDetails?.title.trim() ?? '');
+    final effectiveBusinessType =
+        (businessType != null && businessType.trim().isNotEmpty)
+            ? businessType.trim()
+            : (_categoryDetails?.title.trim() ?? '');
 
     if (location == null || effectiveBusinessType.isEmpty) return;
 
@@ -1477,13 +1654,13 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       _aiResults = [];
       _aiErrorMessage = null;
     });
-    
+
     // TODO: Replace with actual API call to your AI service
     // Example:
     // final response = await http.get(Uri.parse('$aiLink&country=${_location?.country}&city=${_location?.city}&state=${_location?.state}&business_type=${_categoryDetails?.businessType}'));
     // final data = json.decode(response.body);
     // _aiResults = data['data'] or data['data']['businesses'];
-    
+
     try {
       final uri = Uri.parse('${ApiService.baseUrl}/ai-business-finder/');
       final headers = await ApiService.getHeaders();
@@ -1492,9 +1669,14 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
         headers: headers,
         body: jsonEncode({
           'country': location.country,
-          'state': location.allOverBangladesh ? 'All Bangladesh' : (location.state ?? ''),
-          'city': location.allOverBangladesh ? 'All Cities' : (location.city ?? ''),
-          'upazila': location.allOverBangladesh ? 'All Areas' : (location.upazila ?? ''),
+          'state': location.allOverBangladesh
+              ? 'All Bangladesh'
+              : (location.state ?? ''),
+          'city':
+              location.allOverBangladesh ? 'All Cities' : (location.city ?? ''),
+          'upazila': location.allOverBangladesh
+              ? 'All Areas'
+              : (location.upazila ?? ''),
           'business_type': effectiveBusinessType,
         }),
       );
@@ -1544,7 +1726,16 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
       if (!mounted) return;
       setState(() {
         _aiSearching = false;
-        final cleaned = businesses.map(_sanitizeAiBusiness).where((e) => e.isNotEmpty).toList();
+        final cleaned = businesses
+            .map(
+              (business) => _sanitizeAiBusiness(
+                business,
+                businessType: effectiveBusinessType,
+                locationText: location.displayLocation,
+              ),
+            )
+            .where((e) => e.isNotEmpty)
+            .toList();
         _aiResults = _dropRepeatedFieldsAcrossAiResults(cleaned);
         _aiErrorMessage = errorMessage;
       });
@@ -1614,7 +1805,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
               value,
               style: TextStyle(
                 fontSize: 13,
-                color: isLink ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+                color:
+                    isLink ? const Color(0xFF10B981) : const Color(0xFF6B7280),
               ),
             ),
           ),
@@ -1697,7 +1889,7 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
             ],
           ),
         ),
-        
+
         // Results container
         Container(
           decoration: BoxDecoration(
@@ -1734,10 +1926,10 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
   /// Build individual description match card
   Widget _buildDescriptionMatchCard(ClassifiedPost post) {
     final snippet = _extractMatchedSnippet(post.instructions, _searchQuery);
-    
+
     // Skip if no match found in description
     if (snippet.isEmpty) return const SizedBox.shrink();
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1783,7 +1975,8 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                               height: 12,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF59E0B)),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFFF59E0B)),
                               ),
                             ),
                           ),
@@ -1800,9 +1993,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                         ),
                 ),
               ),
-              
+
               const SizedBox(width: 8),
-              
+
               // Content
               Expanded(
                 child: Column(
@@ -1821,12 +2014,13 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     const SizedBox(height: 3),
-                    
+
                     // Matched snippet with HTML parsing - small text
                     Container(
-                      constraints: const BoxConstraints(maxHeight: 28), // Limit height to ~2 lines
+                      constraints: const BoxConstraints(
+                          maxHeight: 28), // Limit height to ~2 lines
                       child: Html(
                         data: snippet,
                         onLinkTap: (url, attributes, element) {
@@ -1851,9 +2045,9 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
                         },
                       ),
                     ),
-                    
+
                     const SizedBox(height: 3),
-                    
+
                     // Price and Location - small size
                     Row(
                       children: [
@@ -1906,7 +2100,10 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     }
 
     // Strip HTML tags for search matching but keep original HTML for display
-    final strippedDesc = description.replaceAll(RegExp(r'<[^>]*>'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    final strippedDesc = description
+        .replaceAll(RegExp(r'<[^>]*>'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
     final lowerStripped = strippedDesc.toLowerCase();
     final lowerQuery = query.toLowerCase();
     final index = lowerStripped.indexOf(lowerQuery);
@@ -1916,15 +2113,14 @@ class _ClassifiedCategoryListScreenState extends State<ClassifiedCategoryListScr
     // Extract context around the match (60 chars before and after for better context)
     final start = (index - 60).clamp(0, strippedDesc.length);
     final end = (index + query.length + 60).clamp(0, strippedDesc.length);
-    
+
     String snippet = strippedDesc.substring(start, end);
-    
+
     // Add ellipsis if truncated
     if (start > 0) snippet = '...$snippet';
     if (end < strippedDesc.length) snippet = '$snippet...';
-    
+
     // Wrap in a paragraph tag for proper HTML rendering
     return '<p>$snippet</p>';
   }
-
 }
