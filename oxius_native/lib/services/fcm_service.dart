@@ -44,6 +44,12 @@ const Set<String> _rideshareRideRequestTypes = <String>{
   'targeted_ride_request',
 };
 
+const Set<String> _callNotificationTypes = <String>{
+  'incoming_call',
+  'call_status',
+  'accepted_call',
+};
+
 const Set<String> _rideshareStatusTypes = <String>{
   'searching_driver',
   'accepted',
@@ -61,6 +67,13 @@ bool _isRideshareNotification(
   String? type,
   String? notificationType,
 }) {
+  if (_callNotificationTypes.contains(type) ||
+      _callNotificationTypes.contains(notificationType) ||
+      data['channel_name'] != null ||
+      data['call_type'] != null) {
+    return false;
+  }
+
   final rideId = data['ride_id']?.toString();
   final status = data['status']?.toString();
 
@@ -73,6 +86,14 @@ bool _isRideshareNotification(
 
 bool _isRideshareRideRequestNotification(String? type) {
   return _rideshareRideRequestTypes.contains(type);
+}
+
+bool _isRideshareRideRequestNotificationFromPayload({
+  String? type,
+  String? notificationType,
+}) {
+  return _rideshareRideRequestTypes.contains(type) ||
+      _rideshareRideRequestTypes.contains(notificationType);
 }
 
 String _resolveRideshareMode(
@@ -221,6 +242,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   _log('📦 Data: ${message.data}');
   
   final type = message.data['type']?.toString();
+  final notificationType = message.data['notification_type']?.toString();
 
   // Handle incoming call in background - show high priority notification
   if (type == 'incoming_call') {
@@ -229,7 +251,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
 
   // Handle ride request in background - wake the driver
-  if (_isRideshareRideRequestNotification(type)) {
+  if (_isRideshareRideRequestNotificationFromPayload(
+    type: type,
+    notificationType: notificationType,
+  )) {
     await _showBackgroundRideRequestNotification(message.data);
   }
 }
@@ -1617,7 +1642,10 @@ class FCMService {
     }
 
     // Ride request for driver: show high-priority heads-up notification
-    if (_isRideshareRideRequestNotification(type)) {
+    if (_isRideshareRideRequestNotificationFromPayload(
+      type: type,
+      notificationType: notificationType,
+    )) {
       if (currentRouteName == '/rideshare') {
         return;
       }
@@ -1842,6 +1870,11 @@ class FCMService {
       type: type,
       notificationType: notificationType,
     )) {
+      if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
+        _log('   → Ignoring rideshare route jump while call UI is active');
+        return;
+      }
+
       final mode = _resolveRideshareMode(
         data,
         type: type,

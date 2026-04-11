@@ -8,6 +8,13 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'package:flutter/foundation.dart';
+
+void _log(String message) {
+  if (kDebugMode) {
+    debugPrint('🎤 AgoraCallService: $message');
+  }
+}
 
 class AgoraCallService {
   static const String appId = '9eba1a50633041d08dbe75b0fde2ed8a';
@@ -174,8 +181,20 @@ class AgoraCallService {
           channelProfile: ChannelProfileType.channelProfileCommunication,
         ),
       );
-      await engine.enableAudio();
-      await engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      // Enable audio - wrap in try-catch so initialization continues even if this fails
+      try {
+        await engine.enableAudio();
+      } catch (e) {
+        _log('⚠️ Warning: enableAudio failed: $e');
+      }
+      
+      // Set client role - wrap in try-catch so initialization continues
+      try {
+        await engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      } catch (e) {
+        _log('⚠️ Warning: setClientRole failed: $e');
+      }
+      
       engine.registerEventHandler(
         RtcEngineEventHandler(
           onJoinChannelSuccess: (connection, _) {
@@ -242,6 +261,8 @@ class AgoraCallService {
 
       final wantsVideo = callType == 'video';
       final engine = await initEngine(callType: callType);
+      
+  _log('📱 Attempting to join channel: $channelName (uid: $uid, video: $wantsVideo)');
 
       if (_joinedChannelName != null && _joinedChannelName != channelName) {
         await engine.leaveChannel();
@@ -261,9 +282,12 @@ class AgoraCallService {
       );
 
       _joinedChannelName = channelName;
+        _log('✅ Successfully joined channel: $channelName');
       return true;
     } catch (error) {
-      _lastError = error.toString();
+      final errorMsg = error.toString();
+      _lastError = errorMsg;
+      _log('❌ Join channel failed for $channelName: $errorMsg');
       return false;
     }
   }
