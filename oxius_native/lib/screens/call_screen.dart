@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -682,37 +681,37 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   Widget _buildWaitingView() {
     final compact = _isCompactLayout;
     final bottomReserved = widget.isIncoming && !_callAccepted
-        ? (compact ? 236.0 : 286.0)
-        : (compact ? 158.0 : 214.0);
+        ? (compact ? 210.0 : 248.0)
+        : (compact ? 150.0 : 188.0);
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Align(
           alignment: Alignment.center,
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(24, compact ? 92 : 110, 24, bottomReserved),
+            padding: EdgeInsets.fromLTRB(24, compact ? 90 : 104, 24, bottomReserved),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: math.max(0, constraints.maxHeight - (compact ? 180 : 220)),
+                minHeight: math.max(0, constraints.maxHeight - (compact ? 170 : 206)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _buildCallTypeBadge(),
-                  SizedBox(height: compact ? 20 : 28),
-                  _buildAnimatedAvatar(size: compact ? 126 : 156),
-                  SizedBox(height: compact ? 20 : 30),
+                  SizedBox(height: compact ? 20 : 24),
+                  _buildAnimatedAvatar(size: compact ? 116 : 138),
+                  SizedBox(height: compact ? 18 : 24),
                   Text(
                     widget.calleeName,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: compact ? 28 : 32,
+                      fontSize: compact ? 26 : 30,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: -0.6,
+                      letterSpacing: -0.4,
                     ),
                   ),
-                  SizedBox(height: compact ? 10 : 12),
+                  SizedBox(height: compact ? 8 : 10),
                   Text(
                     _primaryStatusText,
                     textAlign: TextAlign.center,
@@ -720,30 +719,30 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                       color: Colors.white.withOpacity(0.76),
                       fontSize: compact ? 14 : 16,
                       height: 1.4,
-                      letterSpacing: 0.2,
                     ),
                   ),
-                  SizedBox(height: compact ? 18 : 24),
-                  _buildSignalIndicator(),
-                  SizedBox(height: compact ? 18 : 24),
-                  _buildGlassPanel(
-                    padding: EdgeInsets.symmetric(horizontal: compact ? 14 : 18, vertical: compact ? 14 : 16),
-                    borderRadius: BorderRadius.circular(24),
-                    child: Row(
-                      children: [
-                        _buildMetricTile(
-                          icon: Icons.lock_outline_rounded,
-                          title: 'Secure',
-                          subtitle: 'Encrypted route',
+                  SizedBox(height: compact ? 18 : 22),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _buildInfoPill(
+                        icon: Icons.lock_outline_rounded,
+                        label: 'Secure call',
+                      ),
+                      _buildInfoPill(
+                        icon: widget.callType == 'video'
+                            ? Icons.videocam_outlined
+                            : Icons.call_outlined,
+                        label: widget.callType == 'video' ? 'Video ready' : 'Voice ready',
+                      ),
+                      if (_callAccepted && _callStartedAt != null)
+                        _buildInfoPill(
+                          icon: Icons.schedule_rounded,
+                          label: _formatDuration(_callDuration),
                         ),
-                        SizedBox(width: compact ? 10 : 14),
-                        _buildMetricTile(
-                          icon: widget.callType == 'video' ? Icons.hd_rounded : Icons.graphic_eq_rounded,
-                          title: widget.callType == 'video' ? 'HD Video' : 'Clear Audio',
-                          subtitle: _callAccepted ? 'Live now' : 'Preparing stream',
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -759,71 +758,64 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(18, 0, 18, compact ? 14 : 22),
+        padding: EdgeInsets.fromLTRB(18, 0, 18, compact ? 14 : 20),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
+          constraints: const BoxConstraints(maxWidth: 520),
           child: _buildGlassPanel(
-          padding: EdgeInsets.fromLTRB(compact ? 18 : 20, compact ? 18 : 22, compact ? 18 : 20, compact ? 16 : 20),
-          borderRadius: BorderRadius.circular(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Incoming ${_callModeLabel.toLowerCase()}',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.72),
-                  fontSize: compact ? 14 : 15,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Answer now or decline this call',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: compact ? 16 : 18,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.3,
-                ),
-              ),
-              SizedBox(height: compact ? 12 : 16),
-              _buildSignalIndicator(),
-              SizedBox(height: compact ? 18 : 22),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildIncomingActionCard(
-                      label: 'Decline',
-                      subtitle: 'Send unavailable',
-                      icon: Icons.call_end_rounded,
-                      color: const Color(0xFFFB7185),
-                      onTap: _rejectCall,
-                    ),
+            padding: EdgeInsets.fromLTRB(
+              compact ? 18 : 20,
+              compact ? 18 : 20,
+              compact ? 18 : 20,
+              compact ? 16 : 18,
+            ),
+            borderRadius: BorderRadius.circular(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Incoming ${_callModeLabel.toLowerCase()}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.72),
+                    fontSize: compact ? 14 : 15,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _buildIncomingActionCard(
-                      label: 'Accept',
-                      subtitle: 'Join instantly',
-                      icon: widget.callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
-                      color: _accentColor,
-                      onTap: _acceptCall,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Answer now or decline the call.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: compact ? 17 : 18,
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+                SizedBox(height: compact ? 18 : 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildIncomingResponseButton(
+                        label: 'Decline',
+                        icon: Icons.call_end_rounded,
+                        backgroundColor: const Color(0xFFEF4444),
+                        onTap: _rejectCall,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildIncomingResponseButton(
+                        label: 'Accept',
+                        icon: widget.callType == 'video'
+                            ? Icons.videocam_rounded
+                            : Icons.call_rounded,
+                        backgroundColor: _accentColor,
+                        onTap: _acceptCall,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -839,72 +831,64 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
         child: _buildGlassPanel(
-        padding: EdgeInsets.fromLTRB(compact ? 14 : 18, compact ? 14 : 18, compact ? 14 : 18, compact ? 14 : 18),
-        borderRadius: BorderRadius.circular(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_callAccepted && _callStartedAt != null)
-              Padding(
-                padding: EdgeInsets.only(bottom: compact ? 10 : 14),
-                child: Text(
-                  'Connected • ${_formatDuration(_callDuration)}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.76),
-                    fontSize: compact ? 13 : 14,
-                    fontWeight: FontWeight.w500,
-                  ),
+          padding: EdgeInsets.fromLTRB(
+            compact ? 14 : 16,
+            compact ? 14 : 16,
+            compact ? 14 : 16,
+            compact ? 14 : 16,
+          ),
+          borderRadius: BorderRadius.circular(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _callAccepted && _callStartedAt != null
+                    ? 'Connected • ${_formatDuration(_callDuration)}'
+                    : _isConnecting
+                        ? 'Connecting...'
+                        : 'In call',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.76),
+                  fontSize: compact ? 13 : 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: _buildControlButton(
+              SizedBox(height: compact ? 14 : 16),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  _buildControlButton(
                     icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_none_rounded,
                     label: _isMuted ? 'Unmute' : 'Mute',
                     onTap: _toggleMute,
                     isActive: !_isMuted,
                   ),
-                ),
-                const SizedBox(width: 12),
-                _buildEndCallButton(),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildControlButton(
+                  _buildEndCallButton(),
+                  _buildControlButton(
                     icon: _isSpeakerOn ? Icons.volume_up_rounded : Icons.hearing_rounded,
                     label: _isSpeakerOn ? 'Speaker' : 'Earpiece',
                     onTap: _toggleSpeaker,
                     isActive: _isSpeakerOn,
                   ),
-                ),
-              ],
-            ),
-            if (widget.callType == 'video') ...[
-              SizedBox(height: compact ? 10 : 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildControlButton(
+                  if (widget.callType == 'video')
+                    _buildControlButton(
                       icon: _isCameraOff ? Icons.videocam_off_rounded : Icons.videocam_outlined,
                       label: _isCameraOff ? 'Camera off' : 'Camera',
                       onTap: _toggleCamera,
                       isActive: !_isCameraOff,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildControlButton(
+                  if (widget.callType == 'video')
+                    _buildControlButton(
                       icon: Icons.cameraswitch_rounded,
                       label: 'Switch',
                       onTap: _switchCamera,
                     ),
-                  ),
                 ],
               ),
             ],
-          ],
-        ),
+          ),
         ),
       ),
     );
@@ -916,38 +900,54 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     required VoidCallback onTap,
     bool isActive = true,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
-        child: Ink(
-          height: _isCompactLayout ? 72 : 78,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            color: isActive ? Colors.white.withOpacity(0.12) : Colors.white.withOpacity(0.06),
-            border: Border.all(
-              color: isActive ? Colors.white.withOpacity(0.18) : Colors.white.withOpacity(0.08),
+    return SizedBox(
+      width: _isCompactLayout ? 88 : 94,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              color: isActive
+                  ? Colors.white.withOpacity(0.12)
+                  : Colors.white.withOpacity(0.06),
+              border: Border.all(
+                color: isActive
+                    ? Colors.white.withOpacity(0.16)
+                    : Colors.white.withOpacity(0.08),
+              ),
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 26,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.88),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(isActive ? 0.14 : 0.08),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 22,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -960,12 +960,6 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         : const Color(0xFF34D399);
   }
 
-  Color get _accentGlowColor {
-    return widget.callType == 'video'
-        ? const Color(0xFF8B5CF6)
-        : const Color(0xFF0EA5E9);
-  }
-
   String get _callModeLabel {
     return widget.callType == 'video' ? 'Video Call' : 'Voice Call';
   }
@@ -973,65 +967,37 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   String get _primaryStatusText {
     if (_statusOverlay != null) return _statusOverlay!;
     if (widget.isIncoming && !_callAccepted) {
-      return 'Someone is trying to reach you right now.';
-    }
-    if (_isConnecting) {
-      return 'Connecting through a secure ${widget.callType} channel.';
+      return 'Ready to answer this call.';
     }
     if (_callAccepted && _callStartedAt != null) {
-      return 'Conversation is live and stable.';
+      return 'Connected and stable.';
     }
-    return widget.isIncoming ? 'Preparing your incoming call interface.' : 'Ringing on the other side.';
+    if (_isConnecting) {
+      return widget.isIncoming ? 'Joining the call...' : 'Ringing on the other side.';
+    }
+    return widget.isIncoming ? 'Incoming call' : 'Calling now.';
   }
 
   Widget _buildBackgroundLayer() {
     return Positioned.fill(
-      child: AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, _) {
-          final pulse = math.sin(_pulseController.value * math.pi * 2);
-          return Stack(
-            children: [
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF07111F),
-                      Color(0xFF09162A),
-                      Color(0xFF050816),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: -120,
-                left: -40,
-                child: _buildAmbientOrb(
-                  size: 280,
-                  color: _accentColor.withOpacity(0.18 + (pulse.abs() * 0.05)),
-                ),
-              ),
-              Positioned(
-                top: 140,
-                right: -60,
-                child: _buildAmbientOrb(
-                  size: 220,
-                  color: _accentGlowColor.withOpacity(0.14 + (pulse.abs() * 0.04)),
-                ),
-              ),
-              Positioned(
-                bottom: -110,
-                left: 30,
-                child: _buildAmbientOrb(
-                  size: 260,
-                  color: Colors.white.withOpacity(0.06 + (pulse.abs() * 0.015)),
-                ),
-              ),
-            ],
-          );
-        },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.callType == 'video'
+                ? const [
+                    Color(0xFF172554),
+                    Color(0xFF111827),
+                    Color(0xFF030712),
+                  ]
+                : const [
+                    Color(0xFF064E3B),
+                    Color(0xFF0F172A),
+                    Color(0xFF030712),
+                  ],
+          ),
+        ),
       ),
     );
   }
@@ -1078,7 +1044,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           Expanded(
             child: _buildGlassPanel(
               padding: EdgeInsets.fromLTRB(compact ? 12 : 14, compact ? 12 : 14, compact ? 12 : 14, compact ? 12 : 14),
-              borderRadius: BorderRadius.circular(26),
+              borderRadius: BorderRadius.circular(24),
               child: Row(
                 children: [
                   Container(
@@ -1086,7 +1052,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                     height: compact ? 40 : 46,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.16)),
+                      border: Border.all(color: Colors.white.withOpacity(0.18)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: _buildAvatarImage(iconSize: 22),
@@ -1105,14 +1071,13 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                             color: Colors.white,
                             fontSize: compact ? 15 : 16,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: -0.2,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           _callAccepted && _callStartedAt != null
                               ? '${_callModeLabel.toUpperCase()} • ${_formatDuration(_callDuration)}'
-                              : _callModeLabel.toUpperCase(),
+                              : _primaryStatusText.toUpperCase(),
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.62),
                             fontSize: compact ? 10 : 11,
@@ -1127,14 +1092,14 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: _accentColor.withOpacity(0.14),
+                        color: Colors.white.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: _accentColor.withOpacity(0.22)),
+                        border: Border.all(color: Colors.white.withOpacity(0.12)),
                       ),
                       child: Text(
                         _isConnecting ? 'SYNCING' : 'LIVE',
                         style: TextStyle(
-                          color: _accentColor,
+                          color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1,
@@ -1164,13 +1129,13 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           _buildGlassPanel(
-            padding: const EdgeInsets.all(6),
-            borderRadius: BorderRadius.circular(26),
+            padding: const EdgeInsets.all(4),
+            borderRadius: BorderRadius.circular(22),
             child: Container(
-              width: compact ? 96 : 116,
-              height: compact ? 136 : 162,
+              width: compact ? 92 : 108,
+              height: compact ? 128 : 150,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: Colors.white.withOpacity(0.12)),
               ),
               clipBehavior: Clip.antiAlias,
@@ -1190,8 +1155,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.36),
-                        borderRadius: BorderRadius.circular(14),
+                        color: Colors.black.withOpacity(0.46),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
                         'You',
@@ -1223,7 +1188,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
               key: ValueKey<String>(_statusOverlay!),
               child: _buildGlassPanel(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(20),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1255,9 +1220,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withOpacity(0.14)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1286,33 +1251,21 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     return AnimatedBuilder(
       animation: _pulseController,
       builder: (context, _) {
-        final pulseA = 0.78 + (_pulseController.value * 0.24);
-        final pulseB = 0.62 + (((_pulseController.value + 0.33) % 1) * 0.26);
+        final pulse = Curves.easeOut.transform(_pulseController.value);
         return SizedBox(
-          width: size + 70,
-          height: size + 70,
+          width: size + 42,
+          height: size + 42,
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Transform.scale(
-                scale: pulseA,
+              Opacity(
+                opacity: 0.2 * (1 - pulse),
                 child: Container(
-                  width: size + 48,
-                  height: size + 48,
+                  width: size + 34 + (pulse * 20),
+                  height: size + 34 + (pulse * 20),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: _accentColor.withOpacity(0.22), width: 1.5),
-                  ),
-                ),
-              ),
-              Transform.scale(
-                scale: pulseB,
-                child: Container(
-                  width: size + 18,
-                  height: size + 18,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: _accentGlowColor.withOpacity(0.2), width: 1.5),
+                    border: Border.all(color: _accentColor.withOpacity(0.7), width: 1.6),
                   ),
                 ),
               ),
@@ -1326,15 +1279,15 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.white.withOpacity(0.18),
-                      Colors.white.withOpacity(0.04),
+                      Colors.white.withOpacity(0.08),
                     ],
                   ),
                   border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: _accentColor.withOpacity(0.18),
-                      blurRadius: 30,
-                      spreadRadius: 10,
+                      color: Colors.black.withOpacity(0.18),
+                      blurRadius: 20,
+                      spreadRadius: 4,
                     ),
                   ],
                 ),
@@ -1368,86 +1321,66 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     );
   }
 
-  Widget _buildSignalIndicator() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, _) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(5, (index) {
-            final wave = math.sin((_pulseController.value * math.pi * 2) + (index * 0.75));
-            final height = 10 + ((wave + 1) * 9);
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Container(
-                width: 6,
-                height: height,
-                decoration: BoxDecoration(
-                  color: index.isEven ? _accentColor : _accentGlowColor,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            );
-          }),
-        );
-      },
+  Widget _buildInfoPill({
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: _accentColor),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildIncomingActionCard({
+  Widget _buildIncomingResponseButton({
     required String label,
-    required String subtitle,
     required IconData icon,
-    required Color color,
+    required Color backgroundColor,
     required VoidCallback onTap,
   }) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         child: Ink(
-          padding: EdgeInsets.symmetric(horizontal: _isCompactLayout ? 12 : 16, vertical: _isCompactLayout ? 14 : 18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withOpacity(0.28),
-                color.withOpacity(0.14),
-              ],
-            ),
-            border: Border.all(color: color.withOpacity(0.26)),
+          padding: EdgeInsets.symmetric(
+            horizontal: _isCompactLayout ? 12 : 14,
+            vertical: _isCompactLayout ? 14 : 16,
           ),
-          child: Column(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            color: backgroundColor,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: _isCompactLayout ? 48 : 54,
-                height: _isCompactLayout ? 48 : 54,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color.withOpacity(0.22),
-                ),
-                child: Icon(icon, color: Colors.white, size: _isCompactLayout ? 22 : 24),
-              ),
-              SizedBox(height: _isCompactLayout ? 10 : 14),
+              Icon(icon, color: Colors.white, size: _isCompactLayout ? 20 : 22),
+              const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: _isCompactLayout ? 14 : 15,
                   fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
-                  fontSize: _isCompactLayout ? 11 : 12,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1458,111 +1391,44 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   Widget _buildEndCallButton() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _endCall(notifyPeer: true, allowLog: true),
-        borderRadius: BorderRadius.circular(28),
-        child: Ink(
-          width: _isCompactLayout ? 84 : 96,
-          height: _isCompactLayout ? 84 : 96,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFFFB7185),
-                Color(0xFFDC2626),
+    return SizedBox(
+      width: _isCompactLayout ? 88 : 94,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _endCall(notifyPeer: true, allowLog: true),
+          borderRadius: BorderRadius.circular(22),
+          child: Ink(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              color: const Color(0xFFEF4444),
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 21,
+                  backgroundColor: Color(0x33FFFFFF),
+                  child: Icon(
+                    Icons.call_end_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'End',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFB7185).withOpacity(0.34),
-                blurRadius: 28,
-                spreadRadius: 4,
-              ),
-            ],
           ),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.call_end_rounded,
-                color: Colors.white,
-                size: 30,
-              ),
-              SizedBox(height: 6),
-              Text(
-                'End',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetricTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          color: Colors.white.withOpacity(0.05),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _accentColor.withOpacity(0.14),
-              ),
-              child: Icon(icon, size: 18, color: _accentColor),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.64),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -1573,20 +1439,14 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     required EdgeInsetsGeometry padding,
     required BorderRadius borderRadius,
   }) {
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            color: Colors.white.withOpacity(0.08),
-            border: Border.all(color: Colors.white.withOpacity(0.12)),
-          ),
-          child: child,
-        ),
+    return Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        color: const Color(0xFF0F172A).withOpacity(0.72),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
       ),
+      child: child,
     );
   }
 
@@ -1600,35 +1460,14 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         onTap: onTap,
         borderRadius: BorderRadius.circular(22),
         child: Ink(
-          width: 54,
-          height: 54,
+          width: 50,
+          height: 50,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            color: Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(18),
+            color: const Color(0xFF0F172A).withOpacity(0.72),
             border: Border.all(color: Colors.white.withOpacity(0.12)),
           ),
           child: Icon(icon, color: Colors.white, size: 24),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAmbientOrb({
-    required double size,
-    required Color color,
-  }) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              color,
-              color.withOpacity(0.0),
-            ],
-          ),
         ),
       ),
     );
