@@ -74,6 +74,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   StreamSubscription<Position>? _passengerLocationSubscription;
   bool _isRefreshingActiveRide = false;
   int _statusRefreshTick = 0;
+  String? _lastExpiredTargetRefreshKey;
   RoutePreview? _activeRoutePreview;
   String _activeRouteSignature = '';
   bool _isLoadingActiveRoute = false;
@@ -119,12 +120,39 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _statusRefreshTimer?.cancel();
     _statusRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || _activeRide == null) return;
-      if (_activeRide!.isSearching) {
+      final ride = _activeRide!;
+      if (ride.isSearching) {
+        final targetedDriverName = _currentTargetedDriverName(ride);
+        final secondsRemaining = _targetedRemainingSeconds(ride);
+
+        if (targetedDriverName.isNotEmpty && secondsRemaining > 0) {
+          _lastExpiredTargetRefreshKey = null;
+        }
+
+        if (targetedDriverName.isNotEmpty && secondsRemaining == 0) {
+          final targetedAt = _targetedAtFromEvent ?? ride.targetedAt;
+          final expiryKey = [
+            ride.id,
+            ride.dispatchAttempt,
+            targetedDriverName,
+            targetedAt?.toIso8601String() ?? '',
+          ].join('|');
+
+          if (_lastExpiredTargetRefreshKey != expiryKey) {
+            _lastExpiredTargetRefreshKey = expiryKey;
+            unawaited(_refreshActiveRideSilently(forceApply: true));
+          }
+        }
+
         setState(() {});
       }
+
       _statusRefreshTick += 1;
-      if (_statusRefreshTick % 12 == 0) {
-        _refreshActiveRideSilently();
+      final refreshIntervalSeconds = ride.isSearching
+          ? (_currentTargetedDriverName(ride).isNotEmpty ? 4 : 2)
+          : 12;
+      if (_statusRefreshTick % refreshIntervalSeconds == 0) {
+        unawaited(_refreshActiveRideSilently());
       }
     });
   }
@@ -404,19 +432,32 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _applyRideState(_resolvePassengerActiveRide(result.data), isLoading: false);
   }
 
+  void _syncSearchDispatchState(Ride? ride) {
+    if (ride == null || !ride.isSearching) {
+      _targetedAtFromEvent = null;
+      _targetedDriverNameFromEvent = null;
+      _noDriversInRange = false;
+      _lastExpiredTargetRefreshKey = null;
+      return;
+    }
+
+    _targetedAtFromEvent = ride.targetedAt;
+    final targetedDriverName = ride.targetedDriver?.userName.trim() ?? '';
+    _targetedDriverNameFromEvent = targetedDriverName.isEmpty ? null : targetedDriverName;
+    if (targetedDriverName.isNotEmpty) {
+      _noDriversInRange = false;
+      if (_targetedRemainingSeconds(ride) > 0) {
+        _lastExpiredTargetRefreshKey = null;
+      }
+    }
+  }
+
   void _applyRideState(Ride? ride, {required bool isLoading}) {
     setState(() {
       _activeRide = ride;
       _searchStatusMessage = _deriveSearchStatusMessage(ride);
       _dispatchAttempt = ride?.dispatchAttempt ?? 0;
-      _targetedAtFromEvent = ride == null
-          ? null
-          : (ride.isSearching ? (ride.targetedAt ?? _targetedAtFromEvent) : null);
-      _targetedDriverNameFromEvent = ride == null
-          ? null
-          : (ride.isSearching
-              ? (ride.targetedDriver?.userName ?? _targetedDriverNameFromEvent)
-              : null);
+      _syncSearchDispatchState(ride);
       _isLoadingActiveRide = isLoading;
       _statusRefreshTick = 0;
     });
@@ -445,7 +486,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     await _refreshRideSnapshot();
   }
 
-  Future<void> _refreshActiveRideSilently() async {
+  Future<void> _refreshActiveRideSilently({bool forceApply = false}) async {
     final rideId = _activeRide?.id;
     if (_isRefreshingActiveRide || rideId == null || rideId.isEmpty || _isCancellingRide) {
       return;
@@ -470,7 +511,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         return;
       }
 
-      if (_activeRide?.updatedAt == resolvedRide.updatedAt) {
+      if (!forceApply && _activeRide?.updatedAt == resolvedRide.updatedAt) {
         _syncPassengerLocationTracking();
         return;
       }
@@ -479,12 +520,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         _activeRide = resolvedRide;
         _searchStatusMessage = _deriveSearchStatusMessage(resolvedRide);
         _dispatchAttempt = resolvedRide.dispatchAttempt;
-        _targetedAtFromEvent = resolvedRide.isSearching
-            ? (resolvedRide.targetedAt ?? _targetedAtFromEvent)
-            : null;
-        _targetedDriverNameFromEvent = resolvedRide.isSearching
-            ? (resolvedRide.targetedDriver?.userName ?? _targetedDriverNameFromEvent)
-            : null;
+        _syncSearchDispatchState(resolvedRide);
         _statusRefreshTick = 0;
       });
       _syncPassengerLocationTracking();

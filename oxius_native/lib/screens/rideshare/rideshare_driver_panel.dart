@@ -88,6 +88,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   StreamSubscription<Map<String, dynamic>>? _rideshareNotificationSubscription;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
   bool _isRefreshingActiveRide = false;
+  bool _incomingRideAlertActive = false;
+  String? _incomingRideAlertRideId;
 
   // Live passenger location received via WebSocket
   RidePoint? _passengerLocation;
@@ -326,12 +328,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _refreshTimer?.cancel();
     _activeRideRefreshTimer?.cancel();
     _countdownTimer?.cancel();
-    _stopIncomingRideAlert();
+    _cancelIncomingRideAlertLocally();
+    _ringtonePlayer.stop();
+    Vibration.cancel();
     _dispatchEventSubscription?.cancel();
     _rideEventSubscription?.cancel();
     _rideshareNotificationSubscription?.cancel();
     _realtimeService.dispose();
-    _ringtonePlayer.stop();
     _licenseController.dispose();
     _nidController.dispose();
     _driverDetailsController.dispose();
@@ -725,12 +728,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final type = payload['type']?.toString() ??
         payload['notification_type']?.toString() ??
         '';
+    final rideId = payload['ride_id']?.toString() ?? '';
     if (_activeRide == null &&
         (type == 'targeted_ride_request' || type == 'new_ride_request')) {
-      unawaited(_playIncomingRideAlert());
+      unawaited(_playIncomingRideAlert(rideId: rideId));
     }
 
-    final rideId = payload['ride_id']?.toString() ?? '';
     if (rideId.isNotEmpty) {
       final result = await RideshareService.getRide(rideId);
       if (!mounted || !result.success || result.data == null) {
@@ -739,7 +742,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
       final resolvedRide = _resolveDriverActiveRide(_driverProfile, result.data);
       if (resolvedRide != null) {
-        _stopIncomingRideAlert();
+        await _stopIncomingRideAlert();
         setState(() {
           _activeRide = resolvedRide;
           _availableRequests = [];
@@ -786,6 +789,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     if (filtered.length == before) {
       return false;
+    }
+
+    if (filtered.isEmpty) {
+      unawaited(_stopIncomingRideAlert());
     }
 
     setState(() {
@@ -892,7 +899,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     final type = event['type']?.toString() ?? '';
     if (type == 'ride.targeted') {
-      await _playIncomingRideAlert();
+      await _playIncomingRideAlert(rideId: event['ride_id']?.toString());
       await _loadAvailableRequests();
       _showSuccess('New ride request received.');
       return;
@@ -938,7 +945,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
       if (_activeRide?.isCompleted == true || _activeRide?.isCancelled == true) {
-        _stopIncomingRideAlert();
+        await _stopIncomingRideAlert();
         setState(() {
           _passengerLocation = null;
           _smartRoutePreview = null;
@@ -952,31 +959,65 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
-  Future<void> _playIncomingRideAlert() async {
+  Future<void> _playIncomingRideAlert({String? rideId}) async {
+    final normalizedRideId = rideId?.trim();
+    if (_incomingRideAlertActive &&
+        normalizedRideId != null &&
+        normalizedRideId.isNotEmpty &&
+        _incomingRideAlertRideId == normalizedRideId) {
+      return;
+    }
+
     try {
-      _stopIncomingRideAlert();
+      await _stopIncomingRideAlert();
+      _incomingRideAlertActive = true;
+      _incomingRideAlertRideId =
+          (normalizedRideId != null && normalizedRideId.isNotEmpty)
+              ? normalizedRideId
+              : null;
 
       if (await Vibration.hasVibrator()) {
-        await Vibration.vibrate(duration: 1200);
-        _incomingRideAlertTimer = Timer.periodic(const Duration(seconds: 2), (_) {
-          Vibration.vibrate(duration: 1200);
-        });
-        _incomingRideAlertStopTimer = Timer(const Duration(minutes: 1), () {
-          _stopIncomingRideAlert();
-        });
+        if (await Vibration.hasCustomVibrationsSupport()) {
+          await Vibration.vibrate(pattern: const [0, 1200, 800], repeat: 0);
+        } else {
+          await Vibration.vibrate(duration: 1200);
+          _incomingRideAlertTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+            Vibration.vibrate(duration: 1200);
+          });
+        }
       }
-      await _ringtonePlayer.playNotification(looping: false, asAlarm: true);
+      _incomingRideAlertStopTimer = Timer(const Duration(minutes: 1), () {
+        unawaited(_stopIncomingRideAlert());
+      });
+      await _ringtonePlayer.playRingtone(looping: true, asAlarm: true);
     } catch (_) {
       // Alert fallback is intentionally silent if the device blocks audio/vibration.
     }
   }
 
-  void _stopIncomingRideAlert() {
+  void _cancelIncomingRideAlertLocally() {
     _incomingRideAlertTimer?.cancel();
     _incomingRideAlertTimer = null;
     _incomingRideAlertStopTimer?.cancel();
     _incomingRideAlertStopTimer = null;
-    Vibration.cancel();
+    _incomingRideAlertActive = false;
+    _incomingRideAlertRideId = null;
+  }
+
+  Future<void> _stopIncomingRideAlert() async {
+    _cancelIncomingRideAlertLocally();
+
+    try {
+      await _ringtonePlayer.stop();
+    } catch (_) {
+      // Ignore ringtone stop failures.
+    }
+
+    try {
+      await Vibration.cancel();
+    } catch (_) {
+      // Ignore vibration stop failures.
+    }
   }
 
   Future<void> _loadAvailableRequests() async {
@@ -987,7 +1028,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         .where((ride) => !_isRequestExpired(ride))
         .toList();
     if (requests.isEmpty) {
-      _stopIncomingRideAlert();
+      await _stopIncomingRideAlert();
     }
     setState(() => _availableRequests = requests);
   }
@@ -1202,8 +1243,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       _availableRequests = [];
       _passengerLocation = null;
     });
-    _stopIncomingRideAlert();
-    _ringtonePlayer.stop();
+    unawaited(_stopIncomingRideAlert());
     _syncRealtimeConnections();
 
     final result = await RideshareService.acceptRide(ride.id);
@@ -1244,7 +1284,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final result = await RideshareService.skipRideRequest(ride.id);
     if (!mounted) return;
 
-    _stopIncomingRideAlert();
+    await _stopIncomingRideAlert();
     setState(() => _skippingRideIds.remove(ride.id));
 
     if (result.success) {
@@ -1777,9 +1817,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   const SizedBox(height: 12),
                 ],
               ],
+              if (_driverProfile?.isApproved == true) _buildRideRequestsCard(),
+              if (_driverProfile?.isApproved == true)
+                const SizedBox(height: 12),
               _buildProfileCard(),
               SizedBox(height: _isProfileExpanded ? 12 : 8),
-              if (_driverProfile?.isApproved == true) _buildRideRequestsCard(),
             ],
           ],
         ),
