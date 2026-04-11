@@ -212,7 +212,7 @@ onMounted(() => {
   }
 
   redirectState.value = "redirecting";
-  const didRedirect = redirectToStore(detectedPlatform.value as "android" | "ios", {
+  const didRedirect = redirectToStore(detectedPlatform.value === "ios" ? "ios" : "android", {
     fallbackToDownload: false,
   });
 
