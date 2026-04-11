@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 from .models import (
     ChatRoom, Message, MessageReport, 
-    BlockedUser, TypingStatus, OnlineStatus, ActiveChatSession
+    BlockedUser, TypingStatus, OnlineStatus, ActiveChatSession, CallSession
 )
 from .serializers import (
     ChatRoomSerializer, MessageSerializer, MessageCreateSerializer,
@@ -23,6 +23,95 @@ from .serializers import (
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+_CALL_TYPE_SET = {'audio', 'video'}
+_CALL_STATUS_ALIASES = {
+    'declined': CallSession.STATUS_REJECTED,
+    'no_answer': CallSession.STATUS_MISSED,
+}
+
+
+def _build_user_avatar_url(request, user):
+    image_field = None
+    if hasattr(user, 'image') and user.image:
+        image_field = user.image
+    elif hasattr(user, 'profile_image') and user.profile_image:
+        image_field = user.profile_image
+
+    if not image_field:
+        return ''
+
+    try:
+        return request.build_absolute_uri(image_field.url)
+    except Exception:
+        return image_field.url
+
+
+def _get_call_session_for_user(*, user, channel_name, call_id=None):
+    queryset = CallSession.objects.filter(channel_name=channel_name).filter(
+        Q(caller=user) | Q(callee=user)
+    )
+    if call_id:
+        queryset = queryset.filter(id=call_id)
+    return queryset.order_by('-started_at').first()
+
+
+def _send_call_data_message(*, target_user, payload):
+    from base.models import FCMToken
+
+    success_count = 0
+    total_tokens = 0
+    last_send_error = None
+
+    try:
+        import os
+        import datetime
+        from django.conf import settings
+        import firebase_admin
+        from firebase_admin import credentials, messaging
+
+        if not firebase_admin._apps:
+            cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+
+        fcm_tokens = FCMToken.objects.filter(user=target_user, is_active=True)
+        total_tokens = fcm_tokens.count()
+
+        for fcm_token in fcm_tokens:
+            try:
+                message = messaging.Message(
+                    data=payload,
+                    android=messaging.AndroidConfig(
+                        priority='high',
+                        ttl=datetime.timedelta(seconds=30),
+                    ),
+                    apns=messaging.APNSConfig(
+                        headers={'apns-priority': '10'},
+                        payload=messaging.APNSPayload(
+                            aps=messaging.Aps(content_available=True),
+                        ),
+                    ),
+                    token=fcm_token.token,
+                )
+                messaging.send(message)
+                success_count += 1
+            except Exception as exc:
+                last_send_error = str(exc)
+                logger.warning(
+                    'Failed to send AdsyConnect call FCM to token %s...: %s',
+                    fcm_token.token[:20],
+                    exc,
+                )
+    except Exception as exc:
+        last_send_error = str(exc)
+        logger.warning('AdsyConnect call FCM fallback failed: %s', exc)
+
+    return {
+        'sent_to': success_count,
+        'total_tokens': total_tokens,
+        'fcm_error': last_send_error,
+    }
 
 
 def _broadcast_to_user(user_id, event):
@@ -65,14 +154,13 @@ def firebase_custom_token(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def send_call_notification(request):
-    """Send incoming call signal via websocket and FCM fallback."""
+    """Create a call session and deliver the ringing signal."""
     try:
-        from base.models import FCMToken
-
         callee_id = request.data.get('callee_id')
         channel_name = request.data.get('channel_name')
-        call_id = request.data.get('call_id')
-        call_type = request.data.get('call_type', 'audio')
+        call_type = str(request.data.get('call_type', 'audio')).lower()
+        if call_type not in _CALL_TYPE_SET:
+            call_type = 'audio'
 
         if not callee_id or not channel_name:
             return Response({'error': 'callee_id and channel_name are required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -83,24 +171,34 @@ def send_call_notification(request):
             return Response({'error': 'Callee not found'}, status=status.HTTP_404_NOT_FOUND)
 
         caller = request.user
-        caller_name = caller.get_full_name() or caller.username
+        if caller == callee:
+            return Response({'error': 'Cannot call yourself'}, status=status.HTTP_400_BAD_REQUEST)
 
-        caller_avatar = None
-        if hasattr(caller, 'profile_image') and caller.profile_image:
-            caller_avatar = caller.profile_image.url
-        elif hasattr(caller, 'image') and caller.image:
-            caller_avatar = caller.image.url
+        provided_call_id = request.data.get('call_id')
+        session_kwargs = {
+            'channel_name': str(channel_name),
+            'caller': caller,
+            'callee': callee,
+            'call_type': call_type,
+            'status': CallSession.STATUS_RINGING,
+        }
+        if provided_call_id:
+            session_kwargs['id'] = provided_call_id
+        call_session = CallSession.objects.create(**session_kwargs)
+
+        caller_name = caller.get_full_name() or caller.username
+        caller_avatar = _build_user_avatar_url(request, caller)
 
         import time
         timestamp = int(time.time() * 1000)  # milliseconds for call age validation
 
         payload = {
             'type': 'incoming_call',
-            'channel_name': str(channel_name),
-            **({'call_id': str(call_id)} if call_id else {}),
+            'call_id': str(call_session.id),
+            'channel_name': str(call_session.channel_name),
             'caller_id': str(caller.id),
             'caller_name': caller_name,
-            'call_type': call_type,
+            'call_type': call_session.call_type,
             'caller_avatar': caller_avatar or '',
             'timestamp': str(timestamp),
         }
@@ -112,61 +210,14 @@ def send_call_notification(request):
                 'payload': payload,
             },
         )
-        
-        success_count = 0
-        total_tokens = 0
-        last_send_error = None
-
-        try:
-            import os
-            import datetime
-            from django.conf import settings
-            import firebase_admin
-            from firebase_admin import credentials, messaging
-
-            if not firebase_admin._apps:
-                cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
-                cred = credentials.Certificate(cred_path)
-                firebase_admin.initialize_app(cred)
-
-            fcm_tokens = FCMToken.objects.filter(user=callee, is_active=True)
-            total_tokens = fcm_tokens.count()
-
-            for fcm_token in fcm_tokens:
-                try:
-                    message = messaging.Message(
-                        data=payload,
-                        android=messaging.AndroidConfig(
-                            priority='high',
-                            ttl=datetime.timedelta(seconds=30),
-                        ),
-                        apns=messaging.APNSConfig(
-                            headers={'apns-priority': '10'},
-                            payload=messaging.APNSPayload(
-                                aps=messaging.Aps(content_available=True),
-                            ),
-                        ),
-                        token=fcm_token.token,
-                    )
-                    messaging.send(message)
-                    success_count += 1
-                except Exception as e:
-                    last_send_error = str(e)
-                    logger.warning(
-                        'Failed to send incoming call FCM to token %s...: %s',
-                        fcm_token.token[:20],
-                        e,
-                    )
-        except Exception as e:
-            last_send_error = str(e)
-            logger.warning('Incoming call FCM fallback failed: %s', e)
+        delivery_result = _send_call_data_message(target_user=callee, payload=payload)
 
         return Response({
             'success': True,
+            'call_id': str(call_session.id),
+            'status': call_session.status,
             'sent_to_ws': True,
-            'sent_to': success_count,
-            'total_tokens': total_tokens,
-            'fcm_error': last_send_error,
+            **delivery_result,
         })
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -175,14 +226,16 @@ def send_call_notification(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def send_call_status(request):
-    """Send call status via websocket and FCM fallback."""
+    """Update an existing call session and deliver the status signal."""
     try:
-        from base.models import FCMToken
-
         receiver_id = request.data.get('receiver_id')
         channel_name = request.data.get('channel_name')
-        call_type = request.data.get('call_type', 'audio')
-        status_value = request.data.get('status')
+        call_type = str(request.data.get('call_type', 'audio')).lower()
+        if call_type not in _CALL_TYPE_SET:
+            call_type = 'audio'
+        status_value = str(request.data.get('status')).lower()
+        status_value = _CALL_STATUS_ALIASES.get(status_value, status_value)
+        call_id = request.data.get('call_id')
 
         if not receiver_id or not channel_name or not status_value:
             return Response(
@@ -196,6 +249,15 @@ def send_call_status(request):
             return Response({'error': 'Receiver not found'}, status=status.HTTP_404_NOT_FOUND)
 
         sender = request.user
+        call_session = _get_call_session_for_user(
+            user=sender,
+            channel_name=str(channel_name),
+            call_id=call_id,
+        )
+
+        if call_session:
+            call_session.update_status(str(status_value))
+            call_type = call_session.call_type
 
         payload = {
             'type': 'call_status',
@@ -204,6 +266,8 @@ def send_call_status(request):
             'status': str(status_value),
             'sender_id': str(sender.id),
         }
+        if call_session:
+            payload['call_id'] = str(call_session.id)
 
         _broadcast_to_user(
             receiver.id,
@@ -212,61 +276,14 @@ def send_call_status(request):
                 'payload': payload,
             },
         )
-
-        success_count = 0
-        total_tokens = 0
-        last_send_error = None
-
-        try:
-            import os
-            import datetime
-            from django.conf import settings
-            import firebase_admin
-            from firebase_admin import credentials, messaging
-
-            if not firebase_admin._apps:
-                cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
-                cred = credentials.Certificate(cred_path)
-                firebase_admin.initialize_app(cred)
-
-            fcm_tokens = FCMToken.objects.filter(user=receiver, is_active=True)
-            total_tokens = fcm_tokens.count()
-
-            for fcm_token in fcm_tokens:
-                try:
-                    message = messaging.Message(
-                        data=payload,
-                        android=messaging.AndroidConfig(
-                            priority='high',
-                            ttl=datetime.timedelta(seconds=30),
-                        ),
-                        apns=messaging.APNSConfig(
-                            headers={'apns-priority': '10'},
-                            payload=messaging.APNSPayload(
-                                aps=messaging.Aps(content_available=True),
-                            ),
-                        ),
-                        token=fcm_token.token,
-                    )
-                    messaging.send(message)
-                    success_count += 1
-                except Exception as e:
-                    last_send_error = str(e)
-                    logger.warning(
-                        'Failed to send call status FCM to token %s...: %s',
-                        fcm_token.token[:20],
-                        e,
-                    )
-        except Exception as e:
-            last_send_error = str(e)
-            logger.warning('Call status FCM fallback failed: %s', e)
+        delivery_result = _send_call_data_message(target_user=receiver, payload=payload)
 
         return Response({
             'success': True,
+            'call_id': str(call_session.id) if call_session else None,
+            'status': str(status_value),
             'sent_to_ws': True,
-            'sent_to': success_count,
-            'total_tokens': total_tokens,
-            'fcm_error': last_send_error,
+            **delivery_result,
         })
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

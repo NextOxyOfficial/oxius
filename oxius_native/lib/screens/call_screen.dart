@@ -14,6 +14,7 @@ class CallScreen extends StatefulWidget {
   final String calleeId;
   final String calleeName;
   final String? calleeAvatar;
+  final String? callId;
   final bool isIncoming;
   final String callType; // 'video' or 'audio'
   final bool isReturning;
@@ -25,6 +26,7 @@ class CallScreen extends StatefulWidget {
     required this.calleeId,
     required this.calleeName,
     this.calleeAvatar,
+    this.callId,
     this.isIncoming = false,
     this.callType = 'video',
     this.isReturning = false,
@@ -48,12 +50,17 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   RtcEngine? _engine;
 
   StreamSubscription<Map<String, dynamic>>? _callStatusSub;
+  StreamSubscription<int>? _localJoinSub;
+  StreamSubscription<int>? _remoteJoinSub;
+  StreamSubscription<int>? _remoteLeaveSub;
+  StreamSubscription<String>? _engineErrorSub;
   Timer? _durationTimer;
   DateTime? _callStartedAt;
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
   bool _isClosing = false;
   bool _isMinimizing = false;
+  bool _didEndCall = false;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
   bool _incomingAlertActive = false;
   bool _acceptanceSent = false;
@@ -83,24 +90,14 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     )..repeat();
     _localUid = AgoraCallService.generateUid();
     AgoraCallService.setCallScreenVisible(true);
-    
+
+    _bindServiceStreams();
+
     if (widget.isReturning) {
-      _localUserJoined = true;
-      _callAccepted = AgoraCallService.activeCallAccepted;
-      _isConnecting = !_callAccepted;
-      _engine = AgoraCallService.engine;
-      _listenForCallStatus();
-      final connectedAtMs = AgoraCallService.activeCallConnectedAtMs;
-      if (connectedAtMs != null) {
-        _isConnecting = false;
-        _startCallTimer(
-          connectedAt: DateTime.fromMillisecondsSinceEpoch(connectedAtMs),
-          syncGlobalState: false,
-        );
-      }
+      _restoreActiveCallState();
       return;
     }
-    
+
     AgoraCallService.setInCall(true);
     AgoraCallService.setActiveCallInfo(
       channelName: widget.channelName,
@@ -109,17 +106,16 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       peerAvatar: widget.calleeAvatar,
       callType: widget.callType,
       isIncoming: widget.isIncoming,
+      callId: widget.callId,
     );
-    _listenForCallStatus();
-    
-    // If autoAccept is true (accepted from CallKit), skip ringtone and accept UI
+
     if (widget.autoAccept) {
       _callAccepted = true;
     } else if (widget.isIncoming) {
-      // Only play ringtone if NOT auto-accepted (user needs to accept manually)
-      _startIncomingAlert();
+      unawaited(_startIncomingAlert());
     }
-    _initAgora();
+
+    unawaited(_initializeCall());
   }
 
   @override
@@ -142,7 +138,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     AgoraCallService.setCallScreenVisible(false);
   }
 
-  void _listenForCallStatus() {
+  void _bindServiceStreams() {
     _callStatusSub = AgoraCallService.callStatusStream.listen((data) {
       final type = data['type']?.toString();
       if (type != 'call_status') return;
@@ -155,26 +151,129 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
       if (!mounted) return;
 
-      if (status == 'rejected') {
+      if (status == 'accepted') {
+        setState(() {
+          _callAccepted = true;
+        });
+        return;
+      }
+
+      if (_didEndCall) {
+        return;
+      }
+
+      if (status == 'rejected' || status == 'declined') {
         _showOverlayAndClose('Call declined');
-        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'rejected');
-      } else if (status == 'declined') {
-        _showOverlayAndClose('Call declined');
-        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'rejected');
+        unawaited(_endCall(
+          notifyPeer: false,
+          allowLog: !widget.isIncoming,
+          outcomeOverride: 'rejected',
+        ));
       } else if (status == 'busy') {
         _showOverlayAndClose('User busy');
-        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'busy');
-      } else if (status == 'cancelled') {
+        unawaited(_endCall(
+          notifyPeer: false,
+          allowLog: !widget.isIncoming,
+          outcomeOverride: 'busy',
+        ));
+      } else if (status == 'cancelled' || status == 'missed') {
         _showOverlayAndClose('Call cancelled');
-        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'cancelled');
-      } else if (status == 'ended') {
+        unawaited(_endCall(
+          notifyPeer: false,
+          allowLog: !widget.isIncoming,
+          outcomeOverride: 'cancelled',
+        ));
+      } else if (status == 'ended' || status == 'failed') {
         _showOverlayAndClose('Call ended');
-        _endCall(notifyPeer: false, allowLog: true, outcomeOverride: 'ended');
+        unawaited(_endCall(
+          notifyPeer: false,
+          allowLog: !widget.isIncoming,
+          outcomeOverride: 'ended',
+        ));
       }
+    });
+
+    _localJoinSub = AgoraCallService.localUserJoinedStream.listen((_) {
+      if (!mounted) return;
+      setState(() {
+        _localUserJoined = true;
+        _isConnecting = false;
+      });
+    });
+
+    _remoteJoinSub = AgoraCallService.remoteUserJoinedStream.listen((remoteUid) {
+      if (!mounted) return;
+      setState(() {
+        _remoteUid = remoteUid;
+        _callAccepted = true;
+        _isConnecting = false;
+      });
+      _startCallTimer();
+    });
+
+    _remoteLeaveSub = AgoraCallService.remoteUserLeftStream.listen((remoteUid) {
+      if (!mounted || _didEndCall) return;
+      if (_remoteUid != null && remoteUid != _remoteUid) {
+        return;
+      }
+      setState(() {
+        _remoteUid = null;
+      });
+      _showOverlayAndClose('Call ended');
+      unawaited(_endCall(
+        notifyPeer: false,
+        allowLog: !widget.isIncoming,
+        outcomeOverride: 'ended',
+      ));
+    });
+
+    _engineErrorSub = AgoraCallService.engineErrorStream.listen((message) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
     });
   }
 
-  // Ringtone and vibration are now handled by CallKit natively
+  void _restoreActiveCallState() {
+    final info = AgoraCallService.activeCallInfo;
+    _engine = AgoraCallService.engine;
+    _localUserJoined = _engine != null;
+    _callAccepted = AgoraCallService.activeCallAccepted;
+    _isConnecting = !_callAccepted;
+    _remoteUid = info?['remoteUid'] is int ? info!['remoteUid'] as int : null;
+
+    final connectedAtMs = AgoraCallService.activeCallConnectedAtMs;
+    if (connectedAtMs != null) {
+      _isConnecting = false;
+      _startCallTimer(
+        connectedAt: DateTime.fromMillisecondsSinceEpoch(connectedAtMs),
+        syncGlobalState: false,
+      );
+    } else if (_engine == null) {
+      unawaited(_resumeExistingChannelConnection());
+    }
+  }
+
+  Future<void> _resumeExistingChannelConnection() async {
+    try {
+      _engine = await AgoraCallService.initEngine(callType: widget.callType);
+      await _joinChannel();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not restore the call. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      Navigator.of(context).pop();
+    }
+  }
+
   Future<void> _startIncomingAlert() async {
     if (_incomingAlertActive || widget.autoAccept || !widget.isIncoming) {
       return;
@@ -221,80 +320,42 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     }
   }
 
-  Future<void> _initAgora() async {
+  Future<void> _initializeCall() async {
     try {
       _engine = await AgoraCallService.initEngine(callType: widget.callType);
-      
-      _engine!.registerEventHandler(
-        RtcEngineEventHandler(
-          onJoinChannelSuccess: (RtcConnection connection, int elapsed) {
-            print('Local user joined: ${connection.localUid}');
-            setState(() {
-              _localUserJoined = true;
-              _isConnecting = false;
-            });
-          },
-          onUserJoined: (RtcConnection connection, int remoteUid, int elapsed) {
-            print('Remote user joined: $remoteUid');
-            setState(() {
-              _remoteUid = remoteUid;
-              _callAccepted = true;
-            });
-            _startCallTimer();
-          },
-          onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
-            print('Remote user left: $remoteUid');
-            setState(() {
-              _remoteUid = null;
-            });
-            // End call when remote user leaves
-            _showOverlayAndClose('Call ended');
-            _endCall(notifyPeer: false, allowLog: true);
-          },
-          onError: (ErrorCodeType err, String msg) {
-            print('Agora error: $err - $msg');
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(_friendlyError(err)),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-        ),
-      );
 
-      // If incoming call, wait for accept (unless autoAccept). If outgoing, join immediately
       if (widget.isIncoming && !widget.autoAccept) {
         setState(() {
           _isConnecting = false;
         });
-      } else if (widget.isIncoming && widget.autoAccept) {
-        // Auto-accepted from CallKit - join channel immediately
-        _notifyCallAccepted();
-        await _joinChannel();
+        return;
+      }
+
+      if (widget.isIncoming && widget.autoAccept) {
+        await _acceptCall();
       } else {
-        // Send notification to callee
         final notified = await AgoraCallService.sendCallNotification(
           calleeId: widget.calleeId,
           channelName: widget.channelName,
           callType: widget.callType,
         );
 
-        if (!notified && mounted) {
+        if (!notified) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Could not reach the recipient. Please try again.'),
               backgroundColor: Colors.red,
             ),
           );
+          Navigator.of(context).pop();
+          AgoraCallService.setInCall(false);
+          return;
         }
 
         await _joinChannel();
       }
     } catch (e) {
-      print('Error initializing Agora: $e');
       if (mounted) {
         final msg = e.toString().toLowerCase().contains('permission')
             ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.'
@@ -313,13 +374,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   Future<void> _joinChannel() async {
     setState(() => _isConnecting = true);
 
-    print('CallScreen: join requested. channel=${widget.channelName} (len=${widget.channelName.length}), uid=$_localUid');
-
-    final token = await AgoraCallService.generateToken(widget.channelName, _localUid);
     final success = await AgoraCallService.joinChannel(
       channelName: widget.channelName,
       uid: _localUid,
-      token: token,
       callType: widget.callType,
     );
 
@@ -331,16 +388,21 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           backgroundColor: Colors.red,
         ),
       );
+      AgoraCallService.setInCall(false);
       Navigator.pop(context);
     }
   }
 
-  void _acceptCall() {
+  Future<void> _acceptCall() async {
+    if (_acceptanceSent) {
+      return;
+    }
+
     _notifyCallAccepted();
-    _stopIncomingAlert();
-    FCMService.cancelCallNotification(); // Cancel the notification
+    await _stopIncomingAlert();
+    if (!mounted) return;
     setState(() => _callAccepted = true);
-    _joinChannel();
+    await _joinChannel();
   }
 
   void _notifyCallAccepted() {
@@ -355,25 +417,30 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       channelName: widget.channelName,
       status: 'accepted',
       callType: widget.callType,
+      callId: widget.callId,
     );
   }
 
-  void _rejectCall() {
-    _stopIncomingAlert();
-    FCMService.cancelCallNotification(); // Cancel the notification
-    // For incoming calls, calleeId is actually the caller who should be notified
-    AgoraCallService.sendCallStatus(
+  Future<void> _rejectCall() async {
+    await _stopIncomingAlert();
+    await AgoraCallService.sendCallStatus(
       receiverId: widget.calleeId, // This is the caller for incoming calls
       channelName: widget.channelName,
       status: 'rejected',
       callType: widget.callType,
+      callId: widget.callId,
     );
-    _endCall(notifyPeer: false, allowLog: false);
+    await _endCall(notifyPeer: false, allowLog: false, outcomeOverride: 'rejected');
   }
 
-  Future<void> _endCall({required bool notifyPeer, required bool allowLog, String? outcomeOverride}) async {
-    if (_isClosing) return;
+  Future<void> _endCall({
+    required bool notifyPeer,
+    required bool allowLog,
+    String? outcomeOverride,
+  }) async {
+    if (_isClosing || _didEndCall) return;
     _isClosing = true;
+    _didEndCall = true;
 
     _durationTimer?.cancel();
     _durationTimer = null;
@@ -383,14 +450,12 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     final localOutcome = outcomeOverride ?? ((_callStartedAt != null) ? 'ended' : 'cancelled');
 
     if (notifyPeer) {
-      // For incoming calls, notify the caller (calleeId is actually the caller)
-      // For outgoing calls, notify the callee (calleeId is the actual callee)
-      final receiverId = widget.isIncoming ? widget.calleeId : widget.calleeId;
-      AgoraCallService.sendCallStatus(
-        receiverId: receiverId,
+      await AgoraCallService.sendCallStatus(
+        receiverId: widget.calleeId,
         channelName: widget.channelName,
         status: localOutcome,
         callType: widget.callType,
+        callId: widget.callId,
       );
     }
 
@@ -511,33 +576,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     AgoraCallService.toggleSpeaker(_isSpeakerOn);
   }
 
-  String _friendlyError(ErrorCodeType err) {
-    switch (err) {
-      case ErrorCodeType.errNotInitialized:
-        return 'Call service not ready. Please try again.';
-      case ErrorCodeType.errInvalidToken:
-      case ErrorCodeType.errTokenExpired:
-        return 'Session expired. Please restart the app.';
-      case ErrorCodeType.errConnectionLost:
-      case ErrorCodeType.errConnectionInterrupted:
-        return 'Connection lost. Please check your internet.';
-      case ErrorCodeType.errJoinChannelRejected:
-        return 'Could not join the call. Please try again.';
-      case ErrorCodeType.errLeaveChannelRejected:
-        return 'Could not leave the call properly.';
-      case ErrorCodeType.errInvalidChannelName:
-        return 'Invalid call session. Please try again.';
-      case ErrorCodeType.errNoServerResources:
-        return 'Server busy. Please try again later.';
-      default:
-        return 'Something went wrong. Please try again.';
-    }
-  }
-
   @override
   void dispose() {
-    _isClosing = true;
-
     try {
       FCMService.routeObserver.unsubscribe(this);
     } catch (_) {
@@ -545,29 +585,34 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     }
 
     _callStatusSub?.cancel();
-    _callStatusSub = null;
+    _localJoinSub?.cancel();
+    _remoteJoinSub?.cancel();
+    _remoteLeaveSub?.cancel();
+    _engineErrorSub?.cancel();
     _durationTimer?.cancel();
-    _durationTimer = null;
     AgoraCallService.setCallScreenVisible(false);
     if (!_isMinimizing) {
-      _stopIncomingAlert();
+      unawaited(_stopIncomingAlert());
       if (widget.isIncoming) {
         FCMService.releaseIncomingCallTracking(
           callerId: widget.calleeId,
           channelName: widget.channelName,
         );
       }
-      // If call was active and we're disposing without proper end, notify peer
-      if (AgoraCallService.isInCall && _callStartedAt != null) {
-        AgoraCallService.sendCallStatus(
+
+      if (!_didEndCall && AgoraCallService.isInCall) {
+        final status = _callStartedAt != null ? 'ended' : 'cancelled';
+        unawaited(AgoraCallService.sendCallStatus(
           receiverId: widget.calleeId,
           channelName: widget.channelName,
-          status: 'ended',
+          status: status,
           callType: widget.callType,
-        );
+          callId: widget.callId,
+        ));
       }
+
+      unawaited(AgoraCallService.leaveChannel());
       AgoraCallService.setInCall(false);
-      AgoraCallService.leaveChannel();
     }
     _pulseController.dispose();
     super.dispose();

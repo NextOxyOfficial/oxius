@@ -409,3 +409,102 @@ class ActiveChatSession(models.Model):
             return session.chatroom_id == chatroom.id if session.chatroom else False
         except cls.DoesNotExist:
             return False
+
+
+class CallSession(models.Model):
+    """Tracks the lifecycle of a 1-on-1 AdsyConnect Agora call."""
+
+    CALL_TYPES = [
+        ('audio', 'Audio'),
+        ('video', 'Video'),
+    ]
+
+    STATUS_RINGING = 'ringing'
+    STATUS_ACCEPTED = 'accepted'
+    STATUS_REJECTED = 'rejected'
+    STATUS_BUSY = 'busy'
+    STATUS_CANCELLED = 'cancelled'
+    STATUS_ENDED = 'ended'
+    STATUS_MISSED = 'missed'
+    STATUS_FAILED = 'failed'
+
+    CALL_STATUSES = [
+        (STATUS_RINGING, 'Ringing'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_REJECTED, 'Rejected'),
+        (STATUS_BUSY, 'Busy'),
+        (STATUS_CANCELLED, 'Cancelled'),
+        (STATUS_ENDED, 'Ended'),
+        (STATUS_MISSED, 'Missed'),
+        (STATUS_FAILED, 'Failed'),
+    ]
+
+    TERMINAL_STATUSES = {
+        STATUS_REJECTED,
+        STATUS_BUSY,
+        STATUS_CANCELLED,
+        STATUS_ENDED,
+        STATUS_MISSED,
+        STATUS_FAILED,
+    }
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    channel_name = models.CharField(max_length=80, unique=True)
+    caller = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='adsyconnect_outgoing_calls',
+    )
+    callee = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='adsyconnect_incoming_calls',
+    )
+    call_type = models.CharField(max_length=10, choices=CALL_TYPES, default='audio')
+    status = models.CharField(max_length=20, choices=CALL_STATUSES, default=STATUS_RINGING)
+    started_at = models.DateTimeField(auto_now_add=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    last_status_at = models.DateTimeField(default=timezone.now)
+    duration_seconds = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'adsyconnect_call_sessions'
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['caller', '-started_at']),
+            models.Index(fields=['callee', '-started_at']),
+            models.Index(fields=['status', '-started_at']),
+        ]
+
+    def __str__(self):
+        return (
+            f'{self.caller.username} -> {self.callee.username} '
+            f'[{self.call_type}:{self.status}]'
+        )
+
+    def update_status(self, status_value, *, at=None):
+        timestamp = at or timezone.now()
+        update_fields = ['status', 'last_status_at']
+
+        self.status = status_value
+        self.last_status_at = timestamp
+
+        if status_value == self.STATUS_ACCEPTED and self.accepted_at is None:
+            self.accepted_at = timestamp
+            update_fields.append('accepted_at')
+
+        if status_value in self.TERMINAL_STATUSES:
+            self.ended_at = timestamp
+            if 'ended_at' not in update_fields:
+                update_fields.append('ended_at')
+
+        if self.accepted_at and self.ended_at:
+            self.duration_seconds = max(
+                0,
+                int((self.ended_at - self.accepted_at).total_seconds()),
+            )
+            if 'duration_seconds' not in update_fields:
+                update_fields.append('duration_seconds')
+
+        self.save(update_fields=update_fields)

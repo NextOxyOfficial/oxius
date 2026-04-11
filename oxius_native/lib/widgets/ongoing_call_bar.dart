@@ -93,6 +93,7 @@ class _OngoingCallBarState extends State<OngoingCallBar> {
           calleeId: info['peerId'] ?? '',
           calleeName: info['peerName'] ?? 'Unknown',
           calleeAvatar: info['peerAvatar'],
+          callId: info['callId']?.toString(),
           isIncoming: info['isIncoming'] ?? false,
           callType: info['callType'] ?? 'video',
           isReturning: true,

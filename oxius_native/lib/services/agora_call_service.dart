@@ -1,62 +1,71 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
+
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'package:permission_handler/permission_handler.dart';
+
 import 'api_service.dart';
 import 'auth_service.dart';
 
 class AgoraCallService {
   static const String appId = '9eba1a50633041d08dbe75b0fde2ed8a';
-  static const bool _useTokenServer = false;
-  
+
   static RtcEngine? _engine;
-  static bool _isInitialized = false;
-  static bool _isVideoEnabled = false;
   static bool _isInCall = false;
   static bool _isCallScreenVisible = false;
+  static String? _joinedChannelName;
   static String? _lastError;
   static String? get lastError => _lastError;
+  static String? _lastNotificationError;
+  static String? get lastNotificationError => _lastNotificationError;
   static bool get isCallScreenVisible => _isCallScreenVisible;
-  
+  static RtcEngine? get engine => _engine;
+
   static void setCallScreenVisible(bool value) {
     _isCallScreenVisible = value;
   }
 
   static Map<String, dynamic>? _activeCallInfo;
-  static Map<String, dynamic>? get activeCallInfo => _activeCallInfo;
+  static Map<String, dynamic>? get activeCallInfo =>
+      _activeCallInfo == null ? null : Map<String, dynamic>.from(_activeCallInfo!);
   static bool get activeCallAccepted => _activeCallInfo?['accepted'] == true;
   static int? get activeCallConnectedAtMs {
-    final value = _activeCallInfo?['connectedAt'];
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    if (value is String) return int.tryParse(value);
-    return null;
+    return _toInt(_activeCallInfo?['connectedAt']);
   }
 
   static final StreamController<bool> _callStateController =
       StreamController<bool>.broadcast();
   static Stream<bool> get callStateStream => _callStateController.stream;
 
-  static String? _lastNotificationError;
-  static String? get lastNotificationError => _lastNotificationError;
-
   static final StreamController<Map<String, dynamic>> _callStatusController =
       StreamController<Map<String, dynamic>>.broadcast();
-
   static Stream<Map<String, dynamic>> get callStatusStream => _callStatusController.stream;
+
+  static final StreamController<int> _localUserJoinedController =
+      StreamController<int>.broadcast();
+  static final StreamController<int> _remoteUserJoinedController =
+      StreamController<int>.broadcast();
+  static final StreamController<int> _remoteUserLeftController =
+      StreamController<int>.broadcast();
+  static final StreamController<String> _engineErrorController =
+      StreamController<String>.broadcast();
+
+  static Stream<int> get localUserJoinedStream => _localUserJoinedController.stream;
+  static Stream<int> get remoteUserJoinedStream => _remoteUserJoinedController.stream;
+  static Stream<int> get remoteUserLeftStream => _remoteUserLeftController.stream;
+  static Stream<String> get engineErrorStream => _engineErrorController.stream;
 
   static bool get isInCall => _isInCall;
 
   static void setInCall(bool value) {
     _isInCall = value;
     if (!value) {
+      _joinedChannelName = null;
       _activeCallInfo = null;
     }
-    try {
-      _callStateController.add(value);
-    } catch (_) {}
+    _emitCallState();
   }
 
   static void setActiveCallInfo({
@@ -66,60 +75,81 @@ class AgoraCallService {
     String? peerAvatar,
     required String callType,
     required bool isIncoming,
+    String? callId,
   }) {
     _activeCallInfo = {
+      'callId': callId ?? _activeCallInfo?['callId'],
       'channelName': channelName,
       'peerId': peerId,
       'peerName': peerName,
       'peerAvatar': peerAvatar,
       'callType': callType,
       'isIncoming': isIncoming,
-      'accepted': false,
-      'connectedAt': null,
+      'accepted': _activeCallInfo?['accepted'] == true,
+      'connectedAt': _activeCallInfo?['connectedAt'],
+      'remoteUid': _activeCallInfo?['remoteUid'],
     };
+    _emitCallState();
   }
 
   static void markCallAccepted() {
-    final info = _activeCallInfo;
-    if (info == null) return;
-    info['accepted'] = true;
-    try {
-      _callStateController.add(_isInCall);
-    } catch (_) {}
+    _ensureActiveInfo();
+    _activeCallInfo!['accepted'] = true;
+    _emitCallState();
   }
 
   static void markCallConnected([DateTime? connectedAt]) {
-    final info = _activeCallInfo;
-    if (info == null) return;
-    info['accepted'] = true;
-    info['connectedAt'] = (connectedAt ?? DateTime.now()).millisecondsSinceEpoch;
-    try {
-      _callStateController.add(_isInCall);
-    } catch (_) {}
+    _ensureActiveInfo();
+    _activeCallInfo!['accepted'] = true;
+    _activeCallInfo!['connectedAt'] =
+        (connectedAt ?? DateTime.now()).millisecondsSinceEpoch;
+    _emitCallState();
   }
 
   static void emitCallStatus(Map<String, dynamic> data) {
     try {
-      _callStatusController.add(data);
+      _callStatusController.add(Map<String, dynamic>.from(data));
     } catch (_) {
-      // Ignore
+      // Ignore stream delivery issues.
     }
   }
 
   static Future<void> handleRemoteCallStatus(Map<String, dynamic> data) async {
     emitCallStatus(data);
 
-    final status = data['status']?.toString().toLowerCase();
     final channelName = data['channel_name']?.toString();
+    final status = data['status']?.toString().toLowerCase();
+    final callId = data['call_id']?.toString();
     final activeChannelName = _activeCallInfo?['channelName']?.toString();
-    const terminalStatuses = {'rejected', 'declined', 'busy', 'cancelled', 'ended'};
 
-    if (status == null || channelName == null || activeChannelName == null) {
+    if (status == null || channelName == null || activeChannelName != channelName) {
       return;
     }
-    if (channelName != activeChannelName || !terminalStatuses.contains(status)) {
+
+    if (callId != null && callId.isNotEmpty) {
+      _ensureActiveInfo();
+      _activeCallInfo!['callId'] = callId;
+    }
+
+    if (status == 'accepted') {
+      markCallAccepted();
       return;
     }
+
+    const terminalStatuses = {
+      'rejected',
+      'declined',
+      'busy',
+      'cancelled',
+      'ended',
+      'missed',
+      'failed',
+    };
+
+    if (!terminalStatuses.contains(status)) {
+      return;
+    }
+
     if (_isCallScreenVisible) {
       return;
     }
@@ -127,79 +157,66 @@ class AgoraCallService {
     await leaveChannel();
     setInCall(false);
   }
-  
-  /// Initialize Agora RTC Engine
+
   static Future<RtcEngine> initEngine({required String callType}) async {
     final wantsVideo = callType == 'video';
 
-    if (_engine != null && _isInitialized) {
-      if (wantsVideo != _isVideoEnabled) {
-        if (wantsVideo) {
-          await _engine!.enableVideo();
-          await _engine!.setVideoEncoderConfiguration(
-            const VideoEncoderConfiguration(
-              dimensions: VideoDimensions(width: 640, height: 480),
-              frameRate: 15,
-              bitrate: 0,
-            ),
-          );
-        } else {
-          await _engine!.disableVideo();
-        }
-        _isVideoEnabled = wantsVideo;
-      }
-      return _engine!;
-    }
+    await _ensurePermissions(callType: callType);
 
     _lastError = null;
 
-    final micStatus = await Permission.microphone.request();
-    if (!micStatus.isGranted) {
-      _lastError = 'Microphone permission denied';
-      throw StateError(_lastError!);
-    }
-
-    if (wantsVideo) {
-      final camStatus = await Permission.camera.request();
-      if (!camStatus.isGranted) {
-        _lastError = 'Camera permission denied';
-        throw StateError(_lastError!);
-      }
-    }
-
-    _engine = createAgoraRtcEngine();
-    await _engine!.initialize(
-      RtcEngineContext(
-        appId: appId,
-        channelProfile: ChannelProfileType.channelProfileCommunication,
-      ),
-    );
-
-    await _engine!.enableAudio();
-    if (wantsVideo) {
-      await _engine!.enableVideo();
-      await _engine!.setVideoEncoderConfiguration(
-        const VideoEncoderConfiguration(
-          dimensions: VideoDimensions(width: 640, height: 480),
-          frameRate: 15,
-          bitrate: 0,
+    if (_engine == null) {
+      final engine = createAgoraRtcEngine();
+      await engine.initialize(
+        const RtcEngineContext(
+          appId: appId,
+          channelProfile: ChannelProfileType.channelProfileCommunication,
         ),
       );
-    } else {
-      await _engine!.disableVideo();
+      await engine.enableAudio();
+      await engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
+      engine.registerEventHandler(
+        RtcEngineEventHandler(
+          onJoinChannelSuccess: (connection, _) {
+            try {
+              final localUid = connection.localUid;
+              if (localUid != null) {
+                _localUserJoinedController.add(localUid);
+              }
+            } catch (_) {}
+          },
+          onUserJoined: (_, remoteUid, __) {
+            _ensureActiveInfo();
+            _activeCallInfo!['remoteUid'] = remoteUid;
+            markCallAccepted();
+            try {
+              _remoteUserJoinedController.add(remoteUid);
+            } catch (_) {}
+          },
+          onUserOffline: (_, remoteUid, __) {
+            if (_activeCallInfo != null && _activeCallInfo!['remoteUid'] == remoteUid) {
+              _activeCallInfo!['remoteUid'] = null;
+            }
+            try {
+              _remoteUserLeftController.add(remoteUid);
+            } catch (_) {}
+          },
+          onError: (error, message) {
+            _lastError = _friendlyAgoraError(error, message);
+            try {
+              _engineErrorController.add(_lastError!);
+            } catch (_) {}
+          },
+        ),
+      );
+      _engine = engine;
     }
 
-    await _engine!.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
-
-    _isInitialized = true;
-    _isVideoEnabled = wantsVideo;
+    await _configureVideoState(wantsVideo: wantsVideo);
+    await toggleSpeaker(wantsVideo);
     return _engine!;
   }
-  
-  /// Get the RTC Engine instance
-  static RtcEngine? get engine => _engine;
-  
-  /// Generate a unique channel name for 1-on-1 call
+
   static String generateChannelName(String callerId, String calleeId) {
     final ts = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
     final rnd = Random().nextInt(1 << 32).toRadixString(36);
@@ -207,62 +224,30 @@ class AgoraCallService {
     final pairHash = pair.hashCode.abs().toRadixString(36);
     return 'c_${pairHash}_$ts$rnd';
   }
-  
-  /// Generate RTC token for joining channel
-  /// For production, this should be done on your backend server
-  static Future<String?> generateToken(String channelName, int uid) async {
-    if (!_useTokenServer) return null;
-    try {
-      // For testing, we'll use a temporary token approach
-      // In production, call your backend to generate token
-      final headers = await ApiService.getHeaders();
-      final response = await http.post(
-        Uri.parse('${ApiService.baseUrl}/adsyconnect/agora-token/'),
-        headers: headers,
-        body: json.encode({
-          'channel_name': channelName,
-          'uid': uid,
-        }),
-      );
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['token'];
-      }
-      
-      // If backend doesn't have token endpoint, return null (will use app ID only mode)
-      print('Token generation failed, using app ID only mode');
-      return null;
-    } catch (e) {
-      print('Error generating token: $e');
-      return null;
-    }
-  }
-  
-  /// Join a video call channel
+
   static Future<bool> joinChannel({
     required String channelName,
     required int uid,
-    String? token,
     required String callType,
   }) async {
     try {
       _lastError = null;
-      final nameOk = RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(channelName);
-      if (!nameOk || channelName.isEmpty || channelName.length > 64) {
-        throw ArgumentError(
-          'Invalid channel name. Must match ^[a-zA-Z0-9_]+\$, length 1..64. Got length=${channelName.length}, value=$channelName',
-        );
+      final channelNameOk = channelName.isNotEmpty &&
+          channelName.length <= 64 &&
+          RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(channelName);
+      if (!channelNameOk) {
+        throw ArgumentError('Invalid channel name');
       }
 
-      print('Agora: Joining channel: $channelName with uid: $uid');
-      print('Agora: Token: ${token != null ? "provided" : "null (using App ID only mode)"}');
-      
       final wantsVideo = callType == 'video';
       final engine = await initEngine(callType: callType);
-      
+
+      if (_joinedChannelName != null && _joinedChannelName != channelName) {
+        await engine.leaveChannel();
+      }
+
       await engine.joinChannel(
-        token: token ?? '',
+        token: '',
         channelId: channelName,
         uid: uid,
         options: ChannelMediaOptions(
@@ -273,69 +258,76 @@ class AgoraCallService {
           clientRoleType: ClientRoleType.clientRoleBroadcaster,
         ),
       );
-      
-      print('Agora: Join channel request sent successfully');
+
+      _joinedChannelName = channelName;
       return true;
-    } catch (e) {
-      _lastError = e.toString();
-      print('Agora Error joining channel: $e');
+    } catch (error) {
+      _lastError = error.toString();
       return false;
     }
   }
-  
-  /// Leave the current channel
+
   static Future<void> leaveChannel() async {
     try {
       await _engine?.leaveChannel();
-    } catch (e) {
-      print('Error leaving channel: $e');
+    } catch (_) {
+      // Ignore leave failures.
+    } finally {
+      _joinedChannelName = null;
+      if (_activeCallInfo != null) {
+        _activeCallInfo!['remoteUid'] = null;
+      }
     }
   }
-  
-  /// Toggle microphone mute
+
   static Future<void> toggleMute(bool muted) async {
     await _engine?.muteLocalAudioStream(muted);
   }
-  
-  /// Toggle camera on/off
+
   static Future<void> toggleCamera(bool enabled) async {
     await _engine?.enableLocalVideo(enabled);
   }
-  
-  /// Switch between front and back camera
+
   static Future<void> switchCamera() async {
     await _engine?.switchCamera();
   }
-  
-  /// Toggle speaker/earpiece
+
   static Future<void> toggleSpeaker(bool speakerOn) async {
     await _engine?.setEnableSpeakerphone(speakerOn);
   }
-  
-  /// Dispose the engine
+
   static Future<void> dispose() async {
-    await _engine?.leaveChannel();
-    await _engine?.release();
-    _engine = null;
-    _isInitialized = false;
+    try {
+      await _engine?.leaveChannel();
+      await _engine?.release();
+    } catch (_) {
+      // Ignore engine disposal failures.
+    } finally {
+      _engine = null;
+      _joinedChannelName = null;
+      _activeCallInfo = null;
+      _isInCall = false;
+      _emitCallState();
+    }
   }
-  
-  /// Send call notification to callee via FCM
+
   static Future<bool> sendCallNotification({
     required String calleeId,
     required String channelName,
-    required String callType, // 'video' or 'audio'
+    required String callType,
   }) async {
     try {
       _lastNotificationError = null;
       final currentUser = AuthService.currentUser;
-      if (currentUser == null) return false;
-      
+      if (currentUser == null) {
+        return false;
+      }
+
       final headers = await ApiService.getHeaders();
       final callerName = [currentUser.firstName, currentUser.lastName]
-          .where((s) => s != null && s.isNotEmpty)
+          .where((value) => value != null && value.isNotEmpty)
           .join(' ');
-      
+
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/adsyconnect/send-call-notification/'),
         headers: headers,
@@ -343,6 +335,7 @@ class AgoraCallService {
           'callee_id': calleeId,
           'channel_name': channelName,
           'call_type': callType,
+          'call_id': _activeCallInfo?['callId'],
           'caller_name': callerName.isNotEmpty ? callerName : currentUser.username,
           'caller_avatar': currentUser.profilePicture,
         }),
@@ -351,12 +344,21 @@ class AgoraCallService {
       final ok = response.statusCode == 200 || response.statusCode == 201;
       if (!ok) {
         _lastNotificationError = '${response.statusCode} ${response.body}';
-        print('Call notification failed: ${response.statusCode} ${response.body}');
+        return false;
+      }
+
+      final decoded = json.decode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        final callId = decoded['call_id']?.toString();
+        if (callId != null && callId.isNotEmpty) {
+          _ensureActiveInfo();
+          _activeCallInfo!['callId'] = callId;
+          _emitCallState();
+        }
       }
       return ok;
-    } catch (e) {
-      _lastNotificationError = e.toString();
-      print('Error sending call notification: $e');
+    } catch (error) {
+      _lastNotificationError = error.toString();
       return false;
     }
   }
@@ -366,6 +368,7 @@ class AgoraCallService {
     required String channelName,
     required String status,
     required String callType,
+    String? callId,
   }) async {
     try {
       _lastNotificationError = null;
@@ -379,24 +382,93 @@ class AgoraCallService {
           'channel_name': channelName,
           'status': status,
           'call_type': callType,
+          'call_id': callId ?? _activeCallInfo?['callId'],
         }),
       );
 
       final ok = response.statusCode == 200 || response.statusCode == 201;
       if (!ok) {
         _lastNotificationError = '${response.statusCode} ${response.body}';
-        print('Call status send failed: ${response.statusCode} ${response.body}');
       }
       return ok;
-    } catch (e) {
-      _lastNotificationError = e.toString();
-      print('Error sending call status: $e');
+    } catch (error) {
+      _lastNotificationError = error.toString();
       return false;
     }
   }
-  
-  /// Generate a random UID for Agora
+
   static int generateUid() {
     return Random().nextInt(100000) + 1;
+  }
+
+  static Future<void> _ensurePermissions({required String callType}) async {
+    final micStatus = await Permission.microphone.request();
+    if (!micStatus.isGranted) {
+      throw StateError('Microphone permission denied');
+    }
+
+    if (callType == 'video') {
+      final camStatus = await Permission.camera.request();
+      if (!camStatus.isGranted) {
+        throw StateError('Camera permission denied');
+      }
+    }
+  }
+
+  static Future<void> _configureVideoState({required bool wantsVideo}) async {
+    if (_engine == null) {
+      return;
+    }
+
+    if (wantsVideo) {
+      await _engine!.enableVideo();
+      await _engine!.setVideoEncoderConfiguration(
+        const VideoEncoderConfiguration(
+          dimensions: VideoDimensions(width: 640, height: 480),
+          frameRate: 15,
+          bitrate: 0,
+        ),
+      );
+    } else {
+      await _engine!.disableVideo();
+    }
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  static void _ensureActiveInfo() {
+    _activeCallInfo ??= <String, dynamic>{};
+  }
+
+  static void _emitCallState() {
+    try {
+      _callStateController.add(_isInCall);
+    } catch (_) {
+      // Ignore stream delivery issues.
+    }
+  }
+
+  static String _friendlyAgoraError(ErrorCodeType error, String message) {
+    switch (error) {
+      case ErrorCodeType.errNotInitialized:
+        return 'Call service not ready. Please try again.';
+      case ErrorCodeType.errInvalidToken:
+      case ErrorCodeType.errTokenExpired:
+        return 'Call session expired. Please try again.';
+      case ErrorCodeType.errConnectionLost:
+      case ErrorCodeType.errConnectionInterrupted:
+        return 'Network connection lost during the call.';
+      case ErrorCodeType.errInvalidChannelName:
+        return 'Invalid call session. Please try again.';
+      default:
+        return message.isNotEmpty
+            ? message
+            : 'Unable to continue the call right now.';
+    }
   }
 }

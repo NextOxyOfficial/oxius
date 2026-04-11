@@ -355,6 +355,7 @@ class MyApp extends StatelessWidget {
                   calleeId: args?['calleeId'] ?? args?['callerId'] ?? '',
                   calleeName: args?['calleeName'] ?? args?['callerName'] ?? 'Unknown',
                   calleeAvatar: args?['calleeAvatar'] ?? args?['callerAvatar'],
+                  callId: args?['callId'] ?? args?['call_id'],
                   isIncoming: args?['isIncoming'] ?? false,
                   callType: args?['callType'] ?? 'video',
                   isReturning: args?['isReturning'] ?? false,

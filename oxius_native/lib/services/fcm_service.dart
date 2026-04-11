@@ -223,7 +223,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   final type = message.data['type']?.toString();
 
   // Handle incoming call in background - show high priority notification
-  if (type == 'incoming_call' || type == 'call') {
+  if (type == 'incoming_call') {
     await _showBackgroundCallNotification(message.data);
     return;
   }
@@ -273,6 +273,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     textAccept: 'Accept',
     textDecline: 'Decline',
     extra: {
+      'call_id': data['call_id']?.toString() ?? '',
       'caller_id': callerId,
       'channel_name': channelName,
       'call_type': callType,
@@ -492,7 +493,7 @@ class FCMService {
 
   static bool _shouldProcessCallSignal(Map<String, dynamic> data) {
     final type = data['type']?.toString();
-    if (type != 'incoming_call' && type != 'call' && type != 'call_status') {
+    if (type != 'incoming_call' && type != 'call_status') {
       return true;
     }
 
@@ -527,7 +528,7 @@ class FCMService {
     _adsyConnectRealtimeSubscription ??=
         AdsyConnectRealtimeService.instance.events.listen((event) {
       final type = event['type']?.toString();
-      if (type != 'incoming_call' && type != 'call' && type != 'call_status') {
+      if (type != 'incoming_call' && type != 'call_status') {
         return;
       }
 
@@ -632,12 +633,6 @@ class FCMService {
       _log('⚠️ Failed to end persisted CallKit calls: $e');
     }
 
-    try {
-      await cancelCallNotification();
-    } catch (e) {
-      _log('⚠️ Failed to cancel stale call notification: $e');
-    }
-
     _activeCallIds.clear();
     _callTimestamps.clear();
     _acceptedCallkitUuids.clear();
@@ -650,6 +645,7 @@ class FCMService {
     required String channelName,
     required String callType,
     int? timestamp,
+    String? callId,
     required String source,
     bool notifyCallerOnBusy = true,
   }) {
@@ -661,6 +657,7 @@ class FCMService {
           channelName: channelName,
           status: 'busy',
           callType: callType,
+          callId: callId,
         );
       }
       return false;
@@ -675,14 +672,14 @@ class FCMService {
       }
     }
 
-    final callId = _buildCallId(callerId, channelName);
-    if (_activeCallIds.contains(callId)) {
-      _log('🚫 Ignoring duplicate $source call: $callId');
+    final callKey = _buildCallId(callerId, channelName);
+    if (_activeCallIds.contains(callKey)) {
+      _log('🚫 Ignoring duplicate $source call: $callKey');
       return false;
     }
 
-    _activeCallIds.add(callId);
-    _callTimestamps[callId] = timestamp ?? DateTime.now().millisecondsSinceEpoch;
+    _activeCallIds.add(callKey);
+    _callTimestamps[callKey] = timestamp ?? DateTime.now().millisecondsSinceEpoch;
     return true;
   }
 
@@ -973,6 +970,7 @@ class FCMService {
       final callData = {
         // If call was accepted, use 'accepted_call' type to go directly to CallScreen
         'type': wasAccepted ? 'accepted_call' : 'incoming_call',
+        'call_id': extra?['call_id']?.toString() ?? '',
         'caller_id': callerId,
         'channel_name': channelName,
         'timestamp': timestamp,
@@ -1129,6 +1127,7 @@ class FCMService {
 
     return {
       'type': 'incoming_call',
+      'call_id': extra['call_id']?.toString() ?? '',
       'caller_id': callerId,
       'channel_name': channelName,
       'timestamp': _parseCallTimestamp(extra['timestamp']),
@@ -1155,6 +1154,7 @@ class FCMService {
     final callerAvatar = extra['caller_avatar']?.toString();
     final callkitUuid = event.body['id']?.toString() ?? '';
     final timestamp = _parseCallTimestamp(extra['timestamp']);
+    final callId = extra['call_id']?.toString();
     final incomingKind = extra['incoming_kind']?.toString();
     
     if (callerId == null || channelName == null) return;
@@ -1215,6 +1215,7 @@ class FCMService {
     // Use special type 'accepted_call' so _navigateBasedOnDataNow navigates directly to CallScreen
     final callData = {
       'type': 'accepted_call', // Special type to bypass showIncomingCall and go directly to CallScreen
+      'call_id': callId,
       'caller_id': callerId,
       'channel_name': channelName,
       'timestamp': timestamp,
@@ -1268,6 +1269,7 @@ class FCMService {
       channelName: channelName,
       status: 'rejected',
       callType: callType,
+      callId: extra['call_id']?.toString(),
     );
     
     // End the CallKit UI
@@ -1320,6 +1322,7 @@ class FCMService {
             channelName: channelName,
             status: 'ended',
             callType: callType,
+            callId: extra['call_id']?.toString(),
           );
         } else {
           _log('📞 CallKit ended (was accepted) - CallScreen will handle status');
@@ -1362,6 +1365,7 @@ class FCMService {
       channelName: channelName,
       status: 'cancelled',
       callType: callType,
+      callId: extra['call_id']?.toString(),
     );
     
     if (callkitUuid.isNotEmpty) {
@@ -1378,12 +1382,14 @@ class FCMService {
     required String channelName,
     required String callType,
     int? timestamp,
+    String? callId,
   }) async {
     if (!_registerIncomingCall(
       callerId: callerId,
       channelName: channelName,
       callType: callType,
       timestamp: timestamp,
+      callId: callId,
       source: 'CallKit',
     )) {
       return;
@@ -1402,6 +1408,7 @@ class FCMService {
       textAccept: 'Accept',
       textDecline: 'Decline',
       extra: {
+        'call_id': callId ?? '',
         'caller_id': callerId,
         'channel_name': channelName,
         'timestamp': (timestamp ?? DateTime.now().millisecondsSinceEpoch).toString(),
@@ -1483,6 +1490,7 @@ class FCMService {
 
   /// Navigate directly to CallScreen for accepted calls (bypasses showIncomingCall)
   static void _navigateToCallScreenDirectly(NavigatorState navigator, Map<String, dynamic> data) {
+    final callId = data['call_id']?.toString();
     final channelName = data['channel_name']?.toString();
     final callerId = data['caller_id']?.toString();
     final callerName = data['caller_name']?.toString() ?? 'Unknown';
@@ -1508,6 +1516,7 @@ class FCMService {
           calleeId: callerId,
           calleeName: callerName,
           calleeAvatar: callerAvatar,
+          callId: callId,
           isIncoming: true,
           callType: callType,
           autoAccept: true, // Already accepted from CallKit, skip accept UI
@@ -1517,6 +1526,7 @@ class FCMService {
   }
 
   static void _navigateToIncomingCallScreen(NavigatorState navigator, Map<String, dynamic> data) {
+    final callId = data['call_id']?.toString();
     final channelName = data['channel_name']?.toString();
     final callerId = data['caller_id']?.toString();
     final callerName = data['caller_name']?.toString() ?? 'Unknown';
@@ -1534,6 +1544,7 @@ class FCMService {
       channelName: channelName,
       callType: callType,
       timestamp: timestamp,
+      callId: callId,
       source: 'foreground',
     )) {
       return;
@@ -1546,6 +1557,7 @@ class FCMService {
           calleeId: callerId,
           calleeName: callerName,
           calleeAvatar: callerAvatar,
+          callId: callId,
           isIncoming: true,
           callType: callType,
         ),
@@ -1588,7 +1600,7 @@ class FCMService {
     final notificationType =
         message.data['notification_type']?.toString() ??
         message.data['status']?.toString();
-    if (type == 'incoming_call' || type == 'call' || type == 'call_status') {
+    if (type == 'incoming_call' || type == 'call_status') {
       final payload = Map<String, dynamic>.from(message.data);
       if (_shouldProcessCallSignal(payload)) {
         _navigateBasedOnData(payload);
@@ -1668,13 +1680,6 @@ class FCMService {
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     final notification = message.notification;
     final data = message.data;
-    final type = data['type']?.toString();
-
-    // Check if this is an incoming call notification
-    if (type == 'incoming_call' || type == 'call') {
-      await _showCallNotification(message);
-      return;
-    }
 
     if (notification != null) {
       const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
@@ -1702,41 +1707,7 @@ class FCMService {
     }
   }
 
-  /// Show native incoming call screen for foreground calls
-  static Future<void> _showCallNotification(RemoteMessage message) async {
-    final data = message.data;
-    final callerName = data['caller_name']?.toString() ?? 'Unknown';
-    final callerId = data['caller_id']?.toString() ?? '';
-    final callerAvatar = data['caller_avatar']?.toString();
-    final callType = data['call_type']?.toString() ?? 'video';
-    final channelName = data['channel_name']?.toString() ?? '';
-    
-    // Parse timestamp if available
-    int? timestamp;
-    final timestampStr = data['timestamp']?.toString();
-    if (timestampStr != null) {
-      try {
-        timestamp = int.parse(timestampStr);
-      } catch (e) {
-        _log('⚠️ Error parsing foreground call timestamp: $e');
-      }
-    }
-    
-    // Show native CallKit incoming call screen
-    await showIncomingCall(
-      callerId: callerId,
-      callerName: callerName,
-      callerAvatar: callerAvatar,
-      channelName: channelName,
-      callType: callType,
-      timestamp: timestamp,
-    );
-  }
 
-  /// Cancel call notification
-  static Future<void> cancelCallNotification() async {
-    await _localNotifications.cancel(999);
-  }
 
   /// Handle notification tap
   static void _handleNotificationTap(RemoteMessage message) {
@@ -1995,7 +1966,7 @@ class FCMService {
     // ============================================
     // INCOMING CALL (Agora)
     // ============================================
-    else if (type == 'incoming_call' || type == 'call') {
+    else if (type == 'incoming_call') {
       final channelName = data['channel_name']?.toString();
       final callerId = data['caller_id']?.toString();
       final callerName = data['caller_name']?.toString() ?? 'Unknown';
@@ -2010,6 +1981,7 @@ class FCMService {
             channelName: channelName,
             status: 'busy',
             callType: callType,
+            callId: data['call_id']?.toString(),
           );
           return;
         }
@@ -2025,6 +1997,7 @@ class FCMService {
             channelName: channelName,
             callType: callType,
             timestamp: int.tryParse(data['timestamp']?.toString() ?? ''),
+            callId: data['call_id']?.toString(),
           );
         }
       }
