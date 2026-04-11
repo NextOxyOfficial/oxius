@@ -247,7 +247,11 @@
             <div
               class="text-sm text-gray-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/20 p-3 rounded-lg border border-slate-100 dark:border-slate-700/40"
             >
-              {{ currentProduct.short_description || "No summary available." }}
+              {{
+                toPlainText(
+                  currentProduct.short_description || "No summary available."
+                )
+              }}
             </div>
           </div>
 
@@ -682,7 +686,9 @@
           <div
             class="prose prose-slate max-w-none dark:prose-invert prose-img:rounded-xl prose-headings:font-medium prose-a:text-primary-600 dark:prose-a:text-primary-400 text-left px-4"
             v-html="
-              currentProduct.description || 'No detailed description available.'
+              renderRichText(
+                currentProduct.description || 'No detailed description available.'
+              )
             "
           ></div>
         </div>
@@ -1281,6 +1287,8 @@
 </style>
 
 <script setup>
+const { renderRichText, toPlainText } = useRichText();
+
 const { currentProduct, modal, seeDetails } = defineProps({
   currentProduct: { type: Object, required: true },
   modal: { type: Boolean, required: false },

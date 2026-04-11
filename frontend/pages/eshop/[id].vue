@@ -695,6 +695,8 @@ import { CommonEshopCategoriesSidebar } from "#components";
 import { Search, X } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref } from "vue";
 
+const { previewText, toPlainText } = useRichText();
+
 definePageMeta({
   layout: "eshop",
 });
@@ -791,12 +793,11 @@ const isOwner = computed(() => {
 const maxDescriptionLength = 150; // Character limit for description
 
 const shouldShowSeeMore = computed(() => {
-  const description = storeDetails.value?.store_description;
-  return description && description.length > maxDescriptionLength;
+  return toPlainText(storeDetails.value?.store_description).length > maxDescriptionLength;
 });
 
 const displayedDescription = computed(() => {
-  const description = storeDetails.value?.store_description;
+  const description = toPlainText(storeDetails.value?.store_description);
   if (!description)
     return "Your premium destination for quality products and excellent service.";
 
@@ -807,7 +808,7 @@ const displayedDescription = computed(() => {
     return description;
   }
 
-  return description.substring(0, maxDescriptionLength) + "...";
+  return previewText(description, maxDescriptionLength);
 });
 
 const toggleDescription = () => {

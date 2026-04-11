@@ -397,12 +397,15 @@
                   <!-- Description -->
                   <div class="mb-6">
                     <div
-                      v-html="
-                        sponsor.business_description ||
-                        `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.`
-                      "
                       class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3"
-                    ></div>
+                    >
+                      {{
+                        toPlainText(
+                          sponsor.business_description ||
+                            `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.`
+                        )
+                      }}
+                    </div>
                   </div>
                   <!-- Contact Info -->
                   <div class="space-y-2 mb-6">
@@ -535,12 +538,15 @@
                   <div class="flex-1 min-w-0">
                     <!-- Description -->
                     <div
-                      v-html="
-                        sponsor.business_description ||
-                        `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.`
-                      "
                       class="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed line-clamp-2"
-                    ></div>
+                    >
+                      {{
+                        toPlainText(
+                          sponsor.business_description ||
+                            `${sponsor.name} is a prestigious gold sponsor contributing to our business network community.`
+                        )
+                      }}
+                    </div>
 
                     <!-- Contact Grid -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -654,6 +660,8 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useApi } from "~/composables/useApi";
+
+const { toPlainText } = useRichText();
 
 const { get } = useApi();
 

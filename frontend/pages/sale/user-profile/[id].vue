@@ -479,10 +479,13 @@
                     </div>
                     <div
                       class="text-sm text-gray-600 mt-2 line-clamp-2"
-                      v-html="
-                        product.description || 'No description available.'
-                      "
-                    ></div>
+                    >
+                      {{
+                        toPlainText(
+                          product.description || "No description available."
+                        )
+                      }}
+                    </div>
                     <div
                       class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100"
                     >
@@ -817,6 +820,8 @@ import {
   SearchX,
   ImageOff,
 } from "lucide-vue-next";
+
+const { toPlainText } = useRichText();
 
 const { get } = useApi();
 const { params } = useRoute();

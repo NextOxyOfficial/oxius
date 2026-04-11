@@ -218,7 +218,7 @@
             v-if="product.short_description"
             class="text-sm text-gray-600 mb-2 line-clamp-2"
           >
-            {{ product.short_description }}
+            {{ toPlainText(product.short_description) }}
           </div>
           <div class="flex justify-between items-center">
             <div class="text-lg font-semibold text-indigo-600">
@@ -749,6 +749,8 @@ import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useAuth } from "~/composables/useAuth";
 import { useApi } from "~/composables/useApi";
 // import { useToast } from "~/composables/useToast";
+
+const { toPlainText } = useRichText();
 
 /**
  * My Products Tab Component with Pagination

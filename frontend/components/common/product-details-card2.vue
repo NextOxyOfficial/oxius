@@ -61,8 +61,10 @@
             </div>
             <p class="text-lg text-white/80 mb-6">
               {{
-                currentProduct.short_description ||
-                "Experience the ultimate product designed to transform your life. Premium quality, outstanding performance, and exceptional value."
+                toPlainText(
+                  currentProduct.short_description ||
+                    "Experience the ultimate product designed to transform your life. Premium quality, outstanding performance, and exceptional value."
+                )
               }}
             </p>
 
@@ -195,7 +197,7 @@
         <div class="prose prose-slate dark:prose-invert max-w-none">
           <div
             v-if="currentProduct.description"
-            v-html="currentProduct.description"
+            v-html="renderRichText(currentProduct.description)"
           ></div>
           <p v-else>
             This premium product offers exceptional performance and reliability.
@@ -901,6 +903,8 @@
 </template>
 
 <script setup>
+const { renderRichText, toPlainText } = useRichText();
+
 const { currentProduct, modal } = defineProps({
   currentProduct: { type: Object, required: true },
   modal: { type: Boolean, required: false },

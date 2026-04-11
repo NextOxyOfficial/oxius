@@ -319,9 +319,10 @@
                 </div>
 
                 <!-- Description -->
-                <p class="text-sm text-gray-600 dark:text-slate-300 mb-4">
-                  {{ selectedProduct.description }}
-                </p>
+                <div
+                  class="text-sm text-gray-600 dark:text-slate-300 mb-4"
+                  v-html="renderRichText(selectedProduct.description)"
+                ></div>
 
                 <!-- Add to Cart Area -->
                 <div class="flex items-center gap-3 mb-6">
@@ -482,6 +483,8 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+
+const { renderRichText } = useRichText();
 
 // Props
 const props = defineProps({

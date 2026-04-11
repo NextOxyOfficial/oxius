@@ -133,10 +133,9 @@
                             <h3 class="font-medium text-gray-800">
                               {{ product.name }}
                             </h3>
-                            <div
-                              v-html="product.description"
-                              class="text-gray-600 text-sm line-clamp-1"
-                            ></div>
+                            <div class="text-gray-600 text-sm line-clamp-1">
+                              {{ toPlainText(product.description) }}
+                            </div>
                             <div class="flex items-center justify-between mt-2">
                               <div class="text-indigo-600 font-semibold">
                                 ৳{{
@@ -807,6 +806,9 @@ import {
   Truck,
   Wallet,
 } from "lucide-vue-next";
+
+const { toPlainText } = useRichText();
+
 const { user } = useAuth();
 const { post } = useApi();
 

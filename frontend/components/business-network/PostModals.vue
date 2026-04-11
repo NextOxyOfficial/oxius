@@ -392,9 +392,9 @@
                             <!-- Gift message content with improved styling -->
                             <div class="gift-content">
                               <p class="gift-message-text">
-                                {{ extractGiftMessage(comment?.content) }}
+                                {{ toPlainText(extractGiftMessage(comment?.content)) }}
                               </p>
-                              <CommonFirstLinkPreview :text="extractGiftMessage(comment?.content)" />
+                              <CommonFirstLinkPreview :text="toPlainText(extractGiftMessage(comment?.content))" />
                             </div>
                           </div>
                           <!-- Regular comment with mention processing -->
@@ -601,6 +601,8 @@
 <script setup>
 import { Check, Loader2, UserPlus, X } from "lucide-vue-next";
 import { computed, onMounted, ref } from "vue";
+
+const { toPlainText } = useRichText();
 
 // Import the mentions composable
 const { processMentionsAsHTML, setupMentionClickHandlers } = useMentions();

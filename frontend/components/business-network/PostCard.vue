@@ -40,10 +40,10 @@
             'text-base text-gray-800',
             !post.showFullDescription && 'line-clamp-4',
           ]"
-          v-html="post.content"
+          v-html="renderRichText(post.content)"
         ></p>
         <button
-          v-if="post?.content?.length > 160"
+          v-if="toPlainText(post?.content).length > 160"
           class="text-sm text-blue-600 font-medium mt-1"
           @click="$emit('toggle-description', post)"
         >
@@ -93,6 +93,8 @@
 </template>
 
 <script setup>
+const { renderRichText, toPlainText } = useRichText();
+
 defineProps({
   post: {
     type: Object,

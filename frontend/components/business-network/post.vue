@@ -238,9 +238,11 @@
               ></p>
               <button
                 v-if="
-                  post?.post_details
-                    ? post.post_details.content?.length > 160
-                    : post.content?.length > 160
+                  toPlainText(
+                    post?.post_details
+                      ? post.post_details.content
+                      : post.content
+                  ).length > 160
                 "
                 class="text-sm text-blue-600 dark:text-blue-400 font-medium mt-1.5 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center"
                 @click="toggleDescription(post)"
@@ -409,6 +411,8 @@ import { Loader2 } from "lucide-vue-next";
 import GoldSponsorsSlider from "./GoldSponsorsSlider.vue";
 import BusinessNetworkUserSuggestions from "./UserSuggestions.vue";
 
+const { renderRichText, toPlainText } = useRichText();
+
 // Props
 const props = defineProps({
   posts: {
@@ -435,8 +439,16 @@ const toast = useToast();
 
 // Highlight search terms in post content
 const highlightSearchTerms = (content, fieldType = "content") => {
-  if (!content || !props.searchQuery || props.searchQuery.trim() === "")
-    return content;
+  const normalizedContent =
+    fieldType === "content" ? renderRichText(content) : content;
+
+  if (
+    !normalizedContent ||
+    !props.searchQuery ||
+    props.searchQuery.trim() === ""
+  ) {
+    return normalizedContent;
+  }
 
   let searchText = props.searchQuery;
 
@@ -446,7 +458,7 @@ const highlightSearchTerms = (content, fieldType = "content") => {
   }
 
   // Don't attempt highlighting if search term is too short
-  if (searchText.length < 2) return content;
+  if (searchText.length < 2) return normalizedContent;
 
   try {
     // Escape special regex characters to prevent errors
@@ -474,13 +486,13 @@ const highlightSearchTerms = (content, fieldType = "content") => {
           "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
     }
 
-    return content.replace(
+    return normalizedContent.replace(
       regex,
       `<span class="${highlightClass} px-0.5 rounded">$1</span>`
     );
   } catch (e) {
     console.error("Error highlighting search terms:", e);
-    return content;
+    return normalizedContent;
   }
 };
 

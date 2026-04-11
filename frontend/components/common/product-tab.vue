@@ -157,10 +157,9 @@
           <h3 class="text-lg font-medium text-gray-800 mb-1 line-clamp-1">
             {{ product.name }}
           </h3>
-          <div
-            v-html="product.description"
-            class="text-sm text-gray-600 mb-2 line-clamp-2"
-          ></div>
+          <div class="text-sm text-gray-600 mb-2 line-clamp-2">
+            {{ toPlainText(product.description) }}
+          </div>
           <div class="flex justify-between items-center">
             <div class="text-lg font-semibold text-indigo-600">
               ৳{{ product.price }}
@@ -214,6 +213,8 @@
 </template>
 
 <script setup>
+const { toPlainText } = useRichText();
+
 defineProps({
   products: {
     type: Array,

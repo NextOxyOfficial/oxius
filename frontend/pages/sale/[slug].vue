@@ -375,7 +375,7 @@
               </h2>
               <div
                 class="text-gray-600 sm:px-6 whitespace-pre-line text-sm leading-relaxed"
-                v-html="product?.description"
+                v-html="renderRichText(product?.description)"
               ></div>
 
               <div class="my-6 border-t border-gray-100"></div>
@@ -884,6 +884,8 @@ import {
   LayoutGrid,
   List,
 } from "lucide-vue-next";
+
+const { renderRichText } = useRichText();
 
 // Import toast functionality for notifications
 const toast = useToast();

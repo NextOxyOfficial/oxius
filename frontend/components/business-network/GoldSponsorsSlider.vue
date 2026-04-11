@@ -264,8 +264,10 @@
                   <div class="space-y-4 mb-4 md:mb-6">
                     <div
                       v-html="
-                        selectedSponsor.business_description ||
-                        `${selectedSponsor.name} is one of our esteemed gold sponsors, contributing significantly to our business network. Their commitment to excellence and innovation has made them a valuable member of our community.`
+                        renderRichText(
+                          selectedSponsor.business_description ||
+                            `${selectedSponsor.name} is one of our esteemed gold sponsors, contributing significantly to our business network. Their commitment to excellence and innovation has made them a valuable member of our community.`
+                        )
                       "
                       class="text-gray-600 dark:text-gray-300 text-sm md:text-base"
                     ></div>
@@ -407,6 +409,8 @@
 import { ref, onMounted, watchEffect } from "vue";
 import { useApi } from "~/composables/useApi";
 import { useI18n } from "vue-i18n";
+
+const { renderRichText } = useRichText();
 
 const { t } = useI18n();
 const { get, post } = useApi();

@@ -47,9 +47,10 @@
     <div class="space-y-2 px-6 pb-8">
       <p class="text-xl font-medium">Instruction</p>
 
-      <p class="text-base text-justify">
-        {{ gig.instructions }}
-      </p>
+      <div
+        class="text-base text-justify prose max-w-none"
+        v-html="renderRichText(gig.instructions)"
+      ></div>
       <!-- <UDivider label="" class="pt-4" /> -->
       <p class="text-xl font-medium !mt-8">Reference Photo/Video</p>
       <div class="!mb-6 flex gap-1 cursor-pointer">
@@ -134,6 +135,8 @@
 </template>
 
 <script setup>
+const { renderRichText } = useRichText();
+
 const emit = defineEmits(["close"]);
 const props = defineProps(["gid"]);
 const { get, post } = useApi();

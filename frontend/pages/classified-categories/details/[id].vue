@@ -252,7 +252,7 @@
             <div
               v-if="service?.instructions"
               class="text-gray-600 sm:px-6 whitespace-pre-line text-sm leading-relaxed"
-              v-html="service?.instructions"
+              v-html="renderRichText(service?.instructions)"
             ></div>
             <div v-else class="text-gray-500 sm:px-6 text-sm italic">
               No service details provided
@@ -696,6 +696,8 @@ import {
   Check,
   Phone,
 } from "lucide-vue-next";
+
+const { renderRichText } = useRichText();
 
 // Import toast functionality for notifications
 const toast = useToast();

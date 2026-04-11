@@ -57,7 +57,7 @@
 
           <div
             class="text-base text-justify prose"
-            v-html="gig.instructions"
+            v-html="renderRichText(gig.instructions)"
           ></div>
           <!-- <UDivider label="" class="pt-4" /> -->
 
@@ -315,6 +315,8 @@
 definePageMeta({
   layout: "dashboard",
 });
+
+const { renderRichText } = useRichText();
 
 // Route parameter validation
 const route = useRoute();
