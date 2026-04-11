@@ -1192,6 +1192,7 @@ class NearbyDriversView(RideshareApiMixin, APIView):
                 "name": f"{driver.vehicle_type.title()} Driver",
                 "vehicle_type": driver.vehicle_type,
                 "distance": round(float(getattr(driver, "distance", 0.0)), 2),
+                "is_online": True,
             }
             for driver in nearby_drivers
             if driver.current_latitude is not None

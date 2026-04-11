@@ -1709,10 +1709,12 @@ class DriverLocationService:
         latitude, longitude, radius_km=5, vehicle_type=None, limit=10
     ):
         """Get nearby online drivers within radius"""
+        stale_threshold = timezone.now() - timedelta(minutes=DRIVER_STALE_THRESHOLD_MINUTES)
         query = DriverProfile.objects.filter(
             approval_status="approved",
             is_online=True,
             is_available=True,
+            last_seen_at__gte=stale_threshold,
             current_latitude__isnull=False,
             current_longitude__isnull=False,
         ).select_related("user")

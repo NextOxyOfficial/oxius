@@ -8,7 +8,6 @@ import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
@@ -16,6 +15,7 @@ import 'api_service.dart';
 import 'adsyconnect_realtime_service.dart';
 import 'business_network_service.dart';
 import 'agora_call_service.dart';
+import 'rideshare_service.dart';
 import '../firebase_options.dart';
 import '../screens/business_network/profile_screen.dart';
 import '../screens/business_network/post_detail_screen.dart';
@@ -110,6 +110,93 @@ String _resolveRideshareMode(
 
 Int64List _buildRideRequestVibrationPattern() {
   return Int64List.fromList([0, 500, 250, 700, 250, 900]);
+}
+
+int _parseRideRequestTimeoutSeconds(Map<String, dynamic> data) {
+  final seconds = int.tryParse(data['timeout_seconds']?.toString() ?? '');
+  if (seconds == null || seconds <= 0) {
+    return 60;
+  }
+  return seconds;
+}
+
+String _buildRideRequestTrackingChannel(String rideId) {
+  return 'ride_request_$rideId';
+}
+
+String _buildRideRequestHandle(Map<String, dynamic> data) {
+  final pickup = data['pickup_address']?.toString().trim() ?? 'Pickup';
+  final drop = data['drop_address']?.toString().trim() ?? 'Drop';
+  final fare = data['fare_estimate']?.toString().trim() ?? '';
+  final route = '$pickup → $drop';
+  if (fare.isEmpty) {
+    return route;
+  }
+  return '৳$fare • $route';
+}
+
+CallKitParams _buildRideRequestCallkitParams(Map<String, dynamic> data) {
+  final rideId = data['ride_id']?.toString() ?? '';
+  final timeoutSeconds = _parseRideRequestTimeoutSeconds(data);
+  final timestamp = int.tryParse(data['timestamp']?.toString() ?? '') ??
+      DateTime.now().millisecondsSinceEpoch;
+
+  return CallKitParams(
+    id: const Uuid().v4(),
+    nameCaller: 'New Ride Request',
+    appName: 'AdsyClub',
+    avatar: null,
+    handle: _buildRideRequestHandle(data),
+    type: 0,
+    duration: timeoutSeconds * 1000,
+    textAccept: 'Open',
+    textDecline: 'Skip',
+    extra: {
+      'incoming_kind': 'rideshare_request',
+      'ride_id': rideId,
+      'ride_request_type': data['type']?.toString() ?? 'targeted_ride_request',
+      'notification_type': data['notification_type']?.toString() ??
+          data['status']?.toString() ??
+          '',
+      'pickup_address': data['pickup_address']?.toString() ?? '',
+      'drop_address': data['drop_address']?.toString() ?? '',
+      'fare_estimate': data['fare_estimate']?.toString() ?? '',
+      'timeout_seconds': timeoutSeconds.toString(),
+      'timestamp': timestamp.toString(),
+      'mode': 'driver',
+      'caller_id': 'rideshare_request',
+      'channel_name': _buildRideRequestTrackingChannel(rideId),
+      'call_type': 'rideshare_request',
+    },
+    headers: const <String, dynamic>{'platform': 'android'},
+    android: const AndroidParams(
+      isCustomNotification: false,
+      isShowLogo: false,
+      ringtonePath: 'system_ringtone_default',
+      backgroundColor: '#0F766E',
+      backgroundUrl: '',
+      actionColor: '#10B981',
+      textColor: '#ffffff',
+      incomingCallNotificationChannelName: 'Ride Requests',
+      isShowCallID: false,
+    ),
+    ios: const IOSParams(
+      iconName: 'CallKitLogo',
+      handleType: 'generic',
+      supportsVideo: false,
+      maximumCallGroups: 1,
+      maximumCallsPerCallGroup: 1,
+      audioSessionMode: 'default',
+      audioSessionActive: true,
+      audioSessionPreferredSampleRate: 44100.0,
+      audioSessionPreferredIOBufferDuration: 0.005,
+      supportsDTMF: false,
+      supportsHolding: false,
+      supportsGrouping: false,
+      supportsUngrouping: false,
+      ringtonePath: 'default',
+    ),
+  );
 }
 
 class _CallkitLifecycleObserver extends WidgetsBindingObserver {
@@ -260,57 +347,65 @@ class _TrackingRouteObserver extends RouteObserver<PageRoute<dynamic>> {
 /// Show ride request notification when app is in background/killed
 /// Uses a separate plugin instance since FCMService static members are unavailable
 Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) async {
-  final rideId = data['ride_id']?.toString() ?? '';
-  final pickup = data['pickup_address']?.toString() ?? 'Pickup';
-  final drop = data['drop_address']?.toString() ?? 'Drop';
-  final fare = data['fare_estimate']?.toString() ?? '';
-  final timeoutSec = int.tryParse(data['timeout_seconds']?.toString() ?? '') ?? 60;
+  try {
+    await FlutterCallkitIncoming.showCallkitIncoming(
+      _buildRideRequestCallkitParams(data),
+    );
+  } catch (e) {
+    _log('⚠️ Ride request CallKit failed in background, falling back to notification: $e');
 
-  final title = '🚗 New Ride Request!';
-  final body = '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → ${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}${fare.isNotEmpty ? ' · ৳$fare' : ''}';
+    final rideId = data['ride_id']?.toString() ?? '';
+    final pickup = data['pickup_address']?.toString() ?? 'Pickup';
+    final drop = data['drop_address']?.toString() ?? 'Drop';
+    final fare = data['fare_estimate']?.toString() ?? '';
+    final timeoutSec = _parseRideRequestTimeoutSeconds(data);
 
-  final plugin = FlutterLocalNotificationsPlugin();
-  const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-  await plugin.initialize(const InitializationSettings(android: androidInit));
+    final title = '🚗 New Ride Request!';
+    final body = '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → ${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}${fare.isNotEmpty ? ' · ৳$fare' : ''}';
 
-  final androidPlugin = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-  await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
-    'oxius_ride_requests',
-    'Ride Requests',
-    description: 'New ride request alerts for drivers',
-    importance: Importance.max,
-    playSound: true,
-    enableVibration: true,
-    vibrationPattern: Int64List.fromList([0, 500, 250, 700, 250, 900]),
-  ));
+    final plugin = FlutterLocalNotificationsPlugin();
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await plugin.initialize(const InitializationSettings(android: androidInit));
 
-  final details = AndroidNotificationDetails(
-    'oxius_ride_requests',
-    'Ride Requests',
-    channelDescription: 'New ride request alerts for drivers',
-    importance: Importance.max,
-    priority: Priority.max,
-    playSound: true,
-    enableVibration: true,
-    fullScreenIntent: true,
-    category: AndroidNotificationCategory.alarm,
-    visibility: NotificationVisibility.public,
-    icon: '@mipmap/ic_launcher',
-    timeoutAfter: timeoutSec * 1000,
-    autoCancel: true,
-    vibrationPattern: _buildRideRequestVibrationPattern(),
-  );
+    final androidPlugin = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
+      'oxius_ride_requests',
+      'Ride Requests',
+      description: 'New ride request alerts for drivers',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      vibrationPattern: Int64List.fromList([0, 500, 250, 700, 250, 900]),
+    ));
 
-  await plugin.show(
-    rideId.hashCode,
-    title,
-    body,
-    NotificationDetails(android: details),
-    payload: jsonEncode({
-      ...data,
-      'type': data['type']?.toString() ?? 'targeted_ride_request',
-    }),
-  );
+    final details = AndroidNotificationDetails(
+      'oxius_ride_requests',
+      'Ride Requests',
+      channelDescription: 'New ride request alerts for drivers',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      enableVibration: true,
+      fullScreenIntent: true,
+      category: AndroidNotificationCategory.alarm,
+      visibility: NotificationVisibility.public,
+      icon: '@mipmap/ic_launcher',
+      timeoutAfter: timeoutSec * 1000,
+      autoCancel: true,
+      vibrationPattern: _buildRideRequestVibrationPattern(),
+    );
+
+    await plugin.show(
+      rideId.hashCode,
+      title,
+      body,
+      NotificationDetails(android: details),
+      payload: jsonEncode({
+        ...data,
+        'type': data['type']?.toString() ?? 'targeted_ride_request',
+      }),
+    );
+  }
 }
 
 class FCMService {
@@ -452,6 +547,13 @@ class FCMService {
     return age >= 0 && age <= _callRecoveryMaxAgeMs;
   }
 
+  static bool _isRideRequestTimestampFresh(int? timestamp, int timeoutSeconds) {
+    if (timestamp == null) return false;
+    final maxAgeMs = ((timeoutSeconds <= 0 ? 60 : timeoutSeconds) * 1000) + 5000;
+    final age = DateTime.now().millisecondsSinceEpoch - timestamp;
+    return age >= 0 && age <= maxAgeMs;
+  }
+
   static Future<bool> _hasRecoverableAuthenticatedSession() async {
     final prefs = await SharedPreferences.getInstance();
     final loggedOut = prefs.getBool('adsyclub_logged_out') ?? false;
@@ -549,15 +651,18 @@ class FCMService {
     required String callType,
     int? timestamp,
     required String source,
+    bool notifyCallerOnBusy = true,
   }) {
     if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
       _log('🚫 Ignoring $source incoming call - already in call or CallScreen visible');
-      AgoraCallService.sendCallStatus(
-        receiverId: callerId,
-        channelName: channelName,
-        status: 'busy',
-        callType: callType,
-      );
+      if (notifyCallerOnBusy) {
+        AgoraCallService.sendCallStatus(
+          receiverId: callerId,
+          channelName: channelName,
+          status: 'busy',
+          callType: callType,
+        );
+      }
       return false;
     }
 
@@ -825,12 +930,21 @@ class FCMService {
       final callerId = extra?['caller_id']?.toString();
       final channelName = extra?['channel_name']?.toString();
       final timestamp = _parseCallTimestamp(extra?['timestamp']);
+      final incomingKind = extra?['incoming_kind']?.toString();
+      final rideTimeoutSeconds = int.tryParse(
+            extra?['timeout_seconds']?.toString() ?? '',
+          ) ??
+          60;
       if (callerId == null || channelName == null) {
       _log('📞 CallKit actionCallAccept missing callerId/channelName: callerId=$callerId channelName=$channelName');
       return;
     }
 
-      if (!_isCallTimestampFresh(timestamp)) {
+      final isFresh = incomingKind == 'rideshare_request'
+          ? _isRideRequestTimestampFresh(timestamp, rideTimeoutSeconds)
+          : _isCallTimestampFresh(timestamp);
+
+      if (!isFresh) {
         _log('📞 Clearing stale CallKit recovery entry for channel=$channelName');
         if (callkitUuid.isNotEmpty) {
           await FlutterCallkitIncoming.endCall(callkitUuid);
@@ -838,6 +952,21 @@ class FCMService {
           await _clearPersistedIncomingCallState();
         }
         releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+        return;
+      }
+
+      if (incomingKind == 'rideshare_request') {
+        final rideId = extra?['ride_id']?.toString();
+        if (rideId == null || rideId.isEmpty) {
+          return;
+        }
+
+        _navigateBasedOnData({
+          'type': extra?['ride_request_type']?.toString() ?? 'targeted_ride_request',
+          'notification_type': extra?['notification_type']?.toString() ?? '',
+          'mode': 'driver',
+          'ride_id': rideId,
+        });
         return;
       }
 
@@ -963,6 +1092,11 @@ class FCMService {
       return;
     }
 
+    final extra = _parseCallkitExtra(event.body['extra']);
+    if (extra?['incoming_kind']?.toString() == 'rideshare_request') {
+      return;
+    }
+
     final callData = _extractCallDataFromCallEvent(event);
     if (callData == null) return;
 
@@ -1021,8 +1155,40 @@ class FCMService {
     final callerAvatar = extra['caller_avatar']?.toString();
     final callkitUuid = event.body['id']?.toString() ?? '';
     final timestamp = _parseCallTimestamp(extra['timestamp']);
+    final incomingKind = extra['incoming_kind']?.toString();
     
     if (callerId == null || channelName == null) return;
+
+    if (incomingKind == 'rideshare_request') {
+      final timeoutSeconds = int.tryParse(extra['timeout_seconds']?.toString() ?? '') ?? 60;
+      final rideId = extra['ride_id']?.toString() ?? '';
+      if (rideId.isEmpty) {
+        return;
+      }
+
+      if (!_isRideRequestTimestampFresh(timestamp, timeoutSeconds) ||
+          !await _hasRecoverableAuthenticatedSession()) {
+        releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+        if (callkitUuid.isNotEmpty) {
+          await FlutterCallkitIncoming.endCall(callkitUuid);
+        }
+        return;
+      }
+
+      if (callkitUuid.isNotEmpty) {
+        _acceptedCallkitUuids.add(callkitUuid);
+        FlutterCallkitIncoming.setCallConnected(callkitUuid);
+        FlutterCallkitIncoming.endCall(callkitUuid);
+      }
+
+      _navigateBasedOnData({
+        'type': extra['ride_request_type']?.toString() ?? 'targeted_ride_request',
+        'notification_type': extra['notification_type']?.toString() ?? '',
+        'mode': 'driver',
+        'ride_id': rideId,
+      });
+      return;
+    }
 
     if (!_isCallTimestampFresh(timestamp) || !await _hasRecoverableAuthenticatedSession()) {
       _log('📞 Ignoring accepted CallKit event for stale/unauthenticated call');
@@ -1078,10 +1244,23 @@ class FCMService {
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
     final callkitUuid = event.body['id']?.toString() ?? '';
+    final incomingKind = extra['incoming_kind']?.toString();
     
     if (callerId == null || channelName == null) return;
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+
+    if (incomingKind == 'rideshare_request') {
+      final rideId = extra['ride_id']?.toString() ?? '';
+      if (rideId.isNotEmpty) {
+        unawaited(RideshareService.skipRideRequest(rideId));
+      }
+      if (callkitUuid.isNotEmpty) {
+        _terminalCallkitUuids.add(callkitUuid);
+      }
+      FlutterCallkitIncoming.endCall(callkitUuid);
+      return;
+    }
     
     // Send rejected status to caller
     AgoraCallService.sendCallStatus(
@@ -1108,6 +1287,18 @@ class FCMService {
     
     final extra = _parseCallkitExtra(event.body['extra']);
     if (extra != null) {
+      if (extra['incoming_kind']?.toString() == 'rideshare_request') {
+        final callerId = extra['caller_id']?.toString();
+        final channelName = extra['channel_name']?.toString();
+        if (callerId != null && channelName != null) {
+          releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+        }
+        if (callkitUuid.isNotEmpty) {
+          FlutterCallkitIncoming.endCall(callkitUuid);
+        }
+        return;
+      }
+
       final callerId = extra['caller_id']?.toString();
       final channelName = extra['channel_name']?.toString();
       final callType = extra['call_type']?.toString() ?? 'video';
@@ -1151,10 +1342,19 @@ class FCMService {
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
     final callkitUuid = event.body['id']?.toString() ?? '';
+    final incomingKind = extra['incoming_kind']?.toString();
     
     if (callerId == null || channelName == null) return;
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+
+    if (incomingKind == 'rideshare_request') {
+      if (callkitUuid.isNotEmpty) {
+        _terminalCallkitUuids.add(callkitUuid);
+      }
+      FlutterCallkitIncoming.endCall(callkitUuid);
+      return;
+    }
     
     // Send missed call status
     AgoraCallService.sendCallStatus(
@@ -1231,6 +1431,44 @@ class FCMService {
     );
     
     await FlutterCallkitIncoming.showCallkitIncoming(params);
+  }
+
+  static Future<void> showRideRequestIncomingCall(
+    Map<String, dynamic> data,
+  ) async {
+    final rideId = data['ride_id']?.toString() ?? '';
+    if (rideId.isEmpty) {
+      return;
+    }
+
+    final timestamp = int.tryParse(data['timestamp']?.toString() ?? '') ??
+        DateTime.now().millisecondsSinceEpoch;
+    final trackingCallerId = 'rideshare_request';
+    final trackingChannelName = _buildRideRequestTrackingChannel(rideId);
+
+    if (!_registerIncomingCall(
+      callerId: trackingCallerId,
+      channelName: trackingChannelName,
+      callType: 'rideshare_request',
+      timestamp: timestamp,
+      source: 'RideRequestCallKit',
+      notifyCallerOnBusy: false,
+    )) {
+      return;
+    }
+
+    try {
+      await FlutterCallkitIncoming.showCallkitIncoming(
+        _buildRideRequestCallkitParams(data),
+      );
+    } catch (e) {
+      _log('⚠️ Foreground ride request CallKit failed, falling back to notification: $e');
+      releaseIncomingCallTracking(
+        callerId: trackingCallerId,
+        channelName: trackingChannelName,
+      );
+      await _showRideRequestNotification(data);
+    }
   }
 
   /// End all active calls
@@ -1368,7 +1606,11 @@ class FCMService {
 
     // Ride request for driver: show high-priority heads-up notification
     if (_isRideshareRideRequestNotification(type)) {
-      _showRideRequestNotification(message.data);
+      if (currentRouteName == '/rideshare') {
+        return;
+      }
+
+      unawaited(showRideRequestIncomingCall(message.data));
       return;
     }
 

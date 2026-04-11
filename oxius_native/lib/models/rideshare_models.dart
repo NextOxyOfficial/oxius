@@ -815,6 +815,7 @@ class NearbyDriver {
   final String name;
   final String vehicleType;
   final double? distance;
+  final bool isOnline;
 
   NearbyDriver({
     required this.latitude,
@@ -822,6 +823,7 @@ class NearbyDriver {
     required this.name,
     required this.vehicleType,
     this.distance,
+    this.isOnline = true,
   });
 
   factory NearbyDriver.fromJson(Map<String, dynamic> json) {
@@ -831,6 +833,7 @@ class NearbyDriver {
       name: json['name'] ?? 'Driver',
       vehicleType: json['vehicle_type'] ?? 'bike',
       distance: double.tryParse(json['distance']?.toString() ?? ''),
+      isOnline: json['is_online'] != false,
     );
   }
 

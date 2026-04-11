@@ -158,6 +158,13 @@ export default defineNuxtConfig({
     public: {
       baseURL: "http://127.0.0.1:8000",
       domain: "http://localhost:3000",
+      deepLinkScheme: "adsyclub",
+      homeDeepLinkPath: "home",
+      androidAppPackage: "com.oxius.app",
+      androidStoreUrl:
+        "https://play.google.com/store/apps/details?id=com.oxius.app",
+      iosStoreUrl: "https://apps.apple.com/",
+      appDownloadFallbackPath: "/download",
       cookieOptions: {
         default: {
           httpOnly: false,
@@ -173,6 +180,13 @@ export default defineNuxtConfig({
       public: {
         baseURL: "https://adsyclub.com",
         domain: "https://adsyclub.com",
+        deepLinkScheme: "adsyclub",
+        homeDeepLinkPath: "home",
+        androidAppPackage: "com.oxius.app",
+        androidStoreUrl:
+          "https://play.google.com/store/apps/details?id=com.oxius.app",
+        iosStoreUrl: "https://apps.apple.com/",
+        appDownloadFallbackPath: "/download",
         cookieOptions: {
           default: {
             httpOnly: false,

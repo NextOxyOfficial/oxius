@@ -63,9 +63,17 @@ class RideshareMapWidget extends StatefulWidget {
 class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   final MapController _mapController = MapController();
   bool _initialFitDone = false;
+  double _lastKnownZoom = 13;
+  DateTime? _lastManualMapGestureAt;
   
   // Default center (Dhaka, Bangladesh)
   static const LatLng _defaultCenter = LatLng(23.8103, 90.4125);
+  static const Duration _manualMapControlHold = Duration(seconds: 8);
+
+  List<NearbyDriver> get _visibleNearbyDrivers =>
+      (widget.nearbyDrivers ?? const <NearbyDriver>[])
+          .where((driver) => driver.isOnline)
+          .toList(growable: false);
 
   @override
   void initState() {
@@ -100,12 +108,24 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
 
     if (driverChanged && widget.followDriver && widget.driverLocation != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _shouldPauseAutoFollow()) {
+          return;
+        }
         _mapController.move(
           LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude),
-          15.5,
+          _lastKnownZoom.clamp(6.0, 19.0).toDouble(),
         );
       });
     }
+  }
+
+  bool _shouldPauseAutoFollow() {
+    final lastGestureAt = _lastManualMapGestureAt;
+    if (lastGestureAt == null) {
+      return false;
+    }
+
+    return DateTime.now().difference(lastGestureAt) < _manualMapControlHold;
   }
 
   void _fitBounds() {
@@ -201,6 +221,10 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
               minZoom: 6,
               maxZoom: 19,
               onPositionChanged: (camera, hasGesture) {
+                _lastKnownZoom = camera.zoom ?? _lastKnownZoom;
+                if (hasGesture) {
+                  _lastManualMapGestureAt = DateTime.now();
+                }
                 final center = camera.center;
                 if (center == null) {
                   return;
@@ -342,7 +366,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
 
   Widget _buildStatusPanel(List<LatLng> routeCoordinates) {
     final hasRoute = routeCoordinates.isNotEmpty;
-    final nearbyCount = widget.nearbyDrivers?.length ?? 0;
+    final nearbyCount = _visibleNearbyDrivers.length;
     final title = widget.followDriver && widget.driverLocation != null
         ? 'Live trip tracking'
         : widget.onMapTap != null
@@ -507,7 +531,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       items.add(
         _buildLegendChip(
           icon: Icons.groups_rounded,
-          label: '${widget.nearbyDrivers!.length} online drivers nearby',
+          label: '${_visibleNearbyDrivers.length} online drivers nearby',
           tint: const Color(0xFF334155),
         ),
       );
@@ -799,8 +823,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
 
     // Nearby drivers are represented as a count overlay by default. Showing
     // individual live positions would leak driver whereabouts before a ride is assigned.
-    if (widget.showNearbyDriverMarkers && widget.nearbyDrivers != null) {
-      for (final driver in widget.nearbyDrivers!) {
+    if (widget.showNearbyDriverMarkers && _visibleNearbyDrivers.isNotEmpty) {
+      for (final driver in _visibleNearbyDrivers) {
         markers.add(
           Marker(
             point: LatLng(driver.latitude, driver.longitude),

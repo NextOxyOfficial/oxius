@@ -892,7 +892,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       vehicleType: _selectedVehicleType,
     );
     if (mounted && result.success) {
-      setState(() => _nearbyDrivers = result.data ?? []);
+      final nearbyDrivers = (result.data ?? const <NearbyDriver>[])
+          .where((driver) => driver.isOnline)
+          .toList(growable: false);
+      setState(() => _nearbyDrivers = nearbyDrivers);
     }
   }
 
