@@ -84,10 +84,6 @@ bool _isRideshareNotification(
       (rideId != null && rideId.isNotEmpty);
 }
 
-bool _isRideshareRideRequestNotification(String? type) {
-  return _rideshareRideRequestTypes.contains(type);
-}
-
 bool _isRideshareRideRequestNotificationFromPayload({
   String? type,
   String? notificationType,
