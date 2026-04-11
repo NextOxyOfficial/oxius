@@ -5,6 +5,7 @@ import '../../services/user_search_service.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/time_utils.dart';
+import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
@@ -664,10 +665,11 @@ class _CommentItemState extends State<_CommentItem> {
   void initState() {
     super.initState();
     // Remove mention formatting for editing (keep just the plain text)
-    final plainContent = widget.comment.content.replaceAllMapped(
-      RegExp(r'@([^@]+?)  '),
-      (match) => '@${match.group(1)} ',
-    );
+    final plainContent = HtmlContentUtils.toPlainText(widget.comment.content)
+        .replaceAllMapped(
+          RegExp(r'@([^@]+?)  '),
+          (match) => '@${match.group(1)} ',
+        );
     _editController = TextEditingController(text: plainContent);
     _loadCurrentUser();
   }
@@ -1098,10 +1100,11 @@ class _CommentItemState extends State<_CommentItem> {
                               setState(() {
                                 _isEditing = false;
                                 // Reset to original plain content
-                                final plainContent = widget.comment.content.replaceAllMapped(
-                                  RegExp(r'@([^@]+?)  '),
-                                  (match) => '@${match.group(1)} ',
-                                );
+                                final plainContent = HtmlContentUtils.toPlainText(widget.comment.content)
+                                    .replaceAllMapped(
+                                      RegExp(r'@([^@]+?)  '),
+                                      (match) => '@${match.group(1)} ',
+                                    );
                                 _editController.text = plainContent;
                               });
                             },
@@ -1146,7 +1149,7 @@ class _CommentItemState extends State<_CommentItem> {
                       Text.rich(
                         TextSpan(
                           children: MentionParser.parseTextWithMentionsAndLinks(
-                            widget.comment.content,
+                            HtmlContentUtils.toPlainText(widget.comment.content),
                             context,
                             onMentionTap: (username) async {
                               // Search for user by name to get their ID
@@ -1170,7 +1173,9 @@ class _CommentItemState extends State<_CommentItem> {
                           ),
                         ),
                       ),
-                      FirstLinkPreview(text: widget.comment.content),
+                      FirstLinkPreview(
+                        text: HtmlContentUtils.toPlainText(widget.comment.content),
+                      ),
                     ],
                   ),
                 // Reply button
@@ -1218,10 +1223,11 @@ class _CommentItemState extends State<_CommentItem> {
                 title: const Text('Edit Comment'),
                 onTap: () {
                   Navigator.pop(context);
-                  final plainContent = widget.comment.content.replaceAllMapped(
-                    RegExp(r'@([^@]+?)  '),
-                    (match) => '@${match.group(1)} ',
-                  );
+                  final plainContent = HtmlContentUtils.toPlainText(widget.comment.content)
+                      .replaceAllMapped(
+                        RegExp(r'@([^@]+?)  '),
+                        (match) => '@${match.group(1)} ',
+                      );
                   _editController.text = plainContent;
                   setState(() => _isEditing = true);
                 },
@@ -1283,12 +1289,16 @@ class _CommentItemState extends State<_CommentItem> {
   }
 
   String _extractGiftMessage(String content) {
+    final normalizedContent = HtmlContentUtils.toPlainText(content);
+
     // Remove common prefixes like "Sent X diamonds as a gift! ✨"
-    if (content.contains('diamonds as a gift')) {
-      final cleaned = content.replaceFirst(RegExp(r'Sent \d+ diamonds as a gift! ✨\s*'), '').trim();
+    if (normalizedContent.contains('diamonds as a gift')) {
+      final cleaned = normalizedContent
+          .replaceFirst(RegExp(r'Sent \d+ diamonds as a gift! ✨\s*'), '')
+          .trim();
       // Only return the custom message if it's not empty
       return cleaned.isEmpty ? '' : cleaned;
     }
-    return content;
+    return normalizedContent;
   }
 }

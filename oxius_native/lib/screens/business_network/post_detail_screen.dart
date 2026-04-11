@@ -10,6 +10,7 @@ import '../../widgets/business_network/post_actions.dart';
 import '../../widgets/business_network/post_comment_input.dart';
 import '../../widgets/business_network/post_comments_preview.dart';
 import '../../utils/time_utils.dart';
+import '../../utils/html_content_utils.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'post_media_viewer_screen.dart';
 import 'profile_screen.dart';
@@ -128,12 +129,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     try {
       // Create share text with post title and content
       String shareText = '';
+      final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
       
       if (_post.title.isNotEmpty) {
         shareText += '${_post.title}\n\n';
       }
       
-      shareText += _post.content;
+      shareText += plainPostContent;
       
       // Add post link
       shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
@@ -495,7 +497,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 Padding(
                                   padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
                                   child: Html(
-                                    data: _post.content,
+                                    data: HtmlContentUtils.toDisplayHtml(_post.content),
                                     onLinkTap: (url, attributes, element) {
                                       UrlLauncherUtils.launchExternalUrl(url);
                                     },

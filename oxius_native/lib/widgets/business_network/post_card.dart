@@ -12,6 +12,7 @@ import '../../screens/business_network/search_screen.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/url_launcher_utils.dart';
+import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
@@ -229,12 +230,13 @@ class _PostCardState extends State<PostCard> {
     try {
       // Create share text with post title and content
       String shareText = '';
+      final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
       
       if (_post.title.isNotEmpty) {
         shareText += '${_post.title}\n\n';
       }
       
-      shareText += _post.content;
+      shareText += plainPostContent;
       
       // Add post link
       shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
@@ -597,6 +599,11 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
+    final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
+    final previewPostContent = _showFullContent
+        ? plainPostContent
+        : HtmlContentUtils.previewText(plainPostContent, 160);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -651,7 +658,7 @@ class _PostCardState extends State<PostCard> {
               ),
             ),
           // Post Content with long press copy
-          if (_post.content.trim().isNotEmpty)
+          if (plainPostContent.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Column(
@@ -659,7 +666,7 @@ class _PostCardState extends State<PostCard> {
                 children: [
                   GestureDetector(
                     onLongPress: () {
-                      Clipboard.setData(ClipboardData(text: _post.content));
+                      Clipboard.setData(ClipboardData(text: plainPostContent));
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Content copied to clipboard'),
@@ -670,7 +677,7 @@ class _PostCardState extends State<PostCard> {
                     child: Text.rich(
                       TextSpan(
                         children: MentionParser.parseTextWithMentions(
-                          _showFullContent ? _post.content : (_post.content.length > 160 ? '${_post.content.substring(0, 160)}...' : _post.content),
+                          previewPostContent,
                           context,
                           onMentionTap: _handleMentionTap,
                         ),
@@ -682,7 +689,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                     ),
                   ),
-                  if (_post.content.length > 160)
+                  if (plainPostContent.length > 160)
                     TextButton(
                       onPressed: () {
                         setState(() => _showFullContent = !_showFullContent);
@@ -701,7 +708,7 @@ class _PostCardState extends State<PostCard> {
                         ),
                       ),
                     ),
-                  FirstLinkPreview(text: _post.content),
+                  FirstLinkPreview(text: plainPostContent),
                 ],
               ),
             ),
