@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter_html/flutter_html.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_search_service.dart';
-import '../../config/app_config.dart';
 import '../../screens/business_network/post_detail_screen.dart';
 import '../../screens/business_network/search_screen.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../utils/network_error_handler.dart';
-import '../../utils/url_launcher_utils.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
 import '../../widgets/link_preview_card.dart';

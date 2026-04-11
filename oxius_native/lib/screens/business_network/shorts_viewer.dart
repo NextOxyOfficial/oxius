@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
-import '../../config/app_config.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/network_error_handler.dart';
 import '../../widgets/business_network/post_comment_input.dart';
