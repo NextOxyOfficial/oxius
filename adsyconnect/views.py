@@ -364,6 +364,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     def mark_as_read(self, request, pk=None):
         """Mark all messages in chat room as read"""
         chatroom = self.get_object()
+        read_at = timezone.now()
         unread_messages = list(
             Message.objects.filter(
                 chatroom=chatroom,
@@ -379,7 +380,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             is_read=False
         ).exclude(sender=request.user).update(
             is_read=True,
-            read_at=timezone.now()
+            read_at=read_at
         )
 
         for message_id, sender_id in unread_messages:
@@ -388,6 +389,8 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
                 {
                     'type': 'message_read_update',
                     'message_id': str(message_id),
+                    'chatroom_id': str(chatroom.id),
+                    'read_at': read_at.isoformat(),
                 },
             )
         
@@ -524,6 +527,8 @@ class MessageViewSet(viewsets.ModelViewSet):
                 {
                     'type': 'message_read_update',
                     'message_id': str(message.id),
+                    'chatroom_id': str(message.chatroom_id),
+                    'read_at': message.read_at.isoformat() if message.read_at else None,
                 },
             )
             return Response({'status': 'message marked as read'})

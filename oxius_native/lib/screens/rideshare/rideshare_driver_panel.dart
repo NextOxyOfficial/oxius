@@ -492,7 +492,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '১. অ্যাপ সেটিংস খুলুন\n২. Permission> Location এ চাপুন\n৩. সবসময় অনুমতি দিন\n৪. আবার এখানে ফিরে আসুন',
+                      '১. অ্যাপ সেটিংস খুলুন\n২. Permissions> Location এ চাপুন\n৩. Allow All the Time নির্বাচন করুন\n৪. আবার এখানে ফিরে আসুন',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: _slate600,

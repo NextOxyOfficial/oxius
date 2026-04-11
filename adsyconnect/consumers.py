@@ -185,7 +185,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 f'user_{message.sender.id}',
                 {
                     'type': 'message_read_update',
-                    'message_id': message_id
+                    'message_id': message_id,
+                    'chatroom_id': str(message.chatroom_id),
+                    'read_at': message.read_at.isoformat() if message.read_at else None,
                 }
             )
             
@@ -213,7 +215,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """Send message read status update to WebSocket"""
         await self.send(text_data=json.dumps({
             'type': 'message_read',
-            'message_id': event['message_id']
+            'message_id': event.get('message_id'),
+            'message_ids': event.get('message_ids'),
+            'chatroom_id': event.get('chatroom_id'),
+            'read_at': event.get('read_at'),
         }))
 
     async def user_online_status(self, event):

@@ -432,22 +432,35 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       return;
     }
 
-    if (type == 'message_read') {
-      final messageId = event['message_id']?.toString();
-      if (messageId == null || messageId.isEmpty) {
+    if (type == 'message_read' || type == 'message_read_update') {
+      final chatroomId = event['chatroom_id']?.toString();
+      if (chatroomId != null && chatroomId.isNotEmpty && chatroomId != widget.chatroomId) {
         return;
       }
 
-      final existingIndex = _messages.indexWhere(
-        (message) => (message['id']?.toString() ?? '') == messageId,
-      );
-      if (existingIndex == -1) {
+      final messageIds = <String>{};
+      final singleMessageId = event['message_id']?.toString();
+      if (singleMessageId != null && singleMessageId.isNotEmpty) {
+        messageIds.add(singleMessageId);
+      }
+
+      final bulkMessageIds = event['message_ids'];
+      if (bulkMessageIds is Iterable) {
+        for (final value in bulkMessageIds) {
+          final id = value?.toString() ?? '';
+          if (id.isNotEmpty) {
+            messageIds.add(id);
+          }
+        }
+      }
+
+      if (messageIds.isEmpty) {
         return;
       }
 
-      setState(() {
-        _messages[existingIndex]['isSeen'] = true;
-      });
+      final readAt = _tryParseTimestamp(event['read_at']);
+      _applyReadReceipt(messageIds, readAt: readAt);
+      return;
     }
   }
 
@@ -845,6 +858,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       // Check if message has been seen by recipient
       // is_read means the recipient has opened and viewed the message
       final isSeen = msg['is_read'] == true;
+      final readAt = _tryParseTimestamp(msg['read_at']);
       
       final rawText = msg['display_content']?.toString() ?? msg['content']?.toString() ?? '';
       final replyMeta = _tryParseReplyFromText(rawText);
@@ -867,6 +881,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         'fileName': msg['file_name']?.toString(),
         'voice_duration': (msg['voice_duration'] as int?) ?? (msg['voiceDuration'] as int?) ?? 0,
         'isSeen': isSeen, // Changed from isRead to isSeen for clarity
+        'is_read': isSeen,
+        'readAt': readAt,
         'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
       };
     }).toList();
@@ -907,19 +923,28 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       await AdsyConnectService.markChatroomAsRead(widget.chatroomId);
       
       // Update local state immediately - mark all received messages as read
-      if (mounted) {
-        setState(() {
-          for (var message in _messages) {
-            if (message['isMe'] == false && message['isSeen'] == false) {
-              message['isSeen'] = true;
-            }
-          }
-        });
-      }
+      _markLocalIncomingMessagesAsRead();
     } catch (e) {
       print('🔴 Error marking messages as read: $e');
       // Don't show error to user - this is a background operation
     }
+  }
+
+  void _markLocalIncomingMessagesAsRead() {
+    if (!mounted) {
+      return;
+    }
+
+    final readAt = DateTime.now();
+    setState(() {
+      for (final message in _messages) {
+        if (message['isMe'] == false && message['isSeen'] != true) {
+          message['isSeen'] = true;
+          message['is_read'] = true;
+          message['readAt'] = readAt;
+        }
+      }
+    });
   }
 
   void _scrollToBottom() {
@@ -981,6 +1006,28 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final merged = Map<String, dynamic>.from(_messages[existingIndex]);
     merged.addAll(message);
     _messages[existingIndex] = merged;
+  }
+
+  void _applyReadReceipt(Set<String> messageIds, {DateTime? readAt}) {
+    var changed = false;
+
+    setState(() {
+      for (var index = 0; index < _messages.length; index++) {
+        final messageId = _messages[index]['id']?.toString() ?? '';
+        if (!messageIds.contains(messageId)) {
+          continue;
+        }
+
+        _messages[index]['isSeen'] = true;
+        _messages[index]['is_read'] = true;
+        _messages[index]['readAt'] = readAt ?? _messages[index]['readAt'] ?? DateTime.now();
+        changed = true;
+      }
+    });
+
+    if (changed && _searchQuery.trim().isNotEmpty) {
+      _recomputeSearchMatches(keepCurrent: true);
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -1053,6 +1100,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     // Check if message has been seen by recipient
     // is_read means the recipient has opened and viewed the message
     final isSeen = msg['is_read'] == true;
+    final readAt = _tryParseTimestamp(msg['read_at']);
 
     final rawText = msg['display_content']?.toString() ?? msg['content']?.toString() ?? '';
     final replyMeta = _tryParseReplyFromText(rawText);
@@ -1075,9 +1123,24 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       'fileName': msg['file_name']?.toString(),
       'voice_duration': (msg['voice_duration'] as int?) ?? (msg['voiceDuration'] as int?) ?? 0,
       'isSeen': isSeen, // Changed from isRead to isSeen for clarity
+      'is_read': isSeen,
+      'readAt': readAt,
       'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
       'showTimestamp': true, // Always show timestamp for sent messages
     };
+  }
+
+  DateTime? _tryParseTimestamp(dynamic value) {
+    final raw = value?.toString().trim() ?? '';
+    if (raw.isEmpty) {
+      return null;
+    }
+
+    try {
+      return DateTime.parse(raw).toLocal();
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _startRecording() async {

@@ -11,6 +11,7 @@ import 'auth_service.dart';
 
 class AgoraCallService {
   static const String appId = '9eba1a50633041d08dbe75b0fde2ed8a';
+  static const Duration _requestTimeout = Duration(seconds: 10);
 
   static RtcEngine? _engine;
   static bool _isInCall = false;
@@ -212,8 +213,8 @@ class AgoraCallService {
       _engine = engine;
     }
 
-    await _configureVideoState(wantsVideo: wantsVideo);
-    await toggleSpeaker(wantsVideo);
+    await _runOptionalSetup(() => _configureVideoState(wantsVideo: wantsVideo));
+    await _runOptionalSetup(() => toggleSpeaker(wantsVideo));
     return _engine!;
   }
 
@@ -320,6 +321,7 @@ class AgoraCallService {
       _lastNotificationError = null;
       final currentUser = AuthService.currentUser;
       if (currentUser == null) {
+        _lastNotificationError = 'Your session expired. Please sign in again.';
         return false;
       }
 
@@ -339,11 +341,11 @@ class AgoraCallService {
           'caller_name': callerName.isNotEmpty ? callerName : currentUser.username,
           'caller_avatar': currentUser.profilePicture,
         }),
-      );
+      ).timeout(_requestTimeout);
 
       final ok = response.statusCode == 200 || response.statusCode == 201;
       if (!ok) {
-        _lastNotificationError = '${response.statusCode} ${response.body}';
+        _lastNotificationError = _friendlyHttpError(response);
         return false;
       }
 
@@ -357,6 +359,9 @@ class AgoraCallService {
         }
       }
       return ok;
+    } on TimeoutException {
+      _lastNotificationError = 'Call request timed out. Please try again.';
+      return false;
     } catch (error) {
       _lastNotificationError = error.toString();
       return false;
@@ -384,13 +389,16 @@ class AgoraCallService {
           'call_type': callType,
           'call_id': callId ?? _activeCallInfo?['callId'],
         }),
-      );
+      ).timeout(_requestTimeout);
 
       final ok = response.statusCode == 200 || response.statusCode == 201;
       if (!ok) {
-        _lastNotificationError = '${response.statusCode} ${response.body}';
+        _lastNotificationError = _friendlyHttpError(response);
       }
       return ok;
+    } on TimeoutException {
+      _lastNotificationError = 'Call status update timed out. Please try again.';
+      return false;
     } catch (error) {
       _lastNotificationError = error.toString();
       return false;
@@ -445,6 +453,14 @@ class AgoraCallService {
     _activeCallInfo ??= <String, dynamic>{};
   }
 
+  static Future<void> _runOptionalSetup(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (_) {
+      // Ignore non-essential device-specific setup failures.
+    }
+  }
+
   static void _emitCallState() {
     try {
       _callStateController.add(_isInCall);
@@ -469,6 +485,28 @@ class AgoraCallService {
         return message.isNotEmpty
             ? message
             : 'Unable to continue the call right now.';
+    }
+  }
+
+  static String _friendlyHttpError(http.Response response) {
+    switch (response.statusCode) {
+      case 400:
+        return 'Invalid call request. Please try again.';
+      case 401:
+      case 403:
+        return 'Your session expired. Please sign in again.';
+      case 404:
+        return 'Recipient is unavailable right now.';
+      default:
+        if (response.statusCode >= 500) {
+          return 'Call service is unavailable right now. Please try again.';
+        }
+
+        final body = response.body.trim();
+        if (body.isEmpty || body.length > 160 || body.startsWith('<!DOCTYPE')) {
+          return 'Unable to complete the call request right now.';
+        }
+        return body;
     }
   }
 }

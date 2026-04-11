@@ -3,10 +3,13 @@ import 'package:flutter/foundation.dart';
 /// Application configuration for different environments
 /// Automatically switches between development and production based on build mode
 class AppConfig {
+  static const String _apiOverride = String.fromEnvironment('API_BASE_URL');
+  static const String _mediaOverride = String.fromEnvironment('MEDIA_BASE_URL');
+  static const bool _useLocalDevServer = bool.fromEnvironment('USE_LOCAL_API');
+
   // ==================== DEVELOPMENT CONFIGURATION ====================
-  // These are used when running in Debug mode (flutter run)
-  static const String _devApiBaseUrl = 'http://localhost:8000/api';
-  static const String _devMediaBaseUrl = 'http://localhost:8000';
+  // Local development is opt-in so debug builds on devices keep working
+  // against the production backend unless a local server is requested.
   
   // ==================== PRODUCTION CONFIGURATION ====================
   // These are used when building Release APK (flutter build apk --release)
@@ -16,20 +19,28 @@ class AppConfig {
   // ==================== ACTIVE CONFIGURATION ====================
   /// Current API base URL based on build mode
   static String get apiBaseUrl {
-    if (kDebugMode) {
-      return _devApiBaseUrl;
-    } else {
-      return _prodApiBaseUrl;
+    if (_apiOverride.isNotEmpty) {
+      return _apiOverride;
     }
+
+    if (kDebugMode && _useLocalDevServer) {
+      return '${_localDevHost}/api';
+    }
+
+    return _prodApiBaseUrl;
   }
   
   /// Current media base URL based on build mode
   static String get mediaBaseUrl {
-    if (kDebugMode) {
-      return _devMediaBaseUrl;
-    } else {
-      return _prodMediaBaseUrl;
+    if (_mediaOverride.isNotEmpty) {
+      return _mediaOverride;
     }
+
+    if (kDebugMode && _useLocalDevServer) {
+      return _localDevHost;
+    }
+
+    return _prodMediaBaseUrl;
   }
   
   /// Check if app is running in development mode
@@ -39,7 +50,22 @@ class AppConfig {
   static bool get isProduction => kReleaseMode;
   
   /// Get current environment name
-  static String get environment => kDebugMode ? 'Development' : 'Production';
+  static String get environment {
+    if (_apiOverride.isNotEmpty || _mediaOverride.isNotEmpty) {
+      return 'Custom';
+    }
+    if (kDebugMode && _useLocalDevServer) {
+      return 'Development';
+    }
+    return 'Production';
+  }
+
+  static String get _localDevHost {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000';
+    }
+    return 'http://localhost:8000';
+  }
   
   // ==================== HELPER METHODS ====================
   /// Helper method to convert relative URLs to absolute

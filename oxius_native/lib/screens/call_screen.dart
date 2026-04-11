@@ -342,8 +342,13 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         if (!notified) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Could not reach the recipient. Please try again.'),
+            SnackBar(
+              content: Text(
+                _formatCallStartError(
+                  AgoraCallService.lastNotificationError,
+                  fallback: 'Could not reach the recipient. Please try again.',
+                ),
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -358,7 +363,10 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       if (mounted) {
         final msg = e.toString().toLowerCase().contains('permission')
             ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.'
-            : 'Unable to start call. Please check your connection.';
+            : _formatCallStartError(
+                AgoraCallService.lastError ?? AgoraCallService.lastNotificationError ?? e.toString(),
+                fallback: 'Unable to start call. Please check your connection.',
+              );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(msg),
@@ -382,8 +390,13 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     if (!success && mounted) {
       setState(() => _isConnecting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not join the call. Please try again.'),
+        SnackBar(
+          content: Text(
+            _formatCallStartError(
+              AgoraCallService.lastError,
+              fallback: 'Could not join the call. Please try again.',
+            ),
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -514,6 +527,46 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       return '${two(hours)}:${two(minutes)}:${two(seconds)}';
     }
     return '${two(minutes)}:${two(seconds)}';
+  }
+
+  String _formatCallStartError(String? rawMessage, {required String fallback}) {
+    final value = (rawMessage ?? '').trim();
+    if (value.isEmpty) {
+      return fallback;
+    }
+
+    final lower = value.toLowerCase();
+    if (lower.contains('permission')) {
+      return 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.';
+    }
+    if (lower.contains('session expired') || lower.contains('sign in again')) {
+      return 'Your session expired. Please sign in again.';
+    }
+    if (lower.contains('timed out') || lower.contains('timeout')) {
+      return 'Call request timed out. Please check your connection and try again.';
+    }
+    if (lower.contains('recipient is unavailable')) {
+      return 'Recipient is unavailable right now.';
+    }
+    if (lower.contains('service is unavailable')) {
+      return 'Call service is unavailable right now. Please try again.';
+    }
+    if (lower.contains('network') || lower.contains('connection')) {
+      return 'Network error while starting the call. Please try again.';
+    }
+    if (lower.contains('invalid channel')) {
+      return 'Invalid call session. Please try again.';
+    }
+    if (lower.contains('token')) {
+      return 'Call session expired. Please try again.';
+    }
+    if (value.startsWith('{') || value.startsWith('[') || value.startsWith('<')) {
+      return fallback;
+    }
+    if (value.length > 140) {
+      return fallback;
+    }
+    return value;
   }
 
   Future<void> _sendCallLog(String outcome) async {
