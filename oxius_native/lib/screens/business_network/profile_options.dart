@@ -1193,7 +1193,11 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     );
 
     try {
-      final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 7);
+      final result = await BusinessNetworkService.getShortsFeed(
+        startPage: 1,
+        pageSize: 12,
+        pageWindow: 3,
+      );
       if (!context.mounted) return;
       final posts = (result['posts'] as List<BusinessNetworkPost>?) ?? <BusinessNetworkPost>[];
 

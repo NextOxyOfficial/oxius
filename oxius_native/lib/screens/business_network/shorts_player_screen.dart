@@ -23,7 +23,11 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   final Map<int, BusinessNetworkPost> _updatedPostsById = {};
   bool _isLoadingMore = false;
   bool _hasMore = true;
-  String? _lastCreatedAt;
+  int _nextPage = 1;
+
+  static const int _shortsPageSize = 12;
+  static const int _initialShortsPageWindow = 3;
+  static const int _loadMoreShortsPageWindow = 2;
 
   bool _hasVideo(BusinessNetworkPost post) {
     return post.media.any((m) => m.isVideo);
@@ -37,7 +41,12 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
   }
 
   Future<void> _loadInitial() async {
-    final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 10);
+    final result = await BusinessNetworkService.getShortsFeed(
+      startPage: _nextPage,
+      pageSize: _shortsPageSize,
+      pageWindow: _initialShortsPageWindow,
+      excludePostIds: {widget.initialPost.id},
+    );
     final newPosts = (result['posts'] as List<BusinessNetworkPost>?) ?? <BusinessNetworkPost>[];
 
     if (!mounted) return;
@@ -45,9 +54,7 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
     setState(() {
       _mergePosts(newPosts);
       _hasMore = result['hasMore'] as bool? ?? true;
-      if (newPosts.isNotEmpty) {
-        _lastCreatedAt = newPosts.last.createdAt;
-      }
+      _nextPage = result['nextPage'] as int? ?? (_nextPage + 1);
     });
   }
 
@@ -77,10 +84,11 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
       _isLoadingMore = true;
     });
 
-    final result = await BusinessNetworkService.getPosts(
-      page: 1,
-      pageSize: 10,
-      olderThan: _lastCreatedAt,
+    final result = await BusinessNetworkService.getShortsFeed(
+      startPage: _nextPage,
+      pageSize: _shortsPageSize,
+      pageWindow: _loadMoreShortsPageWindow,
+      excludePostIds: _posts.map((post) => post.id).toSet(),
     );
 
     final newPosts = (result['posts'] as List<BusinessNetworkPost>?) ?? <BusinessNetworkPost>[];
@@ -88,11 +96,9 @@ class _ShortsPlayerScreenState extends State<ShortsPlayerScreen> {
     if (!mounted) return;
 
     setState(() {
-      if (newPosts.isNotEmpty) {
-        _mergePosts(newPosts);
-        _lastCreatedAt = newPosts.last.createdAt;
-      }
+      _mergePosts(newPosts);
       _hasMore = result['hasMore'] as bool? ?? false;
+      _nextPage = result['nextPage'] as int? ?? (_nextPage + 1);
       _isLoadingMore = false;
     });
   }

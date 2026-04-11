@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import '../models/business_network_models.dart';
@@ -9,6 +10,71 @@ import 'auth_service.dart';
 
 class BusinessNetworkService {
   static String get _baseUrl => '${ApiService.baseUrl}/bn';
+  static final Random _shortsRandom = Random();
+
+  static List<BusinessNetworkPost> _mixShortsPosts(
+    List<BusinessNetworkPost> posts, {
+    Set<int> excludePostIds = const {},
+  }) {
+    final currentUser = AuthService.currentUser;
+    final currentUserId = int.tryParse((currentUser?.id ?? '').toString());
+    final uniquePosts = <int, BusinessNetworkPost>{};
+
+    for (final post in posts) {
+      if (excludePostIds.contains(post.id)) {
+        continue;
+      }
+
+      if (!post.media.any((media) => media.isVideo)) {
+        continue;
+      }
+
+      uniquePosts.putIfAbsent(post.id, () => post);
+    }
+
+    final ownPosts = <BusinessNetworkPost>[];
+    final followedPosts = <BusinessNetworkPost>[];
+    final unfollowedPosts = <BusinessNetworkPost>[];
+
+    for (final post in uniquePosts.values) {
+      final isOwnPost = currentUserId != null && post.user.id == currentUserId;
+
+      if (isOwnPost) {
+        ownPosts.add(post);
+      } else if (post.user.isFollowing) {
+        followedPosts.add(post);
+      } else {
+        unfollowedPosts.add(post);
+      }
+    }
+
+    ownPosts.shuffle(_shortsRandom);
+    followedPosts.shuffle(_shortsRandom);
+    unfollowedPosts.shuffle(_shortsRandom);
+
+    final mixedPosts = <BusinessNetworkPost>[];
+
+    while (
+        ownPosts.isNotEmpty || followedPosts.isNotEmpty || unfollowedPosts.isNotEmpty) {
+      if (mixedPosts.isEmpty && ownPosts.isNotEmpty) {
+        mixedPosts.add(ownPosts.removeLast());
+      }
+
+      if (unfollowedPosts.isNotEmpty) {
+        mixedPosts.add(unfollowedPosts.removeLast());
+      }
+
+      if (followedPosts.isNotEmpty) {
+        mixedPosts.add(followedPosts.removeLast());
+      }
+
+      if (ownPosts.isNotEmpty) {
+        mixedPosts.add(ownPosts.removeLast());
+      }
+    }
+
+    return mixedPosts;
+  }
   
   /// Get Business Network logo
   static Future<String?> getBusinessNetworkLogo() async {
@@ -117,6 +183,47 @@ class BusinessNetworkService {
       print('Stack trace: $stackTrace');
       return {'posts': <BusinessNetworkPost>[], 'hasMore': false, 'count': 0};
     }
+  }
+
+  static Future<Map<String, dynamic>> getShortsFeed({
+    int startPage = 1,
+    int pageSize = 12,
+    int pageWindow = 3,
+    Set<int> excludePostIds = const {},
+  }) async {
+    final collectedPosts = <BusinessNetworkPost>[];
+    var currentPage = startPage;
+    var hasMore = true;
+
+    for (var index = 0; index < pageWindow; index++) {
+      if (!hasMore) {
+        break;
+      }
+
+      final result = await getPosts(page: currentPage, pageSize: pageSize);
+      final pagePosts =
+          (result['posts'] as List<BusinessNetworkPost>?) ?? <BusinessNetworkPost>[];
+
+      collectedPosts.addAll(pagePosts);
+      hasMore = result['hasMore'] as bool? ?? false;
+      currentPage += 1;
+
+      if (pagePosts.isEmpty) {
+        hasMore = false;
+        break;
+      }
+    }
+
+    final shortsPosts = _mixShortsPosts(
+      collectedPosts,
+      excludePostIds: excludePostIds,
+    );
+
+    return {
+      'posts': shortsPosts,
+      'hasMore': hasMore,
+      'nextPage': currentPage,
+    };
   }
 
   /// Create a new post

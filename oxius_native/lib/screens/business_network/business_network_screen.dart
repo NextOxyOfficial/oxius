@@ -30,7 +30,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   
   
   List<BusinessNetworkPost> _posts = [];
-  List<Map<String, dynamic>> _sponsoredProducts = [];
+  List<Map<String, dynamic>> _shuffledSponsoredProducts = [];
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasMore = true;
@@ -61,7 +61,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       final products = await UserSuggestionsService.getSponsoredProducts(limit: 20);
       if (mounted) {
         setState(() {
-          _sponsoredProducts = products;
+          _shuffledSponsoredProducts = List<Map<String, dynamic>>.from(products)
+            ..shuffle(_random);
         });
       }
     } catch (e) {
@@ -84,11 +85,25 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     }
   }
 
-  List<Map<String, dynamic>> _getRandomProducts(int count) {
-    if (_sponsoredProducts.isEmpty) return [];
-    
-    final shuffled = List<Map<String, dynamic>>.from(_sponsoredProducts)..shuffle(_random);
-    return shuffled.take(count).toList();
+  List<Map<String, dynamic>> _getSponsoredProductsForSlot(int slotIndex, int count) {
+    if (_shuffledSponsoredProducts.isEmpty) {
+      return [];
+    }
+
+    final safeCount = count.clamp(0, _shuffledSponsoredProducts.length);
+    if (safeCount == 0) {
+      return [];
+    }
+
+    final startIndex = (slotIndex * safeCount) % _shuffledSponsoredProducts.length;
+    final selectedProducts = <Map<String, dynamic>>[];
+
+    for (int offset = 0; offset < safeCount; offset++) {
+      final productIndex = (startIndex + offset) % _shuffledSponsoredProducts.length;
+      selectedProducts.add(_shuffledSponsoredProducts[productIndex]);
+    }
+
+    return selectedProducts;
   }
 
   List<BusinessNetworkPost> _getVisiblePosts() {
@@ -218,7 +233,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   Future<void> _refreshPosts() async {
     _currentPage = 1;
     _lastCreatedAt = null;
-    await _loadPosts();
+    await Future.wait([
+      _loadPosts(),
+      _loadSponsoredProducts(),
+    ]);
   }
 
   void _openCreatePost() {
@@ -435,6 +453,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
     // Calculate actual post position considering injected cards
     int currentIndex = 1; // Start after gold sponsors
+    int sponsoredSlotIndex = 0;
     
     for (int i = 0; i < visiblePosts.length; i++) {
       // Check if we should inject user suggestions (every 10th post) - only for logged in users
@@ -449,9 +468,11 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       if (i > 0 && i % 5 == 0 && i % 10 != 0) { // Don't overlap with suggestions
         if (currentIndex == index) {
           return SponsoredProductsCard(
-            products: _getRandomProducts(3),
+            key: ValueKey('sponsored_products_$sponsoredSlotIndex'),
+            products: _getSponsoredProductsForSlot(sponsoredSlotIndex, 3),
           );
         }
+        sponsoredSlotIndex++;
         currentIndex++;
       }
       

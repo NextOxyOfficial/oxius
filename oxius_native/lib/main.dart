@@ -196,10 +196,16 @@ class MyApp extends StatelessWidget {
             navigatorObservers: [FCMService.routeObserver],
             debugShowCheckedModeBanner: false,
             builder: (context, child) {
-              return Column(
+              return Stack(
+                fit: StackFit.expand,
                 children: [
-                  const OngoingCallBar(),
-                  Expanded(child: child ?? const SizedBox.shrink()),
+                  child ?? const SizedBox.shrink(),
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: OngoingCallBar(),
+                  ),
                 ],
               );
             },
