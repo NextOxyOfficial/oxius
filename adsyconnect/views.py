@@ -29,7 +29,15 @@ def _broadcast_to_user(user_id, event):
     channel_layer = get_channel_layer()
     if channel_layer is None:
         return
-    async_to_sync(channel_layer.group_send)(f'user_{user_id}', event)
+    try:
+        async_to_sync(channel_layer.group_send)(f'user_{user_id}', event)
+    except Exception as exc:
+        logger.warning(
+            'AdsyConnect broadcast failed for user %s and event %s: %s',
+            user_id,
+            event.get('type'),
+            exc,
+        )
 
 
 @api_view(['GET'])
