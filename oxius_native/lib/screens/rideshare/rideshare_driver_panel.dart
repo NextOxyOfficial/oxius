@@ -5,6 +5,7 @@ import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vibration/vibration.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/adsyconnect_service.dart';
@@ -1723,6 +1724,22 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       debugPrint('Rideshare driver chat open failed: $error');
       _showError('Unable to open chat');
     }
+  }
+
+  Future<void> _callPassenger(Ride ride) async {
+    final riderPhone = ride.riderPhone?.trim() ?? '';
+    if (riderPhone.isEmpty) {
+      _showError(t('rideshare_passenger_call_unavailable', fallback: 'Passenger call is unavailable'));
+      return;
+    }
+
+    final uri = Uri(scheme: 'tel', path: riderPhone);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+      return;
+    }
+
+    _showError(t('rideshare_passenger_call_unavailable', fallback: 'Passenger call is unavailable'));
   }
 
   // ── BUILD ──────────────────────────────────────────────────────────────────
@@ -3526,6 +3543,27 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       ),
                     ),
                   ),
+                if ((ride.riderPhone?.trim().isNotEmpty ?? false)) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _callPassenger(ride),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: _emerald.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(color: _emerald.withValues(alpha: 0.25)),
+                      ),
+                      child: const Icon(
+                        Icons.phone_rounded,
+                        size: 18,
+                        color: _emerald,
+                      ),
+                    ),
+                  ),
+                ],
               ]),
               const SizedBox(height: 12),
               _buildRouteWidget(ride),
