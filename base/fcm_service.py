@@ -96,6 +96,50 @@ def send_fcm_notification(fcm_token, title, body, data=None):
         return False
 
 
+def send_fcm_data_message(fcm_token, data):
+    """
+    Send a data-only FCM message (no notification field).
+
+    Use this for payloads that the app handles itself (e.g. incoming calls,
+    ride requests).  Data-only messages always trigger the background
+    handler on Android regardless of app state.
+    """
+    if not FIREBASE_INITIALIZED:
+        _safe_print('Cannot send data message: Firebase Admin SDK not initialized')
+        return False
+
+    try:
+        if not fcm_token or not isinstance(fcm_token, str):
+            _safe_print(f'[ERROR] Invalid FCM token: {fcm_token}')
+            return False
+
+        # Ensure every value is a string (FCM data payload requirement)
+        str_data = {k: str(v) if v is not None else '' for k, v in (data or {}).items()}
+
+        message = messaging.Message(
+            data=str_data,
+            token=fcm_token,
+            android=messaging.AndroidConfig(
+                priority='high',
+            ),
+        )
+
+        response = messaging.send(message)
+        _safe_print(f'Data message sent successfully: {response}')
+        return True
+    except messaging.UnregisteredError:
+        _safe_print(f'[ERROR] Token is invalid or unregistered: {fcm_token[:50]}...')
+        return False
+    except messaging.SenderIdMismatchError:
+        _safe_print(f'[ERROR] Token does not match Firebase project: {fcm_token[:50]}...')
+        return False
+    except Exception as e:
+        _safe_print(f'[ERROR] Error sending data message: {e}')
+        import traceback
+        traceback.print_exc()
+        return False
+
+
 def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
     """
     Send FCM notification to multiple devices

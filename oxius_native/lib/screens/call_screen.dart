@@ -55,6 +55,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   StreamSubscription<int>? _remoteLeaveSub;
   StreamSubscription<String>? _engineErrorSub;
   Timer? _durationTimer;
+  Timer? _ringingTimer;
   DateTime? _callStartedAt;
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
@@ -113,6 +114,20 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       _callAccepted = true;
     } else if (widget.isIncoming) {
       unawaited(_startIncomingAlert());
+    }
+
+    // Start ringing timeout for outgoing calls — if the other party doesn't
+    // pick up within 60 seconds, end the call automatically.
+    if (!widget.isIncoming) {
+      _ringingTimer = Timer(const Duration(seconds: 60), () {
+        if (!mounted || _didEndCall || _remoteUid != null) return;
+        _showOverlayAndClose('No answer');
+        unawaited(_endCall(
+          notifyPeer: true,
+          allowLog: true,
+          outcomeOverride: 'missed',
+        ));
+      });
     }
 
     unawaited(_initializeCall());
@@ -203,6 +218,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
     _remoteJoinSub = AgoraCallService.remoteUserJoinedStream.listen((remoteUid) {
       if (!mounted) return;
+      _ringingTimer?.cancel();
+      _ringingTimer = null;
       setState(() {
         _remoteUid = remoteUid;
         _callAccepted = true;
@@ -213,7 +230,10 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
     _remoteLeaveSub = AgoraCallService.remoteUserLeftStream.listen((remoteUid) {
       if (!mounted || _didEndCall) return;
-      if (_remoteUid != null && remoteUid != _remoteUid) {
+      // Only end the call when our KNOWN remote peer leaves.
+      // If _remoteUid is null (peer never joined yet), ignore — this prevents
+      // the call from ending prematurely due to stale Agora events.
+      if (_remoteUid == null || remoteUid != _remoteUid) {
         return;
       }
       setState(() {
@@ -231,6 +251,19 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       // Log the error for debugging but never expose raw Agora SDK messages
       // to the user — they are technical and unprofessional.
       debugPrint('🎤 Agora engine error (suppressed from UI): $message');
+
+      // If the Agora connection completely failed/disconnected and the call
+      // was never connected (still ringing), end the call gracefully.
+      if (!_didEndCall &&
+          _remoteUid == null &&
+          message.contains('Connection lost')) {
+        _showOverlayAndClose('Connection lost');
+        unawaited(_endCall(
+          notifyPeer: true,
+          allowLog: !widget.isIncoming,
+          outcomeOverride: 'failed',
+        ));
+      }
     });
   }
 
@@ -429,11 +462,26 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       _isConnecting = true;
     });
 
-    // 4. Now initialise the engine and join the channel.
+    // 4. Start a safety timer — if the remote peer doesn't join within 30s
+    //    after we accepted, the caller probably already left.
+    _ringingTimer?.cancel();
+    _ringingTimer = Timer(const Duration(seconds: 30), () {
+      if (!mounted || _didEndCall || _remoteUid != null) return;
+      _showOverlayAndClose('Could not connect');
+      unawaited(_endCall(
+        notifyPeer: true,
+        allowLog: widget.isIncoming,
+        outcomeOverride: 'failed',
+      ));
+    });
+
+    // 5. Now initialise the engine and join the channel.
     try {
       _engine = await AgoraCallService.initEngine(callType: widget.callType);
       await _joinChannel();
     } catch (e) {
+      _ringingTimer?.cancel();
+      _ringingTimer = null;
       if (mounted) {
         final msg = e.toString().toLowerCase().contains('permission')
             ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission.'
@@ -497,6 +545,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     // 5. Pop the screen immediately.
     _durationTimer?.cancel();
     _durationTimer = null;
+    _ringingTimer?.cancel();
+    _ringingTimer = null;
     if (mounted) {
       _popCallScreen();
     }
@@ -513,6 +563,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
     _durationTimer?.cancel();
     _durationTimer = null;
+    _ringingTimer?.cancel();
+    _ringingTimer = null;
 
     unawaited(_stopIncomingAlert());
 
@@ -717,6 +769,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     _remoteLeaveSub?.cancel();
     _engineErrorSub?.cancel();
     _durationTimer?.cancel();
+    _ringingTimer?.cancel();
     AgoraCallService.setCallScreenVisible(false);
     if (!_isMinimizing) {
       unawaited(_stopIncomingAlert());

@@ -217,12 +217,28 @@ class AgoraCallService {
             } catch (_) {}
           },
           onUserOffline: (_, remoteUid, __) {
-            if (_activeCallInfo != null && _activeCallInfo!['remoteUid'] == remoteUid) {
-              _activeCallInfo!['remoteUid'] = null;
+            // Only treat as "remote left" if this uid was actually our known peer.
+            // Agora can fire onUserOffline for transient internal uids — ignoring
+            // unknown uids prevents the call from ending before the peer even joined.
+            final knownRemote = _activeCallInfo?['remoteUid'];
+            if (knownRemote == null || knownRemote != remoteUid) {
+              _log('ℹ️ Ignoring onUserOffline for unknown uid $remoteUid (known: $knownRemote)');
+              return;
             }
+            _activeCallInfo!['remoteUid'] = null;
             try {
               _remoteUserLeftController.add(remoteUid);
             } catch (_) {}
+          },
+          onConnectionStateChanged: (_, state, reason) {
+            _log('🔗 Connection state: $state, reason: $reason');
+            if (state == ConnectionStateType.connectionStateFailed ||
+                state == ConnectionStateType.connectionStateDisconnected) {
+              _lastError = 'Connection lost. Please try again.';
+              try {
+                _engineErrorController.add(_lastError!);
+              } catch (_) {}
+            }
           },
           onError: (error, message) {
             _lastError = _friendlyAgoraError(error, message);

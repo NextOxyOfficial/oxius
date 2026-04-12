@@ -2047,9 +2047,6 @@ class RideNotificationService:
             .distinct()
         )
 
-        title = "🚗 New Ride Request"
-        body = f"New {ride.requested_vehicle_type} ride: {ride.pickup_address[:30]}... → {ride.drop_address[:30]}... | ৳{ride.fare_estimate}"
-
         data = {
             "type": "new_ride_request",
             "ride_id": str(ride.id),
@@ -2059,10 +2056,11 @@ class RideNotificationService:
             "vehicle_type": ride.requested_vehicle_type,
         }
 
+        from base.fcm_service import send_fcm_data_message
         for driver in drivers:
             tokens = cls._get_user_fcm_tokens(driver.user)
             for token in tokens:
-                send_fcm_notification(token, title, body, data)
+                send_fcm_data_message(token, data)
 
 
 class RideAutoCancel:
@@ -2395,9 +2393,6 @@ class NearestDriverDispatch:
     @classmethod
     def _notify_targeted_driver(cls, ride, driver, expires_at):
         """Send notification to targeted driver"""
-        title = "🚗 New Ride Request For You!"
-        body = f"{ride.pickup_address[:40]}... → {ride.drop_address[:40]}... | ৳{ride.fare_estimate}"
-
         data = {
             "type": "targeted_ride_request",
             "ride_id": str(ride.id),
@@ -2410,9 +2405,10 @@ class NearestDriverDispatch:
             "expires_at": expires_at.isoformat(),
         }
 
+        from base.fcm_service import send_fcm_data_message
         tokens = RideNotificationService._get_user_fcm_tokens(driver.user)
         for token in tokens:
-            send_fcm_notification(token, title, body, data)
+            send_fcm_data_message(token, data)
 
         # Also send websocket event to specific driver
         DispatchService._group_send(
