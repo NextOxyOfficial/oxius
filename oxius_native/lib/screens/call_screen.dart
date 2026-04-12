@@ -130,6 +130,21 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       });
     }
 
+    // Incoming ringing timeout — stop ringing 5 seconds before the caller's
+    // 60-second timeout so the recipient never rings longer than the caller
+    // waits.  This also prevents stale/ghost call screens from lingering.
+    if (widget.isIncoming && !widget.autoAccept) {
+      _ringingTimer = Timer(const Duration(seconds: 55), () {
+        if (!mounted || _didEndCall || _callAccepted) return;
+        _showOverlayAndClose('Missed call');
+        unawaited(_endCall(
+          notifyPeer: true,
+          allowLog: false,
+          outcomeOverride: 'missed',
+        ));
+      });
+    }
+
     unawaited(_initializeCall());
   }
 

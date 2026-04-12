@@ -246,6 +246,22 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     return;
   }
 
+  // Handle terminal call_status in background — dismiss any pending CallKit
+  // so the recipient doesn't see a ghost incoming call after the caller
+  // already cancelled/ended.
+  if (type == 'call_status') {
+    final bgStatus = message.data['status']?.toString()?.toLowerCase();
+    const terminalStatuses = {
+      'rejected', 'declined', 'busy', 'cancelled', 'ended', 'missed', 'failed',
+    };
+    if (bgStatus != null && terminalStatuses.contains(bgStatus)) {
+      try {
+        await FlutterCallkitIncoming.endAllCalls();
+      } catch (_) {}
+    }
+    return;
+  }
+
   // Handle ride request in background - wake the driver
   if (_isRideshareRideRequestNotificationFromPayload(
     type: type,
@@ -297,6 +313,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
       'call_id': data['call_id']?.toString() ?? '',
       'caller_id': callerId,
       'channel_name': channelName,
+      'timestamp': data['timestamp']?.toString() ?? '',
       'call_type': callType,
       'caller_name': callerName,
       'caller_avatar': callerAvatar ?? '',
@@ -524,8 +541,12 @@ class FCMService {
     }
 
     final now = DateTime.now().millisecondsSinceEpoch;
+    // Use a longer dedup window for incoming_call because FCM can arrive
+    // 8-10 seconds (or more) after the WebSocket delivery.  A short window
+    // lets the duplicate through and the "busy" guard kills the real call.
+    final dedupWindowMs = type == 'incoming_call' ? 60000 : 4000;
     _recentCallSignalTimestamps.removeWhere(
-      (_, timestamp) => now - timestamp > 4000,
+      (_, timestamp) => now - timestamp > 60000,
     );
 
     final signalKey = [
@@ -536,7 +557,7 @@ class FCMService {
     ].join('|');
 
     final previousTimestamp = _recentCallSignalTimestamps[signalKey];
-    if (previousTimestamp != null && now - previousTimestamp <= 4000) {
+    if (previousTimestamp != null && now - previousTimestamp <= dedupWindowMs) {
       _log('📞 Skipping duplicate call signal: $signalKey');
       return false;
     }
@@ -671,6 +692,14 @@ class FCMService {
     bool notifyCallerOnBusy = true,
   }) {
     if (AgoraCallService.isInCall || AgoraCallService.isCallScreenVisible) {
+      // If this is a duplicate notification for the SAME call we are already
+      // handling, silently ignore it — do NOT send "busy" back to the caller
+      // because that would kill the real call.
+      final activeChannel = AgoraCallService.activeCallInfo?['channelName']?.toString();
+      if (activeChannel == channelName) {
+        _log('📞 Ignoring duplicate $source call for active channel: $channelName');
+        return false;
+      }
       _log('🚫 Ignoring $source incoming call - already in call or CallScreen visible');
       if (notifyCallerOnBusy) {
         AgoraCallService.sendCallStatus(
@@ -1623,6 +1652,19 @@ class FCMService {
         message.data['status']?.toString();
     if (type == 'incoming_call' || type == 'call_status') {
       final payload = Map<String, dynamic>.from(message.data);
+
+      // When a terminal call_status arrives via FCM, dismiss any lingering
+      // CallKit notification so ghost incoming-call screens don't appear.
+      if (type == 'call_status') {
+        final fgStatus = payload['status']?.toString()?.toLowerCase();
+        const terminalStatuses = {
+          'rejected', 'declined', 'busy', 'cancelled', 'ended', 'missed', 'failed',
+        };
+        if (fgStatus != null && terminalStatuses.contains(fgStatus)) {
+          FlutterCallkitIncoming.endAllCalls();
+        }
+      }
+
       if (_shouldProcessCallSignal(payload)) {
         _navigateBasedOnData(payload);
       }
@@ -2004,6 +2046,13 @@ class FCMService {
       
       if (channelName != null && callerId != null) {
         if (AgoraCallService.isInCall) {
+          // If this is a duplicate for the SAME call, silently ignore —
+          // sending "busy" here would kill the real call.
+          final activeChannel = AgoraCallService.activeCallInfo?['channelName']?.toString();
+          if (activeChannel == channelName) {
+            _log('📞 Ignoring duplicate incoming_call for active channel: $channelName');
+            return;
+          }
           _log('   → Already in call. Auto-reply busy to caller: $callerId');
           AgoraCallService.sendCallStatus(
             receiverId: callerId,
