@@ -511,6 +511,7 @@ class FCMService {
     final rideId = data['ride_id']?.toString();
 
     _emitRideshareNotificationEvent({
+      'source': 'fcm',
       'mode': mode,
       if (rideId != null && rideId.isNotEmpty) 'ride_id': rideId,
       if (type != null && type.isNotEmpty) 'type': type,
@@ -1254,6 +1255,18 @@ class FCMService {
     if (callkitUuid.isNotEmpty) {
       _acceptedCallkitUuids.add(callkitUuid);
     }
+    // Mark the call active before route navigation so in-flight rideshare
+    // notifications cannot steal focus during the accept/navigation window.
+    AgoraCallService.setInCall(true);
+    AgoraCallService.setActiveCallInfo(
+      channelName: channelName,
+      peerId: callerId,
+      peerName: callerName,
+      peerAvatar: callerAvatar,
+      callType: callType,
+      isIncoming: true,
+      callId: callId,
+    );
     AgoraCallService.markCallAccepted();
     
     // Use setCallConnected to mark call as connected (stops ringtone, updates call history on iOS)
@@ -1685,6 +1698,11 @@ class FCMService {
       notificationType: notificationType,
     )) {
       if (currentRouteName == '/rideshare') {
+        // The rideshare screen may already be open on the passenger tab, so the
+        // driver panel can miss the one-shot FCM event while it mounts. In that
+        // case we still need an audible foreground alert instead of silently
+        // returning.
+        unawaited(_showRideRequestNotification(message.data));
         return;
       }
 

@@ -725,12 +725,20 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       return;
     }
 
-    final type = payload['type']?.toString() ??
-        payload['notification_type']?.toString() ??
-        '';
+    final rawType = payload['type']?.toString() ?? '';
+    final notificationType = payload['notification_type']?.toString() ?? '';
+    final source = payload['source']?.toString();
+    final isRideRequestNotification =
+      notificationType == 'targeted_ride_request' ||
+      notificationType == 'new_ride_request';
+    final effectiveType = isRideRequestNotification
+      ? notificationType
+      : (rawType.isNotEmpty ? rawType : notificationType);
     final rideId = payload['ride_id']?.toString() ?? '';
     if (_activeRide == null &&
-        (type == 'targeted_ride_request' || type == 'new_ride_request')) {
+        (effectiveType == 'targeted_ride_request' ||
+            effectiveType == 'new_ride_request') &&
+        source != 'fcm') {
       unawaited(_playIncomingRideAlert(rideId: rideId));
     }
 
@@ -3061,7 +3069,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               t('rideshare_requests_auto_appear', fallback: 'New ride requests will automatically appear here.'))
         else
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(4),
             child: Column(children: _availableRequests.map(_buildRequestCard).toList()),
           ),
       ]),

@@ -198,6 +198,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           notifyPeer: false,
           allowLog: !widget.isIncoming,
           outcomeOverride: 'rejected',
+          closeImmediately: true,
         ));
       } else if (status == 'busy') {
         _showOverlayAndClose('User busy');
@@ -205,6 +206,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           notifyPeer: false,
           allowLog: !widget.isIncoming,
           outcomeOverride: 'busy',
+          closeImmediately: true,
         ));
       } else if (status == 'cancelled' || status == 'missed') {
         _showOverlayAndClose('Call cancelled');
@@ -212,6 +214,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           notifyPeer: false,
           allowLog: !widget.isIncoming,
           outcomeOverride: 'cancelled',
+          closeImmediately: true,
         ));
       } else if (status == 'ended' || status == 'failed') {
         _showOverlayAndClose('Call ended');
@@ -219,6 +222,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           notifyPeer: false,
           allowLog: !widget.isIncoming,
           outcomeOverride: 'ended',
+          closeImmediately: true,
         ));
       }
     });
@@ -571,6 +575,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     required bool notifyPeer,
     required bool allowLog,
     String? outcomeOverride,
+    bool closeImmediately = false,
   }) async {
     if (_isClosing || _didEndCall) return;
     _isClosing = true;
@@ -613,7 +618,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     AgoraCallService.setInCall(false);
 
     // Show brief overlay, then close the screen.
-    if (mounted && _statusOverlay != null) {
+    if (!closeImmediately && mounted && _statusOverlay != null) {
       // Let the overlay paint for a short moment so the user sees "Call ended".
       await Future.delayed(const Duration(milliseconds: 600));
     }
@@ -623,23 +628,16 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     }
   }
 
-  /// Shared helper to pop or replace the call screen.
-  void _popCallScreen() {
+  void _showAdsyConnectInbox() {
     final navigator = Navigator.of(context, rootNavigator: true);
-    if (navigator.canPop()) {
-      navigator.pop();
-      return;
-    }
-    // Fallback via the app-level navigator.
-    final fallbackNavigator = FCMService.navigatorKey.currentState;
-    if (fallbackNavigator != null && fallbackNavigator.canPop()) {
-      fallbackNavigator.pop();
-      return;
-    }
-    // Last resort — replace with inbox so we don't leave user on a dead screen.
-    Navigator.of(context).pushReplacement(
+    navigator.pushReplacement(
       MaterialPageRoute(builder: (_) => const InboxScreen(initialTab: 0)),
     );
+  }
+
+  /// Shared helper to pop or replace the call screen.
+  void _popCallScreen() {
+    _showAdsyConnectInbox();
   }
 
   void _startCallTimer({DateTime? connectedAt, bool syncGlobalState = true}) {
@@ -819,16 +817,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     _isMinimizing = true;
     AgoraCallService.setCallScreenVisible(false);
 
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) {
-      navigator.pop();
-    } else {
-      // Cold-start / no back-stack: replace this screen so the stack stays clean.
-      // dispose() will be called with _isMinimizing=true so the call is NOT ended.
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (_) => const InboxScreen(initialTab: 0)),
-      );
-    }
+    // Always minimize back to AdsyConnect instead of revealing unrelated
+    // routes that may be sitting under the call screen.
+    _showAdsyConnectInbox();
   }
 
   @override
@@ -1604,7 +1595,13 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _endCall(notifyPeer: true, allowLog: true),
+          onTap: () => unawaited(
+            _endCall(
+              notifyPeer: true,
+              allowLog: true,
+              closeImmediately: true,
+            ),
+          ),
           borderRadius: BorderRadius.circular(22),
           child: Ink(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
