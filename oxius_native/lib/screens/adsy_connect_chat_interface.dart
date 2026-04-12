@@ -2444,6 +2444,18 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       );
       return;
     }
+
+    // Prevent initiating a second call while one is already active/minimised.
+    // The user can return to the ongoing call via the banner at the top.
+    if (AgoraCallService.isInCall) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You are already in a call. End it before starting a new one.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     
     final channelName = AgoraCallService.generateChannelName(
       currentUser.id,

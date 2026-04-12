@@ -7,6 +7,7 @@ import 'package:vibration/vibration.dart';
 import '../services/agora_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
+import 'inbox_screen.dart';
 
 class CallScreen extends StatefulWidget {
   final String channelName;
@@ -227,13 +228,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     });
 
     _engineErrorSub = AgoraCallService.engineErrorStream.listen((message) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
-      );
+      // Log the error for debugging but never expose raw Agora SDK messages
+      // to the user — they are technical and unprofessional.
+      debugPrint('🎤 Agora engine error (suppressed from UI): $message');
     });
   }
 
@@ -321,14 +318,19 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
   Future<void> _initializeCall() async {
     try {
-      _engine = await AgoraCallService.initEngine(callType: widget.callType);
-
+      // For incoming calls that are still ringing (user hasn't accepted yet) we
+      // intentionally skip calling initEngine here.  Agora's enableAudio() claims
+      // the Android audio session and preempts the STREAM_RING audio stream,
+      // which causes the ringtone to be replaced by a system beep.  We only
+      // initialise (and join) the engine once the user taps Accept.
       if (widget.isIncoming && !widget.autoAccept) {
         setState(() {
           _isConnecting = false;
         });
         return;
       }
+
+      _engine = await AgoraCallService.initEngine(callType: widget.callType);
 
       if (widget.isIncoming && widget.autoAccept) {
         await _acceptCall();
@@ -387,6 +389,10 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       callType: widget.callType,
     );
 
+    // Keep a local reference so _restoreActiveCallState works if the user
+    // minimizes and returns while on an incoming call that was accepted here.
+    _engine ??= AgoraCallService.engine;
+
     if (!success && mounted) {
       setState(() => _isConnecting = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -410,11 +416,36 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       return;
     }
 
+    // 1. Notify caller immediately (fire-and-forget, no await).
     _notifyCallAccepted();
-    await _stopIncomingAlert();
+
+    // 2. Stop ringtone/vibration (fire-and-forget for instant UX).
+    unawaited(_stopIncomingAlert());
+
+    // 3. Update UI immediately — show "Connecting…" state.
     if (!mounted) return;
-    setState(() => _callAccepted = true);
-    await _joinChannel();
+    setState(() {
+      _callAccepted = true;
+      _isConnecting = true;
+    });
+
+    // 4. Now initialise the engine and join the channel.
+    try {
+      _engine = await AgoraCallService.initEngine(callType: widget.callType);
+      await _joinChannel();
+    } catch (e) {
+      if (mounted) {
+        final msg = e.toString().toLowerCase().contains('permission')
+            ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission.'
+            : 'Unable to join the call. Please try again.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
+        );
+        unawaited(AgoraCallService.leaveChannel());
+        AgoraCallService.setInCall(false);
+        if (mounted) Navigator.of(context).pop();
+      }
+    }
   }
 
   void _notifyCallAccepted() {
@@ -434,15 +465,41 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   Future<void> _rejectCall() async {
-    await _stopIncomingAlert();
-    await AgoraCallService.sendCallStatus(
-      receiverId: widget.calleeId, // This is the caller for incoming calls
+    // Guard re-entry — only reject once.
+    if (_isClosing || _didEndCall) return;
+    _isClosing = true;
+    _didEndCall = true;
+
+    // 1. Stop ringtone/vibration immediately (fire-and-forget).
+    unawaited(_stopIncomingAlert());
+
+    // 2. Notify the caller in the background — don't block the UI.
+    unawaited(AgoraCallService.sendCallStatus(
+      receiverId: widget.calleeId,
       channelName: widget.channelName,
       status: 'rejected',
       callType: widget.callType,
       callId: widget.callId,
-    );
-    await _endCall(notifyPeer: false, allowLog: false, outcomeOverride: 'rejected');
+    ));
+
+    // 3. Release incoming call tracking.
+    if (widget.isIncoming) {
+      FCMService.releaseIncomingCallTracking(
+        callerId: widget.calleeId,
+        channelName: widget.channelName,
+      );
+    }
+
+    // 4. Clean up Agora state (engine is null for incoming — fast no-op).
+    unawaited(AgoraCallService.leaveChannel());
+    AgoraCallService.setInCall(false);
+
+    // 5. Pop the screen immediately.
+    _durationTimer?.cancel();
+    _durationTimer = null;
+    if (mounted) {
+      _popCallScreen();
+    }
   }
 
   Future<void> _endCall({
@@ -457,22 +514,24 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     _durationTimer?.cancel();
     _durationTimer = null;
 
-    await _stopIncomingAlert();
+    unawaited(_stopIncomingAlert());
 
     final localOutcome = outcomeOverride ?? ((_callStartedAt != null) ? 'ended' : 'cancelled');
 
+    // Notify peer in background (fire-and-forget).
     if (notifyPeer) {
-      await AgoraCallService.sendCallStatus(
+      unawaited(AgoraCallService.sendCallStatus(
         receiverId: widget.calleeId,
         channelName: widget.channelName,
         status: localOutcome,
         callType: widget.callType,
         callId: widget.callId,
-      );
+      ));
     }
 
+    // Log call in background (fire-and-forget).
     if (allowLog) {
-      await _sendCallLog(localOutcome);
+      unawaited(_sendCallLog(localOutcome));
     }
 
     if (widget.isIncoming) {
@@ -482,22 +541,38 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       );
     }
 
-    await AgoraCallService.leaveChannel();
+    // Clean up Agora state.
+    unawaited(AgoraCallService.leaveChannel());
     AgoraCallService.setInCall(false);
+
+    // Show brief overlay, then close the screen.
     if (mounted && _statusOverlay != null) {
-      await Future.delayed(const Duration(milliseconds: 120));
+      // Let the overlay paint for a short moment so the user sees "Call ended".
+      await Future.delayed(const Duration(milliseconds: 600));
     }
+
     if (mounted) {
-      final navigator = Navigator.of(context, rootNavigator: true);
-      if (navigator.canPop()) {
-        navigator.pop();
-      } else {
-        final fallbackNavigator = FCMService.navigatorKey.currentState;
-        if (fallbackNavigator != null && fallbackNavigator.canPop()) {
-          fallbackNavigator.pop();
-        }
-      }
+      _popCallScreen();
     }
+  }
+
+  /// Shared helper to pop or replace the call screen.
+  void _popCallScreen() {
+    final navigator = Navigator.of(context, rootNavigator: true);
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
+    // Fallback via the app-level navigator.
+    final fallbackNavigator = FCMService.navigatorKey.currentState;
+    if (fallbackNavigator != null && fallbackNavigator.canPop()) {
+      fallbackNavigator.pop();
+      return;
+    }
+    // Last resort — replace with inbox so we don't leave user on a dead screen.
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const InboxScreen(initialTab: 0)),
+    );
   }
 
   void _startCallTimer({DateTime? connectedAt, bool syncGlobalState = true}) {
@@ -671,9 +746,21 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   void _minimizeCall() {
+    // Guard against being called twice (e.g. back button + minimize button race)
+    if (_isMinimizing) return;
     _isMinimizing = true;
     AgoraCallService.setCallScreenVisible(false);
-    Navigator.of(context).pop();
+
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      // Cold-start / no back-stack: replace this screen so the stack stays clean.
+      // dispose() will be called with _isMinimizing=true so the call is NOT ended.
+      navigator.pushReplacement(
+        MaterialPageRoute(builder: (_) => const InboxScreen(initialTab: 0)),
+      );
+    }
   }
 
   @override

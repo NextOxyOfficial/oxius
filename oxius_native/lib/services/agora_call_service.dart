@@ -32,7 +32,10 @@ class AgoraCallService {
   static RtcEngine? get engine => _engine;
 
   static void setCallScreenVisible(bool value) {
+    final changed = _isCallScreenVisible != value;
     _isCallScreenVisible = value;
+    // Notify OngoingCallBar so it shows/hides when the CallScreen appears/disappears.
+    if (changed) _emitCallState();
   }
 
   static Map<String, dynamic>? _activeCallInfo;
@@ -285,19 +288,32 @@ class AgoraCallService {
         _log('✅ Successfully joined channel: $channelName');
       return true;
     } catch (error) {
-      final errorMsg = error.toString();
-      _lastError = errorMsg;
-      _log('❌ Join channel failed for $channelName: $errorMsg');
+      _log('❌ Join channel failed for $channelName: $error');
+      // Always store a user-friendly message — never expose raw SDK exceptions.
+      final raw = error.toString().toLowerCase();
+      if (raw.contains('permission')) {
+        _lastError = 'Microphone permission is required to make calls.';
+      } else if (raw.contains('invalid') && raw.contains('channel')) {
+        _lastError = 'Invalid call session. Please try again.';
+      } else if (raw.contains('token')) {
+        _lastError = 'Call session expired. Please try again.';
+      } else {
+        _lastError = 'Could not join the call. Please try again.';
+      }
       return false;
     }
   }
 
   static Future<void> leaveChannel() async {
+    // Leave the channel first, then release the engine so the next call always
+    // starts with a fresh Agora instance and correct audio routing.
     try {
       await _engine?.leaveChannel();
+      await _engine?.release();
     } catch (_) {
-      // Ignore leave failures.
+      // Ignore leave/release failures.
     } finally {
+      _engine = null;
       _joinedChannelName = null;
       if (_activeCallInfo != null) {
         _activeCallInfo!['remoteUid'] = null;
@@ -506,9 +522,7 @@ class AgoraCallService {
       case ErrorCodeType.errInvalidChannelName:
         return 'Invalid call session. Please try again.';
       default:
-        return message.isNotEmpty
-            ? message
-            : 'Unable to continue the call right now.';
+        return 'Unable to continue the call right now.';
     }
   }
 
