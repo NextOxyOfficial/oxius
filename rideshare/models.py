@@ -240,6 +240,41 @@ class RideshareSettings(models.Model):
         return "Rideshare Settings"
 
 
+class SearchableLocation(models.Model):
+    name = models.CharField(max_length=255)
+    subtitle = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Optional area or locality text shown below the location name.",
+    )
+    search_keywords = models.TextField(
+        blank=True,
+        default="",
+        help_text="Comma or line-separated keywords and aliases for search matching.",
+    )
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    priority = models.PositiveIntegerField(
+        default=0,
+        help_text="Higher priority locations appear earlier when multiple matches are found.",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name", "subtitle"]
+        indexes = [
+            models.Index(fields=["is_active", "name"]),
+        ]
+        verbose_name = "Searchable Location"
+        verbose_name_plural = "Searchable Locations"
+
+    def __str__(self):
+        return self.name
+
+
 class Ride(models.Model):
     STATUS_REQUESTED = "requested"
     STATUS_SEARCHING = "searching_driver"

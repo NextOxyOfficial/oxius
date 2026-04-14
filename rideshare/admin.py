@@ -9,6 +9,7 @@ from .models import (
     RideCancellationReport,
     RideshareSettings,
     RideStatusHistory,
+    SearchableLocation,
     Vehicle,
 )
 
@@ -92,6 +93,30 @@ class RideshareSettingsAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description="Google key configured")
     def google_maps_key_configured(self, obj):
         return bool(obj and obj.google_maps_api_key.strip())
+
+
+@admin.register(SearchableLocation)
+class SearchableLocationAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "subtitle",
+        "latitude",
+        "longitude",
+        "is_active",
+        "updated_at",
+    )
+    list_filter = ("is_active",)
+    search_fields = ("name", "subtitle", "search_keywords")
+    list_editable = ("is_active",)
+    fields = (
+        "name",
+        "subtitle",
+        "search_keywords",
+        "latitude",
+        "longitude",
+        "is_active",
+    )
+    ordering = ("name", "subtitle")
 
 
 class RideStatusHistoryInline(admin.TabularInline):

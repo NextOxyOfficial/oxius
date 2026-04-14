@@ -16,6 +16,7 @@ from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
+from django.db.models import Q
 from django.utils import timezone
 from channels.layers import get_channel_layer
 
@@ -30,6 +31,7 @@ from .models import (
     Ride,
     RideshareSettings,
     RideStatusHistory,
+    SearchableLocation,
 )
 
 
@@ -548,6 +550,35 @@ class LocationService:
         )
 
     @classmethod
+    def _manual_location_to_item(cls, location):
+        title = str(location.name or "").strip() or "Selected location"
+        subtitle = str(location.subtitle or "").strip()
+        return {
+            "name": ", ".join(cls._dedupe_parts([title, subtitle])) or title,
+            "title": title,
+            "subtitle": subtitle,
+            "latitude": float(location.latitude),
+            "longitude": float(location.longitude),
+            "address": {
+                "country": "Bangladesh",
+            },
+        }
+
+    @classmethod
+    def _normalize_manual_keywords(cls, raw_value):
+        parts = re.split(r"[,;\n\r|]+", str(raw_value or ""))
+        return cls._normalize_search_text(" ".join(cls._dedupe_parts(parts)))
+
+    @classmethod
+    def _split_manual_keywords(cls, raw_value):
+        parts = re.split(r"[,;\n\r|]+", str(raw_value or ""))
+        return [
+            cls._normalize_search_text(part)
+            for part in cls._dedupe_parts(parts)
+            if cls._normalize_search_text(part)
+        ]
+
+    @classmethod
     def _normalize_place_item(cls, item):
         if not item:
             return None
@@ -605,9 +636,14 @@ class LocationService:
         title = cls._normalize_search_text(item.get("title"))
         subtitle = cls._normalize_search_text(item.get("subtitle"))
         full_name = cls._normalize_search_text(item.get("name"))
-        haystack = " ".join(part for part in [title, subtitle, full_name] if part)
+        keywords = cls._normalize_search_text(item.get("_manual_keywords"))
+        manual_keyword_parts = item.get("_manual_keyword_parts") or []
+        haystack = " ".join(
+            part for part in [title, subtitle, full_name, keywords] if part
+        )
         tokens = [token for token in normalized_query.split(" ") if token]
         title_tokens = [token for token in title.split(" ") if token]
+        subtitle_tokens = [token for token in subtitle.split(" ") if token]
 
         score = max(0, 30 - (provider_index * 3))
         if title.startswith(normalized_query):
@@ -619,9 +655,13 @@ class LocationService:
             score += 45
         if normalized_query and normalized_query in full_name:
             score += 35
+        if normalized_query and normalized_query in keywords:
+            score += 70
 
         score += sum(18 for token in tokens if token in haystack)
         score += sum(18 for token in tokens if any(title_token.startswith(token) for title_token in title_tokens))
+        score += sum(14 for token in tokens if any(subtitle_token.startswith(token) for subtitle_token in subtitle_tokens))
+        score += sum(22 for token in tokens if token in keywords)
 
         address = item.get("address") or {}
         if address.get("road"):
@@ -650,7 +690,87 @@ class LocationService:
         except (TypeError, ValueError):
             pass
 
+        if item.get("_is_manual"):
+            score += 180
+            if normalized_query and any(alias == normalized_query for alias in manual_keyword_parts):
+                score += 260
+            elif normalized_query and any(alias.startswith(normalized_query) for alias in manual_keyword_parts):
+                score += 160
+
+            if normalized_query and subtitle:
+                combined_name = " ".join(part for part in [title, subtitle] if part)
+                if combined_name.startswith(normalized_query):
+                    score += 120
+                elif normalized_query in combined_name:
+                    score += 70
+
+            if tokens and manual_keyword_parts:
+                alias_token_hits = max(
+                    sum(1 for token in tokens if token in alias.split(" "))
+                    for alias in manual_keyword_parts
+                )
+                score += alias_token_hits * 32
+
         return score
+
+    @classmethod
+    def _search_manual_locations(cls, query, limit=5, focus_lat=None, focus_lng=None):
+        query_variants = cls._build_query_variants(query)
+        if not query_variants:
+            return []
+
+        filters = Q()
+        for variant in query_variants:
+            filters |= Q(name__icontains=variant)
+            filters |= Q(subtitle__icontains=variant)
+            filters |= Q(search_keywords__icontains=variant)
+
+        locations = (
+            SearchableLocation.objects.filter(is_active=True)
+            .filter(filters)
+            .order_by("name", "subtitle")[: max(limit * 8, 30)]
+        )
+
+        ranked_results = []
+        for location in locations:
+            normalized_item = cls._normalize_place_item(
+                cls._manual_location_to_item(location)
+            )
+            if not normalized_item:
+                continue
+
+            normalized_item["_is_manual"] = True
+            normalized_item["_manual_keywords"] = cls._normalize_manual_keywords(
+                location.search_keywords
+            )
+            normalized_item["_manual_keyword_parts"] = cls._split_manual_keywords(
+                location.search_keywords
+            )
+            normalized_item["_score"] = max(
+                cls._score_place_item(
+                    variant,
+                    normalized_item,
+                    provider_index=0,
+                    focus_lat=focus_lat,
+                    focus_lng=focus_lng,
+                )
+                for variant in query_variants
+            )
+            ranked_results.append(normalized_item)
+
+        ranked_results = cls._dedupe_search_results(ranked_results)
+        ranked_results.sort(key=lambda item: item.get("_score", 0), reverse=True)
+        return ranked_results
+
+    @classmethod
+    def _merge_ranked_results(cls, *result_groups):
+        merged = []
+        for group in result_groups:
+            merged.extend(group or [])
+
+        merged = cls._dedupe_search_results(merged)
+        merged.sort(key=lambda item: item.get("_score", 0), reverse=True)
+        return merged
 
     @classmethod
     def _dedupe_search_results(cls, items):
@@ -691,6 +811,48 @@ class LocationService:
                 "country": "Bangladesh",
             },
         }
+
+    @classmethod
+    def _find_nearest_manual_location(cls, lat, lng, max_distance_meters=250):
+        try:
+            latitude = float(lat)
+            longitude = float(lng)
+        except (TypeError, ValueError):
+            return None
+
+        if not cls._is_within_bangladesh(latitude, longitude):
+            return None
+
+        best_match = None
+        best_distance_km = None
+        for location in SearchableLocation.objects.filter(is_active=True).only(
+            "name",
+            "subtitle",
+            "latitude",
+            "longitude",
+            "priority",
+        ):
+            try:
+                distance_km = RoutingService._haversine_distance_km(
+                    latitude,
+                    longitude,
+                    float(location.latitude),
+                    float(location.longitude),
+                )
+            except (TypeError, ValueError):
+                continue
+
+            if best_distance_km is None or distance_km < best_distance_km:
+                best_match = location
+                best_distance_km = distance_km
+
+        if best_match is None or best_distance_km is None:
+            return None
+
+        if best_distance_km * 1000 > max_distance_meters:
+            return None
+
+        return cls._normalize_place_item(cls._manual_location_to_item(best_match))
 
     @staticmethod
     def _is_within_bangladesh(latitude, longitude):
@@ -1167,6 +1329,13 @@ class LocationService:
         if not query:
             return []
 
+        manual_ranked_results = cls._search_manual_locations(
+            query,
+            limit=limit,
+            focus_lat=focus_lat,
+            focus_lng=focus_lng,
+        )
+
         provider = (
             getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "photon").strip().lower()
         )
@@ -1184,7 +1353,11 @@ class LocationService:
         )
 
         if not cls._google_maps_enabled():
-            return cls._clean_ranked_search_results(free_ranked_results, limit)
+            merged_ranked_results = cls._merge_ranked_results(
+                manual_ranked_results,
+                free_ranked_results,
+            )
+            return cls._clean_ranked_search_results(merged_ranked_results, limit)
 
         google_ranked_results = cls._collect_ranked_search_results(
             query,
@@ -1195,10 +1368,16 @@ class LocationService:
         )
 
         if not google_ranked_results:
-            return cls._clean_ranked_search_results(free_ranked_results, limit)
+            merged_ranked_results = cls._merge_ranked_results(
+                manual_ranked_results,
+                free_ranked_results,
+            )
+            return cls._clean_ranked_search_results(merged_ranked_results, limit)
 
-        merged_ranked_results = cls._dedupe_search_results(
-            [*google_ranked_results, *free_ranked_results]
+        merged_ranked_results = cls._merge_ranked_results(
+            manual_ranked_results,
+            google_ranked_results,
+            free_ranked_results,
         )
         return cls._clean_ranked_search_results(merged_ranked_results, limit)
 
@@ -1273,6 +1452,10 @@ class LocationService:
 
     @classmethod
     def reverse_geocode(cls, lat, lng):
+        manual_result = cls._find_nearest_manual_location(lat, lng)
+        if manual_result:
+            return manual_result
+
         provider = (
             getattr(settings, "RIDESHARE_LOCATION_PROVIDER", "photon").strip().lower()
         )
