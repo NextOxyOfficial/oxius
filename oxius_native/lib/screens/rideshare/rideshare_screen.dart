@@ -94,9 +94,12 @@ class _RideshareScreenState extends State<RideshareScreen> {
       return;
     }
 
-    if (_mode != requestedMode) {
-      _setMode(requestedMode!);
-    }
+    // Only ensure the target panel is instantiated so it can process the
+    // event internally.  Do NOT auto-switch the active tab — that yanks the
+    // user away from whatever they are doing (e.g. driver completing a ride
+    // would jump to the passenger tab because the notification resolves as
+    // mode=passenger).
+    _ensureModePanel(requestedMode!);
   }
 
   @override
