@@ -16,6 +16,7 @@ import '../../utils/network_error_handler.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
+import 'custom_location_sheet.dart';
 
 class RidesharePassengerPanel extends StatefulWidget {
   const RidesharePassengerPanel({super.key});
@@ -27,7 +28,6 @@ class RidesharePassengerPanel extends StatefulWidget {
 class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   with WidgetsBindingObserver {
   static const String _recentPlacesKey = 'rideshare_recent_places_v2';
-  static const double _customLocationFee = 199.0;
 
   final TranslationService _ts = TranslationService();
   String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
@@ -46,7 +46,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   List<RidePoint> _pickupSuggestions = [];
   List<RidePoint> _dropSuggestions = [];
   List<RidePoint> _recentPlaces = [];
-  List<CustomRideLocation> _myCustomLocations = [];
   List<NearbyDriver> _nearbyDrivers = [];
   
   // Loading states
@@ -55,7 +54,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   bool _isCreatingRide = false;
   bool _isCancellingRide = false;
   bool _isLoadingActiveRide = true;
-  bool _isLoadingCustomLocations = false;
   bool _locationGranted = false;
   bool _isCheckingLocationPermission = true;
   bool _didAutoFillCurrentLocation = false;
@@ -92,7 +90,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     WidgetsBinding.instance.addObserver(this);
     _startStatusRefreshTimer();
     _loadRecentPlaces();
-    unawaited(_loadMyCustomLocations());
     _rideshareNotificationSubscription =
         FCMService.rideshareNotificationEvents.listen(
           _handleRideshareNotificationEvent,
@@ -874,341 +871,20 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _recentPlaces = updatedPlaces);
   }
 
-  Future<void> _loadMyCustomLocations({bool showErrors = false}) async {
-    if (!mounted) {
-      return;
-    }
-
-    setState(() => _isLoadingCustomLocations = true);
-    final result = await RideshareService.getMyCustomLocations();
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _isLoadingCustomLocations = false;
-      if (result.success) {
-        _myCustomLocations = result.data ?? <CustomRideLocation>[];
-      }
-    });
-
-    if (showErrors && !result.success) {
-      _showError(result.message);
-    }
-  }
-
-  RidePoint? _defaultCustomLocationSource() {
-    if (_activeInput == 'drop' && _dropPoint != null) {
-      return _dropPoint;
-    }
-    if (_dropPoint != null) {
-      return _dropPoint;
-    }
-    return _pickupPoint;
-  }
-
-  Future<void> _selectSavedCustomLocation(CustomRideLocation location) async {
-    final point = location.asRidePoint;
+  Future<void> _showCustomLocationSheet() async {
+    final result = await showCustomLocationSheet(context);
+    if (result == null || !mounted) return;
+    final point = result.point;
     if (_activeInput == 'drop' || (_pickupPoint != null && _dropPoint == null)) {
       await _selectDropSuggestion(point);
-      return;
+    } else {
+      await _selectPickupSuggestion(point);
     }
-    await _selectPickupSuggestion(point);
-  }
-
-  Future<void> _showCustomLocationSheet() async {
-    final nameController = TextEditingController();
-    final subtitleController = TextEditingController();
-    final keywordsController = TextEditingController();
-    final latitudeController = TextEditingController();
-    final longitudeController = TextEditingController();
-
-    bool isSubmitting = false;
-    bool isResolvingCurrent = false;
-    Future<void> usePoint(
-      StateSetter setSheetState,
-      RidePoint point,
-    ) async {
-      nameController.text = point.displayTitle;
-      subtitleController.text = point.displaySubtitle;
-      latitudeController.text = point.latitude.toStringAsFixed(6);
-      longitudeController.text = point.longitude.toStringAsFixed(6);
-      setSheetState(() {});
+    if (!mounted) return;
+    setState(() {});
+    if (result.successMessage != null) {
+      _showSuccess(result.successMessage!);
     }
-
-    Future<void> useCurrentLocation(StateSetter setSheetState) async {
-      setSheetState(() => isResolvingCurrent = true);
-      try {
-        final position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-          timeLimit: const Duration(seconds: 15),
-        );
-        final result = await RideshareService.reverseGeocode(
-          position.latitude,
-          position.longitude,
-        );
-        if (result.success && result.data != null) {
-          latitudeController.text = result.data!.latitude.toStringAsFixed(6);
-          longitudeController.text = result.data!.longitude.toStringAsFixed(6);
-          setSheetState(() {});
-        } else {
-          _showError(result.message.isEmpty ? 'Could not load current location.' : result.message);
-        }
-      } catch (e) {
-        _showError('Failed to load current location: $e');
-      } finally {
-        if (mounted) {
-          setSheetState(() => isResolvingCurrent = false);
-        }
-      }
-    }
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (sheetContext, setSheetState) {
-            final walletBalance = AuthService.currentUser?.balance ?? 0.0;
-            final hasEnoughBalance = walletBalance >= _customLocationFee;
-
-            return SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEA580C).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: const Icon(
-                                Icons.add_location_alt_rounded,
-                                color: Color(0xFFEA580C),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'লোকেশন অ্যাড করুন',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                      color: const Color(0xFF0F172A),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    'প্রতি লোকেশন সেভ করতে ৳199 AdsyPay ব্যালেন্স থেকে কাটা হবে।',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: const Color(0xFF64748B),
-                                      height: 1.35,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildCustomLocationTextField(
-                                controller: latitudeController,
-                                label: 'Latitude',
-                                hint: '23.905722',
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildCustomLocationTextField(
-                                controller: longitudeController,
-                                label: 'Longitude',
-                                hint: '89.136444',
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            _buildSheetQuickFillChip(
-                              label: isResolvingCurrent ? 'Loading GPS...' : 'Use current GPS',
-                              onTap: isResolvingCurrent ? null : () => useCurrentLocation(setSheetState),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        _buildCustomLocationTextField(
-                          controller: nameController,
-                          label: 'Location name',
-                          hint: 'যেমন: আমার বাড়ির নাম, গ্রামের মোড়',
-                        ),
-                        const SizedBox(height: 12),
-                        _buildCustomLocationTextField(
-                          controller: subtitleController,
-                          label: 'Area / details',
-                          hint: 'যেমন: মিরপুর, ঢাকা',
-                        ),
-                        const SizedBox(height: 12),
-                        _buildCustomLocationTextField(
-                          controller: keywordsController,
-                          label: 'Search keywords',
-                          hint: 'কমা দিয়ে alias লিখুন, যেমন: bari, village home',
-                        ),
-                        const SizedBox(height: 18),
-                        if (!hasEnoughBalance) ...[
-                          Text(
-                            'আপনার ব্যালেন্স কম আছে। আগে wallet-এ টাকা add করলে লোকেশন সেভ করতে পারবেন।',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFFB91C1C),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: isSubmitting ? null : () => Navigator.of(sheetContext).pop(),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  side: const BorderSide(color: Color(0xFFE2E8F0)),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Cancel',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF475569),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: FilledButton(
-                                onPressed: (!hasEnoughBalance || isSubmitting)
-                                    ? null
-                                    : () async {
-                                        final latitude = double.tryParse(latitudeController.text.trim());
-                                        final longitude = double.tryParse(longitudeController.text.trim());
-                                        final name = nameController.text.trim();
-
-                                        if (name.isEmpty) {
-                                          _showError('Location name is required.');
-                                          return;
-                                        }
-                                        if (latitude == null || longitude == null) {
-                                          _showError('Valid latitude and longitude are required.');
-                                          return;
-                                        }
-
-                                        setSheetState(() => isSubmitting = true);
-                                        final result = await RideshareService.createCustomLocation(
-                                          name: name,
-                                          subtitle: subtitleController.text.trim(),
-                                          searchKeywords: keywordsController.text.trim(),
-                                          latitude: latitude,
-                                          longitude: longitude,
-                                        );
-                                        if (!mounted) {
-                                          return;
-                                        }
-                                        setSheetState(() => isSubmitting = false);
-
-                                        if (!result.success || result.data == null) {
-                                          _showError(result.message);
-                                          return;
-                                        }
-
-                                        await AuthService.refreshUserData();
-                                        if (!mounted) {
-                                          return;
-                                        }
-                                        await _loadMyCustomLocations();
-                                        await _selectSavedCustomLocation(result.data!.location);
-                                        if (!mounted) {
-                                          return;
-                                        }
-                                        Navigator.of(sheetContext).pop();
-                                        setState(() {});
-                                        _showSuccess(
-                                          'Custom location added. ৳${result.data!.feeCharged.toStringAsFixed(0)} charged from your balance.',
-                                        );
-                                      },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFFEA580C),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: isSubmitting
-                                    ? const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        'Pay ৳199 & Save',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-
-    nameController.dispose();
-    subtitleController.dispose();
-    keywordsController.dispose();
-    latitudeController.dispose();
-    longitudeController.dispose();
   }
 
   List<RidePoint> _visibleSuggestionsForField(
@@ -3452,209 +3128,25 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     );
   }
 
-  Widget _buildSheetQuickFillChip({
-    required String label,
-    required VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: onTap == null
-              ? const Color(0xFFF1F5F9)
-              : const Color(0xFFEEF2FF),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(
-            color: onTap == null
-                ? const Color(0xFFE2E8F0)
-                : const Color(0xFFC7D2FE),
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: onTap == null
-                ? const Color(0xFF94A3B8)
-                : const Color(0xFF4338CA),
+
+  Widget _buildCustomLocationPrompt() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: InkWell(
+        onTap: _showCustomLocationSheet,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Text(
+            '+ আপনার নিজের বাড়ি বা ব্যবসার লোকেশন অ্যাড করুন',
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF9A3412),
+            ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildCustomLocationTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    TextInputType? keyboardType,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF334155),
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF0F172A),
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: GoogleFonts.inter(
-              fontSize: 13,
-              color: const Color(0xFF94A3B8),
-            ),
-            filled: true,
-            fillColor: const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFEA580C), width: 1.4),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCustomLocationPrompt() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: InkWell(
-            onTap: _showCustomLocationSheet,
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Text(
-                '+ আপনার নিজের বাড়ি বা ব্যবসার লোকেশন অ্যাড করুন',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF9A3412),
-                ),
-              ),
-            ),
-          ),
-        ),
-        if (_myCustomLocations.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFBEB),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFFDE68A)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.bookmark_added_rounded,
-                      size: 16,
-                      color: Color(0xFFEA580C),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'My Custom Location',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF9A3412),
-                      ),
-                    ),
-                    if (_isLoadingCustomLocations) ...[
-                      const SizedBox(width: 8),
-                      const SizedBox(
-                        width: 12,
-                        height: 12,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Color(0xFFEA580C),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _myCustomLocations.take(6).map((location) {
-                    return InkWell(
-                      onTap: () => _selectSavedCustomLocation(location),
-                      borderRadius: BorderRadius.circular(14),
-                      child: Container(
-                        constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFFFED7AA)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              location.name,
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF0F172A),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            if (location.subtitle.trim().isNotEmpty) ...[
-                              const SizedBox(height: 3),
-                              Text(
-                                location.subtitle,
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: const Color(0xFF64748B),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
     );
   }
 

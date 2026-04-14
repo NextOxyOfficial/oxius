@@ -12,6 +12,8 @@ from .views import (
     DriverHeartbeatView,
     EstimateRideView,
     LocationSearchView,
+    MyLocationDetailView,
+    MyLocationsListView,
     NearbyDriversView,
     RoutePreviewView,
     ReverseGeocodeView,
@@ -25,7 +27,7 @@ from .views import (
     RideListView,
     RideSkipView,
     RideStatusUpdateView,
-    UserCustomLocationListCreateView,
+    SearchableLocationCreateView,
     VehicleDetailView,
     VehicleListCreateView,
 )
@@ -41,8 +43,18 @@ urlpatterns = [
     ),
     path(
         "location/custom/",
-        UserCustomLocationListCreateView.as_view(),
+        SearchableLocationCreateView.as_view(),
         name="rides-location-custom",
+    ),
+    path(
+        "location/my/",
+        MyLocationsListView.as_view(),
+        name="rides-my-locations",
+    ),
+    path(
+        "location/my/<int:id>/",
+        MyLocationDetailView.as_view(),
+        name="rides-my-location-detail",
     ),
     path(
         "location/reverse/", ReverseGeocodeView.as_view(), name="rides-location-reverse"

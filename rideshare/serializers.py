@@ -10,7 +10,7 @@ from .models import (
     Ride,
     RideCancellationReport,
     RideStatusHistory,
-    UserCustomLocation,
+    SearchableLocation,
     Vehicle,
 )
 
@@ -202,13 +202,9 @@ class DriverLocationSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserCustomLocationSerializer(serializers.ModelSerializer):
-    badge = serializers.SerializerMethodField()
-    source = serializers.SerializerMethodField()
-    is_custom = serializers.SerializerMethodField()
-
+class SearchableLocationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserCustomLocation
+        model = SearchableLocation
         fields = [
             "id",
             "name",
@@ -216,32 +212,37 @@ class UserCustomLocationSerializer(serializers.ModelSerializer):
             "search_keywords",
             "latitude",
             "longitude",
-            "fee_paid",
             "is_active",
-            "badge",
-            "source",
-            "is_custom",
             "created_at",
             "updated_at",
         ]
         read_only_fields = fields
 
-    def get_badge(self, obj):
-        return "My Custom Location"
 
-    def get_source(self, obj):
-        return "user_custom"
-
-    def get_is_custom(self, obj):
-        return True
-
-
-class UserCustomLocationCreateSerializer(serializers.Serializer):
+class SearchableLocationCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     subtitle = serializers.CharField(max_length=255, allow_blank=True, required=False, default="")
     search_keywords = serializers.CharField(allow_blank=True, required=False, default="")
     latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
     longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+
+    def validate_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Location name is required.")
+        return value
+
+    def validate_subtitle(self, value):
+        return value.strip()
+
+    def validate_search_keywords(self, value):
+        return value.strip()
+
+
+class SearchableLocationUpdateSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255, required=False)
+    subtitle = serializers.CharField(max_length=255, allow_blank=True, required=False)
+    search_keywords = serializers.CharField(allow_blank=True, required=False)
 
     def validate_name(self, value):
         value = value.strip()

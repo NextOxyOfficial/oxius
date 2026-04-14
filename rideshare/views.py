@@ -21,8 +21,9 @@ from .serializers import (
     DriverLocationUpdateSerializer,
     DriverProfileSerializer,
     DriverToggleOnlineSerializer,
-    UserCustomLocationCreateSerializer,
-    UserCustomLocationSerializer,
+    SearchableLocationCreateSerializer,
+    SearchableLocationSerializer,
+    SearchableLocationUpdateSerializer,
     RoutePreviewRequestSerializer,
     RideCancellationReportSerializer,
     RideCancelSerializer,
@@ -1163,31 +1164,56 @@ class ReverseGeocodeView(RideshareApiMixin, APIView):
         return api_success(LocationService.reverse_geocode(lat, lng, user=request.user))
 
 
-class UserCustomLocationListCreateView(RideshareApiMixin, APIView):
+class SearchableLocationCreateView(RideshareApiMixin, APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        locations = CustomLocationService.list_user_locations(request.user)
-        serializer = UserCustomLocationSerializer(locations, many=True)
-        return api_success(serializer.data)
-
     def post(self, request):
-        serializer = UserCustomLocationCreateSerializer(data=request.data)
+        serializer = SearchableLocationCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = CustomLocationService.create_user_location(
             request.user,
             **serializer.validated_data,
         )
-        response_serializer = UserCustomLocationSerializer(result["location"])
+        response_serializer = SearchableLocationSerializer(result["location"])
         return api_success(
             {
                 "location": response_serializer.data,
                 "fee_charged": str(result["fee_charged"]),
                 "wallet_balance": str(result["wallet_balance"]),
             },
-            "Custom location added successfully.",
+            "Location added successfully.",
             status.HTTP_201_CREATED,
         )
+
+
+class MyLocationsListView(RideshareApiMixin, APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        locations = CustomLocationService.list_user_locations(request.user)
+        serializer = SearchableLocationSerializer(locations, many=True)
+        return api_success(serializer.data)
+
+
+class MyLocationDetailView(RideshareApiMixin, APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, id):
+        serializer = SearchableLocationUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        location = CustomLocationService.update_user_location(
+            request.user,
+            id,
+            **serializer.validated_data,
+        )
+        return api_success(
+            SearchableLocationSerializer(location).data,
+            "Location updated.",
+        )
+
+    def delete(self, request, id):
+        CustomLocationService.delete_user_location(request.user, id)
+        return api_success(None, "Location removed.")
 
 
 class NearbyDriversView(RideshareApiMixin, APIView):

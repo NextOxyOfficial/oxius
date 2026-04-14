@@ -522,27 +522,6 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<List<CustomRideLocation>>> getMyCustomLocations() async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$_baseUrl/location/custom/'),
-        headers: headers,
-      );
-      return _parseResponse<List<CustomRideLocation>>(
-        response,
-        (data) => (data as List)
-            .map((item) => CustomRideLocation.fromJson(item as Map<String, dynamic>))
-            .toList(),
-      );
-    } catch (e) {
-      return RideshareApiResult<List<CustomRideLocation>>(
-        success: false,
-        message: 'Network error: $e',
-      );
-    }
-  }
-
   static Future<RideshareApiResult<CustomRideLocationPurchase>> createCustomLocation({
     required String name,
     String subtitle = '',
@@ -569,6 +548,75 @@ class RideshareService {
       );
     } catch (e) {
       return RideshareApiResult<CustomRideLocationPurchase>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<List<CustomRideLocation>>> getMyLocations() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/location/my/'),
+        headers: headers,
+      );
+      return _parseResponse<List<CustomRideLocation>>(
+        response,
+        (data) => (data as List)
+            .map((d) => CustomRideLocation.fromJson(d as Map<String, dynamic>))
+            .toList(),
+      );
+    } catch (e) {
+      return RideshareApiResult<List<CustomRideLocation>>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<CustomRideLocation>> updateMyLocation({
+    required String id,
+    String? name,
+    String? subtitle,
+    String? searchKeywords,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final body = <String, dynamic>{};
+      if (name != null) body['name'] = name;
+      if (subtitle != null) body['subtitle'] = subtitle;
+      if (searchKeywords != null) body['search_keywords'] = searchKeywords;
+      final response = await http.patch(
+        Uri.parse('$_baseUrl/location/my/$id/'),
+        headers: headers,
+        body: json.encode(body),
+      );
+      return _parseResponse<CustomRideLocation>(
+        response,
+        (data) => CustomRideLocation.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<CustomRideLocation>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<void>> deleteMyLocation(String id) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/location/my/$id/'),
+        headers: headers,
+      );
+      return _parseResponse<void>(
+        response,
+        (_) => null,
+      );
+    } catch (e) {
+      return RideshareApiResult<void>(
         success: false,
         message: 'Network error: $e',
       );

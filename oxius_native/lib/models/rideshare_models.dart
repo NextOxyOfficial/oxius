@@ -101,7 +101,6 @@ class CustomRideLocation {
   final String searchKeywords;
   final double latitude;
   final double longitude;
-  final double feePaid;
   final bool isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -113,7 +112,6 @@ class CustomRideLocation {
     required this.searchKeywords,
     required this.latitude,
     required this.longitude,
-    required this.feePaid,
     required this.isActive,
     this.createdAt,
     this.updatedAt,
@@ -122,12 +120,11 @@ class CustomRideLocation {
   factory CustomRideLocation.fromJson(Map<String, dynamic> json) {
     return CustomRideLocation(
       id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? 'Custom location',
+      name: json['name']?.toString() ?? 'Location',
       subtitle: json['subtitle']?.toString() ?? '',
       searchKeywords: json['search_keywords']?.toString() ?? '',
       latitude: double.tryParse(json['latitude']?.toString() ?? '') ?? 0.0,
       longitude: double.tryParse(json['longitude']?.toString() ?? '') ?? 0.0,
-      feePaid: double.tryParse(json['fee_paid']?.toString() ?? '') ?? 0.0,
       isActive: json['is_active'] != false,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
       updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
@@ -141,9 +138,6 @@ class CustomRideLocation {
       subtitle: subtitle,
       latitude: latitude,
       longitude: longitude,
-      badge: 'My Custom Location',
-      source: 'user_custom',
-      isCustomLocation: true,
       address: const {'country': 'Bangladesh'},
     );
   }
