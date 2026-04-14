@@ -512,9 +512,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
   Future<void> _shareActiveProduct() async {
     final product = _activeProduct;
     final productTitle = product['name'] ?? product['title'] ?? 'Product';
-    final productSlug = product['slug'] ?? product['id'];
+    final productSlug = (product['slug'] ?? product['id'])?.toString().trim();
     final shareText =
-        'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/products/$productSlug';
+      'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/product-details/$productSlug';
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     try {

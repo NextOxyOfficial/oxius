@@ -44,6 +44,7 @@ import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
 import 'services/deep_link_service.dart';
 import 'services/adsyconnect_realtime_service.dart';
+import 'services/agora_call_service.dart';
 import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
@@ -112,12 +113,14 @@ void main() async {
     if (userState.isAuthenticated) {
       print('Session restored successfully for user: ${userState.userName}');
       await FCMService.handleAuthenticationState(true);
+      await AgoraCallService.restorePersistedCallState();
       await FCMService.syncTokenWithBackend();
       await AdsyConnectRealtimeService.instance.connect();
       OnlineStatusService.start();
       await RideshareDriverPresenceService.restoreIfNeeded();
     } else {
       print('No existing session found');
+      await AgoraCallService.clearPersistedCallState();
       await FCMService.handleAuthenticationState(false);
     }
     

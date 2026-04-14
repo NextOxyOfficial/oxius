@@ -200,7 +200,18 @@ TEMPLATES = [
 # WSGI_APPLICATION = "backend.wsgi.application"
 ASGI_APPLICATION = "backend.asgi.application"
 
-CHANNEL_LAYER_BACKEND = os.getenv("CHANNEL_LAYER_BACKEND", "redis").lower()
+CHANNEL_LAYER_BACKEND = os.getenv("CHANNEL_LAYER_BACKEND", "").lower()
+
+if not CHANNEL_LAYER_BACKEND:
+    # Auto-detect: try Redis, fall back to in-memory for local dev
+    import socket as _socket
+    _redis_url = os.getenv("CHANNEL_REDIS_URL", "redis://127.0.0.1:6379/1")
+    try:
+        _s = _socket.create_connection(("127.0.0.1", 6379), timeout=0.5)
+        _s.close()
+        CHANNEL_LAYER_BACKEND = "redis"
+    except OSError:
+        CHANNEL_LAYER_BACKEND = "memory"
 
 if CHANNEL_LAYER_BACKEND == "redis":
     CHANNEL_LAYERS = {

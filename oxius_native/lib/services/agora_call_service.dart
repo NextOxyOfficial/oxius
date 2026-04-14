@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:http/http.dart' as http;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
 import 'auth_service.dart';
@@ -19,6 +20,10 @@ void _log(String message) {
 class AgoraCallService {
   static const String appId = '9eba1a50633041d08dbe75b0fde2ed8a';
   static const Duration _requestTimeout = Duration(seconds: 10);
+  static const Duration _restorableCallAge = Duration(hours: 8);
+  static const String _prefsInCallKey = 'adsyconnect_active_call_in_call';
+  static const String _prefsCallInfoKey = 'adsyconnect_active_call_info';
+  static const String _prefsUpdatedAtKey = 'adsyconnect_active_call_updated_at';
 
   static RtcEngine? _engine;
   static bool _isInCall = false;
@@ -76,6 +81,7 @@ class AgoraCallService {
       _joinedChannelName = null;
       _activeCallInfo = null;
     }
+    _schedulePersistedCallStateSync();
     _emitCallState();
   }
 
@@ -100,12 +106,14 @@ class AgoraCallService {
       'connectedAt': _activeCallInfo?['connectedAt'],
       'remoteUid': _activeCallInfo?['remoteUid'],
     };
+    _schedulePersistedCallStateSync();
     _emitCallState();
   }
 
   static void markCallAccepted() {
     _ensureActiveInfo();
     _activeCallInfo!['accepted'] = true;
+    _schedulePersistedCallStateSync();
     _emitCallState();
   }
 
@@ -114,7 +122,66 @@ class AgoraCallService {
     _activeCallInfo!['accepted'] = true;
     _activeCallInfo!['connectedAt'] =
         (connectedAt ?? DateTime.now()).millisecondsSinceEpoch;
+    _schedulePersistedCallStateSync();
     _emitCallState();
+  }
+
+  static Future<void> restorePersistedCallState() async {
+    if (_isInCall && _activeCallInfo != null) {
+      return;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final inCall = prefs.getBool(_prefsInCallKey) ?? false;
+      final rawInfo = prefs.getString(_prefsCallInfoKey);
+      final updatedAt = prefs.getInt(_prefsUpdatedAtKey);
+
+      if (!inCall || rawInfo == null || rawInfo.isEmpty || updatedAt == null) {
+        await clearPersistedCallState();
+        return;
+      }
+
+      final ageMs = DateTime.now().millisecondsSinceEpoch - updatedAt;
+      if (ageMs < 0 || ageMs > _restorableCallAge.inMilliseconds) {
+        await clearPersistedCallState();
+        return;
+      }
+
+      final decoded = jsonDecode(rawInfo);
+      if (decoded is! Map) {
+        await clearPersistedCallState();
+        return;
+      }
+
+      final info = Map<String, dynamic>.from(decoded);
+      final channelName = info['channelName']?.toString().trim();
+      final peerId = info['peerId']?.toString().trim();
+      if (channelName == null || channelName.isEmpty || peerId == null || peerId.isEmpty) {
+        await clearPersistedCallState();
+        return;
+      }
+
+      _isInCall = true;
+      _isCallScreenVisible = false;
+      _joinedChannelName = channelName;
+      _activeCallInfo = info;
+      _emitCallState();
+    } catch (error) {
+      _log('⚠️ Failed to restore persisted call state: $error');
+      await clearPersistedCallState();
+    }
+  }
+
+  static Future<void> clearPersistedCallState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_prefsInCallKey);
+      await prefs.remove(_prefsCallInfoKey);
+      await prefs.remove(_prefsUpdatedAtKey);
+    } catch (error) {
+      _log('⚠️ Failed to clear persisted call state: $error');
+    }
   }
 
   static void emitCallStatus(Map<String, dynamic> data) {
@@ -140,6 +207,7 @@ class AgoraCallService {
     if (callId != null && callId.isNotEmpty) {
       _ensureActiveInfo();
       _activeCallInfo!['callId'] = callId;
+      _schedulePersistedCallStateSync();
     }
 
     if (status == 'accepted') {
@@ -211,6 +279,7 @@ class AgoraCallService {
           onUserJoined: (_, remoteUid, __) {
             _ensureActiveInfo();
             _activeCallInfo!['remoteUid'] = remoteUid;
+            _schedulePersistedCallStateSync();
             markCallAccepted();
             try {
               _remoteUserJoinedController.add(remoteUid);
@@ -226,6 +295,7 @@ class AgoraCallService {
               return;
             }
             _activeCallInfo!['remoteUid'] = null;
+            _schedulePersistedCallStateSync();
             try {
               _remoteUserLeftController.add(remoteUid);
             } catch (_) {}
@@ -333,6 +403,7 @@ class AgoraCallService {
       _joinedChannelName = null;
       if (_activeCallInfo != null) {
         _activeCallInfo!['remoteUid'] = null;
+        _schedulePersistedCallStateSync();
       }
     }
   }
@@ -364,6 +435,7 @@ class AgoraCallService {
       _joinedChannelName = null;
       _activeCallInfo = null;
       _isInCall = false;
+      unawaited(clearPersistedCallState());
       _emitCallState();
     }
   }
@@ -411,6 +483,7 @@ class AgoraCallService {
         if (callId != null && callId.isNotEmpty) {
           _ensureActiveInfo();
           _activeCallInfo!['callId'] = callId;
+          _schedulePersistedCallStateSync();
           _emitCallState();
         }
       }
@@ -507,6 +580,30 @@ class AgoraCallService {
 
   static void _ensureActiveInfo() {
     _activeCallInfo ??= <String, dynamic>{};
+  }
+
+  static void _schedulePersistedCallStateSync() {
+    unawaited(_persistCallState());
+  }
+
+  static Future<void> _persistCallState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      if (!_isInCall || _activeCallInfo == null) {
+        await clearPersistedCallState();
+        return;
+      }
+
+      await prefs.setBool(_prefsInCallKey, true);
+      await prefs.setString(_prefsCallInfoKey, jsonEncode(_activeCallInfo));
+      await prefs.setInt(
+        _prefsUpdatedAtKey,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+    } catch (error) {
+      _log('⚠️ Failed to persist call state: $error');
+    }
   }
 
   static Future<void> _runOptionalSetup(Future<void> Function() action) async {

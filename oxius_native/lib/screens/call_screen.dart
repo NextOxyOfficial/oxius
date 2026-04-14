@@ -301,7 +301,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         connectedAt: DateTime.fromMillisecondsSinceEpoch(connectedAtMs),
         syncGlobalState: false,
       );
-    } else if (_engine == null) {
+    }
+
+    if (_engine == null) {
       unawaited(_resumeExistingChannelConnection());
     }
   }

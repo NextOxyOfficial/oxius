@@ -1057,11 +1057,6 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            if (_dropPoint != null)
-                              _buildSheetQuickFillChip(
-                                label: 'Use drop',
-                                onTap: () => usePoint(setSheetState, _dropPoint!),
-                              ),
                             _buildSheetQuickFillChip(
                               label: isResolvingCurrent ? 'Loading GPS...' : 'Use current GPS',
                               onTap: isResolvingCurrent ? null : () => useCurrentLocation(setSheetState),
