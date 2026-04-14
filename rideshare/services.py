@@ -20,7 +20,7 @@ from django.db.models import Q
 from django.utils import timezone
 from channels.layers import get_channel_layer
 
-from base.models import Balance, FCMToken
+from base.models import Balance, FCMToken, User
 from base.fcm_service import send_fcm_notification
 
 from .models import (
@@ -32,10 +32,13 @@ from .models import (
     RideshareSettings,
     RideStatusHistory,
     SearchableLocation,
+    UserCustomLocation,
 )
 
 
 logger = logging.getLogger(__name__)
+
+USER_CUSTOM_LOCATION_FEE = Decimal("199.00")
 
 BANGLADESH_BOUNDS = {
     "min_lat": 20.50,
@@ -565,6 +568,14 @@ class LocationService:
         }
 
     @classmethod
+    def _user_custom_location_to_item(cls, location):
+        item = cls._manual_location_to_item(location)
+        item["badge"] = "My Custom Location"
+        item["source"] = "user_custom"
+        item["is_custom"] = True
+        return item
+
+    @classmethod
     def _normalize_manual_keywords(cls, raw_value):
         parts = re.split(r"[,;\n\r|]+", str(raw_value or ""))
         return cls._normalize_search_text(" ".join(cls._dedupe_parts(parts)))
@@ -621,6 +632,9 @@ class LocationService:
             "latitude": latitude,
             "longitude": longitude,
             "address": address,
+            "badge": item.get("badge"),
+            "source": item.get("source"),
+            "is_custom": item.get("is_custom") == True,
         }
 
     @classmethod
@@ -711,6 +725,13 @@ class LocationService:
                 )
                 score += alias_token_hits * 32
 
+        if item.get("_is_user_custom"):
+            score += 260
+            if normalized_query and title.startswith(normalized_query):
+                score += 70
+            if normalized_query and subtitle and normalized_query in subtitle:
+                score += 24
+
         return score
 
     @classmethod
@@ -740,6 +761,62 @@ class LocationService:
                 continue
 
             normalized_item["_is_manual"] = True
+            normalized_item["_manual_keywords"] = cls._normalize_manual_keywords(
+                location.search_keywords
+            )
+            normalized_item["_manual_keyword_parts"] = cls._split_manual_keywords(
+                location.search_keywords
+            )
+            normalized_item["_score"] = max(
+                cls._score_place_item(
+                    variant,
+                    normalized_item,
+                    provider_index=0,
+                    focus_lat=focus_lat,
+                    focus_lng=focus_lng,
+                )
+                for variant in query_variants
+            )
+            ranked_results.append(normalized_item)
+
+        ranked_results = cls._dedupe_search_results(ranked_results)
+        ranked_results.sort(key=lambda item: item.get("_score", 0), reverse=True)
+        return ranked_results
+
+    @classmethod
+    def _search_user_custom_locations(cls, user, query, limit=5, focus_lat=None, focus_lng=None):
+        if not getattr(user, "is_authenticated", False):
+            return []
+
+        query_variants = cls._build_query_variants(query)
+        if not query_variants:
+            return []
+
+        filters = Q()
+        for variant in query_variants:
+            filters |= Q(name__icontains=variant)
+            filters |= Q(subtitle__icontains=variant)
+            filters |= Q(search_keywords__icontains=variant)
+
+        locations = (
+            UserCustomLocation.objects.filter(user=user, is_active=True)
+            .filter(filters)
+            .order_by("-updated_at")[: max(limit * 8, 30)]
+        )
+
+        ranked_results = []
+        for location in locations:
+            normalized_item = cls._normalize_place_item(
+                cls._user_custom_location_to_item(location)
+            )
+            if not normalized_item:
+                continue
+
+            normalized_item["badge"] = "My Custom Location"
+            normalized_item["source"] = "user_custom"
+            normalized_item["is_custom"] = True
+            normalized_item["_is_manual"] = True
+            normalized_item["_is_user_custom"] = True
             normalized_item["_manual_keywords"] = cls._normalize_manual_keywords(
                 location.search_keywords
             )
@@ -853,6 +930,50 @@ class LocationService:
             return None
 
         return cls._normalize_place_item(cls._manual_location_to_item(best_match))
+
+    @classmethod
+    def _find_nearest_user_custom_location(cls, user, lat, lng, max_distance_meters=250):
+        if not getattr(user, "is_authenticated", False):
+            return None
+
+        try:
+            latitude = float(lat)
+            longitude = float(lng)
+        except (TypeError, ValueError):
+            return None
+
+        if not cls._is_within_bangladesh(latitude, longitude):
+            return None
+
+        best_match = None
+        best_distance_km = None
+        for location in UserCustomLocation.objects.filter(user=user, is_active=True).only(
+            "name",
+            "subtitle",
+            "latitude",
+            "longitude",
+        ):
+            try:
+                distance_km = RoutingService._haversine_distance_km(
+                    latitude,
+                    longitude,
+                    float(location.latitude),
+                    float(location.longitude),
+                )
+            except (TypeError, ValueError):
+                continue
+
+            if best_distance_km is None or distance_km < best_distance_km:
+                best_match = location
+                best_distance_km = distance_km
+
+        if best_match is None or best_distance_km is None:
+            return None
+
+        if best_distance_km * 1000 > max_distance_meters:
+            return None
+
+        return cls._normalize_place_item(cls._user_custom_location_to_item(best_match))
 
     @staticmethod
     def _is_within_bangladesh(latitude, longitude):
@@ -1325,9 +1446,17 @@ class LocationService:
         return results
 
     @classmethod
-    def search_places(cls, query, limit=5, focus_lat=None, focus_lng=None):
+    def search_places(cls, query, limit=5, focus_lat=None, focus_lng=None, user=None):
         if not query:
             return []
+
+        user_custom_ranked_results = cls._search_user_custom_locations(
+            user,
+            query,
+            limit=limit,
+            focus_lat=focus_lat,
+            focus_lng=focus_lng,
+        )
 
         manual_ranked_results = cls._search_manual_locations(
             query,
@@ -1354,6 +1483,7 @@ class LocationService:
 
         if not cls._google_maps_enabled():
             merged_ranked_results = cls._merge_ranked_results(
+                user_custom_ranked_results,
                 manual_ranked_results,
                 free_ranked_results,
             )
@@ -1369,12 +1499,14 @@ class LocationService:
 
         if not google_ranked_results:
             merged_ranked_results = cls._merge_ranked_results(
+                user_custom_ranked_results,
                 manual_ranked_results,
                 free_ranked_results,
             )
             return cls._clean_ranked_search_results(merged_ranked_results, limit)
 
         merged_ranked_results = cls._merge_ranked_results(
+            user_custom_ranked_results,
             manual_ranked_results,
             google_ranked_results,
             free_ranked_results,
@@ -1451,7 +1583,11 @@ class LocationService:
         }
 
     @classmethod
-    def reverse_geocode(cls, lat, lng):
+    def reverse_geocode(cls, lat, lng, user=None):
+        user_custom_result = cls._find_nearest_user_custom_location(user, lat, lng)
+        if user_custom_result:
+            return user_custom_result
+
         manual_result = cls._find_nearest_manual_location(lat, lng)
         if manual_result:
             return manual_result
@@ -1479,6 +1615,112 @@ class LocationService:
         if fallback_result:
             return cls._normalize_place_item(fallback_result)
         return None
+
+
+class CustomLocationService:
+    @staticmethod
+    def list_user_locations(user):
+        return UserCustomLocation.objects.filter(user=user, is_active=True).order_by("-updated_at")
+
+    @staticmethod
+    @transaction.atomic
+    def create_user_location(
+        user,
+        *,
+        name,
+        subtitle="",
+        search_keywords="",
+        latitude,
+        longitude,
+    ):
+        if not getattr(user, "is_authenticated", False):
+            raise ValidationError("Authentication is required.")
+
+        cleaned_name = str(name or "").strip()
+        cleaned_subtitle = str(subtitle or "").strip()
+        cleaned_keywords = str(search_keywords or "").strip()
+
+        if not cleaned_name:
+            raise ValidationError("Location name is required.")
+
+        try:
+            normalized_lat = round(float(latitude), 6)
+            normalized_lng = round(float(longitude), 6)
+        except (TypeError, ValueError):
+            raise ValidationError("Latitude and longitude must be valid numbers.")
+
+        if not LocationService._is_within_bangladesh(normalized_lat, normalized_lng):
+            raise ValidationError("Custom location must be inside Bangladesh.")
+
+        latitude_decimal = Decimal(str(normalized_lat)).quantize(Decimal("0.000001"))
+        longitude_decimal = Decimal(str(normalized_lng)).quantize(Decimal("0.000001"))
+        duplicate_exists = UserCustomLocation.objects.filter(
+            user=user,
+            is_active=True,
+            name__iexact=cleaned_name,
+            latitude=latitude_decimal,
+            longitude=longitude_decimal,
+        ).exists()
+        if duplicate_exists:
+            raise ValidationError("You already saved this custom location.")
+
+        locked_user = User.objects.select_for_update().get(pk=user.pk)
+        available_balance = decimal_money(locked_user.balance or Decimal("0.00"))
+        if available_balance < USER_CUSTOM_LOCATION_FEE:
+            raise ValidationError(
+                f"Insufficient Adsy balance. You need ৳{USER_CUSTOM_LOCATION_FEE} to add a custom location."
+            )
+
+        locked_user.balance = available_balance - USER_CUSTOM_LOCATION_FEE
+        locked_user.save(update_fields=["balance"])
+
+        transaction_record = None
+        last_error = None
+        for _ in range(3):
+            try:
+                transaction_record = Balance.objects.create(
+                    user=locked_user,
+                    transaction_type="ride_custom_location",
+                    payment_method="wallet",
+                    payable_amount=USER_CUSTOM_LOCATION_FEE,
+                    amount=USER_CUSTOM_LOCATION_FEE,
+                    received_amount=Decimal("0.00"),
+                    completed=True,
+                    approved=True,
+                    bank_status="completed",
+                    description=f"Custom rideshare location added: {cleaned_name}",
+                )
+                break
+            except IntegrityError as exc:
+                last_error = exc
+                continue
+
+        if transaction_record is None:
+            logger.exception(
+                "Failed to create custom rideshare location transaction for user %s",
+                user.pk,
+                exc_info=last_error,
+            )
+            raise ValidationError("Could not create location payment transaction. Please try again.")
+
+        location = UserCustomLocation.objects.create(
+            user=locked_user,
+            name=cleaned_name,
+            subtitle=cleaned_subtitle,
+            search_keywords=cleaned_keywords,
+            latitude=latitude_decimal,
+            longitude=longitude_decimal,
+            payment_transaction=transaction_record,
+            fee_paid=USER_CUSTOM_LOCATION_FEE,
+        )
+
+        user.balance = locked_user.balance
+        return {
+            "location": location,
+            "fee_charged": USER_CUSTOM_LOCATION_FEE,
+            "wallet_balance": locked_user.balance,
+            "transaction": transaction_record,
+        }
 
 
 class FareService:

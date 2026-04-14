@@ -2,9 +2,9 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from base.models import User
+from base.models import Balance, User
 from rideshare.models import DriverProfile, Ride
-from rideshare.services import WalletService
+from rideshare.services import CustomLocationService, LocationService, WalletService
 
 
 class WalletServiceRidePaymentTests(TestCase):
@@ -90,3 +90,78 @@ class WalletServiceRidePaymentTests(TestCase):
         self.assertEqual(self.driver_profile.total_earnings, Decimal("180.00"))
         self.assertEqual(self.driver_profile.outstanding_cash_due_count, 1)
         self.assertEqual(self.driver_profile.outstanding_cash_due_amount, Decimal("20.00"))
+
+
+class UserCustomLocationTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="custom-rider",
+            email="custom-rider@example.com",
+            password="testpass123",
+            phone="01700000111",
+            balance=Decimal("500.00"),
+        )
+
+    def test_creating_custom_location_deducts_wallet_and_records_balance_transaction(self):
+        result = CustomLocationService.create_user_location(
+            self.user,
+            name="My Village Home",
+            subtitle="Khalishpur, Khulna",
+            search_keywords="village home, bari",
+            latitude="22.845641",
+            longitude="89.540328",
+        )
+
+        self.user.refresh_from_db()
+        location = result["location"]
+        transaction = result["transaction"]
+
+        self.assertEqual(self.user.balance, Decimal("301.00"))
+        self.assertEqual(location.fee_paid, Decimal("199.00"))
+        self.assertEqual(transaction.transaction_type, "ride_custom_location")
+        self.assertEqual(transaction.user_id, self.user.id)
+        self.assertTrue(
+            Balance.objects.filter(id=transaction.id, completed=True, approved=True).exists()
+        )
+
+    def test_search_places_prioritizes_users_custom_location(self):
+        CustomLocationService.create_user_location(
+            self.user,
+            name="Dakbangla Mor",
+            subtitle="Khalishpur, Khulna",
+            search_keywords="dakbangla, my stop",
+            latitude="22.845641",
+            longitude="89.540328",
+        )
+
+        results = LocationService.search_places(
+            "dakbangla",
+            limit=5,
+            focus_lat=22.845600,
+            focus_lng=89.540300,
+            user=self.user,
+        )
+
+        self.assertGreaterEqual(len(results), 1)
+        self.assertEqual(results[0]["title"], "Dakbangla Mor")
+        self.assertEqual(results[0].get("badge"), "My Custom Location")
+        self.assertTrue(results[0].get("is_custom"))
+
+    def test_reverse_geocode_prefers_users_custom_location(self):
+        CustomLocationService.create_user_location(
+            self.user,
+            name="My Farm Gate",
+            subtitle="Bheramara, Kushtia",
+            search_keywords="farm gate",
+            latitude="23.905722",
+            longitude="89.136444",
+        )
+
+        result = LocationService.reverse_geocode(
+            23.905720,
+            89.136440,
+            user=self.user,
+        )
+
+        self.assertEqual(result["title"], "My Farm Gate")
+        self.assertEqual(result.get("badge"), "My Custom Location")

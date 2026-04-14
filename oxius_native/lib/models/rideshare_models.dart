@@ -5,6 +5,9 @@ class RidePoint {
   final double latitude;
   final double longitude;
   final Map<String, dynamic>? address;
+  final String? badge;
+  final String? source;
+  final bool isCustomLocation;
 
   RidePoint({
     required this.name,
@@ -13,6 +16,9 @@ class RidePoint {
     required this.latitude,
     required this.longitude,
     this.address,
+    this.badge,
+    this.source,
+    this.isCustomLocation = false,
   });
 
   factory RidePoint.fromJson(Map<String, dynamic> json) {
@@ -27,6 +33,9 @@ class RidePoint {
           double.tryParse(json['lon']?.toString() ?? '') ??
           0.0,
       address: json['address'] as Map<String, dynamic>?,
+      badge: json['badge']?.toString(),
+      source: json['source']?.toString(),
+      isCustomLocation: json['is_custom'] == true || json['source']?.toString() == 'user_custom',
     );
   }
 
@@ -37,7 +46,18 @@ class RidePoint {
         'latitude': latitude,
         'longitude': longitude,
         'address': address,
+        'badge': badge,
+        'source': source,
+        'is_custom': isCustomLocation,
       };
+
+  String get badgeLabel {
+    final resolvedBadge = badge?.trim();
+    if (resolvedBadge != null && resolvedBadge.isNotEmpty) {
+      return resolvedBadge;
+    }
+    return isCustomLocation ? 'My Custom Location' : '';
+  }
 
   String get displayTitle {
     final resolvedTitle = title?.trim();
@@ -71,6 +91,83 @@ class RidePoint {
       return '';
     }
     return segments.skip(1).join(', ');
+  }
+}
+
+class CustomRideLocation {
+  final String id;
+  final String name;
+  final String subtitle;
+  final String searchKeywords;
+  final double latitude;
+  final double longitude;
+  final double feePaid;
+  final bool isActive;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  CustomRideLocation({
+    required this.id,
+    required this.name,
+    required this.subtitle,
+    required this.searchKeywords,
+    required this.latitude,
+    required this.longitude,
+    required this.feePaid,
+    required this.isActive,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory CustomRideLocation.fromJson(Map<String, dynamic> json) {
+    return CustomRideLocation(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Custom location',
+      subtitle: json['subtitle']?.toString() ?? '',
+      searchKeywords: json['search_keywords']?.toString() ?? '',
+      latitude: double.tryParse(json['latitude']?.toString() ?? '') ?? 0.0,
+      longitude: double.tryParse(json['longitude']?.toString() ?? '') ?? 0.0,
+      feePaid: double.tryParse(json['fee_paid']?.toString() ?? '') ?? 0.0,
+      isActive: json['is_active'] != false,
+      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+      updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
+    );
+  }
+
+  RidePoint get asRidePoint {
+    return RidePoint(
+      name: subtitle.trim().isEmpty ? name : '$name, $subtitle',
+      title: name,
+      subtitle: subtitle,
+      latitude: latitude,
+      longitude: longitude,
+      badge: 'My Custom Location',
+      source: 'user_custom',
+      isCustomLocation: true,
+      address: const {'country': 'Bangladesh'},
+    );
+  }
+}
+
+class CustomRideLocationPurchase {
+  final CustomRideLocation location;
+  final double feeCharged;
+  final double walletBalance;
+
+  CustomRideLocationPurchase({
+    required this.location,
+    required this.feeCharged,
+    required this.walletBalance,
+  });
+
+  factory CustomRideLocationPurchase.fromJson(Map<String, dynamic> json) {
+    return CustomRideLocationPurchase(
+      location: CustomRideLocation.fromJson(
+        (json['location'] as Map<String, dynamic>?) ?? <String, dynamic>{},
+      ),
+      feeCharged: double.tryParse(json['fee_charged']?.toString() ?? '') ?? 0.0,
+      walletBalance: double.tryParse(json['wallet_balance']?.toString() ?? '') ?? 0.0,
+    );
   }
 }
 

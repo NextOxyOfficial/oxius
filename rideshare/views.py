@@ -21,6 +21,8 @@ from .serializers import (
     DriverLocationUpdateSerializer,
     DriverProfileSerializer,
     DriverToggleOnlineSerializer,
+    UserCustomLocationCreateSerializer,
+    UserCustomLocationSerializer,
     RoutePreviewRequestSerializer,
     RideCancellationReportSerializer,
     RideCancelSerializer,
@@ -41,6 +43,7 @@ from .services import (
     DriverLocationService,
     EarlyCompletionService,
     FareService,
+    CustomLocationService,
     get_user_active_ride,
     get_driver_response_timeout_seconds,
     get_max_search_window_minutes,
@@ -1144,6 +1147,7 @@ class LocationSearchView(RideshareApiMixin, APIView):
                 limit=limit,
                 focus_lat=focus_lat,
                 focus_lng=focus_lng,
+                user=request.user,
             )
         )
 
@@ -1156,7 +1160,34 @@ class ReverseGeocodeView(RideshareApiMixin, APIView):
         lng = request.query_params.get("lng")
         if lat is None or lng is None:
             return api_error("lat and lng query parameters are required.")
-        return api_success(LocationService.reverse_geocode(lat, lng))
+        return api_success(LocationService.reverse_geocode(lat, lng, user=request.user))
+
+
+class UserCustomLocationListCreateView(RideshareApiMixin, APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        locations = CustomLocationService.list_user_locations(request.user)
+        serializer = UserCustomLocationSerializer(locations, many=True)
+        return api_success(serializer.data)
+
+    def post(self, request):
+        serializer = UserCustomLocationCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = CustomLocationService.create_user_location(
+            request.user,
+            **serializer.validated_data,
+        )
+        response_serializer = UserCustomLocationSerializer(result["location"])
+        return api_success(
+            {
+                "location": response_serializer.data,
+                "fee_charged": str(result["fee_charged"]),
+                "wallet_balance": str(result["wallet_balance"]),
+            },
+            "Custom location added successfully.",
+            status.HTTP_201_CREATED,
+        )
 
 
 class NearbyDriversView(RideshareApiMixin, APIView):

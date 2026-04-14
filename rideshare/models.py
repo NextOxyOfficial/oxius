@@ -275,6 +275,51 @@ class SearchableLocation(models.Model):
         return self.name
 
 
+class UserCustomLocation(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="rideshare_custom_locations",
+    )
+    name = models.CharField(max_length=255)
+    subtitle = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Optional area or landmark text shown below the custom location name.",
+    )
+    search_keywords = models.TextField(
+        blank=True,
+        default="",
+        help_text="Optional comma or line-separated aliases to make searching easier.",
+    )
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    payment_transaction = models.ForeignKey(
+        "base.Balance",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rideshare_custom_location_payments",
+    )
+    fee_paid = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("199.00"))
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        indexes = [
+            models.Index(fields=["user", "is_active"]),
+            models.Index(fields=["user", "name"]),
+        ]
+        verbose_name = "User Custom Location"
+        verbose_name_plural = "User Custom Locations"
+
+    def __str__(self):
+        return f"{self.name} ({self.user_id})"
+
+
 class Ride(models.Model):
     STATUS_REQUESTED = "requested"
     STATUS_SEARCHING = "searching_driver"

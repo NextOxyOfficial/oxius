@@ -27,6 +27,7 @@ class RidesharePassengerPanel extends StatefulWidget {
 class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   with WidgetsBindingObserver {
   static const String _recentPlacesKey = 'rideshare_recent_places_v2';
+  static const double _customLocationFee = 199.0;
 
   final TranslationService _ts = TranslationService();
   String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
@@ -45,6 +46,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   List<RidePoint> _pickupSuggestions = [];
   List<RidePoint> _dropSuggestions = [];
   List<RidePoint> _recentPlaces = [];
+  List<CustomRideLocation> _myCustomLocations = [];
   List<NearbyDriver> _nearbyDrivers = [];
   
   // Loading states
@@ -53,6 +55,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   bool _isCreatingRide = false;
   bool _isCancellingRide = false;
   bool _isLoadingActiveRide = true;
+  bool _isLoadingCustomLocations = false;
   bool _locationGranted = false;
   bool _isCheckingLocationPermission = true;
   bool _didAutoFillCurrentLocation = false;
@@ -89,6 +92,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     WidgetsBinding.instance.addObserver(this);
     _startStatusRefreshTimer();
     _loadRecentPlaces();
+    unawaited(_loadMyCustomLocations());
     _rideshareNotificationSubscription =
         FCMService.rideshareNotificationEvents.listen(
           _handleRideshareNotificationEvent,
@@ -868,6 +872,348 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     }
 
     setState(() => _recentPlaces = updatedPlaces);
+  }
+
+  Future<void> _loadMyCustomLocations({bool showErrors = false}) async {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() => _isLoadingCustomLocations = true);
+    final result = await RideshareService.getMyCustomLocations();
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingCustomLocations = false;
+      if (result.success) {
+        _myCustomLocations = result.data ?? <CustomRideLocation>[];
+      }
+    });
+
+    if (showErrors && !result.success) {
+      _showError(result.message);
+    }
+  }
+
+  RidePoint? _defaultCustomLocationSource() {
+    if (_activeInput == 'drop' && _dropPoint != null) {
+      return _dropPoint;
+    }
+    if (_dropPoint != null) {
+      return _dropPoint;
+    }
+    return _pickupPoint;
+  }
+
+  Future<void> _selectSavedCustomLocation(CustomRideLocation location) async {
+    final point = location.asRidePoint;
+    if (_activeInput == 'drop' || (_pickupPoint != null && _dropPoint == null)) {
+      await _selectDropSuggestion(point);
+      return;
+    }
+    await _selectPickupSuggestion(point);
+  }
+
+  Future<void> _showCustomLocationSheet() async {
+    final nameController = TextEditingController();
+    final subtitleController = TextEditingController();
+    final keywordsController = TextEditingController();
+    final latitudeController = TextEditingController();
+    final longitudeController = TextEditingController();
+
+    bool isSubmitting = false;
+    bool isResolvingCurrent = false;
+    Future<void> usePoint(
+      StateSetter setSheetState,
+      RidePoint point,
+    ) async {
+      nameController.text = point.displayTitle;
+      subtitleController.text = point.displaySubtitle;
+      latitudeController.text = point.latitude.toStringAsFixed(6);
+      longitudeController.text = point.longitude.toStringAsFixed(6);
+      setSheetState(() {});
+    }
+
+    Future<void> useCurrentLocation(StateSetter setSheetState) async {
+      setSheetState(() => isResolvingCurrent = true);
+      try {
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 15),
+        );
+        final result = await RideshareService.reverseGeocode(
+          position.latitude,
+          position.longitude,
+        );
+        if (result.success && result.data != null) {
+          latitudeController.text = result.data!.latitude.toStringAsFixed(6);
+          longitudeController.text = result.data!.longitude.toStringAsFixed(6);
+          setSheetState(() {});
+        } else {
+          _showError(result.message.isEmpty ? 'Could not load current location.' : result.message);
+        }
+      } catch (e) {
+        _showError('Failed to load current location: $e');
+      } finally {
+        if (mounted) {
+          setSheetState(() => isResolvingCurrent = false);
+        }
+      }
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            final walletBalance = AuthService.currentUser?.balance ?? 0.0;
+            final hasEnoughBalance = walletBalance >= _customLocationFee;
+
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEA580C).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.add_location_alt_rounded,
+                                color: Color(0xFFEA580C),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'লোকেশন অ্যাড করুন',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: const Color(0xFF0F172A),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    'প্রতি লোকেশন সেভ করতে ৳199 AdsyPay ব্যালেন্স থেকে কাটা হবে।',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: const Color(0xFF64748B),
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildCustomLocationTextField(
+                                controller: latitudeController,
+                                label: 'Latitude',
+                                hint: '23.905722',
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _buildCustomLocationTextField(
+                                controller: longitudeController,
+                                label: 'Longitude',
+                                hint: '89.136444',
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            if (_dropPoint != null)
+                              _buildSheetQuickFillChip(
+                                label: 'Use drop',
+                                onTap: () => usePoint(setSheetState, _dropPoint!),
+                              ),
+                            _buildSheetQuickFillChip(
+                              label: isResolvingCurrent ? 'Loading GPS...' : 'Use current GPS',
+                              onTap: isResolvingCurrent ? null : () => useCurrentLocation(setSheetState),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildCustomLocationTextField(
+                          controller: nameController,
+                          label: 'Location name',
+                          hint: 'যেমন: আমার বাড়ির নাম, গ্রামের মোড়',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildCustomLocationTextField(
+                          controller: subtitleController,
+                          label: 'Area / details',
+                          hint: 'যেমন: মিরপুর, ঢাকা',
+                        ),
+                        const SizedBox(height: 12),
+                        _buildCustomLocationTextField(
+                          controller: keywordsController,
+                          label: 'Search keywords',
+                          hint: 'কমা দিয়ে alias লিখুন, যেমন: bari, village home',
+                        ),
+                        const SizedBox(height: 18),
+                        if (!hasEnoughBalance) ...[
+                          Text(
+                            'আপনার ব্যালেন্স কম আছে। আগে wallet-এ টাকা add করলে লোকেশন সেভ করতে পারবেন।',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFFB91C1C),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: isSubmitting ? null : () => Navigator.of(sheetContext).pop(),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: const Color(0xFF475569),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: (!hasEnoughBalance || isSubmitting)
+                                    ? null
+                                    : () async {
+                                        final latitude = double.tryParse(latitudeController.text.trim());
+                                        final longitude = double.tryParse(longitudeController.text.trim());
+                                        final name = nameController.text.trim();
+
+                                        if (name.isEmpty) {
+                                          _showError('Location name is required.');
+                                          return;
+                                        }
+                                        if (latitude == null || longitude == null) {
+                                          _showError('Valid latitude and longitude are required.');
+                                          return;
+                                        }
+
+                                        setSheetState(() => isSubmitting = true);
+                                        final result = await RideshareService.createCustomLocation(
+                                          name: name,
+                                          subtitle: subtitleController.text.trim(),
+                                          searchKeywords: keywordsController.text.trim(),
+                                          latitude: latitude,
+                                          longitude: longitude,
+                                        );
+                                        if (!mounted) {
+                                          return;
+                                        }
+                                        setSheetState(() => isSubmitting = false);
+
+                                        if (!result.success || result.data == null) {
+                                          _showError(result.message);
+                                          return;
+                                        }
+
+                                        await AuthService.refreshUserData();
+                                        if (!mounted) {
+                                          return;
+                                        }
+                                        await _loadMyCustomLocations();
+                                        await _selectSavedCustomLocation(result.data!.location);
+                                        if (!mounted) {
+                                          return;
+                                        }
+                                        Navigator.of(sheetContext).pop();
+                                        setState(() {});
+                                        _showSuccess(
+                                          'Custom location added. ৳${result.data!.feeCharged.toStringAsFixed(0)} charged from your balance.',
+                                        );
+                                      },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: const Color(0xFFEA580C),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: isSubmitting
+                                    ? const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Pay ৳199 & Save',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    nameController.dispose();
+    subtitleController.dispose();
+    keywordsController.dispose();
+    latitudeController.dispose();
+    longitudeController.dispose();
   }
 
   List<RidePoint> _visibleSuggestionsForField(
@@ -2555,6 +2901,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                   ),
                   const SizedBox(height: 16),
                   _buildLocationInputs(),
+                  const SizedBox(height: 12),
+                  _buildCustomLocationPrompt(),
                   const SizedBox(height: 16),
                   _buildVehicleSelector(),
                   const SizedBox(height: 16),
@@ -2753,78 +3101,97 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   Widget _buildLocationInputs() {
-    return Row(
+    final pickupVisibleSuggestions = _visibleSuggestionsForField(
+      _pickupController,
+      _pickupSuggestions,
+      _activeInput == 'pickup',
+    );
+    final dropVisibleSuggestions = _visibleSuggestionsForField(
+      _dropController,
+      _hideDropSuggestionsUntilEdit ? const <RidePoint>[] : _dropSuggestions,
+      _activeInput == 'drop',
+    );
+    final showingDropSuggestions = _activeInput == 'drop' && dropVisibleSuggestions.isNotEmpty;
+    final activeSuggestions = showingDropSuggestions ? dropVisibleSuggestions : pickupVisibleSuggestions;
+    final showingRecent = showingDropSuggestions
+        ? !_hideDropSuggestionsUntilEdit && _dropSuggestions.isEmpty && activeSuggestions.isNotEmpty
+        : _pickupSuggestions.isEmpty && activeSuggestions.isNotEmpty;
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Route indicator
-        Column(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            // Route indicator
+            Column(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
                 ),
-                shape: BoxShape.circle,
-              ),
-            ),
-            Container(
-              width: 2,
-              height: 50,
-              color: const Color(0xFFE2E8F0),
-            ),
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                Container(
+                  width: 2,
+                  height: 50,
+                  color: const Color(0xFFE2E8F0),
                 ),
-                borderRadius: BorderRadius.circular(2),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    ),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                children: [
+                  _buildLocationInput(
+                    controller: _pickupController,
+                    label: t('rideshare_pickup_location', fallback: 'Pickup Location'),
+                    hint: t('rideshare_search_pickup', fallback: 'Search pickup...').toString(),
+                    isActive: _activeInput == 'pickup',
+                    onTap: () => setState(() => _activeInput = 'pickup'),
+                    onChanged: _onPickupSearch,
+                    trailing: _buildCurrentLocationButton(),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildLocationInput(
+                    controller: _dropController,
+                    label: t('rideshare_drop_location', fallback: 'Drop Location'),
+                    hint: t('rideshare_search_drop', fallback: 'Search drop...').toString(),
+                    isActive: _activeInput == 'drop',
+                    onTap: () => setState(() {
+                      _activeInput = 'drop';
+                      _hideDropSuggestionsUntilEdit = false;
+                    }),
+                    onChanged: _onDropSearch,
+                    onSubmitted: (_) => _dismissDropSuggestions(),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(width: 12),
-        
-        // Input fields
-        Expanded(
-          child: Column(
-            children: [
-              // Pickup input
-              _buildLocationInput(
-                controller: _pickupController,
-                label: t('rideshare_pickup_location', fallback: 'Pickup Location'),
-                hint: t('rideshare_search_pickup', fallback: 'Search pickup...').toString(),
-                isActive: _activeInput == 'pickup',
-                onTap: () => setState(() => _activeInput = 'pickup'),
-                onChanged: _onPickupSearch,
-                suggestions: _pickupSuggestions,
-                onSuggestionTap: _selectPickupSuggestion,
-                trailing: _buildCurrentLocationButton(),
-              ),
-              const SizedBox(height: 12),
-              
-              // Drop input
-              _buildLocationInput(
-                controller: _dropController,
-                label: t('rideshare_drop_location', fallback: 'Drop Location'),
-                hint: t('rideshare_search_drop', fallback: 'Search drop...').toString(),
-                isActive: _activeInput == 'drop',
-                onTap: () => setState(() {
-                  _activeInput = 'drop';
-                  _hideDropSuggestionsUntilEdit = false;
-                }),
-                onChanged: _onDropSearch,
-                suggestions: _dropSuggestions,
-                onSuggestionTap: _selectDropSuggestion,
-                hideSuggestions: _hideDropSuggestionsUntilEdit,
-                onSubmitted: (_) => _dismissDropSuggestions(),
-              ),
-            ],
+        if (activeSuggestions.isNotEmpty)
+          _buildLocationSuggestionsDropdown(
+            suggestions: activeSuggestions,
+            showingRecent: showingRecent,
+            onSuggestionTap: showingDropSuggestions
+                ? _selectDropSuggestion
+                : _selectPickupSuggestion,
           ),
-        ),
       ],
     );
   }
@@ -2836,156 +3203,158 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     required bool isActive,
     required VoidCallback onTap,
     required Function(String) onChanged,
-    required List<RidePoint> suggestions,
-    required Function(RidePoint) onSuggestionTap,
-    bool hideSuggestions = false,
     ValueChanged<String>? onSubmitted,
     Widget? trailing,
   }) {
-    final visibleSuggestions = _visibleSuggestionsForField(
-      controller,
-      hideSuggestions ? const <RidePoint>[] : suggestions,
-      isActive,
-    );
-    final showingRecent = !hideSuggestions && suggestions.isEmpty && visibleSuggestions.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: isActive ? Colors.white : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isActive ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0),
-                width: isActive ? 2 : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF94A3B8),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      TextField(
-                        controller: controller,
-                        onChanged: onChanged,
-                        onTap: onTap,
-                        onSubmitted: onSubmitted,
-                        textInputAction: onSubmitted != null ? TextInputAction.search : TextInputAction.next,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1E293B),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: hint,
-                          hintStyle: GoogleFonts.inter(
-                            fontSize: 13,
-                            color: const Color(0xFF94A3B8),
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (trailing != null) trailing,
-              ],
-            ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.white : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive ? const Color(0xFF6366F1) : const Color(0xFFE2E8F0),
+            width: isActive ? 2 : 1,
           ),
         ),
-        
-        // Suggestions dropdown
-        if (visibleSuggestions.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            constraints: const BoxConstraints(maxHeight: 220),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (showingRecent)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-                    child: Text(
-                      'Recent places',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF64748B),
-                        letterSpacing: 0.3,
-                      ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF94A3B8),
+                      letterSpacing: 0.5,
                     ),
                   ),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    padding: EdgeInsets.zero,
-                    itemCount: visibleSuggestions.length,
-                    itemBuilder: (context, index) {
-                      final suggestion = visibleSuggestions[index];
-                      final subtitle = suggestion.displaySubtitle;
-                      final isRecentItem = showingRecent;
-                      return InkWell(
-                        onTap: () => onSuggestionTap(suggestion),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          child: Row(
+                  const SizedBox(height: 2),
+                  TextField(
+                    controller: controller,
+                    onChanged: onChanged,
+                    onTap: onTap,
+                    onSubmitted: onSubmitted,
+                    textInputAction: onSubmitted != null ? TextInputAction.search : TextInputAction.next,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1E293B),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: hint,
+                      hintStyle: GoogleFonts.inter(
+                        fontSize: 13,
+                        color: const Color(0xFF94A3B8),
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationSuggestionsDropdown({
+    required List<RidePoint> suggestions,
+    required bool showingRecent,
+    required Future<void> Function(RidePoint) onSuggestionTap,
+  }) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      constraints: const BoxConstraints(maxHeight: 220),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showingRecent)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+              child: Text(
+                'Recent places',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF64748B),
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              itemCount: suggestions.length,
+              itemBuilder: (context, index) {
+                final suggestion = suggestions[index];
+                final subtitle = suggestion.displaySubtitle;
+                final badgeLabel = suggestion.badgeLabel;
+                final isRecentItem = showingRecent;
+                return InkWell(
+                  onTap: () => onSuggestionTap(suggestion),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 2),
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: isRecentItem
+                                ? const Color(0xFFF8FAFC)
+                                : suggestion.isCustomLocation
+                                    ? const Color(0xFFFFEDD5)
+                                    : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Icon(
+                            isRecentItem
+                                ? Icons.history_rounded
+                                : suggestion.isCustomLocation
+                                    ? Icons.bookmark_added_rounded
+                                    : Icons.location_on_outlined,
+                            size: 18,
+                            color: suggestion.isCustomLocation
+                                ? const Color(0xFFEA580C)
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 2),
-                                width: 34,
-                                height: 34,
-                                decoration: BoxDecoration(
-                                  color: isRecentItem
-                                      ? const Color(0xFFF8FAFC)
-                                      : const Color(0xFFF1F5F9),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Icon(
-                                  isRecentItem
-                                      ? Icons.history_rounded
-                                      : Icons.location_on_outlined,
-                                  size: 18,
-                                  color: const Color(0xFF64748B),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
                                       suggestion.displayTitle,
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
@@ -2995,33 +3364,53 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    if (subtitle.isNotEmpty) ...[
-                                      const SizedBox(height: 3),
-                                      Text(
-                                        subtitle,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 11.5,
-                                          color: const Color(0xFF64748B),
-                                          height: 1.3,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (badgeLabel.isNotEmpty) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFEDD5),
+                                        borderRadius: BorderRadius.circular(999),
+                                        border: Border.all(color: const Color(0xFFFED7AA)),
                                       ),
-                                    ],
+                                      child: Text(
+                                        badgeLabel,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF9A3412),
+                                        ),
+                                      ),
+                                    ),
                                   ],
-                                ),
+                                ],
                               ),
+                              if (subtitle.isNotEmpty) ...[
+                                const SizedBox(height: 3),
+                                Text(
+                                  subtitle,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11.5,
+                                    color: const Color(0xFF64748B),
+                                    height: 1.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -3065,6 +3454,212 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 ],
               ),
       ),
+    );
+  }
+
+  Widget _buildSheetQuickFillChip({
+    required String label,
+    required VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: onTap == null
+              ? const Color(0xFFF1F5F9)
+              : const Color(0xFFEEF2FF),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: onTap == null
+                ? const Color(0xFFE2E8F0)
+                : const Color(0xFFC7D2FE),
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: onTap == null
+                ? const Color(0xFF94A3B8)
+                : const Color(0xFF4338CA),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomLocationTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    TextInputType? keyboardType,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF334155),
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF0F172A),
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.inter(
+              fontSize: 13,
+              color: const Color(0xFF94A3B8),
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFEA580C), width: 1.4),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomLocationPrompt() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: InkWell(
+            onTap: _showCustomLocationSheet,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Text(
+                '+ আপনার নিজের বাড়ি বা ব্যবসার লোকেশন অ্যাড করুন',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF9A3412),
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (_myCustomLocations.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFBEB),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFFDE68A)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.bookmark_added_rounded,
+                      size: 16,
+                      color: Color(0xFFEA580C),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'My Custom Location',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF9A3412),
+                      ),
+                    ),
+                    if (_isLoadingCustomLocations) ...[
+                      const SizedBox(width: 8),
+                      const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFFEA580C),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _myCustomLocations.take(6).map((location) {
+                    return InkWell(
+                      onTap: () => _selectSavedCustomLocation(location),
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFFED7AA)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              location.name,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF0F172A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            if (location.subtitle.trim().isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(
+                                location.subtitle,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: const Color(0xFF64748B),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 

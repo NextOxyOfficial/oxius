@@ -25,6 +25,7 @@ from .views import (
     RideListView,
     RideSkipView,
     RideStatusUpdateView,
+    UserCustomLocationListCreateView,
     VehicleDetailView,
     VehicleListCreateView,
 )
@@ -37,6 +38,11 @@ urlpatterns = [
     path("active/", ActiveRideView.as_view(), name="rides-active"),
     path(
         "location/search/", LocationSearchView.as_view(), name="rides-location-search"
+    ),
+    path(
+        "location/custom/",
+        UserCustomLocationListCreateView.as_view(),
+        name="rides-location-custom",
     ),
     path(
         "location/reverse/", ReverseGeocodeView.as_view(), name="rides-location-reverse"

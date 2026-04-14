@@ -522,6 +522,59 @@ class RideshareService {
     }
   }
 
+  static Future<RideshareApiResult<List<CustomRideLocation>>> getMyCustomLocations() async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse('$_baseUrl/location/custom/'),
+        headers: headers,
+      );
+      return _parseResponse<List<CustomRideLocation>>(
+        response,
+        (data) => (data as List)
+            .map((item) => CustomRideLocation.fromJson(item as Map<String, dynamic>))
+            .toList(),
+      );
+    } catch (e) {
+      return RideshareApiResult<List<CustomRideLocation>>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
+  static Future<RideshareApiResult<CustomRideLocationPurchase>> createCustomLocation({
+    required String name,
+    String subtitle = '',
+    String searchKeywords = '',
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse('$_baseUrl/location/custom/'),
+        headers: headers,
+        body: json.encode({
+          'name': name,
+          'subtitle': subtitle,
+          'search_keywords': searchKeywords,
+          'latitude': latitude,
+          'longitude': longitude,
+        }),
+      );
+      return _parseResponse<CustomRideLocationPurchase>(
+        response,
+        (data) => CustomRideLocationPurchase.fromJson(data as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return RideshareApiResult<CustomRideLocationPurchase>(
+        success: false,
+        message: 'Network error: $e',
+      );
+    }
+  }
+
   static Future<RideshareApiResult<List<NearbyDriver>>> getNearbyDrivers(
     double latitude,
     double longitude, {

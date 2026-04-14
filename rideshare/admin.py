@@ -10,6 +10,7 @@ from .models import (
     RideshareSettings,
     RideStatusHistory,
     SearchableLocation,
+    UserCustomLocation,
     Vehicle,
 )
 
@@ -117,6 +118,36 @@ class SearchableLocationAdmin(admin.ModelAdmin):
         "is_active",
     )
     ordering = ("name", "subtitle")
+
+
+@admin.register(UserCustomLocation)
+class UserCustomLocationAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "name",
+        "subtitle",
+        "fee_paid",
+        "is_active",
+        "updated_at",
+    )
+    list_filter = ("is_active", "created_at", "updated_at")
+    search_fields = ("user__username", "user__phone", "name", "subtitle", "search_keywords")
+    list_editable = ("is_active",)
+    autocomplete_fields = ("user",)
+    readonly_fields = ("payment_transaction", "fee_paid", "created_at", "updated_at")
+    fields = (
+        "user",
+        "name",
+        "subtitle",
+        "search_keywords",
+        "latitude",
+        "longitude",
+        "payment_transaction",
+        "fee_paid",
+        "is_active",
+        "created_at",
+        "updated_at",
+    )
 
 
 class RideStatusHistoryInline(admin.TabularInline):

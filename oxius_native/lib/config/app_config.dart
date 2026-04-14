@@ -5,11 +5,15 @@ import 'package:flutter/foundation.dart';
 class AppConfig {
   static const String _apiOverride = String.fromEnvironment('API_BASE_URL');
   static const String _mediaOverride = String.fromEnvironment('MEDIA_BASE_URL');
-  static const bool _useLocalDevServer = bool.fromEnvironment('USE_LOCAL_API');
+  static const String _localHostOverride = String.fromEnvironment('LOCAL_API_HOST');
+  static const bool _useLocalDevServer = bool.fromEnvironment(
+    'USE_LOCAL_API',
+    defaultValue: true,
+  );
 
   // ==================== DEVELOPMENT CONFIGURATION ====================
-  // Local development is opt-in so debug builds on devices keep working
-  // against the production backend unless a local server is requested.
+  // Local development is the default for debug builds so local backend
+  // testing works out of the box.
   
   // ==================== PRODUCTION CONFIGURATION ====================
   // These are used when building Release APK (flutter build apk --release)
@@ -20,10 +24,10 @@ class AppConfig {
   /// Current API base URL based on build mode
   static String get apiBaseUrl {
     if (_apiOverride.isNotEmpty) {
-      return _apiOverride;
+      return _sanitizeBaseUrl(_apiOverride);
     }
 
-    if (kDebugMode && _useLocalDevServer) {
+    if (_shouldUseLocalDevServer) {
       return '${_localDevHost}/api';
     }
 
@@ -33,10 +37,10 @@ class AppConfig {
   /// Current media base URL based on build mode
   static String get mediaBaseUrl {
     if (_mediaOverride.isNotEmpty) {
-      return _mediaOverride;
+      return _sanitizeBaseUrl(_mediaOverride);
     }
 
-    if (kDebugMode && _useLocalDevServer) {
+    if (_shouldUseLocalDevServer) {
       return _localDevHost;
     }
 
@@ -54,17 +58,36 @@ class AppConfig {
     if (_apiOverride.isNotEmpty || _mediaOverride.isNotEmpty) {
       return 'Custom';
     }
-    if (kDebugMode && _useLocalDevServer) {
-      return 'Development';
+    if (_shouldUseLocalDevServer) {
+      return 'Local Development';
     }
     return 'Production';
   }
 
+  static bool get _shouldUseLocalDevServer => kDebugMode && _useLocalDevServer;
+
   static String get _localDevHost {
+    if (_localHostOverride.isNotEmpty) {
+      return _sanitizeBaseUrl(_localHostOverride);
+    }
+
     if (defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8000';
     }
     return 'http://localhost:8000';
+  }
+
+  static String _sanitizeBaseUrl(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return trimmed;
+
+    final withScheme = trimmed.startsWith('http://') || trimmed.startsWith('https://')
+        ? trimmed
+        : 'http://$trimmed';
+
+    return withScheme.endsWith('/')
+        ? withScheme.substring(0, withScheme.length - 1)
+        : withScheme;
   }
   
   // ==================== HELPER METHODS ====================
@@ -112,6 +135,9 @@ class AppConfig {
       print('║ API URL:     $apiBaseUrl');
       print('║ Media URL:   $mediaBaseUrl');
       print('║ Debug Mode:  $isDevelopment');
+      if (_shouldUseLocalDevServer) {
+        print('║ Local Host:  $_localDevHost');
+      }
       print('╚═══════════════════════════════════════════════════════════════╝');
     }
   }
