@@ -64,8 +64,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD8VY8UHWTyqJ0VQjRPJfipovo8PxjMUiM',
-    appId: '1:866607241594:ios:YOUR_IOS_APP_ID',
+    apiKey: 'AIzaSyBIFHNWrKWy8pgrkcEsp6yy1zzKhy7Qz3w',
+    appId: '1:866607241594:ios:4c6f8e2ad9a70410a79ec3',
     messagingSenderId: '866607241594',
     projectId: 'adsyclub',
     storageBucket: 'adsyclub.firebasestorage.app',
