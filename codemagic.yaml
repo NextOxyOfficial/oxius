@@ -5,8 +5,6 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      groups:
-        - firebase_credentials
       flutter: stable
       xcode: 15.3
       cocoapods: default
@@ -16,17 +14,6 @@ workflows:
         script: |
           cd oxius_native
           flutter pub get
-
-      - name: Set up Firebase (GoogleService-Info.plist)
-        script: |
-          cd oxius_native
-          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
-            echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > ios/Runner/GoogleService-Info.plist
-            echo "GoogleService-Info.plist created successfully"
-          else
-            echo "WARNING: GOOGLE_SERVICE_INFO_PLIST env var not set!"
-            exit 1
-          fi
 
       - name: Build iOS (debug, no codesign)
         script: |
@@ -49,8 +36,6 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.oxius.app
-      groups:
-        - firebase_credentials
       flutter: stable
       xcode: 15.3
       cocoapods: default
@@ -65,17 +50,6 @@ workflows:
         script: |
           cd oxius_native
           flutter pub get
-
-      - name: Set up Firebase (GoogleService-Info.plist)
-        script: |
-          cd oxius_native
-          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
-            echo "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > ios/Runner/GoogleService-Info.plist
-            echo "GoogleService-Info.plist created successfully"
-          else
-            echo "WARNING: GOOGLE_SERVICE_INFO_PLIST env var not set!"
-            exit 1
-          fi
 
       - name: Build iOS IPA (release)
         script: |
