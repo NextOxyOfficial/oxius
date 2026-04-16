@@ -30,7 +30,7 @@ workflows:
     instance_type: mac_mini_m2
 
     integrations:
-      app_store_connect: Oxius App Store Connect
+      app_store_connect: AdsyClub App Store Connect
 
     environment:
       ios_signing:
