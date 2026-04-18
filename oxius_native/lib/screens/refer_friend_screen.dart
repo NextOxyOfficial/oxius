@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
+import '../widgets/ios_web_redirect_screen.dart';
 import '../services/referral_service.dart';
 import '../models/referral_models.dart';
 import '../models/referral_reward_models.dart';
@@ -589,7 +590,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Share your unique link with friends, and earn rewards with different commission rates: 5% on gig completions, 20% on subscriptions and sponsorships!',
+                  isIOSPlatform
+                      ? 'Share your unique link with friends, and earn rewards with different commission rates: 5% on gig completions, 20% on referral activities!'
+                      : 'Share your unique link with friends, and earn rewards with different commission rates: 5% on gig completions, 20% on subscriptions and sponsorships!',
                   style: AppFonts.roboto(
                     fontSize: 12,
                     height: 1.4,

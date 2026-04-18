@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
+import '../ios_web_redirect_screen.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
@@ -208,7 +209,13 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const BecomeGoldSponsorScreen(),
+                  builder: (context) => isIOSPlatform
+                      ? const IOSWebRedirectScreen(
+                          title: 'Gold Sponsor',
+                          description: 'Gold Sponsor membership is managed through our website. Visit adsyclub.com to become a Gold Sponsor and boost your business visibility.',
+                          webPath: 'business-network/gold-sponsors',
+                        )
+                      : const BecomeGoldSponsorScreen(),
                 ),
               );
             },

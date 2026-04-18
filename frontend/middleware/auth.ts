@@ -9,6 +9,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     "/register",
     "/auth/login",
     "/auth/register",
+    "/auth/app-login",
     "/about",
     "/contact",
     "/privacy",

@@ -147,6 +147,8 @@ urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/validate-token/", TokenValidationView.as_view(), name="validate_token"),
+    path("auth/generate-web-token/", generate_web_login_token, name="generate_web_token"),
+    path("auth/exchange-web-token/", exchange_web_login_token, name="exchange_web_token"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     # payment

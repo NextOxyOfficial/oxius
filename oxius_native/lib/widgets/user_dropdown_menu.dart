@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import 'ios_web_redirect_screen.dart';
 
 class UserDropdownMenu extends StatefulWidget {
   final User? user;
@@ -308,7 +309,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
               ),
             ),
 
-            // Bottom Section: Action
+            // Bottom Section: Action (hide upgrade prompt on iOS)
+            if (!isIOSPlatform || isPro)
             GestureDetector(
               onTap: isPro ? widget.onManageSubscription : widget.onUpgradeToPro,
               child: Container(

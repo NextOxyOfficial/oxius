@@ -23,6 +23,7 @@ import '../utils/network_error_handler.dart';
 import '../models/classified_post.dart';
 import 'wallet/wallet_screen.dart';
 import 'settings_screen.dart';
+import '../widgets/ios_web_redirect_screen.dart';
 import 'inbox_screen.dart';
 import 'eshop_screen.dart';
 import 'news_screen.dart';
@@ -812,7 +813,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            // Upgrade to Pro Action - p-3.5
+            // Upgrade to Pro Action - p-3.5 (hidden on iOS)
+            if (!isIOSPlatform)
             InkWell(
               onTap: () {
                 setState(() => _isDropdownOpen = false);

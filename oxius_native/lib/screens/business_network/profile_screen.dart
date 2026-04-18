@@ -14,6 +14,7 @@ import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
+import '../../widgets/ios_web_redirect_screen.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 
 import 'create_post_screen.dart';
@@ -1176,43 +1177,44 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    DiamondPurchaseBottomSheet.show(
-                      context,
-                      onPurchaseSuccess: () {
-                        setState(() {
-                          _loadProfileData();
-                        });
-                      },
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink.shade500,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.add, size: 14, color: Colors.white),
-                      const SizedBox(width: 3),
-                      const Text(
-                        'Top Up',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                if (!isIOSPlatform) ...[
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      DiamondPurchaseBottomSheet.show(
+                        context,
+                        onPurchaseSuccess: () {
+                          setState(() {
+                            _loadProfileData();
+                          });
+                        },
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink.shade500,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ],
+                      elevation: 0,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add, size: 14, color: Colors.white),
+                        const SizedBox(width: 3),
+                        const Text(
+                          'Top Up',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
             ),
           ],
           

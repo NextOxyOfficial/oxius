@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/diamond_models.dart';
 import '../../services/diamond_service.dart';
 import '../../services/auth_service.dart';
+import '../ios_web_redirect_screen.dart';
 
 class DiamondPurchaseBottomSheet extends StatefulWidget {
   final VoidCallback? onPurchaseSuccess;
@@ -13,6 +14,19 @@ class DiamondPurchaseBottomSheet extends StatefulWidget {
   });
 
   static void show(BuildContext context, {VoidCallback? onPurchaseSuccess}) {
+    if (isIOSPlatform) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const IOSWebRedirectScreen(
+            title: 'Buy Diamonds',
+            description: 'Diamond purchases are managed through our website. Visit adsyclub.com to buy diamonds for your Business Network profile.',
+            webPath: 'deposit-withdraw',
+          ),
+        ),
+      );
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

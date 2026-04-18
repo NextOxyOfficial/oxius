@@ -9,6 +9,7 @@ import '../screens/eshop_screen.dart';
 import '../screens/elearning_screen.dart';
 import '../screens/news_screen.dart';
 import '../screens/rideshare/rideshare_screen.dart';
+import 'ios_web_redirect_screen.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -504,6 +505,13 @@ class _HeroBannerState extends State<HeroBanner> {
   }
 
   Widget _buildMobileServicesGrid({EdgeInsets? margin}) {
+    final services = isIOSPlatform
+        ? mobileServices.where((s) =>
+            s['isComingSoon'] != true &&
+            s['label'] != _translationService.t('packeges', fallback: 'Membership') &&
+            s['label'] != 'Membership' &&
+            s['label'] != 'Packages').toList()
+        : mobileServices;
     return Padding(
       padding: margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
       child: GridView.builder(
@@ -515,8 +523,8 @@ class _HeroBannerState extends State<HeroBanner> {
           crossAxisSpacing: 8,
           childAspectRatio: 0.92, // Slightly taller than square
         ),
-        itemCount: mobileServices.length,
-        itemBuilder: (context, index) => _buildMobileServiceButton(mobileServices[index]),
+        itemCount: services.length,
+        itemBuilder: (context, index) => _buildMobileServiceButton(services[index]),
       ),
     );
   }

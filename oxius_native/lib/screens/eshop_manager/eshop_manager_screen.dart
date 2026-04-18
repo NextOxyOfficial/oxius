@@ -3,6 +3,7 @@ import '../../services/auth_service.dart';
 import '../../services/eshop_manager_service.dart';
 import '../../models/eshop_manager_models.dart';
 import '../../services/translation_service.dart';
+import '../../widgets/ios_web_redirect_screen.dart';
 import 'widgets/store_details_card.dart';
 import 'widgets/my_orders_tab.dart';
 import 'widgets/my_products_tab.dart';
@@ -369,7 +370,9 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Upgrade to Pro to access the Shop Manager and start selling your products.',
+                              isIOSPlatform
+                                  ? 'Pro membership is required to access the Shop Manager. Visit our website for more details.'
+                                  : 'Upgrade to Pro to access the Shop Manager and start selling your products.',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,
@@ -377,6 +380,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                               ),
                             ),
                             const SizedBox(height: 16),
+                            if (!isIOSPlatform)
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -480,7 +484,9 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Upgrade to Pro to access the Shop Manager and start selling your products.',
+                        isIOSPlatform
+                            ? 'Pro membership is required to access the Shop Manager. Visit our website for more details.'
+                            : 'Upgrade to Pro to access the Shop Manager and start selling your products.',
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey.shade600,
@@ -488,6 +494,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                         ),
                       ),
                       const SizedBox(height: 16),
+                      if (!isIOSPlatform)
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(

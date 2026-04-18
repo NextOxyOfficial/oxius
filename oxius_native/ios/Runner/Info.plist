@@ -68,12 +68,7 @@
 	<string>AdsyClub shares your location in the background while you are active as a driver so passengers can find you and you can receive ride requests.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>AdsyClub shares your location in the background while you are active as a driver so passengers can find you and you can receive ride requests.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>AdsyClub can use your contacts to help you connect with friends.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>AdsyClub uses Face ID for secure authentication.</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>AdsyClub uses this to provide personalized content and ads.</string>
+
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>

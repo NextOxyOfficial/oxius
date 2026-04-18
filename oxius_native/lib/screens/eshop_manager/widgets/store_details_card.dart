@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
+import '../../../widgets/ios_web_redirect_screen.dart';
 import 'buy_slots_bottom_sheet.dart';
 
 class StoreDetailsCard extends StatefulWidget {
@@ -528,6 +529,19 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   const SizedBox(width: 6),
                   GestureDetector(
                     onTap: () {
+                      if (isIOSPlatform) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const IOSWebRedirectScreen(
+                              title: 'Buy Product Slots',
+                              description: 'Additional product slots are managed through our website. Visit adsyclub.com to purchase more slots for your eShop.',
+                              webPath: 'shop-manager',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,

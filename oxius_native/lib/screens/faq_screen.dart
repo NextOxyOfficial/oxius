@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import '../widgets/ios_web_redirect_screen.dart';
 
 class FaqScreen extends StatelessWidget {
   const FaqScreen({super.key});
@@ -69,6 +70,7 @@ class FaqScreen extends StatelessWidget {
             'Micro-Gigs are small tasks or services that you can offer or hire others to complete. Examples include graphic design, writing, data entry, and more.',
           ),
           
+          if (!isIOSPlatform)
           _buildFaqItem(
             'How do I upgrade to Pro?',
             'Visit the Upgrade to Pro section from the menu, select a package that suits your needs, and complete the payment. Pro members get additional features and benefits.',

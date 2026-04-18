@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../screens/settings_screen.dart';
+import 'ios_web_redirect_screen.dart';
 
 class MobileDrawer extends StatefulWidget {
   const MobileDrawer({super.key});
@@ -325,6 +326,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
                       child: Divider(height: 1, color: Colors.grey.shade300),
                     ),
 
+                    if (!isIOSPlatform)
                     _buildDrawerItem(
                       context: context,
                       title: _translationService.t('upgrade_pro', fallback: 'Upgrade to Pro'),

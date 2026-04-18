@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../screens/eshop_screen.dart';
 import '../config/app_config.dart';
 import '../utils/url_launcher_utils.dart';
+import 'ios_web_redirect_screen.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
@@ -229,7 +230,8 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
       {'title': 'Classified Services', 'route': '/'},
       {'title': 'Earn Money', 'route': '/micro-gigs'},
       {'title': 'Mobile Recharge', 'route': '/mobile-recharge'},
-      {'title': 'Upgrade to Pro', 'route': '/upgrade-to-pro'},
+      if (!isIOSPlatform)
+        {'title': 'Upgrade to Pro', 'route': '/upgrade-to-pro'},
       {'title': 'Refer Program', 'route': '/refer-a-friend'},
       {'title': 'About Us', 'route': '/about'},
       {'title': 'FAQ', 'route': '/faq'},

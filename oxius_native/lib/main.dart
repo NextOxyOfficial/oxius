@@ -28,6 +28,7 @@ import 'screens/upgrade_to_pro_screen.dart';
 import 'screens/checkout_screen.dart';
 import 'screens/wallet/wallet_screen.dart';
 import 'screens/mobile_recharge/mobile_recharge_screen.dart';
+import 'widgets/ios_web_redirect_screen.dart';
 import 'screens/eshop_screen.dart';
 import 'screens/eshop_manager/eshop_manager_screen.dart';
 import 'screens/news_screen.dart';
@@ -243,12 +244,15 @@ class MyApp extends StatelessWidget {
             '/courses': (context) => const ElearningScreen(),
             '/elearning': (context) => const ElearningScreen(),
             '/deposit-withdraw': (context) => const WalletScreen(),
-            '/pending-tasks': (context) => Scaffold(
-              appBar: AppBar(title: const Text('Pending Tasks')),
-              body: const Center(child: Text('Coming Soon!')),
-            ),
+            '/pending-tasks': (context) => const HomeScreen(),
             '/mobile-recharge': (context) => const MobileRechargeScreen(),
-            '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
+            '/upgrade-to-pro': (context) => isIOSPlatform
+                ? const IOSWebRedirectScreen(
+                    title: 'Upgrade to Pro',
+                    description: 'Pro membership plans and upgrades are managed through our website. Visit adsyclub.com to explore plans and activate your Pro account.',
+                    webPath: 'upgrade-to-pro',
+                  )
+                : const UpgradeToProScreen(),
             '/eshop': (context) => const EshopScreen(),
             '/shop-manager': (context) => const EshopManagerScreen(),
             '/adsy-news': (context) => const NewsScreen(),
