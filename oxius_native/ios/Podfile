@@ -41,6 +41,18 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # Prevent permission_handler from compiling App Tracking Transparency support.
+    # This avoids ATT framework linkage when the app does not request tracking.
+    if target.name == 'permission_handler_apple'
+      target.build_configurations.each do |config|
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
+        defs = [defs] if defs.is_a?(String)
+        defs << 'PERMISSION_APP_TRACKING_TRANSPARENCY=0' unless defs.include?('PERMISSION_APP_TRACKING_TRANSPARENCY=0')
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
+      end
+    end
     
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.5'

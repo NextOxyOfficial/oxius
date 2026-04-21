@@ -7,6 +7,7 @@ import 'drawer_news.dart';
 import 'drawer_hashtags.dart';
 import 'drawer_featured_product.dart';
 import 'drawer_contributors.dart';
+import '../ios_web_redirect_screen.dart';
 
 class BusinessNetworkDrawer extends StatelessWidget {
   final String? currentRoute;
@@ -121,15 +122,18 @@ class BusinessNetworkDrawer extends StatelessWidget {
                     _buildModernDivider(),
                     const SizedBox(height: 12),
                     
-                    // Gold Sponsor Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: DrawerGoldSponsor(isLoggedIn: user != null),
-                    ),
-                    
-                    const SizedBox(height: 12),
-                    _buildModernDivider(),
-                    const SizedBox(height: 12),
+                    // Gold Sponsor Section is hidden on iOS to comply with App Store
+                    // digital purchase policy for this release.
+                    if (!isIOSPlatform) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: DrawerGoldSponsor(isLoggedIn: user != null),
+                      ),
+
+                      const SizedBox(height: 12),
+                      _buildModernDivider(),
+                      const SizedBox(height: 12),
+                    ],
                     
                     // News Section
                     Padding(
