@@ -12,6 +12,7 @@ import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import '../../widgets/business_network/user_suggestions_card.dart';
+import '../../widgets/ios_web_redirect_screen.dart';
 import '../../widgets/business_network/sponsored_products_card.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
@@ -436,6 +437,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Gold Sponsors Slider hidden on iOS for App Store compliance.
+        if (!isIOSPlatform)
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: GoldSponsorsSlider(),

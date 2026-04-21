@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
+import '../../widgets/ios_web_redirect_screen.dart';
 import 'profile_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -478,7 +479,8 @@ class _SearchScreenState extends State<SearchScreen> {
       return ListView(
         padding: EdgeInsets.zero,
         children: [
-          // Gold Sponsors Slider
+          // Gold Sponsors Slider (hidden on iOS for App Store compliance)
+          if (!isIOSPlatform)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             child: GoldSponsorsSlider(),
