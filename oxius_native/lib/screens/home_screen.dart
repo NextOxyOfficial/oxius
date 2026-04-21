@@ -633,11 +633,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         
-        // Membership Section - px-2 pb-3 (8px horizontal, 12px bottom)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
-          child: _buildMembershipCard(context, isPro, user),
-        ),
+        // Membership Section is hidden on iOS for App Store compliance.
+        if (!isIOSPlatform)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+            child: _buildMembershipCard(context, isPro, user),
+          ),
         
         // Main Navigation Grid - px-4 pt-2 pb-3
         Padding(

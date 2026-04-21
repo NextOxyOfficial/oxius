@@ -309,8 +309,8 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
               ),
             ),
 
-            // Bottom Section: Action (hide upgrade prompt on iOS)
-            if (!isIOSPlatform || isPro)
+            // Hide membership action on iOS to avoid paid-plan promotion/access entry points.
+            if (!isIOSPlatform)
             GestureDetector(
               onTap: isPro ? widget.onManageSubscription : widget.onUpgradeToPro,
               child: Container(

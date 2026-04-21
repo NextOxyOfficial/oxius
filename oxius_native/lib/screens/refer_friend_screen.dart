@@ -653,7 +653,14 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                 const SizedBox(height: 12),
                 _buildStep(1, 'Create Account', 'Sign up for a free account and get your unique referral link instantly', Icons.person_add_rounded),
                 _buildStep(2, 'Share Your Link', 'Share your referral link with friends via email, social media, or messaging apps', Icons.share_rounded),
-                _buildStep(3, 'Earn Commissions', 'Earn different commission rates: 5% on gigs, 20% on subscriptions & sponsorships', Icons.paid_rounded),
+                _buildStep(
+                  3,
+                  'Earn Commissions',
+                  isIOSPlatform
+                      ? 'Earn different commission rates: 5% on gigs, 20% on referral activities'
+                      : 'Earn different commission rates: 5% on gigs, 20% on subscriptions & sponsorships',
+                  Icons.paid_rounded,
+                ),
               ],
             ),
           ),
