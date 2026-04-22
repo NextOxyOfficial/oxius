@@ -647,3 +647,30 @@ def notify_admin_kyc_submission(user):
 
     html = _base_template(subject, body)
     return _send_email(subject, ADMIN_EMAIL, f"KYC submission from {name}", html)
+
+
+def notify_admin_user_blocked(blocker, blocked_user, reason=""):
+    """Notify admin when a user is blocked — required by Apple App Store Guideline 1.2 (UGC moderation)"""
+    blocker_name = blocker.name or blocker.first_name or blocker.username or "Unknown"
+    blocked_name = blocked_user.name or blocked_user.first_name or blocked_user.username or "Unknown"
+    subject = "User Block Report — Action Required"
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">A user has blocked another user on AdsyClub. Please review the blocked account for potential policy violations.</p>
+
+{_info_table(
+    _info_row("Reported By (Blocker)", f"{blocker_name} (@{blocker.username})") +
+    _info_row("Blocker Email", blocker.email or "N/A") +
+    _info_row("Blocked User", f"{blocked_name} (@{blocked_user.username})") +
+    _info_row("Blocked Email", blocked_user.email or "N/A") +
+    _info_row("Reason", reason or "Not specified") +
+    _info_row("Date", timezone.now().strftime("%B %d, %Y %I:%M %p"))
+)}
+
+<p style="color:#ef4444;font-size:14px;line-height:1.6;margin:16px 0;font-weight:600;">⚠️ Please review the blocked user's content and account within 24 hours per our content moderation policy.</p>
+
+{_button("Review Blocked Users", SITE_URL + "/admin/adsyconnect/blockeduser/")}
+"""
+
+    html = _base_template(subject, body)
+    return _send_email(subject, ADMIN_EMAIL, f"User block report: {blocker_name} blocked {blocked_name}", html)

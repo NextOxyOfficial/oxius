@@ -632,8 +632,17 @@ class BlockedUserViewSet(viewsets.ModelViewSet):
         ).select_related('blocker', 'blocked')
     
     def perform_create(self, serializer):
-        """Block a user"""
-        serializer.save(blocker=self.request.user)
+        """Block a user and notify admin (Apple App Store Guideline 1.2)"""
+        instance = serializer.save(blocker=self.request.user)
+        try:
+            from base.email_service import notify_admin_user_blocked
+            notify_admin_user_blocked(
+                blocker=self.request.user,
+                blocked_user=instance.blocked,
+                reason=self.request.data.get('reason', ''),
+            )
+        except Exception:
+            pass  # Never let email failure break the block action
     
     @action(detail=False, methods=['post'])
     def unblock(self, request):
