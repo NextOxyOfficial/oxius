@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationPermissionGate extends StatefulWidget {
   final Widget child;
@@ -15,8 +16,11 @@ class NotificationPermissionGate extends StatefulWidget {
 }
 
 class _NotificationPermissionGateState extends State<NotificationPermissionGate> {
+  static const String _skipPrefKey = 'notification_permission_skipped_v1';
+
   bool _hasPermission = false;
   bool _isChecking = true;
+  bool _userSkipped = false;
 
   @override
   void initState() {
@@ -26,11 +30,27 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
 
   Future<void> _checkPermission() async {
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    bool skipped = false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      skipped = prefs.getBool(_skipPrefKey) ?? false;
+    } catch (_) {}
+    if (!mounted) return;
     setState(() {
       _hasPermission = settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional;
+      _userSkipped = skipped;
       _isChecking = false;
     });
+  }
+
+  Future<void> _skipForNow() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_skipPrefKey, true);
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() => _userSkipped = true);
   }
 
   Future<void> _requestPermission() async {
@@ -87,13 +107,27 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
           ],
         ),
         content: const Text(
-          'Notifications are required to use this app. Please enable them in your device settings.',
+          'Notifications help you stay updated with messages, orders, and important announcements. You can enable them in your device settings, or skip for now.',
           style: TextStyle(
             fontSize: 14,
             height: 1.5,
           ),
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _skipForNow();
+            },
+            child: Text(
+              'Skip for now',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
@@ -125,7 +159,7 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
       );
     }
 
-    if (!_hasPermission) {
+    if (!_hasPermission && !_userSkipped) {
       return Scaffold(
         body: SafeArea(
           child: LayoutBuilder(
@@ -238,34 +272,37 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
                     ),
                     const SizedBox(height: 14),
 
-                    // Required notice
+                    // Skip option — notifications are optional. Users can
+                    // enable them later from device Settings.
                     SizedBox(
                       width: isWide ? 400 : double.infinity,
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(8),
+                      child: TextButton(
+                        onPressed: _skipForNow,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.info_rounded,
-                              color: Color(0xFFF59E0B),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Notifications are required to use this app',
-                                style: TextStyle(
-                                  fontSize: isWide ? 14.0 : 13.0,
-                                  color: Colors.grey.shade800,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'Skip for now',
+                          style: TextStyle(
+                            fontSize: isWide ? 15.0 : 14.0,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF6B7280),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    SizedBox(
+                      width: isWide ? 400 : double.infinity,
+                      child: Text(
+                        'You can enable notifications later in Settings',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isWide ? 12.0 : 11.0,
+                          color: Colors.grey.shade500,
                         ),
                       ),
                     ),
