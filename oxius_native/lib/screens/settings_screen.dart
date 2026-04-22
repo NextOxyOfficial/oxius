@@ -696,37 +696,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _changePassword() async {
-    if (!_securityFormKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() => _isChangingPassword = true);
-
-    try {
-      final result = await SettingsService.changePassword(
-        oldPassword: _oldPasswordController.text,
-        newPassword: _newPasswordController.text,
-      );
-
-      if ((result['success'] ?? false) == true) {
-        _oldPasswordController.clear();
-        _newPasswordController.clear();
-        _confirmPasswordController.clear();
-        setState(() {});
-        _showSnackBar(result['message'] ?? 'Password changed successfully');
-      } else {
-        _showSnackBar(result['message'] ?? 'Failed to change password', isError: true);
-      }
-    } catch (_) {
-      _showSnackBar('Failed to change password', isError: true);
-    } finally {
-      if (mounted) {
-        setState(() => _isChangingPassword = false);
-      }
-    }
-  }
-
   Future<void> _showDeleteAccountDialog() async {
     final passwordController = TextEditingController();
     bool showPassword = false;
