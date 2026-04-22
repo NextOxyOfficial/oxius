@@ -56,16 +56,23 @@ Future<Uri> _buildWebRedirectUrl(String webPath) async {
 
 /// A screen that redirects iOS users to the website for features
 /// managed through the web platform.
+///
+/// When [hideWebRedirect] is true, the "Continue on Website" button is
+/// suppressed. This MUST be used for any screen that would otherwise direct
+/// the user toward a paid feature / purchase mechanism that is not available
+/// as an iOS In-App Purchase (Apple App Store Review Guideline 3.1.1).
 class IOSWebRedirectScreen extends StatefulWidget {
   final String title;
   final String description;
   final String webPath;
+  final bool hideWebRedirect;
 
   const IOSWebRedirectScreen({
     super.key,
     required this.title,
     required this.description,
     this.webPath = '',
+    this.hideWebRedirect = false,
   });
 
   @override
@@ -121,16 +128,16 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
                   color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(
-                  Icons.language_rounded,
+                child: Icon(
+                  widget.hideWebRedirect ? Icons.info_outline_rounded : Icons.language_rounded,
                   size: 56,
-                  color: Color(0xFF2563EB),
+                  color: const Color(0xFF2563EB),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Available on Web',
-                style: TextStyle(
+              Text(
+                widget.hideWebRedirect ? 'Not Available' : 'Available on Web',
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: Color(0xFF14213D),
@@ -149,7 +156,9 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: widget.hideWebRedirect
+                    ? const SizedBox.shrink()
+                    : ElevatedButton(
                   onPressed: _isLoading ? null : _openWebsite,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF2563EB),
@@ -179,14 +188,15 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
                         ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                'You\'ll be signed in automatically',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade500,
+              if (!widget.hideWebRedirect) const SizedBox(height: 12),
+              if (!widget.hideWebRedirect)
+                Text(
+                  'You\'ll be signed in automatically',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
                 ),
-              ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.pop(context),

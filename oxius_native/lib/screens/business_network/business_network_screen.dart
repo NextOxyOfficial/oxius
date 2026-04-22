@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -55,6 +56,70 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     _loadSponsoredProducts();
     _loadUnreadNotificationCount();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityGuidelines());
+  }
+
+  /// Apple Guideline 1.2 — Block first-time users from UGC until they
+  /// explicitly accept the community guidelines / EULA. Persists acceptance
+  /// in SharedPreferences so returning users don't see it again.
+  Future<void> _checkCommunityGuidelines() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      const key = 'bn_guidelines_accepted_v1';
+      final accepted = prefs.getBool(key) ?? false;
+      if (accepted || !mounted) return;
+
+      final result = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogCtx) => WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.shield_outlined, color: Color(0xFF2563EB)),
+                SizedBox(width: 10),
+                Expanded(child: Text('Community Guidelines')),
+              ],
+            ),
+            content: const SingleChildScrollView(
+              child: Text(
+                'Welcome to the Business Network — a community for professional and respectful interaction.\n\n'
+                'By continuing, you agree to our End User License Agreement (EULA) and confirm that you will:\n\n'
+                '• Not post content that is objectionable, abusive, harassing, hateful, sexually explicit, discriminatory, or illegal.\n'
+                '• Not impersonate others, spread misinformation, or infringe intellectual property.\n'
+                '• Respect other users. You can block or report any user or post at any time.\n\n'
+                'We have zero tolerance for abusive content. Reported content and users are reviewed within 24 hours and removed if guidelines are violated. Your account may be terminated for violations.',
+                style: TextStyle(fontSize: 14, height: 1.5),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(false),
+                child: const Text('Decline', style: TextStyle(color: Color(0xFFDC2626))),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('I Agree'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (result == true) {
+        await prefs.setBool(key, true);
+      } else if (mounted) {
+        // User declined — leave the Business Network.
+        Navigator.of(context).maybePop();
+      }
+    } catch (_) {
+      // Non-fatal: if prefs fail, don't block the user.
+    }
   }
 
   Future<void> _loadSponsoredProducts() async {

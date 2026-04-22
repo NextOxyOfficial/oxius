@@ -19,9 +19,10 @@ class DiamondPurchaseBottomSheet extends StatefulWidget {
         context,
         MaterialPageRoute(
           builder: (context) => const IOSWebRedirectScreen(
-            title: 'Buy Diamonds',
-            description: 'Diamond purchases are managed through our website. Visit adsyclub.com to buy diamonds for your Business Network profile.',
+            title: 'Diamonds',
+            description: 'This feature is not available in this version of the app.',
             webPath: 'deposit-withdraw',
+            hideWebRedirect: true,
           ),
         ),
       );

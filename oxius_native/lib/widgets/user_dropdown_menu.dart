@@ -471,8 +471,9 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
         'icon': Icons.shopping_bag,
         'color': const Color(0xFF2563EB),
         'route': '/shop-manager',
-        'badge': _tr('pro', fallback: 'Pro'),
-        'badgeType': 'pro',
+        // Hide Pro badge on iOS to avoid implying a paid-upgrade requirement.
+        if (!isIOSPlatform) 'badge': _tr('pro', fallback: 'Pro'),
+        if (!isIOSPlatform) 'badgeType': 'pro',
       },
       {
         'label': _tr('adsy_pay', fallback: 'Adsy Pay'),

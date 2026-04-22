@@ -212,8 +212,9 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                   builder: (context) => isIOSPlatform
                       ? const IOSWebRedirectScreen(
                           title: 'Gold Sponsor',
-                          description: 'Gold Sponsor membership is managed through our website. Visit adsyclub.com to become a Gold Sponsor and boost your business visibility.',
+                          description: 'This feature is not available in this version of the app.',
                           webPath: 'business-network/gold-sponsors',
+                          hideWebRedirect: true,
                         )
                       : const BecomeGoldSponsorScreen(),
                 ),

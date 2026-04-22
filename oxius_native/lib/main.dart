@@ -249,8 +249,9 @@ class MyApp extends StatelessWidget {
             '/upgrade-to-pro': (context) => isIOSPlatform
                 ? const IOSWebRedirectScreen(
                     title: 'Upgrade to Pro',
-                    description: 'Pro membership plans and upgrades are managed through our website. Visit adsyclub.com to explore plans and activate your Pro account.',
+                    description: 'This feature is not available in this version of the app.',
                     webPath: 'upgrade-to-pro',
+                    hideWebRedirect: true,
                   )
                 : const UpgradeToProScreen(),
             '/eshop': (context) => const EshopScreen(),

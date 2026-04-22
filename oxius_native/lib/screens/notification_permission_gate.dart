@@ -128,137 +128,155 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
     if (!_hasPermission) {
       return Scaffold(
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Icon
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.notifications_active_rounded,
-                    size: 80,
-                    color: Color(0xFF3B82F6),
-                  ),
-                ),
-                const SizedBox(height: 32),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth > 600;
+              final iconSize = isWide ? 96.0 : 80.0;
+              final iconPadding = isWide ? 36.0 : 28.0;
+              final titleSize = isWide ? 32.0 : 26.0;
+              final bodySize = isWide ? 18.0 : 15.0;
+              final hPad = isWide ? 80.0 : 28.0;
 
-                // Title
-                const Text(
-                  'Stay Connected',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1F2937),
-                    letterSpacing: -0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-
-                // Description
-                Text(
-                  'Enable notifications to receive important updates and stay connected with your network.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-
-                // Benefits list
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'You\'ll receive notifications for:',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937),
-                        ),
+              final content = Padding(
+                padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Icon
+                    Container(
+                      padding: EdgeInsets.all(iconPadding),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: 16),
-                      _buildBenefit(Icons.chat_bubble_rounded, 'New messages from connections'),
-                      _buildBenefit(Icons.shopping_bag_rounded, 'Order updates and tracking'),
-                      _buildBenefit(Icons.support_agent_rounded, 'Support ticket replies'),
-                      _buildBenefit(Icons.campaign_rounded, 'Important announcements'),
-                      _buildBenefit(Icons.account_balance_wallet_rounded, 'Wallet transactions'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // Enable button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _requestPermission,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      child: Icon(
+                        Icons.notifications_active_rounded,
+                        size: iconSize,
+                        color: const Color(0xFF3B82F6),
                       ),
                     ),
-                    child: const Text(
-                      'Enable Notifications',
+                    const SizedBox(height: 28),
+
+                    // Title
+                    Text(
+                      'Stay Connected',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1F2937),
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Description
+                    Text(
+                      'Enable notifications to receive important updates and stay connected with your network.',
+                      style: TextStyle(
+                        fontSize: bodySize,
+                        color: Colors.grey.shade600,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+
+                    // Benefits list
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'You\'ll receive notifications for:',
+                            style: TextStyle(
+                              fontSize: isWide ? 15.0 : 14.0,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildBenefit(Icons.chat_bubble_rounded, 'New messages from connections', isWide: isWide),
+                          _buildBenefit(Icons.shopping_bag_rounded, 'Order updates and tracking', isWide: isWide),
+                          _buildBenefit(Icons.support_agent_rounded, 'Support ticket replies', isWide: isWide),
+                          _buildBenefit(Icons.campaign_rounded, 'Important announcements', isWide: isWide),
+                          _buildBenefit(Icons.account_balance_wallet_rounded, 'Wallet transactions', isWide: isWide),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                    const SizedBox(height: 32),
 
-                // Required notice
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_rounded,
-                        color: Color(0xFFF59E0B),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
+                    // Enable button
+                    SizedBox(
+                      width: isWide ? 400 : double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: _requestPermission,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3B82F6),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                         child: Text(
-                          'Notifications are required to use this app',
+                          'Enable Notifications',
                           style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade800,
-                            fontWeight: FontWeight.w500,
+                            fontSize: isWide ? 17.0 : 16.0,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Required notice
+                    SizedBox(
+                      width: isWide ? 400 : double.infinity,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.info_rounded,
+                              color: Color(0xFFF59E0B),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Notifications are required to use this app',
+                                style: TextStyle(
+                                  fontSize: isWide ? 14.0 : 13.0,
+                                  color: Colors.grey.shade800,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+
+              return isWide
+                  ? Center(child: SingleChildScrollView(child: content))
+                  : SingleChildScrollView(child: content);
+            },
           ),
         ),
       );
@@ -267,14 +285,14 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
     return widget.child;
   }
 
-  Widget _buildBenefit(IconData icon, String text) {
+  Widget _buildBenefit(IconData icon, String text, {bool isWide = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
           Icon(
             icon,
-            size: 20,
+            size: isWide ? 22 : 20,
             color: const Color(0xFF10B981),
           ),
           const SizedBox(width: 12),
@@ -282,7 +300,7 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
             child: Text(
               text,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: isWide ? 15.0 : 14.0,
                 color: Colors.grey.shade700,
               ),
             ),

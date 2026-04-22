@@ -1924,6 +1924,36 @@ def verifyOTP(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+def delete_account(request):
+    """
+    Permanently delete the authenticated user's account and all associated data.
+    Requires password confirmation for security.
+    """
+    user = request.user
+    password = request.data.get("password")
+
+    if not password:
+        return Response(
+            {"error": "Password confirmation is required to delete your account"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not check_password(password, user.password):
+        return Response(
+            {"error": "Incorrect password"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Delete the user account (cascades to related data via Django's on_delete)
+    user.delete()
+
+    return Response(
+        {"message": "Account deleted successfully"}, status=status.HTTP_200_OK
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def change_password(request):
     user = request.user
     old_password = request.data.get("old_password")

@@ -124,6 +124,47 @@ class SettingsService {
     }
   }
 
+  /// Delete user account permanently
+  static Future<Map<String, dynamic>> deleteAccount({
+    required String password,
+  }) async {
+    try {
+      final token = await AuthService.getValidToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/delete-account/'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Account deleted successfully',
+        };
+      } else {
+        final errorData = json.decode(response.body);
+        return {
+          'success': false,
+          'message': errorData['error'] ?? 'Failed to delete account',
+        };
+      }
+    } catch (e) {
+      print('Error deleting account: $e');
+      return {
+        'success': false,
+        'message': 'Failed to delete account. Please try again.',
+      };
+    }
+  }
+
   /// Delete profile image
   static Future<bool> deleteProfileImage(String email) async {
     try {

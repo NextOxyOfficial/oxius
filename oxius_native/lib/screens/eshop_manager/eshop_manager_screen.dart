@@ -338,7 +338,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'PREMIUM ACCESS',
+                            isIOSPlatform ? 'UNAVAILABLE' : 'PREMIUM ACCESS',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -359,9 +359,9 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
-                              'Premium Access Required',
-                              style: TextStyle(
+                            Text(
+                              isIOSPlatform ? 'Shop Manager Unavailable' : 'Premium Access Required',
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF111827),
@@ -371,7 +371,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                             const SizedBox(height: 8),
                             Text(
                               isIOSPlatform
-                                  ? 'Pro membership is required to access the Shop Manager. Visit our website for more details.'
+                                  ? 'The Shop Manager is not available in this version of the app.'
                                   : 'Upgrade to Pro to access the Shop Manager and start selling your products.',
                               style: TextStyle(
                                 fontSize: 13,
@@ -453,7 +453,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'PREMIUM ACCESS',
+                            isIOSPlatform ? 'UNAVAILABLE' : 'PREMIUM ACCESS',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -473,9 +473,9 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                      const Text(
-                        'Premium Access Required',
-                        style: TextStyle(
+                      Text(
+                        isIOSPlatform ? 'Shop Manager Unavailable' : 'Premium Access Required',
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF111827),
@@ -485,7 +485,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                       const SizedBox(height: 8),
                       Text(
                         isIOSPlatform
-                            ? 'Pro membership is required to access the Shop Manager. Visit our website for more details.'
+                            ? 'The Shop Manager is not available in this version of the app.'
                             : 'Upgrade to Pro to access the Shop Manager and start selling your products.',
                         style: TextStyle(
                           fontSize: 13,

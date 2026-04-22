@@ -525,7 +525,7 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             : const Color(0xFF10B981),
                   ),
                 ),
-                if (remainingSlots <= 3) ...[
+                if (remainingSlots <= 3 && !isIOSPlatform) ...[
                   const SizedBox(width: 6),
                   GestureDetector(
                     onTap: () {
@@ -534,9 +534,10 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => const IOSWebRedirectScreen(
-                              title: 'Buy Product Slots',
-                              description: 'Additional product slots are managed through our website. Visit adsyclub.com to purchase more slots for your eShop.',
+                              title: 'Product Slots',
+                              description: 'This feature is not available in this version of the app.',
                               webPath: 'shop-manager',
+                              hideWebRedirect: true,
                             ),
                           ),
                         );

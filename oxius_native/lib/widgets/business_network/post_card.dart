@@ -441,6 +441,14 @@ class _PostCardState extends State<PostCard> {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.block, color: Colors.red),
+                  title: const Text('Block User', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleBlockUser();
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.visibility_off, color: Colors.grey),
                   title: const Text('Hide'),
                   onTap: () {
@@ -570,6 +578,56 @@ class _PostCardState extends State<PostCard> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  Future<void> _handleBlockUser() async {
+    // Prefer UUID (the User PK on the backend); username is only used for display.
+    final userId = _post.user.uuid ?? _post.user.id.toString();
+    final username = _post.user.username;
+    if (userId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cannot block this user'), backgroundColor: Colors.red),
+        );
+      }
+      return;
+    }
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Block User'),
+        content: Text(
+          username != null && username.isNotEmpty
+              ? 'Block @$username? You will no longer see their posts.'
+              : 'Block ${_post.user.name}? You will no longer see their posts.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final success = await BusinessNetworkService.blockUser(userId);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? 'User blocked' : 'Failed to block user'),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+      if (success) {
+        widget.onPostDeleted?.call(); // Remove post from feed
+      }
     }
   }
 

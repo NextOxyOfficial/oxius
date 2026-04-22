@@ -63,11 +63,11 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>AdsyClub needs access to your microphone for voice messages and video calls.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>AdsyClub needs your location to show nearby products and services.</string>
+	<string>AdsyClub uses your location to show nearby products, services, and available rides in your area.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>AdsyClub shares your location in the background while you are active as a driver so passengers can find you and you can receive ride requests.</string>
+	<string>AdsyClub continuously shares your GPS location in the background while you are active as a rideshare driver, so passengers can find you on the map and you can receive nearby ride requests. Background location is only active when you enable Driver Mode in the Rideshare section.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>AdsyClub shares your location in the background while you are active as a driver so passengers can find you and you can receive ride requests.</string>
+	<string>AdsyClub continuously shares your GPS location in the background while you are active as a rideshare driver, so passengers can find you on the map and you can receive nearby ride requests. Background location is only active when you enable Driver Mode in the Rideshare section.</string>
 
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>

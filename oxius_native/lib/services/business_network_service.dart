@@ -1104,6 +1104,22 @@ class BusinessNetworkService {
     }
   }
 
+  /// Block a user by their user ID (UUID primary key)
+  static Future<bool> blockUser(String userId) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/adsyconnect/blocked-users/'),
+        headers: headers,
+        body: json.encode({'blocked': userId}),
+      );
+      return response.statusCode == 201 || response.statusCode == 200;
+    } catch (e) {
+      print('Error blocking user: $e');
+      return false;
+    }
+  }
+
   /// Get trending hashtags
   static Future<List<Map<String, dynamic>>> getTrendingTags({int limit = 7}) async {
     try {

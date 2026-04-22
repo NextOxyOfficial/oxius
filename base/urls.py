@@ -163,6 +163,7 @@ urlpatterns = [
     # path('district/<str:district_id>/police_stations/', get_police_stations, name='police_station'),
     # user's address
     path("change-password/", change_password, name="change-password"),
+    path("auth/delete-account/", delete_account, name="delete-account"),
     # subscription
     path("subscribe/", subscribeToPro, name="subscribe"),
     # sms and otp
