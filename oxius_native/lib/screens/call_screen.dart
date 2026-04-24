@@ -1025,68 +1025,70 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
   Widget _buildCallControls() {
     final compact = _isCompactLayout;
+    final isVideo = widget.callType == 'video';
+    final hPad = compact ? 10.0 : 14.0;
+    final endSize = compact ? 62.0 : 68.0;
+    final btnSize = compact ? 52.0 : 56.0;
+
     return Positioned(
-      left: 18,
-      right: 18,
-      bottom: compact ? 12 : 20,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 560),
-        child: _buildGlassPanel(
-          padding: EdgeInsets.fromLTRB(
-            compact ? 14 : 16,
-            compact ? 14 : 16,
-            compact ? 14 : 16,
-            compact ? 14 : 16,
+      left: 0,
+      right: 0,
+      bottom: compact ? 16 : 24,
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: compact ? 8 : 10),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.42),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: Colors.white.withOpacity(0.10)),
           ),
-          borderRadius: BorderRadius.circular(28),
-          child: Column(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                _callAccepted && _callStartedAt != null
-                    ? 'Connected • ${_formatDuration(_callDuration)}'
-                    : _isConnecting
-                        ? 'Connecting...'
-                        : 'In call',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.76),
-                  fontSize: compact ? 13 : 14,
-                  fontWeight: FontWeight.w600,
-                ),
+              _buildRoundControl(
+                icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                size: btnSize,
+                isActive: _isMuted,
+                activeBg: const Color(0xFFEF4444),
+                onTap: _toggleMute,
               ),
-              SizedBox(height: compact ? 14 : 16),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  _buildControlButton(
-                    icon: _isMuted ? Icons.mic_off_rounded : Icons.mic_none_rounded,
-                    label: _isMuted ? 'Unmute' : 'Mute',
-                    onTap: _toggleMute,
-                    isActive: !_isMuted,
-                  ),
-                  _buildEndCallButton(),
-                  _buildControlButton(
-                    icon: _isSpeakerOn ? Icons.volume_up_rounded : Icons.hearing_rounded,
-                    label: _isSpeakerOn ? 'Speaker' : 'Earpiece',
-                    onTap: _toggleSpeaker,
-                    isActive: _isSpeakerOn,
-                  ),
-                  if (widget.callType == 'video')
-                    _buildControlButton(
-                      icon: _isCameraOff ? Icons.videocam_off_rounded : Icons.videocam_outlined,
-                      label: _isCameraOff ? 'Camera off' : 'Camera',
-                      onTap: _toggleCamera,
-                      isActive: !_isCameraOff,
-                    ),
-                  if (widget.callType == 'video')
-                    _buildControlButton(
-                      icon: Icons.cameraswitch_rounded,
-                      label: 'Switch',
-                      onTap: _switchCamera,
-                    ),
-                ],
+              SizedBox(width: compact ? 8 : 10),
+              _buildRoundControl(
+                icon: _isSpeakerOn ? Icons.volume_up_rounded : Icons.volume_down_rounded,
+                size: btnSize,
+                isActive: _isSpeakerOn,
+                activeBg: _accentColor,
+                onTap: _toggleSpeaker,
+              ),
+              if (isVideo) ...[
+                SizedBox(width: compact ? 8 : 10),
+                _buildRoundControl(
+                  icon: _isCameraOff ? Icons.videocam_off_rounded : Icons.videocam_rounded,
+                  size: btnSize,
+                  isActive: _isCameraOff,
+                  activeBg: const Color(0xFFEF4444),
+                  onTap: _toggleCamera,
+                ),
+                SizedBox(width: compact ? 8 : 10),
+                _buildRoundControl(
+                  icon: Icons.cameraswitch_rounded,
+                  size: btnSize,
+                  isActive: false,
+                  onTap: _switchCamera,
+                ),
+              ],
+              SizedBox(width: compact ? 10 : 12),
+              _buildRoundControl(
+                icon: Icons.call_end_rounded,
+                size: endSize,
+                isActive: true,
+                activeBg: const Color(0xFFEF4444),
+                iconColor: Colors.white,
+                onTap: () => unawaited(_endCall(
+                  notifyPeer: true,
+                  allowLog: true,
+                  closeImmediately: true,
+                )),
               ),
             ],
           ),
@@ -1095,65 +1097,43 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     );
   }
 
-  Widget _buildControlButton({
+  Widget _buildRoundControl({
     required IconData icon,
-    required String label,
+    required double size,
+    required bool isActive,
+    Color? activeBg,
+    Color? iconColor,
     required VoidCallback onTap,
-    bool isActive = true,
   }) {
-    return SizedBox(
-      width: _isCompactLayout ? 88 : 94,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(22),
-          child: Ink(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              color: isActive
-                  ? Colors.white.withOpacity(0.12)
-                  : Colors.white.withOpacity(0.06),
-              border: Border.all(
-                color: isActive
-                    ? Colors.white.withOpacity(0.16)
-                    : Colors.white.withOpacity(0.08),
-              ),
+    final bg = isActive
+        ? (activeBg ?? Colors.white).withOpacity(activeBg != null ? 1 : 0.22)
+        : Colors.white.withOpacity(0.14);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Ink(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: bg,
+            border: Border.all(
+              color: Colors.white.withOpacity(isActive ? 0.0 : 0.14),
+              width: 1,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(isActive ? 0.14 : 0.08),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor ?? Colors.white,
+            size: size * 0.42,
           ),
         ),
       ),
     );
   }
+
 
   Color get _accentColor {
     return widget.callType == 'video'
@@ -1235,6 +1215,73 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
   Widget _buildTopPanel() {
     final compact = _isCompactLayout;
+    final hasRemoteVideo = _remoteUid != null && widget.callType == 'video';
+    final subtitle = _callAccepted && _callStartedAt != null
+        ? _formatDuration(_callDuration)
+        : _isConnecting
+            ? (widget.isIncoming ? 'Incoming…' : 'Calling…')
+            : 'In call';
+
+    // Slim pill for active video call to keep the opponent's video unobstructed;
+    // fuller header while waiting (audio call or pre-connect).
+    if (hasRemoteVideo) {
+      return Positioned(
+        top: compact ? 8 : 12,
+        left: 14,
+        right: 14,
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.38),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        widget.calleeName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 1,
+                      height: 12,
+                      color: Colors.white.withOpacity(0.25),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            _buildIconChip(
+              icon: Icons.minimize_rounded,
+              onTap: _minimizeCall,
+            ),
+          ],
+        ),
+      );
+    }
+
     return Positioned(
       top: compact ? 8 : 14,
       left: 18,
@@ -1289,24 +1336,6 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                       ],
                     ),
                   ),
-                  if (!widget.isIncoming || _callAccepted)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: Colors.white.withOpacity(0.12)),
-                      ),
-                      child: Text(
-                        _isConnecting ? 'SYNCING' : 'LIVE',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -1585,56 +1614,6 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEndCallButton() {
-    return SizedBox(
-      width: _isCompactLayout ? 88 : 94,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => unawaited(
-            _endCall(
-              notifyPeer: true,
-              allowLog: true,
-              closeImmediately: true,
-            ),
-          ),
-          borderRadius: BorderRadius.circular(22),
-          child: Ink(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              color: const Color(0xFFEF4444),
-            ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                  radius: 21,
-                  backgroundColor: Color(0x33FFFFFF),
-                  child: Icon(
-                    Icons.call_end_rounded,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'End',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

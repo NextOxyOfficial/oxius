@@ -735,11 +735,21 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       ? notificationType
       : (rawType.isNotEmpty ? rawType : notificationType);
     final rideId = payload['ride_id']?.toString() ?? '';
+    // Always play the in-app ringtone for incoming ride requests while the
+    // driver panel is mounted — regardless of whether the event arrived via
+    // the realtime socket or FCM. Previously we skipped FCM-sourced events
+    // assuming the OS notification would ring, but FCM only plays a short
+    // default notification tone, not a continuous ringtone. The in-app
+    // ringtone (flutter_ringtone_player, asAlarm: true, looping) is the only
+    // reliable audible alert when the driver is on the rideshare screen.
     if (_activeRide == null &&
         (effectiveType == 'targeted_ride_request' ||
-            effectiveType == 'new_ride_request') &&
-        source != 'fcm') {
+            effectiveType == 'new_ride_request')) {
       unawaited(_playIncomingRideAlert(rideId: rideId));
+    }
+    // Source is retained for future routing decisions.
+    if (source == 'fcm') {
+      // no-op — kept for readability / future branching.
     }
 
     if (rideId.isNotEmpty) {
