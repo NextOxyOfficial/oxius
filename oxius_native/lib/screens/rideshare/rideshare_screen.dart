@@ -134,15 +134,15 @@ class _RideshareScreenState extends State<RideshareScreen> {
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
         icon: Container(
-          width: 36,
-          height: 36,
+          width: 34,
+          height: 34,
           decoration: BoxDecoration(
             color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(9),
           ),
           child: const Icon(
             Icons.arrow_back_rounded,
-            size: 20,
+            size: 18,
             color: Color(0xFF1E293B),
           ),
         ),
@@ -199,15 +199,15 @@ class _RideshareScreenState extends State<RideshareScreen> {
           ),
           tooltip: t('rideshare_history', fallback: 'History'),
           icon: Container(
-            width: 36,
-            height: 36,
+            width: 34,
+            height: 34,
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(9),
             ),
             child: const Icon(
               Icons.history_rounded,
-              size: 20,
+              size: 18,
               color: Color(0xFF64748B),
             ),
           ),
@@ -217,15 +217,15 @@ class _RideshareScreenState extends State<RideshareScreen> {
             onPressed: () => Navigator.pushNamed(context, '/rideshare/vehicles'),
             tooltip: t('rideshare_vehicles_btn', fallback: 'Vehicles'),
             icon: Container(
-              width: 36,
-              height: 36,
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(9),
               ),
               child: const Icon(
                 Icons.two_wheeler_rounded,
-                size: 20,
+                size: 18,
                 color: Color(0xFF64748B),
               ),
             ),
@@ -285,7 +285,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        padding: const EdgeInsets.symmetric(vertical: 9),
         decoration: BoxDecoration(
           gradient: isActive
               ? const LinearGradient(
@@ -295,7 +295,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
                 )
               : null,
           color: isActive ? null : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(9),
           boxShadow: isActive
               ? [
                   BoxShadow(
@@ -311,14 +311,14 @@ class _RideshareScreenState extends State<RideshareScreen> {
           children: [
             Icon(
               icon,
-              size: 18,
+              size: 16,
               color: isActive ? Colors.white : const Color(0xFF64748B),
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: 6),
             Text(
               label,
               style: GoogleFonts.inter(
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: isActive ? Colors.white : const Color(0xFF64748B),
               ),

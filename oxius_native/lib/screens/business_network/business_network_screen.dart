@@ -74,39 +74,150 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         barrierDismissible: false,
         builder: (dialogCtx) => WillPopScope(
           onWillPop: () async => false,
-          child: AlertDialog(
-            title: const Row(
-              children: [
-                Icon(Icons.shield_outlined, color: Color(0xFF2563EB)),
-                SizedBox(width: 10),
-                Expanded(child: Text('Community Guidelines')),
-              ],
-            ),
-            content: const SingleChildScrollView(
-              child: Text(
-                'Welcome to the Business Network — a community for professional and respectful interaction.\n\n'
-                'By continuing, you agree to our End User License Agreement (EULA) and confirm that you will:\n\n'
-                '• Not post content that is objectionable, abusive, harassing, hateful, sexually explicit, discriminatory, or illegal.\n'
-                '• Not impersonate others, spread misinformation, or infringe intellectual property.\n'
-                '• Respect other users. You can block or report any user or post at any time.\n\n'
-                'We have zero tolerance for abusive content. Reported content and users are reviewed within 24 hours and removed if guidelines are violated. Your account may be terminated for violations.',
-                style: TextStyle(fontSize: 14, height: 1.5),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogCtx).pop(false),
-                child: const Text('Decline', style: TextStyle(color: Color(0xFFDC2626))),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(dialogCtx).pop(true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  foregroundColor: Colors.white,
+          child: Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
+            backgroundColor: Colors.transparent,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.16),
+                      blurRadius: 30,
+                      offset: const Offset(0, 18),
+                    ),
+                  ],
                 ),
-                child: const Text('I Agree'),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.shield_outlined,
+                                color: Color(0xFF2563EB),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                'Community Guidelines',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Welcome to the Business Network, a community for professional and respectful interaction.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.55,
+                            color: Colors.grey.shade900,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'By continuing, you agree to our End User License Agreement (EULA) and confirm that you will:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.55,
+                            color: Colors.grey.shade900,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _buildGuidelineItem('Not post content that is objectionable, abusive, harassing, hateful, sexually explicit, discriminatory, or illegal.'),
+                        const SizedBox(height: 10),
+                        _buildGuidelineItem('Not impersonate others, spread misinformation, or infringe intellectual property.'),
+                        const SizedBox(height: 10),
+                        _buildGuidelineItem('Respect other users. You can block or report any user or post at any time.'),
+                        const SizedBox(height: 16),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Text(
+                            'We have zero tolerance for abusive content. Reported content and users are reviewed within 24 hours and removed if guidelines are violated. Your account may be terminated for violations.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.55,
+                              color: Colors.grey.shade800,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () => Navigator.of(dialogCtx).pop(false),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFFDC2626),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Decline',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.of(dialogCtx).pop(true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2563EB),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'I Agree',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ],
+            ),
           ),
         ),
       );
@@ -120,6 +231,34 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     } catch (_) {
       // Non-fatal: if prefs fail, don't block the user.
     }
+  }
+
+  Widget _buildGuidelineItem(String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          margin: const EdgeInsets.only(top: 7),
+          decoration: const BoxDecoration(
+            color: Color(0xFF2563EB),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              color: Colors.grey.shade900,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _loadSponsoredProducts() async {

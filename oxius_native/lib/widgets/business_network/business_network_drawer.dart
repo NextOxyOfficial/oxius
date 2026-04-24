@@ -119,39 +119,34 @@ class BusinessNetworkDrawer extends StatelessWidget {
   // ---------------------------------------------------------------------------
   Widget _buildHeader(BuildContext context, User? user) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1E3A8A),
-            Color(0xFF2563EB),
-            Color(0xFF3B82F6),
-          ],
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200),
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Close button row (title intentionally removed)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
-                  iconSize: 20,
-                  color: Colors.white,
-                  tooltip: 'Close',
-                  padding: const EdgeInsets.all(6),
-                  constraints: const BoxConstraints(),
-                  splashRadius: 18,
+            if (isIOSPlatform)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                    iconSize: 20,
+                    color: const Color(0xFF334155),
+                    tooltip: 'Close',
+                    padding: const EdgeInsets.all(6),
+                    constraints: const BoxConstraints(),
+                    splashRadius: 18,
+                  ),
                 ),
               ),
-            ),
 
             // User card (only when logged in)
             if (user != null) _buildUserCard(context, user),
@@ -163,7 +158,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
                 child: _buildSignInButton(context),
               ),
 
-            if (user != null) const SizedBox(height: 12),
+            if (user != null) const SizedBox(height: 6),
           ],
         ),
       ),
@@ -180,104 +175,112 @@ class BusinessNetworkDrawer extends StatelessWidget {
         : user.email;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 2, 10, 10),
-      child: Material(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProfileScreen(userId: user.id),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: Row(
-              children: [
-                _buildAvatar(user),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
+      padding: const EdgeInsets.fromLTRB(10, 14, 10, 2),
+      child: Align(
+        alignment: Alignment.center,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 264),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            elevation: 0,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfileScreen(userId: user.id),
+                  ),
+                );
+              },
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: Row(
+                  children: [
+                    _buildAvatar(user),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Flexible(
-                            child: Text(
-                              displayName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.1,
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  displayName,
+                                  style: const TextStyle(
+                                    color: Color(0xFF0F172A),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.1,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                              if (user.isVerified) ...[
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.verified_rounded,
+                                  size: 14,
+                                  color: Color(0xFF93C5FD),
+                                ),
+                              ],
+                              if (user.isPro) ...[
+                                const SizedBox(width: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 5,
+                                    vertical: 1,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFF59E0B),
+                                        Color(0xFFFBBF24),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'PRO',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          if (user.isVerified) ...[
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.verified_rounded,
-                              size: 14,
-                              color: Color(0xFF93C5FD),
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              color: const Color(0xFF64748B),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                          if (user.isPro) ...[
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 5,
-                                vertical: 1,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFFF59E0B),
-                                    Color(0xFFFBBF24),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'PRO',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.4,
-                                ),
-                              ),
-                            ),
-                          ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.78),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: const Color(0xFF94A3B8),
+                      size: 20,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.white.withOpacity(0.7),
-                  size: 20,
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -293,8 +296,8 @@ class BusinessNetworkDrawer extends StatelessWidget {
       height: 42,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withOpacity(0.35), width: 1.5),
-        color: Colors.white.withOpacity(0.15),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+        color: const Color(0xFFF8FAFC),
       ),
       clipBehavior: Clip.antiAlias,
       child: img != null && img.isNotEmpty
@@ -312,7 +315,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
       child: Text(
         initials,
         style: const TextStyle(
-          color: Colors.white,
+          color: Color(0xFF334155),
           fontSize: 14,
           fontWeight: FontWeight.w700,
         ),

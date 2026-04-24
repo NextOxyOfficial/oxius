@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
+import '../../utils/html_content_utils.dart';
 import '../ios_web_redirect_screen.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
@@ -471,6 +472,12 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
   Widget _buildSponsorsList() {
     return Column(
       children: _sponsors.map((sponsor) {
+        final sponsorName = _plainSponsorText(
+          sponsor['name'],
+          fallback: 'Unnamed Sponsor',
+        );
+        final sponsorDescription = _plainSponsorText(sponsor['business_description']);
+
         return Container(
           margin: const EdgeInsets.only(bottom: 8),
           padding: const EdgeInsets.all(8),
@@ -503,7 +510,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      sponsor['name'] ?? 'Unnamed Sponsor',
+                      sponsorName,
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -511,9 +518,9 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (sponsor['business_description'] != null)
+                    if (sponsorDescription.isNotEmpty)
                       Text(
-                        sponsor['business_description'],
+                        sponsorDescription,
                         style: TextStyle(
                           fontSize: 10,
                           color: Colors.grey.shade600,
@@ -558,6 +565,16 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
       return '${(views / 1000).toStringAsFixed(1)}K';
     }
     return views.toString();
+  }
+
+  String _plainSponsorText(dynamic value, {String fallback = ''}) {
+    final raw = (value ?? '').toString().trim();
+    if (raw.isEmpty) {
+      return fallback;
+    }
+
+    final plainText = HtmlContentUtils.toPlainText(raw);
+    return plainText.isNotEmpty ? plainText : fallback;
   }
 
   String _getStatusText(String? status) {
