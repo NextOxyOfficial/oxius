@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
+import '../../../widgets/ios_web_redirect_screen.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -150,7 +151,9 @@ class _AddProductTabState extends State<AddProductTab> {
             ),
             const SizedBox(height: 12),
             Text(
-              'You have reached the maximum limit of ${widget.productLimit} products. Buy additional product slots to list more products.',
+              isIOSPlatform
+                  ? 'You have reached the maximum limit of ${widget.productLimit} products. Please contact support to increase your limit.'
+                  : 'You have reached the maximum limit of ${widget.productLimit} products. Buy additional product slots to list more products.',
               style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFF6B7280),
@@ -744,27 +747,28 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(color: Color(0xFF6B7280)),
+                    child: Text(
+                      isIOSPlatform ? 'Close' : 'Cancel',
+                      style: const TextStyle(color: Color(0xFF6B7280)),
                     ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context); // Close dialog
-                      Navigator.pop(context); // Close add product sheet
-                      // The parent screen should show buy slots option
-                    },
-                    icon: const Icon(Icons.add_shopping_cart, size: 18),
-                    label: const Text('Buy More Slots'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
+                  if (!isIOSPlatform)
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context); // Close dialog
+                        Navigator.pop(context); // Close add product sheet
+                        // The parent screen should show buy slots option
+                      },
+                      icon: const Icon(Icons.add_shopping_cart, size: 18),
+                      label: const Text('Buy More Slots'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                      ),
                     ),
-                  ),
                 ],
               );
             },

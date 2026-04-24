@@ -161,158 +161,198 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
 
     if (!_hasPermission && !_userSkipped) {
       return Scaffold(
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final isWide = constraints.maxWidth > 600;
-              final iconSize = isWide ? 96.0 : 80.0;
-              final iconPadding = isWide ? 36.0 : 28.0;
-              final titleSize = isWide ? 32.0 : 26.0;
-              final bodySize = isWide ? 18.0 : 15.0;
-              final hPad = isWide ? 80.0 : 28.0;
+              final maxW = constraints.maxWidth;
+              final maxH = constraints.maxHeight;
+              final isTablet = maxW >= 600;
+              final isLargeTablet = maxW >= 900;
 
-              final content = Padding(
-                padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Icon
-                    Container(
-                      padding: EdgeInsets.all(iconPadding),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.notifications_active_rounded,
-                        size: iconSize,
-                        color: const Color(0xFF3B82F6),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
+              // Scale against shortest side so iPad portrait & landscape both
+              // feel spacious without looking like a phone window.
+              final iconSize = isLargeTablet ? 88.0 : (isTablet ? 76.0 : 70.0);
+              final iconPadding = isLargeTablet ? 30.0 : (isTablet ? 26.0 : 24.0);
+              final titleSize = isLargeTablet ? 30.0 : (isTablet ? 26.0 : 24.0);
+              final bodySize = isLargeTablet ? 17.0 : (isTablet ? 16.0 : 15.0);
+              final hPad = isLargeTablet ? 56.0 : (isTablet ? 40.0 : 24.0);
+              final vPad = isTablet ? 28.0 : 16.0;
+              final cardMaxWidth = isLargeTablet ? 640.0 : (isTablet ? 560.0 : double.infinity);
 
-                    // Title
-                    Text(
-                      'Stay Connected',
-                      style: TextStyle(
-                        fontSize: titleSize,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1F2937),
-                        letterSpacing: -0.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Description
-                    Text(
-                      'Enable notifications to receive important updates and stay connected with your network.',
-                      style: TextStyle(
-                        fontSize: bodySize,
-                        color: Colors.grey.shade600,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 28),
-
-                    // Benefits list
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
+              final content = ConstrainedBox(
+                constraints: BoxConstraints(minHeight: maxH),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: cardMaxWidth),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(
-                            'You\'ll receive notifications for:',
-                            style: TextStyle(
-                              fontSize: isWide ? 15.0 : 14.0,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1F2937),
+                          // Top-right skip link so reviewers immediately see that
+                          // notifications are optional. (Guideline 4.5.4)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: _skipForNow,
+                              style: TextButton.styleFrom(
+                                foregroundColor: const Color(0xFF6B7280),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              ),
+                              child: const Text(
+                                'Skip',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          _buildBenefit(Icons.chat_bubble_rounded, 'New messages from connections', isWide: isWide),
-                          _buildBenefit(Icons.shopping_bag_rounded, 'Order updates and tracking', isWide: isWide),
-                          _buildBenefit(Icons.support_agent_rounded, 'Support ticket replies', isWide: isWide),
-                          _buildBenefit(Icons.campaign_rounded, 'Important announcements', isWide: isWide),
-                          _buildBenefit(Icons.account_balance_wallet_rounded, 'Wallet transactions', isWide: isWide),
+                          SizedBox(height: isTablet ? 8 : 4),
+
+                          // Icon
+                          Center(
+                            child: Container(
+                              padding: EdgeInsets.all(iconPadding),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.notifications_active_rounded,
+                                size: iconSize,
+                                color: const Color(0xFF3B82F6),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: isTablet ? 24 : 20),
+
+                          // Title
+                          Text(
+                            'Stay Connected',
+                            style: TextStyle(
+                              fontSize: titleSize,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1F2937),
+                              letterSpacing: -0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Description — notifications are explicitly optional.
+                          Text(
+                            'Notifications are optional. Enable them to receive updates about messages, orders and important announcements — or skip and continue using the app.',
+                            style: TextStyle(
+                              fontSize: bodySize,
+                              color: Colors.grey.shade600,
+                              height: 1.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: isTablet ? 24 : 20),
+
+                          // Benefits list
+                          Container(
+                            padding: EdgeInsets.all(isTablet ? 20 : 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'You\'ll receive notifications for:',
+                                  style: TextStyle(
+                                    fontSize: isTablet ? 15.0 : 14.0,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1F2937),
+                                  ),
+                                ),
+                                SizedBox(height: isTablet ? 14 : 12),
+                                _buildBenefit(Icons.chat_bubble_rounded, 'New messages from connections', isWide: isTablet),
+                                _buildBenefit(Icons.shopping_bag_rounded, 'Order updates and tracking', isWide: isTablet),
+                                _buildBenefit(Icons.support_agent_rounded, 'Support ticket replies', isWide: isTablet),
+                                _buildBenefit(Icons.campaign_rounded, 'Important announcements', isWide: isTablet),
+                                _buildBenefit(Icons.account_balance_wallet_rounded, 'Wallet transactions', isWide: isTablet),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: isTablet ? 24 : 20),
+
+                          // Enable button (primary)
+                          SizedBox(
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: _requestPermission,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF3B82F6),
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                'Enable Notifications',
+                                style: TextStyle(
+                                  fontSize: isTablet ? 17.0 : 16.0,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Skip / continue — equal weight OutlinedButton so users
+                          // (and reviewers) clearly see that notifications are not
+                          // required to use the app. (Guideline 4.5.4)
+                          SizedBox(
+                            height: 52,
+                            child: OutlinedButton(
+                              onPressed: _skipForNow,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF374151),
+                                side: BorderSide(color: Colors.grey.shade300, width: 1.2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(
+                                'Continue without notifications',
+                                style: TextStyle(
+                                  fontSize: isTablet ? 16.0 : 15.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'You can enable notifications anytime from device Settings.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: isTablet ? 12.5 : 11.5,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
-
-                    // Enable button
-                    SizedBox(
-                      width: isWide ? 400 : double.infinity,
-                      height: 54,
-                      child: ElevatedButton(
-                        onPressed: _requestPermission,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          'Enable Notifications',
-                          style: TextStyle(
-                            fontSize: isWide ? 17.0 : 16.0,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Skip option — notifications are optional. Users can
-                    // enable them later from device Settings.
-                    SizedBox(
-                      width: isWide ? 400 : double.infinity,
-                      child: TextButton(
-                        onPressed: _skipForNow,
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          'Skip for now',
-                          style: TextStyle(
-                            fontSize: isWide ? 15.0 : 14.0,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6B7280),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    SizedBox(
-                      width: isWide ? 400 : double.infinity,
-                      child: Text(
-                        'You can enable notifications later in Settings',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: isWide ? 12.0 : 11.0,
-                          color: Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               );
 
-              return isWide
-                  ? Center(child: SingleChildScrollView(child: content))
-                  : SingleChildScrollView(child: content);
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: content,
+              );
             },
           ),
         ),
