@@ -6,7 +6,6 @@ import '../services/classified_category_service.dart';
 import '../config/app_config.dart';
 import 'classified_search_bar.dart';
 import 'classified_categories_grid.dart';
-import 'ads_scroll.dart'; // Import the new ads scroll widget
 
 class ClassifiedServicesSection extends StatefulWidget {
   const ClassifiedServicesSection({super.key});
@@ -55,8 +54,6 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     if (_initialized) return;
     _initialized = true;
     await _loadCategories();
-    // Optionally load initial posts (could be trending/latest)
-    await _loadPosts();
   }
 
   Future<void> _loadCategories() async {
@@ -203,17 +200,6 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
               ],
             ),
           ),
-          const SizedBox(height: 12),
-          if (_posts.isNotEmpty) ...[
-            AdsScrollWidget(
-              ads: {
-                'results': _posts
-              }, 
-              sectionTitle: _translationService.t('recent_ads', fallback: 'Recent Ads'),
-            ),
-            const SizedBox(height: 12),
-          ],
-          _buildPostsArea(isMobile),
         ],
       ),
     );

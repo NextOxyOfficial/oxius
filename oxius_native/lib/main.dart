@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
@@ -57,102 +59,127 @@ import 'screens/rideshare/rideshare_screen.dart';
 import 'screens/rideshare/rideshare_history_screen.dart';
 import 'screens/rideshare/rideshare_vehicles_screen.dart';
 
-void main() async {
+/// Runs an async task with a hard timeout. Logs and swallows errors so a single
+/// failing init step never blocks app startup (root cause of iPad blank screen).
+Future<void> _safeInit(
+  String name,
+  Future<void> Function() task, {
+  Duration timeout = const Duration(seconds: 8),
+}) async {
   try {
-    WidgetsFlutterBinding.ensureInitialized();
+    await task().timeout(timeout);
+    print('[init] $name OK');
+  } catch (e) {
+    print('[init] $name FAILED (non-fatal): $e');
+  }
+}
 
-    await FCMService.preflightCallStateCleanup();
+void main() async {
+  // Catch any otherwise-unhandled framework errors so we never end up with a
+  // blank screen in release builds.
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+  };
 
+  // Catch uncaught async (platform/engine) errors. Without this, a single
+  // unhandled Future error in release mode can leave the app in an
+  // inconsistent state on iOS / iPad.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    // ignore: avoid_print
+    print('[FATAL] Uncaught async error: $error\n$stack');
+    return true; // mark as handled
+  };
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Configure system UI synchronously (cheap, no I/O).
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+
+  // Create the user state service immediately. Its `isInitializing` flag drives
+  // the splash UI in MyApp, so we can show a real Flutter splash instantly
+  // instead of leaving the iOS LaunchScreen up while we do network work
+  // (which is what caused the App Store reviewer to see a "blank screen" on
+  // iPad: heavy awaits before runApp() were hanging on Apple's network).
+  final userState = UserStateService();
+
+  // Show the app NOW. MyApp will render the splash because
+  // userState.isInitializing is true until _bootstrap completes.
+  runApp(MyApp(userState: userState));
+
+  // Bootstrap everything else in the background, with timeouts.
+  // ignore: unawaited_futures
+  _bootstrap(userState);
+}
+
+Future<void> _bootstrap(UserStateService userState) async {
+  AppConfig.printConfig();
+
+  await _safeInit('preflightCallStateCleanup',
+      () => FCMService.preflightCallStateCleanup());
+
+  await _safeInit('systemUIMode', () async {
     await SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: SystemUiOverlay.values,
     );
-    
-    // Set status bar to white with dark icons
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
-    
-    // Print app configuration (shows which environment is active)
-    AppConfig.printConfig();
-    
-    // Initialize Firebase
-    print('Initializing Firebase...');
-    await Firebase.initializeApp(
+  });
+
+  await _safeInit(
+    'Firebase',
+    () => Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
-    );
-    print('Firebase initialized successfully');
-    
-    // Initialize FCM
-    print('Initializing FCM...');
-    await FCMService.initialize();
-    print('FCM initialized successfully');
+    ),
+    timeout: const Duration(seconds: 10),
+  );
 
-    // Initialize rideshare driver presence service before session restoration so
-    // Android boot auto-start and app resume share the same callback config.
-    await RideshareDriverPresenceService.initialize();
-    
-    // Initialize translation service
-    print('Initializing translation service...');
-    final translationService = TranslationService();
-    await translationService.initialize();
-    print('Translation service initialized with locale: ${translationService.currentLanguage}');
-    
-    // Initialize user state service (this will initialize auth service internally)
-    print('Initializing authentication session...');
-    final userState = UserStateService();
-    await userState.initialize();
+  await _safeInit('FCM', () => FCMService.initialize(),
+      timeout: const Duration(seconds: 10));
 
-    await DeepLinkService.instance.init();
-    
-    if (userState.isAuthenticated) {
-      print('Session restored successfully for user: ${userState.userName}');
-      await FCMService.handleAuthenticationState(true);
-      await AgoraCallService.restorePersistedCallState();
-      await FCMService.syncTokenWithBackend();
-      await AdsyConnectRealtimeService.instance.connect();
+  await _safeInit('RideshareDriverPresence',
+      () => RideshareDriverPresenceService.initialize());
+
+  await _safeInit('Translation', () async {
+    await TranslationService().initialize();
+  });
+
+  // User session is the most important – give it a slightly longer timeout
+  // but still bounded so the splash always resolves.
+  await _safeInit('UserState', () => userState.initialize(),
+      timeout: const Duration(seconds: 12));
+
+  await _safeInit('DeepLink', () => DeepLinkService.instance.init());
+
+  if (userState.isAuthenticated) {
+    print('Session restored: ${userState.userName}');
+    await _safeInit('FCM auth state',
+        () => FCMService.handleAuthenticationState(true));
+    await _safeInit('Agora restore',
+        () => AgoraCallService.restorePersistedCallState());
+    await _safeInit('FCM token sync',
+        () => FCMService.syncTokenWithBackend());
+    await _safeInit('AdsyConnect connect',
+        () => AdsyConnectRealtimeService.instance.connect());
+    try {
       OnlineStatusService.start();
-      await RideshareDriverPresenceService.restoreIfNeeded();
-    } else {
-      print('No existing session found');
-      await AgoraCallService.clearPersistedCallState();
-      await FCMService.handleAuthenticationState(false);
+    } catch (e) {
+      print('[init] OnlineStatusService FAILED (non-fatal): $e');
     }
-    
-    runApp(MyApp(userState: userState));
-  } catch (e, stackTrace) {
-    print('Error during app initialization: $e');
-    print('Stack trace: $stackTrace');
-    
-    // Run app with minimal setup if initialization fails
-    runApp(
-      MaterialApp(
-        title: 'AdsyClub',
-        home: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
-                const Text(
-                  'App initialization failed',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text('Error: $e'),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    await _safeInit('RideshareDriverPresence restore',
+        () => RideshareDriverPresenceService.restoreIfNeeded());
+  } else {
+    print('No existing session');
+    await _safeInit('Agora clear',
+        () => AgoraCallService.clearPersistedCallState());
+    await _safeInit('FCM auth state',
+        () => FCMService.handleAuthenticationState(false));
   }
 }
 

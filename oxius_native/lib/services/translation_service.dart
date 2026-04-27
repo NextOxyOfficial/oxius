@@ -42,6 +42,9 @@ class TranslationService extends ChangeNotifier {
       'classified_all_results_loaded': 'All results loaded',
       'classified_no_results_found': 'No results found',
       'classified_try_different_keywords': 'Try different keywords',
+      'recent_post': 'Recent Posts',
+      'no_recent_posts': 'No recent posts',
+      'posts_loaded': 'Posts loaded',
     },
     'bn': {
       'premium_access': 'প্রিমিয়াম অ্যাক্সেস',
@@ -74,8 +77,9 @@ class TranslationService extends ChangeNotifier {
       'classified_loading_more': 'আরও লোড হচ্ছে...',
       'classified_all_results_loaded': 'সব ফলাফল দেখা হয়েছে',
       'classified_no_results_found': 'কোনো ফলাফল পাওয়া যায়নি',
-      'classified_try_different_keywords': 'অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন',
-    },
+      'classified_try_different_keywords': 'অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন',      'recent_post': 'সাম্প্রতিক পোস্ট',
+      'no_recent_posts': 'কোনো সাম্প্রতিক পোস্ট নেই',
+      'posts_loaded': 'পোস্ট লোড হয়েছে',    },
   };
 
   // Use centralized API service base URL
@@ -129,7 +133,7 @@ class TranslationService extends ChangeNotifier {
       final response = await http.get(
         Uri.parse('$baseUrl/languages/'),
         headers: {'Content-Type': 'application/json'},
-      );
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -172,7 +176,7 @@ class TranslationService extends ChangeNotifier {
       final response = await http.get(
         Uri.parse('$baseUrl/translations/$languageCode/'),
         headers: {'Content-Type': 'application/json'},
-      );
+      ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

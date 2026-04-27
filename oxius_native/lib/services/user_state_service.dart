@@ -41,31 +41,50 @@ class UserStateService extends ChangeNotifier {
   // Subscription getter
   bool get isPro => _currentUser?.isPro ?? false;
 
-  /// Initialize user state from AuthService
+  /// Initialize user state from AuthService.
+  /// Wrapped in try/finally so [isInitializing] always becomes false even if
+  /// the network/storage steps throw or are cancelled by an upstream timeout.
+  /// This is critical to prevent the iPad "blank screen / endless splash"
+  /// App Store rejection cause.
   Future<void> initialize() async {
     _isInitializing = true;
     notifyListeners();
 
-    // Restore session from storage
-    await AuthService.initialize();
-    
-    // Validate token with server
-    if (AuthService.isAuthenticated) {
-      final isValid = await AuthService.validateToken();
-      if (isValid) {
-        _currentUser = AuthService.currentUser;
-        _isAuthenticated = true;
+    try {
+      // Restore session from storage
+      await AuthService.initialize();
+
+      // Validate token with server (bounded so a hung backend doesn't freeze
+      // the splash forever on networks like Apple's review lab).
+      if (AuthService.isAuthenticated) {
+        bool isValid = false;
+        try {
+          isValid = await AuthService.validateToken()
+              .timeout(const Duration(seconds: 6));
+        } catch (e) {
+          // Network/timeout: keep cached session as authenticated optimistically
+          // so the app still renders. Token will be re-validated later.
+          isValid = AuthService.currentUser != null;
+        }
+        if (isValid) {
+          _currentUser = AuthService.currentUser;
+          _isAuthenticated = true;
+        } else {
+          _currentUser = null;
+          _isAuthenticated = false;
+        }
       } else {
         _currentUser = null;
         _isAuthenticated = false;
       }
-    } else {
+    } catch (e) {
+      // Any unexpected error: render the app as logged-out rather than blank.
       _currentUser = null;
       _isAuthenticated = false;
+    } finally {
+      _isInitializing = false;
+      notifyListeners();
     }
-
-    _isInitializing = false;
-    notifyListeners();
   }
 
   /// Update user state after successful login

@@ -8,6 +8,7 @@ import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
@@ -2260,8 +2261,11 @@ class FCMService {
           'Authorization': 'Bearer $authToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'fcm_token': token, 'device_type': 'android'}),
-      );
+        body: jsonEncode({
+          'fcm_token': token,
+          'device_type': Platform.isIOS ? 'ios' : 'android',
+        }),
+      ).timeout(const Duration(seconds: 6));
 
       _log('   Response status: ${response.statusCode}');
       _log('   Response body: ${response.body}');
