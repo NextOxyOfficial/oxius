@@ -2399,7 +2399,9 @@ class RideNotificationService:
         for driver in drivers:
             tokens = cls._get_user_fcm_tokens(driver.user)
             for token in tokens:
-                send_fcm_data_message(token, data)
+                # 45s TTL: ride broadcast is short-lived; if a driver's device
+                # can't be woken in 45s, the ride has likely been re-targeted.
+                send_fcm_data_message(token, data, ttl_seconds=45)
 
 
 class RideAutoCancel:
@@ -2747,7 +2749,9 @@ class NearestDriverDispatch:
         from base.fcm_service import send_fcm_data_message
         tokens = RideNotificationService._get_user_fcm_tokens(driver.user)
         for token in tokens:
-            send_fcm_data_message(token, data)
+            # 45s TTL aligns with driver_timeout_seconds; if the device can't
+            # be reached in that window the targeted offer is moot.
+            send_fcm_data_message(token, data, ttl_seconds=45)
 
         # Also send websocket event to specific driver
         DispatchService._group_send(

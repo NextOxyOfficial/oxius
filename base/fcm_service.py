@@ -96,13 +96,18 @@ def send_fcm_notification(fcm_token, title, body, data=None):
         return False
 
 
-def send_fcm_data_message(fcm_token, data):
+def send_fcm_data_message(fcm_token, data, ttl_seconds=60):
     """
     Send a data-only FCM message (no notification field).
 
     Use this for payloads that the app handles itself (e.g. incoming calls,
     ride requests).  Data-only messages always trigger the background
     handler on Android regardless of app state.
+
+    Do NOT add a `notification=...` field to the AndroidConfig — adding one
+    would make Android render a system notification directly and skip the
+    Dart background handler, which is what drives our CallKit + ringtone +
+    ride-request UI.
     """
     if not FIREBASE_INITIALIZED:
         _safe_print('Cannot send data message: Firebase Admin SDK not initialized')
@@ -116,11 +121,19 @@ def send_fcm_data_message(fcm_token, data):
         # Ensure every value is a string (FCM data payload requirement)
         str_data = {k: str(v) if v is not None else '' for k, v in (data or {}).items()}
 
+        import datetime as _dt
         message = messaging.Message(
             data=str_data,
             token=fcm_token,
             android=messaging.AndroidConfig(
                 priority='high',
+                ttl=_dt.timedelta(seconds=int(ttl_seconds)),
+            ),
+            apns=messaging.APNSConfig(
+                headers={'apns-priority': '10'},
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(content_available=True),
+                ),
             ),
         )
 

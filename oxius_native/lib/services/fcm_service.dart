@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show Platform;
+import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
@@ -232,6 +233,14 @@ class _CallkitLifecycleObserver extends WidgetsBindingObserver {
 // Top-level function for background messages
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // CRITICAL: bind Flutter engine and register Dart plugins for this isolate.
+  // Without these, every non-Firebase plugin call (CallKit, local notifications,
+  // ringtone, vibration, shared_preferences) silently no-ops in release on a
+  // locked / backgrounded device. This is the #1 root cause of "no ringtone
+  // when phone is locked" on Android.
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -384,30 +393,41 @@ class _TrackingRouteObserver extends RouteObserver<PageRoute<dynamic>> {
   }
 }
 
-/// Show ride request notification when app is in background/killed
-/// Uses a separate plugin instance since FCMService static members are unavailable
+/// Show ride request alert when app is in background / device is locked.
+///
+/// Strategy (system-driven, NOT UI-driven):
+///   1. PRIMARY: full-screen-intent local notification on the high-importance
+///      `oxius_ride_requests` channel. This always rings + vibrates, bypasses
+///      DnD when permitted, wakes the screen, and works from a background
+///      isolate as long as `DartPluginRegistrant.ensureInitialized()` has been
+///      called by the FCM background handler.
+///   2. SECONDARY (best-effort): also surface a CallKit-style incoming UI so
+///      the driver gets the same "phone-call" affordance as Uber. If CallKit
+///      fails for any reason (plugin not initialised on this OEM, no permission)
+///      the primary notification has already fired, so the alert is never lost.
 Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) async {
+  final rideId = data['ride_id']?.toString() ?? '';
+  final pickup = data['pickup_address']?.toString() ?? 'Pickup';
+  final drop = data['drop_address']?.toString() ?? 'Drop';
+  final fare = data['fare_estimate']?.toString() ?? '';
+  final timeoutSec = _parseRideRequestTimeoutSeconds(data);
+
+  final title = '🚗 New Ride Request!';
+  final body =
+      '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → '
+      '${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}'
+      '${fare.isNotEmpty ? ' · ৳$fare' : ''}';
+
+  // -------- 1. PRIMARY system notification (always fires) --------
   try {
-    await FlutterCallkitIncoming.showCallkitIncoming(
-      _buildRideRequestCallkitParams(data),
-    );
-  } catch (e) {
-    _log('⚠️ Ride request CallKit failed in background, falling back to notification: $e');
-
-    final rideId = data['ride_id']?.toString() ?? '';
-    final pickup = data['pickup_address']?.toString() ?? 'Pickup';
-    final drop = data['drop_address']?.toString() ?? 'Drop';
-    final fare = data['fare_estimate']?.toString() ?? '';
-    final timeoutSec = _parseRideRequestTimeoutSeconds(data);
-
-    final title = '🚗 New Ride Request!';
-    final body = '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → ${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}${fare.isNotEmpty ? ' · ৳$fare' : ''}';
-
     final plugin = FlutterLocalNotificationsPlugin();
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     await plugin.initialize(const InitializationSettings(android: androidInit));
 
-    final androidPlugin = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    // Re-create channel with hardened settings; createNotificationChannel is
+    // idempotent (existing channel keeps user overrides for sound).
     await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
       'oxius_ride_requests',
       'Ride Requests',
@@ -415,7 +435,10 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
       importance: Importance.max,
       playSound: true,
       enableVibration: true,
-      vibrationPattern: Int64List.fromList([0, 500, 250, 700, 250, 900]),
+      enableLights: true,
+      showBadge: true,
+      vibrationPattern: _buildRideRequestVibrationPattern(),
+      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
     ));
 
     final details = AndroidNotificationDetails(
@@ -432,11 +455,13 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
       icon: '@mipmap/ic_launcher',
       timeoutAfter: timeoutSec * 1000,
       autoCancel: true,
+      ongoing: true,
       vibrationPattern: _buildRideRequestVibrationPattern(),
+      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
     );
 
     await plugin.show(
-      rideId.hashCode,
+      rideId.isEmpty ? DateTime.now().millisecondsSinceEpoch.remainder(0x7fffffff) : rideId.hashCode,
       title,
       body,
       NotificationDetails(android: details),
@@ -445,6 +470,17 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
         'type': data['type']?.toString() ?? 'targeted_ride_request',
       }),
     );
+  } catch (e) {
+    _log('⚠️ Primary ride-request notification failed: $e');
+  }
+
+  // -------- 2. SECONDARY CallKit-style UI (best effort) --------
+  try {
+    await FlutterCallkitIncoming.showCallkitIncoming(
+      _buildRideRequestCallkitParams(data),
+    );
+  } catch (e) {
+    _log('⚠️ Secondary CallKit ride-request UI failed (non-fatal): $e');
   }
 }
 
@@ -1065,7 +1101,11 @@ class FCMService {
       enableVibration: true,
     );
 
-    // Create high-priority call notification channel with ringtone
+    // Create high-priority call notification channel with ringtone.
+    // audioAttributesUsage = notificationRingtone marks this channel as a
+    // phone-call style alert so Android applies the higher audio priority and
+    // honours it in Priority-only / DnD-allow-calls modes (closest equivalent
+    // to bypassDnd available through flutter_local_notifications today).
     const AndroidNotificationChannel callChannel = AndroidNotificationChannel(
       'oxius_calls', // id
       'Incoming Calls', // name
@@ -1075,9 +1115,12 @@ class FCMService {
       enableVibration: true,
       enableLights: true,
       showBadge: true,
+      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
     );
 
-    // High-priority channel for ride requests (heads-up, sound, vibration)
+    // High-priority channel for ride requests (heads-up, sound, vibration).
+    // Marked as a ringtone-style channel so it gets the same DnD treatment as
+    // an incoming call — Uber-grade urgency.
     final AndroidNotificationChannel rideChannel = AndroidNotificationChannel(
       'oxius_ride_requests', // id
       'Ride Requests', // name
@@ -1088,6 +1131,7 @@ class FCMService {
       enableLights: true,
       showBadge: true,
       vibrationPattern: Int64List.fromList([0, 500, 250, 700, 250, 900]),
+      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
     );
 
     final androidPlugin = _localNotifications
@@ -1742,6 +1786,7 @@ class FCMService {
       timeoutAfter: timeoutSec * 1000,
       autoCancel: true,
       vibrationPattern: _buildRideRequestVibrationPattern(),
+      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
       styleInformation: BigTextStyleInformation(
         body,
         contentTitle: title,

@@ -84,7 +84,15 @@ def _send_call_data_message(*, target_user, payload):
                     data=payload,
                     android=messaging.AndroidConfig(
                         priority='high',
-                        ttl=datetime.timedelta(seconds=30),
+                        # 60s TTL: long enough to survive Doze / brief network
+                        # blips on the receiver, short enough that a stale call
+                        # never rings after the caller has already hung up.
+                        # Do NOT add `notification=...` here — this is a
+                        # data-only message so that the Dart background handler
+                        # fires (which drives CallKit + ringtone). Adding a
+                        # notification field would make Android render a plain
+                        # heads-up and skip the handler.
+                        ttl=datetime.timedelta(seconds=60),
                     ),
                     apns=messaging.APNSConfig(
                         headers={'apns-priority': '10'},
