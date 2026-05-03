@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../utils/payment_policy.dart';
+import '../ios_web_redirect_screen.dart';
 import 'drawer_menu.dart';
 import 'drawer_useful_links.dart';
 import 'drawer_gold_sponsor.dart';
