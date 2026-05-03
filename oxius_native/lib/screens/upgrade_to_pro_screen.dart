@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/subscription_service.dart';
+import '../utils/payment_policy.dart';
+import '../widgets/ios_payment_blocked_widget.dart';
 
 class UpgradeToProScreen extends StatefulWidget {
   const UpgradeToProScreen({super.key});
@@ -49,6 +51,14 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Defense-in-depth: block the entire screen on iOS even if the route-level
+    // guard in main.dart is somehow bypassed.
+    if (PaymentPolicy.shouldBlockDigitalPayment()) {
+      return const Scaffold(
+        body: IOSPaymentBlockedWidget(featureName: 'Pro Subscription'),
+      );
+    }
+
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(

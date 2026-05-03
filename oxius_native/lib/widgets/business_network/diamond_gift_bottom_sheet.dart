@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/diamond_service.dart';
 import '../../services/auth_service.dart';
+import '../../utils/payment_policy.dart';
 import 'diamond_purchase_bottom_sheet.dart';
-import '../ios_web_redirect_screen.dart';
 
 class DiamondGiftBottomSheet extends StatefulWidget {
   final String postId;
@@ -253,9 +253,9 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                             ),
                           ],
                         ),
-                        // Buy More / Purchase Button - hidden on iOS for
-                        // App Store digital-purchase policy compliance.
-                        if (!isIOSPlatform)
+                        // Buy More / Purchase Button — hidden when digital
+                        // payments are blocked (iOS compliance).
+                        if (PaymentPolicy.shouldShowDigitalPaymentUI())
                         InkWell(
                           onTap: () {
                             Navigator.of(context).pop();

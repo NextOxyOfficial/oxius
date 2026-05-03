@@ -31,6 +31,8 @@ import 'screens/checkout_screen.dart';
 import 'screens/wallet/wallet_screen.dart';
 import 'screens/mobile_recharge/mobile_recharge_screen.dart';
 import 'widgets/ios_web_redirect_screen.dart';
+import 'utils/payment_policy.dart';
+import 'widgets/ios_payment_blocked_widget.dart';
 import 'screens/eshop_screen.dart';
 import 'screens/eshop_manager/eshop_manager_screen.dart';
 import 'screens/news_screen.dart';
@@ -273,12 +275,9 @@ class MyApp extends StatelessWidget {
             '/deposit-withdraw': (context) => const WalletScreen(),
             '/pending-tasks': (context) => const HomeScreen(),
             '/mobile-recharge': (context) => const MobileRechargeScreen(),
-            '/upgrade-to-pro': (context) => isIOSPlatform
-                ? const IOSWebRedirectScreen(
-                    title: 'Upgrade to Pro',
-                    description: 'This feature is not available in this version of the app.',
-                    webPath: 'upgrade-to-pro',
-                    hideWebRedirect: true,
+            '/upgrade-to-pro': (context) => PaymentPolicy.shouldBlockDigitalPayment()
+                ? const IOSPaymentBlockedScreen(
+                    featureName: 'Pro Subscription',
                   )
                 : const UpgradeToProScreen(),
             '/eshop': (context) => const EshopScreen(),

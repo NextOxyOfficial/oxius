@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
+import '../utils/payment_policy.dart';
+import '../widgets/ios_payment_blocked_widget.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -192,6 +194,23 @@ class _PostGigScreenState extends State<PostGigScreen> {
   }
 
   Future<void> _handleSubmit() async {
+    // Block the action on iOS — gig posting is a digital-purchase flow.
+    if (PaymentPolicy.shouldBlockDigitalPayment()) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          content: const IOSPaymentBlockedWidget(featureName: 'Gig Posting'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _checkSubmit = true;
       _showError = null;

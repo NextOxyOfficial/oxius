@@ -4,6 +4,8 @@ import 'package:geolocator/geolocator.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/auth_service.dart';
 import '../../services/rideshare_service.dart';
+import '../../utils/payment_policy.dart';
+import '../../widgets/ios_payment_blocked_widget.dart';
 
 const double customLocationFee = 199.0;
 
@@ -227,6 +229,23 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
   }
 
   Future<void> _submitNewLocation() async {
+    // Block the action on iOS — saving a custom location charges a fee.
+    if (PaymentPolicy.shouldBlockDigitalPayment()) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          content: const IOSPaymentBlockedWidget(featureName: 'Custom Location'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     final lat = parseCoordinate(_latCtl.text);
     final lon = parseCoordinate(_lonCtl.text);
     final name = _nameCtl.text.trim();

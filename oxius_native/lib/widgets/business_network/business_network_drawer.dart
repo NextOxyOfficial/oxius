@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../screens/business_network/profile_screen.dart';
+import '../../utils/payment_policy.dart';
 import 'drawer_menu.dart';
 import 'drawer_useful_links.dart';
 import 'drawer_gold_sponsor.dart';
@@ -10,7 +11,6 @@ import 'drawer_news.dart';
 import 'drawer_hashtags.dart';
 import 'drawer_featured_product.dart';
 import 'drawer_contributors.dart';
-import '../ios_web_redirect_screen.dart';
 
 /// Side drawer used across the Business Network screens.
 ///
@@ -71,9 +71,9 @@ class BusinessNetworkDrawer extends StatelessWidget {
 
                     _sectionDivider(),
 
-                    // Gold Sponsor (hidden on iOS for App Store digital-purchase
-                    // policy compliance).
-                    if (!isIOSPlatform) ...[
+                    // Gold Sponsor — hidden when digital payments are blocked
+                    // (iOS compliance: App Store Guideline 3.1.1).
+                    if (PaymentPolicy.shouldShowDigitalPaymentUI()) ...[
                       DrawerGoldSponsor(isLoggedIn: user != null),
                       _sectionDivider(),
                     ],

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
 import '../../utils/html_content_utils.dart';
-import '../ios_web_redirect_screen.dart';
+import '../../utils/payment_policy.dart';
+import '../ios_payment_blocked_widget.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
@@ -210,12 +211,9 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => isIOSPlatform
-                      ? const IOSWebRedirectScreen(
-                          title: 'Gold Sponsor',
-                          description: 'This feature is not available in this version of the app.',
-                          webPath: 'business-network/gold-sponsors',
-                          hideWebRedirect: true,
+                  builder: (context) => PaymentPolicy.shouldBlockDigitalPayment()
+                      ? const IOSPaymentBlockedScreen(
+                          featureName: 'Gold Sponsor',
                         )
                       : const BecomeGoldSponsorScreen(),
                 ),

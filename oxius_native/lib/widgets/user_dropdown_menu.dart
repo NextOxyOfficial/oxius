@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import '../utils/payment_policy.dart';
 import 'ios_web_redirect_screen.dart';
 
 class UserDropdownMenu extends StatefulWidget {
@@ -309,8 +310,9 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
               ),
             ),
 
-            // Hide membership action on iOS to avoid paid-plan promotion/access entry points.
-            if (!isIOSPlatform)
+            // Hide membership action when digital payments are blocked
+            // (iOS App Store Guideline 3.1.1 compliance).
+            if (PaymentPolicy.shouldShowDigitalPaymentUI())
             GestureDetector(
               onTap: isPro ? widget.onManageSubscription : widget.onUpgradeToPro,
               child: Container(
@@ -471,9 +473,9 @@ class _UserDropdownMenuState extends State<UserDropdownMenu>
         'icon': Icons.shopping_bag,
         'color': const Color(0xFF2563EB),
         'route': '/shop-manager',
-        // Hide Pro badge on iOS to avoid implying a paid-upgrade requirement.
-        if (!isIOSPlatform) 'badge': _tr('pro', fallback: 'Pro'),
-        if (!isIOSPlatform) 'badgeType': 'pro',
+        // Hide Pro badge when digital payments are blocked (iOS compliance).
+        if (PaymentPolicy.shouldShowDigitalPaymentUI()) 'badge': _tr('pro', fallback: 'Pro'),
+        if (PaymentPolicy.shouldShowDigitalPaymentUI()) 'badgeType': 'pro',
       },
       {
         'label': _tr('adsy_pay', fallback: 'Adsy Pay'),
