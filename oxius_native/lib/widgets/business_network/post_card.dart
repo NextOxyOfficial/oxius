@@ -738,28 +738,31 @@ class _PostCardState extends State<PostCard> {
                         ),
                       ),
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade800,
-                        height: 1.4,
+                        fontSize: 16,
+                        color: Colors.grey.shade950,
+                        height: 1.5,
                       ),
                     ),
                   ),
                   if (plainPostContent.length > 160)
-                    TextButton(
-                      onPressed: () {
-                        setState(() => _showFullContent = !_showFullContent);
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        _showFullContent ? 'Read less' : 'Read more',
-                        style: const TextStyle(
-                          color: Color(0xFF3B82F6),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          setState(() => _showFullContent = !_showFullContent);
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          _showFullContent ? 'কম পড়ুন' : 'আরো পড়ুন',
+                          style: const TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     ),

@@ -23,12 +23,10 @@ class _DrawerContributorsState extends State<DrawerContributors> {
 
   Future<void> _loadContributors() async {
     setState(() => _isLoading = true);
-    
     try {
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/bn/top-contributors/?limit=5'),
       );
-      
       if (response.statusCode == 200 && mounted) {
         final data = json.decode(response.body);
         if (data is List) {
@@ -39,12 +37,10 @@ class _DrawerContributorsState extends State<DrawerContributors> {
           });
         }
       }
-    } catch (e) {
-      print('Error loading contributors: $e');
+    } catch (_) {
+      // ignore
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -53,301 +49,189 @@ class _DrawerContributorsState extends State<DrawerContributors> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header
+        // Section header
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF10B981), Color(0xFF34D399)],
-                  ),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(
-                  Icons.people,
-                  size: 14,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Top Contributors',
+              Icon(Icons.people_alt_rounded, size: 11, color: Colors.green.shade600),
+              const SizedBox(width: 4),
+              Text(
+                'TOP CONTRIBUTORS',
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade500,
+                  letterSpacing: 0.6,
                 ),
               ),
             ],
           ),
         ),
-        
-        const SizedBox(height: 12),
-        
-        // Contributors list
+
+        // List
         if (_isLoading)
-          _buildLoadingList()
+          Column(
+            children: List.generate(
+              3,
+              (i) => Container(
+                margin: const EdgeInsets.only(bottom: 5),
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(7),
+                ),
+              ),
+            ),
+          )
         else if (_contributors.isEmpty)
-          _buildEmptyState()
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+              'No contributors yet',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            ),
+          )
         else
-          _buildContributorsList(),
+          Column(
+            children: _contributors.asMap().entries.map((entry) {
+              final index = entry.key;
+              final contributor = entry.value;
+              final name = contributor['name'] ?? contributor['username'] ?? 'User';
+              final postCount = contributor['post_count'] ?? 0;
+              final isVerified = contributor['is_verified'] == true;
+              final avatarUrl = contributor['avatar'] ?? contributor['image'];
+
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    final userId = contributor['uuid'] ?? contributor['id']?.toString();
+                    if (userId != null) {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => ProfileScreen(userId: userId)),
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(7),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(7),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        // Rank badge
+                        Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: _rankColor(index),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+
+                        // Avatar
+                        ClipOval(
+                          child: avatarUrl != null
+                              ? Image.network(
+                                  avatarUrl,
+                                  width: 24,
+                                  height: 24,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => _avatarPlaceholder(),
+                                )
+                              : _avatarPlaceholder(),
+                        ),
+                        const SizedBox(width: 7),
+
+                        // Name + posts
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      name,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (isVerified) ...[
+                                    const SizedBox(width: 3),
+                                    const Icon(Icons.verified, size: 11, color: Color(0xFF3B82F6)),
+                                  ],
+                                ],
+                              ),
+                              Text(
+                                '$postCount posts',
+                                style: TextStyle(fontSize: 9, color: Colors.grey.shade500),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Trophy for top 3
+                        if (index < 3)
+                          Icon(Icons.emoji_events, size: 14, color: _trophyColor(index)),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }
 
-  Widget _buildLoadingList() {
-    return Column(
-      children: List.generate(
-        3,
-        (index) => Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 12,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 10,
-                      width: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
+  Widget _avatarPlaceholder() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Center(
-        child: Text(
-          'No contributors yet',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ),
+      width: 24,
+      height: 24,
+      color: Colors.grey.shade200,
+      child: Icon(Icons.person, size: 14, color: Colors.grey.shade400),
     );
   }
 
-  Widget _buildContributorsList() {
-    return Column(
-      children: _contributors.asMap().entries.map((entry) {
-        final index = entry.key;
-        final contributor = entry.value;
-        
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                final userId = contributor['uuid'] ?? contributor['id']?.toString();
-                if (userId != null) {
-                  Navigator.pop(context); // Close drawer
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProfileScreen(userId: userId),
-                    ),
-                  );
-                }
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  children: [
-                    // Rank badge
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: _getRankColors(index),
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(width: 12),
-                    
-                    // Avatar
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.grey.shade300,
-                          width: 2,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: contributor['avatar'] != null || contributor['image'] != null
-                            ? Image.network(
-                                contributor['avatar'] ?? contributor['image'],
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: Colors.grey.shade200,
-                                    child: Icon(
-                                      Icons.person,
-                                      color: Colors.grey.shade400,
-                                      size: 24,
-                                    ),
-                                  );
-                                },
-                              )
-                            : Container(
-                                color: Colors.grey.shade200,
-                                child: Icon(
-                                  Icons.person,
-                                  color: Colors.grey.shade400,
-                                  size: 24,
-                                ),
-                              ),
-                      ),
-                    ),
-                    
-                    const SizedBox(width: 12),
-                    
-                    // Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  contributor['name'] ?? contributor['username'] ?? 'User',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (contributor['is_verified'] == true) ...[
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.verified,
-                                  size: 14,
-                                  color: Color(0xFF3B82F6),
-                                ),
-                              ],
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${contributor['post_count'] ?? 0} posts',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Trophy icon for top 3
-                    if (index < 3)
-                      Icon(
-                        Icons.emoji_events,
-                        size: 20,
-                        color: _getTrophyColor(index),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  List<Color> _getRankColors(int index) {
+  Color _rankColor(int index) {
     switch (index) {
-      case 0:
-        return [const Color(0xFFFFD700), const Color(0xFFFFA500)]; // Gold
-      case 1:
-        return [const Color(0xFFC0C0C0), const Color(0xFFA8A8A8)]; // Silver
-      case 2:
-        return [const Color(0xFFCD7F32), const Color(0xFFB87333)]; // Bronze
-      default:
-        return [Colors.grey.shade400, Colors.grey.shade500];
+      case 0: return const Color(0xFFFFB800);
+      case 1: return const Color(0xFF94A3B8);
+      case 2: return const Color(0xFFCD7F32);
+      default: return Colors.grey.shade400;
     }
   }
 
-  Color _getTrophyColor(int index) {
+  Color _trophyColor(int index) {
     switch (index) {
-      case 0:
-        return const Color(0xFFFFD700); // Gold
-      case 1:
-        return const Color(0xFFC0C0C0); // Silver
-      case 2:
-        return const Color(0xFFCD7F32); // Bronze
-      default:
-        return Colors.grey;
+      case 0: return const Color(0xFFFFB800);
+      case 1: return const Color(0xFF94A3B8);
+      case 2: return const Color(0xFFCD7F32);
+      default: return Colors.grey;
     }
   }
 }

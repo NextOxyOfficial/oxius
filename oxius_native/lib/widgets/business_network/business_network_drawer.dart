@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../utils/payment_policy.dart';
-import '../ios_web_redirect_screen.dart';
 import 'drawer_menu.dart';
 import 'drawer_useful_links.dart';
 import 'drawer_gold_sponsor.dart';
@@ -131,31 +130,13 @@ class BusinessNetworkDrawer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            if (isIOSPlatform)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded),
-                    iconSize: 20,
-                    color: const Color(0xFF334155),
-                    tooltip: 'Close',
-                    padding: const EdgeInsets.all(6),
-                    constraints: const BoxConstraints(),
-                    splashRadius: 18,
-                  ),
-                ),
-              ),
-
             // User card (only when logged in)
             if (user != null) _buildUserCard(context, user),
 
             // Sign-in CTA when logged out
             if (user == null)
               Padding(
-                padding: const EdgeInsets.fromLTRB(14, 2, 14, 14),
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
                 child: _buildSignInButton(context),
               ),
 
@@ -176,7 +157,7 @@ class BusinessNetworkDrawer extends StatelessWidget {
         : user.email;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 14, 10, 2),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 2),
       child: Align(
         alignment: Alignment.center,
         child: ConstrainedBox(

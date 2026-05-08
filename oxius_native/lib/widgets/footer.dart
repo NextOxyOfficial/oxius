@@ -211,7 +211,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Earn Money • Connect • Find Services',
+            'আয় করুন • সংযুক্ত হন • সেবা খুঁজুন',
             style: AppFonts.roboto(
               fontSize: 10,
               color: Colors.grey.shade500,
@@ -227,15 +227,15 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
 
   Widget _buildNavigationSection(BuildContext context, bool isMobile) {
     final navLinks = [
-      {'title': 'Classified Services', 'route': '/'},
-      {'title': 'Earn Money', 'route': '/micro-gigs'},
-      {'title': 'Mobile Recharge', 'route': '/mobile-recharge'},
+      {'title': 'আমার সেবা', 'route': '/'},
+      {'title': 'আয় করুন', 'route': '/micro-gigs'},
+      {'title': 'মোবাইল রিচার্জ', 'route': '/mobile-recharge'},
       if (!isIOSPlatform)
-        {'title': 'Upgrade to Pro', 'route': '/upgrade-to-pro'},
-      {'title': 'Refer Program', 'route': '/refer-a-friend'},
-      {'title': 'About Us', 'route': '/about'},
-      {'title': 'FAQ', 'route': '/faq'},
-      {'title': 'Contact Us', 'route': '/contact-us'},
+        {'title': 'প্রো আপগ্রেড', 'route': '/upgrade-to-pro'},
+      {'title': 'রেফার প্রোগ্রাম', 'route': '/refer-a-friend'},
+      {'title': 'আমাদের সম্পর্কে', 'route': '/about'},
+      {'title': 'সাধারণ প্রশ্ন', 'route': '/faq'},
+      {'title': 'যোগাযোগ করুন', 'route': '/contact-us'},
     ];
 
     return Container(
@@ -291,7 +291,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
             Icon(Icons.verified_user_rounded, size: 12, color: Colors.grey.shade400),
             const SizedBox(width: 4),
             Text(
-              'Secure Payments',
+              'নিরাপদ পেমেন্ট',
               style: AppFonts.roboto(
                 fontSize: 9,
                 fontWeight: FontWeight.w600,
@@ -368,7 +368,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
-              'Terms & Conditions',
+              'শর্তাবলী',
               style: AppFonts.roboto(
                 fontSize: 11,
                 color: Colors.grey.shade500,
@@ -384,7 +384,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             child: Text(
-              'Privacy Policy',
+              'গোপনীয়তা নীতি',
               style: AppFonts.roboto(
                 fontSize: 11,
                 color: Colors.grey.shade500,
@@ -482,7 +482,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         children: [
           
           Text(
-            'Developed with ❤️ by Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
+            'তৈরি করেছে ❤️ Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
             style: AppFonts.roboto(
               fontSize: 11,
               color: Colors.grey.shade400,

@@ -395,10 +395,11 @@ class _PostCommentInputState extends State<PostCommentInput> {
                       onGiftSent: widget.onGiftSent,
                     );
                   },
-                  icon: Icon(
-                    Icons.card_giftcard,
-                    size: 20,
-                    color: Colors.pink.shade500,
+                  icon: Image.asset(
+                    'assets/icons/gift.png',
+                    width: 22,
+                    height: 22,
+                    fit: BoxFit.contain,
                   ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

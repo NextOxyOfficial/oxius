@@ -53,8 +53,8 @@ class PostActions extends StatelessWidget {
                 padding: const EdgeInsets.all(4),
                 child: Image.asset(
                   post.isSaved ? 'assets/icons/saved.png' : 'assets/icons/save.png',
-                  width: 22,
-                  height: 22,
+                  width: 18,
+                  height: 18,
                   fit: BoxFit.contain,
                 ),
               ),

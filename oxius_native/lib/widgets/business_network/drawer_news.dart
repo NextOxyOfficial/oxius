@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../../services/api_service.dart';
+import '../../screens/news_detail_screen.dart';
+import '../../screens/news_screen.dart';
 import 'package:intl/intl.dart';
 
 class DrawerNews extends StatefulWidget {
@@ -129,7 +131,11 @@ class _DrawerNewsState extends State<DrawerNews> {
               ),
               TextButton.icon(
                 onPressed: () {
-                  // TODO: Navigate to /adsy-news
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NewsScreen()),
+                  );
                 },
                 icon: const Text(
                   'See All',
@@ -299,7 +305,21 @@ class _DrawerNewsState extends State<DrawerNews> {
     
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to /adsy-news/${news['slug']}
+        final slug = news['slug'] as String?;
+        Navigator.pop(context);
+        if (slug != null && slug.isNotEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => NewsDetailScreen(slug: slug),
+            ),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NewsScreen()),
+          );
+        }
       },
       child: Stack(
         fit: StackFit.expand,

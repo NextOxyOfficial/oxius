@@ -35,7 +35,7 @@ class GoldSponsorCreateView(generics.CreateAPIView):
 
 class GoldSponsorListView(generics.ListAPIView):
     """Get all active Gold Sponsors (for display purposes)"""
-    queryset = GoldSponsor.objects.filter(status='active', is_featured=True).order_by('?')
+    queryset = GoldSponsor.objects.filter(status='active').order_by('?')
     serializer_class = GoldSponsorSerializer
 
 @api_view(['GET'])

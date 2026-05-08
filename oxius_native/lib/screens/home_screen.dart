@@ -633,12 +633,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         
-        // Membership Section is hidden on iOS for App Store compliance.
-        if (!isIOSPlatform)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
-            child: _buildMembershipCard(context, isPro, user),
-          ),
+        // Membership Section shown on all platforms (upgrade action remains hidden on iOS).
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+          child: _buildMembershipCard(context, isPro, user),
+        ),
         
         // Main Navigation Grid - px-4 pt-2 pb-3
         Padding(
@@ -2146,7 +2145,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Positioned(
       left: 24, // mx-6 = 24px
       right: 24,
-      bottom: 8, // bottom-2 = 8px
+      bottom: 8 + MediaQuery.of(context).viewPadding.bottom, // account for iOS home indicator
       child: Container(
         width: MediaQuery.of(context).size.width - 48, // Full width minus margins
         decoration: BoxDecoration(
@@ -2167,13 +2166,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          child: SafeArea(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8), // py-2 for better touch targets
-              child: isLoggedIn 
-                  ? _buildLoggedInNavigation(loadingButtons, unreadCount)
-                  : _buildGuestNavigation(loadingButtons),
-            ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8), // py-2 for better touch targets
+            child: isLoggedIn 
+                ? _buildLoggedInNavigation(loadingButtons, unreadCount)
+                : _buildGuestNavigation(loadingButtons),
           ),
         ),
       ),
@@ -2202,13 +2199,13 @@ class _HomeScreenState extends State<HomeScreen> {
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.account_balance_wallet, size: 28, color: Color(0xFF34D399)),
+          child: const Icon(Icons.account_balance_wallet, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('mobile_deposit', 'AdsyPay', loadingButtons),
           buttonId: 'mobile_deposit',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.phone_android, size: 28, color: Color(0xFF34D399)),
+          child: const Icon(Icons.phone_android, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('mobile_recharge', 'Mobile Recharge', loadingButtons),
           buttonId: 'mobile_recharge',
           loadingButtons: loadingButtons,
@@ -2216,7 +2213,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _buildMobileNavItem(
           child: Stack(
             children: [
-              const Icon(Icons.network_check, size: 28, color: Color(0xFF34D399)),
+              const Icon(Icons.network_check, size: 26, color: Color(0xFF34D399)),
               if (unreadCount > 0)
                 Positioned(
                   right: -2,
@@ -2249,7 +2246,7 @@ class _HomeScreenState extends State<HomeScreen> {
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.newspaper, size: 28, color: Color(0xFF34D399)),
+          child: const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('mobile_news', 'News', loadingButtons),
           buttonId: 'mobile_news',
           loadingButtons: loadingButtons,
@@ -2280,25 +2277,25 @@ class _HomeScreenState extends State<HomeScreen> {
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.work, size: 28, color: Color(0xFF34D399)),
+          child: const Icon(Icons.work, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('guest_microgigs', 'Microgigs', loadingButtons),
           buttonId: 'guest_microgigs',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.shopping_bag, size: 28, color: Color(0xFF34D399)),
+          child: const Icon(Icons.shopping_bag, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('guest_eshop', 'eShop', loadingButtons),
           buttonId: 'guest_eshop',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.network_check, size: 28, color: Color(0xFF34D399)),
+          child: const Icon(Icons.network_check, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('guest_business', 'Business Network', loadingButtons),
           buttonId: 'guest_business',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.newspaper, size: 28, color: Color(0xFF34D399)),
+          child: const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('guest_news', 'News', loadingButtons),
           buttonId: 'guest_news',
           loadingButtons: loadingButtons,
@@ -2321,8 +2318,8 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(8),
         child: isLoading
             ? const SizedBox(
-                width: 28,
-                height: 28,
+                width: 26,
+                height: 26,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF34D399)),

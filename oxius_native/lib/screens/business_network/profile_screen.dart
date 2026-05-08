@@ -1156,66 +1156,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           
           const SizedBox(height: 12),
           
-          // Action Buttons - Pill Style (matching Vue design)
-          _buildActionButtonsRow(isOwnProfile),
-          
-          // Diamond Balance (for own profile)
-          if (isOwnProfile && _userData?['diamond_balance'] != null) ...[
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.diamond, color: Colors.pink.shade500, size: 18),
-                const SizedBox(width: 6),
-                Text(
-                  '${_userData!['diamond_balance']} Diamonds',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                if (!isIOSPlatform) ...[
-                  const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      DiamondPurchaseBottomSheet.show(
-                        context,
-                        onPurchaseSuccess: () {
-                          setState(() {
-                            _loadProfileData();
-                          });
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink.shade500,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add, size: 14, color: Colors.white),
-                        const SizedBox(width: 3),
-                        const Text(
-                          'Top Up',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
+          // Action Buttons + Diamond (side by side pill row)
+          if (isOwnProfile && _userData?['diamond_balance'] != null)
+            _buildOwnProfileActionRow()
+          else
+            _buildActionButtonsRow(isOwnProfile),
           
           // Bio Section
           if (showAbout ||
@@ -1269,6 +1214,76 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   /// Build action buttons row with pill-style design (matching Vue)
+  /// Own-profile row: QR Code pill + Diamond balance pill side by side
+  Widget _buildOwnProfileActionRow() {
+    final diamondBalance = _userData?['diamond_balance'] ?? 0;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // QR Code pill
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(50),
+            color: Colors.white,
+          ),
+          child: _buildPillButton(
+            icon: Icons.qr_code_2_rounded,
+            label: 'QR Code',
+            onTap: () {
+              if (_userData != null) {
+                showDialog(
+                  context: context,
+                  builder: (context) => QrCodeModal(user: _userData!),
+                );
+              }
+            },
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Diamond balance pill
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.pink.shade100),
+            borderRadius: BorderRadius.circular(50),
+            color: Colors.white,
+          ),
+          child: InkWell(
+            onTap: !isIOSPlatform
+                ? () => DiamondPurchaseBottomSheet.show(
+                      context,
+                      onPurchaseSuccess: () => setState(_loadProfileData),
+                    )
+                : null,
+            borderRadius: BorderRadius.circular(50),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.diamond, size: 16, color: Colors.pink.shade400),
+                  const SizedBox(width: 5),
+                  Text(
+                    '$diamondBalance 💎',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  if (!isIOSPlatform) ...[
+                    const SizedBox(width: 4),
+                    Icon(Icons.add_circle_outline, size: 14, color: Colors.pink.shade400),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildActionButtonsRow(bool isOwnProfile) {
     final isLoggedIn = AuthService.currentUser != null;
     

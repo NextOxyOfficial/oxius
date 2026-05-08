@@ -1036,39 +1036,15 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   }
 
   Widget _buildPagination() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Column(
         children: [
-          // Page info text at top
-          Text(
-            'Page $_currentPage of $_totalPages',
-            style: AppFonts.roboto(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade700,
-            ),
-          ),
-          const SizedBox(height: 12),
-          
-          // Pagination buttons wrapped to prevent overflow
+          // Pagination buttons
           Wrap(
             alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 4,
+            runSpacing: 4,
             children: [
               // Previous Button
               _buildPaginationButton(
@@ -1095,14 +1071,14 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             ],
           ),
           
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           
           // Results Info
           Text(
-            'Showing ${(_currentPage - 1) * _itemsPerPage + 1}-${(_currentPage * _itemsPerPage).clamp(0, _totalCount)} of $_totalCount gigs',
+            'Page $_currentPage of $_totalPages  •  Showing ${(_currentPage - 1) * _itemsPerPage + 1}-${(_currentPage * _itemsPerPage).clamp(0, _totalCount)} of $_totalCount gigs',
             style: AppFonts.roboto(
-              fontSize: 12,
-              color: Colors.grey.shade600,
+              fontSize: 11,
+              color: Colors.grey.shade500,
             ),
             textAlign: TextAlign.center,
           ),
@@ -1124,10 +1100,10 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         onTap: isEnabled ? onPressed : null,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           decoration: BoxDecoration(
             color: isEnabled ? _indigo.withValues(alpha: 0.1) : _slate100,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
             border: Border.all(
               color: isEnabled ? _indigo : _slate200,
               width: 1,
@@ -1138,22 +1114,22 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             children: [
               if (isIconLeft) Icon(
                 icon,
-                size: 16,
+                size: 14,
                 color: isEnabled ? _indigo : _slate400,
               ),
-              if (isIconLeft) const SizedBox(width: 4),
+              if (isIconLeft) const SizedBox(width: 2),
               Text(
                 label,
                 style: AppFonts.roboto(
-                  fontSize: 13,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: isEnabled ? _indigo : _slate400,
                 ),
               ),
-              if (!isIconLeft) const SizedBox(width: 4),
+              if (!isIconLeft) const SizedBox(width: 2),
               if (!isIconLeft) Icon(
                 icon,
-                size: 16,
+                size: 14,
                 color: isEnabled ? _indigo : _slate400,
               ),
             ],
@@ -1171,11 +1147,11 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         onTap: () => _goToPage(page),
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          width: 36,
-          height: 36,
+          width: 28,
+          height: 28,
           decoration: BoxDecoration(
             color: isActive ? _indigo : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
             border: Border.all(
               color: isActive ? _indigo : _slate200,
               width: 1,
@@ -1185,7 +1161,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             child: Text(
               '$page',
               style: AppFonts.roboto(
-                fontSize: 13,
+                fontSize: 11,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive ? Colors.white : _slate500,
               ),

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../../services/api_service.dart';
+import '../../screens/product_details_screen.dart';
 
 class DrawerFeaturedProduct extends StatefulWidget {
   const DrawerFeaturedProduct({super.key});
@@ -220,8 +221,13 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
 
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to product details
-        // Navigator.pushNamed(context, '/product-details', arguments: product['slug']);
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailsScreen(product: product),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

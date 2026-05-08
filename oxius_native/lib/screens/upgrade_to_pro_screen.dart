@@ -93,8 +93,6 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             _buildPlanComposer(),
             const SizedBox(height: 14),
             _buildFeaturesSection(),
-            const SizedBox(height: 14),
-            _buildTrustSection(),
           ],
         ),
       ),
@@ -201,18 +199,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                       color: Colors.white.withValues(alpha: 0.88),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildHeroStat('Starting at', '৳$_monthlyPrice/mo'),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _buildHeroStat('Yearly saving', '৳$_yearlyDiscount'),
-                      ),
-                    ],
-                  ),
+
                 ],
               ),
             ),
@@ -256,92 +243,76 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   }
 
   Widget _buildQuickStatusStrip() {
+    final isPro = _userState.isPro;
+    final balance = _userState.balance;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFF1E8D7)),
       ),
       child: Row(
         children: [
-          Expanded(
-            child: _buildStatusTile(
-              label: 'Membership',
-              value: _userState.isPro ? 'Already Pro' : 'Starter',
-              accent: _userState.isPro ? _mint : _gold,
-              icon: _userState.isPro ? Icons.verified_rounded : Icons.bolt_rounded,
+          // Membership chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: isPro ? _mint.withValues(alpha: 0.12) : _gold.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _buildStatusTile(
-              label: 'Wallet balance',
-              value: _isLoadingBalance
-                  ? 'Checking...'
-                  : '৳${_userState.balance.toStringAsFixed(2)}',
-              accent: _mint,
-              icon: Icons.account_balance_wallet_rounded,
-              onTap: _refreshBalance,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusTile({
-    required String label,
-    required String value,
-    required Color accent,
-    required IconData icon,
-    VoidCallback? onTap,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isPro ? Icons.verified_rounded : Icons.bolt_rounded,
+                  size: 15,
+                  color: isPro ? _mint : _gold,
                 ),
-                child: Icon(icon, size: 18, color: accent),
+                const SizedBox(width: 5),
+                Text(
+                  isPro ? 'Already Pro' : 'Free Plan',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isPro ? _mint : const Color(0xFF92400E),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          // Wallet balance chip
+          GestureDetector(
+            onTap: _refreshBalance,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: _mint.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(10),
               ),
-              const Spacer(),
-              if (onTap != null)
-                GestureDetector(
-                  onTap: onTap,
-                  child: Icon(Icons.refresh_rounded, size: 18, color: accent),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: _muted,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.2,
-              fontWeight: FontWeight.w800,
-              color: _ink,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.account_balance_wallet_rounded, size: 14, color: _mint),
+                  const SizedBox(width: 5),
+                  _isLoadingBalance
+                      ? const SizedBox(
+                          width: 12, height: 12,
+                          child: CircularProgressIndicator(strokeWidth: 1.5, color: _mint),
+                        )
+                      : Text(
+                          '৳${balance.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: _mint,
+                          ),
+                        ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.refresh_rounded, size: 12, color: _mint.withValues(alpha: 0.7)),
+                ],
+              ),
             ),
           ),
         ],
@@ -401,43 +372,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             accent: _sage,
             badge: 'Save ৳$_yearlyDiscount',
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryMetric(
-                    'Today you pay',
-                    '৳$_totalPrice',
-                    _primary,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildSummaryMetric(
-                    'Billing cycle',
-                    _selectedMonths == 1 ? '1 month' : '12 months',
-                    _gold,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildSummaryMetric(
-                    'Per month',
-                    _selectedMonths == 1
-                        ? '৳$_monthlyPrice'
-                        : '৳${(_monthlyPrice * 12 - _yearlyDiscount) ~/ 12}',
-                    _mint,
-                  ),
-                ),
-              ],
-            ),
-          ),
+
         ],
       ),
     );
@@ -679,113 +614,18 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     );
   }
 
-  Widget _buildTrustSection() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: _panel,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFF1E8D7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Payment summary',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: _ink,
-            ),
-          ),
-          const SizedBox(height: 14),
-          _buildSummaryRow('Selected plan', _selectedMonths == 1 ? 'Monthly Pro' : 'Yearly Pro'),
-          _buildSummaryRow('Total payable', '৳$_totalPrice', emphasize: true),
-          _buildSummaryRow(
-            'Available wallet balance',
-            _isLoadingBalance ? 'Checking...' : '৳${_userState.balance.toStringAsFixed(2)}',
-          ),
-          if (!_isLoadingBalance && _userState.balance < _totalPrice)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF1F2),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.info_rounded, color: Color(0xFFE11D48)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Add ৳${(_totalPrice - _userState.balance).toStringAsFixed(2)} more to your wallet before checkout.',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          height: 1.45,
-                          color: Color(0xFF9F1239),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: const [
-              _TrustPill(icon: Icons.lock_rounded, label: 'Secure checkout'),
-              _TrustPill(icon: Icons.bolt_rounded, label: 'Instant activation'),
-              _TrustPill(icon: Icons.receipt_long_rounded, label: 'Wallet billing'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryRow(String label, String value, {bool emphasize = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: _muted,
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: emphasize ? 18 : 14,
-              fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
-              color: emphasize ? _primary : _ink,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBottomCheckoutBar(double bottomInset) {
+    final isPro = _userState.isPro;
+    final balance = _userState.balance;
+    final hasEnoughFunds = balance >= _totalPrice;
+
     return SafeArea(
       top: false,
       child: Container(
-        padding: EdgeInsets.fromLTRB(4, 14, 4, bottomInset > 0 ? 6 : 14),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset > 0 ? 6 : 14),
         decoration: BoxDecoration(
-          color: _panel.withValues(alpha: 0.96),
-          border: const Border(
-            top: BorderSide(color: Color(0xFFF1E8D7)),
-          ),
+          color: _panel.withValues(alpha: 0.97),
+          border: const Border(top: BorderSide(color: Color(0xFFF1E8D7))),
           boxShadow: [
             BoxShadow(
               color: _ink.withValues(alpha: 0.05),
@@ -794,77 +634,142 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _userState.isPro ? 'Current membership' : 'Checkout total',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: _muted,
-                    ),
+            // Insufficient funds warning
+            if (!isPro && !_isLoadingBalance && !hasEnoughFunds)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFECACA)),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _userState.isPro ? 'Pro already active' : '৳$_totalPrice',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: _ink,
-                      letterSpacing: -0.6,
-                    ),
-                  ),
-                  if (!_userState.isPro)
-                    Text(
-                      _selectedMonths == 1
-                          ? 'Billed monthly from wallet'
-                          : 'One yearly wallet payment',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _muted,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_rounded, size: 16, color: Color(0xFFE11D48)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Add ৳${(_totalPrice - balance).toStringAsFixed(0)} more to your wallet.',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF9F1239),
+                          ),
+                        ),
                       ),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE11D48),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'Add Funds',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            // Main row: price + button
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isPro ? 'Membership' : 'Total',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: _muted,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isPro ? 'Pro active ✓' : '৳$_totalPrice',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: _ink,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      if (!isPro)
+                        Text(
+                          'Wallet: ৳${balance.toStringAsFixed(0)} available',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: hasEnoughFunds ? _mint : const Color(0xFFE11D48),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isSubscribing ? null : _handleUpgrade,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isPro ? _mint : _ink,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: _ink.withValues(alpha: 0.55),
+                      padding: const EdgeInsets.symmetric(vertical: 17),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      elevation: 0,
                     ),
+                    child: _isSubscribing
+                        ? const SizedBox(
+                            height: 20, width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            isPro ? 'Already Pro ✓' : 'Upgrade now',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+            // Trust pills
+            if (!isPro) ...[
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  _TrustPill(icon: Icons.lock_rounded, label: 'Secure'),
+                  SizedBox(width: 6),
+                  _TrustPill(icon: Icons.bolt_rounded, label: 'Instant'),
+                  SizedBox(width: 6),
+                  _TrustPill(icon: Icons.receipt_long_rounded, label: 'Wallet billing'),
                 ],
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _isSubscribing ? null : _handleUpgrade,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _ink,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: _ink.withValues(alpha: 0.55),
-                  padding: const EdgeInsets.symmetric(vertical: 17),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 0,
-                ),
-                child: _isSubscribing
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Text(
-                        _userState.isPro ? 'Already Pro' : 'Upgrade now',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-              ),
-            ),
+            ],
           ],
         ),
       ),

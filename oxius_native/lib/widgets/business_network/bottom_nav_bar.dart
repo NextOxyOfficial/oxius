@@ -44,11 +44,10 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         top: false,
         left: true,
         right: true,
-        bottom: false,
-        minimum: EdgeInsets.zero,
+        bottom: true,
         child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          height: 68,
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: isLoggedIn ? _buildLoggedInNav(context) : _buildLoggedOutNav(context),
@@ -182,8 +181,8 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 children: [
                   // Icon or Favicon with gradient effect when active
                   Container(
-                    width: 22,
-                    height: 22,
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
                       gradient: isActive
                           ? RadialGradient(
@@ -198,20 +197,20 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                     child: useFavicon
                         ? Image.asset(
                             'assets/images/favicon.png',
-                            width: 20,
-                            height: 20,
+                            width: 26,
+                            height: 26,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               return Icon(
                                 icon,
-                                size: 20,
+                                size: 26,
                                 color: isActive ? color : Colors.grey.shade600,
                               );
                             },
                           )
                         : Icon(
                             icon,
-                            size: 20,
+                            size: 26,
                             color: isActive ? color : Colors.grey.shade600,
                           ),
                   ),
@@ -265,11 +264,11 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 1),
+              const SizedBox(height: 2),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
                   color: isActive ? color : Colors.grey.shade600,
                   letterSpacing: 0,
@@ -299,13 +298,13 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 icon: Icons.edit_note_rounded,
               ),
         child: Transform.translate(
-          offset: const Offset(0, -6),
+          offset: const Offset(0, -8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   gradient: enabled
                       ? const LinearGradient(
@@ -339,7 +338,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 child: Icon(
                   Icons.add,
                   color: enabled ? Colors.white : Colors.grey.shade300,
-                  size: 20,
+                  size: 24,
                 ),
               ),
             ],

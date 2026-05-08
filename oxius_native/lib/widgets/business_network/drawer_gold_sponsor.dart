@@ -3,10 +3,11 @@ import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/payment_policy.dart';
+import '../ios_web_redirect_screen.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
-  
+
   const DrawerGoldSponsor({
     super.key,
     required this.isLoggedIn,
@@ -26,130 +27,66 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
   @override
   void initState() {
     super.initState();
-    if (widget.isLoggedIn) {
-      _loadGoldSponsors();
-    }
+    if (widget.isLoggedIn) _loadGoldSponsors();
   }
 
   Future<void> _loadGoldSponsors() async {
     setState(() => _isLoading = true);
-    
     try {
-      // Fetch real data from API
       final response = await GoldSponsorService.getMySponsorsStats();
-      
       if (mounted) {
         setState(() {
           _activeCount = response['active_count'] ?? 0;
           _totalViews = response['total_views'] ?? 0;
-          
-          // Calculate expiring count (sponsors expiring in next 7 days)
+          _expiringCount = 0;
           final sponsors = response['featured_sponsors'] as List? ?? [];
-          _expiringCount = 0; // TODO: Calculate from end_date if needed
-          
           _sponsors = sponsors.map((s) => Map<String, dynamic>.from(s)).toList();
-          
-          print('DEBUG: Loaded ${_sponsors.length} sponsors');
-          print('DEBUG: Active count: $_activeCount');
-          print('DEBUG: Sponsors: $_sponsors');
         });
       }
-    } catch (e) {
-      print('Error loading gold sponsors: $e');
+    } catch (_) {
+      // ignore
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.amber.shade50,
-            Colors.yellow.shade50,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.amber.shade100.withOpacity(0.5),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Shimmer effect
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.amber.shade500.withOpacity(0),
-                  Colors.amber.shade500,
-                  Colors.amber.shade500.withOpacity(0),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Header
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+          child: Row(
             children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.amber.shade400,
-                    width: 2,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    '✦',
-                    style: TextStyle(
-                      color: Colors.amber.shade500,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-              ShaderMask(
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [Colors.amber.shade600, Colors.yellow.shade600],
-                ).createShader(bounds),
-                child: Text(
-                  widget.isLoggedIn ? 'My Gold Sponsorships' : 'Gold Sponsorships',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+              Icon(Icons.workspace_premium_rounded, size: 11, color: Colors.amber.shade600),
+              const SizedBox(width: 4),
+              Text(
+                'GOLD SPONSORS',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade500,
+                  letterSpacing: 0.6,
                 ),
               ),
             ],
           ),
-          
-          const SizedBox(height: 12),
-          
-          // Content based on login status
-          if (widget.isLoggedIn)
-            _buildLoggedInContent()
-          else
-            _buildLoginPrompt(),
-        ],
-      ),
+        ),
+
+        // Content card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade50.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.amber.shade100),
+          ),
+          child: widget.isLoggedIn ? _buildLoggedInContent() : _buildLoginPrompt(),
+        ),
+      ],
     );
   }
 
@@ -157,238 +94,145 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Stats cards
+        // Stats row
         Row(
           children: [
-            Expanded(
-              child: _buildStatCard('Active', _activeCount.toString(), _isLoading),
-            ),
+            _buildStatChip('Active', _activeCount.toString(), _isLoading),
             const SizedBox(width: 6),
-            Expanded(
-              child: _buildStatCard('Views', _formatViews(_totalViews), _isLoading),
-            ),
+            _buildStatChip('Views', _formatViews(_totalViews), _isLoading),
             const SizedBox(width: 6),
-            Expanded(
-              child: _buildStatCard(
-                'Expiring',
-                _expiringCount.toString(),
-                _isLoading,
-                isWarning: _expiringCount > 0,
-              ),
-            ),
+            _buildStatChip('Expiring', _expiringCount.toString(), _isLoading, isWarning: _expiringCount > 0),
           ],
         ),
-        
-        const SizedBox(height: 12),
-        
-        // Sponsors list or empty state
-        if (_isLoading)
-          _buildLoadingList()
-        else if (_sponsors.isEmpty)
-          _buildEmptyState()
-        else
+
+        if (_isLoading) ...[
+          const SizedBox(height: 8),
+          _buildLoadingList(),
+        ] else if (_sponsors.isNotEmpty) ...[
+          const SizedBox(height: 8),
           _buildSponsorsList(),
-        
-        if (!PaymentPolicy.shouldBlockDigitalPayment()) ...[
-        const SizedBox(height: 12),
-        
-        // Description
-        Text(
-          'Become a Gold Sponsor and showcase your business to our entire network with premium visibility.',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-        
-        const SizedBox(height: 12),
-        
-        // Become Gold Sponsor button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const BecomeGoldSponsorScreen(),
+        ],
+
+        // CTA
+        if (isIOSPlatform) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.email_rounded, size: 12, color: Colors.amber.shade700),
+              const SizedBox(width: 5),
+              const Expanded(
+                child: Text(
+                  'partnership@adsyclub.com',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF334155)),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber.shade500,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
               ),
-              elevation: 0,
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Become Gold Sponsor',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(Icons.phone_rounded, size: 12, color: Colors.amber.shade700),
+              const SizedBox(width: 5),
+              const Text(
+                '+8801896144066',
+                style: TextStyle(fontSize: 11, color: Color(0xFF334155)),
+              ),
+            ],
+          ),
+        ] else if (!PaymentPolicy.shouldBlockDigitalPayment()) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: Material(
+              color: Colors.amber.shade500,
+              borderRadius: BorderRadius.circular(7),
+              child: InkWell(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BecomeGoldSponsorScreen()),
+                ),
+                borderRadius: BorderRadius.circular(7),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add, size: 13, color: Colors.white),
+                      SizedBox(width: 5),
+                      Text(
+                        'Become Gold Sponsor',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(width: 6),
-                Icon(Icons.add, size: 16),
-              ],
+              ),
             ),
           ),
-        ),
-        ], // end if (!PaymentPolicy.shouldBlockDigitalPayment())
+        ],
       ],
     );
   }
 
   Widget _buildLoginPrompt() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF10B981).withOpacity(0.08),
-            const Color(0xFF059669).withOpacity(0.05),
-          ],
+    return Row(
+      children: [
+        Icon(Icons.workspace_premium_rounded, size: 20, color: Colors.amber.shade500),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            'Login to manage your Gold Sponsorships',
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+          ),
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF10B981).withOpacity(0.2),
-          width: 1,
+        const SizedBox(width: 8),
+        Material(
+          color: Colors.amber.shade500,
+          borderRadius: BorderRadius.circular(6),
+          child: InkWell(
+            onTap: () => Navigator.pushNamed(context, '/login'),
+            borderRadius: BorderRadius.circular(6),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+              child: Text(
+                'Login',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
+              ),
+            ),
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.workspace_premium_rounded,
-              size: 28,
-              color: Color(0xFF10B981),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Become a Gold Sponsor',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF111827),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Login to unlock Gold Sponsor features and boost your visibility',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-              height: 1.4,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/login');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.login_rounded, size: 18),
-                  SizedBox(width: 8),
-                  Text(
-                    'Login to Continue',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/register');
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF10B981),
-            ),
-            child: const Text(
-              'New here? Create an account',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
-  Widget _buildStatCard(String label, String value, bool isLoading, {bool isWarning = false}) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isWarning ? Colors.orange.shade200 : Colors.amber.shade100,
+  Widget _buildStatChip(String label, String value, bool isLoading, {bool isWarning = false}) {
+    final color = isWarning ? Colors.orange.shade600 : Colors.amber.shade700;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: isWarning ? Colors.orange.shade200 : Colors.amber.shade200),
         ),
-      ),
-      child: Column(
-        children: [
-          if (isLoading)
-            Container(
-              height: 20,
-              width: 32,
-              decoration: BoxDecoration(
-                color: Colors.amber.shade100.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(4),
-              ),
-            )
-          else
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isWarning ? Colors.orange.shade600 : Colors.amber.shade600,
-              ),
-            ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ],
+        child: Column(
+          children: [
+            if (isLoading)
+              Container(
+                height: 14,
+                width: 28,
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade100,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              )
+            else
+              Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+            const SizedBox(height: 1),
+            Text(label, style: TextStyle(fontSize: 9, color: Colors.grey.shade500)),
+          ],
+        ),
       ),
     );
   }
@@ -398,68 +242,13 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
       children: List.generate(
         2,
         (index) => Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.only(bottom: 6),
+          height: 32,
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade100.withOpacity(0.5),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 12,
-                      width: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade100.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      height: 10,
-                      width: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.amber.shade100.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            color: Colors.amber.shade50,
+            borderRadius: BorderRadius.circular(6),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        "You don't have any active sponsorships yet.",
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey.shade600,
-        ),
-        textAlign: TextAlign.center,
       ),
     );
   }
@@ -467,83 +256,51 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
   Widget _buildSponsorsList() {
     return Column(
       children: _sponsors.map((sponsor) {
-        final sponsorName = _plainSponsorText(
-          sponsor['name'],
-          fallback: 'Unnamed Sponsor',
-        );
-        final sponsorDescription = _plainSponsorText(sponsor['business_description']);
-
+        final name = _plainSponsorText(sponsor['name'], fallback: 'Unnamed Sponsor');
+        final status = sponsor['status'] as String?;
         return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(8),
+          margin: const EdgeInsets.only(bottom: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: Colors.amber.shade100),
           ),
           child: Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(4),
                 child: Image.network(
                   sponsor['image'] ?? '',
-                  width: 24,
-                  height: 24,
+                  width: 20,
+                  height: 20,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 24,
-                      height: 24,
-                      color: Colors.grey.shade200,
-                      child: const Icon(Icons.business, size: 16),
-                    );
-                  },
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 20,
+                    height: 20,
+                    color: Colors.amber.shade100,
+                    child: const Icon(Icons.business, size: 12),
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 7),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sponsorName,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (sponsorDescription.isNotEmpty)
-                      Text(
-                        sponsorDescription,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey.shade600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                  ],
+                child: Text(
+                  name,
+                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(sponsor['status']).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _getStatusColor(sponsor['status']).withOpacity(0.3),
-                    width: 1,
-                  ),
+                  color: _getStatusColor(status).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  _getStatusText(sponsor['status']).toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: _getStatusColor(sponsor['status']),
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
+                  _getStatusText(status),
+                  style: TextStyle(fontSize: 9, color: _getStatusColor(status), fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -554,51 +311,35 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
   }
 
   String _formatViews(int views) {
-    if (views >= 1000000) {
-      return '${(views / 1000000).toStringAsFixed(1)}M';
-    } else if (views >= 1000) {
-      return '${(views / 1000).toStringAsFixed(1)}K';
-    }
+    if (views >= 1000000) return '${(views / 1000000).toStringAsFixed(1)}M';
+    if (views >= 1000) return '${(views / 1000).toStringAsFixed(1)}K';
     return views.toString();
   }
 
   String _plainSponsorText(dynamic value, {String fallback = ''}) {
     final raw = (value ?? '').toString().trim();
-    if (raw.isEmpty) {
-      return fallback;
-    }
-
+    if (raw.isEmpty) return fallback;
     final plainText = HtmlContentUtils.toPlainText(raw);
     return plainText.isNotEmpty ? plainText : fallback;
   }
 
   String _getStatusText(String? status) {
     switch (status?.toLowerCase()) {
-      case 'active':
-        return 'Active';
-      case 'pending':
-        return 'Pending Approval';
-      case 'expired':
-        return 'Expired';
-      case 'rejected':
-        return 'Rejected';
-      default:
-        return 'Unknown';
+      case 'active': return 'Active';
+      case 'pending': return 'Pending';
+      case 'expired': return 'Expired';
+      case 'rejected': return 'Rejected';
+      default: return 'Unknown';
     }
   }
 
   Color _getStatusColor(String? status) {
     switch (status?.toLowerCase()) {
-      case 'active':
-        return Colors.green.shade600;
-      case 'pending':
-        return Colors.orange.shade600;
-      case 'expired':
-        return Colors.red.shade600;
-      case 'rejected':
-        return Colors.red.shade600;
-      default:
-        return Colors.grey.shade600;
+      case 'active': return Colors.green.shade600;
+      case 'pending': return Colors.orange.shade600;
+      case 'expired': return Colors.red.shade600;
+      case 'rejected': return Colors.red.shade600;
+      default: return Colors.grey.shade600;
     }
   }
 }
