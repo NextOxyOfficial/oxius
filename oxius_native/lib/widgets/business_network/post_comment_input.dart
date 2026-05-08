@@ -379,11 +379,11 @@ class _PostCommentInputState extends State<PostCommentInput> {
             Padding(
               padding: const EdgeInsets.only(left: 4),
               child: Container(
-                width: 36,
-                height: 36,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.pink.shade50,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(22),
                 ),
                 child: IconButton(
                   onPressed: () {
@@ -397,8 +397,8 @@ class _PostCommentInputState extends State<PostCommentInput> {
                   },
                   icon: Image.asset(
                     'assets/icons/gift.png',
-                    width: 22,
-                    height: 22,
+                    width: 28,
+                    height: 28,
                     fit: BoxFit.contain,
                   ),
                   padding: EdgeInsets.zero,

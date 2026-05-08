@@ -737,9 +737,9 @@ class _PostCardState extends State<PostCard> {
                           onMentionTap: _handleMentionTap,
                         ),
                       ),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: const Color(0xFF0A0A0A),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Color(0xFF0A0A0A),
                         height: 1.5,
                       ),
                     ),
