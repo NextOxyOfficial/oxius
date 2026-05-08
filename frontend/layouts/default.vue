@@ -60,31 +60,6 @@
           </div>
           <!-- Content -->
           <div class="p-6">
-            <!-- Version Information (if available) -->
-            <div
-              v-if="appVersion || versionCode"
-              class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
-            >
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-gray-600 dark:text-gray-400"
-                  >Latest Version:</span
-                >
-                <div class="flex items-center space-x-2">
-                  <span
-                    v-if="appVersion"
-                    class="font-semibold text-emerald-600 dark:text-emerald-400"
-                    >{{ appVersion }}</span
-                  >
-                  <span
-                    v-if="versionCode"
-                    class="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded text-xs"
-                  >
-                    Build {{ versionCode }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
             <div class="space-y-4 mb-6">
               <div class="flex items-center space-x-3">
                 <div
@@ -138,12 +113,10 @@
                 size="lg"
               >
                 <UIcon
-                  name="i-heroicons-arrow-down-tray"
+                  :name="downloadButtonIcon"
                   class="w-5 h-5 mr-2 group-hover:animate-bounce"
                 />
-                Download APK {{ appVersion ? `v${appVersion}` : ""
-                }}{{ versionCode ? ` (${versionCode})` : ""
-                }}{{ fileSize ? ` - ${fileSize}` : "" }}
+                {{ downloadButtonLabel }}
               </UButton>
 
               <div class="flex gap-2">
@@ -169,12 +142,11 @@
               </div>
             </div>
 
-            <!-- Privacy Note -->
+            <!-- Store Note -->
             <p
               class="text-xs text-gray-500 dark:text-gray-400 text-center mt-4"
             >
-              Safe download from our official servers. Your privacy is
-              protected.
+              Available on the Google Play Store and Apple App Store.
             </p>
           </div>
         </div>
@@ -357,54 +329,34 @@ const shouldShowMobileAppPopup = () => {
   return true;
 };
 
-// Use the app download composable
-import { useAppDownload } from "~/composables/useAppDownload";
-const { downloadApp, fileSize, appVersion, versionCode, fetchDownloadUrl } =
-  useAppDownload();
+// Static device-aware app download
+const { getPlatform, getStoreUrl } = useSmartAppLinks()
+const appPlatform = ref<'android' | 'ios' | 'desktop'>('android')
 
-// Download mobile app function
-const downloadMobileApp = async () => {
-  try {
-    // Use the composable to get the dynamic download URL from admin
-    const success = await downloadApp();
+const downloadButtonLabel = computed(() => {
+  if (appPlatform.value === 'ios') return 'Get on App Store'
+  if (appPlatform.value === 'android') return 'Get on Google Play'
+  return 'Download for Android'
+})
 
-    if (success) {
-      // Mark app as downloaded/installed to prevent future popups (use both cookies and localStorage)
-      localStorage.setItem("mobileAppInstalled", "true");
-      setCookie("mobileAppInstalled", "true", 24 * 365); // Set for 1 year
-    } else {
-      throw new Error("No download URL available from admin panel");
-    }
+const downloadButtonIcon = computed(() => {
+  if (appPlatform.value === 'ios') return 'i-heroicons-arrow-top-right-on-square'
+  return 'i-heroicons-arrow-down-tray'
+})
 
-    // Show success toast
-    toast.add({
-      title: "Download Started",
-      description: "AdsyClub mobile app is downloading...",
-      color: "green",
-      icon: "i-heroicons-check-circle",
-    });
-
-    // Close popup and update last shown time
-    closeMobileAppPopup();
-  } catch (error) {
-    console.error("Download error:", error);
-
-    // More specific error handling
-    let errorMessage = "Failed to start download. Please try again.";
-    if (error.message && error.message.includes("not found")) {
-      errorMessage = "APK file not found. Please contact support.";
-    } else if (error.message && error.message.includes("network")) {
-      errorMessage = "Network error. Please check your connection.";
-    }
-
-    toast.add({
-      title: "Download Error",
-      description: errorMessage,
-      color: "red",
-      icon: "i-heroicons-exclamation-triangle",
-    });
+// Navigate to the correct store / APK based on device — no API needed
+const downloadMobileApp = () => {
+  const url = getStoreUrl(appPlatform.value)
+  if (url) {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  } else {
+    // Desktop fallback: go to the download page
+    window.open('/download', '_blank', 'noopener,noreferrer')
   }
-};
+  localStorage.setItem('mobileAppInstalled', 'true')
+  setCookie('mobileAppInstalled', 'true', 24 * 365)
+  closeMobileAppPopup()
+}
 
 // Remind me later function
 const remindMeLater = () => {
@@ -481,8 +433,8 @@ const initializeAuth = async () => {
 initializeAuth();
 
 onMounted(async () => {
-  // Fetch app details early
-  await fetchDownloadUrl();
+  // Detect device platform for popup button
+  appPlatform.value = getPlatform()
 
   // Set up header spacing management with a small delay to ensure DOM is ready
   setTimeout(() => {
