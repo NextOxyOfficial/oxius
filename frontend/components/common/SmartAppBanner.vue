@@ -3,6 +3,7 @@
     <div
       v-if="visible"
       class="smart-app-banner"
+      :style="{ top: bannerTop + 'px' }"
       role="banner"
       aria-label="Open in AdsyClub app"
     >
@@ -19,7 +20,7 @@
 
       <!-- App icon -->
       <img
-        :src="'/static/frontend/icons/icon-192x192.png'"
+        :src="'/favicon.png'"
         alt="AdsyClub"
         class="banner-icon"
         width="52"
@@ -30,11 +31,6 @@
       <div class="banner-info">
         <p class="banner-name">AdsyClub</p>
         <p class="banner-tagline">{{ tagline }}</p>
-        <div class="banner-stars" aria-label="4.5 stars">
-          <svg v-for="i in 5" :key="i" class="star" :class="i <= 4 ? 'star-full' : 'star-half'" width="10" height="10" viewBox="0 0 20 20" fill="none">
-            <path d="M10 1l2.39 5.26 5.61.53-4.17 3.78 1.3 5.43L10 13.27l-5.13 2.73 1.3-5.43L2 6.79l5.61-.53L10 1z" :fill="i <= 4 ? '#F59E0B' : 'none'" :stroke="'#F59E0B'" stroke-width="1"/>
-          </svg>
-        </div>
       </div>
 
       <!-- Open CTA -->
@@ -52,14 +48,17 @@
 
 <script setup lang="ts">
 import { useSmartAppLinks } from '~/composables/useSmartAppLinks'
+import { useScrollDirection } from '~/composables/useScrollDirection'
 
 const DISMISS_KEY = 'smart-banner-dismissed-at'
 const COOLDOWN_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 const { getPlatform, isMobileBrowser, isStandaloneContext, tryOpenApp } = useSmartAppLinks()
+const { isScrollingDown } = useScrollDirection()
 
 const visible = ref(false)
 const opening = ref(false)
+const headerHeight = ref(56)
 
 const platform = computed(() => getPlatform())
 
@@ -68,6 +67,8 @@ const tagline = computed(() =>
     ? 'Free · On the App Store'
     : 'Free · On Google Play'
 )
+
+const bannerTop = computed(() => isScrollingDown.value ? 0 : headerHeight.value)
 
 function shouldShow(): boolean {
   if (!import.meta.client) return false
@@ -108,6 +109,15 @@ async function openApp() {
 }
 
 onMounted(() => {
+  const measureHeader = () => {
+    const container = document.getElementById('header-container')
+    if (container) {
+      const headerEl = container.firstElementChild as HTMLElement | null
+      if (headerEl) headerHeight.value = headerEl.offsetHeight
+    }
+  }
+  measureHeader()
+  window.addEventListener('resize', measureHeader)
   // Small delay so it doesn't flash before the page is ready
   setTimeout(() => {
     visible.value = shouldShow()
@@ -118,10 +128,9 @@ onMounted(() => {
 <style scoped>
 .smart-app-banner {
   position: fixed;
-  top: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 99999998;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -130,7 +139,8 @@ onMounted(() => {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Dismiss */
@@ -181,14 +191,6 @@ onMounted(() => {
   margin: 0 0 3px;
   line-height: 1.3;
 }
-.banner-stars {
-  display: flex;
-  gap: 1px;
-}
-.star path {
-  stroke-width: 1.5px;
-}
-
 /* Open button */
 .banner-open-btn {
   flex-shrink: 0;
@@ -235,12 +237,16 @@ onMounted(() => {
 /* Slide-down / slide-up transition */
 .banner-slide-enter-active,
 .banner-slide-leave-active {
-  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.22s ease;
+  transition: opacity 0.25s ease, max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 .banner-slide-enter-from,
 .banner-slide-leave-to {
-  transform: translateY(-100%);
+  max-height: 0;
   opacity: 0;
+}
+.banner-slide-enter-to,
+.banner-slide-leave-from {
+  max-height: 80px;
 }
 </style>

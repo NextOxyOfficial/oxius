@@ -5,6 +5,7 @@
       <!-- Header spacer - maintains space when header becomes fixed -->
       <div id="header-spacer" class="header-spacer" ref="headerSpacer"></div>
     </div>
+    <CommonSmartAppBanner />
     <main id="main-content">
       <slot />
     </main>

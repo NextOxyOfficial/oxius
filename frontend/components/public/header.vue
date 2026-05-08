@@ -14,64 +14,6 @@
       padding-top: max(12px, env(safe-area-inset-top));
     "
   >
-    <!-- Mobile App Download Banner -->
-    <transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0 -translate-y-2"
-      leave-active-class="transition duration-200 ease-in"
-      leave-to-class="opacity-0 -translate-y-2"
-    >
-      <div v-if="showDownloadBanner" class="sm:hidden px-3 pb-2">
-        <div class="relative rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 p-[1px] shadow-lg shadow-emerald-500/20">
-          <!-- Inner content with subtle pattern -->
-          <div class="relative flex items-center gap-2 rounded-[11px] bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 px-3 py-2.5 pr-8">
-            <!-- Decorative circles -->
-            <div class="absolute -left-6 -top-6 w-16 h-16 bg-white/10 rounded-full blur-xl"></div>
-            <div class="absolute -right-4 -bottom-4 w-12 h-12 bg-white/10 rounded-full blur-lg"></div>
-            
-            <!-- App Icon -->
-            <div class="relative shrink-0 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-inner">
-              <img 
-                src="/static/frontend/favicon.png" 
-                alt="Adsy App" 
-                class="w-7 h-7 rounded-lg"
-                loading="lazy"
-              />
-            </div>
-            
-            <!-- Text Content -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="text-[13px] font-bold text-white">Adsy App</span>
-                <span class="px-1.5 py-0.5 text-[9px] font-bold bg-white/20 text-white rounded-full uppercase tracking-wide">Free</span>
-              </div>
-              <div class="text-[11px] text-emerald-100 mt-0.5">
-                Get the best experience on mobile
-              </div>
-            </div>
-            
-            <!-- Download Button -->
-            <button
-              @click="downloadAndroidApp"
-              class="shrink-0 flex items-center gap-1.5 text-[12px] font-bold px-4 py-2 rounded-lg bg-white text-emerald-600 hover:bg-emerald-50 active:scale-95 transition-all shadow-md"
-            >
-              <UIcon name="i-heroicons-arrow-down-tray" class="w-4 h-4" />
-              <span>GET</span>
-            </button>
-            
-            <!-- Close Button -->
-            <button
-              @click="dismissDownloadBanner"
-              class="absolute flex top-1/2 -translate-y-1/2 right-1.5 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white transition"
-              aria-label="Close"
-            >
-              <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
-
     <!-- Subscription Warnings Section -->
     <div class="relative px-4">
       <!-- Pre-expiration Warning -->
@@ -476,55 +418,6 @@
               </NuxtLink>
             </div>
           </div>
-          <!-- Download App Section -->
-          <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
-            <h3
-              class="text-lg font-medium text-gray-800 dark:text-gray-300 mb-4"
-            >
-              {{ $t("download_our_app") }}
-            </h3>
-            <div class="flex items-center gap-4">
-              <button
-                @click="downloadAndroidApp"
-                class="w-32 h-10 bg-green-100 dark:bg-green-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-green-200 dark:hover:bg-green-700 transition overflow-hidden relative group"
-              >
-                <img
-                  src="/static/frontend/images/google.png"
-                  alt="Google Play"
-                  class="w-full h-full object-contain"
-                />
-                <div
-                  class="absolute inset-0 bg-green-500/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                >
-                  <UIcon
-                    name="i-heroicons-arrow-down-tray"
-                    class="w-5 h-5 text-green-600 dark:text-green-300"
-                  />
-                </div>
-              </button>
-              <a
-                href="https://apps.apple.com/us/app/adsyclub/id6760218370"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden relative group"
-              >
-                <img
-                  src="/static/frontend/images/apple.png"
-                  alt="Download on the App Store"
-                  class="w-full h-full object-contain"
-                />
-                <div
-                  class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                >
-                  <UIcon
-                    name="i-heroicons-arrow-top-right-on-square"
-                    class="w-5 h-5 text-white"
-                  />
-                </div>
-              </a>
-            </div>
-          </div>
-
           <!-- Social Media Section -->
           <div class="px-4 py-6 border-t border-gray-200 dark:border-gray-700">
             <h3
@@ -872,7 +765,6 @@
  const { unreadTicketCount, totalUnreadCount, fetchUnreadCount } = useTickets();
  const { isScrollingDown, isScrollingUp } = useScrollDirection();
  const { chatIconPath } = useStaticAssets();
- const toast = useToast();
  
  const { useAdsyChat } = await import('~/composables/useAdsyChat.js');
  const { unreadCount: adsyUnreadCount, loadChatRooms, startHeaderPolling, stopHeaderPolling } = useAdsyChat();
@@ -890,66 +782,11 @@
    return (totalUnreadCount.value || 0) + (adsyUnreadCount.value || 0);
  });
  
- import { useAppDownload } from "~/composables/useAppDownload";
- const { downloadApp } = useAppDownload();
- 
- const downloadAndroidApp = async () => {
-   try {
-     await downloadApp();
-     isOpen.value = false;
-     toast.add({
-       title: "Download Started",
-       description: "AdsyClub Android app is downloading...",
-       color: "green",
-       icon: "i-heroicons-check-circle",
-     });
-   } catch (error) {
-     console.error("Download error:", error);
-     toast.add({
-       title: "Download Error",
-       description: "Failed to start download. Please try again.",
-       color: "red",
-       icon: "i-heroicons-exclamation-triangle",
-     });
-   }
- };
- 
- const showDownloadBanner = ref(false);
- const _downloadBannerCookie = 'adsy_download_app_banner_dismissed_v1';
- 
- const _getCookie = (name) => {
-   try {
-     const value = `; ${document.cookie}`;
-     const parts = value.split(`; ${name}=`);
-     if (parts.length === 2) return parts.pop().split(';').shift();
-   } catch (_) {
-   }
-   return null;
- };
- 
- const _setCookieHours = (name, value, hours) => {
-   try {
-     const date = new Date();
-     date.setTime(date.getTime() + hours * 60 * 60 * 1000);
-     document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-   } catch (_) {
-   }
- };
- 
- const dismissDownloadBanner = () => {
-   _setCookieHours(_downloadBannerCookie, '1', 24);
-   showDownloadBanner.value = false;
- };
- 
  onMounted(async () => {
    await fetchUnreadCount();
    if (user.value?.user) {
      await loadChatRooms();
      startHeaderPolling();
-   }
- 
-   if (!_getCookie(_downloadBannerCookie)) {
-     showDownloadBanner.value = true;
    }
  });
  

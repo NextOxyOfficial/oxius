@@ -1,9 +1,5 @@
 <template>
   <div>
-    <!-- Smart App Banner: prompts mobile users to open/download the native app.
-         Shows a dismissible bar with an "Open" CTA and a close (✕) button.
-         Automatically hidden in standalone / PWA mode. -->
-    <CommonSmartAppBanner />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
