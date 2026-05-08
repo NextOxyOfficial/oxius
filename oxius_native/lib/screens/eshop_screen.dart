@@ -440,11 +440,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     // Cancel previous timers
     _debounceTimer?.cancel();
     _saveSearchTimer?.cancel();
-    
-    // Update suggestions immediately for better UX
-    if (query.trim().isNotEmpty) {
-      _updateSearchSuggestions(query);
-    } else {
+
+    if (query.trim().isEmpty) {
       setState(() {
         _showSuggestions = false;
         _searchSuggestions.clear();
@@ -453,12 +450,24 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       });
       return;
     }
-    
-    // Debounce search by 800ms - wait for user to finish typing
+
+    if (query.trim().length < 3) {
+      // Query too short to search — clear stale results from a longer previous query
+      // so the user doesn't see irrelevant results while still typing.
+      setState(() {
+        _searchResults.clear();
+        _isSearching = false;
+        _showSuggestions = false;
+        _searchSuggestions.clear();
+      });
+      return;
+    }
+
+    // 3+ chars: show suggestions immediately and debounce the API call
+    _updateSearchSuggestions(query);
+
     _debounceTimer = Timer(const Duration(milliseconds: 800), () {
-      if (query.trim().isNotEmpty && query.trim().length >= 3) {
-        _performSearch(query);
-      }
+      if (mounted) _performSearch(query);
     });
   }
   
@@ -753,16 +762,21 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               size: 22,
             ),
             onPressed: () {
-              setState(() {
-                _isSearchActive = !_isSearchActive;
-                if (!_isSearchActive) {
+              if (_isSearchActive) {
+                // Closing search
+                setState(() {
+                  _isSearchActive = false;
                   _searchController.clear();
                   _searchResults.clear();
                   _searchSuggestions.clear();
                   _showSuggestions = false;
                   _isSearching = false;
-                }
-              });
+                });
+                _searchAnimationController.reverse();
+              } else {
+                // Opening search — load suggested products
+                _activateSearch();
+              }
             },
             tooltip: _isSearchActive ? 'Close Search' : 'Search',
           ),
