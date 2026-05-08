@@ -1464,7 +1464,11 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         elevation: 0,
         backgroundColor: _surface,
         surfaceTintColor: Colors.transparent,
-        titleSpacing: 16,
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: _textPrimary),
+          onPressed: () => Navigator.maybePop(context),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

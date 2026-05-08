@@ -45,6 +45,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   int _currentPage = 1;
   Timer? _debounceTimer;
   Timer? _saveSearchTimer;
+  Completer<void> _categoriesCompleter = Completer<void>();
   late AnimationController _searchAnimationController;
   late Animation<double> _searchAnimation;
 
@@ -80,9 +81,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           _selectedCategoryName = null; // Will be set when categories load
           _selectedCategorySlug = null; // Will be set when categories load
         });
-        // Find category name and slug, then reload products
-        _findCategoryDetails(categoryId);
-        _loadInitialData();
+        // Await category details (slug) BEFORE loading products so the API
+        // call includes the correct category_slug param on the first try.
+        _findCategoryDetails(categoryId).then((_) {
+          if (mounted) _loadInitialData();
+        });
       }
     }
   }
@@ -92,29 +95,27 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Future<void> _findCategoryDetails(String categoryId) async {
-    // Wait for categories to load if not loaded yet
-    int attempts = 0;
-    while (_allCategories.isEmpty && attempts < 30) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      attempts++;
+    if (_allCategories.isEmpty) {
+      // Wait for _loadCategories() to complete instead of busy-wait polling
+      await _categoriesCompleter.future;
     }
-    
-    if (_allCategories.isNotEmpty) {
-      final category = _allCategories.firstWhere(
-        (cat) => _categoryIdMatches(cat['id'], categoryId),
-        orElse: () => {},
-      );
-      if (mounted && category.isNotEmpty) {
-        setState(() {
-          _selectedCategoryName = category['name']?.toString();
-          _selectedCategorySlug = category['slug']?.toString();
-        });
-        print('🏷️ Category selected: ${_selectedCategoryName} (slug: $_selectedCategorySlug)');
-      } else {
-        print('⚠️ Category $categoryId not found in loaded category list');
-      }
+    _applyCategoryFromLoaded(categoryId);
+  }
+
+  /// Looks up name+slug from already-loaded _allCategories and updates state.
+  void _applyCategoryFromLoaded(String categoryId) {
+    final category = _allCategories.firstWhere(
+      (cat) => _categoryIdMatches(cat['id'], categoryId),
+      orElse: () => {},
+    );
+    if (mounted && category.isNotEmpty) {
+      setState(() {
+        _selectedCategoryName = category['name']?.toString();
+        _selectedCategorySlug = category['slug']?.toString();
+      });
+      print('🏷️ Category resolved: $_selectedCategoryName (slug: $_selectedCategorySlug)');
     } else {
-      print('⚠️ Categories did not load in time for category $categoryId');
+      print('⚠️ Category $categoryId not found in loaded category list');
     }
   }
 
@@ -292,11 +293,14 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           _allCategories = categories;
         });
         if (_selectedCategoryId != null) {
-          _findCategoryDetails(_selectedCategoryId!);
+          _applyCategoryFromLoaded(_selectedCategoryId!);
         }
       }
     } catch (e) {
       print('Error loading categories: $e');
+    } finally {
+      // Unblock any waiter (e.g. _findCategoryDetails) regardless of success/failure
+      if (!_categoriesCompleter.isCompleted) _categoriesCompleter.complete();
     }
   }
 
@@ -307,12 +311,23 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         _currentPage = 1;
       });
 
-      print('🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"}, slug: $_selectedCategorySlug)');
+      // Derive slug from already-loaded categories when state hasn't been set yet
+      // (e.g. when called before _findCategoryDetails completes).
+      String? resolvedSlug = _selectedCategorySlug;
+      if (resolvedSlug == null && _selectedCategoryId != null && _allCategories.isNotEmpty) {
+        final cat = _allCategories.firstWhere(
+          (c) => _categoryIdMatches(c['id'], _selectedCategoryId),
+          orElse: () => {},
+        );
+        resolvedSlug = cat['slug']?.toString();
+      }
+
+      print('🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"}, slug: $resolvedSlug)');
       final products = await EshopService.fetchEshopProducts(
         page: 1, 
         pageSize: 12,
         categoryId: _selectedCategoryId,
-        categorySlug: _selectedCategorySlug,
+        categorySlug: resolvedSlug,
       );
       
       print('✅ Loaded ${products.length} products');

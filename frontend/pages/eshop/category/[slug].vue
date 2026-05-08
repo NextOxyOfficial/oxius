@@ -563,12 +563,14 @@ function buildCategoryFilterQuery() {
     ? route.params.slug[0]
     : route.params.slug;
 
-  if (categoryDetails.value?.id) {
-    return `&category=${encodeURIComponent(String(categoryDetails.value.id))}`;
-  }
-
+  // Prefer slug-based filtering (consistent with index.vue and backend priority)
   if (routeSlug) {
     return `&category_slug=${encodeURIComponent(String(routeSlug))}`;
+  }
+
+  // Fallback to UUID only when slug is unavailable
+  if (categoryDetails.value?.id) {
+    return `&category=${encodeURIComponent(String(categoryDetails.value.id))}`;
   }
 
   return "";

@@ -41,7 +41,7 @@
                 @click="handleCategorySelect(category.id)"
                 class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3.5 transition-all"
                 :class="
-                  selectedCategory === category.id
+                  selectedCategory != null && String(selectedCategory) === String(category.id)
                     ? 'bg-emerald-200 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-medium'
                     : 'hover:bg-gray-100 dark:hover:bg-gray-800/60 text-gray-800 dark:text-gray-400'
                 "
@@ -57,9 +57,9 @@
                     class="size-10 object-contain category-image rounded"
                     :class="{
                       'brightness-110 saturate-150':
-                        selectedCategory === category.id,
+                        selectedCategory != null && String(selectedCategory) === String(category.id),
                       'brightness-95 saturate-100':
-                        selectedCategory !== category.id,
+                        selectedCategory == null || String(selectedCategory) !== String(category.id),
                     }"
                     @error="onImageError($event, category)"
                     loading="lazy"
@@ -69,7 +69,7 @@
                     :name="getCategoryIcon(category.name)"
                     class="size-4.5"
                     :class="
-                      selectedCategory === category.id
+                      selectedCategory != null && String(selectedCategory) === String(category.id)
                         ? 'text-emerald-500'
                         : 'text-gray-600 dark:text-gray-600'
                     "
@@ -77,7 +77,7 @@
                 </div>
                 <span class="truncate font-medium">{{ category.name }}</span>
                 <div
-                  v-if="selectedCategory === category.id"
+                  v-if="selectedCategory != null && String(selectedCategory) === String(category.id)"
                   class="ml-auto flex-shrink-0 size-2 rounded-full bg-emerald-500"
                 ></div>
               </button>
@@ -250,7 +250,7 @@ const props = defineProps({
     default: () => [],
   },
   selectedCategory: {
-    type: [String, Number, null],
+    type: String,
     default: null,
   },
   hasMoreCategoriesToLoad: {
@@ -412,8 +412,9 @@ function handleCategorySelect(categoryId) {
       if (category && category.slug) {
         router.push(`/eshop?category=${category.slug}`);
       } else {
-        // Fallback if no slug available
-        router.push(`/eshop?categoryId=${categoryId}`);
+        // Fallback when slug is missing: pass UUID under the same ?category= key
+        // so initializeFromURL can resolve it via UUID lookup
+        router.push(`/eshop?category=${encodeURIComponent(String(categoryId))}`);
       }
     } else {
       // Navigate to eshop without category filter

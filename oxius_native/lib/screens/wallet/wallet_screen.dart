@@ -839,7 +839,13 @@ class _WalletScreenState extends State<WalletScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '৳${txn.amount.toStringAsFixed(2)}',
+                      // In the received tab for ride_payment, show the driver
+                      // net payout (received_amount), not the total fare.
+                      (_transactionTab == 'received' &&
+                              (txn.transactionType == 'ride_payment' ||
+                                  txn.transactionType == 'ride_due_settle'))
+                          ? '৳${txn.receivedAmount.toStringAsFixed(2)}'
+                          : '৳${txn.amount.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,

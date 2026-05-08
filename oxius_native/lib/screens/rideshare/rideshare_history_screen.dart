@@ -373,7 +373,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                 const Divider(height: 1),
                 const SizedBox(height: 12),
                 
-                // Stats row
+                // Stats row — distance | duration | [spacer] | payment method | amount
                 Row(
                   children: [
                     _buildStatItem(
@@ -386,6 +386,35 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                       value: ride.etaDisplay,
                     ),
                     const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            ride.paymentMethod == 'wallet'
+                                ? Icons.account_balance_wallet_rounded
+                                : Icons.money_rounded,
+                            size: 12,
+                            color: const Color(0xFF64748B),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _paymentMethodLabel(ride.paymentMethod),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF475569),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Text(
                       '$_bdtSymbol${(ride.finalFare ?? ride.fareEstimate).toStringAsFixed(0)}',
                       style: GoogleFonts.inter(
@@ -396,45 +425,60 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.account_balance_wallet_rounded,
-                        size: 16,
-                        color: Color(0xFF64748B),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        t('rideshare_payment_method', fallback: 'Payment Method'),
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        _paymentMethodLabel(ride.paymentMethod),
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1E293B),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 
+                // Driver earnings breakdown — only shown to drivers for completed rides
+                if (widget.asDriver && ride.status == 'completed') ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFBBF7D0)),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.receipt_long_rounded, size: 13, color: Color(0xFF16A34A)),
+                            const SizedBox(width: 6),
+                            Text(
+                              t('rideshare_fare_breakdown', fallback: 'Fare Breakdown'),
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF16A34A),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        _buildFareRow(
+                          t('rideshare_total_fare', fallback: 'Total Fare'),
+                          '$_bdtSymbol${(ride.finalFare ?? ride.fareEstimate).toStringAsFixed(0)}',
+                          const Color(0xFF1E293B),
+                        ),
+                        const SizedBox(height: 4),
+                        _buildFareRow(
+                          t('rideshare_platform_fee', fallback: 'Platform Fee'),
+                          '- $_bdtSymbol${ride.platformFeeAmount.toStringAsFixed(0)}',
+                          const Color(0xFFEF4444),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 6),
+                          child: Divider(height: 1, color: Color(0xFFBBF7D0)),
+                        ),
+                        _buildFareRow(
+                          t('rideshare_your_earnings', fallback: 'Your Earnings'),
+                          '$_bdtSymbol${ride.driverPayoutAmount.toStringAsFixed(0)}',
+                          const Color(0xFF16A34A),
+                          bold: true,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
                 // Driver/Rider info
                 if (widget.asDriver && ride.riderName.isNotEmpty) ...[
                   const SizedBox(height: 12),
@@ -583,6 +627,31 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
             fontSize: 12,
             fontWeight: FontWeight.w500,
             color: const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFareRow(String label, String value, Color valueColor, {bool bold = false}) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+              color: bold ? const Color(0xFF1E293B) : const Color(0xFF64748B),
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: bold ? 13 : 11,
+            fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+            color: valueColor,
           ),
         ),
       ],

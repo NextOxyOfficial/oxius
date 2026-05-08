@@ -85,7 +85,7 @@
                     md: 'text-sm py-1.5 px-3',
                   },
                 }"
-                @change="handleCategoryChange"
+              @update:modelValue="handleCategoryChange"
               >
                 <template #label>
                   <span v-if="selectedCategory" class="block truncate">
@@ -312,11 +312,17 @@ const isSidebarOpen = ref(false);
 // Initialize from URL query parameters
 const initializeFromURL = () => {
   if (route.query.category) {
-    const categorySlug = Array.isArray(route.query.category)
+    const categoryParam = Array.isArray(route.query.category)
       ? route.query.category[0]
       : route.query.category;
-    // Find category by slug to get the ID
-    const category = categories.value.find((cat) => cat.slug === categorySlug);
+    // Try slug-based lookup first (canonical URL form: ?category=electronics)
+    let category = categories.value.find((cat) => cat.slug === categoryParam);
+    // Fallback: UUID-based lookup (happens when a category has no slug)
+    if (!category) {
+      category = categories.value.find(
+        (cat) => String(cat.id) === String(categoryParam)
+      );
+    }
     if (category) {
       selectedCategory.value = category.id;
     }
@@ -640,7 +646,8 @@ async function fetchCategories() {
     categories.value = res.data;
     displayedCategories.value = res.data.slice(0, 10); // Display first 10 categories initially
     hasMoreCategoriesToLoad.value = res.data.length > 10;
-    initializeFromURL();
+    // NOTE: initializeFromURL() is called by the caller AFTER this resolves
+    // so the watcher is NOT triggered inside this function.
   } catch (error) {
     console.error("Error fetching categories:", error);
     toast.add({
@@ -1021,10 +1028,19 @@ onUnmounted(() => {
   }
 });
 
+// Guard to prevent the filter watcher from firing during initial data load.
+// initializeFromURL() sets selectedCategory synchronously; without this guard
+// the watcher would call fetchProducts() concurrently with the explicit
+// await fetchProducts() call below.
+let isInitializing = true;
+
 // Watch for filter changes and reinitialize infinite scroll
 watch(
   [selectedCategory, searchQuery, minPrice, maxPrice],
   () => {
+    // Suppress watcher during the initial data load sequence
+    if (isInitializing) return;
+
     // Reset pagination state when filters change
     currentPage.value = 1;
     allProducts.value = [];
@@ -1071,8 +1087,15 @@ watch(searchQuery, (newValue) => {
   syncSearchToHeader();
 });
 
-// Initialize data
+// Initialize data — sequential to avoid race conditions:
+// 1. Load categories (needed for slug→ID resolution)
+// 2. Apply any ?category= URL param to selectedCategory
+// 3. Fetch products once with the correct filter already set
+// The isInitializing flag suppresses the filter watcher during steps 1-2
+// so we never fire duplicate concurrent fetchProducts() calls.
 await fetchCategories();
+initializeFromURL();
+isInitializing = false;
 await fetchProducts();
 
 onMounted(() => {

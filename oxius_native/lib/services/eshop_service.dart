@@ -201,8 +201,10 @@ class EshopService {
         queryParams['category'] = categoryId;
       }
 
-  // Correct backend path for products -> api/products/ (base.urls included at api/)
-  final uri = Uri.parse('$baseUrl/products/').replace(queryParameters: queryParams);
+  // Correct backend path for public product listing -> api/all-products/
+  // NOTE: /api/products/ is owner-only (auth-required, returns only own products)
+  //       /api/all-products/ is AllProductsListView (AllowAny, supports category/search/price filters)
+  final uri = Uri.parse('$baseUrl/all-products/').replace(queryParameters: queryParams);
       print('EshopService: Fetching products from: $uri');
       
       final response = await http.get(
@@ -520,13 +522,15 @@ class EshopService {
     }
   }
 
-  // Search products by query - Using the same endpoint as fetchEshopProducts
+  // Search products by query - Uses public /all-products/ endpoint (AllowAny, supports search/name params)
   static Future<List<Map<String, dynamic>>> searchProducts(String query) async {
     try {
-      // Use the correct products endpoint with search parameter
-      final uri = Uri.parse('$baseUrl/products/').replace(queryParameters: {
+      // /all-products/ accepts both 'search' and 'name' params; send both for max compatibility
+      final uri = Uri.parse('$baseUrl/all-products/').replace(queryParameters: {
         'search': query,
+        'name': query,
         'page_size': '20',
+        'ordering': '-created_at',
       });
       
       print('EshopService: Searching products with query: $query');

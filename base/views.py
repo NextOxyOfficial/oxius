@@ -2236,12 +2236,12 @@ class ReceivedTransfersView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Return all transfers where the current user is the recipient"""
+        """Return transfers AND ride earnings received by the current user."""
+        from django.db.models import Q
         return (
             Balance.objects.filter(
-                to_user=self.request.user,
-                completed=True,
-                transaction_type="transfer",
+                Q(to_user=self.request.user, completed=True,
+                  transaction_type__in=["transfer", "ride_payment", "ride_due_settle"])
             )
             .select_related("user")
             .order_by("-updated_at")
@@ -2793,7 +2793,9 @@ class AllProductsListView(generics.ListAPIView):
             return self.get_random_products_from_categories(limit)
 
         # Default behavior - return products ordered by creation date
-        queryset = Product.objects.filter(is_active=True)
+        queryset = Product.objects.filter(is_active=True).prefetch_related(
+            "category", "image"
+        )
 
         # Handle ordering parameter
         ordering = self.request.query_params.get("ordering", "-created_at")
@@ -2989,9 +2991,9 @@ class AllProductsListView(generics.ListAPIView):
                 *[When(pk=pk, then=pos) for pos, pk in enumerate(selected_product_ids)],
                 output_field=IntegerField(),
             )
-            return Product.objects.filter(id__in=selected_product_ids).order_by(
-                preserved_order
-            )
+            return Product.objects.filter(
+                id__in=selected_product_ids
+            ).prefetch_related("category", "image").order_by(preserved_order)
         else:
             return Product.objects.none()
 
