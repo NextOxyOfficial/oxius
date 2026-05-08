@@ -479,8 +479,6 @@ class _SearchScreenState extends State<SearchScreen> {
       return ListView(
         padding: EdgeInsets.zero,
         children: [
-          // Gold Sponsors Slider (hidden on iOS for App Store compliance)
-          if (!isIOSPlatform)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             child: GoldSponsorsSlider(),

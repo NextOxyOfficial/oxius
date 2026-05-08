@@ -21,6 +21,7 @@ import 'screens/classified_category_list_screen.dart';
 import 'screens/classified_post_details_screen.dart';
 import 'screens/classified_post_form_screen.dart';
 import 'screens/my_classified_posts_screen.dart';
+import 'widgets/classified_services_section.dart';
 import 'screens/sale_list_screen.dart';
 import 'screens/sale_detail_screen.dart';
 import 'screens/my_sale_posts_screen.dart';
@@ -275,13 +276,10 @@ class MyApp extends StatelessWidget {
             '/deposit-withdraw': (context) => const WalletScreen(),
             '/pending-tasks': (context) => const HomeScreen(),
             '/mobile-recharge': (context) => const MobileRechargeScreen(),
-            '/upgrade-to-pro': (context) => PaymentPolicy.shouldBlockDigitalPayment()
-                ? const IOSPaymentBlockedScreen(
-                    featureName: 'Pro Subscription',
-                  )
-                : const UpgradeToProScreen(),
+            '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
             '/eshop': (context) => const EshopScreen(),
             '/shop-manager': (context) => const EshopManagerScreen(),
+            '/classified': (context) => const ClassifiedServicesPage(),
             '/adsy-news': (context) => const NewsScreen(),
             '/about': (context) => const AboutScreen(),
             '/faq': (context) => const FaqScreen(),

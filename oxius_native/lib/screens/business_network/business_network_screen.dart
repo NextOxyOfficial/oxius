@@ -641,8 +641,6 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Gold Sponsors Slider hidden on iOS for App Store compliance.
-        if (!isIOSPlatform)
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: GoldSponsorsSlider(),
@@ -1024,7 +1022,6 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               color: Colors.grey.shade600,
             ),
           ),
-          const SizedBox(height: 80),
         ],
       ),
     );

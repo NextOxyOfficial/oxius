@@ -1,5 +1,4 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 /// Central payment configuration.
 ///
@@ -24,11 +23,7 @@ class PaymentConfig {
   /// True only when running as a native iOS build (never on web).
   static bool get isIOS {
     if (kIsWeb) return false;
-    try {
-      return Platform.isIOS;
-    } catch (_) {
-      return false;
-    }
+    return defaultTargetPlatform == TargetPlatform.iOS;
   }
 
   // ── Wallet / External gateway ─────────────────────────────────────────────

@@ -228,16 +228,19 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: AppFonts.roboto(
-            fontSize: isMobile ? 19 : 22,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF155E75),
-            letterSpacing: -0.5,
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/classified'),
+          child: Text(
+            title,
+            style: AppFonts.roboto(
+              fontSize: isMobile ? 19 : 22,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF155E75),
+              letterSpacing: -0.5,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 4),
         Text(
@@ -549,5 +552,42 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     }
     
     return imageUrl;
+  }
+}
+
+/// Full-screen page that wraps ClassifiedServicesSection inside a Scaffold.
+/// Accessible via the `/classified` route.
+class ClassifiedServicesPage extends StatelessWidget {
+  const ClassifiedServicesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF155E75)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'আমার সেবা',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF155E75),
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFCCFBF1)),
+        ),
+      ),
+      body: const SingleChildScrollView(
+        child: ClassifiedServicesSection(),
+      ),
+    );
   }
 }

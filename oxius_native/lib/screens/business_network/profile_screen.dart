@@ -708,15 +708,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         
                         const SizedBox(height: 16),
                         
-                        // Gold Sponsors Slider - hidden on iOS to comply with
-                        // App Store digital purchase policy.
-                        if (!isIOSPlatform) ...[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 4),
-                            child: GoldSponsorsSlider(),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: GoldSponsorsSlider(),
+                        ),
+                        const SizedBox(height: 16),
                         
                         // Tabs
                         _buildTabs(),

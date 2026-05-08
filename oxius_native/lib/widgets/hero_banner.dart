@@ -100,10 +100,9 @@ class _HeroBannerState extends State<HeroBanner> {
     {
       'icon': Icons.medical_services,
       'image': 'assets/images/medicalreport.png',
-      'label': _translationService.t('shastho_sheba', fallback: 'Health Service'),
-      'color': Colors.grey,
-      'bgColor': const Color(0xFFF9FAFB),
-      'isComingSoon': true,
+      'label': _translationService.t('classified_service', fallback: 'আমার সেবা'),
+      'color': const Color(0xFF0FA36B),
+      'bgColor': const Color(0xFFECFDF5),
     },
     {
       'icon': Icons.phone_android,
@@ -506,11 +505,7 @@ class _HeroBannerState extends State<HeroBanner> {
 
   Widget _buildMobileServicesGrid({EdgeInsets? margin}) {
     final services = isIOSPlatform
-        ? mobileServices.where((s) =>
-            s['isComingSoon'] != true &&
-            s['label'] != _translationService.t('packeges', fallback: 'Membership') &&
-            s['label'] != 'Membership' &&
-            s['label'] != 'Packages').toList()
+        ? mobileServices.where((s) => s['isComingSoon'] != true).toList()
         : mobileServices;
     return Padding(
       padding: margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
@@ -521,7 +516,7 @@ class _HeroBannerState extends State<HeroBanner> {
           crossAxisCount: 4, // 4 services per row like in Vue.js
           mainAxisSpacing: 8,
           crossAxisSpacing: 8,
-          childAspectRatio: 0.92, // Slightly taller than square
+          mainAxisExtent: 90, // Fixed cell height — prevents gap on wide/large screens
         ),
         itemCount: services.length,
         itemBuilder: (context, index) => _buildMobileServiceButton(services[index]),
@@ -581,6 +576,10 @@ class _HeroBannerState extends State<HeroBanner> {
               } else if (service['label'] == _translationService.t('earn_money', fallback: 'Earn Money') || 
                   service['label'] == 'Earn Money') {
                 Navigator.pushNamed(context, '/micro-gigs');
+              } else if (service['label'] == _translationService.t('classified_service', fallback: 'আমার সেবা') || 
+                  service['label'] == 'আমার সেবা' ||
+                  service['label'] == 'My Services') {
+                Navigator.pushNamed(context, '/classified');
               } else if (service['label'] == _translationService.t('mindforce', fallback: 'MindForce') || 
                   service['label'] == 'MindForce') {
                 Navigator.pushNamed(context, '/mindforce');
@@ -594,12 +593,84 @@ class _HeroBannerState extends State<HeroBanner> {
               } else if (service['label'] == _translationService.t('packeges', fallback: 'Membership') || 
                   service['label'] == 'Membership' ||
                   service['label'] == 'Packages') {
-                Navigator.pushNamed(context, '/upgrade-to-pro');
+                if (isIOSPlatform) {
+                  _showIOSMembershipDialog(context);
+                } else {
+                  Navigator.pushNamed(context, '/upgrade-to-pro');
+                }
               } else {
                 // For any unhandled services, show a debug message
                 debugPrint('No navigation configured for: ${service['label']}');
               }
             },
+    );
+  }
+
+  void _showIOSMembershipDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF7ED),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFED7AA), width: 2),
+                ),
+                child: const Icon(Icons.info_outline_rounded, color: Color(0xFFEA580C), size: 30),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Feature Unavailable on iOS',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF1C1C1E),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Pro Membership upgrades are not available for purchase on iOS due to Apple App Store guidelines.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF6B7280),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0D9488),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Got it',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

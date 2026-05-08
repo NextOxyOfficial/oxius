@@ -752,8 +752,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       markers.add(
         Marker(
           point: LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude),
-          width: hasRiderInfo ? 160 : 40,
-          height: hasRiderInfo ? 72 : 50,
+          width: hasRiderInfo ? 160 : 116,
+          height: hasRiderInfo ? 72 : 80,
           child: hasRiderInfo
               ? _buildProfileMarker(
                   name: widget.riderName!,
@@ -772,8 +772,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       markers.add(
         Marker(
           point: LatLng(widget.dropPoint!.latitude, widget.dropPoint!.longitude),
-          width: 40,
-          height: 50,
+          width: 90,
+          height: 76,
           child: _buildDropMarker(),
         ),
       );
@@ -937,7 +937,36 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   Widget _buildPickupMarker() {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            'পিকআপ পয়েন্ট',
+            style: GoogleFonts.notoSansBengali(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              height: 1.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: 3),
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -963,7 +992,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
         ),
         Container(
           width: 3,
-          height: 10,
+          height: 8,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -982,7 +1011,36 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   Widget _buildDropMarker() {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF10B981), Color(0xFF059669)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            'গন্তব্য',
+            style: GoogleFonts.notoSansBengali(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              height: 1.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: 3),
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -1008,7 +1066,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
         ),
         Container(
           width: 3,
-          height: 10,
+          height: 8,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [

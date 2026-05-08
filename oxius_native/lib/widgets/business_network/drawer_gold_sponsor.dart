@@ -3,7 +3,6 @@ import '../../services/gold_sponsor_service.dart';
 import '../../screens/business_network/become_gold_sponsor_screen.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/payment_policy.dart';
-import '../ios_payment_blocked_widget.dart';
 
 class DrawerGoldSponsor extends StatefulWidget {
   final bool isLoggedIn;
@@ -190,6 +189,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
         else
           _buildSponsorsList(),
         
+        if (!PaymentPolicy.shouldBlockDigitalPayment()) ...[
         const SizedBox(height: 12),
         
         // Description
@@ -211,11 +211,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => PaymentPolicy.shouldBlockDigitalPayment()
-                      ? const IOSPaymentBlockedScreen(
-                          featureName: 'Gold Sponsor',
-                        )
-                      : const BecomeGoldSponsorScreen(),
+                  builder: (context) => const BecomeGoldSponsorScreen(),
                 ),
               );
             },
@@ -244,6 +240,7 @@ class _DrawerGoldSponsorState extends State<DrawerGoldSponsor> {
             ),
           ),
         ),
+        ], // end if (!PaymentPolicy.shouldBlockDigitalPayment())
       ],
     );
   }

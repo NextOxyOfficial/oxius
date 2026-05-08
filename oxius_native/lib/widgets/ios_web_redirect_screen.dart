@@ -6,8 +6,13 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import '../config/app_config.dart';
 
-/// Returns true if running on iOS (native only, not web)
+/// Set to true via --dart-define=FORCE_IOS=true to preview iOS layout in Chrome.
+const bool _kForceIOS = bool.fromEnvironment('FORCE_IOS');
+
+/// Returns true if running on iOS (native only, not web).
+/// Can be forced to true in Chrome via --dart-define=FORCE_IOS=true for UI preview.
 bool get isIOSPlatform {
+  if (_kForceIOS) return true;
   if (kIsWeb) return false;
   try {
     return Platform.isIOS;

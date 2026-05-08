@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/translation_service.dart';
+import '../../widgets/rideshare_drawer.dart';
 
 class RideshareHistoryScreen extends StatefulWidget {
   final bool asDriver;
@@ -18,6 +19,7 @@ class RideshareHistoryScreen extends StatefulWidget {
 
 class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
   static const String _bdtSymbol = '\u09F3';
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TranslationService _ts = TranslationService();
   List<Ride> _rides = [];
   bool _isLoading = true;
@@ -113,7 +115,9 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAFC),
+      drawer: RideshareDrawer(activeTab: widget.asDriver ? 'driver' : 'history'),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -132,6 +136,23 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: GestureDetector(
+              onTap: () => _scaffoldKey.currentState?.openDrawer(),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF2FF),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.menu_rounded, size: 20, color: Color(0xFF6366F1)),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _buildBody(),
     );

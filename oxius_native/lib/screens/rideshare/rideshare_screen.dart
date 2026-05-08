@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/fcm_service.dart';
 import '../../services/translation_service.dart';
+import '../../widgets/rideshare_drawer.dart';
 import 'rideshare_passenger_panel.dart';
 import 'rideshare_driver_panel.dart';
 
@@ -22,6 +24,8 @@ class _RideshareScreenState extends State<RideshareScreen> {
   StreamSubscription<Map<String, dynamic>>? _rideshareNotificationSubscription;
   Widget? _passengerPanel;
   Widget? _driverPanel;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _passengerPanelKey = const RidesharePassengerPanelKey();
 
   String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
 
@@ -72,7 +76,7 @@ class _RideshareScreenState extends State<RideshareScreen> {
       return;
     }
 
-    _passengerPanel ??= const RidesharePassengerPanel();
+    _passengerPanel ??= RidesharePassengerPanel(key: _passengerPanelKey);
   }
 
   void _setMode(String mode) {
@@ -105,22 +109,19 @@ class _RideshareScreenState extends State<RideshareScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
-      body: Column(
+      drawer: RideshareDrawer(
+        activeTab: _mode,
+        onModeSelected: (m) => _setMode(m),
+        onOpenCustomLocation: () => _passengerPanelKey.openCustomLocationSheet(),
+      ),
+      body: IndexedStack(
+        index: _mode == 'passenger' ? 0 : 1,
         children: [
-          const SizedBox(height: 4),
-          _buildModeSwitch(),
-          const SizedBox(height: 4),
-          Expanded(
-            child: IndexedStack(
-              index: _mode == 'passenger' ? 0 : 1,
-              children: [
-                _passengerPanel ?? const SizedBox.shrink(),
-                _driverPanel ?? const SizedBox.shrink(),
-              ],
-            ),
-          ),
+          _passengerPanel ?? const SizedBox.shrink(),
+          _driverPanel ?? const SizedBox.shrink(),
         ],
       ),
     );
@@ -190,47 +191,25 @@ class _RideshareScreenState extends State<RideshareScreen> {
         ],
       ),
       actions: [
-        IconButton(
-          onPressed: () => Navigator.pushNamed(
-            context,
-            _mode == 'driver'
-                ? '/rideshare/driver-history'
-                : '/rideshare/history',
-          ),
-          tooltip: t('rideshare_history', fallback: 'History'),
-          icon: Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: const Icon(
-              Icons.history_rounded,
-              size: 18,
-              color: Color(0xFF64748B),
+        Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: GestureDetector(
+            onTap: () => _scaffoldKey.currentState?.openDrawer(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.menu_rounded,
+                size: 20,
+                color: Color(0xFF1E293B),
+              ),
             ),
           ),
         ),
-        if (_mode == 'driver')
-          IconButton(
-            onPressed: () => Navigator.pushNamed(context, '/rideshare/vehicles'),
-            tooltip: t('rideshare_vehicles_btn', fallback: 'Vehicles'),
-            icon: Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(9),
-              ),
-              child: const Icon(
-                Icons.two_wheeler_rounded,
-                size: 18,
-                color: Color(0xFF64748B),
-              ),
-            ),
-          ),
-        const SizedBox(width: 4),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
@@ -241,92 +220,6 @@ class _RideshareScreenState extends State<RideshareScreen> {
       ),
     );
   }
-
-  Widget _buildModeSwitch() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildModeButton(
-              label: t('rideshare_passenger_mode', fallback: 'Passenger'),
-              icon: Icons.person_rounded,
-              isActive: _mode == 'passenger',
-              onTap: () => _setMode('passenger'),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _buildModeButton(
-              label: t('rideshare_driver_mode', fallback: 'Driver'),
-              icon: Icons.badge_rounded,
-              isActive: _mode == 'driver',
-              onTap: () => _setMode('driver'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModeButton({
-    required String label,
-    required IconData icon,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 9),
-        decoration: BoxDecoration(
-          gradient: isActive
-              ? const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isActive ? null : Colors.transparent,
-          borderRadius: BorderRadius.circular(9),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.35),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isActive ? Colors.white : const Color(0xFF64748B),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isActive ? Colors.white : const Color(0xFF64748B),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
+
 
