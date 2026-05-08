@@ -37,4 +37,17 @@ import FirebaseMessaging
     Messaging.messaging().apnsToken = deviceToken
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
+
+  // Catches APNs registration failures (certificate mismatch, entitlement issues,
+  // sandbox vs production mismatch, etc.).  Without this handler, registration
+  // failures are completely silent and FCM tokens are never generated on iOS.
+  override func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    // Log the failure so it appears in Xcode console / Codemagic build logs.
+    print("[AdsyClub] APNs registration FAILED: \(error.localizedDescription)")
+    print("[AdsyClub] Full error: \(error)")
+    super.application(application, didFailToRegisterForRemoteNotificationsWithError: error)
+  }
 }

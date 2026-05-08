@@ -29,6 +29,14 @@
     <uses-permission android:name="android.permission.BIND_TELECOM_CONNECTION_SERVICE"/>
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
     <uses-permission android:name="android.permission.TURN_SCREEN_ON"/>
+
+    <!-- Android 14: foreground service accessing microphone (Agora audio calls) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
+    <!-- Android 14: foreground service accessing camera (Agora video calls) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA"/>
+    <!-- Android 12+: exact alarms for call timeout -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     
     <!-- Permissions for image picker -->
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -59,7 +67,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleInstance"
+            android:launchMode="singleTask"
             android:taskAffinity=""
             android:theme="@style/LaunchTheme"
             android:showWhenLocked="true"

@@ -31,6 +31,28 @@ void _log(String message) {
   }
 }
 
+/// Background notification response handler — fires when the user taps a
+/// flutter_local_notifications notification while the app process is dead.
+/// Must be a top-level function annotated with @pragma('vm:entry-point').
+/// Without this, tapping an incoming-call notification from the shade after
+/// the app was killed silently drops the tap and the call screen never opens.
+@pragma('vm:entry-point')
+void _onDidReceiveBackgroundNotificationResponse(NotificationResponse response) {
+  // The background isolate does not have the Flutter engine or plugin registry,
+  // so we cannot navigate here. Instead, store the payload in a persistent
+  // store (SharedPreferences) and let the main isolate consume it on startup
+  // via FCMService.consumePendingLocalNotificationPayload().
+  //
+  // Note: SharedPreferences is safe to call here because we are already in a
+  // Dart isolate (the vm:entry-point guarantees plugin registration happened).
+  final payload = response.payload;
+  if (payload != null && payload.isNotEmpty) {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('_pending_local_notification_payload', payload);
+    });
+  }
+}
+
 const Set<String> _rideshareNotificationTypes = <String>{
   'rideshare_update',
   'new_ride_request',
@@ -306,7 +328,66 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
   final callerAvatar = data['caller_avatar']?.toString();
   final callType = data['call_type']?.toString() ?? 'video';
   final channelName = data['channel_name']?.toString() ?? '';
-  
+  final callId = data['call_id']?.toString() ?? '';
+
+  // -------- 1. PRIMARY: fullScreenIntent local notification (always fires, survives OEM kill) --------
+  // This is the same dual-path strategy used by the rideshare driver alerts,
+  // which are known to be reliable. Without this, a killed-process device that
+  // blocks the CallKit foreground service (Xiaomi/Oppo/Vivo) silently drops
+  // the call.
+  try {
+    final plugin = FlutterLocalNotificationsPlugin();
+    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    await plugin.initialize(const InitializationSettings(android: androidInit));
+
+    final androidPlugin = plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
+      'oxius_calls',
+      'Incoming Calls',
+      description: 'Incoming voice and video call alerts',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      showBadge: true,
+      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
+    ));
+
+    final callTypeLabel = callType == 'video' ? 'Video Call' : 'Voice Call';
+    final details = AndroidNotificationDetails(
+      'oxius_calls',
+      'Incoming Calls',
+      channelDescription: 'Incoming voice and video call alerts',
+      importance: Importance.max,
+      priority: Priority.max,
+      playSound: true,
+      enableVibration: true,
+      fullScreenIntent: true,
+      category: AndroidNotificationCategory.call,
+      visibility: NotificationVisibility.public,
+      icon: '@mipmap/ic_launcher',
+      timeoutAfter: 60000,
+      autoCancel: true,
+      ongoing: true,
+      audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
+    );
+
+    await plugin.show(
+      channelName.hashCode,
+      '$callerName is calling',
+      callTypeLabel,
+      NotificationDetails(android: details),
+      payload: jsonEncode({
+        ...data,
+        'type': 'incoming_call',
+      }),
+    );
+  } catch (e) {
+    _log('⚠️ Primary call notification failed: $e');
+  }
+
+  // -------- 2. SECONDARY: CallKit-style full-screen call UI (best effort) --------
   final uuid = const Uuid().v4();
   
   final params = CallKitParams(
@@ -320,7 +401,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     textAccept: 'Accept',
     textDecline: 'Decline',
     extra: {
-      'call_id': data['call_id']?.toString() ?? '',
+      'call_id': callId,
       'caller_id': callerId,
       'channel_name': channelName,
       'timestamp': data['timestamp']?.toString() ?? '',
@@ -358,7 +439,11 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     ),
   );
 
-  await FlutterCallkitIncoming.showCallkitIncoming(params);
+  try {
+    await FlutterCallkitIncoming.showCallkitIncoming(params);
+  } catch (e) {
+    _log('⚠️ Secondary CallKit call UI failed (non-fatal): $e');
+  }
 }
 
 class _TrackingRouteObserver extends RouteObserver<PageRoute<dynamic>> {
@@ -720,6 +805,24 @@ class FCMService {
     _pendingNavigationData = null;
   }
 
+  /// Call this once during app startup (after FCMService.initialize()) to
+  /// consume any incoming-call notification tap that happened while the app
+  /// was killed. The background handler stored the payload in SharedPreferences;
+  /// here we read it, delete it, and navigate as if the user just tapped.
+  static Future<void> consumePendingLocalNotificationPayload() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final payload = prefs.getString('_pending_local_notification_payload');
+      if (payload != null && payload.isNotEmpty) {
+        await prefs.remove('_pending_local_notification_payload');
+        _log('📲 Consuming pending local notification payload from killed-state tap');
+        _handleLocalNotificationTap(payload);
+      }
+    } catch (e) {
+      _log('⚠️ consumePendingLocalNotificationPayload failed: $e');
+    }
+  }
+
   static bool _registerIncomingCall({
     required String callerId,
     required String channelName,
@@ -873,6 +976,15 @@ class FCMService {
         _log('   Please enable notifications in device settings');
         // Continue anyway - user might enable later
       }
+
+      // iOS CRITICAL FIX: Without this, Firebase Messaging never shows any
+      // notification while the app is in the foreground on iOS — they are
+      // silently discarded. This must be called once after permission is granted.
+      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
       // Initialize local notifications
       await _initializeLocalNotifications();
@@ -1075,11 +1187,29 @@ class FCMService {
 
   /// Initialize local notifications
   static Future<void> _initializeLocalNotifications() async {
-    const AndroidInitializationSettings androidSettings = 
+    const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    // iOS CRITICAL FIX: Without DarwinInitializationSettings, flutter_local_notifications
+    // is completely non-functional on iOS — no local notifications can be shown, no
+    // notification tap callbacks fire, and iOS notification permissions are never
+    // requested through the plugin. requestAlertPermission/etc. are false because
+    // firebase_messaging already requested them, so we don't double-prompt.
+    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+      requestCriticalPermission: false,
+      defaultPresentAlert: true,
+      defaultPresentBadge: true,
+      defaultPresentSound: true,
+      defaultPresentBanner: true,
+      defaultPresentList: true,
+    );
 
     const InitializationSettings initSettings = InitializationSettings(
       android: androidSettings,
+      iOS: iosSettings,
     );
 
     await _localNotifications.initialize(
@@ -1089,6 +1219,11 @@ class FCMService {
           _handleLocalNotificationTap(response.payload!);
         }
       },
+      // Handles taps on local notifications when the app process was killed.
+      // The tap payload is stored in SharedPreferences and consumed on startup
+      // via consumePendingLocalNotificationPayload().
+      onDidReceiveBackgroundNotificationResponse:
+          _onDidReceiveBackgroundNotificationResponse,
     );
 
     // Create notification channel for Android

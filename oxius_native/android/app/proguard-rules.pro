@@ -58,6 +58,27 @@
 
 ## flutter_callkit_incoming
 -keep class com.hiennv.flutter_callkit_incoming.** { *; }
+# Keep WorkManager Worker subclasses used by flutter_callkit_incoming at runtime
+-keep class * extends androidx.work.Worker { *; }
+-keep class * extends androidx.work.ListenableWorker { *; }
+# Keep ConnectionService subclasses (referenced by name in manifest merge)
+-keep class * extends android.telecom.ConnectionService { *; }
+-keep class * extends android.telecom.Connection { *; }
+-dontwarn com.hiennv.flutter_callkit_incoming.**
+
+## flutter_local_notifications — channel / notification classes referenced by name
+-keep class com.dexterous.** { *; }
+-dontwarn com.dexterous.**
+
+## Agora RTC Engine — JNI bridge and reflection-loaded classes
+-keep class io.agora.** { *; }
+-dontwarn io.agora.**
+
+## OkHttp / WebSocket (used by Django Channels WebSocket client inside flutter_background_service)
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
 
 ## Keep all plugin classes
 -keep class io.flutter.plugins.** { *; }

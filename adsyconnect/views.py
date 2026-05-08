@@ -80,28 +80,79 @@ def _send_call_data_message(*, target_user, payload):
 
         for fcm_token in fcm_tokens:
             try:
-                message = messaging.Message(
-                    data=payload,
-                    android=messaging.AndroidConfig(
-                        priority='high',
-                        # 60s TTL: long enough to survive Doze / brief network
-                        # blips on the receiver, short enough that a stale call
-                        # never rings after the caller has already hung up.
-                        # Do NOT add `notification=...` here — this is a
-                        # data-only message so that the Dart background handler
-                        # fires (which drives CallKit + ringtone). Adding a
-                        # notification field would make Android render a plain
-                        # heads-up and skip the handler.
-                        ttl=datetime.timedelta(seconds=60),
-                    ),
-                    apns=messaging.APNSConfig(
-                        headers={'apns-priority': '10'},
-                        payload=messaging.APNSPayload(
-                            aps=messaging.Aps(content_available=True),
+                # Bug fix: enforce ALL payload values are strings.
+                str_payload = {k: str(v) if v is not None else '' for k, v in payload.items()}
+
+                channel_name_val = str_payload.get('channel_name', '')
+                collapse_key = f"call_{channel_name_val}" if channel_name_val else None
+
+                # iOS vs Android split:
+                # Android: data-only message → Dart background isolate fires → shows local
+                #   notification + CallKit. Adding notification= would skip the isolate.
+                # iOS: data-only / silent push is throttled by Apple to a few per hour and
+                #   is NEVER delivered to a killed app. We must send notification+data so
+                #   APNs delivers it as an alert. The Flutter foreground handler still reads
+                #   message.data and navigates to the call screen when the app is live.
+                is_ios = fcm_token.device_type == 'ios'
+
+                caller_name = str_payload.get('caller_name', 'Unknown')
+                call_type = str_payload.get('call_type', 'audio')
+                call_type_label = 'Video Call' if call_type == 'video' else 'Voice Call'
+
+                if is_ios:
+                    message = messaging.Message(
+                        data=str_payload,
+                        notification=messaging.Notification(
+                            title=f'{caller_name} is calling',
+                            body=call_type_label,
                         ),
-                    ),
-                    token=fcm_token.token,
-                )
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            ttl=datetime.timedelta(seconds=60),
+                            collapse_key=collapse_key,
+                        ),
+                        # iOS: apns-push-type=alert delivers as a visible notification.
+                        # content_available=True is kept so the app can handle the call
+                        # if it's already running in background.
+                        # mutable_content=True allows a notification service extension
+                        # to intercept and trigger CallKit in future (VoIP upgrade path).
+                        apns=messaging.APNSConfig(
+                            headers={
+                                'apns-push-type': 'alert',
+                                'apns-priority': '10',
+                                'apns-collapse-id': collapse_key or '',
+                            },
+                            payload=messaging.APNSPayload(
+                                aps=messaging.Aps(
+                                    sound='default',
+                                    content_available=True,
+                                    mutable_content=True,
+                                    category='INCOMING_CALL',
+                                ),
+                            ),
+                        ),
+                        token=fcm_token.token,
+                    )
+                else:
+                    message = messaging.Message(
+                        data=str_payload,
+                        android=messaging.AndroidConfig(
+                            priority='high',
+                            ttl=datetime.timedelta(seconds=60),
+                            collapse_key=collapse_key,
+                        ),
+                        apns=messaging.APNSConfig(
+                            headers={
+                                'apns-push-type': 'background',
+                                'apns-priority': '5',
+                            },
+                            payload=messaging.APNSPayload(
+                                aps=messaging.Aps(content_available=True),
+                            ),
+                        ),
+                        token=fcm_token.token,
+                    )
+
                 messaging.send(message)
                 success_count += 1
             except Exception as exc:

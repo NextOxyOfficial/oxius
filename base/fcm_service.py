@@ -76,6 +76,21 @@ def send_fcm_notification(fcm_token, title, body, data=None):
                     color='#10B981',
                 ),
             ),
+            # iOS fix: apns-push-type=alert is required since iOS 13+.
+            # Without it APNs may reject the message on iOS 15+ devices.
+            # Also explicitly sets sound so the notification is audible.
+            apns=messaging.APNSConfig(
+                headers={
+                    'apns-push-type': 'alert',
+                    'apns-priority': '10',
+                },
+                payload=messaging.APNSPayload(
+                    aps=messaging.Aps(
+                        sound='default',
+                        mutable_content=True,
+                    ),
+                ),
+            ),
         )
         
         response = messaging.send(message)
@@ -129,8 +144,16 @@ def send_fcm_data_message(fcm_token, data, ttl_seconds=60):
                 priority='high',
                 ttl=_dt.timedelta(seconds=int(ttl_seconds)),
             ),
+            # iOS fix: apns-push-type MUST be 'background' for data-only / silent pushes.
+            # apns-priority MUST be 5 (not 10) for background pushes — APNs silently
+            # drops priority-10 background pushes (Apple developer docs § Sending
+            # Notification Requests to APNs). Without this, data-only FCM messages
+            # are completely invisible to iOS devices.
             apns=messaging.APNSConfig(
-                headers={'apns-priority': '10'},
+                headers={
+                    'apns-push-type': 'background',
+                    'apns-priority': '5',
+                },
                 payload=messaging.APNSPayload(
                     aps=messaging.Aps(content_available=True),
                 ),
@@ -199,6 +222,20 @@ def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
                         sound='default',
                         channel_id='oxius_messages',
                         color='#10B981',
+                    ),
+                ),
+                # iOS fix: same as send_fcm_notification — apns-push-type=alert
+                # required since iOS 13+ or APNs may drop the message.
+                apns=messaging.APNSConfig(
+                    headers={
+                        'apns-push-type': 'alert',
+                        'apns-priority': '10',
+                    },
+                    payload=messaging.APNSPayload(
+                        aps=messaging.Aps(
+                            sound='default',
+                            mutable_content=True,
+                        ),
                     ),
                 ),
             )

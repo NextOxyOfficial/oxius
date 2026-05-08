@@ -146,6 +146,11 @@ Future<void> _bootstrap(UserStateService userState) async {
   await _safeInit('FCM', () => FCMService.initialize(),
       timeout: const Duration(seconds: 10));
 
+  // Consume any local notification tap that happened while app was killed.
+  // Must run after FCMService.initialize() so the navigator key is set up.
+  await _safeInit('FCMPendingNotification',
+      () => FCMService.consumePendingLocalNotificationPayload());
+
   await _safeInit('RideshareDriverPresence',
       () => RideshareDriverPresenceService.initialize());
 

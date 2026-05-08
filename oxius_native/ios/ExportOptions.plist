@@ -4,6 +4,10 @@
 <dict>
     <key>method</key>
     <string>app-store</string>
+    <!-- IMPORTANT: Replace YOUR_TEAM_ID with your actual Apple Developer Team ID.
+         Find it at https://developer.apple.com/account -> Membership details.
+         This file is only used by local builds. Codemagic production builds use
+         the auto-generated /Users/builder/export_options.plist instead. -->
     <key>teamID</key>
     <string>YOUR_TEAM_ID</string>
     <key>uploadBitcode</key>
