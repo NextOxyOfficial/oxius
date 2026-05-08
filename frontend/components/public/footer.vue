@@ -124,8 +124,10 @@
             </h4>
             <ul class="flex gap-2 flex-1 max-md:justify-center">
               <li class="w-[117px]">
-                <nuxt-link
-                  to="/download/"
+                <a
+                  href="https://apps.apple.com/us/app/adsyclub/id6760218370"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   class="transition-transform hover:scale-105 duration-300 block"
                 >
                   <img
@@ -133,9 +135,9 @@
                     class="mx-auto w-full shadow-sm rounded-lg"
                     quality="100"
                     format="webp"
-                    alt="App Store - Coming Soon"
+                    alt="Download on the App Store"
                   />
-                </nuxt-link>
+                </a>
               </li>
               <li class="w-[119px]">
                 <button

@@ -149,6 +149,11 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                     'Choose a payment method and complete the checkout inside the app.';
               }
             });
+            // iOS WKWebView fires onPageStarted with the original URL, not the
+            // redirect target. The final resolved URL only arrives here in
+            // onPageFinished, so we must also check it for the return/callback
+            // URL — otherwise the success screen never shows on iOS.
+            _handleGatewayUrl(url);
           },
           onNavigationRequest: (request) {
             _handleGatewayUrl(request.url);

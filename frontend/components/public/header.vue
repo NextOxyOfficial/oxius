@@ -502,24 +502,26 @@
                   />
                 </div>
               </button>
-              <div
-                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center relative opacity-60 overflow-hidden"
+              <a
+                href="https://apps.apple.com/us/app/adsyclub/id6760218370"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-32 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg shadow-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition overflow-hidden relative group"
               >
                 <img
                   src="/static/frontend/images/apple.png"
-                  alt="App Store"
+                  alt="Download on the App Store"
                   class="w-full h-full object-contain"
                 />
                 <div
-                  class="absolute inset-0 bg-gray-500/20 flex items-center justify-center"
+                  class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
                 >
-                  <div
-                    class="bg-gray-600 text-white text-xs py-0.5 px-2 rounded-full"
-                  >
-                    Coming Soon
-                  </div>
+                  <UIcon
+                    name="i-heroicons-arrow-top-right-on-square"
+                    class="w-5 h-5 text-white"
+                  />
                 </div>
-              </div>
+              </a>
             </div>
           </div>
 

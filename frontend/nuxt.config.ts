@@ -163,7 +163,7 @@ export default defineNuxtConfig({
       androidAppPackage: "com.oxius.app",
       androidStoreUrl:
         "https://play.google.com/store/apps/details?id=com.oxius.app",
-      iosStoreUrl: "https://apps.apple.com/",
+      iosStoreUrl: "https://apps.apple.com/us/app/adsyclub/id6760218370",
       appDownloadFallbackPath: "/download",
       cookieOptions: {
         default: {
@@ -185,7 +185,7 @@ export default defineNuxtConfig({
         androidAppPackage: "com.oxius.app",
         androidStoreUrl:
           "https://play.google.com/store/apps/details?id=com.oxius.app",
-        iosStoreUrl: "https://apps.apple.com/",
+        iosStoreUrl: "https://apps.apple.com/us/app/adsyclub/id6760218370",
         appDownloadFallbackPath: "/download",
         cookieOptions: {
           default: {
