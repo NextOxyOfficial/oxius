@@ -540,14 +540,20 @@ class AgoraCallService {
 
   static Future<void> _ensurePermissions({required String callType}) async {
     final micStatus = await Permission.microphone.request();
+    if (micStatus.isPermanentlyDenied) {
+      throw StateError('permission_permanently_denied:microphone');
+    }
     if (!micStatus.isGranted) {
-      throw StateError('Microphone permission denied');
+      throw StateError('permission_denied:microphone');
     }
 
     if (callType == 'video') {
       final camStatus = await Permission.camera.request();
+      if (camStatus.isPermanentlyDenied) {
+        throw StateError('permission_permanently_denied:camera');
+      }
       if (!camStatus.isGranted) {
-        throw StateError('Camera permission denied');
+        throw StateError('permission_denied:camera');
       }
     }
   }

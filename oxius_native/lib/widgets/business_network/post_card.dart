@@ -739,7 +739,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey.shade950,
+                        color: const Color(0xFF0A0A0A),
                         height: 1.5,
                       ),
                     ),

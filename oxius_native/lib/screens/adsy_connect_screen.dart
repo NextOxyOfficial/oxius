@@ -294,6 +294,16 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
             displayMessage = 'Message removed';
           } else if (messageContent.isEmpty) {
             displayMessage = 'No messages yet';
+          } else if (messageContent.trimLeft().startsWith('↩️')) {
+            // Reply message: extract actual message text from format:
+            // ↩️ (uuid) Sender: preview\n\nActual message
+            final parts = messageContent.split('\n\n');
+            if (parts.length >= 2) {
+              final actualText = parts.sublist(1).join('\n\n').trim();
+              displayMessage = actualText.isNotEmpty ? '↩️ $actualText' : messageContent;
+            } else {
+              displayMessage = messageContent;
+            }
           } else {
             displayMessage = messageContent;
           }
@@ -536,33 +546,6 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     ),
             ),
           ],
-        ),
-        // Floating Action Button for New Chat
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton(
-            onPressed: () {
-              // TODO: Navigate to user search/select screen to start new chat
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Search for users in Business Network to start chatting'),
-                  backgroundColor: Color(0xFF3B82F6),
-                ),
-              );
-            },
-            backgroundColor: const Color(0xFF3B82F6),
-            child: Image.asset(
-              'assets/images/chat_icon.png',
-              width: 24,
-              height: 24,
-              color: Colors.white,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.chat_bubble_outline, color: Colors.white);
-              },
-            ),
-          ),
         ),
       ],
     );

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:vibration/vibration.dart';
 import '../services/agora_call_service.dart';
 import '../services/adsyconnect_service.dart';
@@ -417,19 +418,46 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       }
     } catch (e) {
       if (mounted) {
-        final msg = e.toString().toLowerCase().contains('permission')
-            ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.'
-            : _formatCallStartError(
-                AgoraCallService.lastError ?? AgoraCallService.lastNotificationError ?? e.toString(),
-                fallback: 'Unable to start call. Please check your connection.',
-              );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: Colors.red,
-          ),
-        );
-        Navigator.pop(context);
+        final errStr = e.toString();
+        if (errStr.contains('permission_permanently_denied')) {
+          final isMic = errStr.contains('microphone');
+          Navigator.pop(context);
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(isMic ? 'Microphone Access Required' : 'Camera Access Required'),
+              content: Text(
+                isMic
+                    ? 'Microphone permission is blocked. Please go to Settings → AdsyClub → Microphone and enable it.'
+                    : 'Camera permission is blocked. Please go to Settings → AdsyClub → Camera and enable it.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    openAppSettings();
+                  },
+                  child: const Text('Open Settings'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          final msg = errStr.toLowerCase().contains('permission')
+              ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.'
+              : _formatCallStartError(
+                  AgoraCallService.lastError ?? AgoraCallService.lastNotificationError ?? errStr,
+                  fallback: 'Unable to start call. Please check your connection.',
+                );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          );
+          Navigator.pop(context);
+        }
       }
     }
   }
@@ -504,15 +532,45 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       _ringingTimer?.cancel();
       _ringingTimer = null;
       if (mounted) {
-        final msg = e.toString().toLowerCase().contains('permission')
-            ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission.'
-            : 'Unable to join the call. Please try again.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg), backgroundColor: Colors.red),
-        );
+        final errStr = e.toString();
         unawaited(AgoraCallService.leaveChannel());
         AgoraCallService.setInCall(false);
-        if (mounted) Navigator.of(context).pop();
+        if (errStr.contains('permission_permanently_denied')) {
+          final isMic = errStr.contains('microphone');
+          Navigator.of(context).pop();
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text(isMic ? 'Microphone Access Required' : 'Camera Access Required'),
+              content: Text(
+                isMic
+                    ? 'Microphone permission is blocked. Please go to Settings → AdsyClub → Microphone and enable it.'
+                    : 'Camera permission is blocked. Please go to Settings → AdsyClub → Camera and enable it.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    openAppSettings();
+                  },
+                  child: const Text('Open Settings'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          final msg = errStr.toLowerCase().contains('permission')
+              ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission.'
+              : 'Unable to join the call. Please try again.';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(msg), backgroundColor: Colors.red),
+          );
+          if (mounted) Navigator.of(context).pop();
+        }
       }
     }
   }
