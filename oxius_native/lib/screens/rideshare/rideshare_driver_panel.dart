@@ -658,7 +658,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   void _startActiveRideRefreshTimer() {
     _activeRideRefreshTimer?.cancel();
-    _activeRideRefreshTimer = Timer.periodic(const Duration(seconds: 12), (_) {
+    _activeRideRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted || _activeRide == null || _isUpdatingStatus || _isAcceptingRide) {
         return;
       }
@@ -916,6 +916,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (!mounted) return;
 
     final type = event['type']?.toString() ?? '';
+
+    // Reconnect recovery: reload available requests so any ride that was
+    // dispatched while the dispatch socket was reconnecting is not lost.
+    if (type == 'connection.established') {
+      if (_driverProfile?.isOnline == true && _activeRide == null) {
+        await _loadAvailableRequests();
+      }
+      return;
+    }
+
     if (type == 'ride.targeted') {
       await _playIncomingRideAlert(rideId: event['ride_id']?.toString());
       await _loadAvailableRequests();
@@ -932,6 +942,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (!mounted || _activeRide == null) return;
 
     final type = event['type']?.toString() ?? '';
+
+    // Reconnect recovery: when the ride socket re-establishes, immediately
+    // fetch the current ride state to catch any transitions that arrived
+    // while the socket was reconnecting (3-second gap).
+    if (type == 'connection.established') {
+      await _refreshActiveRideSilently();
+      return;
+    }
 
     // Handle live passenger location updates
     if (type == 'passenger.location') {

@@ -226,7 +226,13 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
 
                       if (ride.isSearching) ...[
                         const SizedBox(height: 12),
-                        _buildSearchStatusCard(ride),
+                        _SearchingDriverCard(
+                          statusMessage: _searchStatusMessage,
+                          noDriversInRange: _noDriversInRange,
+                          targetedDriverName: _currentTargetedDriverName(ride),
+                          secondsRemaining: _targetedRemainingSeconds(ride),
+                          dispatchAttempt: _dispatchAttempt,
+                        ),
                       ],
                       
                       const SizedBox(height: 16),
@@ -454,80 +460,6 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
       return t('rideshare_driver_assigned', fallback: 'Driver confirmed');
     }
     return ride.statusDisplay;
-  }
-
-  // ── Search Status Card ───────────────────────────────────────────────────────
-
-  Widget _buildSearchStatusCard(Ride ride) {
-    final now = DateTime.now();
-    final secondsRemaining = _targetedRemainingSeconds(ride, now: now);
-    final targetedDriverName = _currentTargetedDriverName(ride);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFDE68A)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                _noDriversInRange ? Icons.location_off_rounded : Icons.radar_rounded,
-                size: 18,
-                color: _noDriversInRange ? const Color(0xFFDC2626) : const Color(0xFFD97706),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  _searchStatusMessage,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: _noDriversInRange ? const Color(0xFFDC2626) : const Color(0xFF92400E),
-                  ),
-                ),
-              ),
-              if (targetedDriverName.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    _formatDuration(secondsRemaining),
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFD97706),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          if (_noDriversInRange) ...[
-            Text(
-              'আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।',
-              style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFFDC2626), height: 1.4),
-            ),
-            const SizedBox(height: 4),
-          ],
-          if (targetedDriverName.isNotEmpty) ...[
-            Text(
-              'Current driver: $targetedDriverName',
-              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF92400E)),
-            ),
-            const SizedBox(height: 4),
-          ],
-        ],
-      ),
-    );
   }
 
   // ── Route Info ───────────────────────────────────────────────────────────────
@@ -812,6 +744,417 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
             ),
           ),
       ],
+    );
+  }
+}
+
+// ── Premium Searching Driver Card ───────────────────────────────────────────
+// A self-contained StatefulWidget so it manages its own AnimationControllers
+// without requiring TickerProviderStateMixin on the parent state class.
+
+class _SearchingDriverCard extends StatefulWidget {
+  const _SearchingDriverCard({
+    required this.statusMessage,
+    required this.noDriversInRange,
+    required this.targetedDriverName,
+    required this.secondsRemaining,
+    required this.dispatchAttempt,
+  });
+
+  final String statusMessage;
+  final bool noDriversInRange;
+  final String targetedDriverName;
+  final int secondsRemaining;
+  final int dispatchAttempt;
+
+  @override
+  State<_SearchingDriverCard> createState() => _SearchingDriverCardState();
+}
+
+class _SearchingDriverCardState extends State<_SearchingDriverCard>
+    with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _pulseController2;
+  late AnimationController _pulseController3;
+  late AnimationController _spinController;
+  late Animation<double> _pulse1;
+  late Animation<double> _pulse1Opacity;
+  late Animation<double> _pulse2;
+  late Animation<double> _pulse2Opacity;
+  late Animation<double> _pulse3;
+  late Animation<double> _pulse3Opacity;
+  late Animation<double> _spinAnimation;
+
+  static const _kAmber = Color(0xFFF59E0B);
+  static const _kAmberDark = Color(0xFFD97706);
+  static const _kAmberLight = Color(0xFFFEF3C7);
+  static const _kRed = Color(0xFFDC2626);
+  static const _kRedLight = Color(0xFFFEE2E2);
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Three staggered pulse rings (Uber-style radar)
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+    _pulseController2 = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+    _pulseController3 = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+
+    // Stagger: ring2 starts 600ms later, ring3 starts 1200ms later
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) _pulseController2.forward(from: 0);
+    });
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted) _pulseController3.forward(from: 0);
+    });
+
+    _pulse1 = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
+    );
+    _pulse1Opacity = Tween<double>(begin: 0.6, end: 0.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeOut),
+    );
+    _pulse2 = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController2, curve: Curves.easeOut),
+    );
+    _pulse2Opacity = Tween<double>(begin: 0.6, end: 0.0).animate(
+      CurvedAnimation(parent: _pulseController2, curve: Curves.easeOut),
+    );
+    _pulse3 = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController3, curve: Curves.easeOut),
+    );
+    _pulse3Opacity = Tween<double>(begin: 0.6, end: 0.0).animate(
+      CurvedAnimation(parent: _pulseController3, curve: Curves.easeOut),
+    );
+
+    // Spinning arc indicator
+    _spinController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+    _spinAnimation = Tween<double>(begin: 0, end: 1).animate(_spinController);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _pulseController2.dispose();
+    _pulseController3.dispose();
+    _spinController.dispose();
+    super.dispose();
+  }
+
+  String _formatCountdown(int seconds) {
+    final s = seconds < 0 ? 0 : seconds;
+    final mm = (s ~/ 60).toString().padLeft(2, '0');
+    final ss = (s % 60).toString().padLeft(2, '0');
+    return '$mm:$ss';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isNoDriver = widget.noDriversInRange;
+    final hasTargeted = widget.targetedDriverName.isNotEmpty;
+    final accent = isNoDriver ? _kRed : _kAmber;
+    final accentLight = isNoDriver ? _kRedLight : _kAmberLight;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accent.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // ── Header strip ──────────────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: accentLight,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+            ),
+            child: Row(
+              children: [
+                // Spinning arc + pulsing dot
+                SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (!isNoDriver)
+                        RotationTransition(
+                          turns: _spinAnimation,
+                          child: SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: accent,
+                              value: 0.75,
+                            ),
+                          ),
+                        )
+                      else
+                        Icon(Icons.location_off_rounded, size: 18, color: _kRed),
+                      if (!isNoDriver)
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: accent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    child: Text(
+                      widget.statusMessage,
+                      key: ValueKey(widget.statusMessage),
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: isNoDriver ? _kRed : _kAmberDark,
+                      ),
+                    ),
+                  ),
+                ),
+                if (hasTargeted)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: accent.withValues(alpha: 0.3)),
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        _formatCountdown(widget.secondsRemaining),
+                        key: ValueKey(widget.secondsRemaining),
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: accent,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // ── Animated radar + status body ──────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+            child: Row(
+              children: [
+                // Radar pulse animation
+                if (!isNoDriver)
+                  SizedBox(
+                    width: 56,
+                    height: 56,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Pulse ring 1
+                        AnimatedBuilder(
+                          animation: _pulse1,
+                          builder: (context, _) => Opacity(
+                            opacity: _pulse1Opacity.value,
+                            child: Container(
+                              width: 56 * _pulse1.value,
+                              height: 56 * _pulse1.value,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: _kAmber,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Pulse ring 2
+                        AnimatedBuilder(
+                          animation: _pulse2,
+                          builder: (context, _) => Opacity(
+                            opacity: _pulse2Opacity.value,
+                            child: Container(
+                              width: 56 * _pulse2.value,
+                              height: 56 * _pulse2.value,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: _kAmber,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Pulse ring 3
+                        AnimatedBuilder(
+                          animation: _pulse3,
+                          builder: (context, _) => Opacity(
+                            opacity: _pulse3Opacity.value,
+                            child: Container(
+                              width: 56 * _pulse3.value,
+                              height: 56 * _pulse3.value,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: _kAmber,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Center dot
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: _kAmber,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: _kRedLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.location_off_rounded, size: 24, color: _kRed),
+                  ),
+
+                const SizedBox(width: 14),
+
+                // Text content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isNoDriver) ...[
+                        Text(
+                          'এলাকায় ড্রাইভার নেই',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: _kRed,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'আপনার এলাকায় কোনো ড্রাইভার পাওয়া যাচ্ছে না। শহর এলাকা থেকে চেষ্টা করুন।',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            color: _kRed,
+                            height: 1.45,
+                          ),
+                        ),
+                      ] else if (hasTargeted) ...[
+                        Text(
+                          'ড্রাইভারকে অনুরোধ পাঠানো হয়েছে',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: _kAmberDark,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          children: [
+                            const Icon(Icons.person_rounded, size: 14, color: _kAmberDark),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                widget.targetedDriverName,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1E293B),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'উত্তরের জন্য অপেক্ষা করুন...',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: const Color(0xFF92400E),
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          'ড্রাইভার খোঁজা হচ্ছে',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: _kAmberDark,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'আশেপাশের ড্রাইভারদের সাথে সংযোগ স্থাপন করা হচ্ছে...',
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            color: const Color(0xFF92400E),
+                            height: 1.4,
+                          ),
+                        ),
+                        if (widget.dispatchAttempt > 0) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            'ড্রাইভার অনুরোধ #${widget.dispatchAttempt}',
+                            style: GoogleFonts.inter(
+                              fontSize: 10.5,
+                              color: const Color(0xFF92400E).withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

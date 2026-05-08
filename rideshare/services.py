@@ -2305,6 +2305,9 @@ class RideNotificationService:
         data = {
             "type": "rideshare_update",
             "notification_type": notification_type,
+            # Flutter's _resolveRideshareMode() must see mode=passenger so the
+            # passenger panel's FCM fallback handler accepts the event.
+            "mode": "passenger",
         }
         if ride:
             data["ride_id"] = str(ride.id)
@@ -2332,6 +2335,9 @@ class RideNotificationService:
                 "notification_type": ride.status,
                 "ride_id": str(ride.id),
                 "status": ride.status,
+                # mode field is required by the Flutter rideshare event router so it
+                # knows which panel (passenger vs driver) should handle the push fallback.
+                "mode": "passenger",
             }
             for token in cls._get_user_fcm_tokens(ride.rider):
                 send_fcm_notification(token, rider_title, rider_body, rider_data)
@@ -2366,6 +2372,10 @@ class RideNotificationService:
                 "notification_type": ride.status,
                 "ride_id": str(ride.id),
                 "status": ride.status,
+                # mode: driver routes this FCM to the driver panel's fallback handler.
+                # Without this, _resolveRideshareMode() returns 'passenger' by default,
+                # causing the driver panel to silently drop the FCM fallback event.
+                "mode": "driver",
             }
             for token in tokens:
                 send_fcm_notification(token, driver_title, driver_body, data)

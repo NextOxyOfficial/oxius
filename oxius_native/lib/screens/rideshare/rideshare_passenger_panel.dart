@@ -163,7 +163,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       _statusRefreshTick += 1;
       final refreshIntervalSeconds = ride.isSearching
           ? (_currentTargetedDriverName(ride).isNotEmpty ? 4 : 2)
-          : 12;
+          : 5; // Reduced from 12s → 5s so missed socket events are recovered faster
       if (_statusRefreshTick % refreshIntervalSeconds == 0) {
         unawaited(_refreshActiveRideSilently());
       }
@@ -536,6 +536,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         _syncSearchDispatchState(resolvedRide);
         _statusRefreshTick = 0;
       });
+      _syncRideRealtimeConnection(); // Re-validate socket after state change
       _syncPassengerLocationTracking();
       _refreshPassengerRoutePreview();
     } finally {
@@ -621,12 +622,24 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   }
 
   Future<void> _handleRideRealtimeEvent(Map<String, dynamic> event) async {
-    if (!mounted || _activeRide == null || _isCancellingRide) {
+    if (!mounted || _isCancellingRide) {
       return;
     }
 
     final type = event['type']?.toString() ?? '';
     final eventName = event['event']?.toString() ?? '';
+
+    // When the socket connects (or reconnects after a gap), refresh state
+    // immediately to recover any events that were emitted during the gap.
+    // Django Channels does not buffer missed WebSocket frames, so a reconnect
+    // without an immediate snapshot fetch leaves the UI stale.
+    if (type == 'connection.established') {
+      unawaited(_refreshActiveRideSilently(forceApply: true));
+      return;
+    }
+
+    if (_activeRide == null) return;
+
     if (type == 'driver.location') {
       final location = RideDriverLocation.fromJson(event);
       setState(() {
@@ -671,7 +684,12 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       if (rideId.isEmpty) {
         return;
       }
-      await _loadActiveRideById(rideId);
+      // Use silent refresh (no full-screen spinner) for socket-triggered updates.
+      // _loadActiveRideById sets _isLoadingActiveRide=true which replaces the
+      // entire UI with a spinner for 200-500ms on every state transition —
+      // that causes the jarring "flash" between states. _refreshActiveRideSilently
+      // updates the ride model in-place without any loading indicator.
+      await _refreshActiveRideSilently(forceApply: true);
       if (eventName == 'ride_auto_cancelled') {
         _showError(event['message']?.toString() ?? 'No drivers available, please try again.');
       }
