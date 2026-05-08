@@ -19,7 +19,7 @@
 
       <!-- App icon -->
       <img
-        src="/static/frontend/icons/icon-192x192.png"
+        :src="'/static/frontend/icons/icon-192x192.png'"
         alt="AdsyClub"
         class="banner-icon"
         width="52"
