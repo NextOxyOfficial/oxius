@@ -854,7 +854,7 @@ const microGigsFilter = [
   { title: "Completed", value: "completed" },
 ];
 
-const microGigsStatus = ref(microGigsFilter[1]);
+const microGigsStatus = ref(microGigsFilter[1].value);
 
 const errorIndex = ref([]);
 function handleImageError(index) {
@@ -900,10 +900,6 @@ async function getMicroGigsCategories() {
     })
   );
 }
-
-setTimeout(() => {
-  getMicroGigsCategories();
-}, 20);
 
 async function getMicroGigsByAvailability(e) {
   if (e === "completed") {
@@ -1156,6 +1152,9 @@ const startCursorBlink = () => {
 
 // Initialize animations on mount
 onMounted(() => {
+  // Calculate micro gigs categories (client-only)
+  getMicroGigsCategories();
+
   // Start after a brief delay to ensure reactivity is set up
   setTimeout(() => {
     typeNextChar();

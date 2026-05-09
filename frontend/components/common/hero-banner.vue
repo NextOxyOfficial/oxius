@@ -700,8 +700,6 @@ async function getSlideImages() {
   }
 }
 
-await getSlideImages();
-
 const currentSlide = ref(0);
 let intervalId = null;
 const sliderContainer = ref(null);
@@ -810,7 +808,9 @@ const handleSliderHover = (isHover) => {
 };
 
 // Start auto-sliding when component is mounted
-onMounted(() => {
+onMounted(async () => {
+  await getSlideImages();
+
   resetAutoSlideTimer();
 
   // Add touch event listeners
