@@ -331,7 +331,7 @@ const shouldShowMobileAppPopup = () => {
 
 // Static device-aware app download
 const { getPlatform, getStoreUrl } = useSmartAppLinks()
-const appPlatform = ref<'android' | 'ios' | 'desktop'>('android')
+const appPlatform = ref('android')
 
 const downloadButtonLabel = computed(() => {
   if (appPlatform.value === 'ios') return 'Get on App Store'

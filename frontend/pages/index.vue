@@ -785,26 +785,45 @@ const INITIAL_LIMITS = {
   posts: 10, // Show only 10 recent posts initially
 };
 
-// Load micro gigs with pagination
-const { data } = await get(`/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}`);
-microGigs.value = Array.isArray(data) ? data : [];
-
-// Load services with pagination
-const res = await get(
-  `/classified-categories/?limit=${INITIAL_LIMITS.services}`
-);
-// Ensure services has the expected structure
-if (Array.isArray(res.data)) {
-  services.value = { results: res.data, next: null };
-} else {
-  services.value = res.data;
-}
 const classifiedLatestPosts = ref([]);
-const res2 = await get(`/classified-posts/?limit=${INITIAL_LIMITS.posts}`);
-classifiedLatestPosts.value = res2.data;
-
 const classifiedPosts = ref([]);
 const toast = useToast();
+
+async function loadInitialData() {
+  try {
+    // Load micro gigs with pagination
+    const { data } = await get(`/micro-gigs/?limit=${INITIAL_LIMITS.microGigs}`);
+    microGigs.value = Array.isArray(data) ? data : [];
+  } catch (e) {
+    microGigs.value = [];
+  }
+
+  try {
+    // Load services with pagination
+    const res = await get(`/classified-categories/?limit=${INITIAL_LIMITS.services}`);
+    if (Array.isArray(res.data)) {
+      services.value = { results: res.data, next: null };
+    } else {
+      services.value = res.data;
+    }
+  } catch (e) {
+    services.value = { results: [], next: null };
+  }
+
+  try {
+    const res2 = await get(`/classified-posts/?limit=${INITIAL_LIMITS.posts}`);
+    classifiedLatestPosts.value = res2.data;
+  } catch (e) {
+    classifiedLatestPosts.value = [];
+  }
+
+  try {
+    const operatorsRes = await get("/mobile-recharge/operators/");
+    operators.value = operatorsRes.data;
+  } catch (e) {
+    operators.value = [];
+  }
+}
 
 // Pagination state for micro gigs
 const microGigsPage = ref(1);
@@ -1087,9 +1106,6 @@ watch(
 );
 
 const operators = ref([]);
-const operatorsRes = await get("/mobile-recharge/operators/");
-
-operators.value = operatorsRes.data;
 
 // Add these variables for the typing animation
 const searchInput = ref(null);
@@ -1151,7 +1167,8 @@ const startCursorBlink = () => {
 };
 
 // Initialize animations on mount
-onMounted(() => {
+onMounted(async () => {
+  await loadInitialData();
   // Calculate micro gigs categories (client-only)
   getMicroGigsCategories();
 

@@ -35,7 +35,9 @@ async function getLogo() {
     logo.value = {};
   }
 }
-await getLogo();
+onMounted(() => {
+  getLogo();
+});
 </script>
 
 <style scoped></style>
