@@ -196,7 +196,7 @@ class BlockedUserSerializer(serializers.ModelSerializer):
 class OnlineStatusSerializer(serializers.ModelSerializer):
     """Online status serializer"""
     user = UserBasicSerializer(read_only=True)
-    user_id = serializers.CharField(source='user_id', read_only=True)
+    user_id = serializers.CharField(read_only=True)
     is_online = serializers.SerializerMethodField()
     
     class Meta:

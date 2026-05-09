@@ -31,14 +31,18 @@ export function useAppDownload() {
     error.value = null;
     
     try {
-      // Call the API to get the app version details
-      const response = await $fetch<AppVersionResponse>(`${baseURL}/api/android-app/latest/`, {
+      const result = await fetch(`${baseURL}/api/android-app/latest/`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
         },
-        ignoreResponseError: true, // Don't throw on 404
       });
+
+      if (!result.ok) {
+        return '';
+      }
+
+      const response = await result.json().catch(() => null) as AppVersionResponse | null;
       
       // Set the app details from the API response
       if (response && response.download_url) {

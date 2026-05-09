@@ -4444,10 +4444,13 @@ def get_latest_android_app(request):
         if not latest_version:
             return Response(
                 {
-                    "error": "No app version found",
-                    "message": "Please configure an app version in the admin panel",
-                },
-                status=404,
+                    "download_url": "",
+                    "file_size_mb": None,
+                    "version_name": "",
+                    "version_code": 0,
+                    "release_notes": "",
+                    "message": "No app version configured",
+                }
             )
 
         serializer = AndroidAppVersionSerializer(latest_version)
