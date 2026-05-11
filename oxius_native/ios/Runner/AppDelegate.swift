@@ -6,7 +6,7 @@ import UserNotifications
 import PushKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, PKPushRegistryDelegate {
+@objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
