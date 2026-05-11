@@ -63,6 +63,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   final FocusNode _searchFocusNode = FocusNode();
   final AudioRecorder _audioRecorder = AudioRecorder();
   final AudioPlayer _audioPlayer = AudioPlayer();
+  // Subscriptions for the currently-playing voice message. Cancelled and
+  // replaced every time a new voice message starts to prevent listener
+  // accumulation (previously every play() added 3 new listeners that were
+  // never removed, causing memory growth and ghost setState calls).
+  StreamSubscription<dynamic>? _audioPlayerStateSub;
+  StreamSubscription<dynamic>? _audioPositionSub;
+  StreamSubscription<dynamic>? _audioDurationSub;
   final ImagePicker _imagePicker = ImagePicker();
   bool _isTyping = false;
   bool _isLoadingMessages = true;
@@ -139,8 +146,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // iOS/Android both kill idle sockets after a few minutes in background.
+      // Force a reconnect now so chat state is restored instantly — without
+      // this the user can see stale "typing" indicators and miss messages
+      // until the next polling tick (20s) or until a keepalive fails.
+      unawaited(AdsyConnectRealtimeService.instance.forceReconnect());
       _loadOnlineStatus();
       _loadChatroomStatus();
+      // Also pull any messages that may have arrived while we were paused —
+      // belt-and-suspenders against socket replay gaps.
+      _loadMessages();
     }
   }
 
@@ -261,6 +276,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     _messageFocusNode.dispose();
     _searchFocusNode.dispose();
     _audioRecorder.dispose();
+    _audioPlayerStateSub?.cancel();
+    _audioPositionSub?.cancel();
+    _audioDurationSub?.cancel();
     _audioPlayer.dispose();
     _recordTimer?.cancel();
     _messagePollingTimer?.cancel();
@@ -293,6 +311,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
       // Stop any currently playing message and load new one
       await _audioPlayer.stop();
+      // Cancel previous subscriptions before attaching new ones — without
+      // this, each voice-message play would leak 3 listeners forever.
+      await _audioPlayerStateSub?.cancel();
+      await _audioPositionSub?.cancel();
+      await _audioDurationSub?.cancel();
+      _audioPlayerStateSub = null;
+      _audioPositionSub = null;
+      _audioDurationSub = null;
       setState(() => _playingVoiceMessageId = messageId);
 
       // Set audio source and play
@@ -300,7 +326,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       await _audioPlayer.play();
 
       // Listen to player state changes
-      _audioPlayer.playerStateStream.listen((state) {
+      _audioPlayerStateSub = _audioPlayer.playerStateStream.listen((state) {
         if (mounted) {
           if (state.processingState == ProcessingState.completed) {
             setState(() => _playingVoiceMessageId = null);
@@ -309,14 +335,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       });
 
       // Listen to position changes
-      _audioPlayer.positionStream.listen((position) {
+      _audioPositionSub = _audioPlayer.positionStream.listen((position) {
         if (mounted) {
           setState(() => _voicePosition = position);
         }
       });
 
       // Listen to duration changes
-      _audioPlayer.durationStream.listen((duration) {
+      _audioDurationSub = _audioPlayer.durationStream.listen((duration) {
         if (mounted && duration != null) {
           setState(() => _voiceDuration = duration);
         }

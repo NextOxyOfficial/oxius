@@ -696,6 +696,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     if (type == 'driver.location') {
       final location = RideDriverLocation.fromJson(event);
+      if (!mounted) return;
       setState(() {
         _activeRide = _activeRide?.copyWith(latestDriverLocation: location);
       });

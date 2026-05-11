@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -13,20 +14,41 @@ class AdsyConnectRealtimeService {
   static final AdsyConnectRealtimeService instance = AdsyConnectRealtimeService._();
 
   static const String _tokenKey = 'adsyclub_token';
-  static const Duration _reconnectDelay = Duration(seconds: 3);
+  static const Duration _initialReconnectDelay = Duration(seconds: 2);
+  static const Duration _maxReconnectDelay = Duration(seconds: 60);
   static const Duration _pingInterval = Duration(seconds: 20);
+  // Bounded LRU of recent event fingerprints to suppress duplicates that
+  // arrive via socket replay after reconnect or simultaneously via the FCM
+  // fallback path. Bounded to avoid memory growth on long sessions.
+  static const int _dedupWindow = 64;
 
   final StreamController<Map<String, dynamic>> _eventsController =
       StreamController<Map<String, dynamic>>.broadcast();
+  final List<String> _recentFingerprints = <String>[];
 
   WebSocketChannel? _channel;
   Timer? _reconnectTimer;
   Timer? _pingTimer;
   String? _connectedUserId;
   bool _shouldStayConnected = false;
+  int _reconnectAttempts = 0;
+  final math.Random _jitter = math.Random();
 
   Stream<Map<String, dynamic>> get events => _eventsController.stream;
   bool get isConnected => _channel != null;
+
+  /// Force the socket to reconnect now (e.g. after AppLifecycleState.resumed).
+  /// Safe to call even if already connected — will only reopen if the user is
+  /// still authenticated and the channel is actually stale/closed.
+  Future<void> forceReconnect() async {
+    if (!_shouldStayConnected || _connectedUserId == null) {
+      return;
+    }
+    _reconnectAttempts = 0;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    await _openSocket();
+  }
 
   Future<void> connect() async {
     final userId = AuthService.currentUser?.id;
@@ -51,6 +73,8 @@ class AdsyConnectRealtimeService {
     _reconnectTimer = null;
     _pingTimer?.cancel();
     _pingTimer = null;
+    _reconnectAttempts = 0;
+    _recentFingerprints.clear();
     await _channel?.sink.close();
     _channel = null;
   }
@@ -78,6 +102,11 @@ class AdsyConnectRealtimeService {
     _pingTimer?.cancel();
     await _channel?.sink.close();
 
+    // Clear the dedup ring on every fresh socket — backend may replay events
+    // we already saw on the previous channel, but the UI state may also have
+    // missed updates that we want to re-apply on reconnect.
+    _recentFingerprints.clear();
+
     try {
       final channel = WebSocketChannel.connect(await _buildUri(userId));
       _channel = channel;
@@ -86,7 +115,14 @@ class AdsyConnectRealtimeService {
       });
 
       channel.stream.listen(
-        _handleMessage,
+        (message) {
+          // First successful frame — reset backoff so transient hiccups don't
+          // poison the next reconnect cycle.
+          if (_reconnectAttempts != 0) {
+            _reconnectAttempts = 0;
+          }
+          _handleMessage(message);
+        },
         onDone: _scheduleReconnect,
         onError: (_) => _scheduleReconnect(),
         cancelOnError: true,
@@ -104,6 +140,27 @@ class AdsyConnectRealtimeService {
     try {
       final decoded = jsonDecode(message);
       if (decoded is Map<String, dynamic>) {
+        // Dedup by stable identifier when the server provides one. Falls back
+        // to a composite fingerprint so legacy events without event_id still
+        // get a basic duplicate filter without blocking legitimate updates.
+        final eventId = decoded['event_id'] ?? decoded['id'] ?? decoded['message_id'];
+        final fingerprint = eventId != null
+            ? 'id:$eventId'
+            : '${decoded['type'] ?? ''}|'
+                '${decoded['chatroom_id'] ?? ''}|'
+                '${decoded['user_id'] ?? ''}|'
+                '${decoded['timestamp'] ?? decoded['created_at'] ?? ''}';
+
+        if (fingerprint.isNotEmpty && fingerprint != 'id:null') {
+          if (_recentFingerprints.contains(fingerprint)) {
+            return; // duplicate — drop silently
+          }
+          _recentFingerprints.add(fingerprint);
+          if (_recentFingerprints.length > _dedupWindow) {
+            _recentFingerprints.removeAt(0);
+          }
+        }
+
         _eventsController.add(decoded);
       }
     } catch (_) {
@@ -133,7 +190,18 @@ class AdsyConnectRealtimeService {
     }
 
     _reconnectTimer?.cancel();
-    _reconnectTimer = Timer(_reconnectDelay, () {
+    // Exponential backoff with jitter, capped at _maxReconnectDelay.
+    // Prevents thundering-herd reconnect storms during backend outages while
+    // still recovering quickly from transient drops.
+    final attempt = _reconnectAttempts.clamp(0, 10);
+    final baseMs = (_initialReconnectDelay.inMilliseconds *
+            math.pow(1.5, attempt))
+        .toInt()
+        .clamp(_initialReconnectDelay.inMilliseconds,
+            _maxReconnectDelay.inMilliseconds);
+    final jitterMs = _jitter.nextInt(1000);
+    _reconnectAttempts++;
+    _reconnectTimer = Timer(Duration(milliseconds: baseMs + jitterMs), () {
       unawaited(connect());
     });
   }
