@@ -126,7 +126,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   Future<void> _handleResendOtp() async { if (_resendCooldown > 0) return; _otpController.clear(); await _handleSendOtp(); }
-  void _startResendCooldown() { setState(() => _resendCooldown = 60); Future.doWhile(() async { await Future.delayed(const Duration(seconds: 1)); if (!mounted) return false; setState(() => _resendCooldown--); return _resendCooldown > 0; }); }
+  void _startResendCooldown() { if (!mounted) return; setState(() => _resendCooldown = 60); Future.doWhile(() async { await Future.delayed(const Duration(seconds: 1)); if (!mounted) return false; setState(() => _resendCooldown--); return _resendCooldown > 0; }); }
   void _goToPreviousStep() { _clearMessages(); setState(() { if (_currentStep == 2) { _currentStep = 1; _otpController.clear(); } else if (_currentStep == 3) { _currentStep = 2; _newPasswordController.clear(); _confirmPasswordController.clear(); } }); }
 
   @override

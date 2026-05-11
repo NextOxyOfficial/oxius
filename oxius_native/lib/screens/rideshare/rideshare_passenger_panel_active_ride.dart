@@ -978,7 +978,12 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                   SizedBox(
                     width: 56,
                     height: 56,
-                    child: Stack(
+                    // RepaintBoundary isolates the radar animation (3 pulse rings
+                    // running concurrently at 60fps) from the rest of the bottom
+                    // sheet. Without it, every animation frame invalidates the
+                    // whole "Searching for driver" card including text + map.
+                    child: RepaintBoundary(
+                      child: Stack(
                       alignment: Alignment.center,
                       children: [
                         // Pulse ring 1
@@ -1045,6 +1050,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                           ),
                         ),
                       ],
+                    ),
                     ),
                   )
                 else

@@ -357,6 +357,8 @@ class _InboxScreenState extends State<InboxScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _updatesScrollController.removeListener(_onUpdatesScroll);
+    _ticketsScrollController.removeListener(_onTicketsScroll);
     _updatesScrollController.dispose();
     _ticketsScrollController.dispose();
     super.dispose();

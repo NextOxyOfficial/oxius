@@ -1113,6 +1113,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     ? CachedNetworkImage(
                         imageUrl: getImageUrl(),
                         fit: BoxFit.cover,
+                        memCacheWidth: 180,
+                        memCacheHeight: 180,
+                        fadeInDuration: const Duration(milliseconds: 120),
                         placeholder: (context, url) => Container(
                           color: Colors.grey.shade100,
                           child: const Center(
@@ -1301,6 +1304,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         ? CachedNetworkImage(
                             imageUrl: getImageUrl(),
                             fit: BoxFit.cover,
+                            memCacheWidth: 400,
+                            fadeInDuration: const Duration(milliseconds: 120),
                             placeholder: (context, url) => Container(
                               color: Colors.grey.shade100,
                               child: const Center(
@@ -1636,6 +1641,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       height: 78,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
+                                      memCacheHeight: 156,
+                                      fadeInDuration: const Duration(milliseconds: 120),
                                       placeholder: (context, url) => Container(
                                         height: 85,
                                         color: Colors.grey.shade100,

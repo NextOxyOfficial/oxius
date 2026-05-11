@@ -48,6 +48,8 @@ class FoodZoneCard extends StatelessWidget {
                           height: 100,
                           width: double.infinity,
                           fit: BoxFit.cover,
+                          memCacheHeight: 200,
+                          fadeInDuration: const Duration(milliseconds: 120),
                           placeholder: (context, url) => Container(
                             height: 100,
                             color: Colors.grey[200],
@@ -236,6 +238,9 @@ class FoodZoneListCard extends StatelessWidget {
                           height: 100,
                           width: 100,
                           fit: BoxFit.cover,
+                          memCacheWidth: 200,
+                          memCacheHeight: 200,
+                          fadeInDuration: const Duration(milliseconds: 120),
                           placeholder: (context, url) => Container(
                             height: 100,
                             width: 100,
