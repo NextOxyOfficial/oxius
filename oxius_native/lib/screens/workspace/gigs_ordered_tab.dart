@@ -414,7 +414,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.grey[700],
             fontWeight: FontWeight.w500,
-            fontSize: 11,
+            fontSize: 13,
           ),
         ),
       ),
@@ -456,7 +456,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                   'Order #${order['id'].toString().substring(0, 8)}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                 ),
                 const Spacer(),
@@ -504,7 +504,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                           gig?['title'] ?? 'Unknown Gig',
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
-                            fontSize: 13,
+                            fontSize: 15,
                             color: Color(0xFF8B5CF6),
                           ),
                           maxLines: 1,
@@ -531,7 +531,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                           Flexible(
                             child: Text(
                               'from ${seller?['name'] ?? 'Unknown'}',
-                              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -566,7 +566,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                           ),
                           Text(
                             _formatDate(createdAt),
-                            style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                           ),
                         ],
                       ),

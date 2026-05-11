@@ -176,7 +176,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
           style: TextStyle(
             color: isSelected ? Colors.white : Colors.grey[700],
             fontWeight: FontWeight.w500,
-            fontSize: 11,
+            fontSize: 13,
           ),
         ),
       ),
@@ -242,7 +242,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
                           child: Text(
                             gig['title'] ?? '',
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF8B5CF6),
                             ),
@@ -263,7 +263,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
                       Text(
                         '৳$price',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF8B5CF6),
                         ),
@@ -273,14 +273,14 @@ class _MyGigsTabState extends State<MyGigsTab> {
                       const SizedBox(width: 2),
                       Text(
                         '$ordersCount',
-                        style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[500]),
                       ),
                       const SizedBox(width: 10),
                       const Icon(Icons.star, size: 12, color: Colors.amber),
                       const SizedBox(width: 2),
                       Text(
                         rating.toStringAsFixed(1),
-                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
                   ),

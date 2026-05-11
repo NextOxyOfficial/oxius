@@ -153,66 +153,81 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                     dividerColor: Colors.transparent,
                     splashBorderRadius: BorderRadius.circular(12),
                     labelStyle: GoogleFonts.inter(
-                        fontWeight: FontWeight.w700, fontSize: 12),
+                        fontWeight: FontWeight.w700, fontSize: 14),
                     unselectedLabelStyle: GoogleFonts.inter(
-                        fontWeight: FontWeight.w600, fontSize: 12),
+                        fontWeight: FontWeight.w600, fontSize: 14),
                     tabAlignment: TabAlignment.start,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                     padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
                     tabs: const [
                       Tab(
                         height: 40,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.explore_rounded, size: 15),
-                            SizedBox(width: 5),
-                            Text('All Gigs'),
-                          ],
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.explore_rounded, size: 15),
+                              SizedBox(width: 5),
+                              Text('All Gigs'),
+                            ],
+                          ),
                         ),
                       ),
                       Tab(
                         height: 40,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.person_outline_rounded, size: 15),
-                            SizedBox(width: 5),
-                            Text('My Gigs'),
-                          ],
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.person_outline_rounded, size: 15),
+                              SizedBox(width: 5),
+                              Text('My Gigs'),
+                            ],
+                          ),
                         ),
                       ),
                       Tab(
                         height: 40,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.inbox_rounded, size: 15),
-                            SizedBox(width: 5),
-                            Text('Orders Received'),
-                          ],
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.inbox_rounded, size: 15),
+                              SizedBox(width: 5),
+                              Text('Orders Received'),
+                            ],
+                          ),
                         ),
                       ),
                       Tab(
                         height: 40,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.shopping_bag_outlined, size: 15),
-                            SizedBox(width: 5),
-                            Text('Gigs Ordered'),
-                          ],
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.shopping_bag_outlined, size: 15),
+                              SizedBox(width: 5),
+                              Text('Gigs Ordered'),
+                            ],
+                          ),
                         ),
                       ),
                       Tab(
                         height: 40,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add_circle_outline_rounded, size: 15),
-                            SizedBox(width: 5),
-                            Text('Post a Gig'),
-                          ],
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.add_circle_outline_rounded, size: 15),
+                              SizedBox(width: 5),
+                              Text('Post a Gig'),
+                            ],
+                          ),
                         ),
                       ),
                     ],

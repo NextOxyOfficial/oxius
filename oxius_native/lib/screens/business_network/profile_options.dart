@@ -839,7 +839,14 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               _buildActionTile(
                 icon: Icons.qr_code_2_rounded,
                 label: 'QR Code',
-                onTap: () => _showQrCode(context),
+                onTap: () {
+                  if (_profileData != null) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => QrCodeModal(user: _profileData!),
+                    );
+                  }
+                },
               ),
             ],
           ),

@@ -140,10 +140,10 @@ class _AllGigsTabState extends State<AllGigsTab> {
                   height: 36,
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(fontSize: 13),
+                    style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Search gigs...',
-                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                      hintStyle: TextStyle(fontSize: 15, color: Colors.grey[400]),
                       prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 18),
                       prefixIconConstraints: const BoxConstraints(minWidth: 36),
                       suffixIcon: _searchQuery.isNotEmpty
@@ -244,7 +244,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.grey[700],
               fontWeight: FontWeight.w500,
-              fontSize: 11,
+              fontSize: 13,
             ),
           ),
         ),
@@ -329,7 +329,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                                 child: Text(
                                   user?['name'] ?? 'Unknown',
                                   style: TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 13,
                                     color: Colors.grey[600],
                                   ),
                                   maxLines: 1,
@@ -353,7 +353,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                       child: Text(
                         gig['title'] ?? '',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
@@ -373,7 +373,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                             Text(
                               rating.toStringAsFixed(1),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 13,
                                 color: Colors.grey[700],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -383,7 +383,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                         Text(
                           '৳$price',
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF8B5CF6),
                           ),
