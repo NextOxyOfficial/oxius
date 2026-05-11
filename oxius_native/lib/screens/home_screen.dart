@@ -581,9 +581,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildUserDropdownMenu(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 640; // sm breakpoint
-    
+    // Anchor below the fixed header: status-bar inset + 56px header + 4px gap.
+    final topOffset = MediaQuery.of(context).padding.top + 56 + 4;
+
     return Positioned(
-      top: 68, // Below header (top-12)
+      top: topOffset,
       right: isMobile ? 8 : 16,
       child: Container(
         width: isMobile ? 288 : 320, // w-72 (288px) mobile, sm:w-80 (320px) desktop
