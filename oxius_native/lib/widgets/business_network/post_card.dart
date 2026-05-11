@@ -702,12 +702,13 @@ class _PostCardState extends State<PostCard> {
                       _post.title,
                       context,
                       onMentionTap: _handleMentionTap,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                        height: 1.45,
+                      ),
                     ),
-                  ),
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black87,
                   ),
                 ),
               ),
@@ -731,41 +732,41 @@ class _PostCardState extends State<PostCard> {
                     },
                     child: Text.rich(
                       TextSpan(
-                        children: MentionParser.parseTextWithMentions(
-                          previewPostContent,
-                          context,
-                          onMentionTap: _handleMentionTap,
-                        ),
-                      ),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Color(0xFF0A0A0A),
-                        height: 1.5,
+                        children: [
+                          ...MentionParser.parseTextWithMentions(
+                            previewPostContent,
+                            context,
+                            onMentionTap: _handleMentionTap,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF111827),
+                              height: 1.55,
+                            ),
+                          ),
+                          if (plainPostContent.length > 160)
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.baseline,
+                              baseline: TextBaseline.alphabetic,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() => _showFullContent = !_showFullContent);
+                                },
+                                child: Text(
+                                  _showFullContent ? '  কম পড়ুন' : '  আরো পড়ুন',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6366F1),
+                                    height: 1.55,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
-                  if (plainPostContent.length > 160)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          setState(() => _showFullContent = !_showFullContent);
-                        },
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          _showFullContent ? 'কম পড়ুন' : 'আরো পড়ুন',
-                          style: const TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ),
                   FirstLinkPreview(text: plainPostContent),
                 ],
               ),

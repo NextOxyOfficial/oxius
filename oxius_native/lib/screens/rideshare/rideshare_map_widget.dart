@@ -1127,18 +1127,6 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     );
   }
 
-  String get _vehicleEmoji {
-    switch (widget.vehicleType) {
-      case 'bike':
-        return '🏍️';
-      case 'cng':
-        return '🛺';
-      case 'car':
-      default:
-        return '🚗';
-    }
-  }
-
   Widget _buildDriverMarker() {
     final heading = widget.driverHeading ?? 0;
     return Transform.rotate(
@@ -1157,9 +1145,10 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             ),
           ],
         ),
-        child: Text(
-          _vehicleEmoji,
-          style: const TextStyle(fontSize: 20),
+        child: Icon(
+          _vehicleIconData(widget.vehicleType),
+          size: 22,
+          color: const Color(0xFF6366F1),
         ),
       ),
     );
@@ -1171,7 +1160,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF94A3B8), width: 2),
+        border: Border.all(color: const Color(0xFF6366F1), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -1180,10 +1169,23 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
           ),
         ],
       ),
-      child: Text(
-        driver.vehicleIcon,
-        style: const TextStyle(fontSize: 14),
+      child: Icon(
+        _vehicleIconData(driver.vehicleType),
+        size: 16,
+        color: const Color(0xFF334155),
       ),
     );
+  }
+
+  IconData _vehicleIconData(String? vehicleType) {
+    switch (vehicleType) {
+      case 'bike':
+        return Icons.two_wheeler_rounded;
+      case 'cng':
+        return Icons.electric_rickshaw_rounded;
+      case 'car':
+      default:
+        return Icons.directions_car_rounded;
+    }
   }
 }

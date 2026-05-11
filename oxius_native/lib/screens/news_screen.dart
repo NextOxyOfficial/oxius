@@ -120,43 +120,19 @@ class _NewsScreenState extends State<NewsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: _newsLogoUrl != null
+        title: _newsLogoUrl != null && _newsLogoUrl!.isNotEmpty
             ? Image.network(
                 _newsLogoUrl!,
                 height: 28,
-                errorBuilder: (context, error, stackTrace) {
-                  return Image.asset(
-                    'assets/images/adsy-news-logo.png',
-                    height: 28,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Text(
-                        'AdsyNews',
-                        style: TextStyle(
-                          color: Color(0xFFE53E3E),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
-                          letterSpacing: -0.2,
-                        ),
-                      );
-                    },
-                  );
+                fit: BoxFit.contain,
+                gaplessPlayback: true,
+                errorBuilder: (context, error, stackTrace) => _buildAdsyNewsTextLogo(),
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return _buildAdsyNewsTextLogo();
                 },
               )
-            : Image.asset(
-                'assets/images/adsy-news-logo.png',
-                height: 28,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Text(
-                    'AdsyNews',
-                    style: TextStyle(
-                      color: Color(0xFFE53E3E),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18,
-                      letterSpacing: -0.2,
-                    ),
-                  );
-                },
-              ),
+            : _buildAdsyNewsTextLogo(),
         actions: [
           IconButton(
             icon: const Icon(Icons.search_rounded, color: Color(0xFF1F2937), size: 22),
@@ -528,5 +504,17 @@ class _NewsScreenState extends State<NewsScreen> {
     final sorted = List<NewsPost>.from(_allPosts);
     sorted.sort((a, b) => b.comments.length.compareTo(a.comments.length));
     return sorted.take(8).toList();
+  }
+
+  Widget _buildAdsyNewsTextLogo() {
+    return const Text(
+      'AdsyNews',
+      style: TextStyle(
+        color: Color(0xFFE53E3E),
+        fontWeight: FontWeight.w700,
+        fontSize: 18,
+        letterSpacing: -0.2,
+      ),
+    );
   }
 }

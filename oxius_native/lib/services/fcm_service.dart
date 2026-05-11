@@ -1929,11 +1929,20 @@ class FCMService {
       ),
     );
 
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'default',
+      interruptionLevel: InterruptionLevel.timeSensitive,
+      categoryIdentifier: 'oxius_ride_requests',
+    );
+
     await _localNotifications.show(
       rideId.hashCode,
       title,
       body,
-      NotificationDetails(android: androidDetails),
+      NotificationDetails(android: androidDetails, iOS: iosDetails),
       payload: jsonEncode({
         ...data,
         'type': data['type']?.toString() ?? 'targeted_ride_request',
@@ -1958,8 +1967,16 @@ class FCMService {
         icon: '@mipmap/ic_launcher',
       );
 
+      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        sound: 'default',
+      );
+
       const NotificationDetails notificationDetails = NotificationDetails(
         android: androidDetails,
+        iOS: iosDetails,
       );
 
       await _localNotifications.show(

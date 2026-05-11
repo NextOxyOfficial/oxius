@@ -539,7 +539,14 @@ class AgoraCallService {
   }
 
   static Future<void> _ensurePermissions({required String callType}) async {
-    final micStatus = await Permission.microphone.request();
+    // Check status first to avoid showing a redundant in-app prompt when the
+    // OS already remembers the user's decision (especially on iOS where the
+    // system dialog is one-shot and subsequent .request() returns the cached
+    // status without showing UI — which previously looked like a "fake popup").
+    PermissionStatus micStatus = await Permission.microphone.status;
+    if (!micStatus.isGranted && !micStatus.isPermanentlyDenied) {
+      micStatus = await Permission.microphone.request();
+    }
     if (micStatus.isPermanentlyDenied) {
       throw StateError('permission_permanently_denied:microphone');
     }
@@ -548,7 +555,10 @@ class AgoraCallService {
     }
 
     if (callType == 'video') {
-      final camStatus = await Permission.camera.request();
+      PermissionStatus camStatus = await Permission.camera.status;
+      if (!camStatus.isGranted && !camStatus.isPermanentlyDenied) {
+        camStatus = await Permission.camera.request();
+      }
       if (camStatus.isPermanentlyDenied) {
         throw StateError('permission_permanently_denied:camera');
       }

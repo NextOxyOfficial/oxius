@@ -235,17 +235,30 @@ class MyApp extends StatelessWidget {
             navigatorObservers: [FCMService.routeObserver],
             debugShowCheckedModeBanner: false,
             builder: (context, child) {
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  child ?? const SizedBox.shrink(),
-                  const Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: OngoingCallBar(),
-                  ),
-                ],
+              // Global tap-to-dismiss keyboard. Wrapping at MaterialApp.builder
+              // level means every screen inherits the behavior without each
+              // route needing its own GestureDetector.
+              return GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  final FocusScopeNode currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus &&
+                      currentFocus.focusedChild != null) {
+                    currentFocus.focusedChild!.unfocus();
+                  }
+                },
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    child ?? const SizedBox.shrink(),
+                    const Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: OngoingCallBar(),
+                    ),
+                  ],
+                ),
               );
             },
             theme: ThemeData(

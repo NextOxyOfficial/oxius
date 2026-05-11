@@ -86,6 +86,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   StreamSubscription<Map<String, dynamic>>? _dispatchEventSubscription;
   StreamSubscription<Map<String, dynamic>>? _rideEventSubscription;
   StreamSubscription<Map<String, dynamic>>? _rideshareNotificationSubscription;
+  StreamSubscription<String>? _authFailureSubscription;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
   bool _isRefreshingActiveRide = false;
   bool _incomingRideAlertActive = false;
@@ -310,6 +311,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         FCMService.rideshareNotificationEvents.listen(
           _handleRideshareNotificationEvent,
         );
+    _authFailureSubscription = _realtimeService.authFailure.listen((reason) {
+      if (!mounted) return;
+      // Probe auth via HTTP — if the user is still authenticated this will
+      // refresh the active ride and we can safely retry the socket.
+      unawaited(_realtimeService.retryAfterAuthFailure());
+    });
     _refreshLocationPermissionStatus();
     _handlePresencePositionChanged();
     _loadDriverData();
@@ -334,6 +341,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _dispatchEventSubscription?.cancel();
     _rideEventSubscription?.cancel();
     _rideshareNotificationSubscription?.cancel();
+    _authFailureSubscription?.cancel();
     _realtimeService.dispose();
     _licenseController.dispose();
     _nidController.dispose();

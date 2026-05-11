@@ -75,8 +75,18 @@ class MentionParser {
     String text,
     BuildContext context, {
     Function(String)? onMentionTap,
+    TextStyle? style,
   }) {
-    if (text.isEmpty) return [TextSpan(text: text)];
+    if (text.isEmpty) return [TextSpan(text: text, style: style)];
+
+    // Default plain-text style. Callers can override via [style] so the
+    // surrounding Text.rich parent size/color is respected.
+    final plainStyle = style ??
+        TextStyle(
+          fontSize: 15,
+          color: Colors.grey.shade900,
+          height: 1.4,
+        );
 
     final List<InlineSpan> spans = [];
     int lastIndex = 0;
@@ -86,11 +96,7 @@ class MentionParser {
       if (match.start > lastIndex) {
         spans.add(TextSpan(
           text: text.substring(lastIndex, match.start),
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey.shade800,
-            height: 1.3,
-          ),
+          style: plainStyle,
         ));
       }
 
@@ -141,11 +147,7 @@ class MentionParser {
         if (match.start > localLast) {
           spans.add(TextSpan(
             text: remaining.substring(localLast, match.start),
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade800,
-              height: 1.3,
-            ),
+            style: plainStyle,
           ));
         }
 
@@ -190,11 +192,7 @@ class MentionParser {
       if (localLast < remaining.length) {
         spans.add(TextSpan(
           text: remaining.substring(localLast),
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey.shade800,
-            height: 1.3,
-          ),
+          style: plainStyle,
         ));
       }
 
@@ -205,11 +203,7 @@ class MentionParser {
     if (lastIndex < text.length) {
       spans.add(TextSpan(
         text: text.substring(lastIndex),
-        style: TextStyle(
-          fontSize: 13,
-          color: Colors.grey.shade800,
-          height: 1.3,
-        ),
+        style: plainStyle,
       ));
     }
 

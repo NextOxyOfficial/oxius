@@ -85,6 +85,12 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   bool _isRefreshingActiveRide = false;
   int _statusRefreshTick = 0;
   String? _lastExpiredTargetRefreshKey;
+  // Server timestamp of the most recent ride event we applied. Used to drop
+  // out-of-order events that arrive on the socket after a newer one has
+  // already mutated UI state — e.g. a stale "driver_assigned" trailing a
+  // "ride_completed".
+  DateTime? _lastAppliedRideEventAt;
+  StreamSubscription<String>? _authFailureSubscription;
   RoutePreview? _activeRoutePreview;
   String _activeRouteSignature = '';
   bool _isLoadingActiveRoute = false;
@@ -106,6 +112,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         FCMService.rideshareNotificationEvents.listen(
           _handleRideshareNotificationEvent,
         );
+    _authFailureSubscription = _realtimeService.authFailure.listen((reason) {
+      // Repeated immediate WS failures — most commonly an expired token. Fall
+      // back to an HTTP refresh of the active ride; if the user is still
+      // authenticated this also gives the service a chance to retry the
+      // socket cleanly.
+      if (!mounted) return;
+      unawaited(_refreshActiveRideSilently(forceApply: true));
+      unawaited(_realtimeService.retryAfterAuthFailure());
+    });
     _refreshLocationPermissionStatus(autoFillCurrentLocation: true);
     _loadActiveRide();
   }
@@ -121,6 +136,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _rideEventSubscription?.cancel();
     _rideshareNotificationSubscription?.cancel();
     _passengerLocationSubscription?.cancel();
+    _authFailureSubscription?.cancel();
     _realtimeService.dispose();
     super.dispose();
   }
@@ -131,10 +147,17 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   void _startStatusRefreshTimer() {
     _statusRefreshTimer?.cancel();
+    // The 1s timer exists primarily to drive the targeted-driver countdown UI
+    // while we are actively searching. Once a driver is assigned we no longer
+    // need per-second ticks — socket events drive the state. We still keep a
+    // low-frequency polling fallback (every 15s) to recover from a missed
+    // socket event without hammering the server.
     _statusRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || _activeRide == null) return;
       final ride = _activeRide!;
-      if (ride.isSearching) {
+      final isSearching = ride.isSearching;
+
+      if (isSearching) {
         final targetedDriverName = _currentTargetedDriverName(ride);
         final secondsRemaining = _targetedRemainingSeconds(ride);
 
@@ -157,13 +180,21 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           }
         }
 
-        setState(() {});
+        setState(() {}); // tick countdown
       }
 
       _statusRefreshTick += 1;
-      final refreshIntervalSeconds = ride.isSearching
-          ? (_currentTargetedDriverName(ride).isNotEmpty ? 4 : 2)
-          : 5; // Reduced from 12s → 5s so missed socket events are recovered faster
+      // Trust the WebSocket. Poll infrequently as a safety net only.
+      //   searching + targeted driver visible → 8s (countdown is local)
+      //   searching (no target yet)          → 6s
+      //   any other state                    → 20s
+      final int refreshIntervalSeconds;
+      if (isSearching) {
+        refreshIntervalSeconds =
+            _currentTargetedDriverName(ride).isNotEmpty ? 8 : 6;
+      } else {
+        refreshIntervalSeconds = 20;
+      }
       if (_statusRefreshTick % refreshIntervalSeconds == 0) {
         unawaited(_refreshActiveRideSilently());
       }
@@ -634,8 +665,29 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     // Django Channels does not buffer missed WebSocket frames, so a reconnect
     // without an immediate snapshot fetch leaves the UI stale.
     if (type == 'connection.established') {
+      _lastAppliedRideEventAt = null; // resync from server snapshot
       unawaited(_refreshActiveRideSilently(forceApply: true));
       return;
+    }
+
+    // Out-of-order protection for state-changing ride events. Live driver
+    // location pings and search-status updates intentionally bypass this
+    // gate so we don't stall the pulsing UI on jittery networks.
+    final isStateMutating =
+        type == 'ride.event' || eventName == 'ride_status_changed';
+    if (isStateMutating) {
+      final eventTs = DateTime.tryParse(
+        (event['timestamp'] ?? event['updated_at'] ?? '').toString(),
+      );
+      if (eventTs != null &&
+          _lastAppliedRideEventAt != null &&
+          eventTs.isBefore(_lastAppliedRideEventAt!)) {
+        // Stale event — a newer one has already been applied. Drop it.
+        return;
+      }
+      if (eventTs != null) {
+        _lastAppliedRideEventAt = eventTs;
+      }
     }
 
     if (_activeRide == null) return;
@@ -1055,6 +1107,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   Future<void> _cancelRide() async {
     if (_activeRide == null) return;
 
+    // Snapshot the id so a socket race that mutates _activeRide mid-cancel
+    // cannot redirect the cancel call to a different ride.
+    final rideIdToCancel = _activeRide!.id;
+
     // Disconnect realtime immediately to prevent incoming events from
     // overwriting state while the cancel API call is in flight.
     _rideEventSubscription?.cancel();
@@ -1064,7 +1120,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _isCancellingRide = true);
 
     final result = await RideshareService.cancelRide(
-      _activeRide!.id,
+      rideIdToCancel,
       reason: 'Cancelled by passenger',
     );
     
