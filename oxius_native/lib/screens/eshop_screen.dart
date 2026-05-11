@@ -119,6 +119,38 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     }
   }
 
+  /// Apply a category filter to the existing screen without pushing a new
+  /// route. Used by in-page category sources (HotDealsSection, dropdown).
+  void _applyCategoryFilterInPlace(String categoryId) {
+    final category = _allCategories.firstWhere(
+      (cat) => _categoryIdMatches(cat['id'], categoryId),
+      orElse: () => {},
+    );
+    setState(() {
+      _selectedCategoryId = categoryId;
+      _selectedCategoryName = category['name']?.toString();
+      _selectedCategorySlug = category['slug']?.toString();
+    });
+    // Scroll to top so the filtered list is visible immediately.
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+    _loadInitialData();
+  }
+
+  void _clearCategoryFilter() {
+    setState(() {
+      _selectedCategoryId = null;
+      _selectedCategoryName = null;
+      _selectedCategorySlug = null;
+    });
+    _loadInitialData();
+  }
+
   Future<void> _loadEshopLogo() async {
     try {
       print('EshopScreen: Loading dynamic eShop logo...');
@@ -522,19 +554,6 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           _hasMoreResults = results.length >= 20;
           _lastSearchQuery = query;
         });
-        
-        // Save search keyword after 15 seconds of viewing results
-        // This ensures user actually looked at results and found them useful
-        // Only save if query is meaningful (3+ characters) and has results
-        _saveSearchTimer?.cancel();
-        if (results.isNotEmpty && query.trim().length >= 3) {
-          _saveSearchTimer = Timer(const Duration(seconds: 15), () {
-            // Only save if user is still on the same search and not already in recent searches
-            if (_lastSearchQuery == query && mounted && !_recentSearches.contains(query.trim())) {
-              _saveSearchKeyword(query);
-            }
-          });
-        }
       }
     } catch (e) {
       if (mounted) {
@@ -550,58 +569,43 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     }
   }
   
-  Future<void> _saveSearchKeyword(String query) async {
+  /// Persist a user-intent search (submit / suggestion / recent tap with new
+  /// keyword) to the backend history. Deduplicated against in-memory list to
+  /// avoid POSTing values that are already known to be present.
+  Future<void> _commitSearchToHistory(String rawQuery) async {
+    final query = rawQuery.trim();
+    if (query.length < 3) return;
+    if (_recentSearches.any((s) => s.toLowerCase() == query.toLowerCase())) {
+      return; // already saved
+    }
     try {
-      print('Saving search keyword: "$query"');
       await EshopService.saveSearchHistory(query);
-      
-      // Reload search history to show the new keyword
-      await _loadSearchHistory();
-      
-      // Show subtle feedback that keyword was saved
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.bookmark_added, color: Colors.white, size: 18),
-                const SizedBox(width: 8),
-                Text('"$query" saved to recent searches'),
-              ],
-            ),
-            backgroundColor: const Color(0xFF10B981),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
-      }
-      
-      print('Search keyword saved and history reloaded. Recent searches: $_recentSearches');
+      if (!mounted) return;
+      // Optimistically prepend so it appears immediately; refresh from
+      // backend in the background to keep ordering consistent.
+      setState(() {
+        _recentSearches = [query, ..._recentSearches]
+            .take(10)
+            .toList();
+      });
+      _loadSearchHistory();
     } catch (e) {
-      print('Error saving search keyword: $e');
+      print('EshopScreen: Failed to commit search history: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        // If category filter is active, clear it first
+    return PopScope(
+      canPop: _selectedCategoryId == null,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        // Category filter active: first back press clears the filter
+        // (returns to All Products); a subsequent back press pops the
+        // screen and returns to the previous route (e.g. homepage).
         if (_selectedCategoryId != null) {
-          setState(() {
-            _selectedCategoryId = null;
-            _selectedCategoryName = null;
-            _selectedCategorySlug = null;
-          });
-          _loadInitialData();
-          return false; // Don't pop the route
+          _clearCategoryFilter();
         }
-        // Otherwise, allow normal back navigation
-        return true;
       },
       child: Scaffold(
         body: Container(
@@ -677,20 +681,14 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          // Back Button - Professional navigation
+          // Back Button - clears category filter first, then pops route
           IconButton(
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+            tooltip: 'Back',
             onPressed: () {
-              // If category filter is active, clear it first
               if (_selectedCategoryId != null) {
-                setState(() {
-                  _selectedCategoryId = null;
-                  _selectedCategoryName = null;
-                  _selectedCategorySlug = null;
-                });
-                _loadInitialData();
-              } else {
-                // Otherwise, navigate back normally
+                _clearCategoryFilter();
+              } else if (Navigator.canPop(context)) {
                 Navigator.pop(context);
               }
             },
@@ -704,9 +702,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     autofocus: true,
                     onChanged: _onSearchChanged,
                     onSubmitted: (value) {
-                      if (value.trim().isNotEmpty && value.trim().length >= 3) {
+                      final trimmed = value.trim();
+                      if (trimmed.length >= 3) {
                         _debounceTimer?.cancel();
-                        _performSearch(value);
+                        _performSearch(trimmed);
+                        _commitSearchToHistory(trimmed);
                       }
                     },
                     style: const TextStyle(fontSize: 15, color: Colors.white),
@@ -719,36 +719,33 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   )
                 : GestureDetector(
                     onTap: () {
-                      // Clear category filter when clicking logo
+                      // Tapping the logo returns to the unfiltered list.
                       if (_selectedCategoryId != null) {
-                        setState(() {
-                          _selectedCategoryId = null;
-                          _selectedCategoryName = null;
-                          _selectedCategorySlug = null;
-                        });
-                        _loadInitialData();
+                        _clearCategoryFilter();
                       }
                     },
                     child: _eshopLogoUrl != null && _eshopLogoUrl!.isNotEmpty
                         ? Image.network(
                             _eshopLogoUrl!,
-                            height: 34,
+                            height: 44,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) => const Text(
                               'eShop',
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: 22,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
+                                letterSpacing: 0.2,
                               ),
                             ),
                           )
                         : const Text(
                             'eShop',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 22,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
+                              letterSpacing: 0.2,
                             ),
                           ),
                   ),
@@ -866,17 +863,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 ];
               },
               onSelected: (value) {
-                final category = _allCategories.firstWhere(
-                  (cat) => cat['id'].toString() == value,
-                  orElse: () => {},
-                );
-                setState(() {
-                  _selectedCategoryId = value;
-                  _selectedCategoryName = category['name']?.toString();
-                  _selectedCategorySlug = category['slug']?.toString();
-                });
-                print('🏷️ Category selected from dropdown: ${_selectedCategoryName} (slug: $_selectedCategorySlug)');
-                              _loadInitialData();
+                if (value == null) {
+                  _clearCategoryFilter();
+                } else {
+                  _applyCategoryFilterInPlace(value);
+                }
               },
             ),
         ],
@@ -1140,7 +1131,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           ),
           
           // 2. Hot Deals Section - compact spacing
-          const HotDealsSection(),
+          // Pass in-place filter callback so tapping a deal updates the
+          // existing screen instead of pushing a new route on top.
+          HotDealsSection(onCategorySelected: _applyCategoryFilterInPlace),
           const SizedBox(height: 12),
           
           // 3. Product Cards Section
@@ -1191,14 +1184,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     if (_selectedCategoryId != null) ...[
                       const SizedBox(width: 8),
                       InkWell(
-                        onTap: () {
-                          setState(() {
-                            _selectedCategoryId = null;
-                            _selectedCategoryName = null;
-                            _selectedCategorySlug = null;
-                          });
-                          _loadInitialData();
-                        },
+                        onTap: _clearCategoryFilter,
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

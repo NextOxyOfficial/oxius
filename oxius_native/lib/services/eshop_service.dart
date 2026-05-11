@@ -579,10 +579,10 @@ class EshopService {
         
         print('EshopService: Successfully searched ${products.length} products for query: "$query"');
         
-        // Save search to history (fire and forget)
-        saveSearchHistory(query).catchError((e) {
-          print('EshopService: Failed to save search history: $e');
-        });
+        // NOTE: Search history is saved explicitly from the UI layer on user
+        // intent (submit / suggestion tap) — NOT here. Saving on every API
+        // call caused duplicates because each debounced keystroke fired a
+        // search and each one was persisted.
         
         return products;
       }

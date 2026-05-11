@@ -547,11 +547,11 @@ class AgoraCallService {
   static Future<void> preRegisterIOSPermissions() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
     final micStatus = await Permission.microphone.status;
-    if (micStatus.isNotDetermined) {
+    if (!micStatus.isGranted) {
       await Permission.microphone.request();
     }
     final camStatus = await Permission.camera.status;
-    if (camStatus.isNotDetermined) {
+    if (!camStatus.isGranted) {
       await Permission.camera.request();
     }
   }

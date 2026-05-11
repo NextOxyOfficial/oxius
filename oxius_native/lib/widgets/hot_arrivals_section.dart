@@ -243,29 +243,34 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // Navigate to eShop page with category filter
-          if (arrival['id'] != null) {
-            // Check if we're already on eShop screen
-            final currentRoute = ModalRoute.of(context)?.settings.name;
-            if (currentRoute == '/eshop') {
-              // Already on eShop, just pop to trigger filter update
-              Navigator.pop(context);
-              // Wait a frame then push with new category
-              Future.delayed(Duration.zero, () {
-                Navigator.pushReplacementNamed(
-                  context,
-                  '/eshop',
-                  arguments: {'categoryId': arrival['id'].toString()},
-                );
-              });
-            } else {
-              // Not on eShop, use pushReplacementNamed to avoid stacking
-              Navigator.pushReplacementNamed(
-                context,
-                '/eshop',
-                arguments: {'categoryId': arrival['id'].toString()},
-              );
-            }
+          if (arrival['id'] == null) return;
+          final categoryId = arrival['id'].toString();
+
+          // If host (e.g. eShop screen) provided a callback, filter in-place
+          // without re-navigating. This avoids stacking new routes and keeps
+          // the back stack clean.
+          if (widget.onCategorySelected != null) {
+            widget.onCategorySelected!(categoryId);
+            return;
+          }
+
+          // From homepage: push a new eShop screen ON TOP of home so the
+          // back button returns to the homepage. Do NOT use
+          // pushReplacementNamed here — it would remove the homepage from
+          // the back stack and the user would exit the app on back press.
+          final currentRoute = ModalRoute.of(context)?.settings.name;
+          if (currentRoute == '/eshop') {
+            Navigator.pushReplacementNamed(
+              context,
+              '/eshop',
+              arguments: {'categoryId': categoryId},
+            );
+          } else {
+            Navigator.pushNamed(
+              context,
+              '/eshop',
+              arguments: {'categoryId': categoryId},
+            );
           }
         },
         borderRadius: BorderRadius.circular(10),

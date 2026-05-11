@@ -188,31 +188,32 @@ class _HotDealsSectionState extends State<HotDealsSection> {
     
     return GestureDetector(
       onTap: () {
-        // Navigate to eShop page with category filter
-        if (deal['id'] != null) {
-          print('🔥 Hot deal tapped - ID: ${deal['id']}, Name: ${deal['name']}');
-          
-          // Check if we're already on eShop screen
-          final currentRoute = ModalRoute.of(context)?.settings.name;
-          print('📍 Current route: $currentRoute');
-          
-          if (currentRoute == '/eshop') {
-            // Already on eShop, push replacement to same route with new args
-            print('✅ Already on eShop, pushing replacement with new category');
-            Navigator.pushReplacementNamed(
-              context,
-              '/eshop',
-              arguments: {'categoryId': deal['id'].toString()},
-            );
-          } else {
-            // Not on eShop, navigate normally
-            print('✅ Not on eShop, navigating to eShop with category');
-            Navigator.pushNamed(
-              context,
-              '/eshop',
-              arguments: {'categoryId': deal['id'].toString()},
-            );
-          }
+        if (deal['id'] == null) return;
+        final categoryId = deal['id'].toString();
+        print('🔥 Hot deal tapped - ID: ${deal['id']}, Name: ${deal['name']}');
+
+        // If host supplied a callback (e.g. eShop screen), filter in place.
+        if (widget.onCategorySelected != null) {
+          widget.onCategorySelected!(categoryId);
+          return;
+        }
+
+        final currentRoute = ModalRoute.of(context)?.settings.name;
+        if (currentRoute == '/eshop') {
+          Navigator.pushReplacementNamed(
+            context,
+            '/eshop',
+            arguments: {'categoryId': categoryId},
+          );
+        } else {
+          // From homepage: keep home in the back stack so the user can
+          // navigate back. Previously this used pushReplacementNamed which
+          // removed the home route and made the back button exit the app.
+          Navigator.pushNamed(
+            context,
+            '/eshop',
+            arguments: {'categoryId': categoryId},
+          );
         }
       },
       child: IntrinsicWidth(

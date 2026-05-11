@@ -110,12 +110,13 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
     return AnimatedSlide(
       offset: _isVisible ? Offset.zero : const Offset(0, 1),
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(36, 0, 36, 4),
+        margin: EdgeInsets.fromLTRB(36, 0, 36, 4 + bottomInset),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -136,12 +137,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
               vertical: MediaQuery.of(context).size.height * 0.008,
               horizontal: 4,
             ),
-            child: SafeArea(
-              top: false,
-              child: _userStateService.isAuthenticated
-                  ? _buildLoggedInNavigation(context)
-                  : _buildGuestNavigation(context),
-            ),
+            child: _userStateService.isAuthenticated
+                ? _buildLoggedInNavigation(context)
+                : _buildGuestNavigation(context),
           ),
         ),
       ),

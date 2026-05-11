@@ -250,6 +250,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         isTyping: false,
       );
     }
+    // Make sure we don't leave any focus capturing pointer events on the
+    // returning chat-list screen.
+    FocusManager.instance.primaryFocus?.unfocus();
     ActiveChatTracker.clearActiveChat();
     AdsyConnectService.clearActiveChat();
     _realtimeSubscription?.cancel();
@@ -709,12 +712,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _startMessagePolling() {
-    // WebSocket is the primary realtime path; polling stays as a recovery fallback.
-    _messagePollingTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    // WebSocket is the primary realtime path; polling stays as a recovery
+    // fallback. Use a short interval so that if the socket drops, lag stays
+    // sub-5s rather than the previous 10s.
+    _messagePollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (mounted && !_isLoadingMessages) {
         _checkForNewMessages();
         _statusPollCounter++;
-        if (_statusPollCounter >= 3) {
+        if (_statusPollCounter >= 8) {
           _statusPollCounter = 0;
           _loadChatroomStatus();
         }
@@ -1037,11 +1042,30 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final messageText = _messageController.text.trim();
     final replyTo = _replyingToMessage;
     _messageController.clear();
-    
+
+    // Optimistic UI: show the message immediately with a pending marker so
+    // the user gets instant feedback. The server response will replace this
+    // temp entry by id.
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    final now = DateTime.now();
+    final optimistic = <String, dynamic>{
+      'id': tempId,
+      'isMe': true,
+      'type': 'text',
+      'message': messageText,
+      'timestamp': now,
+      'timeDisplay': _formatMessageTime(now),
+      'showTimestamp': true,
+      'isSeen': false,
+      'pending': true,
+    };
+
     setState(() {
+      _upsertMessage(optimistic);
       _isSendingMessage = true;
       _replyingToMessage = null;
     });
+    _scrollToBottom();
 
     try {
       print('🔵 Sending message: $messageText');
@@ -1065,6 +1089,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       
       if (mounted) {
         setState(() {
+          // Remove the optimistic temp entry and add the real server entry.
+          _messages.removeWhere((m) => (m['id']?.toString() ?? '') == tempId);
           _upsertMessage(_parseSingleMessage(sentMessage));
           _isSendingMessage = false;
         });
@@ -1073,7 +1099,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     } catch (e) {
       print('🔴 Error sending message: $e');
       if (mounted) {
-        setState(() => _isSendingMessage = false);
+        setState(() {
+          // Roll back the optimistic message on failure.
+          _messages.removeWhere((m) => (m['id']?.toString() ?? '') == tempId);
+          _isSendingMessage = false;
+        });
 
         final errorStr = e.toString().toLowerCase();
         if (errorStr.contains('403') || errorStr.contains('permission denied') || errorStr.contains('blocked')) {
@@ -1145,8 +1175,51 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   Future<void> _startRecording() async {
     try {
-      // Request microphone permission
-      final status = await Permission.microphone.request();
+      // Check current permission state first so we can tell the difference
+      // between "never asked", "denied this time", and "permanently denied".
+      var status = await Permission.microphone.status;
+
+      if (status.isDenied || status.isRestricted || status.isLimited) {
+        // Trigger native permission dialog. On Android first run this shows
+        // the system prompt; on iOS it shows on first call only.
+        status = await Permission.microphone.request();
+      }
+
+      if (status.isPermanentlyDenied) {
+        if (!mounted) return;
+        final goSettings = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.mic_off_rounded, color: Color(0xFFEF4444)),
+                SizedBox(width: 10),
+                Text('Microphone blocked'),
+              ],
+            ),
+            content: const Text(
+              'Microphone access was previously denied. Please enable it in '
+              'app settings to record voice messages.',
+              style: TextStyle(fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Not now'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Open settings'),
+              ),
+            ],
+          ),
+        );
+        if (goSettings == true) {
+          await openAppSettings();
+        }
+        return;
+      }
+
       if (!status.isGranted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1292,12 +1365,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   void _showMessageOptions(Map<String, dynamic> message) {
     final messageType = message['type']?.toString() ?? 'text';
-    final canEdit = messageType == 'text' && !_isMessageDeleted(message);
-    
+    final isMe = message['isMe'] == true;
+    final isDeleted = _isMessageDeleted(message);
+    final isTextLike = messageType == 'text';
+    final canEdit = isMe && isTextLike && !isDeleted;
+    final canCopy = isTextLike && !isDeleted &&
+        (message['message'] ?? '').toString().trim().isNotEmpty;
+    final canReply = !isDeleted;
+    final canDelete = isMe && !isDeleted;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -1306,7 +1386,6 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Handle bar
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
                 width: 40,
@@ -1316,68 +1395,89 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Edit option (only for text messages)
-              if (canEdit)
-                ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.edit_rounded,
-                      color: Color(0xFF3B82F6),
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text(
-                    'Edit Message',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                    ),
-                  ),
+              if (canReply)
+                _buildMessageOptionTile(
+                  sheetContext: sheetContext,
+                  icon: Icons.reply_rounded,
+                  iconColor: const Color(0xFF10B981),
+                  label: 'Reply',
+                  onTap: () => _setReplyingTo(message),
+                ),
+              if (canCopy)
+                _buildMessageOptionTile(
+                  sheetContext: sheetContext,
+                  icon: Icons.copy_rounded,
+                  iconColor: const Color(0xFF6366F1),
+                  label: 'Copy text',
                   onTap: () {
-                    Navigator.pop(context);
-                    _showEditMessageDialog(message);
+                    final text = (message['message'] ?? '').toString();
+                    Clipboard.setData(ClipboardData(text: text));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Message copied'),
+                          duration: Duration(seconds: 1),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
                   },
                 ),
-              // Delete option
-              ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.delete_outline_rounded,
-                    color: Color(0xFFEF4444),
-                    size: 20,
-                  ),
+              if (canEdit)
+                _buildMessageOptionTile(
+                  sheetContext: sheetContext,
+                  icon: Icons.edit_rounded,
+                  iconColor: const Color(0xFF3B82F6),
+                  label: 'Edit Message',
+                  onTap: () => _showEditMessageDialog(message),
                 ),
-                title: const Text(
-                  'Delete Message',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFEF4444),
-                  ),
+              if (canDelete)
+                _buildMessageOptionTile(
+                  sheetContext: sheetContext,
+                  icon: Icons.delete_outline_rounded,
+                  iconColor: const Color(0xFFEF4444),
+                  label: 'Delete Message',
+                  destructive: true,
+                  onTap: () => _deleteMessage(message),
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deleteMessage(message);
-                },
-              ),
               const SizedBox(height: 8),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMessageOptionTile({
+    required BuildContext sheetContext,
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required VoidCallback onTap,
+    bool destructive = false,
+  }) {
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: iconColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: iconColor, size: 20),
+      ),
+      title: Text(
+        label,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: destructive ? const Color(0xFFEF4444) : const Color(0xFF1F2937),
+        ),
+      ),
+      onTap: () {
+        Navigator.pop(sheetContext);
+        onTap();
+      },
     );
   }
 
@@ -2703,6 +2803,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               _closeSearch();
               return;
             }
+            // Release keyboard / TextField focus before popping. Without this
+            // the first tap on the returning chat-list dismisses focus and
+            // the InkWell taps appear to be "swallowed" until a second tap.
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
           },
           padding: EdgeInsets.zero,
@@ -3458,9 +3562,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onLongPress: isMe && !_isMessageDeleted(message) 
-                      ? () => _showMessageOptions(message) 
-                      : null,
+                  onLongPress: _isMessageDeleted(message)
+                      ? null
+                      : () => _showMessageOptions(message),
                   child: Container(
                     padding: message['type'] == 'image' || message['type'] == 'video'
                         ? EdgeInsets.zero
@@ -3511,7 +3615,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                               Text(
                                 'Message removed',
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 16,
                                   fontStyle: FontStyle.italic,
                                   color: isMe ? Colors.white70 : Colors.grey.shade500,
                                 ),
@@ -3541,9 +3645,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                                     LinkifyText(
                                                       (message['message'] ?? '').toString(),
                                                       style: TextStyle(
-                                                        fontSize: 15,
+                                                        fontSize: 16,
                                                         color: isMe ? Colors.white : const Color(0xFF1F2937),
-                                                        height: 1.3,
+                                                        height: 1.35,
                                                       ),
                                                       linkStyle: TextStyle(
                                                         color: isMe ? Colors.white : const Color(0xFF2563EB),
@@ -3565,8 +3669,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                         Text(
                           message['timeDisplay'],
                           style: TextStyle(
-                            fontSize: 9,
-                            color: Colors.grey.shade400,
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
                           ),
                         ),
                       // Show seen/unseen status for sent messages
@@ -3576,7 +3680,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                           message['isSeen'] == true 
                               ? Icons.done_all_rounded  // Double tick when seen
                               : Icons.done_rounded,      // Single tick when sent
-                          size: 12,
+                          size: 14,
                           color: message['isSeen'] == true 
                               ? const Color(0xFF3B82F6)  // Blue when seen
                               : Colors.grey.shade400,     // Grey when just sent
@@ -3607,56 +3711,59 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     
     return GestureDetector(
       onTap: () => _playVoiceMessage(messageId, mediaUrl),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: isMe 
-                  ? Colors.white.withOpacity(0.2) 
-                  : const Color(0xFF3B82F6).withOpacity(0.1),
-              shape: BoxShape.circle,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isMe 
+                    ? Colors.white.withOpacity(0.2) 
+                    : const Color(0xFF3B82F6).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                size: 28,
+                color: isMe ? Colors.white : const Color(0xFF3B82F6),
+              ),
             ),
-            child: Icon(
-              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              size: 20,
-              color: isMe ? Colors.white : const Color(0xFF3B82F6),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Waveform visualization
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: List.generate(
-                  15,
-                  (index) => Container(
-                    width: 2,
-                    height: (index % 3 + 1) * 4.0,
-                    margin: const EdgeInsets.symmetric(horizontal: 1),
-                    decoration: BoxDecoration(
-                      color: isMe ? Colors.white.withOpacity(0.7) : const Color(0xFF3B82F6).withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(1),
+            const SizedBox(width: 12),
+            // Waveform visualization
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: List.generate(
+                    22,
+                    (index) => Container(
+                      width: 3,
+                      height: (index % 4 + 2) * 4.0,
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                      decoration: BoxDecoration(
+                        color: isMe ? Colors.white.withOpacity(0.85) : const Color(0xFF3B82F6).withOpacity(0.65),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                isPlaying && _voiceDuration.inSeconds > 0
-                    ? '${_voicePosition.inMinutes}:${(_voicePosition.inSeconds % 60).toString().padLeft(2, '0')} / ${_voiceDuration.inMinutes}:${(_voiceDuration.inSeconds % 60).toString().padLeft(2, '0')}'
-                    : _formatDuration(duration),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: isMe ? Colors.white.withOpacity(0.9) : const Color(0xFF6B7280),
+                const SizedBox(height: 6),
+                Text(
+                  isPlaying && _voiceDuration.inSeconds > 0
+                      ? '${_voicePosition.inMinutes}:${(_voicePosition.inSeconds % 60).toString().padLeft(2, '0')} / ${_voiceDuration.inMinutes}:${(_voiceDuration.inSeconds % 60).toString().padLeft(2, '0')}'
+                      : _formatDuration(duration),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isMe ? Colors.white.withOpacity(0.9) : const Color(0xFF6B7280),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -4472,13 +4579,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   maxLines: 5,
                   textCapitalization: TextCapitalization.sentences,
                   style: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: Color(0xFF1F2937),
                   ),
                   decoration: InputDecoration(
                     hintText: 'Type a message...',
                     hintStyle: TextStyle(
-                      fontSize: 13,
+                      fontSize: 15,
                       color: Colors.grey.shade400,
                     ),
                     border: InputBorder.none,

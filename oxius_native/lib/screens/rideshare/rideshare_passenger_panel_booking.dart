@@ -118,6 +118,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               _activeInput = 'drop';
               _hideDropSuggestionsUntilEdit = false;
             }),
+            isSearching: _isSearchingDrop,
           ),
 
           // Suggestions
@@ -242,6 +243,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             onChanged: _onPickupSearch,
             onTap: () => setState(() => _activeInput = 'pickup'),
             trailing: _buildCurrentLocationButton(),
+            isSearching: _isSearchingPickup,
           ),
 
           // Suggestions
@@ -445,6 +447,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
     required Function(String) onChanged,
     required VoidCallback onTap,
     Widget? trailing,
+    bool isSearching = false,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -473,7 +476,20 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               ),
             ),
           ),
-          if (trailing != null) trailing,
+          if (isSearching)
+            const Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.5,
+                  color: Color(0xFF6366F1),
+                ),
+              ),
+            )
+          else if (trailing != null)
+            trailing,
         ],
       ),
     );

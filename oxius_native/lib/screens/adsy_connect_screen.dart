@@ -342,6 +342,13 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   Future<void> _refreshChats() async {
+    // Prefer a silent background refresh so we don't flash the skeleton or
+    // briefly empty the list right after returning from a chat — that empty
+    // frame can swallow the first tap on the list.
+    if (_chatConversations.isNotEmpty) {
+      await _refreshChatsInBackground();
+      return;
+    }
     await _loadChats();
   }
 
@@ -452,7 +459,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 20),
                     hintText: 'Search chats',
-                    hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   ),
@@ -659,7 +666,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                               child: Text(
                                 chat['userName'],
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 16,
                                   fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w600,
                                   color: const Color(0xFF1F2937),
                                   letterSpacing: -0.2,
@@ -692,8 +699,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       Text(
                         _formatTimestamp(chat['timestamp']),
                         style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade400,
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
                         ),
                       ),
                     ],
@@ -716,9 +723,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                   Text(
                     chat['lastMessage'],
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w400,
-                      color: hasUnread ? const Color(0xFF1F2937) : const Color(0xFF9CA3AF),
+                      color: hasUnread ? const Color(0xFF1F2937) : const Color(0xFF6B7280),
                       letterSpacing: -0.1,
                     ),
                     maxLines: 1,

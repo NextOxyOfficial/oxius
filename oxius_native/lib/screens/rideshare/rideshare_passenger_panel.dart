@@ -59,6 +59,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   
   // Loading states
   bool _isLoadingLocation = false;
+  bool _isSearchingPickup = false;
+  bool _isSearchingDrop = false;
   bool _isEstimating = false;
   bool _isCreatingRide = false;
   bool _isCancellingRide = false;
@@ -827,9 +829,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   void _onPickupSearch(String query) {
     _searchDebounce?.cancel();
     if (query.trim().length < 2) {
-      setState(() => _pickupSuggestions = []);
+      setState(() {
+        _pickupSuggestions = [];
+        _isSearchingPickup = false;
+      });
       return;
     }
+    setState(() => _isSearchingPickup = true);
     _searchDebounce = Timer(const Duration(milliseconds: 250), () async {
       final result = await RideshareService.searchLocations(
         query,
@@ -837,8 +843,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         latitude: _mapSearchLatitude ?? _pickupPoint?.latitude,
         longitude: _mapSearchLongitude ?? _pickupPoint?.longitude,
       );
-      if (mounted && result.success) {
-        setState(() => _pickupSuggestions = result.data ?? []);
+      if (mounted) {
+        setState(() {
+          _isSearchingPickup = false;
+          if (result.success) _pickupSuggestions = result.data ?? [];
+        });
       }
     });
   }
@@ -847,9 +856,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _searchDebounce?.cancel();
     _hideDropSuggestionsUntilEdit = false;
     if (query.trim().length < 2) {
-      setState(() => _dropSuggestions = []);
+      setState(() {
+        _dropSuggestions = [];
+        _isSearchingDrop = false;
+      });
       return;
     }
+    setState(() => _isSearchingDrop = true);
     _searchDebounce = Timer(const Duration(milliseconds: 250), () async {
       final result = await RideshareService.searchLocations(
         query,
@@ -857,8 +870,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         latitude: _mapSearchLatitude ?? _pickupPoint?.latitude ?? _dropPoint?.latitude,
         longitude: _mapSearchLongitude ?? _pickupPoint?.longitude ?? _dropPoint?.longitude,
       );
-      if (mounted && result.success) {
-        setState(() => _dropSuggestions = result.data ?? []);
+      if (mounted) {
+        setState(() {
+          _isSearchingDrop = false;
+          if (result.success) _dropSuggestions = result.data ?? [];
+        });
       }
     });
   }

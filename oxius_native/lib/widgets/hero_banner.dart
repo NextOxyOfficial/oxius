@@ -395,6 +395,10 @@ class _HeroBannerState extends State<HeroBanner> {
 
     final imagesToShow = bannerImages;
 
+    if (imagesToShow.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       height: height,
       decoration: BoxDecoration(
