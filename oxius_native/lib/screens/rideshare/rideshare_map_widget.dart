@@ -65,7 +65,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   bool _initialFitDone = false;
   double _lastKnownZoom = 13;
   DateTime? _lastManualMapGestureAt;
-  
+
   // Default center (Dhaka, Bangladesh)
   static const LatLng _defaultCenter = LatLng(23.8103, 90.4125);
   static const Duration _manualMapControlHold = Duration(seconds: 8);
@@ -91,10 +91,11 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   void didUpdateWidget(RideshareMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final driverChanged =
-        widget.driverLocation?.latitude != oldWidget.driverLocation?.latitude ||
+    final driverChanged = widget.driverLocation?.latitude !=
+            oldWidget.driverLocation?.latitude ||
         widget.driverLocation?.longitude != oldWidget.driverLocation?.longitude;
-    final routeChanged = widget.routeGeometry?.toString() != oldWidget.routeGeometry?.toString();
+    final routeChanged =
+        widget.routeGeometry?.toString() != oldWidget.routeGeometry?.toString();
 
     // Auto-fit bounds when points change
     if (widget.pickupPoint != oldWidget.pickupPoint ||
@@ -112,7 +113,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
           return;
         }
         _mapController.move(
-          LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude),
+          LatLng(widget.driverLocation!.latitude,
+              widget.driverLocation!.longitude),
           _lastKnownZoom.clamp(6.0, 19.0).toDouble(),
         );
       });
@@ -131,49 +133,53 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   void _fitBounds() {
     final points = <LatLng>[];
     points.addAll(_parseRouteCoordinates());
-    
+
     if (widget.pickupPoint != null) {
-      points.add(LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude));
+      points.add(
+          LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude));
     }
     if (widget.dropPoint != null) {
-      points.add(LatLng(widget.dropPoint!.latitude, widget.dropPoint!.longitude));
+      points
+          .add(LatLng(widget.dropPoint!.latitude, widget.dropPoint!.longitude));
     }
     if (widget.driverLocation != null) {
-      points.add(LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude));
+      points.add(LatLng(
+          widget.driverLocation!.latitude, widget.driverLocation!.longitude));
     }
     if (widget.passengerLocation != null) {
-      points.add(LatLng(widget.passengerLocation!.latitude, widget.passengerLocation!.longitude));
+      points.add(LatLng(widget.passengerLocation!.latitude,
+          widget.passengerLocation!.longitude));
     }
-    
+
     if (points.isEmpty) return;
-    
+
     if (points.length == 1) {
       _mapController.move(points.first, 15);
       return;
     }
-    
+
     // Calculate bounds
     double minLat = points.first.latitude;
     double maxLat = points.first.latitude;
     double minLng = points.first.longitude;
     double maxLng = points.first.longitude;
-    
+
     for (final point in points) {
       if (point.latitude < minLat) minLat = point.latitude;
       if (point.latitude > maxLat) maxLat = point.latitude;
       if (point.longitude < minLng) minLng = point.longitude;
       if (point.longitude > maxLng) maxLng = point.longitude;
     }
-    
+
     // Add padding
     final latPadding = math.max((maxLat - minLat) * 0.2, 0.0025);
     final lngPadding = math.max((maxLng - minLng) * 0.2, 0.0025);
-    
+
     final bounds = LatLngBounds(
       LatLng(minLat - latPadding, minLng - lngPadding),
       LatLng(maxLat + latPadding, maxLng + lngPadding),
     );
-    
+
     _mapController.fitCamera(
       CameraFit.bounds(
         bounds: bounds,
@@ -184,7 +190,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
 
   LatLng _getInitialCenter() {
     if (widget.pickupPoint != null) {
-      return LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude);
+      return LatLng(
+          widget.pickupPoint!.latitude, widget.pickupPoint!.longitude);
     }
     if (widget.dropPoint != null) {
       return LatLng(widget.dropPoint!.latitude, widget.dropPoint!.longitude);
@@ -202,110 +209,122 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   Widget build(BuildContext context) {
     final routeCoordinates = _parseRouteCoordinates();
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFEFF6FF), Color(0xFFF8FAFC)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Stack(
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: _getInitialCenter(),
-              initialZoom: 13,
-              cameraConstraint: CameraConstraint.contain(bounds: _bangladeshBounds),
-              minZoom: 6,
-              maxZoom: 19,
-              onPositionChanged: (camera, hasGesture) {
-                _lastKnownZoom = camera.zoom ?? _lastKnownZoom;
-                if (hasGesture) {
-                  _lastManualMapGestureAt = DateTime.now();
-                }
-                final center = camera.center;
-                if (center == null) {
-                  return;
-                }
-                widget.onCenterChanged?.call(center.latitude, center.longitude);
-              },
-              onTap: widget.onMapTap != null
-                  ? (tapPosition, point) {
-                      widget.onMapTap!(point.latitude, point.longitude);
-                    }
-                  : null,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
-                userAgentPackageName: 'com.adsyclub.oxius',
-                retinaMode: RetinaMode.isHighDensity(context),
-                maxZoom: 20,
-              ),
-              if (routeCoordinates.isNotEmpty) _buildRouteLayer(routeCoordinates),
-              MarkerLayer(
-                markers: _buildMarkers(),
-              ),
-            ],
+    // RepaintBoundary isolates the entire map layer (tiles, markers, polylines)
+    // from the rest of the parent widget tree. Without it, every passenger
+    // location ping / marker rebuild repaints the whole ride panel including
+    // unrelated cards, sheets, and the status banner.
+    return RepaintBoundary(
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFEFF6FF), Color(0xFFF8FAFC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.18),
-                      Colors.transparent,
-                      const Color(0xFF0F172A).withValues(alpha: 0.18),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    stops: const [0, 0.45, 1],
+        ),
+        child: Stack(
+          children: [
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: _getInitialCenter(),
+                initialZoom: 13,
+                cameraConstraint:
+                    CameraConstraint.contain(bounds: _bangladeshBounds),
+                minZoom: 6,
+                maxZoom: 19,
+                onPositionChanged: (camera, hasGesture) {
+                  _lastKnownZoom = camera.zoom ?? _lastKnownZoom;
+                  if (hasGesture) {
+                    _lastManualMapGestureAt = DateTime.now();
+                  }
+                  final center = camera.center;
+                  if (center == null) {
+                    return;
+                  }
+                  widget.onCenterChanged
+                      ?.call(center.latitude, center.longitude);
+                },
+                onTap: widget.onMapTap != null
+                    ? (tapPosition, point) {
+                        widget.onMapTap!(point.latitude, point.longitude);
+                      }
+                    : null,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                  subdomains: const ['a', 'b', 'c', 'd'],
+                  userAgentPackageName: 'com.adsyclub.oxius',
+                  retinaMode: RetinaMode.isHighDensity(context),
+                  maxZoom: 20,
+                ),
+                if (routeCoordinates.isNotEmpty)
+                  _buildRouteLayer(routeCoordinates),
+                MarkerLayer(
+                  markers: _buildMarkers(),
+                ),
+              ],
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.18),
+                        Colors.transparent,
+                        const Color(0xFF0F172A).withValues(alpha: 0.18),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: const [0, 0.45, 1],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Positioned(
-            top: 12,
-            left: 12,
-            right: 76,
-            child: _buildStatusPanel(routeCoordinates),
-          ),
-          Positioned(
-            top: 12,
-            right: 12,
-            child: Column(
-              children: [
-                _buildMapActionButton(
-                  icon: Icons.fit_screen_rounded,
-                  tooltip: 'Fit route',
-                  onPressed: _fitBounds,
-                ),
-                const SizedBox(height: 8),
-                _buildMapActionButton(
-                  icon: widget.followDriver && widget.driverLocation != null
-                      ? Icons.my_location_rounded
-                      : Icons.center_focus_strong_rounded,
-                  tooltip: widget.followDriver && widget.driverLocation != null
-                      ? 'Follow driver'
-                      : 'Focus map',
-                  onPressed: _focusPrimaryLocation,
-                  isHighlighted: widget.followDriver && widget.driverLocation != null,
-                ),
-              ],
+            Positioned(
+              top: 12,
+              left: 12,
+              right: 76,
+              child: _buildStatusPanel(routeCoordinates),
             ),
-          ),
-          Positioned(
-            left: 12,
-            right: 12,
-            bottom: 12,
-            child: _buildLegendPanel(routeCoordinates),
-          ),
-        ],
+            Positioned(
+              top: 12,
+              right: 12,
+              child: Column(
+                children: [
+                  _buildMapActionButton(
+                    icon: Icons.fit_screen_rounded,
+                    tooltip: 'Fit route',
+                    onPressed: _fitBounds,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildMapActionButton(
+                    icon: widget.followDriver && widget.driverLocation != null
+                        ? Icons.my_location_rounded
+                        : Icons.center_focus_strong_rounded,
+                    tooltip:
+                        widget.followDriver && widget.driverLocation != null
+                            ? 'Follow driver'
+                            : 'Focus map',
+                    onPressed: _focusPrimaryLocation,
+                    isHighlighted:
+                        widget.followDriver && widget.driverLocation != null,
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: _buildLegendPanel(routeCoordinates),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -335,14 +354,16 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
   void _focusPrimaryLocation() {
     if (widget.followDriver && widget.driverLocation != null) {
       _mapController.move(
-        LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude),
+        LatLng(
+            widget.driverLocation!.latitude, widget.driverLocation!.longitude),
         15.5,
       );
       return;
     }
     if (widget.passengerLocation != null) {
       _mapController.move(
-        LatLng(widget.passengerLocation!.latitude, widget.passengerLocation!.longitude),
+        LatLng(widget.passengerLocation!.latitude,
+            widget.passengerLocation!.longitude),
         15,
       );
       return;
@@ -381,7 +402,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             : hasRoute
                 ? 'Pickup, drop-off and trip path are framed together.'
                 : nearbyCount > 0
-                  ? '$nearbyCount online drivers available around your selected area.'
+                    ? '$nearbyCount online drivers available around your selected area.'
                     : 'Zoom and inspect the current service area.';
 
     return _buildGlassPanel(
@@ -513,7 +534,9 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       items.add(
         _buildLegendChip(
           icon: Icons.directions_car_rounded,
-          label: widget.driverName?.trim().isNotEmpty == true ? widget.driverName!.trim() : 'Driver live',
+          label: widget.driverName?.trim().isNotEmpty == true
+              ? widget.driverName!.trim()
+              : 'Driver live',
           tint: const Color(0xFF0EA5E9),
         ),
       );
@@ -522,12 +545,16 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
       items.add(
         _buildLegendChip(
           icon: Icons.person_pin_circle_rounded,
-          label: widget.passengerName?.trim().isNotEmpty == true ? widget.passengerName!.trim() : 'Passenger live',
+          label: widget.passengerName?.trim().isNotEmpty == true
+              ? widget.passengerName!.trim()
+              : 'Passenger live',
           tint: const Color(0xFFF59E0B),
         ),
       );
     }
-    if (routeCoordinates.isEmpty && widget.nearbyDrivers != null && widget.nearbyDrivers!.isNotEmpty) {
+    if (routeCoordinates.isEmpty &&
+        widget.nearbyDrivers != null &&
+        widget.nearbyDrivers!.isNotEmpty) {
       items.add(
         _buildLegendChip(
           icon: Icons.groups_rounded,
@@ -577,7 +604,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Colors.white.withValues(alpha: isHighlighted ? 0.18 : 0.7),
+                color:
+                    Colors.white.withValues(alpha: isHighlighted ? 0.18 : 0.7),
               ),
               boxShadow: [
                 BoxShadow(
@@ -594,7 +622,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     );
   }
 
-  Widget _buildGlassPanel({required EdgeInsetsGeometry padding, required Widget child}) {
+  Widget _buildGlassPanel(
+      {required EdgeInsetsGeometry padding, required Widget child}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -698,22 +727,25 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
 
   List<LatLng> _parseRouteCoordinates() {
     if (widget.routeGeometry == null) return [];
-    
+
     try {
       // Handle GeoJSON format
       if (widget.routeGeometry!.containsKey('coordinates')) {
         final coords = widget.routeGeometry!['coordinates'] as List;
-        return coords.map((c) {
-          if (c is List && c.length >= 2) {
-            return LatLng(
-              (c[1] as num).toDouble(),
-              (c[0] as num).toDouble(),
-            );
-          }
-          return null;
-        }).whereType<LatLng>().toList();
+        return coords
+            .map((c) {
+              if (c is List && c.length >= 2) {
+                return LatLng(
+                  (c[1] as num).toDouble(),
+                  (c[0] as num).toDouble(),
+                );
+              }
+              return null;
+            })
+            .whereType<LatLng>()
+            .toList();
       }
-      
+
       // Handle OSRM format
       if (widget.routeGeometry!.containsKey('routes')) {
         final routes = widget.routeGeometry!['routes'] as List;
@@ -723,15 +755,18 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
             final geometry = route['geometry'];
             if (geometry is Map && geometry.containsKey('coordinates')) {
               final coords = geometry['coordinates'] as List;
-              return coords.map((c) {
-                if (c is List && c.length >= 2) {
-                  return LatLng(
-                    (c[1] as num).toDouble(),
-                    (c[0] as num).toDouble(),
-                  );
-                }
-                return null;
-              }).whereType<LatLng>().toList();
+              return coords
+                  .map((c) {
+                    if (c is List && c.length >= 2) {
+                      return LatLng(
+                        (c[1] as num).toDouble(),
+                        (c[0] as num).toDouble(),
+                      );
+                    }
+                    return null;
+                  })
+                  .whereType<LatLng>()
+                  .toList();
             }
           }
         }
@@ -739,19 +774,21 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
     } catch (e) {
       debugPrint('Error parsing route coordinates: $e');
     }
-    
+
     return [];
   }
 
   List<Marker> _buildMarkers() {
     final markers = <Marker>[];
-    
+
     // Pickup marker (with rider profile if available)
     if (widget.pickupPoint != null) {
-      final hasRiderInfo = widget.riderName != null && widget.riderName!.isNotEmpty;
+      final hasRiderInfo =
+          widget.riderName != null && widget.riderName!.isNotEmpty;
       markers.add(
         Marker(
-          point: LatLng(widget.pickupPoint!.latitude, widget.pickupPoint!.longitude),
+          point: LatLng(
+              widget.pickupPoint!.latitude, widget.pickupPoint!.longitude),
           width: hasRiderInfo ? 160 : 116,
           height: hasRiderInfo ? 72 : 80,
           child: hasRiderInfo
@@ -766,25 +803,28 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
         ),
       );
     }
-    
+
     // Drop marker
     if (widget.dropPoint != null) {
       markers.add(
         Marker(
-          point: LatLng(widget.dropPoint!.latitude, widget.dropPoint!.longitude),
+          point:
+              LatLng(widget.dropPoint!.latitude, widget.dropPoint!.longitude),
           width: 90,
           height: 76,
           child: _buildDropMarker(),
         ),
       );
     }
-    
+
     // Driver marker (with driver profile if available)
     if (widget.driverLocation != null) {
-      final hasDriverInfo = widget.driverName != null && widget.driverName!.isNotEmpty;
+      final hasDriverInfo =
+          widget.driverName != null && widget.driverName!.isNotEmpty;
       markers.add(
         Marker(
-          point: LatLng(widget.driverLocation!.latitude, widget.driverLocation!.longitude),
+          point: LatLng(widget.driverLocation!.latitude,
+              widget.driverLocation!.longitude),
           width: hasDriverInfo ? 180 : 50,
           height: hasDriverInfo ? 82 : 50,
           child: hasDriverInfo
@@ -799,13 +839,15 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
         ),
       );
     }
-    
+
     // Live passenger location (shown on driver map)
     if (widget.passengerLocation != null) {
-      final hasPassengerInfo = widget.passengerName != null && widget.passengerName!.isNotEmpty;
+      final hasPassengerInfo =
+          widget.passengerName != null && widget.passengerName!.isNotEmpty;
       markers.add(
         Marker(
-          point: LatLng(widget.passengerLocation!.latitude, widget.passengerLocation!.longitude),
+          point: LatLng(widget.passengerLocation!.latitude,
+              widget.passengerLocation!.longitude),
           width: hasPassengerInfo ? 160 : 40,
           height: hasPassengerInfo ? 72 : 50,
           child: hasPassengerInfo
@@ -835,7 +877,7 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
         );
       }
     }
-    
+
     return markers;
   }
 
@@ -861,7 +903,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
                 offset: const Offset(0, 2),
               ),
             ],
-            border: Border.all(color: gradientColors.first.withValues(alpha: 0.4), width: 1.5),
+            border: Border.all(
+                color: gradientColors.first.withValues(alpha: 0.4), width: 1.5),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -881,7 +924,8 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
                           width: 28,
                           height: 28,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(icon, size: 14, color: Colors.white),
+                          errorBuilder: (_, __, ___) =>
+                              Icon(icon, size: 14, color: Colors.white),
                         ),
                       )
                     : Icon(icon, size: 14, color: Colors.white),
@@ -924,7 +968,10 @@ class _RideshareMapWidgetState extends State<RideshareMapWidget> {
           height: 8,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [gradientColors.first, gradientColors.first.withValues(alpha: 0)],
+              colors: [
+                gradientColors.first,
+                gradientColors.first.withValues(alpha: 0)
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),

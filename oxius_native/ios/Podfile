@@ -49,11 +49,16 @@ post_install do |installer|
     # scanner detects the linked framework and rejects the build.
     if target.name == 'permission_handler_apple'
       target.build_configurations.each do |config|
-        # Preprocessor macro: disables ATT code paths
+        # Preprocessor macro: disables ATT code paths, enables required permissions
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
         defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
         defs = [defs] if defs.is_a?(String)
         defs << 'PERMISSION_APP_TRACKING_TRANSPARENCY=0' unless defs.include?('PERMISSION_APP_TRACKING_TRANSPARENCY=0')
+        defs << 'PERMISSION_MICROPHONE=1' unless defs.include?('PERMISSION_MICROPHONE=1')
+        defs << 'PERMISSION_CAMERA=1' unless defs.include?('PERMISSION_CAMERA=1')
+        defs << 'PERMISSION_PHOTOS=1' unless defs.include?('PERMISSION_PHOTOS=1')
+        defs << 'PERMISSION_NOTIFICATIONS=1' unless defs.include?('PERMISSION_NOTIFICATIONS=1')
+        defs << 'PERMISSION_LOCATION=1' unless defs.include?('PERMISSION_LOCATION=1')
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = defs
 
         # Linker flags: remove weak_framework AppTrackingTransparency so the

@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
@@ -42,9 +42,10 @@ class RideshareDriverPanel extends StatefulWidget {
 }
 
 class _RideshareDriverPanelState extends State<RideshareDriverPanel>
-  with WidgetsBindingObserver {
+    with WidgetsBindingObserver {
   final TranslationService _ts = TranslationService();
-  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+  String t(String key, {required String fallback}) =>
+      _ts.t(key, fallback: fallback);
 
   DriverProfile? _driverProfile;
   Ride? _activeRide;
@@ -94,6 +95,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   // Live passenger location received via WebSocket
   RidePoint? _passengerLocation;
+  // Throttle live passenger location updates: WebSocket can ping multiple
+  // times per second, but the map only needs ~3 updates/sec to feel smooth.
+  // Without throttling, every ping triggers a full Stack/Map rebuild.
+  int _lastPassengerLocationSetStateAt = 0;
+  Timer? _pendingPassengerLocationTimer;
+  double? _latestPassengerLat;
+  double? _latestPassengerLng;
+  static const int _passengerLocationMinIntervalMs = 300;
+  static const double _passengerLocationMinMoveMeters = 5.0;
   RidePoint? _driverCurrentPoint;
   RoutePreview? _smartRoutePreview;
   String _smartRouteSignature = '';
@@ -206,7 +216,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: accentColor.withValues(alpha: 0.14)),
+                  border:
+                      Border.all(color: accentColor.withValues(alpha: 0.14)),
                 ),
                 child: Text(
                   badge,
@@ -224,7 +235,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             height: _mapViewportHeight(context),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.76), width: 1.2),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.76), width: 1.2),
               boxShadow: [
                 BoxShadow(
                   color: _slate800.withValues(alpha: 0.08),
@@ -272,8 +284,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
         ),
         content: Text(
-          t('rideshare_need_vehicle_msg', fallback: 'You need an active vehicle. Add bike/car/CNG from the Vehicles section.'),
-          style: GoogleFonts.inter(fontSize: 13, color: _slate500, height: 1.45),
+          t('rideshare_need_vehicle_msg',
+              fallback:
+                  'You need an active vehicle. Add bike/car/CNG from the Vehicles section.'),
+          style:
+              GoogleFonts.inter(fontSize: 13, color: _slate500, height: 1.45),
         ),
         actions: [
           TextButton(
@@ -309,8 +324,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     );
     _rideshareNotificationSubscription =
         FCMService.rideshareNotificationEvents.listen(
-          _handleRideshareNotificationEvent,
-        );
+      _handleRideshareNotificationEvent,
+    );
     _authFailureSubscription = _realtimeService.authFailure.listen((reason) {
       if (!mounted) return;
       // Probe auth via HTTP — if the user is still authenticated this will
@@ -335,6 +350,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _refreshTimer?.cancel();
     _activeRideRefreshTimer?.cancel();
     _countdownTimer?.cancel();
+    _pendingPassengerLocationTimer?.cancel();
     _cancelIncomingRideAlertLocally();
     _ringtonePlayer.stop();
     Vibration.cancel();
@@ -370,7 +386,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               return;
             }
             setState(() {
-              _activeRide = _resolveDriverActiveRide(_driverProfile, result.data);
+              _activeRide =
+                  _resolveDriverActiveRide(_driverProfile, result.data);
               if (_activeRide == null) {
                 _passengerLocation = null;
               }
@@ -401,18 +418,22 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     _refreshSmartRoutePreview();
   }
 
-  Future<bool> _refreshLocationPermissionStatus({bool syncTracking = true}) async {
+  Future<bool> _refreshLocationPermissionStatus(
+      {bool syncTracking = true}) async {
     if (mounted) {
       setState(() => _isCheckingLocationPermission = true);
     }
 
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      final permission = await RideshareDriverPresenceService.getLocationPermission();
+      final permission =
+          await RideshareDriverPresenceService.getLocationPermission();
       final hasForegroundPermission = serviceEnabled &&
-          RideshareDriverPresenceService.isForegroundPermissionGranted(permission);
+          RideshareDriverPresenceService.isForegroundPermissionGranted(
+              permission);
       final granted = serviceEnabled &&
-          RideshareDriverPresenceService.isBackgroundPermissionGranted(permission);
+          RideshareDriverPresenceService.isBackgroundPermissionGranted(
+              permission);
 
       if (mounted) {
         setState(() {
@@ -444,7 +465,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
-  Future<bool> _showDriverLocationGuide({required bool goOnlineAfterSetup}) async {
+  Future<bool> _showDriverLocationGuide(
+      {required bool goOnlineAfterSetup}) async {
     if (!mounted) {
       return false;
     }
@@ -544,7 +566,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         ),
                       ),
                       child: Text(
-                        goOnlineAfterSetup ? 'সেটিংস খুলুন' : 'সেটআপ সম্পন্ন করুন',
+                        goOnlineAfterSetup
+                            ? 'সেটিংস খুলুন'
+                            : 'সেটআপ সম্পন্ন করুন',
                         style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -595,7 +619,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _showError('Location service is off. Please enable GPS before going online.');
+        _showError(
+            'Location service is off. Please enable GPS before going online.');
         await Geolocator.openLocationSettings();
         return false;
       }
@@ -611,12 +636,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _showError('Location permission permanently denied. Please enable it in app settings.');
+        _showError(
+            'Location permission permanently denied. Please enable it in app settings.');
         await Geolocator.openAppSettings();
         return false;
       }
 
-      if (!RideshareDriverPresenceService.isBackgroundPermissionGranted(permission)) {
+      if (!RideshareDriverPresenceService.isBackgroundPermissionGranted(
+          permission)) {
         setState(() {
           _hasForegroundLocationPermission = true;
           _needsBackgroundLocationUpgrade = true;
@@ -667,7 +694,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   void _startActiveRideRefreshTimer() {
     _activeRideRefreshTimer?.cancel();
     _activeRideRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (!mounted || _activeRide == null || _isUpdatingStatus || _isAcceptingRide) {
+      if (!mounted ||
+          _activeRide == null ||
+          _isUpdatingStatus ||
+          _isAcceptingRide) {
         return;
       }
       _refreshActiveRideSilently();
@@ -737,11 +767,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final notificationType = payload['notification_type']?.toString() ?? '';
     final source = payload['source']?.toString();
     final isRideRequestNotification =
-      notificationType == 'targeted_ride_request' ||
-      notificationType == 'new_ride_request';
+        notificationType == 'targeted_ride_request' ||
+            notificationType == 'new_ride_request';
     final effectiveType = isRideRequestNotification
-      ? notificationType
-      : (rawType.isNotEmpty ? rawType : notificationType);
+        ? notificationType
+        : (rawType.isNotEmpty ? rawType : notificationType);
     final rideId = payload['ride_id']?.toString() ?? '';
     // Always play the in-app ringtone for incoming ride requests while the
     // driver panel is mounted — regardless of whether the event arrived via
@@ -766,7 +796,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         return;
       }
 
-      final resolvedRide = _resolveDriverActiveRide(_driverProfile, result.data);
+      final resolvedRide =
+          _resolveDriverActiveRide(_driverProfile, result.data);
       if (resolvedRide != null) {
         await _stopIncomingRideAlert();
         setState(() {
@@ -803,15 +834,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   bool _isRequestExpired(Ride ride) {
-    return ride.targetedDriver != null &&
-        ride.targetedCountdownSeconds() <= 0;
+    return ride.targetedDriver != null && ride.targetedCountdownSeconds() <= 0;
   }
 
   bool _removeExpiredTargetedRequests() {
     final before = _availableRequests.length;
-    final filtered = _availableRequests
-        .where((ride) => !_isRequestExpired(ride))
-        .toList();
+    final filtered =
+        _availableRequests.where((ride) => !_isRequestExpired(ride)).toList();
 
     if (filtered.length == before) {
       return false;
@@ -831,9 +860,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   }
 
   Future<void> _loadDriverData() async {
-    setState(() { _isLoading = true; _isAuthError = false; });
+    setState(() {
+      _isLoading = true;
+      _isAuthError = false;
+    });
     if (!AuthService.isAuthenticated) {
-      if (mounted) setState(() { _isLoading = false; _isAuthError = true; _driverProfile = null; });
+      if (mounted)
+        setState(() {
+          _isLoading = false;
+          _isAuthError = true;
+          _driverProfile = null;
+        });
       return;
     }
     final results = await Future.wait([
@@ -843,35 +880,42 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     ]);
     final profileResult = results[0] as RideshareApiResult<DriverProfile>;
     final activeRideResult = results[1] as RideshareApiResult<Ride?>;
-    final earningsResult = results[2] as RideshareApiResult<DriverEarningsSummary>;
+    final earningsResult =
+        results[2] as RideshareApiResult<DriverEarningsSummary>;
     final resolvedActiveRide = _resolveDriverActiveRide(
       profileResult.data,
       activeRideResult.data,
     );
     final msg = profileResult.message.toLowerCase();
     final authFailed = !profileResult.success &&
-        (msg.contains('unauthorized') || msg.contains('credentials') ||
-         msg.contains('authentication') || msg.contains('not provided'));
+        (msg.contains('unauthorized') ||
+            msg.contains('credentials') ||
+            msg.contains('authentication') ||
+            msg.contains('not provided'));
     if (mounted) {
       setState(() {
         _isAuthError = authFailed;
         _driverProfile = profileResult.data;
         _activeRide = resolvedActiveRide;
         _earnings = earningsResult.data;
-        _driverCurrentPoint = RideshareDriverPresenceService.positionNotifier.value != null
-            ? RidePoint(
-                name: t('rideshare_you', fallback: 'You'),
-                latitude: RideshareDriverPresenceService.positionNotifier.value!.latitude,
-                longitude: RideshareDriverPresenceService.positionNotifier.value!.longitude,
-              )
-            : _driverPointFromProfile(profileResult.data);
+        _driverCurrentPoint =
+            RideshareDriverPresenceService.positionNotifier.value != null
+                ? RidePoint(
+                    name: t('rideshare_you', fallback: 'You'),
+                    latitude: RideshareDriverPresenceService
+                        .positionNotifier.value!.latitude,
+                    longitude: RideshareDriverPresenceService
+                        .positionNotifier.value!.longitude,
+                  )
+                : _driverPointFromProfile(profileResult.data);
         _isLoading = false;
       });
       if (profileResult.data != null) {
         _licenseController.text = profileResult.data!.licenseNumber;
         _nidController.text = profileResult.data!.nationalIdNumber;
         _driverDetailsController.text = profileResult.data!.driverDetails;
-        _additionalDocuments = List<String>.from(profileResult.data!.additionalDocuments);
+        _additionalDocuments =
+            List<String>.from(profileResult.data!.additionalDocuments);
         _additionalDocumentLabels = List<String>.generate(
           _additionalDocuments.length,
           (i) => 'Document ${i + 1}',
@@ -898,7 +942,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   void _syncRealtimeConnections() {
     RideshareDriverPresenceService.setActiveRideId(_activeRide?.id);
 
-    final canReceiveDispatch = _driverProfile?.isOnline == true && _activeRide == null;
+    final canReceiveDispatch =
+        _driverProfile?.isOnline == true && _activeRide == null;
     if (canReceiveDispatch) {
       _dispatchEventSubscription ??=
           _realtimeService.dispatchEvents.listen(_handleDispatchEvent);
@@ -946,6 +991,61 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
+  /// Throttle live passenger.location updates from the ride socket.
+  /// Multiple pings per second otherwise trigger a full rebuild + smart
+  /// route recompute for every event. We coalesce them into one update
+  /// every [_passengerLocationMinIntervalMs] ms, AND skip updates where
+  /// the passenger has moved less than [_passengerLocationMinMoveMeters].
+  void _scheduleThrottledPassengerLocationUpdate(double lat, double lng) {
+    _latestPassengerLat = lat;
+    _latestPassengerLng = lng;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final elapsed = now - _lastPassengerLocationSetStateAt;
+
+    void applyUpdate() {
+      if (!mounted) return;
+      final newLat = _latestPassengerLat;
+      final newLng = _latestPassengerLng;
+      if (newLat == null || newLng == null) return;
+
+      final existing = _passengerLocation;
+      if (existing != null) {
+        // Crude great-circle distance — only needs to be accurate to ~1 m.
+        const earthRadiusM = 6371000.0;
+        final dLat = (newLat - existing.latitude) * 3.141592653589793 / 180;
+        final dLng = (newLng - existing.longitude) * 3.141592653589793 / 180;
+        final approxMeters =
+            earthRadiusM * (dLat.abs() + dLng.abs() * 0.8); // good enough
+        if (approxMeters < _passengerLocationMinMoveMeters) {
+          return; // No meaningful movement — skip rebuild entirely.
+        }
+      }
+
+      _lastPassengerLocationSetStateAt = DateTime.now().millisecondsSinceEpoch;
+      setState(() {
+        _passengerLocation = RidePoint(
+          name: t('rideshare_passenger', fallback: 'Passenger'),
+          latitude: newLat,
+          longitude: newLng,
+        );
+      });
+      _refreshSmartRoutePreview();
+    }
+
+    if (elapsed >= _passengerLocationMinIntervalMs) {
+      _pendingPassengerLocationTimer?.cancel();
+      _pendingPassengerLocationTimer = null;
+      applyUpdate();
+    } else {
+      _pendingPassengerLocationTimer?.cancel();
+      _pendingPassengerLocationTimer = Timer(
+        Duration(milliseconds: _passengerLocationMinIntervalMs - elapsed),
+        applyUpdate,
+      );
+    }
+  }
+
   Future<void> _handleActiveRideEvent(Map<String, dynamic> event) async {
     if (!mounted || _activeRide == null) return;
 
@@ -964,14 +1064,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       final lat = double.tryParse(event['latitude']?.toString() ?? '');
       final lng = double.tryParse(event['longitude']?.toString() ?? '');
       if (lat != null && lng != null) {
-        setState(() {
-          _passengerLocation = RidePoint(
-            name: t('rideshare_passenger', fallback: 'Passenger'),
-            latitude: lat,
-            longitude: lng,
-          );
-        });
-        _refreshSmartRoutePreview();
+        _scheduleThrottledPassengerLocationUpdate(lat, lng);
       }
       return;
     }
@@ -988,14 +1081,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
-      if (_activeRide?.isCompleted == true || _activeRide?.isCancelled == true) {
+      if (_activeRide?.isCompleted == true ||
+          _activeRide?.isCancelled == true) {
         await _stopIncomingRideAlert();
         setState(() {
           _passengerLocation = null;
           _smartRoutePreview = null;
           _smartRouteSignature = '';
         });
-        _showSuccess(_activeRide!.isCompleted ? t('rideshare_ride_completed', fallback: 'Ride completed!') : t('rideshare_ride_cancelled', fallback: 'Ride cancelled'));
+        _showSuccess(_activeRide!.isCompleted
+            ? t('rideshare_ride_completed', fallback: 'Ride completed!')
+            : t('rideshare_ride_cancelled', fallback: 'Ride cancelled'));
       } else {
         _refreshSmartRoutePreview(force: true);
       }
@@ -1025,7 +1121,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           await Vibration.vibrate(pattern: const [0, 1200, 800], repeat: 0);
         } else {
           await Vibration.vibrate(duration: 1200);
-          _incomingRideAlertTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+          _incomingRideAlertTimer =
+              Timer.periodic(const Duration(seconds: 2), (_) {
             Vibration.vibrate(duration: 1200);
           });
         }
@@ -1068,9 +1165,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final result = await RideshareService.listAvailableRideRequests();
     if (!mounted || !result.success) return;
 
-    final requests = (result.data ?? [])
-        .where((ride) => !_isRequestExpired(ride))
-        .toList();
+    final requests =
+        (result.data ?? []).where((ride) => !_isRequestExpired(ride)).toList();
     if (requests.isEmpty) {
       await _stopIncomingRideAlert();
     }
@@ -1109,7 +1205,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _driverDetailsController.text = result.data!.driverDetails;
         setState(() {
           _driverProfile = result.data;
-          _additionalDocuments = List<String>.from(result.data!.additionalDocuments);
+          _additionalDocuments =
+              List<String>.from(result.data!.additionalDocuments);
           _additionalDocumentLabels = List<String>.generate(
             _additionalDocuments.length,
             (i) => 'Document ${i + 1}',
@@ -1120,7 +1217,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _profileExpansionInitialized = true;
         });
         _showSuccess(isNewApplication
-            ? t('rideshare_application_submitted', fallback: 'Application submitted! Wait for admin approval.')
+            ? t('rideshare_application_submitted',
+                fallback: 'Application submitted! Wait for admin approval.')
             : t('rideshare_profile_saved', fallback: 'Profile saved'));
       } else {
         _showError(result.message);
@@ -1131,12 +1229,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Future<void> _pickAdditionalDocuments() async {
     final remainingSlots = 10 - _additionalDocuments.length;
     if (remainingSlots <= 0) {
-      _showError(t('rideshare_doc_limit', fallback: 'You can upload up to 10 additional documents.'));
+      _showError(t('rideshare_doc_limit',
+          fallback: 'You can upload up to 10 additional documents.'));
       return;
     }
 
     try {
-      final files = await _imagePicker.pickMultiImage(imageQuality: 80, maxWidth: 1800);
+      final files =
+          await _imagePicker.pickMultiImage(imageQuality: 80, maxWidth: 1800);
       if (files.isEmpty || !mounted) return;
 
       final docs = List<String>.from(_additionalDocuments);
@@ -1146,7 +1246,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         final bytes = await file.readAsBytes();
         final base64Data = base64Encode(bytes);
         final ext = file.name.toLowerCase();
-        final mime = ext.endsWith('.png') ? 'png' : ext.endsWith('.webp') ? 'webp' : 'jpeg';
+        final mime = ext.endsWith('.png')
+            ? 'png'
+            : ext.endsWith('.webp')
+                ? 'webp'
+                : 'jpeg';
         docs.add('data:image/$mime;base64,$base64Data');
         labels.add(file.name);
       }
@@ -1157,7 +1261,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _additionalDocumentLabels = labels;
       });
     } catch (_) {
-      _showError(t('rideshare_doc_pick_failed', fallback: 'Could not pick documents right now.'));
+      _showError(t('rideshare_doc_pick_failed',
+          fallback: 'Could not pick documents right now.'));
     }
   }
 
@@ -1182,7 +1287,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
     if (newStatus && _driverProfile!.cashDueLimitReached) {
       _showError(
-        t('rideshare_cash_due_warning_msg', fallback: 'You have cash dues. Pay from Adsy Balance before going online.'),
+        t('rideshare_cash_due_warning_msg',
+            fallback:
+                'You have cash dues. Pay from Adsy Balance before going online.'),
       );
       return;
     }
@@ -1208,12 +1315,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           await _startLocationTracking();
           _loadAvailableRequests();
           _syncRealtimeConnections();
-          _showSuccess(t('rideshare_now_online', fallback: 'You are now online'));
+          _showSuccess(
+              t('rideshare_now_online', fallback: 'You are now online'));
         } else {
           _stopLocationTracking();
           setState(() => _availableRequests = []);
           _syncRealtimeConnections();
-          _showSuccess(t('rideshare_now_offline', fallback: 'You are now offline'));
+          _showSuccess(
+              t('rideshare_now_offline', fallback: 'You are now offline'));
         }
       } else {
         if (newStatus && result.message.toLowerCase().contains('vehicle')) {
@@ -1225,7 +1334,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
   }
 
-  Future<void> _payOutstandingCashDues({bool goOnlineAfterPayment = false}) async {
+  Future<void> _payOutstandingCashDues(
+      {bool goOnlineAfterPayment = false}) async {
     if (_driverProfile == null || _isPayingCashDues) return;
 
     setState(() => _isPayingCashDues = true);
@@ -1238,7 +1348,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     setState(() => _isPayingCashDues = false);
     if (result.success && result.data != null) {
       setState(() => _driverProfile = result.data);
-      _showSuccess(result.message.isNotEmpty ? result.message : t('rideshare_ride_completed_msg', fallback: 'Done!'));
+      _showSuccess(result.message.isNotEmpty
+          ? result.message
+          : t('rideshare_ride_completed_msg', fallback: 'Done!'));
       // Refresh wallet balance so home/wallet screens show updated amount
       unawaited(AuthService.refreshUserData());
       await _loadDriverData();
@@ -1271,7 +1383,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       setState(() {
         _availableRequests.removeWhere((request) => request.id == ride.id);
       });
-      _showError(t('rideshare_request_expired_msg', fallback: 'This ride request has expired.'));
+      _showError(t('rideshare_request_expired_msg',
+          fallback: 'This ride request has expired.'));
       return;
     }
 
@@ -1294,7 +1407,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (mounted) {
       setState(() => _isAcceptingRide = false);
       if (result.success && result.data != null) {
-        setState(() { _activeRide = result.data; _availableRequests = []; });
+        setState(() {
+          _activeRide = result.data;
+          _availableRequests = [];
+        });
         _syncRealtimeConnections();
         _refreshSmartRoutePreview(force: true);
         _showSuccess(t('rideshare_ride_accepted', fallback: 'Ride accepted!'));
@@ -1353,8 +1469,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _activeRide = _activeRide?.copyWith(
           status: status,
           acceptedAt: _activeRide?.acceptedAt ?? DateTime.now(),
-          startedAt: status == 'in_progress' ? DateTime.now() : _activeRide?.startedAt,
-          passengerCanCancel: status == 'in_progress' ? false : _activeRide?.passengerCanCancel,
+          startedAt:
+              status == 'in_progress' ? DateTime.now() : _activeRide?.startedAt,
+          passengerCanCancel:
+              status == 'in_progress' ? false : _activeRide?.passengerCanCancel,
         );
       });
       _syncRealtimeConnections();
@@ -1391,8 +1509,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _showSuccess(
             status == 'completed'
                 ? (paymentMethod == 'cash'
-                    ? t('rideshare_cash_ride_completed', fallback: 'Ride completed. Cash payment marked and due added.')
-                    : t('rideshare_ride_completed', fallback: 'Ride completed!'))
+                    ? t('rideshare_cash_ride_completed',
+                        fallback:
+                            'Ride completed. Cash payment marked and due added.')
+                    : t('rideshare_ride_completed',
+                        fallback: 'Ride completed!'))
                 : t('rideshare_ride_cancelled', fallback: 'Ride cancelled'),
           );
         } else {
@@ -1401,7 +1522,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _refreshSmartRoutePreview(force: true);
         }
       } else {
-        if (previousRide != null && (status == 'driver_arriving' || status == 'in_progress')) {
+        if (previousRide != null &&
+            (status == 'driver_arriving' || status == 'in_progress')) {
           setState(() => _activeRide = previousRide);
           _syncRealtimeConnections();
           _refreshSmartRoutePreview(force: true);
@@ -1463,7 +1585,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final ride = _activeRide;
     if (ride == null || !_supportsSmartRoute(ride)) {
       if (!mounted) return;
-      if (_smartRoutePreview != null || _smartRouteSignature.isNotEmpty || _isLoadingSmartRoute) {
+      if (_smartRoutePreview != null ||
+          _smartRouteSignature.isNotEmpty ||
+          _isLoadingSmartRoute) {
         setState(() {
           _smartRoutePreview = null;
           _smartRouteSignature = '';
@@ -1615,8 +1739,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final color = isCash ? const Color(0xFFD97706) : const Color(0xFF6366F1);
     final bg = isCash ? const Color(0xFFFFFBEB) : const Color(0xFFEEF2FF);
     final border = isCash ? const Color(0xFFFDE68A) : const Color(0xFFC7D2FE);
-    final icon = isCash ? Icons.payments_rounded : Icons.account_balance_wallet_rounded;
-    final label = isCash ? t('rideshare_cash', fallback: 'Cash') : t('rideshare_wallet', fallback: 'Wallet');
+    final icon =
+        isCash ? Icons.payments_rounded : Icons.account_balance_wallet_rounded;
+    final label = isCash
+        ? t('rideshare_cash', fallback: 'Cash')
+        : t('rideshare_wallet', fallback: 'Wallet');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -1629,7 +1756,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         children: [
           Icon(icon, size: 10, color: color),
           const SizedBox(width: 3),
-          Text(label, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+          Text(label,
+              style: GoogleFonts.inter(
+                  fontSize: 10, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
     );
@@ -1638,7 +1767,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   void _showError(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(_localizeDriverMessage(_resolveDriverErrorMessage(msg)), style: GoogleFonts.inter(fontSize: 13)),
+      content: Text(_localizeDriverMessage(_resolveDriverErrorMessage(msg)),
+          style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: Colors.red.shade600,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1682,7 +1812,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   void _showSuccess(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(_localizeDriverMessage(msg), style: GoogleFonts.inter(fontSize: 13)),
+      content: Text(_localizeDriverMessage(msg),
+          style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: _emerald,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1699,26 +1830,41 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final lower = raw.toLowerCase();
 
     const exactMessages = {
-      'connection error. please check your internet connection.': 'ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।',
-      'unable to process response. please try again.': 'রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।',
-      'connection timeout. please try again.': 'সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
-      'network connection issue. please check your internet.': 'নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।',
-      'request timed out. please try again.': 'রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
-      'session expired. please log in again.': 'সেশন শেষ হয়েছে। আবার লগইন করুন।',
-      "you don't have permission to perform this action.": 'এই কাজটি করার অনুমতি আপনার নেই।',
+      'connection error. please check your internet connection.':
+          'ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।',
+      'unable to process response. please try again.':
+          'রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।',
+      'connection timeout. please try again.':
+          'সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'network connection issue. please check your internet.':
+          'নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।',
+      'request timed out. please try again.':
+          'রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'session expired. please log in again.':
+          'সেশন শেষ হয়েছে। আবার লগইন করুন।',
+      "you don't have permission to perform this action.":
+          'এই কাজটি করার অনুমতি আপনার নেই।',
       'requested resource not found.': 'চাওয়া তথ্য পাওয়া যায়নি।',
-      'server error. please try again later.': 'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
-      'service temporarily unavailable. please try again later.': 'সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।',
-      'something went wrong. please try again.': 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
-      'location service is off. please enable gps before going online.': 'অনলাইনে যেতে আগে জিপিএস চালু করুন।',
-      'location permission is required to use driver mode.': 'ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।',
-      'location permission permanently denied. please enable it in app settings.': 'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।',
+      'server error. please try again later.':
+          'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
+      'service temporarily unavailable. please try again later.':
+          'সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।',
+      'something went wrong. please try again.':
+          'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+      'location service is off. please enable gps before going online.':
+          'অনলাইনে যেতে আগে জিপিএস চালু করুন।',
+      'location permission is required to use driver mode.':
+          'ড্রাইভার মোড ব্যবহার করতে লোকেশন অনুমতি প্রয়োজন।',
+      'location permission permanently denied. please enable it in app settings.':
+          'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।',
       'new ride request received.': 'নতুন রাইড রিকোয়েস্ট এসেছে।',
       'unable to open chat': 'চ্যাট খোলা যাচ্ছে না।',
-      'passenger chat is unavailable': 'যাত্রীর সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
+      'passenger chat is unavailable':
+          'যাত্রীর সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
       'ride completed!': 'রাইড সম্পন্ন হয়েছে!',
       'ride cancelled': 'রাইড বাতিল হয়েছে।',
-      'application submitted! wait for admin approval.': 'আবেদন জমা হয়েছে। এখন অ্যাডমিন অনুমোদনের জন্য অপেক্ষা করুন।',
+      'application submitted! wait for admin approval.':
+          'আবেদন জমা হয়েছে। এখন অ্যাডমিন অনুমোদনের জন্য অপেক্ষা করুন।',
       'profile saved': 'প্রোফাইল সংরক্ষণ করা হয়েছে।',
       'you are now online': 'আপনি এখন অনলাইনে আছেন।',
       'you are now offline': 'আপনি এখন অফলাইনে আছেন।',
@@ -1726,12 +1872,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       'this ride request has expired.': 'এই রাইড রিকোয়েস্টের সময় শেষ হয়েছে।',
       'ride accepted!': 'রাইড গ্রহণ করা হয়েছে!',
       'ride skipped.': 'রাইডটি স্কিপ করা হয়েছে।',
-      'passenger confirmation requested for early completion.': 'আগাম সম্পন্নের জন্য যাত্রীর অনুমোদন চাওয়া হয়েছে।',
-      'could not pick documents right now.': 'এই মুহূর্তে ডকুমেন্ট নেওয়া যাচ্ছে না।',
-      'you can upload up to 10 additional documents.': 'সর্বোচ্চ ১০টি অতিরিক্ত ডকুমেন্ট আপলোড করা যাবে।',
+      'passenger confirmation requested for early completion.':
+          'আগাম সম্পন্নের জন্য যাত্রীর অনুমোদন চাওয়া হয়েছে।',
+      'could not pick documents right now.':
+          'এই মুহূর্তে ডকুমেন্ট নেওয়া যাচ্ছে না।',
+      'you can upload up to 10 additional documents.':
+          'সর্বোচ্চ ১০টি অতিরিক্ত ডকুমেন্ট আপলোড করা যাবে।',
       'ride is no longer available.': 'রাইডটি আর উপলভ্য নেই।',
-      'this ride is currently assigned to another driver.': 'এই রাইডটি বর্তমানে অন্য একজন ড্রাইভারের জন্য নির্ধারিত।',
-      'you already have an active ride. complete it before accepting a new one.': 'আপনার ইতোমধ্যে একটি সক্রিয় রাইড আছে। নতুনটি নেওয়ার আগে সেটি শেষ করুন।',
+      'this ride is currently assigned to another driver.':
+          'এই রাইডটি বর্তমানে অন্য একজন ড্রাইভারের জন্য নির্ধারিত।',
+      'you already have an active ride. complete it before accepting a new one.':
+          'আপনার ইতোমধ্যে একটি সক্রিয় রাইড আছে। নতুনটি নেওয়ার আগে সেটি শেষ করুন।',
       'ride accepted successfully.': 'রাইড সফলভাবে গ্রহণ করা হয়েছে।',
     };
 
@@ -1749,7 +1900,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Future<void> _openPassengerChat(Ride ride) async {
     if (ride.riderId.isEmpty) {
-      _showError(t('rideshare_passenger_chat_unavailable', fallback: 'Passenger chat is unavailable'));
+      _showError(t('rideshare_passenger_chat_unavailable',
+          fallback: 'Passenger chat is unavailable'));
       return;
     }
 
@@ -1765,7 +1917,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       );
       loadingDialogShown = true;
 
-      final chatroom = await AdsyConnectService.getOrCreateChatRoom(ride.riderId);
+      final chatroom =
+          await AdsyConnectService.getOrCreateChatRoom(ride.riderId);
       final chatroomId = chatroom['id']?.toString();
       if (chatroomId == null || chatroomId.isEmpty) {
         throw Exception('Chat room unavailable');
@@ -1813,7 +1966,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Future<void> _callPassenger(Ride ride) async {
     final riderPhone = ride.riderPhone?.trim() ?? '';
     if (riderPhone.isEmpty) {
-      _showError(t('rideshare_passenger_call_unavailable', fallback: 'Passenger call is unavailable'));
+      _showError(t('rideshare_passenger_call_unavailable',
+          fallback: 'Passenger call is unavailable'));
       return;
     }
 
@@ -1823,14 +1977,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       return;
     }
 
-    _showError(t('rideshare_passenger_call_unavailable', fallback: 'Passenger call is unavailable'));
+    _showError(t('rideshare_passenger_call_unavailable',
+        fallback: 'Passenger call is unavailable'));
   }
 
   // ── BUILD ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator(color: _indigo));
+    if (_isLoading)
+      return const Center(child: CircularProgressIndicator(color: _indigo));
     if (_isAuthError) return _buildLoginRequired();
     return RefreshIndicator(
       color: _indigo,
@@ -1884,25 +2040,36 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           children: [
             Container(
               padding: const EdgeInsets.all(18),
-              decoration: const BoxDecoration(color: Color(0xFFFEF3C7), shape: BoxShape.circle),
-              child: const Icon(Icons.lock_outline_rounded, size: 40, color: Color(0xFFD97706)),
+              decoration: const BoxDecoration(
+                  color: Color(0xFFFEF3C7), shape: BoxShape.circle),
+              child: const Icon(Icons.lock_outline_rounded,
+                  size: 40, color: Color(0xFFD97706)),
             ),
             const SizedBox(height: 16),
             Text(t('login_required', fallback: 'Login Required'),
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: _slate800)),
+                style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: _slate800)),
             const SizedBox(height: 6),
-            Text(t('rideshare_login_required_subtitle', fallback: 'Log in to use driver features.'),
+            Text(
+                t('rideshare_login_required_subtitle',
+                    fallback: 'Log in to use driver features.'),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(fontSize: 13, color: _slate500)),
             const SizedBox(height: 20),
             FilledButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/login').then((_) => _loadDriverData()),
+              onPressed: () => Navigator.pushNamed(context, '/login')
+                  .then((_) => _loadDriverData()),
               icon: const Icon(Icons.login_rounded, size: 18),
-              label: Text(t('login_button', fallback: 'Sign In'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+              label: Text(t('login_button', fallback: 'Sign In'),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
               style: FilledButton.styleFrom(
                 backgroundColor: _indigo,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 13),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 13),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ],
@@ -1924,19 +2091,29 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     }
 
     return Row(children: [
-      _buildStatChip(t('rideshare_stats_status', fallback: 'Status'),
+      _buildStatChip(
+          t('rideshare_stats_status', fallback: 'Status'),
           approval[0].toUpperCase() + approval.substring(1),
-          approvalColor, isApproved ? Icons.verified_rounded : Icons.hourglass_top_rounded),
+          approvalColor,
+          isApproved ? Icons.verified_rounded : Icons.hourglass_top_rounded),
       const SizedBox(width: 8),
-      _buildStatChip(t('rideshare_stats_trips', fallback: 'Trips'), '${_earnings?.totalTrips ?? 0}', _indigo, Icons.directions_car_rounded),
+      _buildStatChip(
+          t('rideshare_stats_trips', fallback: 'Trips'),
+          '${_earnings?.totalTrips ?? 0}',
+          _indigo,
+          Icons.directions_car_rounded),
       const SizedBox(width: 8),
-      _buildStatChip(t('rideshare_stats_earned', fallback: 'Earned'), '৳${(_earnings?.totalEarnings ?? 0).toStringAsFixed(0)}',
-          _emerald, Icons.account_balance_wallet_rounded),
+      _buildStatChip(
+          t('rideshare_stats_earned', fallback: 'Earned'),
+          '৳${(_earnings?.totalEarnings ?? 0).toStringAsFixed(0)}',
+          _emerald,
+          Icons.account_balance_wallet_rounded),
     ]);
   }
 
   Widget _buildLocationRequiredCard() {
-    final isBusy = _isCheckingLocationPermission || _isRequestingLocationPermission;
+    final isBusy =
+        _isCheckingLocationPermission || _isRequestingLocationPermission;
     final needsUpgrade = _needsBackgroundLocationUpgrade;
 
     return Container(
@@ -1979,7 +2156,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     Text(
                       needsUpgrade
                           ? 'Finish location setup'
-                          : t('rideshare_location_mandatory', fallback: 'Location Sharing Required'),
+                          : t('rideshare_location_mandatory',
+                              fallback: 'Location Sharing Required'),
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -1990,7 +2168,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     Text(
                       needsUpgrade
                           ? 'Choose Allow all the time in app settings so you keep receiving requests while the app is in the background.'
-                          : t('rideshare_location_mandatory_driver_desc', fallback: 'You must enable location sharing to receive ride requests and go online as a driver.'),
+                          : t('rideshare_location_mandatory_driver_desc',
+                              fallback:
+                                  'You must enable location sharing to receive ride requests and go online as a driver.'),
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: const Color(0xFF7F1D1D),
@@ -2033,13 +2213,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               label: Text(
                 isBusy
                     ? t('rideshare_checking', fallback: 'Checking...')
-                    : (needsUpgrade ? 'Open settings' : t('rideshare_enable_location', fallback: 'Enable Location')),
+                    : (needsUpgrade
+                        ? 'Open settings'
+                        : t('rideshare_enable_location',
+                            fallback: 'Enable Location')),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w700),
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFDC2626),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
             ),
           ),
@@ -2048,7 +2233,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     );
   }
 
-  Widget _buildStatChip(String label, String value, Color color, IconData icon) {
+  Widget _buildStatChip(
+      String label, String value, Color color, IconData icon) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
@@ -2061,19 +2247,26 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           Row(children: [
             Icon(icon, size: 12, color: color),
             const SizedBox(width: 4),
-            Text(label, style: GoogleFonts.inter(
-                fontSize: 10, fontWeight: FontWeight.w600, color: _slate400, letterSpacing: 0.3)),
+            Text(label,
+                style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: _slate400,
+                    letterSpacing: 0.3)),
           ]),
           const SizedBox(height: 4),
-          Text(value, style: GoogleFonts.inter(
-              fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+          Text(value,
+              style: GoogleFonts.inter(
+                  fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
         ]),
       ),
     );
   }
 
   Future<void> _handleOnlineToggleTap() async {
-    if (_driverProfile == null || _isTogglingOnline || _isCheckingLocationPermission) {
+    if (_driverProfile == null ||
+        _isTogglingOnline ||
+        _isCheckingLocationPermission) {
       return;
     }
 
@@ -2097,29 +2290,40 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final locationSubtitle = !isApproved
         ? 'Complete approval to start driving'
         : dueLimitReached
-            ? t('rideshare_pay_due_to_go_online', fallback: 'Pay cash dues to go online again')
+            ? t('rideshare_pay_due_to_go_online',
+                fallback: 'Pay cash dues to go online again')
             : isOnline
-                ? t('rideshare_requests_will_appear', fallback: 'Requests will appear below')
+                ? t('rideshare_requests_will_appear',
+                    fallback: 'Requests will appear below')
                 : _needsBackgroundLocationUpgrade
                     ? 'Finish one-time location setup to stay online in background'
                     : !_hasForegroundLocationPermission
                         ? 'Tap once to enable location and go online'
-                        : t('rideshare_go_online_for_requests', fallback: 'Go online to get requests');
+                        : t('rideshare_go_online_for_requests',
+                            fallback: 'Go online to get requests');
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        gradient: isOnline ? const LinearGradient(
-            colors: [_emerald, _emeraldDark],
-            begin: Alignment.topLeft, end: Alignment.bottomRight) : null,
+        gradient: isOnline
+            ? const LinearGradient(
+                colors: [_emerald, _emeraldDark],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight)
+            : null,
         color: isOnline ? null : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: isOnline ? null : Border.all(color: _slate200),
-        boxShadow: [BoxShadow(
-          color: isOnline ? _emerald.withValues(alpha: 0.25) : Colors.black.withValues(alpha: 0.04),
-          blurRadius: 10, offset: const Offset(0, 3),
-        )],
+        boxShadow: [
+          BoxShadow(
+            color: isOnline
+                ? _emerald.withValues(alpha: 0.25)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          )
+        ],
       ),
       child: Row(children: [
         Container(
@@ -2132,40 +2336,60 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               size: 20, color: isOnline ? Colors.white : _slate500),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(isOnline ? t('rideshare_online_status', fallback: 'Online — Accepting Rides') : t('rideshare_offline_status', fallback: 'Offline'),
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700,
-                  color: isOnline ? Colors.white : _slate800)),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(
-              locationSubtitle,
-              style: GoogleFonts.inter(fontSize: 11,
-                  color: isOnline ? Colors.white.withValues(alpha: 0.8) : _slate500)),
+              isOnline
+                  ? t('rideshare_online_status',
+                      fallback: 'Online — Accepting Rides')
+                  : t('rideshare_offline_status', fallback: 'Offline'),
+              style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: isOnline ? Colors.white : _slate800)),
+          Text(locationSubtitle,
+              style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: isOnline
+                      ? Colors.white.withValues(alpha: 0.8)
+                      : _slate500)),
         ])),
         GestureDetector(
-            onTap: (isApproved && !_isTogglingOnline && !_isCheckingLocationPermission)
+          onTap: (isApproved &&
+                  !_isTogglingOnline &&
+                  !_isCheckingLocationPermission)
               ? _handleOnlineToggleTap
               : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
-            width: 50, height: 28,
+            width: 50,
+            height: 28,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: isOnline ? Colors.white.withValues(alpha: 0.35)
+              color: isOnline
+                  ? Colors.white.withValues(alpha: 0.35)
                   : (isApproved ? _slate300 : _slate200),
               borderRadius: BorderRadius.circular(14),
             ),
             child: AnimatedAlign(
               duration: const Duration(milliseconds: 220),
-              alignment: isOnline ? Alignment.centerRight : Alignment.centerLeft,
+              alignment:
+                  isOnline ? Alignment.centerRight : Alignment.centerLeft,
               child: Container(
-                width: 22, height: 22,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
-                    color: isOnline ? Colors.white : _slate400, shape: BoxShape.circle),
-                child: _isTogglingOnline ? Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: isOnline ? _emerald : _slate500),
-                ) : null,
+                    color: isOnline ? Colors.white : _slate400,
+                    shape: BoxShape.circle),
+                child: _isTogglingOnline
+                    ? Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isOnline ? _emerald : _slate500),
+                      )
+                    : null,
               ),
             ),
           ),
@@ -2194,7 +2418,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         ),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: limitReached ? const Color(0xFFF59E0B) : const Color(0xFFFCD34D),
+          color:
+              limitReached ? const Color(0xFFF59E0B) : const Color(0xFFFCD34D),
         ),
       ),
       child: Column(
@@ -2208,7 +2433,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.receipt_long_rounded, color: Color(0xFFD97706), size: 20),
+                child: const Icon(Icons.receipt_long_rounded,
+                    color: Color(0xFFD97706), size: 20),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -2216,13 +2442,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      t('rideshare_cash_due_title', fallback: 'Cash Payment Due'),
-                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: const Color(0xFF92400E)),
+                      t('rideshare_cash_due_title',
+                          fallback: 'Cash Payment Due'),
+                      style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF92400E)),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '৳${dueAmount.toStringAsFixed(0)} pending across $dueCount cash ride${dueCount > 1 ? 's' : ''}.',
-                      style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF92400E)),
+                      style: GoogleFonts.inter(
+                          fontSize: 12, color: const Color(0xFF92400E)),
                     ),
                   ],
                 ),
@@ -2232,9 +2463,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           const SizedBox(height: 10),
           Text(
             limitReached
-                ? t('rideshare_cash_due_limit_msg', fallback: 'You reached the maximum unpaid cash rides. Pay this due from your Adsy balance to go online again.')
-                : t('rideshare_cash_due_warning_msg', fallback: 'You can keep driving for now, but clear this due from your Adsy balance before it reaches the limit.'),
-            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF78350F), height: 1.35),
+                ? t('rideshare_cash_due_limit_msg',
+                    fallback:
+                        'You reached the maximum unpaid cash rides. Pay this due from your Adsy balance to go online again.')
+                : t('rideshare_cash_due_warning_msg',
+                    fallback:
+                        'You can keep driving for now, but clear this due from your Adsy balance before it reaches the limit.'),
+            style: GoogleFonts.inter(
+                fontSize: 12, color: const Color(0xFF78350F), height: 1.35),
           ),
           const SizedBox(height: 12),
           Builder(
@@ -2247,27 +2483,33 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     width: double.infinity,
                     child: FilledButton.icon(
                       onPressed: (hasEnough && !_isPayingCashDues)
-                          ? () => _payOutstandingCashDues(goOnlineAfterPayment: limitReached)
+                          ? () => _payOutstandingCashDues(
+                              goOnlineAfterPayment: limitReached)
                           : null,
                       icon: _isPayingCashDues
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white),
                             )
-                          : const Icon(Icons.account_balance_wallet_rounded, size: 18),
+                          : const Icon(Icons.account_balance_wallet_rounded,
+                              size: 18),
                       label: Text(
                         _isPayingCashDues
                             ? t('rideshare_paying', fallback: 'Paying...')
                             : hasEnough
-                                ? t('rideshare_pay_due_btn', fallback: 'Pay Cash Dues')
+                                ? t('rideshare_pay_due_btn',
+                                    fallback: 'Pay Cash Dues')
                                 : '${t("rideshare_insufficient_balance", fallback: "Insufficient balance")} (৳${walletBalance.toStringAsFixed(0)})',
                         style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                       ),
                       style: FilledButton.styleFrom(
-                        backgroundColor: hasEnough ? const Color(0xFFD97706) : _slate400,
+                        backgroundColor:
+                            hasEnough ? const Color(0xFFD97706) : _slate400,
                         padding: const EdgeInsets.symmetric(vertical: 13),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                   ),
@@ -2276,17 +2518,20 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, '/deposit-withdraw'),
                         icon: const Icon(Icons.add_rounded, size: 18),
                         label: Text(
-                          t('rideshare_add_funds_wallet', fallback: 'Add Funds to Adsy Wallet'),
+                          t('rideshare_add_funds_wallet',
+                              fallback: 'Add Funds to Adsy Wallet'),
                           style: GoogleFonts.inter(fontWeight: FontWeight.w700),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF6366F1),
                           side: const BorderSide(color: Color(0xFF6366F1)),
                           padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                         ),
                       ),
                     ),
@@ -2320,7 +2565,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           color: Colors.transparent,
           child: InkWell(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(13)),
-            onTap: () => setState(() => _isProfileExpanded = !_isProfileExpanded),
+            onTap: () =>
+                setState(() => _isProfileExpanded = !_isProfileExpanded),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
               decoration: const BoxDecoration(
@@ -2333,20 +2579,31 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    isNew ? t('rideshare_become_driver', fallback: 'Become a Driver') : t('rideshare_driver_profile', fallback: 'Driver Profile'),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                    isNew
+                        ? t('rideshare_become_driver',
+                            fallback: 'Become a Driver')
+                        : t('rideshare_driver_profile',
+                            fallback: 'Driver Profile'),
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800),
                   ),
                 ),
                 if (isSuspended) ...[
-                    _buildBadge(t('rideshare_suspended', fallback: 'Suspended'), Colors.red.shade600),
+                  _buildBadge(t('rideshare_suspended', fallback: 'Suspended'),
+                      Colors.red.shade600),
                   const SizedBox(width: 6),
                 ],
                 if (isPending) ...[
-                  _buildBadge(t('rideshare_under_review', fallback: 'Under Review'), const Color(0xFFD97706)),
+                  _buildBadge(
+                      t('rideshare_under_review', fallback: 'Under Review'),
+                      const Color(0xFFD97706)),
                   const SizedBox(width: 6),
                 ],
                 if (isApproved) ...[
-                  _buildBadge(t('rideshare_approved', fallback: 'Approved'), _emerald),
+                  _buildBadge(
+                      t('rideshare_approved', fallback: 'Approved'), _emerald),
                   const SizedBox(width: 6),
                 ],
                 GestureDetector(
@@ -2358,12 +2615,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: _slate200),
                     ),
-                    child: const Icon(Icons.two_wheeler_rounded, size: 16, color: _indigo),
+                    child: const Icon(Icons.two_wheeler_rounded,
+                        size: 16, color: _indigo),
                   ),
                 ),
                 const SizedBox(width: 6),
                 Icon(
-                  _isProfileExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  _isProfileExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
                   size: 20,
                   color: _slate500,
                 ),
@@ -2373,7 +2633,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         ),
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 220),
-          crossFadeState: _isProfileExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          crossFadeState: _isProfileExpanded
+              ? CrossFadeState.showFirst
+              : CrossFadeState.showSecond,
           firstChild: _buildExpandedProfileContent(
             isNew: isNew,
             isPending: isPending,
@@ -2405,7 +2667,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         if (isPending)
           _buildNoticeBanner(
             icon: Icons.hourglass_top_rounded,
-            msg: t('rideshare_profile_under_review', fallback: 'Your profile is under review. You\'ll be notified once approved.'),
+            msg: t('rideshare_profile_under_review',
+                fallback:
+                    'Your profile is under review. You\'ll be notified once approved.'),
             bgColor: const Color(0xFFFFFBEB),
             borderColor: const Color(0xFFFDE68A),
             iconColor: const Color(0xFFD97706),
@@ -2414,7 +2678,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         if (isSuspended)
           _buildNoticeBanner(
             icon: Icons.block_rounded,
-            msg: t('rideshare_account_suspended', fallback: 'Your driver account has been suspended. Contact support.'),
+            msg: t('rideshare_account_suspended',
+                fallback:
+                    'Your driver account has been suspended. Contact support.'),
             bgColor: const Color(0xFFFEF2F2),
             borderColor: const Color(0xFFFECACA),
             iconColor: Colors.red.shade600,
@@ -2422,7 +2688,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           ),
         Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             // Instructions
             if (isNew) ...[
               Container(
@@ -2436,7 +2703,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      _driverProfile == null ? Icons.info_rounded : Icons.check_circle_rounded,
+                      _driverProfile == null
+                          ? Icons.info_rounded
+                          : Icons.check_circle_rounded,
                       size: 16,
                       color: _indigo,
                     ),
@@ -2444,9 +2713,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     Expanded(
                       child: Text(
                         _driverProfile == null
-                            ? t('rideshare_apply_instructions', fallback: 'Submit your identity details to apply as a driver. Admin will review and approve.')
-                            : t('rideshare_identity_instructions', fallback: 'Fill in your identity details once. After submission, license and NID stay locked.'),
-                        style: GoogleFonts.inter(fontSize: 12, height: 1.4, color: _indigo),
+                            ? t('rideshare_apply_instructions',
+                                fallback:
+                                    'Submit your identity details to apply as a driver. Admin will review and approve.')
+                            : t('rideshare_identity_instructions',
+                                fallback:
+                                    'Fill in your identity details once. After submission, license and NID stay locked.'),
+                        style: GoogleFonts.inter(
+                            fontSize: 12, height: 1.4, color: _indigo),
                       ),
                     ),
                   ],
@@ -2461,8 +2735,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    t('rideshare_identity_section', fallback: 'Identity Verification'),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                    t('rideshare_identity_section',
+                        fallback: 'Identity Verification'),
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800),
                   ),
                 ),
               ],
@@ -2475,7 +2753,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               t('rideshare_license_hint', fallback: 'Driving license number'),
               Icons.credit_card_rounded,
               readOnly: licenseLocked,
-              helperText: licenseLocked ? t('rideshare_license_locked', fallback: 'Submitted license number cannot be edited.') : null,
+              helperText: licenseLocked
+                  ? t('rideshare_license_locked',
+                      fallback: 'Submitted license number cannot be edited.')
+                  : null,
             ),
             const SizedBox(height: 12),
             // NID Field
@@ -2485,7 +2766,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               t('rideshare_nid_hint', fallback: 'National ID number'),
               Icons.perm_identity_rounded,
               readOnly: nidLocked,
-              helperText: nidLocked ? t('rideshare_nid_locked', fallback: 'Submitted NID cannot be edited.') : null,
+              helperText: nidLocked
+                  ? t('rideshare_nid_locked',
+                      fallback: 'Submitted NID cannot be edited.')
+                  : null,
             ),
             const SizedBox(height: 20),
             // Driver Details Section Header
@@ -2495,8 +2779,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    t('rideshare_details_section', fallback: 'Driver Information'),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                    t('rideshare_details_section',
+                        fallback: 'Driver Information'),
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800),
                   ),
                 ),
               ],
@@ -2505,7 +2793,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             // Driver Details Label
             Text(
               t('rideshare_driver_details', fallback: 'Experience & Notes'),
-              style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate600),
+              style: GoogleFonts.inter(
+                  fontSize: 11, fontWeight: FontWeight.w600, color: _slate600),
             ),
             const SizedBox(height: 6),
             // Driver Details TextField
@@ -2513,16 +2802,22 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               controller: _driverDetailsController,
               minLines: 3,
               maxLines: 5,
-              style: GoogleFonts.inter(fontSize: 13, color: _slate800, height: 1.5),
+              style: GoogleFonts.inter(
+                  fontSize: 13, color: _slate800, height: 1.5),
               decoration: InputDecoration(
-                hintText: t('rideshare_driver_details_hint', fallback: 'Describe your driving experience, favorite routes, vehicle details, or any special notes...'),
+                hintText: t('rideshare_driver_details_hint',
+                    fallback:
+                        'Describe your driving experience, favorite routes, vehicle details, or any special notes...'),
                 hintStyle: GoogleFonts.inter(fontSize: 12, color: _slate400),
                 prefixIcon: Padding(
                   padding: const EdgeInsets.only(top: 10),
-                  child: Icon(Icons.description_rounded, size: 16, color: _slate400),
+                  child: Icon(Icons.description_rounded,
+                      size: 16, color: _slate400),
                 ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 42),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                prefixIconConstraints:
+                    const BoxConstraints(minWidth: 42, minHeight: 42),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                 filled: true,
                 fillColor: _slate50,
                 border: OutlineInputBorder(
@@ -2544,12 +2839,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    t('rideshare_documents_section', fallback: 'Additional Documents'),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                    t('rideshare_documents_section',
+                        fallback: 'Additional Documents'),
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: _indigo.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -2557,7 +2857,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   child: Text(
                     '${_additionalDocuments.length}/10',
                     style: GoogleFonts.inter(
-                        fontSize: 10.5, fontWeight: FontWeight.w700, color: _indigo),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w700,
+                        color: _indigo),
                   ),
                 )
               ],
@@ -2565,8 +2867,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             const SizedBox(height: 12),
             // Documents Helper Text
             Text(
-              t('rideshare_documents_hint', fallback: 'Upload additional documents to support your application (licenses, certifications, insurance, etc.)'),
-              style: GoogleFonts.inter(fontSize: 11, color: _slate500, height: 1.4),
+              t('rideshare_documents_hint',
+                  fallback:
+                      'Upload additional documents to support your application (licenses, certifications, insurance, etc.)'),
+              style: GoogleFonts.inter(
+                  fontSize: 11, color: _slate500, height: 1.4),
             ),
             const SizedBox(height: 12),
             // Upload Button
@@ -2576,13 +2881,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 onPressed: _pickAdditionalDocuments,
                 icon: const Icon(Icons.cloud_upload_rounded, size: 18),
                 label: Text(
-                  t('rideshare_upload_btn', fallback: 'Upload license documents photo'),
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+                  t('rideshare_upload_btn',
+                      fallback: 'Upload license documents photo'),
+                  style: GoogleFonts.inter(
+                      fontSize: 13, fontWeight: FontWeight.w700),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _indigo,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
               ),
@@ -2592,13 +2900,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               const SizedBox(height: 14),
               Text(
                 t('rideshare_uploaded_docs', fallback: 'Uploaded Documents'),
-                style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: _slate600),
+                style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: _slate600),
               ),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: List.generate(_additionalDocumentLabels.length, (index) {
+                children:
+                    List.generate(_additionalDocumentLabels.length, (index) {
                   final label = _additionalDocumentLabels[index];
                   return Container(
                     padding: const EdgeInsets.all(10),
@@ -2625,12 +2937,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                             color: _indigo.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: _additionalDocuments[index].startsWith('data:image')
+                          child: _additionalDocuments[index]
+                                  .startsWith('data:image')
                               ? Image.memory(
-                                  base64Decode(_additionalDocuments[index].split(',')[1]),
+                                  base64Decode(_additionalDocuments[index]
+                                      .split(',')[1]),
                                   fit: BoxFit.cover,
                                 )
-                              : Icon(Icons.insert_drive_file_rounded, size: 28, color: _indigo),
+                              : Icon(Icons.insert_drive_file_rounded,
+                                  size: 28, color: _indigo),
                         ),
                         const SizedBox(height: 6),
                         // Document name/label
@@ -2641,7 +2956,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(fontSize: 9, fontWeight: FontWeight.w600, color: _slate800),
+                            style: GoogleFonts.inter(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                                color: _slate800),
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -2675,8 +2993,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    t('rideshare_service_section', fallback: 'Service Preferences'),
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                    t('rideshare_service_section',
+                        fallback: 'Service Preferences'),
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _slate800),
                   ),
                 ),
               ],
@@ -2698,19 +3020,27 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        t('rideshare_service_radius', fallback: 'Minimum Service Radius'),
-                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate800),
+                        t('rideshare_service_radius',
+                            fallback: 'Minimum Service Radius'),
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _slate800),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: _indigo.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         '${_serviceRadius.toStringAsFixed(0)} km',
-                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: _indigo),
+                        style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: _indigo),
                       ),
                     ),
                   ]),
@@ -2718,7 +3048,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   SliderTheme(
                     data: SliderThemeData(
                       trackHeight: 4,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                      thumbShape:
+                          const RoundSliderThumbShape(enabledThumbRadius: 10),
                       activeTrackColor: _indigo,
                       inactiveTrackColor: _slate300,
                       thumbColor: _indigo,
@@ -2752,12 +3083,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        t('rideshare_max_ride_distance', fallback: 'Max Ride Distance'),
-                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate800),
+                        t('rideshare_max_ride_distance',
+                            fallback: 'Max Ride Distance'),
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _slate800),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: _indigo.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
@@ -2766,7 +3102,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         _maxRideDistance == 0
                             ? t('rideshare_no_limit', fallback: 'Unlimited')
                             : '${_maxRideDistance.toStringAsFixed(0)} km',
-                        style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700, color: _indigo),
+                        style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: _indigo),
                       ),
                     ),
                   ]),
@@ -2774,7 +3113,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   SliderTheme(
                     data: SliderThemeData(
                       trackHeight: 4,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                      thumbShape:
+                          const RoundSliderThumbShape(enabledThumbRadius: 10),
                       activeTrackColor: _indigo,
                       inactiveTrackColor: _slate300,
                       thumbColor: _indigo,
@@ -2813,14 +3153,18 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       _isSavingProfile
                           ? t('rideshare_saving', fallback: 'Saving...')
                           : _driverProfile == null
-                              ? t('rideshare_apply_driver', fallback: 'Apply as Driver')
-                              : t('rideshare_save_profile', fallback: 'Save Changes'),
-                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+                              ? t('rideshare_apply_driver',
+                                  fallback: 'Apply as Driver')
+                              : t('rideshare_save_profile',
+                                  fallback: 'Save Changes'),
+                      style: GoogleFonts.inter(
+                          fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: _indigo,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                       elevation: 0,
                     ),
                   ),
@@ -2835,7 +3179,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   style: OutlinedButton.styleFrom(
                     foregroundColor: _indigo,
                     side: const BorderSide(color: _indigo),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                     padding: EdgeInsets.zero,
                   ),
                   child: const Icon(Icons.two_wheeler_rounded, size: 20),
@@ -2865,13 +3210,19 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             children: [
               _buildProfileSummaryPill(
                 icon: Icons.credit_card_rounded,
-                label: licenseLocked ? t('rideshare_license_submitted', fallback: 'License submitted') : t('rideshare_license_pending', fallback: 'License pending'),
+                label: licenseLocked
+                    ? t('rideshare_license_submitted',
+                        fallback: 'License submitted')
+                    : t('rideshare_license_pending',
+                        fallback: 'License pending'),
                 color: licenseLocked ? _emerald : _slate500,
                 highlighted: licenseLocked,
               ),
               _buildProfileSummaryPill(
                 icon: Icons.perm_identity_rounded,
-                label: nidLocked ? t('rideshare_nid_submitted', fallback: 'NID submitted') : t('rideshare_nid_pending', fallback: 'NID pending'),
+                label: nidLocked
+                    ? t('rideshare_nid_submitted', fallback: 'NID submitted')
+                    : t('rideshare_nid_pending', fallback: 'NID pending'),
                 color: nidLocked ? _emerald : _slate500,
                 highlighted: nidLocked,
               ),
@@ -2883,7 +3234,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               ),
               _buildProfileSummaryPill(
                 icon: Icons.route_rounded,
-                label: _maxRideDistance == 0 ? t('rideshare_no_distance_limit', fallback: 'No distance limit') : '${_maxRideDistance.toStringAsFixed(0)} km max ride',
+                label: _maxRideDistance == 0
+                    ? t('rideshare_no_distance_limit',
+                        fallback: 'No distance limit')
+                    : '${_maxRideDistance.toStringAsFixed(0)} km max ride',
                 color: _indigo,
                 highlighted: true,
               ),
@@ -2902,7 +3256,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             hasSubmittedIdentity
                 ? 'Identity fields are locked after first submission. Open this section only when you need to review status or update service radius.'
                 : 'Open this section to complete your driver profile before going online.',
-            style: GoogleFonts.inter(fontSize: 11, color: _slate500, height: 1.35),
+            style:
+                GoogleFonts.inter(fontSize: 11, color: _slate500, height: 1.35),
           ),
         ],
       ),
@@ -2920,7 +3275,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       decoration: BoxDecoration(
         color: highlighted ? color.withValues(alpha: 0.08) : _slate50,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: highlighted ? color.withValues(alpha: 0.22) : _slate200),
+        border: Border.all(
+            color: highlighted ? color.withValues(alpha: 0.22) : _slate200),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -2929,7 +3285,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: color),
+            style: GoogleFonts.inter(
+                fontSize: 11, fontWeight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -2948,12 +3305,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       margin: const EdgeInsets.fromLTRB(14, 12, 14, 0),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-          color: bgColor, borderRadius: BorderRadius.circular(10),
+          color: bgColor,
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: borderColor)),
       child: Row(children: [
         Icon(icon, size: 14, color: iconColor),
         const SizedBox(width: 8),
-        Expanded(child: Text(msg, style: GoogleFonts.inter(fontSize: 11, color: textColor))),
+        Expanded(
+            child: Text(msg,
+                style: GoogleFonts.inter(fontSize: 11, color: textColor))),
       ]),
     );
   }
@@ -3002,8 +3362,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   child: Icon(Icons.lock_rounded, size: 16, color: _slate400),
                 )
               : null,
-          prefixIconConstraints: const BoxConstraints(minWidth: 42, minHeight: 42),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 42, minHeight: 42),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
           filled: true,
           fillColor: readOnly ? _slate100 : _slate50,
           border: OutlineInputBorder(
@@ -3036,7 +3398,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(label,
-          style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700, color: color)),
+          style: GoogleFonts.inter(
+              fontSize: 10, fontWeight: FontWeight.w700, color: color)),
     );
   }
 
@@ -3061,28 +3424,37 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             const Icon(Icons.hail_rounded, size: 16, color: _indigo),
             const SizedBox(width: 8),
             Text(t('rideshare_ride_requests', fallback: 'Ride Requests'),
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+                style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _slate800)),
             const Spacer(),
             if (isOnline && _availableRequests.isNotEmpty)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _emerald.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+                    color: _emerald.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6)),
                 child: Text('${_availableRequests.length}',
                     style: GoogleFonts.inter(
-                        fontSize: 11, fontWeight: FontWeight.w700, color: _emerald)),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: _emerald)),
               ),
             if (isOnline)
               GestureDetector(
                 onTap: _loadAvailableRequests,
                 child: Container(
                   margin: const EdgeInsets.only(left: 6),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                       color: _slate100, borderRadius: BorderRadius.circular(6)),
                   child: Text(t('rideshare_refresh', fallback: 'Refresh'),
                       style: GoogleFonts.inter(
-                          fontSize: 10, fontWeight: FontWeight.w600, color: _slate500)),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: _slate500)),
                 ),
               ),
             Container(
@@ -3092,21 +3464,36 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 color: isOnline ? _emerald.withValues(alpha: 0.12) : _slate100,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Text(isOnline ? t('rideshare_online_label', fallback: 'Online') : t('rideshare_offline_status', fallback: 'Offline'),
-                  style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w700,
+              child: Text(
+                  isOnline
+                      ? t('rideshare_online_label', fallback: 'Online')
+                      : t('rideshare_offline_status', fallback: 'Offline'),
+                  style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
                       color: isOnline ? _emerald : _slate500)),
             ),
           ]),
         ),
         if (!isOnline)
-          _buildEmptyRequests(Icons.wifi_off_rounded, t('rideshare_you_are_offline', fallback: 'You are offline'), t('rideshare_go_online_desc', fallback: 'Go online using the switch above to receive ride requests.'))
+          _buildEmptyRequests(
+              Icons.wifi_off_rounded,
+              t('rideshare_you_are_offline', fallback: 'You are offline'),
+              t('rideshare_go_online_desc',
+                  fallback:
+                      'Go online using the switch above to receive ride requests.'))
         else if (_availableRequests.isEmpty)
-          _buildEmptyRequests(Icons.search_rounded, t('rideshare_no_requests_yet', fallback: 'No requests yet'),
-              t('rideshare_requests_auto_appear', fallback: 'New ride requests will automatically appear here.'))
+          _buildEmptyRequests(
+              Icons.search_rounded,
+              t('rideshare_no_requests_yet', fallback: 'No requests yet'),
+              t('rideshare_requests_auto_appear',
+                  fallback:
+                      'New ride requests will automatically appear here.'))
         else
           Padding(
             padding: const EdgeInsets.all(4),
-            child: Column(children: _availableRequests.map(_buildRequestCard).toList()),
+            child: Column(
+                children: _availableRequests.map(_buildRequestCard).toList()),
           ),
       ]),
     );
@@ -3118,14 +3505,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       child: Column(children: [
         Container(
           padding: const EdgeInsets.all(14),
-          decoration: const BoxDecoration(color: _slate100, shape: BoxShape.circle),
+          decoration:
+              const BoxDecoration(color: _slate100, shape: BoxShape.circle),
           child: Icon(icon, size: 28, color: _slate400),
         ),
         const SizedBox(height: 12),
-        Text(title, style: GoogleFonts.inter(
-            fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
+        Text(title,
+            style: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w700, color: _slate800)),
         const SizedBox(height: 4),
-        Text(subtitle, textAlign: TextAlign.center,
+        Text(subtitle,
+            textAlign: TextAlign.center,
             style: GoogleFonts.inter(fontSize: 12, color: _slate500)),
       ]),
     );
@@ -3144,9 +3534,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isTargeted && !isExpired
-              ? const Color(0xFFFDE68A)
-              : _slate200,
+          color: isTargeted && !isExpired ? const Color(0xFFFDE68A) : _slate200,
           width: isTargeted && !isExpired ? 1.5 : 1,
         ),
         boxShadow: [
@@ -3165,7 +3553,6 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         ],
       ),
       child: Column(children: [
-
         // ── Header strip ─────────────────────────────────────────────────
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -3199,7 +3586,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             const SizedBox(width: 10),
 
             // Rider info
-            Expanded(child: Column(
+            Expanded(
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildIdentityRow(
@@ -3208,7 +3596,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   isPro: ride.riderIsPro,
                   completedTrips: ride.riderCompletedTrips,
                   textStyle: GoogleFonts.inter(
-                      fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _slate800),
                 ),
                 const SizedBox(height: 2),
                 Row(children: [
@@ -3228,7 +3618,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               if (isTargeted)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isExpired ? _slate100 : const Color(0xFFFEF3C7),
                     borderRadius: BorderRadius.circular(20),
@@ -3257,9 +3648,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 ),
               if (isTargeted) const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [_emerald, _emeraldDark]),
+                  gradient:
+                      const LinearGradient(colors: [_emerald, _emeraldDark]),
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
@@ -3272,7 +3665,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 child: Text(
                   '৳${ride.fareEstimate.toStringAsFixed(0)}',
                   style: GoogleFonts.inter(
-                      fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white),
                 ),
               ),
             ]),
@@ -3295,7 +3690,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             _buildMini(t('rideshare_distance', fallback: 'Distance'),
                 '${ride.distanceKm.toStringAsFixed(1)} km', _slate800),
             const SizedBox(width: 6),
-            _buildMini(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay, _slate800),
+            _buildMini(t('rideshare_eta', fallback: 'ETA'), ride.etaDisplay,
+                _slate800),
           ]),
         ),
 
@@ -3321,15 +3717,19 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     ),
                     child: Center(
                       child: isSkipping
-                          ? const SizedBox(width: 16, height: 16,
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
                               child: CircularProgressIndicator(
                                   strokeWidth: 2, color: _slate400))
                           : Row(mainAxisSize: MainAxisSize.min, children: [
-                              const Icon(Icons.skip_next_rounded, size: 15, color: _slate500),
+                              const Icon(Icons.skip_next_rounded,
+                                  size: 15, color: _slate500),
                               const SizedBox(width: 4),
                               Text(t('rideshare_skip', fallback: 'Skip'),
                                   style: GoogleFonts.inter(
-                                      fontSize: 12, fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
                                       color: _slate500)),
                             ]),
                     ),
@@ -3373,13 +3773,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       child: Center(
                         child: _isAcceptingRide
                             ? Row(mainAxisSize: MainAxisSize.min, children: [
-                                const SizedBox(width: 16, height: 16,
+                                const SizedBox(
+                                    width: 16,
+                                    height: 16,
                                     child: CircularProgressIndicator(
                                         strokeWidth: 2, color: Colors.white)),
                                 const SizedBox(width: 8),
                                 Text('Accepting...',
                                     style: GoogleFonts.inter(
-                                        fontSize: 13, fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
                                         color: Colors.white)),
                               ])
                             : Row(mainAxisSize: MainAxisSize.min, children: [
@@ -3393,8 +3796,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                                 const SizedBox(width: 6),
                                 Text(
                                   isExpired
-                                      ? t('rideshare_expired', fallback: 'Expired')
-                                      : t('rideshare_accept_ride', fallback: 'Accept Ride'),
+                                      ? t('rideshare_expired',
+                                          fallback: 'Expired')
+                                      : t('rideshare_accept_ride',
+                                          fallback: 'Accept Ride'),
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
@@ -3471,7 +3876,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               margin: const EdgeInsets.symmetric(vertical: 2),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_indigo.withValues(alpha: 0.5), _emerald.withValues(alpha: 0.5)],
+                  colors: [
+                    _indigo.withValues(alpha: 0.5),
+                    _emerald.withValues(alpha: 0.5)
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -3495,7 +3903,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -3506,7 +3915,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 ),
                 child: Text('PICK',
                     style: GoogleFonts.inter(
-                        fontSize: 8, fontWeight: FontWeight.w800, color: _indigo,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        color: _indigo,
                         letterSpacing: 0.5)),
               ),
               Expanded(
@@ -3514,7 +3925,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                        fontSize: 12, fontWeight: FontWeight.w600, color: _slate800)),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _slate800)),
               ),
             ]),
             const SizedBox(height: 10),
@@ -3528,7 +3941,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 ),
                 child: Text('DROP',
                     style: GoogleFonts.inter(
-                        fontSize: 8, fontWeight: FontWeight.w800, color: _emerald,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        color: _emerald,
                         letterSpacing: 0.5)),
               ),
               Expanded(
@@ -3536,7 +3951,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                        fontSize: 12, fontWeight: FontWeight.w600, color: _slate800)),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _slate800)),
               ),
             ]),
           ]),
@@ -3552,7 +3969,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     return Column(children: [
       Container(
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(14),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: _slate200)),
         child: Column(children: [
           // Gradient header
@@ -3563,11 +3981,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               borderRadius: BorderRadius.vertical(top: Radius.circular(13)),
             ),
             child: Row(children: [
-              const Icon(Icons.directions_car_rounded, color: Colors.white, size: 18),
+              const Icon(Icons.directions_car_rounded,
+                  color: Colors.white, size: 18),
               const SizedBox(width: 8),
-              Expanded(child: Text(t('rideshare_active_ride', fallback: 'Active Ride'),
-                  style: GoogleFonts.inter(
-                      fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white))),
+              Expanded(
+                  child: Text(
+                      t('rideshare_active_ride', fallback: 'Active Ride'),
+                      style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white))),
               _buildStatusPill(ride.statusDisplay),
             ]),
           ),
@@ -3582,29 +4005,36 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     radius: 20,
                     backgroundColor: _slate100,
                     backgroundImage: ride.riderAvatar != null
-                        ? NetworkImage(ride.riderAvatar!) : null,
+                        ? NetworkImage(ride.riderAvatar!)
+                        : null,
                     child: ride.riderAvatar == null
-                        ? const Icon(Icons.person_rounded, size: 20, color: _slate500) : null,
+                        ? const Icon(Icons.person_rounded,
+                            size: 20, color: _slate500)
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 10),
-                Expanded(child: GestureDetector(
+                Expanded(
+                    child: GestureDetector(
                   onTap: () => _openBusinessProfile(ride.riderId),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _buildIdentityRow(
-                      name: ride.riderName,
-                      isVerified: ride.riderIsVerified,
-                      isPro: ride.riderIsPro,
-                      completedTrips: ride.riderCompletedTrips,
-                      textStyle: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: _slate800,
-                      ),
-                    ),
-                    Text(t('rideshare_passenger', fallback: 'Passenger'),
-                        style: GoogleFonts.inter(fontSize: 11, color: _slate500)),
-                  ]),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildIdentityRow(
+                          name: ride.riderName,
+                          isVerified: ride.riderIsVerified,
+                          isPro: ride.riderIsPro,
+                          completedTrips: ride.riderCompletedTrips,
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: _slate800,
+                          ),
+                        ),
+                        Text(t('rideshare_passenger', fallback: 'Passenger'),
+                            style: GoogleFonts.inter(
+                                fontSize: 11, color: _slate500)),
+                      ]),
                 )),
                 if (_canChatWithPassenger(ride))
                   GestureDetector(
@@ -3614,8 +4044,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       height: 40,
                       padding: const EdgeInsets.all(9),
                       decoration: BoxDecoration(
-                        color: _emerald.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(9),
-                        border: Border.all(color: _emerald.withValues(alpha: 0.25)),
+                        color: _emerald.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(9),
+                        border:
+                            Border.all(color: _emerald.withValues(alpha: 0.25)),
                       ),
                       child: Image.asset(
                         'assets/images/chat_icon.png',
@@ -3640,7 +4072,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       decoration: BoxDecoration(
                         color: _emerald.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(9),
-                        border: Border.all(color: _emerald.withValues(alpha: 0.25)),
+                        border:
+                            Border.all(color: _emerald.withValues(alpha: 0.25)),
                       ),
                       child: const Icon(
                         Icons.phone_rounded,
@@ -3655,11 +4088,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               _buildRouteWidget(ride),
               const SizedBox(height: 10),
               Row(children: [
-                _buildMini(t('rideshare_fare', fallback: 'Fare'), '৳${ride.payableFare.toStringAsFixed(0)}', _indigo),
+                _buildMini(t('rideshare_fare', fallback: 'Fare'),
+                    '৳${ride.payableFare.toStringAsFixed(0)}', _indigo),
                 const SizedBox(width: 6),
-                _buildMini(t('rideshare_distance', fallback: 'Distance'), '${_currentDisplayedDistanceKm(ride).toStringAsFixed(1)} km', _slate800),
+                _buildMini(
+                    t('rideshare_distance', fallback: 'Distance'),
+                    '${_currentDisplayedDistanceKm(ride).toStringAsFixed(1)} km',
+                    _slate800),
                 const SizedBox(width: 6),
-                _buildMini(t('rideshare_eta', fallback: 'ETA'), _currentDisplayedEta(ride), _slate800),
+                _buildMini(t('rideshare_eta', fallback: 'ETA'),
+                    _currentDisplayedEta(ride), _slate800),
                 const Spacer(),
                 _buildPaymentBadge(ride.paymentMethod),
               ]),
@@ -3672,11 +4110,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       const SizedBox(height: 10),
       _buildMapSectionFrame(
         context: context,
-        icon: ride.isInProgress ? Icons.navigation_rounded : Icons.route_rounded,
+        icon:
+            ride.isInProgress ? Icons.navigation_rounded : Icons.route_rounded,
         title: t('rideshare_command_map', fallback: 'Trip Command Map'),
         subtitle: ride.isInProgress
-            ? t('rideshare_command_map_progress_subtitle', fallback: 'Keep the passenger, route path and live driver position visible while you drive.')
-            : t('rideshare_command_map_arrival_subtitle', fallback: 'Use the route preview to approach pickup with live passenger visibility.'),
+            ? t('rideshare_command_map_progress_subtitle',
+                fallback:
+                    'Keep the passenger, route path and live driver position visible while you drive.')
+            : t('rideshare_command_map_arrival_subtitle',
+                fallback:
+                    'Use the route preview to approach pickup with live passenger visibility.'),
         badge: ride.isInProgress
             ? t('rideshare_live_badge', fallback: 'Live')
             : t('rideshare_en_route_badge', fallback: 'En Route'),
@@ -3700,7 +4143,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(8)),
       child: Text(label,
           style: GoogleFonts.inter(
               fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white)),
@@ -3709,7 +4153,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
 
   Widget _buildRideActions(Ride ride) {
     if (_isUpdatingStatus) {
-      return const Center(child: CircularProgressIndicator(color: _indigo, strokeWidth: 2));
+      return const Center(
+          child: CircularProgressIndicator(color: _indigo, strokeWidth: 2));
     }
     switch (ride.status) {
       case 'accepted':
@@ -3721,10 +4166,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 foregroundColor: Colors.red.shade600,
                 side: BorderSide(color: Colors.red.shade300),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(t('cancel', fallback: 'Cancel'),
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ),
           const SizedBox(width: 10),
@@ -3733,12 +4180,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             child: FilledButton.icon(
               onPressed: () => _advanceRideWithNavigation('driver_arriving'),
               icon: const Icon(Icons.navigation_rounded, size: 16),
-              label: Text(t('rideshare_start_navigation', fallback: 'Start Navigation'),
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13)),
+              label: Text(
+                  t('rideshare_start_navigation', fallback: 'Start Navigation'),
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700, fontSize: 13)),
               style: FilledButton.styleFrom(
                 backgroundColor: _indigo,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -3752,9 +4202,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 foregroundColor: Colors.red.shade600,
                 side: BorderSide(color: Colors.red.shade300),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
-              child: Text(t('cancel', fallback: 'Cancel'), style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+              child: Text(t('cancel', fallback: 'Cancel'),
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ),
           const SizedBox(width: 10),
@@ -3764,11 +4217,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
               onPressed: () => _advanceRideWithNavigation('in_progress'),
               icon: const Icon(Icons.play_arrow_rounded, size: 18),
               label: Text(t('rideshare_start_ride', fallback: 'Start Ride'),
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700, fontSize: 14)),
               style: FilledButton.styleFrom(
                 backgroundColor: _emerald,
                 padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ),
@@ -3785,9 +4240,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     foregroundColor: Colors.red.shade600,
                     side: BorderSide(color: Colors.red.shade300),
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: Text(t('cancel', fallback: 'Cancel'), style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                  child: Text(t('cancel', fallback: 'Cancel'),
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600, fontSize: 13)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -3796,11 +4254,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   onPressed: _showCompleteRideDialog,
                   icon: const Icon(Icons.check_circle_rounded, size: 18),
                   label: Text(t('rideshare_complete', fallback: 'Complete'),
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700, fontSize: 14)),
                   style: FilledButton.styleFrom(
                     backgroundColor: _emerald,
                     padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ),
@@ -3809,12 +4269,15 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             FilledButton.icon(
               onPressed: _requestEarlyCompletion,
               icon: const Icon(Icons.flag_circle_rounded, size: 18),
-              label: Text(t('rideshare_early_complete', fallback: 'Early Complete'),
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+              label: Text(
+                  t('rideshare_early_complete', fallback: 'Early Complete'),
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700, fontSize: 14)),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEA580C),
                 padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             ),
           ],
@@ -3831,8 +4294,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 border: Border.all(color: const Color(0xFFFDE68A)),
               ),
               child: Text(
-                t('rideshare_awaiting_passenger_confirm', fallback: 'Early completion payment awaiting passenger confirmation.'),
-                style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF92400E)),
+                t('rideshare_awaiting_passenger_confirm',
+                    fallback:
+                        'Early completion payment awaiting passenger confirmation.'),
+                style: GoogleFonts.inter(
+                    fontSize: 12, color: const Color(0xFF92400E)),
               ),
             ),
             const SizedBox(height: 10),
@@ -3842,10 +4308,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 foregroundColor: Colors.red.shade600,
                 side: BorderSide(color: Colors.red.shade300),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: Text(t('rideshare_cancel_ride', fallback: 'Cancel Ride'),
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600, fontSize: 13)),
             ),
           ],
         );
@@ -3862,24 +4330,32 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        title: Text(t('rideshare_early_complete_confirm_title', fallback: 'Complete Early?'),
-            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+        title: Text(
+            t('rideshare_early_complete_confirm_title',
+                fallback: 'Complete Early?'),
+            style:
+                GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
-          t('rideshare_early_complete_desc', fallback: 'This will calculate a partial fare based on distance covered and send a confirmation to the passenger.'),
+          t('rideshare_early_complete_desc',
+              fallback:
+                  'This will calculate a partial fare based on distance covered and send a confirmation to the passenger.'),
           style: GoogleFonts.inter(fontSize: 13, color: _slate500),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t('cancel', fallback: 'Cancel'), style: GoogleFonts.inter(color: _slate500)),
+            child: Text(t('cancel', fallback: 'Cancel'),
+                style: GoogleFonts.inter(color: _slate500)),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFEA580C),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text(t('rideshare_confirm', fallback: 'Confirm'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            child: Text(t('rideshare_confirm', fallback: 'Confirm'),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -3901,7 +4377,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       // Fallback: use last known position or profile coordinates
       try {
         final last = await Geolocator.getLastKnownPosition();
-        if (last != null) { lat = last.latitude; lng = last.longitude; }
+        if (last != null) {
+          lat = last.latitude;
+          lng = last.longitude;
+        }
       } catch (_) {}
     }
 
@@ -3916,7 +4395,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     if (result.success && result.data != null) {
       setState(() => _activeRide = result.data);
       _syncRealtimeConnections();
-      _showSuccess(t('rideshare_early_complete_requested', fallback: 'Passenger confirmation requested for early completion.'));
+      _showSuccess(t('rideshare_early_complete_requested',
+          fallback: 'Passenger confirmation requested for early completion.'));
     } else {
       _showError(result.message);
     }
@@ -3926,11 +4406,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     final ride = _activeRide;
     if (ride == null) return;
     final fare = ride.fareEstimate;
-    final paymentMethod = ride.paymentMethod.isEmpty ? 'wallet' : ride.paymentMethod;
+    final paymentMethod =
+        ride.paymentMethod.isEmpty ? 'wallet' : ride.paymentMethod;
     final isCash = paymentMethod == 'cash';
 
     // Fee breakdown (5% platform fee)
-    final double feePercent = ride.platformFeePercent > 0 ? ride.platformFeePercent : 5.0;
+    final double feePercent =
+        ride.platformFeePercent > 0 ? ride.platformFeePercent : 5.0;
     final double platformFee = (fare * feePercent / 100);
     final double driverEarnings = fare - platformFee;
 
@@ -3943,7 +4425,8 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
+        padding: EdgeInsets.fromLTRB(
+            20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3969,12 +4452,16 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     color: _emerald.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.flag_rounded, color: _emerald, size: 20),
+                  child:
+                      const Icon(Icons.flag_rounded, color: _emerald, size: 20),
                 ),
                 const SizedBox(width: 10),
                 Text(
                   t('rideshare_complete_ride', fallback: 'Complete Ride'),
-                  style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800, color: _slate800),
+                  style: GoogleFonts.inter(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: _slate800),
                 ),
               ],
             ),
@@ -3992,9 +4479,12 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   CircleAvatar(
                     radius: 18,
                     backgroundColor: _slate100,
-                    backgroundImage: ride.riderAvatar != null ? NetworkImage(ride.riderAvatar!) : null,
+                    backgroundImage: ride.riderAvatar != null
+                        ? NetworkImage(ride.riderAvatar!)
+                        : null,
                     child: ride.riderAvatar == null
-                        ? const Icon(Icons.person_rounded, size: 18, color: _slate500)
+                        ? const Icon(Icons.person_rounded,
+                            size: 18, color: _slate500)
                         : null,
                   ),
                   const SizedBox(width: 10),
@@ -4004,7 +4494,10 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       isVerified: ride.riderIsVerified,
                       isPro: ride.riderIsPro,
                       completedTrips: ride.riderCompletedTrips,
-                      textStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: _slate800),
+                      textStyle: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _slate800),
                     ),
                   ),
                 ],
@@ -4023,12 +4516,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.circle, size: 10, color: Color(0xFF6366F1)),
+                      const Icon(Icons.circle,
+                          size: 10, color: Color(0xFF6366F1)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          ride.pickupAddress.isNotEmpty ? ride.pickupAddress : t('rideshare_pickup_location', fallback: 'Pickup Location'),
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569)),
+                          ride.pickupAddress.isNotEmpty
+                              ? ride.pickupAddress
+                              : t('rideshare_pickup_location',
+                                  fallback: 'Pickup Location'),
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: const Color(0xFF475569)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -4041,12 +4539,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.square_rounded, size: 10, color: _emerald),
+                      const Icon(Icons.square_rounded,
+                          size: 10, color: _emerald),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          ride.dropAddress.isNotEmpty ? ride.dropAddress : t('rideshare_drop_location', fallback: 'Drop Location'),
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569)),
+                          ride.dropAddress.isNotEmpty
+                              ? ride.dropAddress
+                              : t('rideshare_drop_location',
+                                  fallback: 'Drop Location'),
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: const Color(0xFF475569)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -4071,8 +4574,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     child: Column(
                       children: [
                         Text('${ride.distanceKm.toStringAsFixed(1)} km',
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF334155))),
-                        Text(t('rideshare_distance', fallback: 'Distance'), style: GoogleFonts.inter(fontSize: 10, color: _slate400)),
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF334155))),
+                        Text(t('rideshare_distance', fallback: 'Distance'),
+                            style: GoogleFonts.inter(
+                                fontSize: 10, color: _slate400)),
                       ],
                     ),
                   ),
@@ -4089,8 +4597,13 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     child: Column(
                       children: [
                         Text(ride.etaDisplay,
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: const Color(0xFF334155))),
-                        Text('Duration', style: GoogleFonts.inter(fontSize: 10, color: _slate400)),
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF334155))),
+                        Text('Duration',
+                            style: GoogleFonts.inter(
+                                fontSize: 10, color: _slate400)),
                       ],
                     ),
                   ),
@@ -4100,14 +4613,21 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                      gradient: const LinearGradient(
+                          colors: [Color(0xFF10B981), Color(0xFF059669)]),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
                       children: [
                         Text('৳${fare.toStringAsFixed(0)}',
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white)),
-                        Text(t('rideshare_fare', fallback: 'Fare'), style: GoogleFonts.inter(fontSize: 10, color: Colors.white.withValues(alpha: 0.8))),
+                            style: GoogleFonts.inter(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white)),
+                        Text(t('rideshare_fare', fallback: 'Fare'),
+                            style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: Colors.white.withValues(alpha: 0.8))),
                       ],
                     ),
                   ),
@@ -4119,18 +4639,25 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isCash ? const Color(0xFFFFFBEB) : const Color(0xFFEEF2FF),
+                color:
+                    isCash ? const Color(0xFFFFFBEB) : const Color(0xFFEEF2FF),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: isCash ? const Color(0xFFFDE68A) : const Color(0xFFC7D2FE),
+                  color: isCash
+                      ? const Color(0xFFFDE68A)
+                      : const Color(0xFFC7D2FE),
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
-                    isCash ? Icons.payments_rounded : Icons.account_balance_wallet_rounded,
+                    isCash
+                        ? Icons.payments_rounded
+                        : Icons.account_balance_wallet_rounded,
                     size: 18,
-                    color: isCash ? const Color(0xFFD97706) : const Color(0xFF6366F1),
+                    color: isCash
+                        ? const Color(0xFFD97706)
+                        : const Color(0xFF6366F1),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -4138,11 +4665,17 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isCash ? t('rideshare_cash_payment', fallback: 'Cash Payment') : t('rideshare_wallet_payment', fallback: 'Wallet Payment'),
+                          isCash
+                              ? t('rideshare_cash_payment',
+                                  fallback: 'Cash Payment')
+                              : t('rideshare_wallet_payment',
+                                  fallback: 'Wallet Payment'),
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: isCash ? const Color(0xFF92400E) : const Color(0xFF3730A3),
+                            color: isCash
+                                ? const Color(0xFF92400E)
+                                : const Color(0xFF3730A3),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -4152,7 +4685,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                               : '৳${fare.toStringAsFixed(0)} will be auto-deducted from passenger wallet.',
                           style: GoogleFonts.inter(
                             fontSize: 11,
-                            color: isCash ? const Color(0xFF78350F) : const Color(0xFF4338CA),
+                            color: isCash
+                                ? const Color(0xFF78350F)
+                                : const Color(0xFF4338CA),
                             height: 1.35,
                           ),
                         ),
@@ -4177,19 +4712,26 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(t('rideshare_trip_fare', fallback: 'Trip Fare'),
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF475569))),
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: const Color(0xFF475569))),
                       Text('৳${fare.toStringAsFixed(0)}',
-                          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF334155))),
+                          style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF334155))),
                     ],
                   ),
                   const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('${t('rideshare_platform_fee', fallback: 'Platform Fee')} (${feePercent.toStringAsFixed(0)}%)',
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
+                      Text(
+                          '${t('rideshare_platform_fee', fallback: 'Platform Fee')} (${feePercent.toStringAsFixed(0)}%)',
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: const Color(0xFF64748B))),
                       Text('- ৳${platformFee.toStringAsFixed(0)}',
-                          style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFFDC2626))),
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: const Color(0xFFDC2626))),
                     ],
                   ),
                   const Padding(
@@ -4199,28 +4741,41 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(t('rideshare_your_earnings', fallback: 'Your Earnings'),
-                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF166534))),
+                      Text(
+                          t('rideshare_your_earnings',
+                              fallback: 'Your Earnings'),
+                          style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF166534))),
                       Text('৳${driverEarnings.toStringAsFixed(0)}',
-                          style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w800, color: const Color(0xFF16A34A))),
+                          style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF16A34A))),
                     ],
                   ),
                   if (isCash) ...[
                     const SizedBox(height: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFEF3C7),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.info_outline_rounded, size: 13, color: Color(0xFFD97706)),
+                          const Icon(Icons.info_outline_rounded,
+                              size: 13, color: Color(0xFFD97706)),
                           const SizedBox(width: 5),
                           Expanded(
                             child: Text(
                               '৳${platformFee.toStringAsFixed(0)} ${t('rideshare_cash_fee_due_note', fallback: 'platform fee will be added as cash due')}',
-                              style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF92400E), height: 1.3),
+                              style: GoogleFonts.inter(
+                                  fontSize: 10.5,
+                                  color: const Color(0xFF92400E),
+                                  height: 1.3),
                             ),
                           ),
                         ],
@@ -4241,9 +4796,11 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                       foregroundColor: const Color(0xFF475569),
                       side: const BorderSide(color: _slate300),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: Text(t('cancel', fallback: 'Cancel'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                    child: Text(t('cancel', fallback: 'Cancel'),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -4252,20 +4809,30 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   child: FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(ctx);
-                      _updateRideStatus('completed', paymentMethod: paymentMethod);
+                      _updateRideStatus('completed',
+                          paymentMethod: paymentMethod);
                     },
                     icon: Icon(
-                      isCash ? Icons.payments_rounded : Icons.check_circle_rounded,
+                      isCash
+                          ? Icons.payments_rounded
+                          : Icons.check_circle_rounded,
                       size: 18,
                     ),
                     label: Text(
-                      isCash ? t('rideshare_confirm_cash_received', fallback: 'Confirm & Cash Received') : t('rideshare_confirm_completion', fallback: 'Confirm Completion'),
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13),
+                      isCash
+                          ? t('rideshare_confirm_cash_received',
+                              fallback: 'Confirm & Cash Received')
+                          : t('rideshare_confirm_completion',
+                              fallback: 'Confirm Completion'),
+                      style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700, fontSize: 13),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: isCash ? const Color(0xFFD97706) : _emerald,
+                      backgroundColor:
+                          isCash ? const Color(0xFFD97706) : _emerald,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
                 ),
@@ -4277,8 +4844,3 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
     );
   }
 }
-
-
-
-
-

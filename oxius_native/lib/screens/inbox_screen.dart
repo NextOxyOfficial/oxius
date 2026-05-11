@@ -635,8 +635,8 @@ class _InboxScreenState extends State<InboxScreen>
               indicatorColor: const Color(0xFF3B82F6),
               labelColor: const Color(0xFF3B82F6),
               unselectedLabelColor: const Color(0xFF6B7280),
-              labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: -0.2),
-              unselectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: -0.2),
+              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: -0.2),
+              unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, letterSpacing: -0.2),
               tabAlignment: TabAlignment.fill,
               isScrollable: false,
               tabs: [
@@ -647,10 +647,10 @@ class _InboxScreenState extends State<InboxScreen>
                     children: [
                       Image.asset(
                         'assets/images/chat_icon.png',
-                        width: 12,
-                        height: 12,
+                        width: 15,
+                        height: 15,
                         errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.chat_bubble_rounded, size: 12);
+                          return const Icon(Icons.chat_bubble_rounded, size: 15);
                         },
                       ),
                       const SizedBox(width: 4),
@@ -684,7 +684,7 @@ class _InboxScreenState extends State<InboxScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.notifications_rounded, size: 14),
+                      const Icon(Icons.notifications_rounded, size: 16),
                       const SizedBox(width: 4),
                       const Text('Updates'),
                       if (updatesCount > 0) ...[
@@ -716,7 +716,7 @@ class _InboxScreenState extends State<InboxScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.support_agent_rounded, size: 14),
+                      const Icon(Icons.support_agent_rounded, size: 16),
                       const SizedBox(width: 4),
                       const Text('Support'),
                       if (supportTicketsCount > 0) ...[

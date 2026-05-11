@@ -534,7 +534,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     required VoidCallback onTap,
   }) {
     return Material(
-      color: _slate100,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
       child: InkWell(
         onTap: onTap,
@@ -775,18 +775,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _buildHeroBadge(
-                icon: stock > 0
-                    ? Icons.check_circle_rounded
-                    : Icons.remove_shopping_cart_rounded,
-                label: stock > 0 ? 'In stock' : 'Unavailable',
-                color: stock > 0 ? _emerald : _rose,
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
           Text(
             title,
             style: AppFonts.roboto(
@@ -1025,21 +1013,38 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
   }
 
   Widget _buildImageGallery(Map<String, dynamic> product) {
-    final topInset = MediaQuery.of(context).padding.top + kToolbarHeight + 14;
+    final headerHeight = MediaQuery.of(context).padding.top + kToolbarHeight;
+    final topInset = headerHeight + 14;
     final discount = _calcDiscount(
         product['sale_price'], product['regular_price'] ?? product['price']);
     final isFreeDelivery = product['is_free_delivery'] == true;
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFE9F1FF), Color(0xFFF6F9FE)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+    return Stack(
+      children: [
+        Positioned.fill(
+          top: headerHeight,
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFE9F1FF), Color(0xFFF6F9FE)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
         ),
-      ),
-      padding: EdgeInsets.fromLTRB(4, topInset, 4, 0),
-      child: LayoutBuilder(
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: headerHeight,
+            color: Colors.white,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(4, topInset, 4, 0),
+          child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth.clamp(0.0, double.infinity);
           final height = constraints.maxHeight.clamp(0.0, double.infinity);
@@ -1101,17 +1106,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                     ),
                   ),
                 ),
-                if (discount > 0)
-                  Positioned(
-                    top: 14,
-                    left: 14,
-                    child: _buildHeroBadge(
-                      icon: Icons.local_offer_rounded,
-                      label: '$discount% OFF',
-                      color: _rose,
-                      background: const Color(0xFFFFE4E6),
-                    ),
-                  ),
                 if (isFreeDelivery)
                   Positioned(
                     top: 14,
@@ -1150,6 +1144,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
           );
         },
       ),
+        ),
+      ],
     );
   }
 
@@ -1810,6 +1806,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
               itemCount: _storeProducts.length,
               separatorBuilder: (_, __) => const SizedBox(height: 2),
               itemBuilder: (context, index) {

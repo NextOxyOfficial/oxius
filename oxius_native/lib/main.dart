@@ -95,6 +95,17 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
+  // ---------------------------------------------------------------
+  // PERFORMANCE: Tune the global Flutter ImageCache.
+  // Default = 1000 entries / 100 MB which is OK for small apps, but a
+  // super-app with feed/marketplace/news/profile images burns through the
+  // 100 MB budget quickly on mid-range devices and triggers re-decode
+  // flicker. Raise the byte budget and cap entry count so common in-feed
+  // thumbnails are kept hot. Memory is reclaimed automatically on pressure.
+  PaintingBinding.instance.imageCache
+    ..maximumSize = 400
+    ..maximumSizeBytes = 200 * 1024 * 1024; // 200 MB
+
   // Configure system UI synchronously (cheap, no I/O).
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -125,6 +136,10 @@ void main() async {
 Future<void> _bootstrap(UserStateService userState) async {
   AppConfig.printConfig();
 
+  // -----------------------------------------------------------------
+  // STAGE 1 — cheap, must run before anything async-network.
+  // Run synchronously-ish so subsequent stages can depend on them.
+  // -----------------------------------------------------------------
   await _safeInit('preflightCallStateCleanup',
       () => FCMService.preflightCallStateCleanup());
 
@@ -135,6 +150,7 @@ Future<void> _bootstrap(UserStateService userState) async {
     );
   });
 
+  // Firebase MUST complete before FCM init (FCM depends on FirebaseApp).
   await _safeInit(
     'Firebase',
     () => Firebase.initializeApp(
@@ -143,27 +159,27 @@ Future<void> _bootstrap(UserStateService userState) async {
     timeout: const Duration(seconds: 10),
   );
 
-  await _safeInit('FCM', () => FCMService.initialize(),
-      timeout: const Duration(seconds: 10));
-
-  // iOS: pre-register microphone and camera permissions immediately after
-  // FCM init so the app appears in Settings > Privacy on first launch, even
-  // before the user places their first call.  This is a no-op on Android and
-  // on subsequent launches where the permission is already determined.
-  await _safeInit('IOSPermissions',
-      () => AgoraCallService.preRegisterIOSPermissions());
+  // -----------------------------------------------------------------
+  // STAGE 2 — independent inits run in PARALLEL.
+  // Previously these 5 awaits were sequential ~3-4 s on cold start.
+  // Future.wait drops it to the duration of the slowest one.
+  // -----------------------------------------------------------------
+  await Future.wait([
+    _safeInit('FCM', () => FCMService.initialize(),
+        timeout: const Duration(seconds: 10)),
+    _safeInit(
+        'IOSPermissions', () => AgoraCallService.preRegisterIOSPermissions()),
+    _safeInit('RideshareDriverPresence',
+        () => RideshareDriverPresenceService.initialize()),
+    _safeInit('Translation', () async {
+      await TranslationService().initialize();
+    }),
+  ]);
 
   // Consume any local notification tap that happened while app was killed.
   // Must run after FCMService.initialize() so the navigator key is set up.
   await _safeInit('FCMPendingNotification',
       () => FCMService.consumePendingLocalNotificationPayload());
-
-  await _safeInit('RideshareDriverPresence',
-      () => RideshareDriverPresenceService.initialize());
-
-  await _safeInit('Translation', () async {
-    await TranslationService().initialize();
-  });
 
   // User session is the most important – give it a slightly longer timeout
   // but still bounded so the splash always resolves.
@@ -174,33 +190,35 @@ Future<void> _bootstrap(UserStateService userState) async {
 
   if (userState.isAuthenticated) {
     print('Session restored: ${userState.userName}');
-    await _safeInit('FCM auth state',
-        () => FCMService.handleAuthenticationState(true));
-    await _safeInit('Agora restore',
-        () => AgoraCallService.restorePersistedCallState());
-    await _safeInit('FCM token sync',
-        () => FCMService.syncTokenWithBackend());
-    await _safeInit('AdsyConnect connect',
-        () => AdsyConnectRealtimeService.instance.connect());
+    // Post-auth inits — independent, run in parallel.
+    await Future.wait([
+      _safeInit(
+          'FCM auth state', () => FCMService.handleAuthenticationState(true)),
+      _safeInit(
+          'Agora restore', () => AgoraCallService.restorePersistedCallState()),
+      _safeInit('FCM token sync', () => FCMService.syncTokenWithBackend()),
+      _safeInit('AdsyConnect connect',
+          () => AdsyConnectRealtimeService.instance.connect()),
+      _safeInit('RideshareDriverPresence restore',
+          () => RideshareDriverPresenceService.restoreIfNeeded()),
+    ]);
     try {
       OnlineStatusService.start();
     } catch (e) {
       print('[init] OnlineStatusService FAILED (non-fatal): $e');
     }
-    await _safeInit('RideshareDriverPresence restore',
-        () => RideshareDriverPresenceService.restoreIfNeeded());
   } else {
     print('No existing session');
-    await _safeInit('Agora clear',
-        () => AgoraCallService.clearPersistedCallState());
-    await _safeInit('FCM auth state',
-        () => FCMService.handleAuthenticationState(false));
+    await _safeInit(
+        'Agora clear', () => AgoraCallService.clearPersistedCallState());
+    await _safeInit(
+        'FCM auth state', () => FCMService.handleAuthenticationState(false));
   }
 }
 
 class MyApp extends StatelessWidget {
   final UserStateService userState;
-  
+
   const MyApp({super.key, required this.userState});
 
   @override
@@ -214,7 +232,8 @@ class MyApp extends StatelessWidget {
             title: 'AdsyClub Native',
             debugShowCheckedModeBanner: false,
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
+              colorScheme:
+                  ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
               useMaterial3: true,
               textTheme: AppFonts.robotoTextTheme(),
               appBarTheme: const AppBarTheme(
@@ -269,7 +288,8 @@ class MyApp extends StatelessWidget {
               );
             },
             theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
+              colorScheme:
+                  ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
               useMaterial3: true,
               textTheme: AppFonts.robotoTextTheme(),
               appBarTheme: const AppBarTheme(
@@ -283,150 +303,155 @@ class MyApp extends StatelessWidget {
             // Use initialRoute instead of home to avoid conflict
             initialRoute: '/',
             routes: {
-            '/': (context) => const NotificationPermissionGate(
-              child: HomeScreen(),
-            ),
-            '/login': (context) => const LoginPageRedesigned(),
-            '/register': (context) => const RegisterPage(),
-            '/reset-password': (context) => const ResetPasswordPage(),
-            '/inbox': (context) => const InboxScreen(),
-            '/support': (context) => const InboxScreen(initialTab: 2),
-            '/my-gigs': (context) => const MyGigsScreen(),
-            '/micro-gigs': (context) => const MicroGigsScreen(),
-            '/post-a-gig': (context) => const PostGigScreen(),
-            '/business-network': (context) => const BusinessNetworkScreen(),
-            '/mindforce': (context) => const MindForceScreen(),
-            '/courses': (context) => const ElearningScreen(),
-            '/elearning': (context) => const ElearningScreen(),
-            '/deposit-withdraw': (context) => const WalletScreen(),
-            '/pending-tasks': (context) => const HomeScreen(),
-            '/mobile-recharge': (context) => const MobileRechargeScreen(),
-            '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
-            '/eshop': (context) => const EshopScreen(),
-            '/shop-manager': (context) => const EshopManagerScreen(),
-            '/classified': (context) => const ClassifiedServicesPage(),
-            '/adsy-news': (context) => const NewsScreen(),
-            '/about': (context) => const AboutScreen(),
-            '/faq': (context) => const FaqScreen(),
-            '/contact-us': (context) => const ContactUsScreen(),
-            '/refer-a-friend': (context) => const ReferFriendScreen(),
-            '/terms-and-conditions': (context) => const TermsAndConditionsScreen(),
-            '/privacy-policy': (context) => const PrivacyPolicyScreen(),
-            '/food-zone': (context) => const FoodZoneScreen(),
-            '/rideshare': (context) => const RideshareScreen(),
-            '/rideshare/history': (context) => const RideshareHistoryScreen(),
-            '/rideshare/driver-history': (context) => const RideshareHistoryScreen(asDriver: true),
-            '/rideshare/vehicles': (context) => const RideshareVehiclesScreen(),
-          },
-          onGenerateRoute: (settings) {
-            final routeUri = Uri.tryParse(settings.name ?? '');
-            if (routeUri?.path == '/deposit-withdraw') {
-              return MaterialPageRoute(
-                builder: (context) => WalletScreen(
-                  paymentCallbackUrl:
-                      routeUri?.queryParameters['payment_callback_url'],
-                ),
-              );
-            }
+              '/': (context) => const NotificationPermissionGate(
+                    child: HomeScreen(),
+                  ),
+              '/login': (context) => const LoginPageRedesigned(),
+              '/register': (context) => const RegisterPage(),
+              '/reset-password': (context) => const ResetPasswordPage(),
+              '/inbox': (context) => const InboxScreen(),
+              '/support': (context) => const InboxScreen(initialTab: 2),
+              '/my-gigs': (context) => const MyGigsScreen(),
+              '/micro-gigs': (context) => const MicroGigsScreen(),
+              '/post-a-gig': (context) => const PostGigScreen(),
+              '/business-network': (context) => const BusinessNetworkScreen(),
+              '/mindforce': (context) => const MindForceScreen(),
+              '/courses': (context) => const ElearningScreen(),
+              '/elearning': (context) => const ElearningScreen(),
+              '/deposit-withdraw': (context) => const WalletScreen(),
+              '/pending-tasks': (context) => const HomeScreen(),
+              '/mobile-recharge': (context) => const MobileRechargeScreen(),
+              '/upgrade-to-pro': (context) => const UpgradeToProScreen(),
+              '/eshop': (context) => const EshopScreen(),
+              '/shop-manager': (context) => const EshopManagerScreen(),
+              '/classified': (context) => const ClassifiedServicesPage(),
+              '/adsy-news': (context) => const NewsScreen(),
+              '/about': (context) => const AboutScreen(),
+              '/faq': (context) => const FaqScreen(),
+              '/contact-us': (context) => const ContactUsScreen(),
+              '/refer-a-friend': (context) => const ReferFriendScreen(),
+              '/terms-and-conditions': (context) =>
+                  const TermsAndConditionsScreen(),
+              '/privacy-policy': (context) => const PrivacyPolicyScreen(),
+              '/food-zone': (context) => const FoodZoneScreen(),
+              '/rideshare': (context) => const RideshareScreen(),
+              '/rideshare/history': (context) => const RideshareHistoryScreen(),
+              '/rideshare/driver-history': (context) =>
+                  const RideshareHistoryScreen(asDriver: true),
+              '/rideshare/vehicles': (context) =>
+                  const RideshareVehiclesScreen(),
+            },
+            onGenerateRoute: (settings) {
+              final routeUri = Uri.tryParse(settings.name ?? '');
+              if (routeUri?.path == '/deposit-withdraw') {
+                return MaterialPageRoute(
+                  builder: (context) => WalletScreen(
+                    paymentCallbackUrl:
+                        routeUri?.queryParameters['payment_callback_url'],
+                  ),
+                );
+              }
 
-            if (settings.name == '/classified-category') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => ClassifiedCategoryListScreen(
-                  categoryId: args?['categoryId'] ?? '',
-                  categorySlug: args?['categorySlug'] ?? '',
-                ),
-              );
-            } else if (settings.name == '/classified-post-details') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => ClassifiedPostDetailsScreen(
-                  postId: args?['postId'] ?? '',
-                  postSlug: args?['postSlug'] ?? '',
-                ),
-              );
-            } else if (settings.name == '/classified-post-form') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => ClassifiedPostFormScreen(
-                  postId: args?['postId'],
-                  categoryId: args?['categoryId'],
-                ),
-              );
-            } else if (settings.name == '/my-classified-posts') {
-              return MaterialPageRoute(
-                builder: (context) => const MyClassifiedPostsScreen(),
-              );
-            } else if (settings.name == '/sale') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => SaleListScreen(
-                  categoryId: args?['categoryId'],
-                  categoryName: args?['categoryName'],
-                ),
-              );
-            } else if (settings.name == '/sale/detail') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => SaleDetailScreen(
-                  slug: args?['slug'],
-                  id: args?['id'],
-                ),
-              );
-            } else if (settings.name == '/my-sale-posts') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => MySalePostsScreen(
-                  initialTab: args?['tab'],
-                ),
-              );
-            } else if (settings.name == '/create-sale-post') {
-              return MaterialPageRoute(
-                builder: (context) => const CreateSalePostScreen(),
-              );
-            } else if (settings.name == '/eshop-manager') {
-              return MaterialPageRoute(
-                builder: (context) => const EshopManagerScreen(),
-              );
-            } else if (settings.name == '/seller-profile') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => SellerProfileScreen(
-                  userId: args?['userId'],
-                ),
-              );
-            } else if (settings.name == '/business-network/profile') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => ProfileScreen(
-                  userId: args?['userId'] ?? '',
-                ),
-              );
-            } else if (settings.name == '/checkout') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              final cartItems = args?['cartItems'] as List<CartItem>? ?? [];
-              return MaterialPageRoute(
-                builder: (context) => CheckoutScreen(
-                  cartItems: cartItems,
-                ),
-              );
-            } else if (settings.name == '/call') {
-              final args = settings.arguments as Map<String, dynamic>?;
-              return MaterialPageRoute(
-                builder: (context) => CallScreen(
-                  channelName: args?['channelName'] ?? '',
-                  calleeId: args?['calleeId'] ?? args?['callerId'] ?? '',
-                  calleeName: args?['calleeName'] ?? args?['callerName'] ?? 'Unknown',
-                  calleeAvatar: args?['calleeAvatar'] ?? args?['callerAvatar'],
-                  callId: args?['callId'] ?? args?['call_id'],
-                  isIncoming: args?['isIncoming'] ?? false,
-                  callType: args?['callType'] ?? 'video',
-                  isReturning: args?['isReturning'] ?? false,
-                ),
-              );
-            }
-            return null;
-          },
+              if (settings.name == '/classified-category') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => ClassifiedCategoryListScreen(
+                    categoryId: args?['categoryId'] ?? '',
+                    categorySlug: args?['categorySlug'] ?? '',
+                  ),
+                );
+              } else if (settings.name == '/classified-post-details') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => ClassifiedPostDetailsScreen(
+                    postId: args?['postId'] ?? '',
+                    postSlug: args?['postSlug'] ?? '',
+                  ),
+                );
+              } else if (settings.name == '/classified-post-form') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => ClassifiedPostFormScreen(
+                    postId: args?['postId'],
+                    categoryId: args?['categoryId'],
+                  ),
+                );
+              } else if (settings.name == '/my-classified-posts') {
+                return MaterialPageRoute(
+                  builder: (context) => const MyClassifiedPostsScreen(),
+                );
+              } else if (settings.name == '/sale') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => SaleListScreen(
+                    categoryId: args?['categoryId'],
+                    categoryName: args?['categoryName'],
+                  ),
+                );
+              } else if (settings.name == '/sale/detail') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => SaleDetailScreen(
+                    slug: args?['slug'],
+                    id: args?['id'],
+                  ),
+                );
+              } else if (settings.name == '/my-sale-posts') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => MySalePostsScreen(
+                    initialTab: args?['tab'],
+                  ),
+                );
+              } else if (settings.name == '/create-sale-post') {
+                return MaterialPageRoute(
+                  builder: (context) => const CreateSalePostScreen(),
+                );
+              } else if (settings.name == '/eshop-manager') {
+                return MaterialPageRoute(
+                  builder: (context) => const EshopManagerScreen(),
+                );
+              } else if (settings.name == '/seller-profile') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => SellerProfileScreen(
+                    userId: args?['userId'],
+                  ),
+                );
+              } else if (settings.name == '/business-network/profile') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => ProfileScreen(
+                    userId: args?['userId'] ?? '',
+                  ),
+                );
+              } else if (settings.name == '/checkout') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                final cartItems = args?['cartItems'] as List<CartItem>? ?? [];
+                return MaterialPageRoute(
+                  builder: (context) => CheckoutScreen(
+                    cartItems: cartItems,
+                  ),
+                );
+              } else if (settings.name == '/call') {
+                final args = settings.arguments as Map<String, dynamic>?;
+                return MaterialPageRoute(
+                  builder: (context) => CallScreen(
+                    channelName: args?['channelName'] ?? '',
+                    calleeId: args?['calleeId'] ?? args?['callerId'] ?? '',
+                    calleeName:
+                        args?['calleeName'] ?? args?['callerName'] ?? 'Unknown',
+                    calleeAvatar:
+                        args?['calleeAvatar'] ?? args?['callerAvatar'],
+                    callId: args?['callId'] ?? args?['call_id'],
+                    isIncoming: args?['isIncoming'] ?? false,
+                    callType: args?['callType'] ?? 'video',
+                    isReturning: args?['isReturning'] ?? false,
+                  ),
+                );
+              }
+              return null;
+            },
           ),
         );
       },

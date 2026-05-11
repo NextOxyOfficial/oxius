@@ -34,9 +34,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <!-- Android 14: foreground service accessing camera (Agora video calls) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA"/>
-    <!-- Android 12+: exact alarms for call timeout -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     
     <!-- Permissions for image picker -->
     <uses-permission android:name="android.permission.CAMERA"/>

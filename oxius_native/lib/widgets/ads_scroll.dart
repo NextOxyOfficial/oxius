@@ -370,12 +370,17 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                       itemCount: _displayedAds.length,
                       itemBuilder: (context, index) {
                         final ad = _displayedAds[index];
-                        return Container(
-                          width: _cardWidth,
-                          margin: EdgeInsets.only(
-                            right: index < _displayedAds.length - 1 ? _cardGap : 0,
+                        // RepaintBoundary ensures each card paints independently;
+                        // when the auto-scroll Timer nudges the controller, only
+                        // visible cards repaint instead of the entire row.
+                        return RepaintBoundary(
+                          child: Container(
+                            width: _cardWidth,
+                            margin: EdgeInsets.only(
+                              right: index < _displayedAds.length - 1 ? _cardGap : 0,
+                            ),
+                            child: _buildAdCard(ad),
                           ),
-                          child: _buildAdCard(ad),
                         );
                       },
                     ),

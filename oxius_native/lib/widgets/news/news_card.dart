@@ -51,6 +51,11 @@ class NewsCard extends StatelessWidget {
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    // Decode image at display size (~2x devicePixelRatio).
+                    // Prevents 4000×3000 source images from chewing 48 MB
+                    // of GPU memory when only 180-tall display is needed.
+                    memCacheHeight: 360,
+                    fadeInDuration: const Duration(milliseconds: 120),
                     placeholder: (context, url) => Container(
                       height: 180,
                       color: Colors.grey.shade200,
@@ -145,6 +150,9 @@ class NewsCard extends StatelessWidget {
                     width: 120,
                     height: 120,
                     fit: BoxFit.cover,
+                    memCacheWidth: 240,
+                    memCacheHeight: 240,
+                    fadeInDuration: const Duration(milliseconds: 120),
                     placeholder: (context, url) => Container(
                       width: 120,
                       height: 120,
