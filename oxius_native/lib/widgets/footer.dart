@@ -213,7 +213,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           child: Text(
             'আয় করুন • সংযুক্ত হন • সেবা খুঁজুন',
             style: AppFonts.roboto(
-              fontSize: 10,
+              fontSize: 13,
               color: Colors.grey.shade500,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.3,
@@ -248,7 +248,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           return Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => _handleNavigation(context, link['title']!),
+              onTap: () => _handleNavigation(context, link['route']!),
               borderRadius: BorderRadius.circular(6),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
@@ -260,7 +260,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
                 child: Text(
                   link['title']!,
                   style: AppFonts.roboto(
-                    fontSize: 10,
+                    fontSize: 13,
                     color: const Color(0xFF374151),
                     fontWeight: FontWeight.w500,
                   ),
@@ -484,7 +484,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
           Text(
             'তৈরি করেছে ❤️ Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
             style: AppFonts.roboto(
-              fontSize: 11,
+              fontSize: 13,
               color: Colors.grey.shade400,
               fontWeight: FontWeight.w500,
             ),
@@ -677,6 +677,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
     
     switch (destination.toLowerCase()) {
       case 'home':
+      case '/':
         route = '/';
         break;
       case 'eshop':
@@ -694,6 +695,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         route = '/privacy-policy';
         break;
       case 'mobile recharge':
+      case '/mobile-recharge':
         route = '/mobile-recharge';
         break;
       case 'services':
@@ -706,35 +708,47 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         return;
       case 'earn':
       case 'earn money':
+      case '/micro-gigs':
         route = '/micro-gigs';
         break;
       case 'microgigs':
         route = '/micro-gigs';
         break;
       case 'recharge':
+      case '/mobile-recharge':
         route = '/mobile-recharge';
         break;
       case 'pro':
       case 'packages':
       case 'packeges':
+      case '/upgrade-to-pro':
         route = '/upgrade-to-pro';
         break;
       case 'refer':
       case 'refer program':
+      case '/refer-a-friend':
         route = '/refer-a-friend';
         break;
       case 'about':
       case 'about us':
+      case '/about':
         route = '/about';
+        break;
+      case 'faq':
+      case '/faq':
+        route = '/faq';
         break;
       case 'contact':
       case 'contact us':
+      case '/contact-us':
         route = '/contact-us';
         break;
       case 'business network':
+      case '/business-network':
         route = '/business-network';
         break;
       case 'news':
+      case '/adsy-news':
         route = '/adsy-news';
         break;
       case 'adsypay':

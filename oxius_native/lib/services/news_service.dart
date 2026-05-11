@@ -219,12 +219,12 @@ class NewsService {
 
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/news/logo/'),
+        Uri.parse('$baseUrl/api/news-logo/'),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final logoUrl = data['logo'] as String?;
+        final logoUrl = data['image'] as String?;
 
         if (logoUrl != null && logoUrl.isNotEmpty) {
           final absoluteUrl = AppConfig.getAbsoluteUrl(logoUrl);

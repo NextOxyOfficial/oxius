@@ -146,6 +146,13 @@ Future<void> _bootstrap(UserStateService userState) async {
   await _safeInit('FCM', () => FCMService.initialize(),
       timeout: const Duration(seconds: 10));
 
+  // iOS: pre-register microphone and camera permissions immediately after
+  // FCM init so the app appears in Settings > Privacy on first launch, even
+  // before the user places their first call.  This is a no-op on Android and
+  // on subsequent launches where the permission is already determined.
+  await _safeInit('IOSPermissions',
+      () => AgoraCallService.preRegisterIOSPermissions());
+
   // Consume any local notification tap that happened while app was killed.
   // Must run after FCMService.initialize() so the navigator key is set up.
   await _safeInit('FCMPendingNotification',

@@ -20,14 +20,11 @@ class MobileStickyNav extends StatefulWidget {
   State<MobileStickyNav> createState() => _MobileStickyNavState();
 }
 
-class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProviderStateMixin {
+class _MobileStickyNavState extends State<MobileStickyNav> {
   final UserStateService _userStateService = UserStateService();
   final TranslationService _translationService = TranslationService();
   int unreadCount = 0;
   bool _isVisible = true;
-  late AnimationController _animationController;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _opacityAnimation;
   ScrollController? _scrollController;
   double _lastScrollPosition = 0;
 
@@ -42,29 +39,6 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
       _loadUnreadNotificationCount();
     }
     
-    // Initialize animation controller with slower duration
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600), // Much slower animation
-      vsync: this,
-    );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, 2), // Slide down by 2x height
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
-    // Add opacity animation to fade out completely when hidden
-    _opacityAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
     // Attach scroll listener
     _scrollController = widget.scrollController;
     _scrollController?.addListener(_onScroll);
@@ -74,7 +48,6 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
   void dispose() {
     _userStateService.removeListener(_onUserStateChanged);
     _scrollController?.removeListener(_onScroll);
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -123,18 +96,12 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
     if (scrollDelta > 0 && currentScrollPosition > 50) {
       // Scrolling down - hide navbar
       if (_isVisible) {
-        setState(() {
-          _isVisible = false;
-        });
-        _animationController.forward();
+        setState(() => _isVisible = false);
       }
     } else if (scrollDelta < 0) {
       // Scrolling up - show navbar
       if (!_isVisible) {
-        setState(() {
-          _isVisible = true;
-        });
-        _animationController.reverse();
+        setState(() => _isVisible = true);
       }
     }
     
@@ -143,13 +110,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 600),
-      transform: Matrix4.translationValues(
-        0, 
-        _isVisible ? 0 : 100, // Slide down by 100px when hidden
-        0
-      ),
+    return AnimatedSlide(
+      offset: _isVisible ? Offset.zero : const Offset(0, 1),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       child: Container(
         margin: const EdgeInsets.fromLTRB(36, 0, 36, 4),

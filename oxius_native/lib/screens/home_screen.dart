@@ -425,7 +425,9 @@ class _HomeScreenState extends State<HomeScreen> {
             triggerMode: RefreshIndicatorTriggerMode.anywhere,
             child: SingleChildScrollView(
               controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: ClampingScrollPhysics(),
+              ),
               child: Column(
                 children: [
                   // Add spacing for header
@@ -508,6 +510,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   const AppFooter(
                     showMobileNav: false,
                   ),
+                  // Space so the floating bottom nav doesn't cover content
+                  const SizedBox(height: 96),
               ],
             ),
           ),
@@ -522,7 +526,7 @@ class _HomeScreenState extends State<HomeScreen> {
             duration: const Duration(milliseconds: 300),
             transform: Matrix4.translationValues(
               0,
-              _isHeaderVisible ? 0 : -100, // Slide up by 100px when hidden
+              _isHeaderVisible ? 0 : -(topPadding + 56.0),
               0,
             ),
             curve: Curves.easeInOut,

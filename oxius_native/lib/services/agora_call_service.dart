@@ -538,6 +538,24 @@ class AgoraCallService {
     return Random().nextInt(100000) + 1;
   }
 
+  /// iOS only: proactively request microphone and camera so the app appears
+  /// under Settings > Privacy & Security > Microphone / Camera on first launch,
+  /// even before the user makes their first call.  On Android this is a no-op
+  /// because runtime permissions are requested at call time (no pre-declaration
+  /// needed for these permissions to appear in Settings on Android).
+  /// Call this once from main.dart after FCMService.initialize().
+  static Future<void> preRegisterIOSPermissions() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
+    final micStatus = await Permission.microphone.status;
+    if (micStatus.isNotDetermined) {
+      await Permission.microphone.request();
+    }
+    final camStatus = await Permission.camera.status;
+    if (camStatus.isNotDetermined) {
+      await Permission.camera.request();
+    }
+  }
+
   static Future<void> _ensurePermissions({required String callType}) async {
     // Check status first to avoid showing a redundant in-app prompt when the
     // OS already remembers the user's decision (especially on iOS where the
