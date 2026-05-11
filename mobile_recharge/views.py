@@ -39,10 +39,7 @@ class RechargeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Admin/staff can see all recharges
-        if self.request.user.is_staff or self.request.user.is_superuser:
-            return Recharge.objects.all().order_by('-created_at')
-        # Regular users can only see their own recharges
+        # Always filter by the current user — admin access is via Django admin panel
         return Recharge.objects.filter(user=self.request.user).order_by('-created_at')
     
     def create(self, request, *args, **kwargs):

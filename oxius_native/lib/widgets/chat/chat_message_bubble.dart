@@ -1,0 +1,844 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import '../../config/app_config.dart';
+import '../../widgets/chat_video_player.dart';
+import '../../widgets/link_preview_card.dart';
+import '../../widgets/linkify_text.dart';
+
+// ---------------------------------------------------------------------------
+// Helper
+// ---------------------------------------------------------------------------
+
+bool isMsgDeleted(Map<String, dynamic> msg) {
+  final v = msg['isDeleted'];
+  return v == true || v == 1 || v == '1' || v == 'true';
+}
+
+String formatVoiceDuration(int seconds) {
+  final m = seconds ~/ 60;
+  final s = seconds % 60;
+  return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+}
+
+// ---------------------------------------------------------------------------
+// Reply-quote card (standalone, no state deps)
+// ---------------------------------------------------------------------------
+
+class ChatReplyQuoteCard extends StatelessWidget {
+  final Map<String, dynamic> message;
+  final bool isMe;
+  final void Function(String messageId) onTapReply;
+
+  const ChatReplyQuoteCard({
+    super.key,
+    required this.message,
+    required this.isMe,
+    required this.onTapReply,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final preview = message['replyPreview']?.toString() ?? '';
+    if (preview.isEmpty) return const SizedBox.shrink();
+
+    final sender = message['replyToSender']?.toString() ?? '';
+    final replyToId = message['replyToId']?.toString() ?? '';
+
+    final accent = isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF3B82F6);
+    final bg = isMe
+        ? Colors.white.withOpacity(0.18)
+        : const Color(0xFF3B82F6).withOpacity(0.08);
+    final border = isMe
+        ? Colors.white.withOpacity(0.22)
+        : const Color(0xFF3B82F6).withOpacity(0.18);
+    final titleColor =
+        isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF111827);
+    final previewColor =
+        isMe ? Colors.white.withOpacity(0.85) : const Color(0xFF4B5563);
+
+    return GestureDetector(
+      onTap: replyToId.isNotEmpty ? () => onTapReply(replyToId) : null,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Container(
+              width: 3,
+              height: 32,
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    sender.isEmpty ? 'Reply' : sender,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    preview,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: previewColor,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ChatMessageBubble — handles its own swipe-to-reply gesture state
+// ---------------------------------------------------------------------------
+
+class ChatMessageBubble extends StatefulWidget {
+  final Map<String, dynamic> message;
+  final bool showAvatar;
+  final String userName;
+  final String? userAvatar;
+
+  // Search highlight
+  final bool isSearchHit;
+  final bool isCurrentSearchHit;
+
+  // Voice playback state (from parent)
+  final String? playingVoiceMessageId;
+  final Duration voicePosition;
+  final Duration voiceDuration;
+
+  // Callbacks
+  final VoidCallback? onLongPress;
+  final void Function(Map<String, dynamic> message) onReply;
+  final void Function(String messageId, String? mediaUrl) onPlayVoice;
+  final void Function(String filePath) onViewImage;
+  final void Function(String? filePath, String fileName) onDownloadDoc;
+  final void Function(String messageId) onScrollToMessage;
+
+  const ChatMessageBubble({
+    super.key,
+    required this.message,
+    required this.showAvatar,
+    required this.userName,
+    this.userAvatar,
+    this.isSearchHit = false,
+    this.isCurrentSearchHit = false,
+    this.playingVoiceMessageId,
+    required this.voicePosition,
+    required this.voiceDuration,
+    this.onLongPress,
+    required this.onReply,
+    required this.onPlayVoice,
+    required this.onViewImage,
+    required this.onDownloadDoc,
+    required this.onScrollToMessage,
+  });
+
+  @override
+  State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
+}
+
+class _ChatMessageBubbleState extends State<ChatMessageBubble> {
+  double _swipeOffset = 0.0;
+  bool _isSwiping = false;
+  bool _replyTriggered = false;
+
+  static const double _swipeThreshold = 60.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final message = widget.message;
+    final isMe = message['isMe'] as bool;
+    final isDeleted = isMsgDeleted(message);
+    final messageId = message['id']?.toString() ?? '';
+    final swipeProgress = (_swipeOffset.abs() / _swipeThreshold).clamp(0.0, 1.0);
+
+    final quoteCard = _buildReplyQuoteCard(message, isMe);
+
+    return GestureDetector(
+      onHorizontalDragStart: isDeleted
+          ? null
+          : (details) {
+              setState(() {
+                _isSwiping = true;
+                _swipeOffset = 0.0;
+                _replyTriggered = false;
+              });
+            },
+      onHorizontalDragUpdate: isDeleted
+          ? null
+          : (details) {
+              setState(() {
+                if (isMe) {
+                  _swipeOffset =
+                      (_swipeOffset + details.delta.dx).clamp(-_swipeThreshold * 1.2, 0.0);
+                } else {
+                  _swipeOffset =
+                      (_swipeOffset + details.delta.dx).clamp(0.0, _swipeThreshold * 1.2);
+                }
+              });
+
+              if (_swipeOffset.abs() >= _swipeThreshold && !_replyTriggered) {
+                _replyTriggered = true;
+                HapticFeedback.lightImpact();
+              }
+            },
+      onHorizontalDragEnd: isDeleted
+          ? null
+          : (details) {
+              if (_swipeOffset.abs() >= _swipeThreshold) {
+                HapticFeedback.mediumImpact();
+                widget.onReply(message);
+              }
+              setState(() {
+                _isSwiping = false;
+                _swipeOffset = 0.0;
+                _replyTriggered = false;
+              });
+            },
+      onHorizontalDragCancel: () {
+        setState(() {
+          _isSwiping = false;
+          _swipeOffset = 0.0;
+          _replyTriggered = false;
+        });
+      },
+      child: Stack(
+        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+        children: [
+          // Swipe reply icon
+          if (_isSwiping && swipeProgress > 0.1)
+            Positioned(
+              left: isMe ? null : 8,
+              right: isMe ? 8 : null,
+              child: AnimatedOpacity(
+                opacity: swipeProgress,
+                duration: const Duration(milliseconds: 50),
+                child: AnimatedScale(
+                  scale: 0.5 + (swipeProgress * 0.5),
+                  duration: const Duration(milliseconds: 50),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: swipeProgress >= 1.0
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF10B981).withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.reply_rounded,
+                      size: 20,
+                      color: swipeProgress >= 1.0 ? Colors.white : const Color(0xFF10B981),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          // Bubble with swipe transform
+          AnimatedContainer(
+            duration: Duration(milliseconds: _isSwiping ? 0 : 200),
+            curve: Curves.easeOutCubic,
+            transform: Matrix4.translationValues(_swipeOffset, 0, 0),
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: 4,
+                left: isMe ? 48 : 0,
+                right: isMe ? 0 : 48,
+              ),
+              child: Row(
+                mainAxisAlignment:
+                    isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (!isMe && widget.showAvatar)
+                    _buildSmallAvatar()
+                  else if (!isMe)
+                    const SizedBox(width: 34),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment:
+                          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onLongPress: isDeleted ? null : widget.onLongPress,
+                          child: _buildBubbleContainer(
+                            message: message,
+                            isMe: isMe,
+                            isDeleted: isDeleted,
+                            quoteCard: quoteCard,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        if (message['showTimestamp'] == true)
+                          _buildTimestamp(message, isMe),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSmallAvatar() {
+    final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar ?? '');
+    Widget fallback() => Center(
+          child: Text(
+            widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : '?',
+            style: const TextStyle(
+              color: Color(0xFF3B82F6),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+
+    return Container(
+      width: 28,
+      height: 28,
+      margin: const EdgeInsets.only(right: 6, bottom: 2),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF3B82F6).withOpacity(0.1),
+            const Color(0xFF6366F1).withOpacity(0.1),
+          ],
+        ),
+      ),
+      child: avatarUrl.isEmpty
+          ? fallback()
+          : ClipOval(
+              child: Image.network(
+                avatarUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => fallback(),
+              ),
+            ),
+    );
+  }
+
+  Widget? _buildReplyQuoteCard(Map<String, dynamic> message, bool isMe) {
+    final preview = message['replyPreview']?.toString() ?? '';
+    if (preview.isEmpty) return null;
+
+    return ChatReplyQuoteCard(
+      message: message,
+      isMe: isMe,
+      onTapReply: widget.onScrollToMessage,
+    );
+  }
+
+  Widget _buildBubbleContainer({
+    required Map<String, dynamic> message,
+    required bool isMe,
+    required bool isDeleted,
+    Widget? quoteCard,
+  }) {
+    final msgType = message['type']?.toString() ?? 'text';
+    final isMedia = msgType == 'image' || msgType == 'video';
+
+    return Container(
+      padding: isMedia ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: isMe && !isMedia
+            ? const LinearGradient(
+                colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+              )
+            : null,
+        color: isMe || isMedia ? null : Colors.white,
+        border: widget.isSearchHit
+            ? Border.all(
+                color: widget.isCurrentSearchHit
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFFFBBF24).withOpacity(0.65),
+                width: widget.isCurrentSearchHit ? 2 : 1,
+              )
+            : null,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(12),
+          topRight: const Radius.circular(12),
+          bottomLeft: Radius.circular(isMe ? 12 : 2),
+          bottomRight: Radius.circular(isMe ? 2 : 12),
+        ),
+        boxShadow: isMedia
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+      ),
+      child: isDeleted
+          ? _buildDeletedContent(isMe)
+          : _buildContent(message, isMe, quoteCard),
+    );
+  }
+
+  Widget _buildDeletedContent(bool isMe) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.block_rounded,
+            size: 14, color: isMe ? Colors.white70 : Colors.grey.shade500),
+        const SizedBox(width: 6),
+        Text(
+          'Message removed',
+          style: TextStyle(
+            fontSize: 16,
+            fontStyle: FontStyle.italic,
+            color: isMe ? Colors.white70 : Colors.grey.shade500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContent(
+    Map<String, dynamic> message,
+    bool isMe,
+    Widget? quoteCard,
+  ) {
+    final msgType = message['type']?.toString() ?? 'text';
+    final text = (message['message'] ?? '').toString();
+
+    Widget wrapWithQuote(Widget child) {
+      if (quoteCard == null) return child;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [quoteCard, child],
+      );
+    }
+
+    if (msgType == 'voice') {
+      return wrapWithQuote(_buildVoiceContent(message, isMe));
+    }
+    if (msgType == 'image') {
+      return wrapWithQuote(_buildImageContent(message));
+    }
+    if (msgType == 'video') {
+      return wrapWithQuote(_buildVideoContent(message, isMe));
+    }
+    if (msgType == 'document') {
+      return wrapWithQuote(_buildDocumentContent(message, isMe));
+    }
+    if (msgType == 'text' && text.startsWith('📞')) {
+      return wrapWithQuote(_buildCallLogContent(message, isMe));
+    }
+    // Default: text with link preview
+    return wrapWithQuote(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FirstLinkPreview(
+            text: text,
+            margin: const EdgeInsets.only(bottom: 6),
+          ),
+          LinkifyText(
+            text,
+            style: TextStyle(
+              fontSize: 16,
+              color: isMe ? Colors.white : const Color(0xFF1F2937),
+              height: 1.35,
+            ),
+            linkStyle: TextStyle(
+              color: isMe ? Colors.white : const Color(0xFF2563EB),
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVoiceContent(Map<String, dynamic> message, bool isMe) {
+    final duration = (message['voiceDuration'] as int?) ??
+        (message['voice_duration'] as int?) ??
+        0;
+    final messageId = message['id']?.toString() ?? '';
+    final mediaUrl = message['mediaUrl'] as String?;
+    final isPlaying = widget.playingVoiceMessageId == messageId;
+
+    return GestureDetector(
+      onTap: () => widget.onPlayVoice(messageId, mediaUrl),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isMe
+                    ? Colors.white.withOpacity(0.2)
+                    : const Color(0xFF3B82F6).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                size: 28,
+                color: isMe ? Colors.white : const Color(0xFF3B82F6),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: List.generate(
+                    22,
+                    (i) => Container(
+                      width: 3,
+                      height: (i % 4 + 2) * 4.0,
+                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                      decoration: BoxDecoration(
+                        color: isMe
+                            ? Colors.white.withOpacity(0.85)
+                            : const Color(0xFF3B82F6).withOpacity(0.65),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  isPlaying && widget.voiceDuration.inSeconds > 0
+                      ? '${widget.voicePosition.inMinutes}:${(widget.voicePosition.inSeconds % 60).toString().padLeft(2, '0')} / ${widget.voiceDuration.inMinutes}:${(widget.voiceDuration.inSeconds % 60).toString().padLeft(2, '0')}'
+                      : formatVoiceDuration(duration),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isMe
+                        ? Colors.white.withOpacity(0.9)
+                        : const Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCallLogContent(Map<String, dynamic> message, bool isMe) {
+    final raw = (message['message'] ?? '').toString();
+    final cleaned = raw.replaceFirst('📞', '').trim();
+
+    String title = cleaned;
+    String detail = '';
+
+    if (cleaned.contains('•')) {
+      final parts = cleaned.split('•');
+      title = parts.first.trim();
+      detail = parts.length > 1 ? parts.sublist(1).join('•').trim() : '';
+    }
+
+    final lowerDetail = detail.toLowerCase();
+    final isDuration = RegExp(r'^\d{2}:\d{2}(:\d{2})?$').hasMatch(detail);
+
+    late final IconData icon;
+    if (title.toLowerCase().contains('video')) {
+      icon = Icons.videocam_rounded;
+    } else if (title.toLowerCase().contains('audio')) {
+      icon = Icons.call_rounded;
+    } else {
+      icon = Icons.phone_rounded;
+    }
+
+    late final Color accent;
+    if (isDuration) {
+      accent = const Color(0xFF10B981);
+    } else if (lowerDetail.contains('busy') || lowerDetail.contains('rejected')) {
+      accent = const Color(0xFFF59E0B);
+    } else if (lowerDetail.contains('cancel')) {
+      accent = const Color(0xFF9CA3AF);
+    } else {
+      accent = const Color(0xFF3B82F6);
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: isMe
+                ? Colors.white.withOpacity(0.18)
+                : accent.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: isMe ? Colors.white : accent),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title.isEmpty ? 'Call' : title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.1,
+                  color: isMe ? Colors.white : const Color(0xFF111827),
+                ),
+              ),
+              if (detail.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? Colors.white.withOpacity(0.18)
+                        : accent.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: isMe
+                          ? Colors.white.withOpacity(0.20)
+                          : accent.withOpacity(0.25),
+                    ),
+                  ),
+                  child: Text(
+                    detail,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: isMe ? Colors.white.withOpacity(0.95) : accent,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageContent(Map<String, dynamic> message) {
+    final filePath =
+        (message['mediaUrl'] as String?) ?? (message['filePath'] as String?);
+
+    if (filePath == null || filePath.isEmpty) {
+      return _imagePlaceholder(Icons.image_rounded, 'Image');
+    }
+
+    final isUrl =
+        filePath.startsWith('http://') || filePath.startsWith('https://');
+
+    return GestureDetector(
+      onTap: () => widget.onViewImage(filePath),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: isUrl
+            ? Image.network(
+                filePath,
+                width: 180,
+                height: 120,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    _imagePlaceholder(Icons.broken_image_rounded, 'Failed to load'),
+              )
+            : Image.file(
+                File(filePath),
+                width: 180,
+                height: 120,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    _imagePlaceholder(Icons.broken_image_rounded, 'Failed to load'),
+              ),
+      ),
+    );
+  }
+
+  Widget _imagePlaceholder(IconData icon, String label) {
+    return Container(
+      width: 180,
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade200,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 40, color: Colors.grey),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVideoContent(Map<String, dynamic> message, bool isMe) {
+    final videoUrl =
+        (message['mediaUrl'] as String?) ?? (message['filePath'] as String?);
+
+    if (videoUrl == null || videoUrl.isEmpty) {
+      return Container(
+        width: 280,
+        height: 180,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.videocam_off_rounded, size: 48, color: Colors.grey),
+            SizedBox(height: 8),
+            Text('Video unavailable',
+                style: TextStyle(fontSize: 12, color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    return ChatVideoPlayer(videoUrl: videoUrl, isMe: isMe);
+  }
+
+  Widget _buildDocumentContent(Map<String, dynamic> message, bool isMe) {
+    final fileName = message['fileName'] as String? ?? 'Document';
+    final extension = fileName.split('.').last.toUpperCase();
+    final filePath = message['filePath'] as String?;
+
+    return GestureDetector(
+      onTap: () => widget.onDownloadDoc(filePath, fileName),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              border: Border.all(
+                color: isMe
+                    ? Colors.white.withOpacity(0.3)
+                    : const Color(0xFF10B981).withOpacity(0.3),
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              Icons.insert_drive_file_rounded,
+              size: 20,
+              color: isMe ? Colors.white : const Color(0xFF10B981),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 130,
+                child: Text(
+                  fileName,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isMe ? Colors.white : const Color(0xFF1F2937),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  Text(
+                    extension,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: isMe
+                          ? Colors.white.withOpacity(0.7)
+                          : const Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.download_rounded,
+                    size: 12,
+                    color: isMe
+                        ? Colors.white.withOpacity(0.7)
+                        : const Color(0xFF6B7280),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimestamp(Map<String, dynamic> message, bool isMe) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (message['timeDisplay'] != null)
+          Text(
+            message['timeDisplay'].toString(),
+            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+          ),
+        if (isMe) ...[
+          const SizedBox(width: 4),
+          Icon(
+            message['isSeen'] == true
+                ? Icons.done_all_rounded
+                : Icons.done_rounded,
+            size: 14,
+            color: message['isSeen'] == true
+                ? const Color(0xFF3B82F6)
+                : Colors.grey.shade400,
+          ),
+        ],
+      ],
+    );
+  }
+}

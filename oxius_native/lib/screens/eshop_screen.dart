@@ -922,6 +922,30 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     );
   }
 
+  /// Delete a single search term from history (optimistic: removes locally first).
+  Future<void> _deleteSearchItem(String query) async {
+    setState(() {
+      _recentSearches = _recentSearches.where((s) => s != query).toList();
+    });
+    try {
+      await EshopService.deleteSearchHistoryItem(query);
+    } catch (e) {
+      print('EshopScreen: Failed to delete search item: $e');
+    }
+  }
+
+  /// Clear all search history.
+  Future<void> _clearAllSearchHistory() async {
+    setState(() {
+      _recentSearches = [];
+    });
+    try {
+      await EshopService.clearSearchHistory();
+    } catch (e) {
+      print('EshopScreen: Failed to clear search history: $e');
+    }
+  }
+
   Widget _buildSearchDefault() {
     print('EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}, isSearching: $_isSearching');
     
@@ -952,13 +976,49 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Clear search history'),
+                        content: const Text('Remove all recent searches?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel'),
+                          ),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFFEF4444),
+                            ),
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Clear All'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) _clearAllSearchHistory();
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFFEF4444),
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text(
+                    'Clear All',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _recentSearches.take(5).map((search) {
+              children: _recentSearches.take(10).map((search) {
                 return InkWell(
                   onTap: () {
                     _searchController.text = search;
@@ -966,7 +1026,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6, right: 6),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(20),
@@ -974,13 +1034,29 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.search, size: 14, color: Colors.grey.shade400),
+                        Icon(Icons.history, size: 14, color: Colors.grey.shade400),
                         const SizedBox(width: 4),
                         Text(
                           search,
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () => _deleteSearchItem(search),
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close,
+                              size: 11,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ),
                       ],

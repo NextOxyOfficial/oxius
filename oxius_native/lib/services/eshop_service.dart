@@ -665,6 +665,33 @@ class EshopService {
     }
   }
 
+  // Delete a single search history item by query string
+  static Future<bool> deleteSearchHistoryItem(String query) async {
+    try {
+      final uri = Uri.parse('$baseUrl/search-history/delete/');
+
+      final response = await http.delete(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({'query': query}),
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        print('EshopService: Search item deleted: $query');
+        return true;
+      }
+
+      print('EshopService: Failed to delete search item. Status: ${response.statusCode}');
+      return false;
+    } catch (e) {
+      print('EshopService: Error deleting search item: $e');
+      return false;
+    }
+  }
+
   // Clear all search history
   static Future<bool> clearSearchHistory() async {
     try {

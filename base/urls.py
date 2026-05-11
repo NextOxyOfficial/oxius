@@ -328,4 +328,5 @@ urlpatterns = [
     path("search-history/", SearchHistoryListView.as_view(), name="search_history"),
     path("search-history/save/", save_search_history, name="save_search_history"),
     path("search-history/clear/", clear_search_history, name="clear_search_history"),
+    path("search-history/delete/", delete_search_history_item, name="delete_search_history_item"),
 ]

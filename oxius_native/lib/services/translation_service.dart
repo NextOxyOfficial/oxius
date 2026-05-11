@@ -45,6 +45,9 @@ class TranslationService extends ChangeNotifier {
       'recent_post': 'Recent Posts',
       'no_recent_posts': 'No recent posts',
       'posts_loaded': 'Posts loaded',
+      'popular_packages': 'Popular Packages',
+      'all_packages': 'All Packages',
+      'recharge_now': 'Recharge Now',
     },
     'bn': {
       'premium_access': 'প্রিমিয়াম অ্যাক্সেস',
@@ -79,7 +82,11 @@ class TranslationService extends ChangeNotifier {
       'classified_no_results_found': 'কোনো ফলাফল পাওয়া যায়নি',
       'classified_try_different_keywords': 'অন্য কীওয়ার্ড দিয়ে চেষ্টা করুন',      'recent_post': 'সাম্প্রতিক পোস্ট',
       'no_recent_posts': 'কোনো সাম্প্রতিক পোস্ট নেই',
-      'posts_loaded': 'পোস্ট লোড হয়েছে',    },
+      'posts_loaded': 'পোস্ট লোড হয়েছে',
+      'popular_packages': 'জনপ্রিয় প্যাকেজ',
+      'all_packages': 'সব প্যাকেজ',
+      'recharge_now': 'রিচার্জ করুন',
+    },
   };
 
   // Use centralized API service base URL

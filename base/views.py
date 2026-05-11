@@ -5396,6 +5396,22 @@ def clear_search_history(request):
     return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_search_history_item(request):
+    """Delete a single search history item by query string"""
+    user = request.user
+    if not user.is_authenticated:
+        return Response({'error': 'User not authenticated'}, status=status.HTTP_401_UNAUTHORIZED)
+    query = request.data.get('query') or request.query_params.get('query', '')
+    if not query:
+        return Response({'error': 'query is required'}, status=status.HTTP_400_BAD_REQUEST)
+    deleted, _ = SearchHistory.objects.filter(
+        user=user, query=query, search_type='product'
+    ).delete()
+    return Response({'deleted': deleted}, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_fcm_token(request):
