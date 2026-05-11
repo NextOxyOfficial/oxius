@@ -416,6 +416,7 @@ class MyApp extends StatelessWidget {
                 return MaterialPageRoute(
                   builder: (context) => SellerProfileScreen(
                     userId: args?['userId'],
+                    userName: args?['userName'],
                   ),
                 );
               } else if (settings.name == '/business-network/profile') {

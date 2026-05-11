@@ -8,14 +8,19 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/sale_post.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
+import '../services/adsyconnect_service.dart';
+import 'adsy_connect_chat_interface.dart';
 
 /// Seller Profile Screen - Display seller information and their listings
 class SellerProfileScreen extends StatefulWidget {
   final String? userId;
+  final String? userName;
 
   const SellerProfileScreen({
     Key? key,
     this.userId,
+    this.userName,
   }) : super(key: key);
 
   @override
@@ -176,8 +181,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Get seller name
-    String sellerName = 'Seller Profile';
+    // Get seller name — prefer live API data, fall back to passed-in name
+    String sellerName = widget.userName ?? 'Seller Profile';
     if (_seller != null) {
       if (_seller!['name'] != null && _seller!['name'].toString().isNotEmpty) {
         sellerName = _seller!['name'];
@@ -256,7 +261,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   }
 
   Widget _buildContent() {
-    // Build full name from first_name and last_name, or use name field if available
     String name = 'Seller';
     if (_seller!['name'] != null && _seller!['name'].toString().isNotEmpty) {
       name = _seller!['name'];
@@ -269,7 +273,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     }
 
     final image = _seller!['image'];
-    final email = _seller!['email'];
     final phone = _seller!['phone'];
     final address = _seller!['address'];
     final dateJoined = _seller!['date_joined'] != null
@@ -279,370 +282,466 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     final kyc = _seller!['kyc'] == true;
     final isPro = _seller!['is_pro'] == true;
 
+    final divider = Container(height: 1, color: Colors.grey.shade200);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Header Card
+          // ── Seller header ──────────────────────────────────────────
           Container(
-            margin: const EdgeInsets.fromLTRB(2, 8, 2, 0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 62,
+                  width: 62,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border:
+                        Border.all(color: const Color(0xFFE5E7EB), width: 2),
+                  ),
+                  child: ClipOval(
+                    child: image != null
+                        ? CachedNetworkImage(
+                            imageUrl: image,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) =>
+                                Container(color: Colors.grey.shade200),
+                            errorWidget: (context, url, error) =>
+                                _buildAvatarFallback(name),
+                          )
+                        : _buildAvatarFallback(name),
+                  ),
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Row(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 72,
-                        width: 72,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: const Color(0xFFE5E7EB), width: 2),
-                        ),
-                        child: ClipOval(
-                          child: image != null
-                              ? CachedNetworkImage(
-                                  imageUrl: image,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) =>
-                                      Container(color: Colors.grey.shade200),
-                                  errorWidget: (context, url, error) =>
-                                      _buildAvatarFallback(name),
-                                )
-                              : _buildAvatarFallback(name),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    name,
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFF111827)),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (kyc) ...[
-                                  const SizedBox(width: 5),
-                                  const Icon(Icons.verified,
-                                      size: 17, color: Color(0xFF2563EB)),
-                                ],
-                                if (isPro) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 7, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(colors: [
-                                        Color(0xFF4F46E5),
-                                        Color(0xFF2563EB)
-                                      ]),
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: const Text('PRO',
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w800)),
-                                  ),
-                                ],
-                              ],
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              name,
+                              style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF10B981)),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(Icons.calendar_today_outlined,
-                                    size: 12, color: Colors.grey.shade500),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Member since ${_formatDate(dateJoined)}',
+                          ),
+                          if (kyc) ...[
+                            const SizedBox(width: 5),
+                            const Icon(Icons.verified,
+                                size: 17, color: Color(0xFF2563EB)),
+                          ],
+                          if (isPro) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(colors: [
+                                  Color(0xFF4F46E5),
+                                  Color(0xFF2563EB)
+                                ]),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: const Text('PRO',
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade600),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.sell_outlined,
-                                    size: 12, color: Color(0xFF10B981)),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '$salePostCount Active Listings',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF10B981),
-                                      fontWeight: FontWeight.w600),
-                                ),
-                              ],
+                                      fontSize: 10,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800)),
                             ),
                           ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (phone != null || email != null || address != null) ...[
-                    const SizedBox(height: 14),
-                    const Divider(height: 1, color: Color(0xFFE5E7EB)),
-                    const SizedBox(height: 14),
-                    if (phone != null) ...[
-                      _buildContactRow(
-                        Icons.phone_rounded,
-                        _showPhone ? phone : _maskPhoneNumber(phone),
-                        trailing: GestureDetector(
-                          onTap: () => setState(() => _showPhone = !_showPhone),
-                          child: Icon(
-                            _showPhone
-                                ? Icons.visibility_off_rounded
-                                : Icons.visibility_rounded,
-                            size: 18,
-                            color: const Color(0xFF10B981),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _openChatWithSeller(
+                                widget.userId ?? '', name),
+                            child: Image.asset(
+                              'assets/icons/chat_icon.png',
+                              width: 26,
+                              height: 26,
+                              fit: BoxFit.contain,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(height: 10),
-                    ],
-                    if (email != null) ...[
-                      _buildContactRow(Icons.email_outlined, email),
-                      const SizedBox(height: 10),
-                    ],
-                    if (address != null)
-                      _buildContactRow(Icons.location_on_outlined, address),
-                  ],
-                  const SizedBox(height: 14),
-                  if (phone != null)
-                    GestureDetector(
-                      onTap: () async {
-                        try {
-                          await launchUrl(Uri.parse('tel:$phone'),
-                              mode: LaunchMode.externalApplication);
-                        } catch (_) {}
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 4,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.calendar_today_outlined,
+                                  size: 12, color: Colors.grey.shade500),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Member since ${_formatDate(dateJoined)}',
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey.shade600),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.sell_outlined,
+                                  size: 12, color: Color(0xFF10B981)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$salePostCount Listings',
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF10B981),
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      if (phone != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
                           children: [
                             Icon(Icons.phone_rounded,
-                                size: 17, color: Colors.white),
-                            SizedBox(width: 8),
+                                size: 13, color: Colors.grey.shade500),
+                            const SizedBox(width: 5),
                             Text(
-                              'Call Seller',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white),
+                              _showPhone
+                                  ? phone
+                                  : _maskPhoneNumber(phone),
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF111827)),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () =>
+                                  setState(() => _showPhone = !_showPhone),
+                              child: Icon(
+                                  _showPhone
+                                      ? Icons.visibility_off_rounded
+                                      : Icons.visibility_rounded,
+                                  size: 16,
+                                  color: const Color(0xFF10B981)),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () async {
+                                try {
+                                  await launchUrl(Uri.parse('tel:$phone'),
+                                      mode: LaunchMode.externalApplication);
+                                } catch (_) {}
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: const Icon(Icons.phone_rounded,
+                                    size: 13, color: Colors.white),
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                ],
-              ),
+                      ],
+                      if (address != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.location_on_outlined,
+                                size: 13, color: Colors.grey.shade500),
+                            const SizedBox(width: 5),
+                            Flexible(
+                              child: Text(
+                                address,
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
 
-          // Listings Section
+          divider,
+          const SizedBox(height: 8),
+
+          // ── Listings header ────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+            child: Row(
               children: [
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Icon(Icons.grid_view_rounded,
-                        size: 17, color: Color(0xFF10B981)),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: Text(
-                        "$name's Listings",
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                const Text(
+                  'Listings',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827)),
                 ),
-                const SizedBox(height: 10),
-
-                // Filter Row - Category and Sort in one row
-                Row(
-                  children: [
-                    // Category filter
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.white,
-                        ),
-                        child: DropdownButton<String>(
-                          value: _selectedCategory,
-                          hint: Text(
-                            'All Categories',
-                            style: TextStyle(
-                                fontSize: 13, color: Colors.grey.shade600),
-                          ),
-                          underline: const SizedBox(),
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down, size: 20),
+                const Spacer(),
+                // Category dropdown
+                Container(
+                  height: 34,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedCategory,
+                      hint: Text('Category',
                           style: TextStyle(
-                              fontSize: 13, color: Colors.grey.shade700),
-                          items: [
-                            DropdownMenuItem<String>(
-                              value: null,
-                              child: Text('All Categories'),
-                            ),
-                            ..._categories.map((category) {
-                              return DropdownMenuItem<String>(
-                                value: category['id'].toString(),
-                                child: Text(
-                                  category['name'] ?? 'Unknown',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              );
-                            }).toList(),
-                          ],
-                          onChanged: (value) {
-                            setState(() => _selectedCategory = value);
-                            _fetchSellerPosts();
-                          },
-                        ),
-                      ),
+                              fontSize: 12, color: Colors.grey.shade600)),
+                      icon: const Icon(Icons.arrow_drop_down, size: 18),
+                      style: TextStyle(
+                          fontSize: 12, color: Colors.grey.shade700),
+                      isDense: true,
+                      items: [
+                        const DropdownMenuItem<String>(
+                            value: null, child: Text('All')),
+                        ..._categories.map((c) => DropdownMenuItem<String>(
+                            value: c['id'].toString(),
+                            child: Text(c['name'] ?? '',
+                                overflow: TextOverflow.ellipsis))),
+                      ],
+                      onChanged: (v) {
+                        setState(() => _selectedCategory = v);
+                        _fetchSellerPosts();
+                      },
                     ),
-
-                    const SizedBox(width: 8),
-
-                    // Sort dropdown
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(6),
-                          color: Colors.white,
-                        ),
-                        child: DropdownButton<String>(
-                          value: _selectedSort,
-                          underline: const SizedBox(),
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down, size: 20),
-                          style: TextStyle(
-                              fontSize: 13, color: Colors.grey.shade700),
-                          items: const [
-                            DropdownMenuItem(
-                                value: 'recent', child: Text('Most Recent')),
-                            DropdownMenuItem(
-                                value: 'price-low',
-                                child: Text('Price: Low-High')),
-                            DropdownMenuItem(
-                                value: 'price-high',
-                                child: Text('Price: High-Low')),
-                            DropdownMenuItem(
-                                value: 'popular', child: Text('Most Popular')),
-                          ],
-                          onChanged: (value) {
-                            setState(() => _selectedSort = value!);
-                            _fetchSellerPosts();
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-
-                const SizedBox(height: 16),
-
-                // Listings Grid
-                _isLoadingPosts
-                    ? const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(40),
-                          child: CircularProgressIndicator(
-                              color: Color(0xFF10B981)),
-                        ),
-                      )
-                    : _sellerPosts.isEmpty
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(40),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.inbox,
-                                      size: 60, color: Colors.grey.shade400),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No listings yet',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'This seller hasn\'t posted anything yet',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        : GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.zero,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.68,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                            ),
-                            itemCount: _sellerPosts.length,
-                            itemBuilder: (context, index) {
-                              final post = _sellerPosts[index];
-                              return _buildListingCard(post);
-                            },
-                          ),
-
-                const SizedBox(height: 80),
+                const SizedBox(width: 8),
+                // Sort dropdown
+                Container(
+                  height: 34,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedSort,
+                      icon: const Icon(Icons.arrow_drop_down, size: 18),
+                      isDense: true,
+                      style: TextStyle(
+                          fontSize: 12, color: Colors.grey.shade700),
+                      items: const [
+                        DropdownMenuItem(
+                            value: 'recent', child: Text('Recent')),
+                        DropdownMenuItem(
+                            value: 'price-low', child: Text('Low Price')),
+                        DropdownMenuItem(
+                            value: 'price-high', child: Text('High Price')),
+                        DropdownMenuItem(
+                            value: 'popular', child: Text('Popular')),
+                      ],
+                      onChanged: (v) {
+                        setState(() => _selectedSort = v!);
+                        _fetchSellerPosts();
+                      },
+                    ),
+                  ),
+                ),
               ],
             ),
+          ),
+
+          // ── Grid ───────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: _isLoadingPosts
+                ? const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40),
+                      child:
+                          CircularProgressIndicator(color: Color(0xFF10B981)),
+                    ),
+                  )
+                : _sellerPosts.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(40),
+                          child: Column(
+                            children: [
+                              Icon(Icons.inbox,
+                                  size: 60, color: Colors.grey.shade400),
+                              const SizedBox(height: 16),
+                              Text('No listings yet',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade600)),
+                            ],
+                          ),
+                        ),
+                      )
+                    : GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.zero,
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.68,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                        itemCount: _sellerPosts.length,
+                        itemBuilder: (context, index) =>
+                            _buildListingCard(_sellerPosts[index]),
+                      ),
+          ),
+
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openChatWithSeller(String userId, String userName) async {
+    if (!AuthService.isAuthenticated) {
+      _showLoginRequiredDialog();
+      return;
+    }
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+        ),
+      );
+      final chatroom =
+          await AdsyConnectService.getOrCreateChatRoom(userId);
+      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => DraggableScrollableSheet(
+            initialChildSize: 0.9,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            builder: (_, controller) => Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: AdsyConnectChatInterface(
+                chatroomId: chatroom['id'].toString(),
+                userId: userId,
+                userName: userName,
+                userAvatar: _seller?['image'],
+                profession: null,
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      if (e.toString().contains('401') ||
+          e.toString().contains('Unauthorized')) {
+        if (mounted) _showLoginRequiredDialog();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to open chat. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+      }
+    }
+  }
+
+  void _showLoginRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.chat_bubble_outline,
+                  color: Color(0xFF10B981), size: 24),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Login Required',
+                  style: TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('You need to be logged in to chat with the seller.',
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                    height: 1.5)),
+            SizedBox(height: 12),
+            Text('Please login or create an account to continue.',
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                    height: 1.5)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel',
+                style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/login');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Login',
+                style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -661,25 +760,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
               fontWeight: FontWeight.w800),
         ),
       ),
-    );
-  }
-
-  Widget _buildContactRow(IconData icon, String value, {Widget? trailing}) {
-    return Row(
-      children: [
-        Icon(icon, size: 15, color: const Color(0xFF10B981)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF374151),
-                fontWeight: FontWeight.w500),
-          ),
-        ),
-        if (trailing != null) trailing,
-      ],
     );
   }
 

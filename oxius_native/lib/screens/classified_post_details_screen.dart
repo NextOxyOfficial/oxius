@@ -1450,40 +1450,27 @@ class _ClassifiedPostDetailsScreenState
                           ),
                         ],
                       ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Report button
-                  InkWell(
-                    onTap: _showReportDialog,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF2F2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFFECACA)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.flag_outlined,
-                              size: 14, color: Color(0xFFDC2626)),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Report this listing',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFFDC2626),
-                              fontWeight: FontWeight.w600,
+                      // Report link (inline, no button background)
+                      GestureDetector(
+                        onTap: _showReportDialog,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.flag_outlined,
+                                size: 13, color: Color(0xFFDC2626)),
+                            SizedBox(width: 4),
+                            Text(
+                              'Report',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFFDC2626),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
@@ -1899,7 +1886,7 @@ class _ClassifiedPostDetailsScreenState
 
   Widget _buildSafetyTipsSection() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       color: const Color(0xFFFFFBEB),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1907,13 +1894,13 @@ class _ClassifiedPostDetailsScreenState
           Row(
             children: [
               const Icon(
-                Icons.shield_outlined,
+                Icons.shield_rounded,
                 color: Color(0xFFF59E0B),
                 size: 18,
               ),
               const SizedBox(width: 8),
               const Text(
-                'Safety Tips',
+                'নিরাপত্তা পরামর্শ',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -1924,9 +1911,38 @@ class _ClassifiedPostDetailsScreenState
             ],
           ),
           const SizedBox(height: 10),
-          _buildSafetyTip('Meet in a safe, public place'),
-          _buildSafetyTip('Check the item before purchase'),
-          _buildSafetyTip('Pay only after collecting the item'),
+          _buildSafetyTip('পরিচিত ও জনবহুল স্থানে দেখা করুন'),
+          _buildSafetyTip('পণ্য ভালোভাবে দেখে ও যাচাই করে কিনুন'),
+          _buildSafetyTip('পণ্য হাতে পাওয়ার আগে টাকা পরিশোধ করবেন না'),
+          _buildSafetyTip('অগ্রিম বিকাশ/নগদ পাঠানোর অনুরোধ থেকে সতর্ক থাকুন'),
+          _buildSafetyTip('অপরিচিত লিংকে ক্লিক করা বা ব্যক্তিগত তথ্য শেয়ার করা থেকে বিরত থাকুন'),
+          _buildSafetyTip('প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান'),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFFCA5A5)),
+            ),
+            child: Row(
+              children: const [
+                Icon(Icons.phone_in_talk_rounded, size: 15, color: Color(0xFFDC2626)),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'জরুরি সহায়তার জন্য ৯৯৯ নম্বরে কল করুন',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFDC2626),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1934,7 +1950,7 @@ class _ClassifiedPostDetailsScreenState
 
   Widget _buildSafetyTip(String tip) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1952,7 +1968,7 @@ class _ClassifiedPostDetailsScreenState
               style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF92400E),
-                height: 1.3,
+                height: 1.4,
               ),
             ),
           ),
