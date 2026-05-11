@@ -55,6 +55,7 @@
 		<string>fetch</string>
 		<string>location</string>
 		<string>remote-notification</string>
+		<string>voip</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>AdsyClub needs access to your photo library to upload images for posts, products, and profile pictures.</string>

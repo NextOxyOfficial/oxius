@@ -9,5 +9,7 @@
 		<string>applinks:adsyclub.com</string>
 		<string>applinks:www.adsyclub.com</string>
 	</array>
+	<key>com.apple.developer.pushkit.unrestricted-voip</key>
+	<true/>
 </dict>
 </plist>

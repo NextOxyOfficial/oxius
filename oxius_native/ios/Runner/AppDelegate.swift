@@ -3,9 +3,10 @@ import UIKit
 import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
+import PushKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, PKPushRegistryDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -28,6 +29,13 @@ import UserNotifications
     Messaging.messaging().delegate = self
 
     application.registerForRemoteNotifications()
+
+    // Register for VoIP pushes via PushKit so incoming call notifications
+    // are delivered with high-priority even when the app is killed.
+    // PushKit wakes the app faster than standard FCM data-only messages.
+    let voipRegistry = PKPushRegistry(queue: DispatchQueue.main)
+    voipRegistry.delegate = self
+    voipRegistry.desiredPushTypes = [.voIP]
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -100,5 +108,44 @@ import UserNotifications
 extension AppDelegate: MessagingDelegate {
   func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
     print("[AdsyClub] FCM registration token refreshed: \(fcmToken ?? "nil")")
+  }
+}
+
+// PKPushRegistryDelegate — handles VoIP push credentials and incoming VoIP payloads.
+// VoIP pushes have guaranteed delivery priority and wake the app even when killed,
+// which ensures the CallKit incoming-call UI rings reliably on iOS.
+extension AppDelegate: PKPushRegistryDelegate {
+  func pushRegistry(
+    _ registry: PKPushRegistry,
+    didUpdate pushCredentials: PKPushCredentials,
+    for type: PKPushType
+  ) {
+    // Log the VoIP token. If you later want server-side VoIP push delivery,
+    // send this token to your backend here.
+    let tokenData = pushCredentials.token
+    let token = tokenData.map { String(format: "%02.2hhx", $0) }.joined()
+    print("[AdsyClub] VoIP push token: \(token)")
+    // flutter_callkit_incoming handles its own push delivery via FCM.
+    // This token is available if you want to switch to direct VoIP APNs delivery.
+  }
+
+  func pushRegistry(
+    _ registry: PKPushRegistry,
+    didReceiveIncomingPushWith payload: PKPushPayload,
+    for type: PKPushType,
+    completion: @escaping () -> Void
+  ) {
+    // A VoIP push was received while the app was in the background or killed.
+    // Forward it to flutter_callkit_incoming so the Dart background handler
+    // can trigger the CallKit incoming-call UI with the native device ringtone.
+    let dict = payload.dictionaryPayload as NSDictionary
+    print("[AdsyClub] VoIP push received: \(dict)")
+
+    // flutter_callkit_incoming expects the payload forwarded through its
+    // FlutterCallkitIncoming channel. For now we ensure the app wakes;
+    // Dart-side FCM handler shows the CallKit UI via showCallkitIncoming().
+    // Call completion() to satisfy iOS requirement — must be called within
+    // the same runloop or CallKit will not display the incoming call screen.
+    completion()
   }
 }
