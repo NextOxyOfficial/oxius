@@ -985,11 +985,13 @@ class _SaleListScreenState extends State<SaleListScreen> {
             ),
           ),
           _isListView
-              ? ListView.builder(
+              ? ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   itemCount: _posts.length,
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 1, thickness: 1),
                   itemBuilder: (context, index) => _buildListItem(_posts[index]),
                 )
               : GridView.builder(
@@ -1068,180 +1070,176 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Widget _buildListItem(SalePost post) {
     final bool hasImage = post.images != null && post.images!.isNotEmpty;
-    
-    String getImageUrl() {
-      if (!hasImage) return '';
-      final imageUrl = post.images![0].image;
-      return imageUrl;
-    }
+    final String imageUrl = hasImage ? post.images![0].image : '';
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/sale/detail',
-          arguments: {'slug': post.slug, 'id': post.id},
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                bottomLeft: Radius.circular(10),
-              ),
-              child: SizedBox(
-                width: 90,
-                height: 90,
-                child: hasImage
-                    ? CachedNetworkImage(
-                        imageUrl: getImageUrl(),
-                        fit: BoxFit.cover,
-                        memCacheWidth: 180,
-                        memCacheHeight: 180,
-                        fadeInDuration: const Duration(milliseconds: 120),
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey.shade100,
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFF10B981),
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            '/sale/detail',
+            arguments: {'slug': post.slug, 'id': post.id},
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  width: 75,
+                  height: 75,
+                  color: const Color(0xFFF3F4F6),
+                  child: hasImage && imageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          memCacheWidth: 150,
+                          memCacheHeight: 150,
+                          fadeInDuration: const Duration(milliseconds: 120),
+                          placeholder: (context, url) => const Center(
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF10B981)),
+                              ),
                             ),
                           ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: Colors.grey.shade100,
-                          child: Icon(
-                            Icons.image_not_supported_rounded,
-                            color: Colors.grey.shade400,
-                            size: 32,
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.image_outlined,
+                            color: Color(0xFF9CA3AF),
+                            size: 28,
+                          ),
+                        )
+                      : Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.image_not_supported_outlined,
+                                  color: Colors.grey[400], size: 24),
+                              const SizedBox(height: 4),
+                              Text(
+                                'No photo\nuploaded',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 9,
+                                    color: Colors.grey[500],
+                                    height: 1.2),
+                              ),
+                            ],
                           ),
                         ),
-                      )
-                    : Container(
-                        color: Colors.grey.shade100,
-                        child: Icon(
-                          Icons.image_outlined,
-                          color: Colors.grey.shade400,
-                          size: 32,
-                        ),
-                      ),
+                ),
               ),
-            ),
-            
-            // Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+
+              const SizedBox(width: 8),
+
+              // Content
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Title
                     Text(
                       post.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w700,
                         color: Color(0xFF111827),
-                        height: 1.2,
+                        height: 1.3,
                         letterSpacing: -0.1,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 5),
-                    
-                    // Price and Condition Badge Row
+
+                    const SizedBox(height: 4),
+
+                    // Price + Condition badge + Time
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Left side: Price and Condition
-                        Row(
-                          children: [
-                            // Price
-                            Text(
-                              _formatPrice(post),
-                              style: TextStyle(
-                                fontSize: post.negotiable ? 12 : 14,
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF10B981),
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            
-                            // Condition Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: const Color(0xFF10B981).withOpacity(0.3),
-                                ),
-                              ),
-                              child: Text(
-                                post.condition.toUpperCase(),
+                        // Left: price + condition badge (Expanded to not crowd time)
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Text(
+                                _formatPrice(post),
                                 style: const TextStyle(
-                                  fontSize: 9,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF10B981),
-                                  letterSpacing: 0.3,
+                                  letterSpacing: -0.3,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(width: 6),
+                              // Condition badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                      color: const Color(0xFF10B981)
+                                          .withOpacity(0.3)),
+                                ),
+                                child: Text(
+                                  post.condition.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF10B981),
+                                    letterSpacing: 0.3,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                        
-                        // Right side: Time ago
-                        if (post.createdAt != null)
+                        // Time
+                        if (post.createdAt != null) ...[
+                          const SizedBox(width: 6),
                           Text(
                             _formatDate(post.createdAt),
-                            style: TextStyle(
-                              fontSize: 9,
-                              color: Colors.grey.shade500,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFF9CA3AF),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 3),
-                    
+
+                    const SizedBox(height: 4),
+
                     // Location
                     if (_formatLocation(post).isNotEmpty)
                       Row(
                         children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            size: 11,
-                            color: Colors.grey.shade500,
-                          ),
-                          const SizedBox(width: 3),
+                          const Icon(Icons.location_on_rounded,
+                              size: 12, color: Color(0xFF6B7280)),
+                          const SizedBox(width: 2),
                           Expanded(
                             child: Text(
                               _formatLocation(post),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey.shade600,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF6B7280),
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: -0.1,
                               ),
                             ),
                           ),
@@ -1250,8 +1248,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -104,6 +104,15 @@ class _ClassifiedCategoryListScreenState
       'description of the business',
       'to be updated',
       'coming soon',
+      'your business',
+      'your company',
+      'your name',
+      'insert name',
+      'n/a',
+      'not available',
+      'not provided',
+      'unknown',
+      'tbd',
     };
     return phrases.any(lower.contains);
   }
@@ -208,8 +217,29 @@ class _ClassifiedCategoryListScreenState
   bool _isValidEmail(String value) {
     final email = value.trim();
     if (email.isEmpty) return false;
-    final re = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
-    return re.hasMatch(email);
+    if (_containsAiPlaceholderText(email)) return false;
+    final re = RegExp(r'^[^\.\s@][^\s@]*@[^\s@]+\.[a-zA-Z]{2,}$');
+    if (!re.hasMatch(email)) return false;
+    final lower = email.toLowerCase();
+    // Block all known fake / placeholder / hallucinated domains
+    const fakeDomains = {
+      'example.com', 'example.org', 'example.net',
+      'test.com', 'test.org', 'test.net',
+      'placeholder.com', 'sample.com', 'dummy.com',
+      'yourmail.com', 'youremail.com', 'yourdomain.com',
+      'domain.com', 'company.com', 'yourcompany.com',
+      'businessname.com', 'shopname.com', 'sitename.com',
+      'yoursite.com', 'yourwebsite.com', 'website.com',
+      'email.com', 'mail.com', 'address.com',
+      'info.com', 'contact.com',
+    };
+    final at = lower.indexOf('@');
+    if (at <= 0) return false;
+    final domain = lower.substring(at + 1);
+    if (fakeDomains.contains(domain)) return false;
+    // Block if domain itself contains placeholder keywords
+    if (_containsAiPlaceholderText(domain)) return false;
+    return true;
   }
 
   bool _isLikelyValidWebsite(String value) {
@@ -342,11 +372,16 @@ class _ClassifiedCategoryListScreenState
 
     final finalEmail = sanitized['email'] as String?;
     final finalWebsite = sanitized['website'] as String?;
-    if (!_isWebsiteConsistentWithEmail(
-        email: finalEmail, website: finalWebsite)) {
-      sanitized.remove('website');
+    // If both are present but domains don't match, the email is likely
+    // hallucinated — drop the email and keep the verifiable website
+    if (finalEmail != null &&
+        finalWebsite != null &&
+        !_isWebsiteConsistentWithEmail(
+            email: finalEmail, website: finalWebsite)) {
+      sanitized.remove('email');
     }
 
+    // Require at least one verifiable contact field beyond just a name
     if ((sanitized['address'] == null) &&
         (sanitized['phone'] == null) &&
         (sanitized['email'] == null) &&
