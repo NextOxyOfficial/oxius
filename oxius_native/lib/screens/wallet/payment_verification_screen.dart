@@ -518,21 +518,21 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
       child: Column(
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: 30,
+            height: 30,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
               border: Border.all(color: color.withValues(alpha: 0.28)),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 16),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             label,
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
               color: done || active ? _slate800 : _slate500,
             ),
@@ -865,17 +865,17 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 14, 4, 0),
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
             child: Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 22,
-                    offset: const Offset(0, 12),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -884,18 +884,19 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                   Row(
                     children: [
                       Container(
-                        width: 46,
-                        height: 46,
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
                           color: _statusColor().withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(11),
                         ),
                         child: Icon(
                           _statusIcon(),
                           color: _statusColor(),
+                          size: 20,
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -903,17 +904,17 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                             Text(
                               _statusTitle(),
                               style: GoogleFonts.inter(
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w800,
                                 color: _slate800,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
                               _message,
                               style: GoogleFonts.inter(
-                                fontSize: 12,
-                                height: 1.45,
+                                fontSize: 11,
+                                height: 1.35,
                                 color: _slate500,
                               ),
                             ),
@@ -922,7 +923,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       _buildProgressStep(
@@ -945,11 +946,11 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
+                      horizontal: 10,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: _slate50,
@@ -983,7 +984,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
           else
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(4, 16, 4, 16),
+                padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
                 child: Container(
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
@@ -1203,10 +1204,11 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
           surfaceTintColor: Colors.white,
           foregroundColor: _slate800,
           elevation: 0,
+          toolbarHeight: 44,
           title: Text(
             'Complete Deposit',
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w700,
               color: _slate800,
             ),

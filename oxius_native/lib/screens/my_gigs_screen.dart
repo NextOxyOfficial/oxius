@@ -186,7 +186,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        hasAnyGigs ? 'No gigs in $_getSelectedFilterLabel()' : 'No gigs found yet',
+                        hasAnyGigs ? 'No gigs in ${_getSelectedFilterLabel()}' : 'No gigs found yet',
                         style: const TextStyle(
                           fontSize: 20,
                           height: 1.1,

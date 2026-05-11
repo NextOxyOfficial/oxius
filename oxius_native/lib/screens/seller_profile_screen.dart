@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/sale_post.dart';
 import '../services/api_service.dart';
 
@@ -39,14 +41,14 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     _fetchCategories();
     _fetchSellerPosts();
   }
-  
+
   Future<void> _fetchCategories() async {
     try {
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/sale/categories/'),
         headers: {'Content-Type': 'application/json'},
       );
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -64,13 +66,13 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     if (widget.userId == null) return;
 
     setState(() => _isLoading = true);
-    
+
     try {
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/user/${widget.userId}/'),
         headers: {'Content-Type': 'application/json'},
       );
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (mounted) {
@@ -94,7 +96,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     if (widget.userId == null) return;
 
     setState(() => _isLoadingPosts = true);
-    
+
     try {
       // Build query parameters
       final queryParams = <String, String>{
@@ -102,19 +104,20 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         'page_size': '50',
         'ordering': _getSortParam(),
       };
-      
+
       // Add category filter if selected
       if (_selectedCategory != null && _selectedCategory!.isNotEmpty) {
         queryParams['category'] = _selectedCategory!;
       }
-      
-      final uri = Uri.parse('${ApiService.baseUrl}/sale/posts/').replace(queryParameters: queryParams);
-      
+
+      final uri = Uri.parse('${ApiService.baseUrl}/sale/posts/')
+          .replace(queryParameters: queryParams);
+
       final response = await http.get(
         uri,
         headers: {'Content-Type': 'application/json'},
       );
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List results = data['results'] ?? [];
@@ -186,20 +189,28 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         }
       }
     }
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         title: Text(
           sellerName,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF111827)),
         ),
-        backgroundColor: const Color(0xFF10B981),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF111827),
         elevation: 0,
+        centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: const Color(0xFFE5E7EB)),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_rounded, size: 22),
+            icon: const Icon(Icons.share_rounded, size: 21),
             onPressed: () => setState(() => _showShareDialog = true),
           ),
         ],
@@ -207,11 +218,12 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
       body: Stack(
         children: [
           _isLoading
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)))
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF10B981)))
               : _seller == null
                   ? _buildErrorState()
                   : _buildContent(),
-          
+
           // Share Dialog
           if (_showShareDialog) _buildShareDialog(),
         ],
@@ -255,13 +267,13 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         name = '$firstName $lastName'.trim();
       }
     }
-    
+
     final image = _seller!['image'];
     final email = _seller!['email'];
     final phone = _seller!['phone'];
     final address = _seller!['address'];
-    final dateJoined = _seller!['date_joined'] != null 
-        ? DateTime.tryParse(_seller!['date_joined']) 
+    final dateJoined = _seller!['date_joined'] != null
+        ? DateTime.tryParse(_seller!['date_joined'])
         : null;
     final salePostCount = _seller!['sale_post_count'] ?? 0;
     final kyc = _seller!['kyc'] == true;
@@ -273,315 +285,216 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         children: [
           // Profile Header Card
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+            margin: const EdgeInsets.fromLTRB(2, 8, 2, 0),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: Column(
-              children: [
-                // Cover gradient
-                Container(
-                  height: 140,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF059669), Color(0xFF047857)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                  ),
-                ),
-                
-                // Profile info
-                Transform.translate(
-                  offset: const Offset(0, -50),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        // Avatar
-                        Container(
-                          height: 100,
-                          width: 100,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            border: Border.all(color: Colors.white, width: 4),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: image != null
-                                ? CachedNetworkImage(
-                                    imageUrl: image,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Container(
-                                      color: Colors.grey.shade200,
-                                    ),
-                                    errorWidget: (context, url, error) => Container(
-                                      color: const Color(0xFF10B981).withOpacity(0.1),
-                                      child: Center(
-                                        child: Text(
-                                          name[0].toUpperCase(),
-                                          style: const TextStyle(
-                                            fontSize: 40,
-                                            color: Color(0xFF10B981),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  )
-                                : Container(
-                                    color: const Color(0xFF10B981).withOpacity(0.1),
-                                    child: Center(
-                                      child: Text(
-                                        name[0].toUpperCase(),
-                                        style: const TextStyle(
-                                          fontSize: 40,
-                                          color: Color(0xFF10B981),
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Name with badges
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                name,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1F2937),
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            if (kyc) ...[
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.verified,
-                                size: 22,
-                                color: Color(0xFF2563EB),
-                              ),
-                            ],
-                          ],
-                        ),
-                        
-                        if (isPro) ...[
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF4F46E5), Color(0xFF2563EB)],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF4F46E5).withOpacity(0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.shield, size: 14, color: Colors.white),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Pro Member',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        
-                        const SizedBox(height: 12),
-                        
-                        // Member since
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Member since ${_formatDate(dateJoined)}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Stats row
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.sell, size: 18, color: Color(0xFF10B981)),
-                              const SizedBox(width: 8),
-                              Text(
-                                '$salePostCount Active Listings',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1F2937),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 20),
-                        
-                        // Contact Info Card
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade200),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Contact Information',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1F2937),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              
-                              if (phone != null) ...[
-                                _buildContactRow(
-                                  Icons.phone,
-                                  'Phone',
-                                  _showPhone ? phone : _maskPhoneNumber(phone),
-                                  trailing: IconButton(
-                                    icon: Icon(
-                                      _showPhone ? Icons.visibility_off : Icons.visibility,
-                                      size: 18,
-                                      color: const Color(0xFF10B981),
-                                    ),
-                                    onPressed: () => setState(() => _showPhone = !_showPhone),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                              ],
-                              
-                              if (email != null) ...[
-                                _buildContactRow(Icons.email, 'Email', email),
-                                const SizedBox(height: 8),
-                              ],
-                              
-                              if (address != null) ...[
-                                _buildContactRow(Icons.location_on, 'Location', address),
-                              ],
-                            ],
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 20),
-                        
-                        // Contact button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: phone != null ? () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Call: $phone')),
-                              );
-                            } : null,
-                            icon: const Icon(Icons.phone, size: 18),
-                            label: const Text(
-                              'Contact Seller',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              elevation: 0,
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        height: 72,
+                        width: 72,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: const Color(0xFFE5E7EB), width: 2),
+                        ),
+                        child: ClipOval(
+                          child: image != null
+                              ? CachedNetworkImage(
+                                  imageUrl: image,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) =>
+                                      Container(color: Colors.grey.shade200),
+                                  errorWidget: (context, url, error) =>
+                                      _buildAvatarFallback(name),
+                                )
+                              : _buildAvatarFallback(name),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    name,
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF111827)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (kyc) ...[
+                                  const SizedBox(width: 5),
+                                  const Icon(Icons.verified,
+                                      size: 17, color: Color(0xFF2563EB)),
+                                ],
+                                if (isPro) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(colors: [
+                                        Color(0xFF4F46E5),
+                                        Color(0xFF2563EB)
+                                      ]),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: const Text('PRO',
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800)),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.calendar_today_outlined,
+                                    size: 12, color: Colors.grey.shade500),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Member since ${_formatDate(dateJoined)}',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(Icons.sell_outlined,
+                                    size: 12, color: Color(0xFF10B981)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$salePostCount Active Listings',
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF10B981),
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (phone != null || email != null || address != null) ...[
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                    const SizedBox(height: 14),
+                    if (phone != null) ...[
+                      _buildContactRow(
+                        Icons.phone_rounded,
+                        _showPhone ? phone : _maskPhoneNumber(phone),
+                        trailing: GestureDetector(
+                          onTap: () => setState(() => _showPhone = !_showPhone),
+                          child: Icon(
+                            _showPhone
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
+                            size: 18,
+                            color: const Color(0xFF10B981),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                    if (email != null) ...[
+                      _buildContactRow(Icons.email_outlined, email),
+                      const SizedBox(height: 10),
+                    ],
+                    if (address != null)
+                      _buildContactRow(Icons.location_on_outlined, address),
+                  ],
+                  const SizedBox(height: 14),
+                  if (phone != null)
+                    GestureDetector(
+                      onTap: () async {
+                        try {
+                          await launchUrl(Uri.parse('tel:$phone'),
+                              mode: LaunchMode.externalApplication);
+                        } catch (_) {}
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.phone_rounded,
+                                size: 17, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Call Seller',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
-          
+
           // Listings Section
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 8),
-                
-                // Section header
+                const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.grid_view, size: 20, color: Color(0xFF10B981)),
-                    const SizedBox(width: 8),
+                    const Icon(Icons.grid_view_rounded,
+                        size: 17, color: Color(0xFF10B981)),
+                    const SizedBox(width: 7),
                     Expanded(
                       child: Text(
-                        '$name\'s Listings',
+                        "$name's Listings",
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF111827),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 12),
-                
+                const SizedBox(height: 10),
+
                 // Filter Row - Category and Sort in one row
                 Row(
                   children: [
@@ -598,12 +511,14 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                           value: _selectedCategory,
                           hint: Text(
                             'All Categories',
-                            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey.shade600),
                           ),
                           underline: const SizedBox(),
                           isExpanded: true,
                           icon: const Icon(Icons.arrow_drop_down, size: 20),
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade700),
                           items: [
                             DropdownMenuItem<String>(
                               value: null,
@@ -626,9 +541,9 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(width: 8),
-                    
+
                     // Sort dropdown
                     Expanded(
                       child: Container(
@@ -643,12 +558,19 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                           underline: const SizedBox(),
                           isExpanded: true,
                           icon: const Icon(Icons.arrow_drop_down, size: 20),
-                          style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                          style: TextStyle(
+                              fontSize: 13, color: Colors.grey.shade700),
                           items: const [
-                            DropdownMenuItem(value: 'recent', child: Text('Most Recent')),
-                            DropdownMenuItem(value: 'price-low', child: Text('Price: Low-High')),
-                            DropdownMenuItem(value: 'price-high', child: Text('Price: High-Low')),
-                            DropdownMenuItem(value: 'popular', child: Text('Most Popular')),
+                            DropdownMenuItem(
+                                value: 'recent', child: Text('Most Recent')),
+                            DropdownMenuItem(
+                                value: 'price-low',
+                                child: Text('Price: Low-High')),
+                            DropdownMenuItem(
+                                value: 'price-high',
+                                child: Text('Price: High-Low')),
+                            DropdownMenuItem(
+                                value: 'popular', child: Text('Most Popular')),
                           ],
                           onChanged: (value) {
                             setState(() => _selectedSort = value!);
@@ -659,15 +581,16 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Listings Grid
                 _isLoadingPosts
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(40),
-                          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+                          child: CircularProgressIndicator(
+                              color: Color(0xFF10B981)),
                         ),
                       )
                     : _sellerPosts.isEmpty
@@ -676,7 +599,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                               padding: const EdgeInsets.all(40),
                               child: Column(
                                 children: [
-                                  Icon(Icons.inbox, size: 60, color: Colors.grey.shade400),
+                                  Icon(Icons.inbox,
+                                      size: 60, color: Colors.grey.shade400),
                                   const SizedBox(height: 16),
                                   Text(
                                     'No listings yet',
@@ -702,7 +626,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             padding: EdgeInsets.zero,
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               childAspectRatio: 0.68,
                               crossAxisSpacing: 10,
@@ -714,7 +639,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                               return _buildListingCard(post);
                             },
                           ),
-                
+
                 const SizedBox(height: 80),
               ],
             ),
@@ -724,34 +649,33 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     );
   }
 
-  Widget _buildContactRow(IconData icon, String label, String value, {Widget? trailing}) {
+  Widget _buildAvatarFallback(String name) {
+    return Container(
+      color: const Color(0xFF10B981).withOpacity(0.1),
+      child: Center(
+        child: Text(
+          name.isNotEmpty ? name[0].toUpperCase() : '?',
+          style: const TextStyle(
+              fontSize: 28,
+              color: Color(0xFF10B981),
+              fontWeight: FontWeight.w800),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactRow(IconData icon, String value, {Widget? trailing}) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF10B981)),
+        Icon(icon, size: 15, color: const Color(0xFF10B981)),
         const SizedBox(width: 8),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF1F2937),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          child: Text(
+            value,
+            style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF374151),
+                fontWeight: FontWeight.w500),
           ),
         ),
         if (trailing != null) trailing,
@@ -787,7 +711,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(8)),
               child: AspectRatio(
                 aspectRatio: 1.1,
                 child: post.images != null && post.images!.isNotEmpty
@@ -826,7 +751,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                       ),
               ),
             ),
-            
+
             // Info
             Padding(
               padding: const EdgeInsets.all(8),
@@ -846,11 +771,13 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  
+
                   const SizedBox(height: 4),
-                  
+
                   // Location
-                  if (post.division != null && post.district != null && post.area != null)
+                  if (post.division != null &&
+                      post.district != null &&
+                      post.area != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Row(
@@ -858,7 +785,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
-                            child: Icon(Icons.location_on, size: 12, color: Colors.grey.shade500),
+                            child: Icon(Icons.location_on,
+                                size: 12, color: Colors.grey.shade500),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -876,7 +804,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                         ],
                       ),
                     ),
-                  
+
                   // Price
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -884,7 +812,9 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          post.price > 0 ? _formatPrice(post.price) : 'Contact for Price',
+                          post.price > 0
+                              ? _formatPrice(post.price)
+                              : 'Contact for Price',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -915,7 +845,20 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     final sellerId = widget.userId ?? '';
     final sellerName = _seller?['name'] ?? 'Seller';
     final shareUrl = 'https://adsyclub.com/seller/$sellerId';
-    
+    final shareText = 'Check out $sellerName on AdsyClub\n$shareUrl';
+
+    Future<void> launch(String url) async {
+      try {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open the app')),
+          );
+        }
+      }
+    }
+
     return GestureDetector(
       onTap: () => setState(() => _showShareDialog = false),
       child: Container(
@@ -928,7 +871,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -936,32 +879,53 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Share $sellerName\'s Profile',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
+                      const Text('Share Profile',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700)),
                       IconButton(
                         icon: const Icon(Icons.close),
-                        onPressed: () => setState(() => _showShareDialog = false),
+                        onPressed: () =>
+                            setState(() => _showShareDialog = false),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                  
-                  // Copy Link
+                  const SizedBox(height: 12),
                   ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.ios_share_rounded,
+                          color: Color(0xFF10B981)),
+                    ),
+                    title: const Text('Share via...',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                    onTap: () {
+                      setState(() => _showShareDialog = false);
+                      Share.share(shareText, subject: sellerName);
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.link, color: Color(0xFF10B981)),
+                      child: const Icon(Icons.link, color: Color(0xFF6B7280)),
                     ),
-                    title: const Text('Copy Link', style: TextStyle(fontSize: 14)),
-                    trailing: _copied 
+                    title: const Text('Copy Link',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                    trailing: _copied
                         ? const Icon(Icons.check, color: Color(0xFF10B981))
                         : null,
                     onTap: () async {
@@ -972,41 +936,70 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                       });
                     },
                   ),
-                  
                   const Divider(height: 1),
-                  
-                  // Social Media Options
                   ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1877F2).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.facebook, color: Color(0xFF1877F2)),
-                    ),
-                    title: const Text('Share on Facebook', style: TextStyle(fontSize: 14)),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Facebook share coming soon!')),
-                      );
-                    },
-                  ),
-                  
-                  ListTile(
+                    contentPadding: EdgeInsets.zero,
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF25D366).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.chat, color: Color(0xFF25D366)),
+                      child: const Icon(Icons.chat_rounded,
+                          color: Color(0xFF25D366)),
                     ),
-                    title: const Text('Share on WhatsApp', style: TextStyle(fontSize: 14)),
+                    title: const Text('Share on WhatsApp',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('WhatsApp share coming soon!')),
-                      );
+                      setState(() => _showShareDialog = false);
+                      launch(
+                          'https://wa.me/?text=${Uri.encodeComponent(shareText)}');
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text('𝕏',
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black)),
+                    ),
+                    title: const Text('Share on X',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                    onTap: () {
+                      setState(() => _showShareDialog = false);
+                      launch(
+                          'https://x.com/intent/tweet?text=${Uri.encodeComponent(sellerName)}&url=${Uri.encodeComponent(shareUrl)}');
+                    },
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1877F2).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child:
+                          const Icon(Icons.facebook, color: Color(0xFF1877F2)),
+                    ),
+                    title: const Text('Share on Facebook',
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                    onTap: () {
+                      setState(() => _showShareDialog = false);
+                      launch(
+                          'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(shareUrl)}');
                     },
                   ),
                 ],
