@@ -636,29 +636,12 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
           await AdsyConnectService.getOrCreateChatRoom(userId);
       if (mounted) Navigator.pop(context);
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (_, controller) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: AdsyConnectChatInterface(
-                chatroomId: chatroom['id'].toString(),
-                userId: userId,
-                userName: userName,
-                userAvatar: _seller?['image'],
-                profession: null,
-              ),
-            ),
-          ),
+        AdsyConnectChatInterface.open(
+          context,
+          chatroomId: chatroom['id'].toString(),
+          userId: userId,
+          userName: userName,
+          userAvatar: _seller?['image'],
         );
       }
     } catch (e) {

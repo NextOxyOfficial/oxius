@@ -598,6 +598,8 @@ class FCMService {
   static Timer? _pendingNavigationTimer;
   static int _pendingNavigationAttempts = 0;
   static bool _lifecycleObserverInstalled = false;
+  static bool _initialized = false;
+  static bool _callkitListenerRegistered = false;
   static StreamSubscription<Map<String, dynamic>>? _adsyConnectRealtimeSubscription;
   static final Map<String, int> _recentCallSignalTimestamps = <String, int>{};
 
@@ -1008,6 +1010,11 @@ class FCMService {
 
   /// Initialize FCM
   static Future<void> initialize() async {
+    if (_initialized) {
+      _log('🔥 FCM Service already initialized — skipping duplicate initialize()');
+      return;
+    }
+    _initialized = true;
     try {
       _log('🔥 Initializing FCM Service...');
       _log('=' * 60);
@@ -1343,6 +1350,11 @@ class FCMService {
 
   /// Initialize CallKit for native incoming call UI
   static Future<void> _initializeCallKit() async {
+    if (_callkitListenerRegistered) {
+      _log('📞 CallKit listener already registered — skipping duplicate subscription');
+      return;
+    }
+    _callkitListenerRegistered = true;
     try {
       // Listen for CallKit events
       FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
@@ -1809,10 +1821,18 @@ class FCMService {
       return;
     }
     
-    // Prevent duplicate CallScreen pushes
+    // Prevent duplicate CallScreen pushes ONLY when the visible CallScreen
+    // belongs to the exact same channel. A stale flag from a previous call,
+    // or a CallScreen for a different channel, must not silently drop a new
+    // accept event — that was the root cause of "tapping Accept does nothing".
     if (AgoraCallService.isCallScreenVisible) {
-      _log('📞 CallScreen already visible, skipping navigation');
-      return;
+      final activeChannel =
+          AgoraCallService.activeCallInfo?['channelName']?.toString();
+      if (activeChannel == channelName) {
+        _log('📞 CallScreen already visible for $channelName, skipping navigation');
+        return;
+      }
+      _log('📞 Stale CallScreen flag detected (active=$activeChannel, new=$channelName) — pushing new CallScreen anyway');
     }
     
     _log('📞 Navigating directly to CallScreen (accepted call)');

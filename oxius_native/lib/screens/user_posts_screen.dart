@@ -198,44 +198,14 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
       Navigator.pop(context);
 
       if (chatroom != null && chatroom['id'] != null) {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (context, scrollController) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 12, bottom: 8),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Expanded(
-                    child: AdsyConnectChatInterface(
-                      chatroomId: chatroom['id'].toString(),
-                      userId: widget.userId,
-                      userName: widget.userName,
-                      userAvatar: widget.userAvatar,
-                      profession: 'Seller',
-                      isOnline: false,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        AdsyConnectChatInterface.open(
+          context,
+          chatroomId: chatroom['id'].toString(),
+          userId: widget.userId,
+          userName: widget.userName,
+          userAvatar: widget.userAvatar,
+          profession: 'Seller',
+          isOnline: false,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

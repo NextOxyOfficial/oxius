@@ -320,52 +320,20 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       // Close loading indicator
       if (mounted) Navigator.pop(context);
 
-      // Show chat interface in bottom sheet
+      // Open chat interface (stack-deduplicated)
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (context, scrollController) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                children: [
-                  // Handle bar
-                  Container(
-                    margin: const EdgeInsets.only(top: 12, bottom: 8),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  // Chat interface
-                  Expanded(
-                    child: AdsyConnectChatInterface(
-                      chatroomId: chatroom['id'].toString(),
-                      userId: sellerId,
-                      userName: _gig!['user']?['name'] ?? 'Seller',
-                      userAvatar: _gig!['user']?['avatar'] != null 
-                          ? _getImageUrl(_gig!['user']['avatar']) 
-                          : null,
-                      profession: 'Gig Seller',
-                      isOnline: false,
-                      isVerified: _gig!['user']?['kyc'] == true,
-                      isPro: _gig!['user']?['is_pro'] == true,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        AdsyConnectChatInterface.open(
+          context,
+          chatroomId: chatroom['id'].toString(),
+          userId: sellerId,
+          userName: _gig!['user']?['name'] ?? 'Seller',
+          userAvatar: _gig!['user']?['avatar'] != null
+              ? _getImageUrl(_gig!['user']['avatar'])
+              : null,
+          profession: 'Gig Seller',
+          isOnline: false,
+          isVerified: _gig!['user']?['kyc'] == true,
+          isPro: _gig!['user']?['is_pro'] == true,
         );
       }
     } catch (e) {

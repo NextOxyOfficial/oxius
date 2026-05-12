@@ -926,51 +926,19 @@ class _ClassifiedPostDetailsScreenState
       // Close loading indicator
       if (mounted) Navigator.pop(context);
 
-      // Show chat interface in bottom sheet
+      // Show chat interface (stack-deduplicated)
       if (mounted) {
-        print('🔵 Opening bottom sheet...');
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (context, scrollController) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Column(
-                children: [
-                  // Handle bar
-                  Container(
-                    margin: const EdgeInsets.only(top: 12, bottom: 8),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  // Chat interface
-                  Expanded(
-                    child: AdsyConnectChatInterface(
-                      chatroomId: chatroom['id'].toString(),
-                      userId: _post!.user!.id.toString(),
-                      userName: _getSellerName(),
-                      userAvatar: _post!.user!.profilePicture,
-                      profession: 'Seller',
-                      isOnline: false,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        print('🔵 Opening chat...');
+        AdsyConnectChatInterface.open(
+          context,
+          chatroomId: chatroom['id'].toString(),
+          userId: _post!.user!.id.toString(),
+          userName: _getSellerName(),
+          userAvatar: _post!.user!.profilePicture,
+          profession: 'Seller',
+          isOnline: false,
         );
-        print('🟢 Bottom sheet opened successfully!');
+        print('🟢 Chat opened successfully!');
       }
     } catch (e, stackTrace) {
       print('🔴 Error opening chat: $e');

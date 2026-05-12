@@ -1862,30 +1862,14 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
       // Close loading dialog
       if (mounted) Navigator.pop(context);
 
-      // Open chat bottom sheet
+      // Open chat (with stack-deduplication: returns to existing chat if open)
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (_, controller) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: AdsyConnectChatInterface(
-                chatroomId: chatroom['id'].toString(),
-                userId: user.id.toString(),
-                userName: user.displayName,
-                userAvatar: user.profilePicture,
-                profession: null,
-              ),
-            ),
-          ),
+        AdsyConnectChatInterface.open(
+          context,
+          chatroomId: chatroom['id'].toString(),
+          userId: user.id.toString(),
+          userName: user.displayName,
+          userAvatar: user.profilePicture,
         );
       }
     } catch (e) {

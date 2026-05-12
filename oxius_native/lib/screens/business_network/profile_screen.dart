@@ -403,33 +403,18 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       // Close loading dialog
       if (mounted) Navigator.pop(context);
 
-      // Open chat bottom sheet
+      // Open chat (stack-deduplicated)
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (_, controller) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: AdsyConnectChatInterface(
-                chatroomId: chatroom['id'].toString(),
-                userId: widget.userId,
-                userName: _userData!['first_name'] != null && _userData!['last_name'] != null
-                    ? '${_userData!['first_name']} ${_userData!['last_name']}'
-                    : _userData!['username'] ?? 'User',
-                userAvatar: _userData?['image'] ?? _userData?['profile_picture'] ?? _userData?['avatar'],
-                profession: _userData!['profession'],
-                isOnline: false,
-              ),
-            ),
-          ),
+        AdsyConnectChatInterface.open(
+          context,
+          chatroomId: chatroom['id'].toString(),
+          userId: widget.userId,
+          userName: _userData!['first_name'] != null && _userData!['last_name'] != null
+              ? '${_userData!['first_name']} ${_userData!['last_name']}'
+              : _userData!['username'] ?? 'User',
+          userAvatar: _userData?['image'] ?? _userData?['profile_picture'] ?? _userData?['avatar'],
+          profession: _userData!['profession'],
+          isOnline: false,
         );
       }
     } catch (e) {

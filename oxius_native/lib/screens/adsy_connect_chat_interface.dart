@@ -49,6 +49,71 @@ class AdsyConnectChatInterface extends StatefulWidget {
     this.isPro = false,
   });
 
+  /// Stable route name used to identify a chat in the Navigator stack so the
+  /// same chat is never duplicated. If you open chat A → then somehow open
+  /// chat A again from a different screen, [open] will detect the existing
+  /// route and pop back to it instead of pushing a second copy. This matches
+  /// WhatsApp / Telegram / Messenger behaviour where a single back press
+  /// always returns to a different page (not the same chat repeated).
+  static String routeNameFor(String chatroomId) => 'adsy_chat:$chatroomId';
+
+  /// Open a chat with built-in stack deduplication.
+  ///
+  /// - If a route for this [chatroomId] is already in the navigator stack,
+  ///   pop back to it (removing any duplicate routes above it).
+  /// - Otherwise push a new full-screen chat route.
+  ///
+  /// Returns a Future that completes when the chat route is popped.
+  static Future<T?> open<T>(
+    BuildContext context, {
+    required String chatroomId,
+    required String userId,
+    required String userName,
+    String? userAvatar,
+    String? profession,
+    bool isOnline = false,
+    bool isVerified = false,
+    bool isPro = false,
+    bool useRootNavigator = false,
+  }) {
+    final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+    final targetName = routeNameFor(chatroomId);
+
+    // 1. Non-destructive scan: check whether a chat route with the same
+    //    chatroomId already exists somewhere in the navigator stack.
+    bool existsInStack = false;
+    navigator.popUntil((route) {
+      if (route.settings.name == targetName) {
+        existsInStack = true;
+      }
+      return true; // Predicate returning true on the first call = no popping.
+    });
+
+    // 2. If it exists, collapse everything above it so a single back press
+    //    from the user always returns to a different page.
+    if (existsInStack) {
+      navigator.popUntil((route) => route.settings.name == targetName);
+      return Future<T?>.value(null);
+    }
+
+    // 3. Otherwise push a new full-screen chat route with the stable name.
+    return navigator.push<T>(
+      MaterialPageRoute<T>(
+        settings: RouteSettings(name: targetName),
+        builder: (_) => AdsyConnectChatInterface(
+          chatroomId: chatroomId,
+          userId: userId,
+          userName: userName,
+          userAvatar: userAvatar,
+          profession: profession,
+          isOnline: isOnline,
+          isVerified: isVerified,
+          isPro: isPro,
+        ),
+      ),
+    );
+  }
+
   @override
   State<AdsyConnectChatInterface> createState() => _AdsyConnectChatInterfaceState();
 }

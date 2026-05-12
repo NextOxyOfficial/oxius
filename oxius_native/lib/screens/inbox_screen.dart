@@ -1749,33 +1749,18 @@ class _NewChatModalState extends State<_NewChatModal> {
       // Close search modal
       if (mounted) Navigator.pop(context);
 
-      // Open chat
+      // Open chat (stack-deduplicated)
       if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (context) => DraggableScrollableSheet(
-            initialChildSize: 0.9,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            builder: (_, controller) => Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: AdsyConnectChatInterface(
-                chatroomId: chatroom['id'].toString(),
-                userId: user['id'].toString(),
-                userName: user['first_name'] != null && user['last_name'] != null
-                    ? '${user['first_name']} ${user['last_name']}'
-                    : user['username'] ?? 'User',
-                userAvatar: user['profile_picture'],
-                profession: user['profession'],
-                isOnline: false,
-              ),
-            ),
-          ),
+        AdsyConnectChatInterface.open(
+          context,
+          chatroomId: chatroom['id'].toString(),
+          userId: user['id'].toString(),
+          userName: user['first_name'] != null && user['last_name'] != null
+              ? '${user['first_name']} ${user['last_name']}'
+              : user['username'] ?? 'User',
+          userAvatar: user['profile_picture'],
+          profession: user['profession'],
+          isOnline: false,
         );
       }
     } catch (e) {

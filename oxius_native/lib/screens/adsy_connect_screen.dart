@@ -366,18 +366,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
 
     if (mounted) {
-      Navigator.push(
+      AdsyConnectChatInterface.open(
         context,
-        MaterialPageRoute(
-          builder: (context) => AdsyConnectChatInterface(
-            chatroomId: chat['id'],
-            userId: chat['userId'],
-            userName: chat['userName'],
-            userAvatar: chat['userAvatar'],
-            profession: chat['profession'],
-            isOnline: chat['isOnline'],
-          ),
-        ),
+        chatroomId: chat['id'],
+        userId: chat['userId'],
+        userName: chat['userName'],
+        userAvatar: chat['userAvatar'],
+        profession: chat['profession'],
+        isOnline: chat['isOnline'] ?? false,
       ).then((_) => _refreshChats());
     }
   }

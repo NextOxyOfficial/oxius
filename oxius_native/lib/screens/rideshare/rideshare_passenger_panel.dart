@@ -1209,29 +1209,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       }
 
       if (!mounted) return;
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => DraggableScrollableSheet(
-          initialChildSize: 0.9,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (_, controller) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: AdsyConnectChatInterface(
-              chatroomId: chatroomId,
-              userId: driver.userId,
-              userName: driver.userName,
-              userAvatar: driver.userAvatar,
-              profession: 'Driver',
-              isOnline: driver.isOnline,
-            ),
-          ),
-        ),
+      AdsyConnectChatInterface.open(
+        context,
+        chatroomId: chatroomId,
+        userId: driver.userId,
+        userName: driver.userName,
+        userAvatar: driver.userAvatar,
+        profession: 'Driver',
+        isOnline: driver.isOnline,
       );
     } catch (_) {
       if (mounted && loadingDialogShown) {

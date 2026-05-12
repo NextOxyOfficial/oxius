@@ -5,6 +5,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vibration/vibration.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../services/agora_call_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../services/fcm_service.dart';
@@ -92,6 +93,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     )..repeat();
     _localUid = AgoraCallService.generateUid();
     AgoraCallService.setCallScreenVisible(true);
+    _enableWakelock();
 
     _bindServiceStreams();
 
@@ -167,6 +169,28 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   @override
   void didPop() {
     AgoraCallService.setCallScreenVisible(false);
+  }
+
+  bool _wakelockEnabled = false;
+
+  Future<void> _enableWakelock() async {
+    if (_wakelockEnabled) return;
+    try {
+      await WakelockPlus.enable();
+      _wakelockEnabled = true;
+    } catch (e) {
+      debugPrint('⚠️ Wakelock enable failed: $e');
+    }
+  }
+
+  Future<void> _disableWakelock() async {
+    if (!_wakelockEnabled) return;
+    _wakelockEnabled = false;
+    try {
+      await WakelockPlus.disable();
+    } catch (e) {
+      debugPrint('⚠️ Wakelock disable failed: $e');
+    }
   }
 
   void _bindServiceStreams() {
@@ -310,6 +334,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   Future<void> _resumeExistingChannelConnection() async {
+    await _enableWakelock();
     try {
       _engine = await AgoraCallService.initEngine(callType: widget.callType);
       await _joinChannel();
@@ -696,7 +721,20 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   }
 
   /// Shared helper to pop or replace the call screen.
+  ///
+  /// If the CallScreen was pushed on top of another screen (e.g. the chat
+  /// interface), simply pop back to it so the user returns to the exact
+  /// context they came from. Only fall back to the AdsyConnect inbox when
+  /// the CallScreen is the root of the stack — this happens when the call
+  /// was answered from a killed/locked-state CallKit notification, where
+  /// there is no underlying chat screen to return to.
   void _popCallScreen() {
+    if (!mounted) return;
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+      return;
+    }
     _showAdsyConnectInbox();
   }
 
@@ -844,7 +882,17 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     _durationTimer?.cancel();
     _ringingTimer?.cancel();
     AgoraCallService.setCallScreenVisible(false);
-    if (!_isMinimizing) {
+
+    // CRITICAL: Only tear down the Agora session when the user has explicitly
+    // ended the call (_didEndCall) OR when there is no active call to preserve.
+    // If _didEndCall is false and a call is still active, the user has merely
+    // navigated away from the CallScreen — we must keep the Agora engine,
+    // channel, and remote stream alive so audio/video continues and so the
+    // CallScreen can be restored via OngoingCallBar with isReturning=true.
+    // Releasing the channel here would prematurely end the call for the peer.
+    final shouldTeardown = _didEndCall || !AgoraCallService.isInCall;
+
+    if (shouldTeardown) {
       unawaited(_stopIncomingAlert());
       if (widget.isIncoming) {
         FCMService.releaseIncomingCallTracking(
@@ -866,7 +914,14 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
       unawaited(AgoraCallService.leaveChannel());
       AgoraCallService.setInCall(false);
+      unawaited(_disableWakelock());
+    } else {
+      // Call is being minimized / backgrounded — keep Agora alive, keep the
+      // wakelock active so video/audio stays awake while in the background
+      // (this matches WhatsApp/Telegram behaviour).
+      debugPrint('📞 CallScreen disposed while call still active — preserving engine for background continuity');
     }
+
     _pulseController.dispose();
     super.dispose();
   }

@@ -1930,29 +1930,14 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
       }
       if (!mounted) return;
 
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (sheetContext) => DraggableScrollableSheet(
-          initialChildSize: 0.9,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          builder: (_, controller) => Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: AdsyConnectChatInterface(
-              chatroomId: chatroomId,
-              userId: ride.riderId,
-              userName: ride.riderName,
-              userAvatar: ride.riderAvatar,
-              profession: t('rideshare_passenger', fallback: 'Passenger'),
-              isOnline: false,
-            ),
-          ),
-        ),
+      AdsyConnectChatInterface.open(
+        context,
+        chatroomId: chatroomId,
+        userId: ride.riderId,
+        userName: ride.riderName,
+        userAvatar: ride.riderAvatar,
+        profession: t('rideshare_passenger', fallback: 'Passenger'),
+        isOnline: false,
       );
     } catch (error) {
       if (mounted && loadingDialogShown) {
