@@ -110,12 +110,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
 
   @override
   Widget build(BuildContext context) {
-    // Keep a tiny breathing space above the home-indicator/gesture bar.
-    // Adding the full system safe-area inset on top of the Positioned(bottom:0)
-    // anchor produced a large blank strip below the pill, so we clamp to a
-    // small fixed value that still keeps the pill clear of the home indicator.
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    final bottomMargin = bottomInset > 0 ? 4.0 : 8.0;
+    // The Positioned in home_screen already offsets by padding.bottom,
+    // so we just need a small consistent gap above the home indicator.
+    final bottomMargin = 8.0;
     return AnimatedSlide(
       offset: _isVisible ? Offset.zero : const Offset(0, 1),
       duration: const Duration(milliseconds: 300),
