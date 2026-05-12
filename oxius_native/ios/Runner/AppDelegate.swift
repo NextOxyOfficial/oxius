@@ -7,6 +7,8 @@ import PushKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
+  private var voipRegistry: PKPushRegistry?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -33,9 +35,10 @@ import PushKit
     // Register for VoIP pushes via PushKit so incoming call notifications
     // are delivered with high-priority even when the app is killed.
     // PushKit wakes the app faster than standard FCM data-only messages.
-    let voipRegistry = PKPushRegistry(queue: DispatchQueue.main)
-    voipRegistry.delegate = self
-    voipRegistry.desiredPushTypes = [.voIP]
+    let registry = PKPushRegistry(queue: DispatchQueue.main)
+    registry.delegate = self
+    registry.desiredPushTypes = [.voIP]
+    voipRegistry = registry
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -47,7 +50,14 @@ import PushKit
     _ application: UIApplication,
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
-    Messaging.messaging().apnsToken = deviceToken
+    let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+#if DEBUG
+    Messaging.messaging().setAPNSToken(deviceToken, type: .sandbox)
+    print("[AdsyClub] APNS device token registered (sandbox): \(token)")
+#else
+    Messaging.messaging().setAPNSToken(deviceToken, type: .prod)
+    print("[AdsyClub] APNS device token registered (production): \(token)")
+#endif
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
   }
 
@@ -99,6 +109,24 @@ import PushKit
     let userInfo = response.notification.request.content.userInfo
     Messaging.messaging().appDidReceiveMessage(userInfo)
     super.userNotificationCenter(center, didReceive: response, withCompletionHandler: completionHandler)
+  }
+
+  // With FirebaseAppDelegateProxyEnabled=false, background / silent remote
+  // notifications must also be forwarded manually. Without this callback iOS
+  // can deliver the APNs packet but the Flutter/Firebase layer never gets the
+  // background receipt path, which breaks silent wakes and weakens killed /
+  // background recovery for data-bearing notifications.
+  override func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    Messaging.messaging().appDidReceiveMessage(userInfo)
+    super.application(
+      application,
+      didReceiveRemoteNotification: userInfo,
+      fetchCompletionHandler: completionHandler
+    )
   }
 }
 

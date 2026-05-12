@@ -591,6 +591,8 @@ class FCMService {
   
   static const String _fcmTokenKey = 'adsyclub_fcm_token';
   static const String _lastUploadedKey = 'adsyclub_fcm_token_last_uploaded';
+  static const Duration _iosApnsWaitTimeout = Duration(seconds: 12);
+  static const Duration _iosTokenPollInterval = Duration(milliseconds: 350);
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
   static Map<String, dynamic>? _pendingNavigationData;
   static Timer? _pendingNavigationTimer;
@@ -927,11 +929,70 @@ class FCMService {
     }
   }
 
+  static Future<String?> _waitForIosApnsToken({
+    Duration timeout = _iosApnsWaitTimeout,
+  }) async {
+    if (!Platform.isIOS) {
+      return null;
+    }
+
+    final deadline = DateTime.now().add(timeout);
+    String? lastToken;
+
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        lastToken = await _firebaseMessaging.getAPNSToken();
+      } catch (e) {
+        _log('⚠️ Failed to read APNS token from Firebase Messaging: $e');
+      }
+
+      if (lastToken != null && lastToken.isNotEmpty) {
+        _log('🍎 APNS token is available and can now be mapped to FCM');
+        return lastToken;
+      }
+
+      await Future.delayed(_iosTokenPollInterval);
+    }
+
+    _log('❌ APNS token never became available on iOS after waiting $timeout');
+    _log('   If permission is granted, this points to native/config issues:');
+    _log('   1. Push Notifications capability or provisioning profile is wrong');
+    _log('   2. Firebase Console is missing a valid APNS auth key/certificate');
+    _log('   3. Device/build environment does not match APNS environment');
+    return null;
+  }
+
+  static Future<String?> _resolveUsableFcmToken() async {
+    if (Platform.isIOS) {
+      final apnsToken = await _waitForIosApnsToken();
+      if (apnsToken == null || apnsToken.isEmpty) {
+        return null;
+      }
+    }
+
+    final deadline = DateTime.now().add(const Duration(seconds: 8));
+    while (DateTime.now().isBefore(deadline)) {
+      try {
+        final token = await _firebaseMessaging.getToken();
+        if (token != null && token.isNotEmpty) {
+          return token;
+        }
+      } catch (e) {
+        _log('⚠️ FirebaseMessaging.getToken() failed: $e');
+      }
+
+      await Future.delayed(_iosTokenPollInterval);
+    }
+
+    _log('❌ FirebaseMessaging.getToken() stayed null/empty after retry window');
+    return null;
+  }
+
   /// Sync the current (or persisted) FCM token to the backend.
   /// Call this after login/session restore so the token upload doesn't get skipped.
   static Future<void> syncTokenWithBackend() async {
     try {
-      final token = _fcmToken ?? await _getPersistedFcmToken() ?? await _firebaseMessaging.getToken();
+      final token = _fcmToken ?? await _getPersistedFcmToken() ?? await _resolveUsableFcmToken();
       if (token == null || token.isEmpty) {
         _log('❌ Cannot sync token: FCM token is null/empty');
         return;
@@ -994,8 +1055,11 @@ class FCMService {
 
       await _ensureAndroidCallPermissions();
 
-      // Get FCM token
-      _fcmToken = await _firebaseMessaging.getToken();
+      // On iOS, Firebase cannot mint an FCM token until the APNS token has
+      // arrived through AppDelegate.didRegisterForRemoteNotifications. Waiting
+      // here prevents the first-launch race where iOS returns null and the
+      // backend never receives any token for this device.
+      _fcmToken = await _resolveUsableFcmToken();
       _log('\n📱 FCM TOKEN (DEBUG ONLY):');
       _log('=' * 60);
       _log(_fcmToken ?? 'null');
@@ -2492,7 +2556,7 @@ class FCMService {
   static Future<void> refreshToken() async {
     try {
       await _firebaseMessaging.deleteToken();
-      _fcmToken = await _firebaseMessaging.getToken();
+      _fcmToken = await _resolveUsableFcmToken();
       if (_fcmToken != null) {
         await _sendTokenToBackend(_fcmToken!);
       }
