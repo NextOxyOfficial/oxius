@@ -15,7 +15,7 @@ class InboxScreen extends StatefulWidget {
   final int initialTab;
   final String? initialChatId;
   final String? initialTicketId;
-  
+
   const InboxScreen({
     super.key,
     this.initialTab = 0, // 0 = AdsyConnect, 1 = Updates, 2 = Support
@@ -38,7 +38,7 @@ class _InboxScreenState extends State<InboxScreen>
   int _newChatCount = 0;
   bool _isLoadingUpdates = true;
   bool _isLoadingTickets = true;
-  
+
   // Pagination
   int _updatesPage = 1;
   int _ticketsPage = 1;
@@ -46,11 +46,11 @@ class _InboxScreenState extends State<InboxScreen>
   bool _hasMoreTickets = true;
   bool _isLoadingMoreUpdates = false;
   bool _isLoadingMoreTickets = false;
-  
+
   // Real data from backend
   List<Map<String, dynamic>> _updates = [];
   List<Map<String, dynamic>> _tickets = [];
-  
+
   // Scroll controllers
   final ScrollController _updatesScrollController = ScrollController();
   final ScrollController _ticketsScrollController = ScrollController();
@@ -59,7 +59,7 @@ class _InboxScreenState extends State<InboxScreen>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3, 
+      length: 3,
       vsync: this,
       initialIndex: widget.initialTab.clamp(0, 2),
     );
@@ -74,7 +74,7 @@ class _InboxScreenState extends State<InboxScreen>
         }
       });
     });
-    
+
     // Set initial active tab based on initialIndex
     if (widget.initialTab == 0) {
       _activeTab = 'chat';
@@ -83,19 +83,19 @@ class _InboxScreenState extends State<InboxScreen>
     } else {
       _activeTab = 'support';
     }
-    
+
     // Add scroll listeners for pagination
     _updatesScrollController.addListener(_onUpdatesScroll);
     _ticketsScrollController.addListener(_onTicketsScroll);
-    
+
     _loadInboxData();
-    
+
     // Handle deep linking to specific chat or ticket
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleDeepLink();
     });
   }
-  
+
   void _handleDeepLink() {
     // If we have an initial chat ID, navigate to that chat
     if (widget.initialChatId != null && widget.initialChatId!.isNotEmpty) {
@@ -103,7 +103,7 @@ class _InboxScreenState extends State<InboxScreen>
       // The AdsyConnectScreen will handle opening the specific chat
       // We just need to make sure we're on the chat tab
     }
-    
+
     // If we have an initial ticket ID, navigate to that ticket
     if (widget.initialTicketId != null && widget.initialTicketId!.isNotEmpty) {
       print('📱 Deep linking to ticket: ${widget.initialTicketId}');
@@ -118,18 +118,18 @@ class _InboxScreenState extends State<InboxScreen>
       );
     }
   }
-  
+
   void _onUpdatesScroll() {
-    if (_updatesScrollController.position.pixels >= 
+    if (_updatesScrollController.position.pixels >=
         _updatesScrollController.position.maxScrollExtent - 200) {
       if (!_isLoadingMoreUpdates && _hasMoreUpdates) {
         _loadMoreUpdates();
       }
     }
   }
-  
+
   void _onTicketsScroll() {
-    if (_ticketsScrollController.position.pixels >= 
+    if (_ticketsScrollController.position.pixels >=
         _ticketsScrollController.position.maxScrollExtent - 200) {
       if (!_isLoadingMoreTickets && _hasMoreTickets) {
         _loadMoreTickets();
@@ -150,23 +150,24 @@ class _InboxScreenState extends State<InboxScreen>
       _updatesPage = 1;
       _updates = [];
     });
-    
+
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
         Uri.parse(ApiService.getApiUrl('admin-notice/?page=$_updatesPage')),
         headers: headers,
       );
-      
+
       print('=== Load Updates (AdminNotice) Page $_updatesPage ===');
       print('Status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final List<dynamic> notifications = data is List ? data : (data['results'] ?? []);
+        final List<dynamic> notifications =
+            data is List ? data : (data['results'] ?? []);
         final int? count = data is Map ? data['count'] : null;
         final String? next = data is Map ? data['next'] : null;
-        
+
         if (mounted) {
           setState(() {
             _updates = notifications.map((item) {
@@ -175,7 +176,8 @@ class _InboxScreenState extends State<InboxScreen>
                 'title': item['title'] ?? 'System Notification',
                 'message': item['message'] ?? '',
                 'isRead': item['is_read'] ?? false,
-                'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+                'timestamp': DateTime.parse(
+                    item['created_at'] ?? DateTime.now().toIso8601String()),
                 'type': item['notification_type'] ?? 'system',
                 'amount': item['amount'],
                 'referenceId': item['reference_id'],
@@ -197,30 +199,31 @@ class _InboxScreenState extends State<InboxScreen>
       }
     }
   }
-  
+
   Future<void> _loadMoreUpdates() async {
     if (_isLoadingMoreUpdates || !_hasMoreUpdates) return;
-    
+
     setState(() {
       _isLoadingMoreUpdates = true;
       _updatesPage++;
     });
-    
+
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
         Uri.parse(ApiService.getApiUrl('admin-notice/?page=$_updatesPage')),
         headers: headers,
       );
-      
+
       print('=== Load More Updates Page $_updatesPage ===');
       print('Status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final List<dynamic> notifications = data is List ? data : (data['results'] ?? []);
+        final List<dynamic> notifications =
+            data is List ? data : (data['results'] ?? []);
         final String? next = data is Map ? data['next'] : null;
-        
+
         if (mounted) {
           setState(() {
             _updates.addAll(notifications.map((item) {
@@ -229,7 +232,8 @@ class _InboxScreenState extends State<InboxScreen>
                 'title': item['title'] ?? 'System Notification',
                 'message': item['message'] ?? '',
                 'isRead': item['is_read'] ?? false,
-                'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
+                'timestamp': DateTime.parse(
+                    item['created_at'] ?? DateTime.now().toIso8601String()),
                 'type': item['notification_type'] ?? 'system',
                 'amount': item['amount'],
                 'referenceId': item['reference_id'],
@@ -252,40 +256,43 @@ class _InboxScreenState extends State<InboxScreen>
     }
   }
 
-
   Future<void> _loadTickets() async {
     setState(() {
       _isLoadingTickets = true;
       _ticketsPage = 1;
       _tickets = [];
     });
-    
+
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
         Uri.parse(ApiService.getApiUrl('tickets/?page=$_ticketsPage')),
         headers: headers,
       );
-      
+
       print('=== Load Tickets Page $_ticketsPage ===');
       print('Status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final List<dynamic> ticketsJson = data is List ? data : (data['results'] ?? []);
+        final List<dynamic> ticketsJson =
+            data is List ? data : (data['results'] ?? []);
         final String? next = data is Map ? data['next'] : null;
-        
+
         if (mounted) {
           setState(() {
-            _tickets = ticketsJson.map((item) => {
-              'id': item['id'],
-              'title': item['title'] ?? 'Support Ticket',
-              'message': item['message'] ?? '',
-              'status': item['status'] ?? 'open',
-              'isRead': !(item['is_unread'] ?? true),
-              'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
-              'replyCount': item['reply_count'] ?? 0,
-            }).toList();
+            _tickets = ticketsJson
+                .map((item) => {
+                      'id': item['id'],
+                      'title': item['title'] ?? 'Support Ticket',
+                      'message': item['message'] ?? '',
+                      'status': item['status'] ?? 'open',
+                      'isRead': !(item['is_unread'] ?? true),
+                      'timestamp': DateTime.parse(item['created_at'] ??
+                          DateTime.now().toIso8601String()),
+                      'replyCount': item['reply_count'] ?? 0,
+                    })
+                .toList();
             _hasMoreTickets = next != null;
             _isLoadingTickets = false;
           });
@@ -302,41 +309,45 @@ class _InboxScreenState extends State<InboxScreen>
       }
     }
   }
-  
+
   Future<void> _loadMoreTickets() async {
     if (_isLoadingMoreTickets || !_hasMoreTickets) return;
-    
+
     setState(() {
       _isLoadingMoreTickets = true;
       _ticketsPage++;
     });
-    
+
     try {
       final headers = await ApiService.getHeaders();
       final response = await http.get(
         Uri.parse(ApiService.getApiUrl('tickets/?page=$_ticketsPage')),
         headers: headers,
       );
-      
+
       print('=== Load More Tickets Page $_ticketsPage ===');
       print('Status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final List<dynamic> ticketsJson = data is List ? data : (data['results'] ?? []);
+        final List<dynamic> ticketsJson =
+            data is List ? data : (data['results'] ?? []);
         final String? next = data is Map ? data['next'] : null;
-        
+
         if (mounted) {
           setState(() {
-            _tickets.addAll(ticketsJson.map((item) => {
-              'id': item['id'],
-              'title': item['title'] ?? 'Support Ticket',
-              'message': item['message'] ?? '',
-              'status': item['status'] ?? 'open',
-              'isRead': !(item['is_unread'] ?? true),
-              'timestamp': DateTime.parse(item['created_at'] ?? DateTime.now().toIso8601String()),
-              'replyCount': item['reply_count'] ?? 0,
-            }).toList());
+            _tickets.addAll(ticketsJson
+                .map((item) => {
+                      'id': item['id'],
+                      'title': item['title'] ?? 'Support Ticket',
+                      'message': item['message'] ?? '',
+                      'status': item['status'] ?? 'open',
+                      'isRead': !(item['is_unread'] ?? true),
+                      'timestamp': DateTime.parse(item['created_at'] ??
+                          DateTime.now().toIso8601String()),
+                      'replyCount': item['reply_count'] ?? 0,
+                    })
+                .toList());
             _hasMoreTickets = next != null;
             _isLoadingMoreTickets = false;
           });
@@ -394,8 +405,10 @@ class _InboxScreenState extends State<InboxScreen>
     setState(() {
       _activeTab = tab;
       int index = 0;
-      if (tab == 'chat') index = 0;
-      else if (tab == 'updates') index = 1;
+      if (tab == 'chat')
+        index = 0;
+      else if (tab == 'updates')
+        index = 1;
       else if (tab == 'support') index = 2;
       _tabController.animateTo(index);
     });
@@ -431,9 +444,9 @@ class _InboxScreenState extends State<InboxScreen>
     if (_activeTab == 'updates') {
       // Mark all unread updates as read
       final unreadUpdates = _updates.where((u) => !u['isRead']).toList();
-      
+
       if (unreadUpdates.isEmpty) return;
-      
+
       // Show loading
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -441,18 +454,19 @@ class _InboxScreenState extends State<InboxScreen>
           duration: Duration(seconds: 1),
         ),
       );
-      
+
       try {
         final headers = await ApiService.getHeaders();
-        
+
         // Mark each unread update as read
         for (var update in unreadUpdates) {
           await http.post(
-            Uri.parse(ApiService.getApiUrl('admin-notice/${update['id']}/mark-read/')),
+            Uri.parse(ApiService.getApiUrl(
+                'admin-notice/${update['id']}/mark-read/')),
             headers: headers,
           );
         }
-        
+
         // Update UI
         if (mounted) {
           setState(() {
@@ -460,7 +474,7 @@ class _InboxScreenState extends State<InboxScreen>
               update['isRead'] = true;
             }
           });
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('All updates marked as read'),
@@ -535,7 +549,8 @@ class _InboxScreenState extends State<InboxScreen>
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF3B82F6), size: 20),
+                      icon: const Icon(Icons.arrow_back_rounded,
+                          color: Color(0xFF3B82F6), size: 20),
                       onPressed: () => Navigator.pop(context),
                       padding: const EdgeInsets.all(8),
                       constraints: const BoxConstraints(),
@@ -637,8 +652,14 @@ class _InboxScreenState extends State<InboxScreen>
               indicatorColor: const Color(0xFF3B82F6),
               labelColor: const Color(0xFF3B82F6),
               unselectedLabelColor: const Color(0xFF6B7280),
-              labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, letterSpacing: -0.2),
-              unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, letterSpacing: -0.2),
+              labelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.2),
+              unselectedLabelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.2),
               tabAlignment: TabAlignment.fill,
               isScrollable: false,
               tabs: [
@@ -652,7 +673,8 @@ class _InboxScreenState extends State<InboxScreen>
                         width: 15,
                         height: 15,
                         errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.chat_bubble_rounded, size: 15);
+                          return const Icon(Icons.chat_bubble_rounded,
+                              size: 15);
                         },
                       ),
                       const SizedBox(width: 4),
@@ -767,8 +789,11 @@ class _InboxScreenState extends State<InboxScreen>
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
-                          value: _activeTab == 'support' ? _ticketStatusFilter : _updatesFilter,
-                          icon: const Icon(Icons.arrow_drop_down_rounded, size: 20),
+                          value: _activeTab == 'support'
+                              ? _ticketStatusFilter
+                              : _updatesFilter,
+                          icon: const Icon(Icons.arrow_drop_down_rounded,
+                              size: 20),
                           isExpanded: true,
                           isDense: true,
                           style: const TextStyle(
@@ -778,23 +803,48 @@ class _InboxScreenState extends State<InboxScreen>
                           ),
                           items: _activeTab == 'support'
                               ? [
-                                  const DropdownMenuItem(value: 'all', child: Text('All Tickets')),
-                                  const DropdownMenuItem(value: 'open', child: Text('Open')),
-                                  const DropdownMenuItem(value: 'in_progress', child: Text('In Progress')),
-                                  const DropdownMenuItem(value: 'resolved', child: Text('Resolved')),
-                                  const DropdownMenuItem(value: 'closed', child: Text('Closed')),
+                                  const DropdownMenuItem(
+                                      value: 'all', child: Text('All Tickets')),
+                                  const DropdownMenuItem(
+                                      value: 'open', child: Text('Open')),
+                                  const DropdownMenuItem(
+                                      value: 'in_progress',
+                                      child: Text('In Progress')),
+                                  const DropdownMenuItem(
+                                      value: 'resolved',
+                                      child: Text('Resolved')),
+                                  const DropdownMenuItem(
+                                      value: 'closed', child: Text('Closed')),
                                 ]
                               : [
-                                  const DropdownMenuItem(value: 'all', child: Text('All Updates')),
-                                  const DropdownMenuItem(value: 'order_received', child: Text('Orders')),
-                                  const DropdownMenuItem(value: 'withdraw_successful', child: Text('Withdrawals')),
-                                  const DropdownMenuItem(value: 'mobile_recharge_successful', child: Text('Recharges')),
-                                  const DropdownMenuItem(value: 'pro_subscribed', child: Text('Pro')),
-                                  const DropdownMenuItem(value: 'pro_expiring', child: Text('Expiring')),
-                                  const DropdownMenuItem(value: 'gig_posted', child: Text('Gigs')),
-                                  const DropdownMenuItem(value: 'transfer_sent', child: Text('Transfers Sent')),
-                                  const DropdownMenuItem(value: 'transfer_received', child: Text('Transfers Received')),
-                                  const DropdownMenuItem(value: 'deposit_successful', child: Text('Deposits')),
+                                  const DropdownMenuItem(
+                                      value: 'all', child: Text('All Updates')),
+                                  const DropdownMenuItem(
+                                      value: 'order_received',
+                                      child: Text('Orders')),
+                                  const DropdownMenuItem(
+                                      value: 'withdraw_successful',
+                                      child: Text('Withdrawals')),
+                                  const DropdownMenuItem(
+                                      value: 'mobile_recharge_successful',
+                                      child: Text('Recharges')),
+                                  const DropdownMenuItem(
+                                      value: 'pro_subscribed',
+                                      child: Text('Pro')),
+                                  const DropdownMenuItem(
+                                      value: 'pro_expiring',
+                                      child: Text('Expiring')),
+                                  const DropdownMenuItem(
+                                      value: 'gig_posted', child: Text('Gigs')),
+                                  const DropdownMenuItem(
+                                      value: 'transfer_sent',
+                                      child: Text('Transfers Sent')),
+                                  const DropdownMenuItem(
+                                      value: 'transfer_received',
+                                      child: Text('Transfers Received')),
+                                  const DropdownMenuItem(
+                                      value: 'deposit_successful',
+                                      child: Text('Deposits')),
                                 ],
                           onChanged: (value) {
                             if (value != null) {
@@ -824,8 +874,10 @@ class _InboxScreenState extends State<InboxScreen>
                             foregroundColor: const Color(0xFF10B981),
                             side: const BorderSide(color: Color(0xFF10B981)),
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            textStyle: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                         ),
                       ),
@@ -846,8 +898,10 @@ class _InboxScreenState extends State<InboxScreen>
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            textStyle: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                         ),
                       ),
@@ -862,7 +916,7 @@ class _InboxScreenState extends State<InboxScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                const AdsyConnectScreen(),
+                AdsyConnectScreen(initialChatId: widget.initialChatId),
                 _buildUpdatesList(),
                 _buildTicketsList(),
               ],
@@ -880,7 +934,8 @@ class _InboxScreenState extends State<InboxScreen>
                 height: 24,
                 color: Colors.white,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.chat_bubble_rounded, color: Colors.white);
+                  return const Icon(Icons.chat_bubble_rounded,
+                      color: Colors.white);
                 },
               ),
             )
@@ -934,7 +989,8 @@ class _InboxScreenState extends State<InboxScreen>
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: isSelected ? const Color(0xFF059669) : const Color(0xFFE5E7EB),
+            color:
+                isSelected ? const Color(0xFF059669) : const Color(0xFFE5E7EB),
           ),
         ),
       ),
@@ -950,9 +1006,9 @@ class _InboxScreenState extends State<InboxScreen>
         ),
       );
     }
-    
+
     final updates = filteredUpdates;
-    
+
     if (updates.isEmpty) {
       return Center(
         child: Column(
@@ -1039,9 +1095,9 @@ class _InboxScreenState extends State<InboxScreen>
         ),
       );
     }
-    
+
     final tickets = filteredTickets;
-    
+
     if (tickets.isEmpty) {
       return RefreshIndicator(
         onRefresh: _loadTickets,
@@ -1116,7 +1172,7 @@ class _InboxScreenState extends State<InboxScreen>
 
   Widget _buildUpdateItem(Map<String, dynamic> update) {
     final bool isUnread = !update['isRead'];
-    
+
     return InkWell(
       onTap: () {
         _showUpdateDetailsBottomSheet(update);
@@ -1124,7 +1180,9 @@ class _InboxScreenState extends State<InboxScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: isUnread ? const Color(0xFFF0FDF4).withOpacity(0.5) : Colors.white,
+          color: isUnread
+              ? const Color(0xFFF0FDF4).withOpacity(0.5)
+              : Colors.white,
           border: Border(
             bottom: BorderSide(
               color: const Color(0xFFE5E7EB).withOpacity(0.4),
@@ -1140,17 +1198,23 @@ class _InboxScreenState extends State<InboxScreen>
               height: 42,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isUnread 
+                color: isUnread
                     ? const Color(0xFF059669).withOpacity(0.1)
                     : const Color(0xFFF3F4F6),
                 border: Border.all(
-                  color: isUnread ? const Color(0xFF059669).withOpacity(0.25) : Colors.transparent,
+                  color: isUnread
+                      ? const Color(0xFF059669).withOpacity(0.25)
+                      : Colors.transparent,
                   width: 1.5,
                 ),
               ),
               child: Icon(
-                update['type'] == 'system' ? Icons.settings_rounded : Icons.verified_user_rounded,
-                color: isUnread ? const Color(0xFF059669) : const Color(0xFF6B7280),
+                update['type'] == 'system'
+                    ? Icons.settings_rounded
+                    : Icons.verified_user_rounded,
+                color: isUnread
+                    ? const Color(0xFF059669)
+                    : const Color(0xFF6B7280),
                 size: 18,
               ),
             ),
@@ -1167,7 +1231,8 @@ class _InboxScreenState extends State<InboxScreen>
                           update['title'],
                           style: TextStyle(
                             fontSize: 13,
-                            fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                            fontWeight:
+                                isUnread ? FontWeight.w700 : FontWeight.w600,
                             color: const Color(0xFF1F2937),
                             letterSpacing: -0.2,
                           ),
@@ -1220,7 +1285,7 @@ class _InboxScreenState extends State<InboxScreen>
     final bool isUnread = !ticket['isRead'];
     Color statusColor;
     String statusLabel;
-    
+
     switch (ticket['status']) {
       case 'open':
         statusColor = const Color(0xFFF59E0B);
@@ -1248,7 +1313,7 @@ class _InboxScreenState extends State<InboxScreen>
         setState(() {
           ticket['isRead'] = true;
         });
-        
+
         // Navigate to ticket detail screen
         await Navigator.push(
           context,
@@ -1258,14 +1323,16 @@ class _InboxScreenState extends State<InboxScreen>
             ),
           ),
         );
-        
+
         // Reload tickets after returning from detail screen
         _loadTickets();
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: isUnread ? const Color(0xFFF0FDF4).withOpacity(0.5) : Colors.white,
+          color: isUnread
+              ? const Color(0xFFF0FDF4).withOpacity(0.5)
+              : Colors.white,
           border: Border(
             bottom: BorderSide(
               color: const Color(0xFFE5E7EB).withOpacity(0.4),
@@ -1306,7 +1373,8 @@ class _InboxScreenState extends State<InboxScreen>
                           ticket['title'],
                           style: TextStyle(
                             fontSize: 13,
-                            fontWeight: isUnread ? FontWeight.w700 : FontWeight.w600,
+                            fontWeight:
+                                isUnread ? FontWeight.w700 : FontWeight.w600,
                             color: const Color(0xFF1F2937),
                             letterSpacing: -0.2,
                           ),
@@ -1315,7 +1383,8 @@ class _InboxScreenState extends State<InboxScreen>
                       ),
                       const SizedBox(width: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
@@ -1454,7 +1523,7 @@ class _InboxScreenState extends State<InboxScreen>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // Header
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -1472,8 +1541,8 @@ class _InboxScreenState extends State<InboxScreen>
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      update['type'] == 'system' 
-                          ? Icons.settings_rounded 
+                      update['type'] == 'system'
+                          ? Icons.settings_rounded
                           : Icons.verified_user_rounded,
                       color: const Color(0xFF059669),
                       size: 24,
@@ -1511,7 +1580,7 @@ class _InboxScreenState extends State<InboxScreen>
                 ],
               ),
             ),
-            
+
             // Content
             Expanded(
               child: SingleChildScrollView(
@@ -1528,7 +1597,7 @@ class _InboxScreenState extends State<InboxScreen>
                         color: Color(0xFF374151),
                       ),
                     ),
-                    
+
                     // Additional details if available
                     if (update['referenceId'] != null) ...[
                       const SizedBox(height: 24),
@@ -1579,7 +1648,7 @@ class _InboxScreenState extends State<InboxScreen>
                 ),
               ),
             ),
-            
+
             // Footer button
             Container(
               padding: const EdgeInsets.all(20),
@@ -1628,7 +1697,8 @@ class _InboxScreenState extends State<InboxScreen>
     try {
       final headers = await ApiService.getHeaders();
       await http.post(
-        Uri.parse(ApiService.getApiUrl('admin-notice/${update['id']}/mark-read/')),
+        Uri.parse(
+            ApiService.getApiUrl('admin-notice/${update['id']}/mark-read/')),
         headers: headers,
       );
     } catch (e) {
@@ -1657,16 +1727,17 @@ class _NewChatModalState extends State<_NewChatModal> {
 
   String? _getUserImageUrl(Map<String, dynamic> user) {
     // Check for image field (backend returns this)
-    final imageUrl = user['image']?.toString() ?? user['profile_picture']?.toString();
+    final imageUrl =
+        user['image']?.toString() ?? user['profile_picture']?.toString();
     if (imageUrl == null || imageUrl.isEmpty) return null;
-    
+
     // Convert to absolute URL using AppConfig
     return AppConfig.getAbsoluteUrl(imageUrl);
   }
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    
+
     if (query.trim().isEmpty) {
       setState(() {
         _searchResults.clear();
@@ -1685,11 +1756,11 @@ class _NewChatModalState extends State<_NewChatModal> {
   Future<void> _searchPeople(String query) async {
     try {
       final token = await AuthService.getValidToken();
-      
+
       final headers = <String, String>{
         'Content-Type': 'application/json',
       };
-      
+
       if (token != null) {
         headers['Authorization'] = 'Bearer $token';
       }
@@ -1766,7 +1837,7 @@ class _NewChatModalState extends State<_NewChatModal> {
     } catch (e) {
       // Close loading if still open
       if (mounted) Navigator.pop(context);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1861,7 +1932,8 @@ class _NewChatModalState extends State<_NewChatModal> {
                               color: Colors.grey.shade400,
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 10),
                             isDense: true,
                           ),
                         ),
@@ -1926,29 +1998,37 @@ class _NewChatModalState extends State<_NewChatModal> {
                       )
                     : ListView.separated(
                         itemCount: _searchResults.length,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         separatorBuilder: (context, index) => Divider(
                           height: 1,
                           color: Colors.grey.shade100,
                         ),
                         itemBuilder: (context, index) {
                           final user = _searchResults[index];
-                          final userName = user['first_name'] != null && user['last_name'] != null
+                          final userName = user['first_name'] != null &&
+                                  user['last_name'] != null
                               ? '${user['first_name']} ${user['last_name']}'
                               : user['username'] ?? 'User';
-                          final userInitial = (user['first_name']?[0] ?? user['username']?[0] ?? 'U').toUpperCase();
-                          
+                          final userInitial = (user['first_name']?[0] ??
+                                  user['username']?[0] ??
+                                  'U')
+                              .toUpperCase();
+
                           return InkWell(
                             onTap: () => _openChatWithUser(user),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 4),
                               child: Row(
                                 children: [
                                   // Avatar
                                   CircleAvatar(
                                     radius: 22,
-                                    backgroundColor: const Color(0xFF3B82F6).withOpacity(0.1),
-                                    backgroundImage: _getUserImageUrl(user) != null
+                                    backgroundColor: const Color(0xFF3B82F6)
+                                        .withOpacity(0.1),
+                                    backgroundImage: _getUserImageUrl(user) !=
+                                            null
                                         ? NetworkImage(_getUserImageUrl(user)!)
                                         : null,
                                     child: _getUserImageUrl(user) == null
@@ -1966,7 +2046,8 @@ class _NewChatModalState extends State<_NewChatModal> {
                                   // Name and profession
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           userName,
@@ -1998,7 +2079,8 @@ class _NewChatModalState extends State<_NewChatModal> {
                                   Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF3B82F6).withOpacity(0.08),
+                                      color: const Color(0xFF3B82F6)
+                                          .withOpacity(0.08),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Image.asset(
@@ -2006,7 +2088,8 @@ class _NewChatModalState extends State<_NewChatModal> {
                                       width: 16,
                                       height: 16,
                                       color: const Color(0xFF3B82F6),
-                                      errorBuilder: (context, error, stackTrace) {
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
                                         return Icon(
                                           Icons.chat_bubble_outline_rounded,
                                           color: const Color(0xFF3B82F6),

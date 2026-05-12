@@ -8,7 +8,9 @@ import '../config/app_config.dart';
 import '../utils/network_error_handler.dart';
 
 class AdsyConnectScreen extends StatefulWidget {
-  const AdsyConnectScreen({super.key});
+  const AdsyConnectScreen({super.key, this.initialChatId});
+
+  final String? initialChatId;
 
   @override
   State<AdsyConnectScreen> createState() => _AdsyConnectScreenState();
@@ -20,6 +22,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   List<Map<String, dynamic>> _chatConversations = [];
   int _currentPage = 1;
   bool _hasMore = true;
+  bool _didOpenInitialChat = false;
   Timer? _pollingTimer;
   Timer? _onlineStatusTimer;
   StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
@@ -120,10 +123,10 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       for (final item in statuses) {
         if (item is Map) {
           final map = Map<String, dynamic>.from(item);
-            final id = (map['user_id'] ??
-                map['userId'] ??
-                map['id'] ??
-                (map['user'] is Map ? map['user']['id'] : null))
+          final id = (map['user_id'] ??
+                  map['userId'] ??
+                  map['id'] ??
+                  (map['user'] is Map ? map['user']['id'] : null))
               ?.toString();
           if (id != null && id.isNotEmpty) {
             statusByUserId[id] = map;
@@ -139,7 +142,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
           final status = statusByUserId[uid];
           if (status == null) continue;
 
-          final isOnline = _parseBool(status['is_online'] ?? status['isOnline']);
+          final isOnline =
+              _parseBool(status['is_online'] ?? status['isOnline']);
           _chatConversations[i]['isOnline'] = isOnline;
         }
       });
@@ -157,16 +161,18 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   Future<void> _refreshChatsInBackground() async {
     try {
-      final chatRooms = await AdsyConnectService.getChatRooms(page: 1, pageSize: _pageSize);
-      
+      final chatRooms =
+          await AdsyConnectService.getChatRooms(page: 1, pageSize: _pageSize);
+
       if (mounted) {
         setState(() {
           // Only update the first page to refresh unread counts
           final newChats = _parseChatRooms(chatRooms);
-          
+
           // Update existing chats with new data
           for (var newChat in newChats) {
-            final index = _chatConversations.indexWhere((c) => c['id'] == newChat['id']);
+            final index =
+                _chatConversations.indexWhere((c) => c['id'] == newChat['id']);
             if (index != -1) {
               final existingOnline = _chatConversations[index]['isOnline'];
               _chatConversations[index] = newChat;
@@ -219,34 +225,38 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         _isLoadingMore = true;
       });
     }
-    
+
     try {
       final pageToLoad = loadMore ? _currentPage + 1 : 1;
       print('🔵 Loading chat rooms, page: $pageToLoad');
-      final chatRooms = await AdsyConnectService.getChatRooms(page: pageToLoad, pageSize: _pageSize);
+      final chatRooms = await AdsyConnectService.getChatRooms(
+          page: pageToLoad, pageSize: _pageSize);
       print('🟢 Loaded ${chatRooms.length} chat rooms');
-      
+
       if (mounted) {
         final newChats = _parseChatRooms(chatRooms);
-        
+
         setState(() {
           if (loadMore) {
             // Get existing chat IDs to prevent duplicates
             final existingIds = _chatConversations.map((c) => c['id']).toSet();
-            
+
             // Only add chats that don't already exist
-            final uniqueNewChats = newChats.where((chat) => !existingIds.contains(chat['id'])).toList();
-            
-            print('📊 Adding ${uniqueNewChats.length} unique chats (filtered ${newChats.length - uniqueNewChats.length} duplicates)');
+            final uniqueNewChats = newChats
+                .where((chat) => !existingIds.contains(chat['id']))
+                .toList();
+
+            print(
+                '📊 Adding ${uniqueNewChats.length} unique chats (filtered ${newChats.length - uniqueNewChats.length} duplicates)');
             _chatConversations.addAll(uniqueNewChats);
-            
+
             // Move to the page we just successfully loaded
             _currentPage = pageToLoad;
           } else {
             _chatConversations = newChats;
             _currentPage = 1;
           }
-          
+
           _isLoadingChats = false;
           _isLoadingMore = false;
           _hasMore = chatRooms.length >= _pageSize;
@@ -254,6 +264,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
         if (!loadMore) {
           _refreshOnlineStatuses();
+          unawaited(_openInitialChatIfNeeded());
         }
       }
     } catch (e) {
@@ -279,58 +290,61 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   }
 
   List<Map<String, dynamic>> _parseChatRooms(List<dynamic> chatRooms) {
-    return chatRooms
-        .map((room) {
-          final otherUser = room['other_user'] ?? {};
-          final lastMessage = room['last_message'];
-          
-          // Check if last message is deleted
-          final isDeleted = lastMessage?['is_deleted'] == true;
-          final messageContent = lastMessage?['content']?.toString() ?? room['last_message_preview']?.toString() ?? '';
-          
-          // Show "Message removed" if deleted OR if content says "Message deleted"
-          String displayMessage;
-          if (isDeleted || messageContent == 'Message deleted') {
-            displayMessage = 'Message removed';
-          } else if (messageContent.isEmpty) {
-            displayMessage = 'No messages yet';
-          } else if (messageContent.trimLeft().startsWith('↩️')) {
-            // Reply message: extract actual message text from format:
-            // ↩️ (uuid) Sender: preview\n\nActual message
-            final parts = messageContent.split('\n\n');
-            if (parts.length >= 2) {
-              final actualText = parts.sublist(1).join('\n\n').trim();
-              displayMessage = actualText.isNotEmpty ? '↩️ $actualText' : messageContent;
-            } else {
-              displayMessage = messageContent;
-            }
-          } else {
-            displayMessage = messageContent;
-          }
-          
-          return {
-            'id': room['id'],
-            'userId': otherUser['id']?.toString() ?? '',
-            'userName': _getFullName(otherUser),
-            'userAvatar': otherUser['avatar'],
-            'profession': otherUser['profession'] ?? '',
-            'lastMessage': displayMessage,
-            'timestamp': lastMessage?['created_at'] != null 
-                ? DateTime.parse(lastMessage['created_at'])
-                : DateTime.parse(room['last_message_at'] ?? DateTime.now().toIso8601String()),
-            'unreadCount': room['unread_count'] ?? 0,
-            'isOnline': _parseBool(otherUser['is_online'] ?? otherUser['isOnline']),
-            'isTyping': false,
-            'isVerified': otherUser['is_verified'] ?? false,
-          };
-        }).toList();
+    return chatRooms.map((room) {
+      final otherUser = room['other_user'] ?? {};
+      final lastMessage = room['last_message'];
+
+      // Check if last message is deleted
+      final isDeleted = lastMessage?['is_deleted'] == true;
+      final messageContent = lastMessage?['content']?.toString() ??
+          room['last_message_preview']?.toString() ??
+          '';
+
+      // Show "Message removed" if deleted OR if content says "Message deleted"
+      String displayMessage;
+      if (isDeleted || messageContent == 'Message deleted') {
+        displayMessage = 'Message removed';
+      } else if (messageContent.isEmpty) {
+        displayMessage = 'No messages yet';
+      } else if (messageContent.trimLeft().startsWith('↩️')) {
+        // Reply message: extract actual message text from format:
+        // ↩️ (uuid) Sender: preview\n\nActual message
+        final parts = messageContent.split('\n\n');
+        if (parts.length >= 2) {
+          final actualText = parts.sublist(1).join('\n\n').trim();
+          displayMessage =
+              actualText.isNotEmpty ? '↩️ $actualText' : messageContent;
+        } else {
+          displayMessage = messageContent;
+        }
+      } else {
+        displayMessage = messageContent;
+      }
+
+      return {
+        'id': room['id'],
+        'userId': otherUser['id']?.toString() ?? '',
+        'userName': _getFullName(otherUser),
+        'userAvatar': otherUser['avatar'],
+        'profession': otherUser['profession'] ?? '',
+        'lastMessage': displayMessage,
+        'timestamp': lastMessage?['created_at'] != null
+            ? DateTime.parse(lastMessage['created_at'])
+            : DateTime.parse(
+                room['last_message_at'] ?? DateTime.now().toIso8601String()),
+        'unreadCount': room['unread_count'] ?? 0,
+        'isOnline': _parseBool(otherUser['is_online'] ?? otherUser['isOnline']),
+        'isTyping': false,
+        'isVerified': otherUser['is_verified'] ?? false,
+      };
+    }).toList();
   }
 
   String _getFullName(Map<String, dynamic> user) {
     final firstName = user['first_name'] ?? '';
     final lastName = user['last_name'] ?? '';
     final username = user['username'] ?? 'User';
-    
+
     if (firstName.isNotEmpty && lastName.isNotEmpty) {
       return '$firstName $lastName';
     } else if (firstName.isNotEmpty) {
@@ -376,6 +390,50 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         isOnline: chat['isOnline'] ?? false,
       ).then((_) => _refreshChats());
     }
+  }
+
+  Future<void> _openInitialChatIfNeeded() async {
+    if (_didOpenInitialChat || !mounted) {
+      return;
+    }
+
+    final initialChatId = widget.initialChatId;
+    if (initialChatId == null || initialChatId.isEmpty) {
+      return;
+    }
+
+    _didOpenInitialChat = true;
+    var chat = _chatConversations.cast<Map<String, dynamic>?>().firstWhere(
+          (candidate) => candidate?['id']?.toString() == initialChatId,
+          orElse: () => null,
+        );
+
+    if (chat == null) {
+      final details =
+          await AdsyConnectService.getChatRoomDetails(initialChatId);
+      if (!mounted || details == null) {
+        return;
+      }
+
+      final parsed = _parseChatRooms([details]);
+      if (parsed.isEmpty) {
+        return;
+      }
+
+      chat = parsed.first;
+      setState(() {
+        if (!_chatConversations
+            .any((c) => c['id']?.toString() == initialChatId)) {
+          _chatConversations.insert(0, chat!);
+        }
+      });
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    _openChat(chat);
   }
 
   @override
@@ -453,11 +511,14 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                 child: TextField(
                   controller: _chatSearchController,
                   decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 20),
+                    prefixIcon: Icon(Icons.search_rounded,
+                        color: Colors.grey.shade500, size: 20),
                     hintText: 'Search chats',
-                    hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                    hintStyle:
+                        TextStyle(color: Colors.grey.shade500, fontSize: 14),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                   ),
                 ),
               ),
@@ -480,13 +541,15 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       child: NotificationListener<ScrollNotification>(
                         onNotification: (ScrollNotification scrollInfo) {
                           if (!isFiltering &&
-                              scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 200) {
+                              scrollInfo.metrics.pixels >=
+                                  scrollInfo.metrics.maxScrollExtent - 200) {
                             _loadMoreChats();
                           }
                           return false;
                         },
                         child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 8),
                           itemCount: chatsToShow.length + (isFiltering ? 0 : 1),
                           itemBuilder: (context, index) {
                             if (!isFiltering && index == chatsToShow.length) {
@@ -494,13 +557,15 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                 return const ChatListSkeleton(itemCount: 3);
                               } else if (!_hasMore && chatsToShow.isNotEmpty) {
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 20, horizontal: 16),
                                   child: Row(
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                          color: const Color(0xFF3B82F6)
+                                              .withOpacity(0.1),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
@@ -512,7 +577,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             const Text(
                                               'All chats loaded',
@@ -564,7 +630,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: hasUnread ? const Color(0xFF3B82F6).withOpacity(0.02) : Colors.white,
+          color: hasUnread
+              ? const Color(0xFF3B82F6).withOpacity(0.02)
+              : Colors.white,
           border: Border(
             bottom: BorderSide(
               color: const Color(0xFFE5E7EB).withOpacity(0.4),
@@ -590,13 +658,16 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       ],
                     ),
                     border: Border.all(
-                      color: hasUnread ? const Color(0xFF3B82F6).withOpacity(0.25) : Colors.transparent,
+                      color: hasUnread
+                          ? const Color(0xFF3B82F6).withOpacity(0.25)
+                          : Colors.transparent,
                       width: 1.5,
                     ),
                   ),
                   child: ClipOval(
                     child: chat['userAvatar'] != null &&
-                            AppConfig.getAbsoluteUrl(chat['userAvatar']).isNotEmpty
+                            AppConfig.getAbsoluteUrl(chat['userAvatar'])
+                                .isNotEmpty
                         ? Image.network(
                             AppConfig.getAbsoluteUrl(chat['userAvatar']),
                             fit: BoxFit.cover,
@@ -632,16 +703,20 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      color: isOnline ? const Color(0xFF10B981) : const Color(0xFF9CA3AF),
+                      color: isOnline
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF9CA3AF),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: isOnline ? [
-                        BoxShadow(
-                          color: const Color(0xFF10B981).withOpacity(0.4),
-                          blurRadius: 4,
-                          spreadRadius: 1,
-                        ),
-                      ] : null,
+                      boxShadow: isOnline
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withOpacity(0.4),
+                                blurRadius: 4,
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : null,
                     ),
                   ),
                 ),
@@ -663,7 +738,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                                 chat['userName'],
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w600,
+                                  fontWeight: hasUnread
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
                                   color: const Color(0xFF1F2937),
                                   letterSpacing: -0.2,
                                 ),
@@ -673,9 +750,11 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                             if (isTyping) ...[
                               const SizedBox(width: 4),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withOpacity(0.1),
+                                  color:
+                                      const Color(0xFF10B981).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
@@ -702,7 +781,8 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     ],
                   ),
                   // Only show profession if it exists and is not empty
-                  if (chat['profession'] != null && chat['profession'].toString().isNotEmpty) ...[
+                  if (chat['profession'] != null &&
+                      chat['profession'].toString().isNotEmpty) ...[
                     const SizedBox(height: 1),
                     Text(
                       chat['profession'],
@@ -721,7 +801,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w400,
-                      color: hasUnread ? const Color(0xFF1F2937) : const Color(0xFF6B7280),
+                      color: hasUnread
+                          ? const Color(0xFF1F2937)
+                          : const Color(0xFF6B7280),
                       letterSpacing: -0.1,
                     ),
                     maxLines: 1,

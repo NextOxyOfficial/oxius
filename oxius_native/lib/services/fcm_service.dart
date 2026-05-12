@@ -38,7 +38,8 @@ void _log(String message) {
 /// Without this, tapping an incoming-call notification from the shade after
 /// the app was killed silently drops the tap and the call screen never opens.
 @pragma('vm:entry-point')
-void _onDidReceiveBackgroundNotificationResponse(NotificationResponse response) {
+void _onDidReceiveBackgroundNotificationResponse(
+    NotificationResponse response) {
   // The background isolate does not have the Flutter engine or plugin registry,
   // so we cannot navigate here. Instead, store the payload in a persistent
   // store (SharedPreferences) and let the main isolate consume it on startup
@@ -269,7 +270,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   );
   _log('📱 Background message received: ${message.messageId}');
   _log('📦 Data: ${message.data}');
-  
+
   final type = message.data['type']?.toString();
   final notificationType = message.data['notification_type']?.toString();
 
@@ -283,9 +284,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // so the recipient doesn't see a ghost incoming call after the caller
   // already cancelled/ended.
   if (type == 'call_status') {
-    final bgStatus = message.data['status']?.toString()?.toLowerCase();
+    final bgStatus = message.data['status']?.toString().toLowerCase();
     const terminalStatuses = {
-      'rejected', 'declined', 'busy', 'cancelled', 'ended', 'missed', 'failed',
+      'rejected',
+      'declined',
+      'busy',
+      'cancelled',
+      'ended',
+      'missed',
+      'failed',
     };
     if (bgStatus != null && terminalStatuses.contains(bgStatus)) {
       try {
@@ -313,7 +320,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
       final callTimestamp = int.parse(timestampStr);
       final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
       final timeDifference = currentTimestamp - callTimestamp;
-      
+
       // If call is older than 30 seconds, ignore it
       if (timeDifference > 30000) {
         _log('🚫 Ignoring old call notification (${timeDifference}ms old)');
@@ -323,7 +330,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
       _log('⚠️ Error parsing call timestamp: $e');
     }
   }
-  
+
   final callerName = data['caller_name']?.toString() ?? 'Unknown';
   final callerId = data['caller_id']?.toString() ?? '';
   final callerAvatar = data['caller_avatar']?.toString();
@@ -341,9 +348,10 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     await plugin.initialize(const InitializationSettings(android: androidInit));
 
-    final androidPlugin = plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.createNotificationChannel(const AndroidNotificationChannel(
+    final androidPlugin = plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin
+        ?.createNotificationChannel(const AndroidNotificationChannel(
       'oxius_calls',
       'Incoming Calls',
       description: 'Incoming voice and video call alerts',
@@ -390,7 +398,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
 
   // -------- 2. SECONDARY: CallKit-style full-screen call UI (best effort) --------
   final uuid = const Uuid().v4();
-  
+
   final params = CallKitParams(
     id: uuid,
     nameCaller: callerName,
@@ -491,7 +499,8 @@ class _TrackingRouteObserver extends RouteObserver<PageRoute<dynamic>> {
 ///      the driver gets the same "phone-call" affordance as Uber. If CallKit
 ///      fails for any reason (plugin not initialised on this OEM, no permission)
 ///      the primary notification has already fired, so the alert is never lost.
-Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) async {
+Future<void> _showBackgroundRideRequestNotification(
+    Map<String, dynamic> data) async {
   final rideId = data['ride_id']?.toString() ?? '';
   final pickup = data['pickup_address']?.toString() ?? 'Pickup';
   final drop = data['drop_address']?.toString() ?? 'Drop';
@@ -510,8 +519,8 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     await plugin.initialize(const InitializationSettings(android: androidInit));
 
-    final androidPlugin = plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
     // Re-create channel with hardened settings; createNotificationChannel is
     // idempotent (existing channel keeps user overrides for sound).
     await androidPlugin?.createNotificationChannel(AndroidNotificationChannel(
@@ -547,7 +556,9 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
     );
 
     await plugin.show(
-      rideId.isEmpty ? DateTime.now().millisecondsSinceEpoch.remainder(0x7fffffff) : rideId.hashCode,
+      rideId.isEmpty
+          ? DateTime.now().millisecondsSinceEpoch.remainder(0x7fffffff)
+          : rideId.hashCode,
       title,
       body,
       NotificationDetails(android: details),
@@ -571,8 +582,10 @@ Future<void> _showBackgroundRideRequestNotification(Map<String, dynamic> data) a
 }
 
 class FCMService {
-  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  static final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  static final FirebaseMessaging _firebaseMessaging =
+      FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
   static String? _fcmToken;
   static final _TrackingRouteObserver _routeObserver = _TrackingRouteObserver();
   static final StreamController<Map<String, dynamic>>
@@ -581,30 +594,34 @@ class FCMService {
   static AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
   static const int _callRecoveryMaxAgeMs = 30000;
   static bool _callRecoveryEnabled = false;
-  
+
   // Track active calls to prevent duplicates
   static final Set<String> _activeCallIds = <String>{};
   static final Map<String, int> _callTimestamps = <String, int>{};
-  
+
   // Track accepted CallKit UUIDs to prevent actionCallEnded from sending 'ended' status
   static final Set<String> _acceptedCallkitUuids = <String>{};
   static final Set<String> _terminalCallkitUuids = <String>{};
-  
+
   static const String _fcmTokenKey = 'adsyclub_fcm_token';
   static const String _lastUploadedKey = 'adsyclub_fcm_token_last_uploaded';
   static const Duration _iosApnsWaitTimeout = Duration(seconds: 12);
   static const Duration _iosTokenPollInterval = Duration(milliseconds: 350);
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
   static Map<String, dynamic>? _pendingNavigationData;
   static Timer? _pendingNavigationTimer;
   static int _pendingNavigationAttempts = 0;
   static bool _lifecycleObserverInstalled = false;
   static bool _initialized = false;
   static bool _callkitListenerRegistered = false;
-  static StreamSubscription<Map<String, dynamic>>? _adsyConnectRealtimeSubscription;
+  static bool _firebaseMessageListenersRegistered = false;
+  static StreamSubscription<Map<String, dynamic>>?
+      _adsyConnectRealtimeSubscription;
   static final Map<String, int> _recentCallSignalTimestamps = <String, int>{};
 
-  static bool get _isAppInForeground => _appLifecycleState == AppLifecycleState.resumed;
+  static bool get _isAppInForeground =>
+      _appLifecycleState == AppLifecycleState.resumed;
   static RouteObserver<PageRoute<dynamic>> get routeObserver => _routeObserver;
   static String? get currentRouteName => _routeObserver.currentRouteName;
 
@@ -720,7 +737,8 @@ class FCMService {
 
   static bool _isRideRequestTimestampFresh(int? timestamp, int timeoutSeconds) {
     if (timestamp == null) return false;
-    final maxAgeMs = ((timeoutSeconds <= 0 ? 60 : timeoutSeconds) * 1000) + 5000;
+    final maxAgeMs =
+        ((timeoutSeconds <= 0 ? 60 : timeoutSeconds) * 1000) + 5000;
     final age = DateTime.now().millisecondsSinceEpoch - timestamp;
     return age >= 0 && age <= maxAgeMs;
   }
@@ -820,7 +838,8 @@ class FCMService {
       final payload = prefs.getString('_pending_local_notification_payload');
       if (payload != null && payload.isNotEmpty) {
         await prefs.remove('_pending_local_notification_payload');
-        _log('📲 Consuming pending local notification payload from killed-state tap');
+        _log(
+            '📲 Consuming pending local notification payload from killed-state tap');
         _handleLocalNotificationTap(payload);
       }
     } catch (e) {
@@ -841,12 +860,15 @@ class FCMService {
       // If this is a duplicate notification for the SAME call we are already
       // handling, silently ignore it — do NOT send "busy" back to the caller
       // because that would kill the real call.
-      final activeChannel = AgoraCallService.activeCallInfo?['channelName']?.toString();
+      final activeChannel =
+          AgoraCallService.activeCallInfo?['channelName']?.toString();
       if (activeChannel == channelName) {
-        _log('📞 Ignoring duplicate $source call for active channel: $channelName');
+        _log(
+            '📞 Ignoring duplicate $source call for active channel: $channelName');
         return false;
       }
-      _log('🚫 Ignoring $source incoming call - already in call or CallScreen visible');
+      _log(
+          '🚫 Ignoring $source incoming call - already in call or CallScreen visible');
       if (notifyCallerOnBusy) {
         AgoraCallService.sendCallStatus(
           receiverId: callerId,
@@ -875,7 +897,8 @@ class FCMService {
     }
 
     _activeCallIds.add(callKey);
-    _callTimestamps[callKey] = timestamp ?? DateTime.now().millisecondsSinceEpoch;
+    _callTimestamps[callKey] =
+        timestamp ?? DateTime.now().millisecondsSinceEpoch;
     return true;
   }
 
@@ -959,7 +982,8 @@ class FCMService {
 
     _log('❌ APNS token never became available on iOS after waiting $timeout');
     _log('   If permission is granted, this points to native/config issues:');
-    _log('   1. Push Notifications capability or provisioning profile is wrong');
+    _log(
+        '   1. Push Notifications capability or provisioning profile is wrong');
     _log('   2. Firebase Console is missing a valid APNS auth key/certificate');
     _log('   3. Device/build environment does not match APNS environment');
     return null;
@@ -995,7 +1019,9 @@ class FCMService {
   /// Call this after login/session restore so the token upload doesn't get skipped.
   static Future<void> syncTokenWithBackend() async {
     try {
-      final token = _fcmToken ?? await _getPersistedFcmToken() ?? await _resolveUsableFcmToken();
+      final token = _fcmToken ??
+          await _getPersistedFcmToken() ??
+          await _resolveUsableFcmToken();
       if (token == null || token.isEmpty) {
         _log('❌ Cannot sync token: FCM token is null/empty');
         return;
@@ -1012,10 +1038,10 @@ class FCMService {
   /// Initialize FCM
   static Future<void> initialize() async {
     if (_initialized) {
-      _log('🔥 FCM Service already initialized — skipping duplicate initialize()');
+      _log(
+          '🔥 FCM Service already initialized — skipping duplicate initialize()');
       return;
     }
-    _initialized = true;
     try {
       _log('🔥 Initializing FCM Service...');
       _log('=' * 60);
@@ -1026,18 +1052,20 @@ class FCMService {
       }
 
       // Request notification permissions with more aggressive settings
-      NotificationSettings settings = await _firebaseMessaging.requestPermission(
+      NotificationSettings settings =
+          await _firebaseMessaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
         provisional: false,
-        criticalAlert: true,  // Request critical alert permission (iOS)
-        announcement: true,   // Request announcement permission (iOS)
+        criticalAlert: true, // Request critical alert permission (iOS)
+        announcement: true, // Request announcement permission (iOS)
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         _log('✅ Notification permission granted');
-      } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      } else if (settings.authorizationStatus ==
+          AuthorizationStatus.provisional) {
         _log('⚠️ Notification permission granted (provisional)');
       } else {
         _log('❌ Notification permission denied');
@@ -1049,7 +1077,8 @@ class FCMService {
       // iOS CRITICAL FIX: Without this, Firebase Messaging never shows any
       // notification while the app is in the foreground on iOS — they are
       // silently discarded. This must be called once after permission is granted.
-      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
         sound: true,
@@ -1057,7 +1086,7 @@ class FCMService {
 
       // Initialize local notifications
       await _initializeLocalNotifications();
-      
+
       // Initialize CallKit for incoming calls
       await _initializeCallKit();
 
@@ -1086,38 +1115,44 @@ class FCMService {
         _log('❌ Failed to get FCM token');
       }
 
-      // Listen for token refresh
-      _firebaseMessaging.onTokenRefresh.listen((newToken) {
-        _log('🔄 FCM Token refreshed: $newToken');
-        Telemetry.event('fcm.token_refresh');
-        _fcmToken = newToken;
-        _persistFcmToken(newToken);
-        _sendTokenToBackend(newToken);
-      });
+      if (!_firebaseMessageListenersRegistered) {
+        // Listen for token refresh
+        _firebaseMessaging.onTokenRefresh.listen((newToken) {
+          _log('🔄 FCM Token refreshed: $newToken');
+          Telemetry.event('fcm.token_refresh');
+          _fcmToken = newToken;
+          _persistFcmToken(newToken);
+          _sendTokenToBackend(newToken);
+        });
 
-      // Handle background messages
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+        // Handle background messages
+        FirebaseMessaging.onBackgroundMessage(
+            _firebaseMessagingBackgroundHandler);
 
-      // Handle foreground messages
-      FirebaseMessaging.onMessage.listen((message) {
-        _traceForegroundMessage(message);
-        _handleForegroundMessage(message);
-      });
+        // Handle foreground messages
+        FirebaseMessaging.onMessage.listen((message) {
+          _traceForegroundMessage(message);
+          _handleForegroundMessage(message);
+        });
+
+        // Handle notification tap when app is in background
+        FirebaseMessaging.onMessageOpenedApp.listen((message) {
+          Telemetry.event('fcm.tap', tags: {
+            'type': message.data['type']?.toString(),
+            'message_id': message.messageId,
+          });
+          _handleNotificationTap(message);
+        });
+
+        _firebaseMessageListenersRegistered = true;
+      }
 
       _attachAdsyConnectRealtimeBridge();
 
-      // Handle notification tap when app is in background
-      FirebaseMessaging.onMessageOpenedApp.listen((message) {
-        Telemetry.event('fcm.tap', tags: {
-          'type': message.data['type']?.toString(),
-          'message_id': message.messageId,
-        });
-        _handleNotificationTap(message);
-      });
-
       // Check if app was opened from a notification
       // Skip if we already have an accepted_call pending (from CallKit accept)
-      RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
+      RemoteMessage? initialMessage =
+          await _firebaseMessaging.getInitialMessage();
       if (initialMessage != null) {
         final pendingType = _pendingNavigationData?['type']?.toString();
         if (pendingType == 'accepted_call') {
@@ -1128,8 +1163,10 @@ class FCMService {
       }
 
       _log('✅ FCM Service initialized successfully');
+      _initialized = true;
     } catch (e) {
       _log('❌ Error initializing FCM: $e');
+      _initialized = false;
     }
   }
 
@@ -1141,15 +1178,18 @@ class FCMService {
     try {
       await FlutterCallkitIncoming.requestNotificationPermission({
         'title': 'Notification permission',
-        'rationaleMessagePermission': 'Call notifications are required to show incoming calls.',
-        'postNotificationMessageRequired': 'Please allow notifications so incoming calls can ring properly.',
+        'rationaleMessagePermission':
+            'Call notifications are required to show incoming calls.',
+        'postNotificationMessageRequired':
+            'Please allow notifications so incoming calls can ring properly.',
       });
     } catch (e) {
       _log('⚠️ Failed to request CallKit notification permission: $e');
     }
 
     try {
-      final canUseFullScreenIntent = await FlutterCallkitIncoming.canUseFullScreenIntent();
+      final canUseFullScreenIntent =
+          await FlutterCallkitIncoming.canUseFullScreenIntent();
       if (canUseFullScreenIntent != true) {
         await FlutterCallkitIncoming.requestFullIntentPermission();
       }
@@ -1167,14 +1207,17 @@ class FCMService {
     }
 
     if (!await _hasRecoverableAuthenticatedSession()) {
-      _log('📞 No authenticated session found. Clearing persisted CallKit state.');
+      _log(
+          '📞 No authenticated session found. Clearing persisted CallKit state.');
       await _clearPersistedIncomingCallState();
       return;
     }
-    
+
     // Don't overwrite pending accepted_call navigation
-    if (_pendingNavigationData != null && _pendingNavigationData!['type'] == 'accepted_call') {
-      _log('📞 Skipping _tryNavigateToActiveCallkitCall - accepted_call pending');
+    if (_pendingNavigationData != null &&
+        _pendingNavigationData!['type'] == 'accepted_call') {
+      _log(
+          '📞 Skipping _tryNavigateToActiveCallkitCall - accepted_call pending');
       return;
     }
 
@@ -1186,10 +1229,11 @@ class FCMService {
       if (last is! Map) return;
 
       final map = Map<String, dynamic>.from(last);
-      
+
       // Check if this call was already accepted
       final callkitUuid = map['id']?.toString() ?? '';
-      final wasAccepted = callkitUuid.isNotEmpty && _acceptedCallkitUuids.contains(callkitUuid);
+      final wasAccepted =
+          callkitUuid.isNotEmpty && _acceptedCallkitUuids.contains(callkitUuid);
 
       Map<String, dynamic>? extra;
       final rawExtra = map['extra'];
@@ -1215,22 +1259,25 @@ class FCMService {
           ) ??
           60;
       if (callerId == null || channelName == null) {
-      _log('📞 CallKit actionCallAccept missing callerId/channelName: callerId=$callerId channelName=$channelName');
-      return;
-    }
+        _log(
+            '📞 CallKit actionCallAccept missing callerId/channelName: callerId=$callerId channelName=$channelName');
+        return;
+      }
 
       final isFresh = incomingKind == 'rideshare_request'
           ? _isRideRequestTimestampFresh(timestamp, rideTimeoutSeconds)
           : _isCallTimestampFresh(timestamp);
 
       if (!isFresh) {
-        _log('📞 Clearing stale CallKit recovery entry for channel=$channelName');
+        _log(
+            '📞 Clearing stale CallKit recovery entry for channel=$channelName');
         if (callkitUuid.isNotEmpty) {
           await FlutterCallkitIncoming.endCall(callkitUuid);
         } else {
           await _clearPersistedIncomingCallState();
         }
-        releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+        releaseIncomingCallTracking(
+            callerId: callerId, channelName: channelName);
         return;
       }
 
@@ -1241,7 +1288,8 @@ class FCMService {
         }
 
         _navigateBasedOnData({
-          'type': extra?['ride_request_type']?.toString() ?? 'targeted_ride_request',
+          'type': extra?['ride_request_type']?.toString() ??
+              'targeted_ride_request',
           'notification_type': extra?['notification_type']?.toString() ?? '',
           'mode': 'driver',
           'ride_id': rideId,
@@ -1277,7 +1325,8 @@ class FCMService {
     // notification tap callbacks fire, and iOS notification permissions are never
     // requested through the plugin. requestAlertPermission/etc. are false because
     // firebase_messaging already requested them, so we don't double-prompt.
-    const DarwinInitializationSettings iosSettings = DarwinInitializationSettings(
+    const DarwinInitializationSettings iosSettings =
+        DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
       requestSoundPermission: false,
@@ -1351,9 +1400,10 @@ class FCMService {
       audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
     );
 
-    final androidPlugin = _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    
+    final androidPlugin =
+        _localNotifications.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+
     await androidPlugin?.createNotificationChannel(channel);
     await androidPlugin?.createNotificationChannel(callChannel);
     await androidPlugin?.createNotificationChannel(rideChannel);
@@ -1362,7 +1412,8 @@ class FCMService {
   /// Initialize CallKit for native incoming call UI
   static Future<void> _initializeCallKit() async {
     if (_callkitListenerRegistered) {
-      _log('📞 CallKit listener already registered — skipping duplicate subscription');
+      _log(
+          '📞 CallKit listener already registered — skipping duplicate subscription');
       return;
     }
     _callkitListenerRegistered = true;
@@ -1371,7 +1422,7 @@ class FCMService {
       FlutterCallkitIncoming.onEvent.listen((CallEvent? event) {
         if (event == null) return;
         _log('📞 CallKit Event: ${event.event}');
-        
+
         switch (event.event) {
           case Event.actionCallIncoming:
             _cacheCallIncoming(event);
@@ -1392,7 +1443,7 @@ class FCMService {
             break;
         }
       });
-      
+
       _log('✅ CallKit initialized');
     } catch (e) {
       _log('❌ Error initializing CallKit: $e');
@@ -1461,10 +1512,11 @@ class FCMService {
 
     final extra = _parseCallkitExtra(event.body['extra']);
     if (extra == null) {
-      _log('📞 CallKit actionCallAccept missing/invalid extra: ${event.body['extra']}');
+      _log(
+          '📞 CallKit actionCallAccept missing/invalid extra: ${event.body['extra']}');
       return;
     }
-    
+
     final callerId = extra['caller_id']?.toString();
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
@@ -1474,11 +1526,12 @@ class FCMService {
     final timestamp = _parseCallTimestamp(extra['timestamp']);
     final callId = extra['call_id']?.toString();
     final incomingKind = extra['incoming_kind']?.toString();
-    
+
     if (callerId == null || channelName == null) return;
 
     if (incomingKind == 'rideshare_request') {
-      final timeoutSeconds = int.tryParse(extra['timeout_seconds']?.toString() ?? '') ?? 60;
+      final timeoutSeconds =
+          int.tryParse(extra['timeout_seconds']?.toString() ?? '') ?? 60;
       final rideId = extra['ride_id']?.toString() ?? '';
       if (rideId.isEmpty) {
         return;
@@ -1486,7 +1539,8 @@ class FCMService {
 
       if (!_isRideRequestTimestampFresh(timestamp, timeoutSeconds) ||
           !await _hasRecoverableAuthenticatedSession()) {
-        releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+        releaseIncomingCallTracking(
+            callerId: callerId, channelName: channelName);
         if (callkitUuid.isNotEmpty) {
           await FlutterCallkitIncoming.endCall(callkitUuid);
         }
@@ -1500,7 +1554,8 @@ class FCMService {
       }
 
       _navigateBasedOnData({
-        'type': extra['ride_request_type']?.toString() ?? 'targeted_ride_request',
+        'type':
+            extra['ride_request_type']?.toString() ?? 'targeted_ride_request',
         'notification_type': extra['notification_type']?.toString() ?? '',
         'mode': 'driver',
         'ride_id': rideId,
@@ -1508,7 +1563,8 @@ class FCMService {
       return;
     }
 
-    if (!_isCallTimestampFresh(timestamp) || !await _hasRecoverableAuthenticatedSession()) {
+    if (!_isCallTimestampFresh(timestamp) ||
+        !await _hasRecoverableAuthenticatedSession()) {
       _log('📞 Ignoring accepted CallKit event for stale/unauthenticated call');
       releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
       if (callkitUuid.isNotEmpty) {
@@ -1517,7 +1573,7 @@ class FCMService {
       await _clearPersistedIncomingCallState();
       return;
     }
-    
+
     // Mark this CallKit UUID as accepted so actionCallEnded won't send 'ended' status
     if (callkitUuid.isNotEmpty) {
       _acceptedCallkitUuids.add(callkitUuid);
@@ -1535,16 +1591,17 @@ class FCMService {
       callId: callId,
     );
     AgoraCallService.markCallAccepted();
-    
+
     // Use setCallConnected to mark call as connected (stops ringtone, updates call history on iOS)
     // Then end the CallKit UI - this is the correct flow for accepted calls
     FlutterCallkitIncoming.setCallConnected(callkitUuid);
     FlutterCallkitIncoming.endCall(callkitUuid);
-    
+
     // Navigate to call screen - use pending navigation if navigator not ready (app cold start)
     // Use special type 'accepted_call' so _navigateBasedOnDataNow navigates directly to CallScreen
     final callData = {
-      'type': 'accepted_call', // Special type to bypass showIncomingCall and go directly to CallScreen
+      'type':
+          'accepted_call', // Special type to bypass showIncomingCall and go directly to CallScreen
       'call_id': callId,
       'caller_id': callerId,
       'channel_name': channelName,
@@ -1553,7 +1610,7 @@ class FCMService {
       'caller_name': callerName,
       'caller_avatar': callerAvatar ?? '',
     };
-    
+
     final navigator = navigatorKey.currentState;
     if (navigator != null) {
       _log('📞 Navigating to CallScreen immediately (accepted_call)');
@@ -1570,13 +1627,13 @@ class FCMService {
   static void _handleCallDeclined(CallEvent event) {
     final extra = _parseCallkitExtra(event.body['extra']);
     if (extra == null) return;
-    
+
     final callerId = extra['caller_id']?.toString();
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
     final callkitUuid = event.body['id']?.toString() ?? '';
     final incomingKind = extra['incoming_kind']?.toString();
-    
+
     if (callerId == null || channelName == null) return;
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
@@ -1592,7 +1649,7 @@ class FCMService {
       FlutterCallkitIncoming.endCall(callkitUuid);
       return;
     }
-    
+
     // Send rejected status to caller
     AgoraCallService.sendCallStatus(
       receiverId: callerId,
@@ -1601,7 +1658,7 @@ class FCMService {
       callType: callType,
       callId: extra['call_id']?.toString(),
     );
-    
+
     // End the CallKit UI
     if (callkitUuid.isNotEmpty) {
       _terminalCallkitUuids.add(callkitUuid);
@@ -1613,17 +1670,18 @@ class FCMService {
   static void _handleCallEnded(CallEvent event) {
     final callkitUuid = event.body['id']?.toString() ?? '';
     final terminalAlreadyHandled = _terminalCallkitUuids.remove(callkitUuid);
-    
+
     // If this call was accepted, don't send 'ended' status - the CallScreen will handle it
     final wasAccepted = _acceptedCallkitUuids.remove(callkitUuid);
-    
+
     final extra = _parseCallkitExtra(event.body['extra']);
     if (extra != null) {
       if (extra['incoming_kind']?.toString() == 'rideshare_request') {
         final callerId = extra['caller_id']?.toString();
         final channelName = extra['channel_name']?.toString();
         if (callerId != null && channelName != null) {
-          releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+          releaseIncomingCallTracking(
+              callerId: callerId, channelName: channelName);
         }
         if (callkitUuid.isNotEmpty) {
           FlutterCallkitIncoming.endCall(callkitUuid);
@@ -1634,19 +1692,21 @@ class FCMService {
       final callerId = extra['caller_id']?.toString();
       final channelName = extra['channel_name']?.toString();
       final callType = extra['call_type']?.toString() ?? 'video';
-      
+
       if (callerId != null && channelName != null) {
-        releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+        releaseIncomingCallTracking(
+            callerId: callerId, channelName: channelName);
 
         if (terminalAlreadyHandled) {
           _log('📞 CallKit end event already handled for uuid=$callkitUuid');
           return;
         }
-        
+
         // Only send ended status if the call was NOT accepted
         // If accepted, the CallScreen handles sending the proper status when call ends
         if (!wasAccepted) {
-          _log('📞 CallKit ended (not accepted) - sending ended status to caller');
+          _log(
+              '📞 CallKit ended (not accepted) - sending ended status to caller');
           AgoraCallService.sendCallStatus(
             receiverId: callerId,
             channelName: channelName,
@@ -1655,11 +1715,12 @@ class FCMService {
             callId: extra['call_id']?.toString(),
           );
         } else {
-          _log('📞 CallKit ended (was accepted) - CallScreen will handle status');
+          _log(
+              '📞 CallKit ended (was accepted) - CallScreen will handle status');
         }
       }
     }
-    
+
     // Ensure CallKit UI is dismissed
     if (callkitUuid.isNotEmpty) {
       FlutterCallkitIncoming.endCall(callkitUuid);
@@ -1670,13 +1731,13 @@ class FCMService {
   static void _handleCallTimeout(CallEvent event) {
     final extra = _parseCallkitExtra(event.body['extra']);
     if (extra == null) return;
-    
+
     final callerId = extra['caller_id']?.toString();
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
     final callkitUuid = event.body['id']?.toString() ?? '';
     final incomingKind = extra['incoming_kind']?.toString();
-    
+
     if (callerId == null || channelName == null) return;
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
@@ -1688,7 +1749,7 @@ class FCMService {
       FlutterCallkitIncoming.endCall(callkitUuid);
       return;
     }
-    
+
     // Send missed call status
     AgoraCallService.sendCallStatus(
       receiverId: callerId,
@@ -1697,7 +1758,7 @@ class FCMService {
       callType: callType,
       callId: extra['call_id']?.toString(),
     );
-    
+
     if (callkitUuid.isNotEmpty) {
       _terminalCallkitUuids.add(callkitUuid);
     }
@@ -1724,9 +1785,9 @@ class FCMService {
     )) {
       return;
     }
-    
+
     final uuid = const Uuid().v4();
-    
+
     final params = CallKitParams(
       id: uuid,
       nameCaller: callerName,
@@ -1741,7 +1802,8 @@ class FCMService {
         'call_id': callId ?? '',
         'caller_id': callerId,
         'channel_name': channelName,
-        'timestamp': (timestamp ?? DateTime.now().millisecondsSinceEpoch).toString(),
+        'timestamp':
+            (timestamp ?? DateTime.now().millisecondsSinceEpoch).toString(),
         'call_type': callType,
         'caller_name': callerName,
         'caller_avatar': callerAvatar ?? '',
@@ -1766,7 +1828,7 @@ class FCMService {
         ringtonePath: 'default',
       ),
     );
-    
+
     await FlutterCallkitIncoming.showCallkitIncoming(params);
   }
 
@@ -1799,7 +1861,8 @@ class FCMService {
         _buildRideRequestCallkitParams(data),
       );
     } catch (e) {
-      _log('⚠️ Foreground ride request CallKit failed, falling back to notification: $e');
+      _log(
+          '⚠️ Foreground ride request CallKit failed, falling back to notification: $e');
       releaseIncomingCallTracking(
         callerId: trackingCallerId,
         channelName: trackingChannelName,
@@ -1819,19 +1882,20 @@ class FCMService {
   }
 
   /// Navigate directly to CallScreen for accepted calls (bypasses showIncomingCall)
-  static void _navigateToCallScreenDirectly(NavigatorState navigator, Map<String, dynamic> data) {
+  static void _navigateToCallScreenDirectly(
+      NavigatorState navigator, Map<String, dynamic> data) {
     final callId = data['call_id']?.toString();
     final channelName = data['channel_name']?.toString();
     final callerId = data['caller_id']?.toString();
     final callerName = data['caller_name']?.toString() ?? 'Unknown';
     final callerAvatar = data['caller_avatar']?.toString();
     final callType = data['call_type']?.toString() ?? 'video';
-    
+
     if (channelName == null || callerId == null) {
       _log('⚠️ Cannot navigate to CallScreen: missing channelName or callerId');
       return;
     }
-    
+
     // Prevent duplicate CallScreen pushes ONLY when the visible CallScreen
     // belongs to the exact same channel. A stale flag from a previous call,
     // or a CallScreen for a different channel, must not silently drop a new
@@ -1840,12 +1904,14 @@ class FCMService {
       final activeChannel =
           AgoraCallService.activeCallInfo?['channelName']?.toString();
       if (activeChannel == channelName) {
-        _log('📞 CallScreen already visible for $channelName, skipping navigation');
+        _log(
+            '📞 CallScreen already visible for $channelName, skipping navigation');
         return;
       }
-      _log('📞 Stale CallScreen flag detected (active=$activeChannel, new=$channelName) — pushing new CallScreen anyway');
+      _log(
+          '📞 Stale CallScreen flag detected (active=$activeChannel, new=$channelName) — pushing new CallScreen anyway');
     }
-    
+
     _log('📞 Navigating directly to CallScreen (accepted call)');
     navigator.push(
       MaterialPageRoute(
@@ -1863,7 +1929,8 @@ class FCMService {
     );
   }
 
-  static void _navigateToIncomingCallScreen(NavigatorState navigator, Map<String, dynamic> data) {
+  static void _navigateToIncomingCallScreen(
+      NavigatorState navigator, Map<String, dynamic> data) {
     final callId = data['call_id']?.toString();
     final channelName = data['channel_name']?.toString();
     final callerId = data['caller_id']?.toString();
@@ -1873,7 +1940,8 @@ class FCMService {
     final timestamp = int.tryParse(data['timestamp']?.toString() ?? '');
 
     if (channelName == null || callerId == null) {
-      _log('⚠️ Cannot navigate to incoming call screen: missing channelName or callerId');
+      _log(
+          '⚠️ Cannot navigate to incoming call screen: missing channelName or callerId');
       return;
     }
 
@@ -1907,7 +1975,7 @@ class FCMService {
   static void cleanupOldCalls() {
     final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final expiredCallIds = <String>[];
-    
+
     _callTimestamps.forEach((callId, timestamp) {
       final timeDifference = currentTimestamp - timestamp;
       // Remove calls older than 2 minutes
@@ -1915,7 +1983,7 @@ class FCMService {
         expiredCallIds.add(callId);
       }
     });
-    
+
     for (final callId in expiredCallIds) {
       _activeCallIds.remove(callId);
       _callTimestamps.remove(callId);
@@ -1964,8 +2032,7 @@ class FCMService {
 
     // Incoming call: open call screen immediately in foreground
     final type = message.data['type']?.toString();
-    final notificationType =
-        message.data['notification_type']?.toString() ??
+    final notificationType = message.data['notification_type']?.toString() ??
         message.data['status']?.toString();
     if (type == 'incoming_call' || type == 'call_status') {
       final payload = Map<String, dynamic>.from(message.data);
@@ -1973,9 +2040,15 @@ class FCMService {
       // When a terminal call_status arrives via FCM, dismiss any lingering
       // CallKit notification so ghost incoming-call screens don't appear.
       if (type == 'call_status') {
-        final fgStatus = payload['status']?.toString()?.toLowerCase();
+        final fgStatus = payload['status']?.toString().toLowerCase();
         const terminalStatuses = {
-          'rejected', 'declined', 'busy', 'cancelled', 'ended', 'missed', 'failed',
+          'rejected',
+          'declined',
+          'busy',
+          'cancelled',
+          'ended',
+          'missed',
+          'failed',
         };
         if (fgStatus != null && terminalStatuses.contains(fgStatus)) {
           FlutterCallkitIncoming.endAllCalls();
@@ -2019,17 +2092,21 @@ class FCMService {
   }
 
   /// Show high-priority ride request notification for drivers
-  static Future<void> _showRideRequestNotification(Map<String, dynamic> data) async {
+  static Future<void> _showRideRequestNotification(
+      Map<String, dynamic> data) async {
     final rideId = data['ride_id']?.toString() ?? '';
     final pickup = data['pickup_address']?.toString() ?? 'Pickup';
     final drop = data['drop_address']?.toString() ?? 'Drop';
     final fare = data['fare_estimate']?.toString() ?? '';
-    final timeoutSec = int.tryParse(data['timeout_seconds']?.toString() ?? '') ?? 60;
+    final timeoutSec =
+        int.tryParse(data['timeout_seconds']?.toString() ?? '') ?? 60;
 
     final title = '🚗 New Ride Request!';
-    final body = '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → ${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}${fare.isNotEmpty ? ' · ৳$fare' : ''} · ${timeoutSec}s';
+    final body =
+        '${pickup.length > 35 ? '${pickup.substring(0, 35)}…' : pickup} → ${drop.length > 35 ? '${drop.substring(0, 35)}…' : drop}${fare.isNotEmpty ? ' · ৳$fare' : ''} · ${timeoutSec}s';
 
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       'oxius_ride_requests',
       'Ride Requests',
       channelDescription: 'New ride request alerts for drivers',
@@ -2080,7 +2157,8 @@ class FCMService {
     final data = message.data;
 
     if (notification != null) {
-      const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      const AndroidNotificationDetails androidDetails =
+          AndroidNotificationDetails(
         'oxius_messages',
         'Oxius Messages',
         channelDescription: 'Notifications for messages and updates',
@@ -2112,8 +2190,6 @@ class FCMService {
       );
     }
   }
-
-
 
   /// Handle notification tap
   static void _handleNotificationTap(RemoteMessage message) {
@@ -2165,7 +2241,8 @@ class FCMService {
     if (_pendingNavigationTimer != null) return;
 
     _pendingNavigationAttempts = 0;
-    _pendingNavigationTimer = Timer.periodic(const Duration(milliseconds: 350), (timer) {
+    _pendingNavigationTimer =
+        Timer.periodic(const Duration(milliseconds: 350), (timer) {
       final pendingType = _pendingNavigationData?['type']?.toString();
       final maxAttempts = pendingType == 'accepted_call' ? 120 : 25;
       final navigator = navigatorKey.currentState;
@@ -2180,7 +2257,8 @@ class FCMService {
 
       _pendingNavigationAttempts += 1;
       if (_pendingNavigationAttempts >= maxAttempts) {
-        _log('⚠️ Navigator not ready after waiting. Dropping pending navigation.');
+        _log(
+            '⚠️ Navigator not ready after waiting. Dropping pending navigation.');
         _pendingNavigationData = null;
         timer.cancel();
         _pendingNavigationTimer = null;
@@ -2188,7 +2266,8 @@ class FCMService {
     });
   }
 
-  static Map<String, dynamic> _normalizeNotificationData(Map<String, dynamic> data) {
+  static Map<String, dynamic> _normalizeNotificationData(
+      Map<String, dynamic> data) {
     final normalized = Map<String, dynamic>.from(data);
 
     for (final key in ['data', 'payload', 'extra']) {
@@ -2212,7 +2291,8 @@ class FCMService {
     return normalized;
   }
 
-  static void _navigateBasedOnDataNow(NavigatorState navigator, Map<String, dynamic> rawData) {
+  static void _navigateBasedOnDataNow(
+      NavigatorState navigator, Map<String, dynamic> rawData) {
     final context = navigator.context;
     final data = _normalizeNotificationData(rawData);
 
@@ -2222,11 +2302,15 @@ class FCMService {
     String? type = rawType;
     final notificationType = rawNotificationType;
 
-    if ((type == null || type.isEmpty) && notificationType != null && notificationType.isNotEmpty) {
+    if ((type == null || type.isEmpty) &&
+        notificationType != null &&
+        notificationType.isNotEmpty) {
       type = notificationType;
     }
 
-    if (type == 'business_network' && notificationType != null && notificationType.isNotEmpty) {
+    if (type == 'business_network' &&
+        notificationType != null &&
+        notificationType.isNotEmpty) {
       type = notificationType;
     }
 
@@ -2237,7 +2321,8 @@ class FCMService {
       return;
     }
 
-    _log('🔔 Navigating based on notification type: $type, notification_type: $notificationType');
+    _log(
+        '🔔 Navigating based on notification type: $type, notification_type: $notificationType');
     _log('   Data: $data');
 
     // ============================================
@@ -2287,9 +2372,9 @@ class FCMService {
     // ============================================
     if (type == 'workspace') {
       final orderId = data['order_id']?.toString();
-      
+
       // Handle different workspace notification types
-      if (notificationType == 'new_order' || 
+      if (notificationType == 'new_order' ||
           notificationType == 'order_accept' ||
           notificationType == 'order_decline' ||
           notificationType == 'order_deliver' ||
@@ -2320,7 +2405,8 @@ class FCMService {
         navigator.pushNamed('/my-gigs');
       } else {
         // Default workspace - go to inbox updates tab
-        _log('   → Default workspace notification, navigating to inbox updates');
+        _log(
+            '   → Default workspace notification, navigating to inbox updates');
         navigator.push(
           MaterialPageRoute(
             builder: (context) => const InboxScreen(initialTab: 1),
@@ -2333,7 +2419,8 @@ class FCMService {
     // ============================================
     else if (type == 'follow') {
       // Navigate to user profile
-      final userId = data['actor_id']?.toString() ?? data['user_id']?.toString();
+      final userId =
+          data['actor_id']?.toString() ?? data['user_id']?.toString();
       if (userId != null) {
         _log('   → Navigating to profile: $userId');
         navigator.push(
@@ -2344,14 +2431,16 @@ class FCMService {
       }
     } else if (type == 'like_post' || type == 'comment' || type == 'mention') {
       // Navigate to post detail
-      final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
+      final postId =
+          data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         _log('   → Navigating to post: $postId');
         _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
       }
     } else if (type == 'like_comment' || type == 'reply') {
       // Navigate to post detail using parent_id
-      final postId = data['parent_id']?.toString() ?? data['post_id']?.toString();
+      final postId =
+          data['parent_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         _log('   → Navigating to post: $postId');
         _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
@@ -2362,7 +2451,8 @@ class FCMService {
       navigator.pushNamed('/mindforce');
     } else if (type == 'gift_diamonds') {
       // Navigate to post detail
-      final postId = data['target_id']?.toString() ?? data['post_id']?.toString();
+      final postId =
+          data['target_id']?.toString() ?? data['post_id']?.toString();
       if (postId != null) {
         _log('   → Navigating to post: $postId');
         _navigateToPostDetail(context, int.tryParse(postId) ?? 0);
@@ -2383,14 +2473,16 @@ class FCMService {
       final callerName = data['caller_name']?.toString() ?? 'Unknown';
       final callerAvatar = data['caller_avatar']?.toString();
       final callType = data['call_type']?.toString() ?? 'video';
-      
+
       if (channelName != null && callerId != null) {
         if (AgoraCallService.isInCall) {
           // If this is a duplicate for the SAME call, silently ignore —
           // sending "busy" here would kill the real call.
-          final activeChannel = AgoraCallService.activeCallInfo?['channelName']?.toString();
+          final activeChannel =
+              AgoraCallService.activeCallInfo?['channelName']?.toString();
           if (activeChannel == channelName) {
-            _log('📞 Ignoring duplicate incoming_call for active channel: $channelName');
+            _log(
+                '📞 Ignoring duplicate incoming_call for active channel: $channelName');
             return;
           }
           _log('   → Already in call. Auto-reply busy to caller: $callerId');
@@ -2431,7 +2523,8 @@ class FCMService {
     // ============================================
     else if (type == 'message' || type == 'chat_message') {
       // Navigate to inbox AdsyConnect tab
-      final chatId = data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
+      final chatId =
+          data['chat_id']?.toString() ?? data['chatroom_id']?.toString();
       _log('   → Navigating to AdsyConnect chat: $chatId');
       navigator.push(
         MaterialPageRoute(
@@ -2445,7 +2538,10 @@ class FCMService {
     // ============================================
     // SUPPORT TICKETS
     // ============================================
-    else if (type == 'support_ticket' || type == 'ticket' || type == 'ticket_reply' || type == 'ticket_status_update') {
+    else if (type == 'support_ticket' ||
+        type == 'ticket' ||
+        type == 'ticket_reply' ||
+        type == 'ticket_status_update') {
       final ticketId = data['ticket_id']?.toString();
       _log('   → Navigating to support ticket: $ticketId');
       navigator.push(
@@ -2460,16 +2556,23 @@ class FCMService {
     // ============================================
     // WALLET/TRANSACTIONS
     // ============================================
-    else if (type == 'wallet' || type == 'withdraw_successful' || type == 'mobile_recharge_successful' || 
-             type == 'deposit' || type == 'deposit_successful' || type == 'transfer_sent' || 
-             type == 'transfer_received') {
+    else if (type == 'wallet' ||
+        type == 'withdraw_successful' ||
+        type == 'mobile_recharge_successful' ||
+        type == 'deposit' ||
+        type == 'deposit_successful' ||
+        type == 'transfer_sent' ||
+        type == 'transfer_received') {
       _log('   → Navigating to wallet for: $type');
       navigator.pushNamed('/deposit-withdraw');
     }
     // ============================================
     // ORDERS (Legacy)
     // ============================================
-    else if (type == 'order' || type == 'order_received' || type == 'order_status' || type == 'order_placed') {
+    else if (type == 'order' ||
+        type == 'order_received' ||
+        type == 'order_status' ||
+        type == 'order_placed') {
       final orderId = data['order_id']?.toString();
       if (orderId != null) {
         _log('   → Navigating to order: $orderId');
@@ -2490,14 +2593,18 @@ class FCMService {
     // ============================================
     // PRO SUBSCRIPTION
     // ============================================
-    else if (type == 'pro_subscribed' || type == 'pro_expiring' || type == 'pro_expired') {
+    else if (type == 'pro_subscribed' ||
+        type == 'pro_expiring' ||
+        type == 'pro_expired') {
       _log('   → Navigating to upgrade to pro for: $type');
       navigator.pushNamed('/upgrade-to-pro');
     }
     // ============================================
     // GIG UPDATES
     // ============================================
-    else if (type == 'gig_posted' || type == 'gig_approved' || type == 'gig_rejected') {
+    else if (type == 'gig_posted' ||
+        type == 'gig_approved' ||
+        type == 'gig_rejected') {
       _log('   → Navigating to my gigs for: $type');
       navigator.pushNamed('/my-gigs');
     }
@@ -2505,7 +2612,8 @@ class FCMService {
     // CLASSIFIED POSTS
     // ============================================
     else if (type == 'classified_post' || type == 'classified') {
-      final postId = data['post_id']?.toString() ?? data['classified_id']?.toString();
+      final postId =
+          data['post_id']?.toString() ?? data['classified_id']?.toString();
       if (postId != null) {
         _log('   → Navigating to classified post: $postId');
         navigator.pushNamed(
@@ -2517,7 +2625,10 @@ class FCMService {
     // ============================================
     // GENERAL/ADMIN NOTICES
     // ============================================
-    else if (type == 'general' || type == 'admin_notice' || type == 'system' || type == 'announcement') {
+    else if (type == 'general' ||
+        type == 'admin_notice' ||
+        type == 'system' ||
+        type == 'announcement') {
       _log('   → General notification, navigating to inbox updates tab');
       navigator.push(
         MaterialPageRoute(
@@ -2528,8 +2639,11 @@ class FCMService {
     // ============================================
     // ACCOUNT UPDATES
     // ============================================
-    else if (type == 'kyc_approved' || type == 'kyc_rejected' || type == 'account_warning' || 
-             type == 'account_suspended' || type == 'account_activated') {
+    else if (type == 'kyc_approved' ||
+        type == 'kyc_rejected' ||
+        type == 'account_warning' ||
+        type == 'account_suspended' ||
+        type == 'account_activated') {
       _log('   → Account notification, navigating to inbox updates tab');
       navigator.push(
         MaterialPageRoute(
@@ -2575,18 +2689,20 @@ class FCMService {
 
       _log('   ✅ User is authenticated');
       _log('   📡 Sending to: ${ApiService.baseUrl}/save-fcm-token/');
-      
-      final response = await http.post(
-        Uri.parse('${ApiService.baseUrl}/save-fcm-token/'),
-        headers: {
-          'Authorization': 'Bearer $authToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'fcm_token': token,
-          'device_type': Platform.isIOS ? 'ios' : 'android',
-        }),
-      ).timeout(const Duration(seconds: 6));
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/save-fcm-token/'),
+            headers: {
+              'Authorization': 'Bearer $authToken',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'fcm_token': token,
+              'device_type': Platform.isIOS ? 'ios' : 'android',
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
 
       _log('   Response status: ${response.statusCode}');
       _log('   Response body: ${response.body}');
@@ -2626,12 +2742,13 @@ class FCMService {
   }
 
   /// Helper method to navigate to post detail by fetching the post first
-  static Future<void> _navigateToPostDetail(BuildContext context, int postId) async {
+  static Future<void> _navigateToPostDetail(
+      BuildContext context, int postId) async {
     if (postId <= 0) {
       _log('   ⚠️ Invalid post ID: $postId');
       return;
     }
-    
+
     try {
       // Show loading indicator
       showDialog(
@@ -2641,15 +2758,15 @@ class FCMService {
           child: CircularProgressIndicator(),
         ),
       );
-      
+
       // Fetch the post
       final post = await BusinessNetworkService.getPost(postId);
-      
+
       // Close loading dialog
       if (context.mounted) {
         Navigator.pop(context);
       }
-      
+
       if (post != null && context.mounted) {
         Navigator.push(
           context,

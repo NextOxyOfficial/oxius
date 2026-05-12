@@ -25,26 +25,29 @@ class RidesharePassengerPanel extends StatefulWidget {
   const RidesharePassengerPanel({super.key});
 
   @override
-  State<RidesharePassengerPanel> createState() => _RidesharePassengerPanelState();
+  State<RidesharePassengerPanel> createState() =>
+      _RidesharePassengerPanelState();
 }
 
 // Public key type so callers can invoke openCustomLocationSheet()
-class RidesharePassengerPanelKey extends GlobalKey<_RidesharePassengerPanelState> {
+class RidesharePassengerPanelKey
+    extends GlobalKey<_RidesharePassengerPanelState> {
   const RidesharePassengerPanelKey() : super.constructor();
   void openCustomLocationSheet() => currentState?._showCustomLocationSheet();
 }
 
 class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
-  with WidgetsBindingObserver {
+    with WidgetsBindingObserver {
   static const String _recentPlacesKey = 'rideshare_recent_places_v2';
 
   final TranslationService _ts = TranslationService();
-  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+  String t(String key, {required String fallback}) =>
+      _ts.t(key, fallback: fallback);
 
   // Controllers
   final TextEditingController _pickupController = TextEditingController();
   final TextEditingController _dropController = TextEditingController();
-  
+
   // State
   RidePoint? _pickupPoint;
   RidePoint? _dropPoint;
@@ -56,7 +59,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   List<RidePoint> _dropSuggestions = [];
   List<RidePoint> _recentPlaces = [];
   List<NearbyDriver> _nearbyDrivers = [];
-  
+
   // Loading states
   bool _isLoadingLocation = false;
   bool _isSearchingPickup = false;
@@ -68,7 +71,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   bool _locationGranted = false;
   bool _isCheckingLocationPermission = true;
   bool _didAutoFillCurrentLocation = false;
-  
+
   // Focus
   String _activeInput = 'pickup'; // 'pickup' or 'drop'
   Timer? _searchDebounce;
@@ -112,8 +115,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     _loadRecentPlaces();
     _rideshareNotificationSubscription =
         FCMService.rideshareNotificationEvents.listen(
-          _handleRideshareNotificationEvent,
-        );
+      _handleRideshareNotificationEvent,
+    );
     _authFailureSubscription = _realtimeService.authFailure.listen((reason) {
       // Repeated immediate WS failures — most commonly an expired token. Fall
       // back to an HTTP refresh of the active ride; if the user is still
@@ -298,7 +301,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: accentColor.withValues(alpha: 0.14)),
+                  border:
+                      Border.all(color: accentColor.withValues(alpha: 0.14)),
                 ),
                 child: Text(
                   badge,
@@ -316,7 +320,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             height: _mapViewportHeight(context),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.72), width: 1.2),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.72), width: 1.2),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFF0F172A).withValues(alpha: 0.08),
@@ -355,7 +360,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       _refreshLocationPermissionStatus(
         autoFillCurrentLocation: _pickupPoint == null && _activeRide == null,
       );
-      _loadActiveRide();
+      if (_activeRide == null) {
+        _loadActiveRide();
+      } else {
+        unawaited(_refreshActiveRideSilently(forceApply: true));
+      }
     }
   }
 
@@ -409,7 +418,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _showError('Location service is off. Please enable GPS to use rideshare.');
+        _showError(
+            'Location service is off. Please enable GPS to use rideshare.');
         await Geolocator.openLocationSettings();
         return;
       }
@@ -425,7 +435,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _showError('Location permission permanently denied. Please enable it in app settings.');
+        _showError(
+            'Location permission permanently denied. Please enable it in app settings.');
         await Geolocator.openAppSettings();
         return;
       }
@@ -437,7 +448,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       if (_pickupPoint == null) {
         _didAutoFillCurrentLocation = true;
         await _useCurrentLocation(showSuccessMessage: false);
-        _showSuccess('Location enabled. Pickup set from your current location.');
+        _showSuccess(
+            'Location enabled. Pickup set from your current location.');
       }
     } catch (e) {
       _showError('Failed to enable location: $e');
@@ -455,7 +467,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _isLoadingActiveRide = true);
     final result = await RideshareService.getActiveRide();
     if (mounted) {
-      _applyRideState(_resolvePassengerActiveRide(result.data), isLoading: false);
+      _applyRideState(_resolvePassengerActiveRide(result.data),
+          isLoading: false);
     }
   }
 
@@ -463,7 +476,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     setState(() => _isLoadingActiveRide = true);
     final result = await RideshareService.getRide(rideId);
     if (mounted) {
-      _applyRideState(_resolvePassengerActiveRide(result.data), isLoading: false);
+      _applyRideState(_resolvePassengerActiveRide(result.data),
+          isLoading: false);
     }
   }
 
@@ -489,7 +503,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     _targetedAtFromEvent = ride.targetedAt;
     final targetedDriverName = ride.targetedDriver?.userName.trim() ?? '';
-    _targetedDriverNameFromEvent = targetedDriverName.isEmpty ? null : targetedDriverName;
+    _targetedDriverNameFromEvent =
+        targetedDriverName.isEmpty ? null : targetedDriverName;
     if (targetedDriverName.isNotEmpty) {
       _noDriversInRange = false;
       if (_targetedRemainingSeconds(ride) > 0) {
@@ -534,7 +549,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   Future<void> _refreshActiveRideSilently({bool forceApply = false}) async {
     final rideId = _activeRide?.id;
-    if (_isRefreshingActiveRide || rideId == null || rideId.isEmpty || _isCancellingRide) {
+    if (_isRefreshingActiveRide ||
+        rideId == null ||
+        rideId.isEmpty ||
+        _isCancellingRide) {
       return;
     }
 
@@ -580,7 +598,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   String _deriveSearchStatusMessage(Ride? ride) {
     if (ride == null) {
       return _localizeDisplayMessage(
-        t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...'),
+        t('rideshare_finding_driver_status',
+            fallback: 'Looking for nearby drivers...'),
       );
     }
 
@@ -589,7 +608,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       if (event == 'driver_skipped') {
         continue;
       }
-      final message = entry.metadata['status_text'] ?? entry.metadata['message'];
+      final message =
+          entry.metadata['status_text'] ?? entry.metadata['message'];
       if (message is String && message.trim().isNotEmpty) {
         return _localizeDisplayMessage(message.trim());
       }
@@ -601,7 +621,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     }
     if (ride.isSearching) {
       return _localizeDisplayMessage(
-        t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...'),
+        t('rideshare_finding_driver_status',
+            fallback: 'Looking for nearby drivers...'),
       );
     }
     if (ride.isCancelled && (ride.cancellationReason?.isNotEmpty ?? false)) {
@@ -619,7 +640,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       return;
     }
 
-    _rideEventSubscription ??= _realtimeService.rideEvents.listen(_handleRideRealtimeEvent);
+    _rideEventSubscription ??=
+        _realtimeService.rideEvents.listen(_handleRideRealtimeEvent);
     _realtimeService.connectRide(ride.id);
     _syncPassengerLocationTracking();
   }
@@ -710,8 +732,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         event['driver_response_timeout_seconds'],
         _driverResponseTimeoutSeconds,
       );
-      final dispatchAttempt = _parseInt(event['dispatch_attempt'], _dispatchAttempt);
-      final targetedAt = DateTime.tryParse(event['targeted_at']?.toString() ?? '');
+      final dispatchAttempt =
+          _parseInt(event['dispatch_attempt'], _dispatchAttempt);
+      final targetedAt =
+          DateTime.tryParse(event['targeted_at']?.toString() ?? '');
       final targetedDriverId = event['targeted_driver_id']?.toString();
       final targetedDriverName = event['targeted_driver_name']?.toString();
       final noDrivers = event['no_drivers_in_range'] == true;
@@ -724,12 +748,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         _driverResponseTimeoutSeconds = timeoutSeconds;
         _dispatchAttempt = dispatchAttempt;
         _targetedDriverNameFromEvent =
-          (targetedDriverName == null || targetedDriverName.trim().isEmpty)
-            ? null
-            : targetedDriverName.trim();
-        _targetedAtFromEvent = (targetedDriverId == null || targetedDriverId.isEmpty)
-            ? null
-            : targetedAt;
+            (targetedDriverName == null || targetedDriverName.trim().isEmpty)
+                ? null
+                : targetedDriverName.trim();
+        _targetedAtFromEvent =
+            (targetedDriverId == null || targetedDriverId.isEmpty)
+                ? null
+                : targetedAt;
       });
       return;
     }
@@ -746,14 +771,15 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       // updates the ride model in-place without any loading indicator.
       await _refreshActiveRideSilently(forceApply: true);
       if (eventName == 'ride_auto_cancelled') {
-        _showError(event['message']?.toString() ?? 'No drivers available, please try again.');
+        _showError(event['message']?.toString() ??
+            'No drivers available, please try again.');
       }
     }
   }
 
   Future<void> _useCurrentLocation({bool showSuccessMessage = true}) async {
     setState(() => _isLoadingLocation = true);
-    
+
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
@@ -776,12 +802,13 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           return;
         }
       }
-      
+
       if (permission == LocationPermission.deniedForever) {
         if (mounted) {
           setState(() => _locationGranted = false);
         }
-        _showError('Location permission permanently denied. Please enable in settings.');
+        _showError(
+            'Location permission permanently denied. Please enable in settings.');
         await Geolocator.openAppSettings();
         return;
       }
@@ -821,7 +848,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     } catch (e) {
       _showError('Failed to get location: $e');
     }
-    
+
     if (mounted) {
       setState(() => _isLoadingLocation = false);
     }
@@ -868,8 +895,12 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       final result = await RideshareService.searchLocations(
         query,
         limit: 7,
-        latitude: _mapSearchLatitude ?? _pickupPoint?.latitude ?? _dropPoint?.latitude,
-        longitude: _mapSearchLongitude ?? _pickupPoint?.longitude ?? _dropPoint?.longitude,
+        latitude: _mapSearchLatitude ??
+            _pickupPoint?.latitude ??
+            _dropPoint?.latitude,
+        longitude: _mapSearchLongitude ??
+            _pickupPoint?.longitude ??
+            _dropPoint?.longitude,
       );
       if (mounted) {
         setState(() {
@@ -976,7 +1007,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final result = await showCustomLocationSheet(context);
     if (result == null || !mounted) return;
     final point = result.point;
-    if (_activeInput == 'drop' || (_pickupPoint != null && _dropPoint == null)) {
+    if (_activeInput == 'drop' ||
+        (_pickupPoint != null && _dropPoint == null)) {
       await _selectDropSuggestion(point);
     } else {
       await _selectPickupSuggestion(point);
@@ -1019,9 +1051,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   Future<void> _requestEstimate() async {
     if (_pickupPoint == null || _dropPoint == null) return;
-    
+
     setState(() => _isEstimating = true);
-    
+
     final result = await RideshareService.estimateRide(
       pickupLatitude: _pickupPoint!.latitude,
       pickupLongitude: _pickupPoint!.longitude,
@@ -1031,7 +1063,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       pickupAddress: _pickupPoint!.name,
       dropAddress: _dropPoint!.name,
     );
-    
+
     if (mounted) {
       setState(() {
         _estimate = result.data;
@@ -1042,13 +1074,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   Future<void> _createRide() async {
     if (!_locationGranted) {
-      _showError(t('rideshare_location_required', fallback: 'Location access required before booking a ride.'));
+      _showError(t('rideshare_location_required',
+          fallback: 'Location access required before booking a ride.'));
       return;
     }
     if (_pickupPoint == null || _dropPoint == null) return;
-    
+
     setState(() => _isCreatingRide = true);
-    
+
     final result = await RideshareService.createRide(
       pickupLatitude: _pickupPoint!.latitude,
       pickupLongitude: _pickupPoint!.longitude,
@@ -1059,13 +1092,14 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       dropAddress: _dropPoint!.name,
       paymentMethod: _selectedPaymentMethod,
     );
-    
+
     if (mounted) {
       setState(() => _isCreatingRide = false);
-      
+
       if (result.success && result.data != null) {
         _applyRideState(result.data, isLoading: false);
-        _showSuccess(t('rideshare_ride_requested', fallback: 'Ride requested! Looking for a driver...'));
+        _showSuccess(t('rideshare_ride_requested',
+            fallback: 'Ride requested! Looking for a driver...'));
       } else {
         final msg = result.message.toLowerCase();
         if (msg.contains('active ride') || msg.contains('already have')) {
@@ -1094,23 +1128,29 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(t('rideshare_cancel_ride_title', fallback: 'Cancel Ride?'),
-            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
+            style:
+                GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700)),
         content: Text(
-          t('rideshare_cancel_ride_confirm', fallback: 'Are you sure you want to cancel? You can book a new ride after cancellation.'),
-          style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+          t('rideshare_cancel_ride_confirm',
+              fallback:
+                  'Are you sure you want to cancel? You can book a new ride after cancellation.'),
+          style:
+              GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(t('rideshare_keep_ride', fallback: 'Keep Ride'),
                 style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w600, color: const Color(0xFF6366F1))),
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF6366F1))),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red.shade600,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: Text(t('rideshare_yes_cancel', fallback: 'Yes, Cancel'),
                 style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
@@ -1140,10 +1180,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       rideIdToCancel,
       reason: 'Cancelled by passenger',
     );
-    
+
     if (mounted) {
       setState(() => _isCancellingRide = false);
-      
+
       if (result.success) {
         // Clear active ride AND reset the booking form so user starts fresh
         setState(() {
@@ -1157,7 +1197,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
           _pickupSuggestions = [];
           _dropSuggestions = [];
           _activeInput = 'pickup';
-          _searchStatusMessage = t('rideshare_finding_driver_status', fallback: 'Looking for nearby drivers...');
+          _searchStatusMessage = t('rideshare_finding_driver_status',
+              fallback: 'Looking for nearby drivers...');
           _noDriversInRange = false;
           _targetedAtFromEvent = null;
           _dispatchAttempt = 0;
@@ -1197,7 +1238,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       );
       loadingDialogShown = true;
 
-      final chatroom = await AdsyConnectService.getOrCreateChatRoom(driver.userId);
+      final chatroom =
+          await AdsyConnectService.getOrCreateChatRoom(driver.userId);
       final chatroomId = chatroom['id']?.toString();
       if (chatroomId == null || chatroomId.isEmpty) {
         throw Exception('Chat room unavailable');
@@ -1245,25 +1287,29 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
-          t('rideshare_report_driver_cancellation', fallback: 'Report Driver Cancellation'),
+          t('rideshare_report_driver_cancellation',
+              fallback: 'Report Driver Cancellation'),
           style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         content: TextField(
           controller: controller,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText: t('rideshare_add_details_hint', fallback: 'Add details for support...'),
+            hintText: t('rideshare_add_details_hint',
+                fallback: 'Add details for support...'),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(t('rideshare_close', fallback: 'Close'), style: GoogleFonts.inter()),
+            child: Text(t('rideshare_close', fallback: 'Close'),
+                style: GoogleFonts.inter()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(t('rideshare_submit', fallback: 'Submit'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            child: Text(t('rideshare_submit', fallback: 'Submit'),
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -1299,7 +1345,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
         longitude: ride.latestDriverLocation!.longitude,
       );
     }
-    if (ride.assignedDriver?.currentLatitude != null && ride.assignedDriver?.currentLongitude != null) {
+    if (ride.assignedDriver?.currentLatitude != null &&
+        ride.assignedDriver?.currentLongitude != null) {
       return RidePoint(
         name: 'Driver',
         latitude: ride.assignedDriver!.currentLatitude!,
@@ -1339,7 +1386,9 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final ride = _activeRide;
     if (ride == null || !_supportsPassengerSmartRoute(ride)) {
       if (!mounted) return;
-      if (_activeRoutePreview != null || _activeRouteSignature.isNotEmpty || _isLoadingActiveRoute) {
+      if (_activeRoutePreview != null ||
+          _activeRouteSignature.isNotEmpty ||
+          _isLoadingActiveRoute) {
         setState(() {
           _activeRoutePreview = null;
           _activeRouteSignature = '';
@@ -1357,7 +1406,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     final signature =
         '${ride.id}|${ride.status}|${_passengerRoutePointSignature(origin)}|${_passengerRoutePointSignature(destination)}';
-    if (!force && (_isLoadingActiveRoute || signature == _activeRouteSignature)) {
+    if (!force &&
+        (_isLoadingActiveRoute || signature == _activeRouteSignature)) {
       return;
     }
 
@@ -1430,8 +1480,10 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       _showSuccess(
         confirm
             ? (paymentMethod == 'cash'
-                ? t('rideshare_cash_completion_note', fallback: 'Ride complete. Please pay the driver in cash.')
-                : t('rideshare_wallet_completion_note', fallback: 'Ride complete and wallet payment confirmed.'))
+                ? t('rideshare_cash_completion_note',
+                    fallback: 'Ride complete. Please pay the driver in cash.')
+                : t('rideshare_wallet_completion_note',
+                    fallback: 'Ride complete and wallet payment confirmed.'))
             : 'Ride will continue until you confirm completion.',
       );
       return;
@@ -1457,20 +1509,26 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                t('rideshare_choose_payment_method', fallback: 'Choose Payment Method'),
-                style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w800),
+                t('rideshare_choose_payment_method',
+                    fallback: 'Choose Payment Method'),
+                style: GoogleFonts.inter(
+                    fontSize: 16, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 6),
               Text(
-'${t('rideshare_trip_fare', fallback: 'Trip Fare')}: à§³${payableFare.toStringAsFixed(0)}',
-                style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+                '${t('rideshare_trip_fare', fallback: 'Trip Fare')}: à§³${payableFare.toStringAsFixed(0)}',
+                style: GoogleFonts.inter(
+                    fontSize: 13, color: const Color(0xFF64748B)),
               ),
               const SizedBox(height: 14),
               _buildPaymentMethodTile(
                 ctx,
                 value: 'wallet',
-                title: t('rideshare_wallet_payment_title', fallback: 'Pay with Adsy Balance'),
-                subtitle: t('rideshare_wallet_subtitle', fallback: 'Fare will be deducted from your in-app balance instantly.'),
+                title: t('rideshare_wallet_payment_title',
+                    fallback: 'Pay with Adsy Balance'),
+                subtitle: t('rideshare_wallet_subtitle',
+                    fallback:
+                        'Fare will be deducted from your in-app balance instantly.'),
                 icon: Icons.account_balance_wallet_rounded,
                 accent: const Color(0xFF6366F1),
               ),
@@ -1478,8 +1536,11 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
               _buildPaymentMethodTile(
                 ctx,
                 value: 'cash',
-                title: t('rideshare_cash_payment_title', fallback: 'Pay Driver in Cash'),
-                subtitle: t('rideshare_cash_subtitle', fallback: 'You will pay the driver directly in cash at the end of the ride.'),
+                title: t('rideshare_cash_payment_title',
+                    fallback: 'Pay Driver in Cash'),
+                subtitle: t('rideshare_cash_subtitle',
+                    fallback:
+                        'You will pay the driver directly in cash at the end of the ride.'),
                 icon: Icons.payments_rounded,
                 accent: const Color(0xFF10B981),
               ),
@@ -1493,7 +1554,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   void _onMapTap(double latitude, double longitude) async {
     final result = await RideshareService.reverseGeocode(latitude, longitude);
     if (!mounted || !result.success || result.data == null) return;
-    
+
     final point = result.data!;
     await _rememberRecentPlace(point);
     setState(() {
@@ -1520,7 +1581,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
   void _showError(String message) {
     if (!mounted) return;
-    final resolvedMessage = _localizeDisplayMessage(_resolveErrorMessage(message));
+    final resolvedMessage =
+        _localizeDisplayMessage(_resolveErrorMessage(message));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(resolvedMessage, style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: Colors.red.shade600,
@@ -1587,40 +1649,65 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     final lower = raw.toLowerCase();
 
     const exactMessages = {
-      'connection error. please check your internet connection.': 'ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।',
-      'unable to process response. please try again.': 'রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।',
-      'connection timeout. please try again.': 'সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
-      'network connection issue. please check your internet.': 'নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।',
-      'request timed out. please try again.': 'রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
-      'session expired. please log in again.': 'সেশন শেষ হয়েছে। আবার লগইন করুন।',
-      "you don't have permission to perform this action.": 'এই কাজটি করার অনুমতি আপনার নেই।',
+      'connection error. please check your internet connection.':
+          'ইন্টারনেট সংযোগে সমস্যা হয়েছে। আপনার সংযোগ পরীক্ষা করুন।',
+      'unable to process response. please try again.':
+          'রেসপন্স প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।',
+      'connection timeout. please try again.':
+          'সংযোগের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'network connection issue. please check your internet.':
+          'নেটওয়ার্কে সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করুন।',
+      'request timed out. please try again.':
+          'রিকোয়েস্টের সময় শেষ হয়েছে। আবার চেষ্টা করুন।',
+      'session expired. please log in again.':
+          'সেশন শেষ হয়েছে। আবার লগইন করুন।',
+      "you don't have permission to perform this action.":
+          'এই কাজটি করার অনুমতি আপনার নেই।',
       'requested resource not found.': 'চাওয়া তথ্য পাওয়া যায়নি।',
-      'server error. please try again later.': 'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
-      'service temporarily unavailable. please try again later.': 'সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।',
-      'something went wrong. please try again.': 'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
-      'location service is off. please enable gps to use rideshare.': 'রাইডশেয়ার ব্যবহার করতে জিপিএস চালু করুন।',
-      'location service is off. please enable gps to continue.': 'চালিয়ে যেতে জিপিএস চালু করুন।',
-      'location permission is required for rideshare.': 'রাইডশেয়ার ব্যবহারের জন্য লোকেশন অনুমতি প্রয়োজন।',
+      'server error. please try again later.':
+          'সার্ভারে সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
+      'service temporarily unavailable. please try again later.':
+          'সার্ভিস সাময়িকভাবে বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।',
+      'something went wrong. please try again.':
+          'কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+      'location service is off. please enable gps to use rideshare.':
+          'রাইডশেয়ার ব্যবহার করতে জিপিএস চালু করুন।',
+      'location service is off. please enable gps to continue.':
+          'চালিয়ে যেতে জিপিএস চালু করুন।',
+      'location permission is required for rideshare.':
+          'রাইডশেয়ার ব্যবহারের জন্য লোকেশন অনুমতি প্রয়োজন।',
       'location permission denied': 'লোকেশন অনুমতি দেওয়া হয়নি।',
-      'location permission permanently denied. please enable it in app settings.': 'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।',
-      'location permission permanently denied. please enable in settings.': 'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। সেটিংস থেকে চালু করুন।',
-      'location enabled. pickup set from your current location.': 'লোকেশন চালু হয়েছে। আপনার বর্তমান অবস্থান থেকে পিকআপ সেট করা হয়েছে।',
+      'location permission permanently denied. please enable it in app settings.':
+          'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। অ্যাপ সেটিংস থেকে চালু করুন।',
+      'location permission permanently denied. please enable in settings.':
+          'লোকেশন অনুমতি স্থায়ীভাবে বন্ধ আছে। সেটিংস থেকে চালু করুন।',
+      'location enabled. pickup set from your current location.':
+          'লোকেশন চালু হয়েছে। আপনার বর্তমান অবস্থান থেকে পিকআপ সেট করা হয়েছে।',
       'location found': 'লোকেশন পাওয়া গেছে।',
       'could not resolve location': 'লোকেশনের ঠিকানা বের করা যায়নি।',
-      'no drivers available, please try again.': 'কাছাকাছি কোনো ড্রাইভার পাওয়া যায়নি। আবার চেষ্টা করুন।',
-      'driver chat is unavailable right now.': 'ড্রাইভারের সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
-      'unable to open driver chat right now.': 'ড্রাইভার চ্যাট এখন খোলা যাচ্ছে না।',
-      'driver report submitted successfully.': 'ড্রাইভারের রিপোর্ট সফলভাবে পাঠানো হয়েছে।',
+      'no drivers available, please try again.':
+          'কাছাকাছি কোনো ড্রাইভার পাওয়া যায়নি। আবার চেষ্টা করুন।',
+      'driver chat is unavailable right now.':
+          'ড্রাইভারের সাথে চ্যাট এখন পাওয়া যাচ্ছে না।',
+      'unable to open driver chat right now.':
+          'ড্রাইভার চ্যাট এখন খোলা যাচ্ছে না।',
+      'driver report submitted successfully.':
+          'ড্রাইভারের রিপোর্ট সফলভাবে পাঠানো হয়েছে।',
       'ride cancelled': 'রাইড বাতিল হয়েছে।',
       'looking for nearby drivers...': 'কাছাকাছি ড্রাইভার খোঁজা হচ্ছে...',
       'looking for a driver': 'ড্রাইভার খোঁজা হচ্ছে।',
       'driver confirmed': 'ড্রাইভার নিশ্চিত হয়েছে।',
-      'ride requested! looking for a driver...': 'রাইড রিকোয়েস্ট করা হয়েছে। ড্রাইভার খোঁজা হচ্ছে...',
-      'ride complete. please pay the driver in cash.': 'রাইড সম্পন্ন। ড্রাইভারকে নগদ পরিশোধ করুন।',
-      'ride complete and wallet payment confirmed.': 'রাইড সম্পন্ন এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।',
-      'you already have an active ride.': 'আপনার ইতোমধ্যে একটি সক্রিয় রাইড আছে।',
+      'ride requested! looking for a driver...':
+          'রাইড রিকোয়েস্ট করা হয়েছে। ড্রাইভার খোঁজা হচ্ছে...',
+      'ride complete. please pay the driver in cash.':
+          'রাইড সম্পন্ন। ড্রাইভারকে নগদ পরিশোধ করুন।',
+      'ride complete and wallet payment confirmed.':
+          'রাইড সম্পন্ন এবং ওয়ালেট পেমেন্ট নিশ্চিত হয়েছে।',
+      'you already have an active ride.':
+          'আপনার ইতোমধ্যে একটি সক্রিয় রাইড আছে।',
       'ride requested successfully.': 'রাইড রিকোয়েস্ট সফলভাবে করা হয়েছে।',
-      'no drivers available. ride cancelled automatically.': 'কোনো ড্রাইভার পাওয়া যায়নি। রাইড স্বয়ংক্রিয়ভাবে বাতিল হয়েছে।',
+      'no drivers available. ride cancelled automatically.':
+          'কোনো ড্রাইভার পাওয়া যায়নি। রাইড স্বয়ংক্রিয়ভাবে বাতিল হয়েছে।',
     };
 
     final exact = exactMessages[lower];
@@ -1644,7 +1731,8 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   void _showSuccess(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(_localizeDisplayMessage(message), style: GoogleFonts.inter(fontSize: 13)),
+      content: Text(_localizeDisplayMessage(message),
+          style: GoogleFonts.inter(fontSize: 13)),
       backgroundColor: const Color(0xFF10B981),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1674,5 +1762,4 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
     // No active ride Ã¢â‚¬â€ show booking form
     return _buildBookingView();
   }
-
 }

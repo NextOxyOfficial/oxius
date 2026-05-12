@@ -257,7 +257,10 @@ class MyApp extends StatelessWidget {
           child: MaterialApp(
             title: 'AdsyClub Native',
             navigatorKey: FCMService.navigatorKey,
-            navigatorObservers: [FCMService.routeObserver],
+            navigatorObservers: [
+              FCMService.routeObserver,
+              TelemetryNavigatorObserver(),
+            ],
             debugShowCheckedModeBanner: false,
             builder: (context, child) {
               // Global tap-to-dismiss keyboard. Wrapping at MaterialApp.builder
@@ -266,10 +269,7 @@ class MyApp extends StatelessWidget {
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
-                  final FocusScop
-              FCMService.routeObserver,
-              TelemetryNavigatorObserver(),
-            usScope.of(context);
+                  final currentFocus = FocusScope.of(context);
                   if (!currentFocus.hasPrimaryFocus &&
                       currentFocus.focusedChild != null) {
                     currentFocus.focusedChild!.unfocus();

@@ -31,12 +31,12 @@ class AuthGuard extends StatelessWidget {
             if (context.mounted) {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => const LoginPage(),
+                  builder: (context) => const LoginPageRedesigned(),
                 ),
               );
             }
           });
-          
+
           // Show loading while redirecting
           return const Scaffold(
             body: Center(
@@ -155,7 +155,8 @@ class AuthRouteGuard {
 /// Extension on BuildContext for easier auth navigation
 extension AuthNavigationExtension on BuildContext {
   /// Navigate to a route with automatic authentication check
-  Future<void> navigateWithAuth(String route, {Map<String, dynamic>? arguments}) async {
+  Future<void> navigateWithAuth(String route,
+      {Map<String, dynamic>? arguments}) async {
     await AuthRouteGuard.navigateWithGuard(
       context: this,
       route: route,
@@ -164,7 +165,8 @@ extension AuthNavigationExtension on BuildContext {
   }
 
   /// Push replacement with automatic authentication check
-  Future<void> pushReplacementWithAuth(String route, {Map<String, dynamic>? arguments}) async {
+  Future<void> pushReplacementWithAuth(String route,
+      {Map<String, dynamic>? arguments}) async {
     await AuthRouteGuard.pushReplacementWithGuard(
       context: this,
       route: route,

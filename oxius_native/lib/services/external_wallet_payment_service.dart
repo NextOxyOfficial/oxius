@@ -13,8 +13,6 @@ import 'diamond_service.dart';
 class ExternalWalletPaymentService extends PaymentService {
   const ExternalWalletPaymentService();
 
-  final _subscriptionService = const SubscriptionService();
-
   // ── Subscription ───────────────────────────────────────────────────────────
 
   @override
@@ -22,9 +20,9 @@ class ExternalWalletPaymentService extends PaymentService {
     required int months,
     required double total,
   }) async {
-    return await _subscriptionService.createSubscription(
+    return await SubscriptionService().createSubscription(
       months: months,
-      total: total,
+      total: total.round(),
     );
   }
 

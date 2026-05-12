@@ -56,6 +56,7 @@ class AdsyConnectChatInterface extends StatefulWidget {
   /// WhatsApp / Telegram / Messenger behaviour where a single back press
   /// always returns to a different page (not the same chat repeated).
   static String routeNameFor(String chatroomId) => 'adsy_chat:$chatroomId';
+  static final Set<String> _openRouteNames = <String>{};
 
   /// Open a chat with built-in stack deduplication.
   ///
@@ -79,24 +80,14 @@ class AdsyConnectChatInterface extends StatefulWidget {
     final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
     final targetName = routeNameFor(chatroomId);
 
-    // 1. Non-destructive scan: check whether a chat route with the same
-    //    chatroomId already exists somewhere in the navigator stack.
-    bool existsInStack = false;
-    navigator.popUntil((route) {
-      if (route.settings.name == targetName) {
-        existsInStack = true;
-      }
-      return true; // Predicate returning true on the first call = no popping.
-    });
-
-    // 2. If it exists, collapse everything above it so a single back press
+    // 1. If it exists, collapse everything above it so a single back press
     //    from the user always returns to a different page.
-    if (existsInStack) {
+    if (_openRouteNames.contains(targetName)) {
       navigator.popUntil((route) => route.settings.name == targetName);
       return Future<T?>.value(null);
     }
 
-    // 3. Otherwise push a new full-screen chat route with the stable name.
+    // 2. Otherwise push a new full-screen chat route with the stable name.
     return navigator.push<T>(
       MaterialPageRoute<T>(
         settings: RouteSettings(name: targetName),
@@ -115,7 +106,8 @@ class AdsyConnectChatInterface extends StatefulWidget {
   }
 
   @override
-  State<AdsyConnectChatInterface> createState() => _AdsyConnectChatInterfaceState();
+  State<AdsyConnectChatInterface> createState() =>
+      _AdsyConnectChatInterfaceState();
 }
 
 class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
@@ -123,7 +115,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
+  final ItemPositionsListener _itemPositionsListener =
+      ItemPositionsListener.create();
   final FocusNode _messageFocusNode = FocusNode();
   final FocusNode _searchFocusNode = FocusNode();
   final AudioRecorder _audioRecorder = AudioRecorder();
@@ -175,10 +168,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   Set<String> _searchMatchedMessageIds = <String>{};
   int _currentSearchMatchPosition = 0;
   String? _currentSearchMessageId;
-  
+
   @override
   void initState() {
     super.initState();
+    AdsyConnectChatInterface._openRouteNames.add(
+      AdsyConnectChatInterface.routeNameFor(widget.chatroomId),
+    );
     WidgetsBinding.instance.addObserver(this);
     ActiveChatTracker.setActiveChat(widget.chatroomId);
     AdsyConnectService.setActiveChat(widget.chatroomId);
@@ -228,7 +224,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final positions = _itemPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
 
-    final bottomVisible = positions.any((p) => p.index == 0 && p.itemTrailingEdge > 0);
+    final bottomVisible =
+        positions.any((p) => p.index == 0 && p.itemTrailingEdge > 0);
     if (bottomVisible != _isUserNearBottom && mounted) {
       setState(() {
         _isUserNearBottom = bottomVisible;
@@ -274,14 +271,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     try {
       final nextPage = _currentPage + 1;
       print('ðŸ”µ Loading older messages, page: $nextPage');
-      
+
       final messages = await AdsyConnectService.getMessages(
         widget.chatroomId,
         page: nextPage,
       );
-      
+
       print('ðŸŸ¢ Loaded ${messages.length} older messages');
-      
+
       if (mounted && messages.isNotEmpty) {
         // Backend returns oldest-to-newest (ascending by created_at)
         final parsedMessages = _parseMessages(messages);
@@ -331,13 +328,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     // Make sure we don't leave any focus capturing pointer events on the
     // returning chat-list screen.
     FocusManager.instance.primaryFocus?.unfocus();
+    AdsyConnectChatInterface._openRouteNames.remove(
+      AdsyConnectChatInterface.routeNameFor(widget.chatroomId),
+    );
     ActiveChatTracker.clearActiveChat();
     AdsyConnectService.clearActiveChat();
     _realtimeSubscription?.cancel();
     _remoteTypingResetTimer?.cancel();
     _messageController.dispose();
     _searchController.dispose();
-    _itemPositionsListener.itemPositions.removeListener(_onItemPositionsChanged);
+    _itemPositionsListener.itemPositions
+        .removeListener(_onItemPositionsChanged);
     _messageFocusNode.dispose();
     _searchFocusNode.dispose();
     _audioRecorder.dispose();
@@ -526,7 +527,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     if (type == 'message_read' || type == 'message_read_update') {
       final chatroomId = event['chatroom_id']?.toString();
-      if (chatroomId != null && chatroomId.isNotEmpty && chatroomId != widget.chatroomId) {
+      if (chatroomId != null &&
+          chatroomId.isNotEmpty &&
+          chatroomId != widget.chatroomId) {
         return;
       }
 
@@ -574,7 +577,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   String _messageSearchText(Map<String, dynamic> message) {
     final base = (message['message'] ?? message['content'] ?? '').toString();
     final preview = (message['replyPreview'] ?? '').toString();
-    final fileName = (message['fileName'] ?? message['file_name'] ?? '').toString();
+    final fileName =
+        (message['fileName'] ?? message['file_name'] ?? '').toString();
     final combined = '$base $preview $fileName'.trim();
     return combined;
   }
@@ -680,8 +684,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   void _goToPrevSearchMatch() {
     if (_searchMatchIndexes.isEmpty) return;
-    final prev = (_currentSearchMatchPosition - 1 + _searchMatchIndexes.length) %
-        _searchMatchIndexes.length;
+    final prev =
+        (_currentSearchMatchPosition - 1 + _searchMatchIndexes.length) %
+            _searchMatchIndexes.length;
     _scrollToSearchMatchPosition(prev);
   }
 
@@ -694,7 +699,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     });
 
     try {
-      final details = await AdsyConnectService.getChatRoomDetails(widget.chatroomId);
+      final details =
+          await AdsyConnectService.getChatRoomDetails(widget.chatroomId);
       if (!mounted) return;
 
       if (details == null) {
@@ -712,8 +718,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         blockStatus = Map<String, dynamic>.from(rawBlockStatus);
       }
 
-      final blockedValue =
-          blockStatus?['is_blocked'] ??
+      final blockedValue = blockStatus?['is_blocked'] ??
           blockStatus?['isBlocked'] ??
           details['is_blocked'] ??
           details['isBlocked'] ??
@@ -721,8 +726,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           details['is_chat_blocked'] ??
           details['isChatBlocked'];
 
-      final blockedByMeValue =
-          blockStatus?['blocked_by_me'] ??
+      final blockedByMeValue = blockStatus?['blocked_by_me'] ??
           blockStatus?['blockedByMe'] ??
           blockStatus?['is_blocked_by_me'] ??
           details['blocked_by_me'] ??
@@ -822,15 +826,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         widget.chatroomId,
         page: 1,
       );
-      
+
       if (messages.isEmpty) return;
-      
+
       // Backend returns oldest-to-newest (ascending by created_at)
       final parsedMessages = _parseMessages(messages);
       if (parsedMessages.isEmpty) return;
-      
+
       bool hasUpdates = false;
-      
+
       // Update seen status for existing messages
       for (var serverMsg in parsedMessages) {
         final serverId = serverMsg['id']?.toString() ?? '';
@@ -845,16 +849,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           }
         }
       }
-      
+
       // Get the latest message ID from server
       final latestServerMessageId = parsedMessages.last['id'];
-      
+
       // Find new messages that we don't have yet
       final newMessages = parsedMessages.where((msg) {
         final msgId = msg['id']?.toString() ?? '';
-        return !_messages.any((existing) => (existing['id']?.toString() ?? '') == msgId);
+        return !_messages
+            .any((existing) => (existing['id']?.toString() ?? '') == msgId);
       }).toList();
-      
+
       if (newMessages.isNotEmpty) {
         hasUpdates = true;
         for (final m in newMessages) {
@@ -870,7 +875,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _scrollToBottom();
         }
       }
-      
+
       // Update UI if there were any changes
       if (hasUpdates && mounted) {
         setState(() {});
@@ -888,17 +893,18 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _currentPage = 1;
       });
     }
-    
+
     try {
-      print('ðŸ”µ Loading messages for chatroom: ${widget.chatroomId}, page: $_currentPage');
-      
+      print(
+          'ðŸ”µ Loading messages for chatroom: ${widget.chatroomId}, page: $_currentPage');
+
       final messages = await AdsyConnectService.getMessages(
         widget.chatroomId,
         page: _currentPage,
       );
-      
+
       print('ðŸŸ¢ Loaded ${messages.length} messages');
-      
+
       if (mounted) {
         // Backend returns oldest-to-newest (ascending by created_at)
         final parsedMessages = _parseMessages(messages);
@@ -920,7 +926,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           _hasMoreMessages = messages.length >= 20;
           if (loadMore) _currentPage++;
         });
-        
+
         if (!loadMore) {
           _scrollToBottom();
           // Mark messages as read when opening chat
@@ -948,13 +954,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       final senderId = sender['id']?.toString() ?? '';
       final currentUserId = AuthService.currentUser?.id;
       final isMe = currentUserId != null && senderId == currentUserId;
-      
+
       // Check if message has been seen by recipient
       // is_read means the recipient has opened and viewed the message
       final isSeen = msg['is_read'] == true;
       final readAt = _tryParseTimestamp(msg['read_at']);
-      
-      final rawText = msg['display_content']?.toString() ?? msg['content']?.toString() ?? '';
+
+      final rawText = msg['display_content']?.toString() ??
+          msg['content']?.toString() ??
+          '';
       final replyMeta = _tryParseReplyFromText(rawText);
 
       return {
@@ -964,33 +972,40 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         'replyToId': replyMeta?['replyToId']?.toString(),
         'replyToSender': replyMeta?['replyToSender']?.toString(),
         'replyPreview': replyMeta?['replyPreview']?.toString(),
-        'timestamp': msg['created_at'] != null 
-            ? DateTime.parse(msg['created_at']) 
+        'timestamp': msg['created_at'] != null
+            ? DateTime.parse(msg['created_at'])
             : DateTime.now(),
         'timeDisplay': msg['time_display']?.toString(),
         'isMe': isMe,
         'type': msg['message_type']?.toString() ?? 'text',
-        'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
+        'mediaUrl': msg['media_url']
+            ?.toString(), // Backend returns media_url, not media_file
         'thumbnailUrl': msg['thumbnail_url']?.toString(),
         'fileName': msg['file_name']?.toString(),
-        'voice_duration': (msg['voice_duration'] as int?) ?? (msg['voiceDuration'] as int?) ?? 0,
+        'voice_duration': (msg['voice_duration'] as int?) ??
+            (msg['voiceDuration'] as int?) ??
+            0,
         'isSeen': isSeen, // Changed from isRead to isSeen for clarity
         'is_read': isSeen,
         'readAt': readAt,
-        'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
+        'isDeleted': (msg['is_deleted'] == true ||
+            msg['is_deleted'] == 1 ||
+            msg['is_deleted'] == '1' ||
+            msg['is_deleted'] == 'true'),
       };
     }).toList();
-    
+
     // Add smart timestamp display logic
     return _addSmartTimestamps(parsedMessages);
   }
-  
-  List<Map<String, dynamic>> _addSmartTimestamps(List<Map<String, dynamic>> messages) {
+
+  List<Map<String, dynamic>> _addSmartTimestamps(
+      List<Map<String, dynamic>> messages) {
     if (messages.isEmpty) return messages;
-    
+
     for (int i = 0; i < messages.length; i++) {
       bool showTimestamp = false;
-      
+
       // Always show timestamp for first message
       if (i == 0) {
         showTimestamp = true;
@@ -998,16 +1013,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         final currentTime = messages[i]['timestamp'] as DateTime;
         final previousTime = messages[i - 1]['timestamp'] as DateTime;
         final difference = currentTime.difference(previousTime);
-        
+
         // Show timestamp if gap is 3+ minutes
         if (difference.inMinutes >= 3) {
           showTimestamp = true;
         }
       }
-      
+
       messages[i]['showTimestamp'] = showTimestamp;
     }
-    
+
     return messages;
   }
 
@@ -1015,7 +1030,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     try {
       // Call API to mark messages as read
       await AdsyConnectService.markChatroomAsRead(widget.chatroomId);
-      
+
       // Update local state immediately - mark all received messages as read
       _markLocalIncomingMessagesAsRead();
     } catch (e) {
@@ -1114,7 +1129,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
         _messages[index]['isSeen'] = true;
         _messages[index]['is_read'] = true;
-        _messages[index]['readAt'] = readAt ?? _messages[index]['readAt'] ?? DateTime.now();
+        _messages[index]['readAt'] =
+            readAt ?? _messages[index]['readAt'] ?? DateTime.now();
         changed = true;
       }
     });
@@ -1158,24 +1174,25 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     try {
       print('ðŸ”µ Sending message: $messageText');
-      
+
       String contentToSend = messageText;
       if (replyTo != null) {
         final replyToId = replyTo['id']?.toString() ?? '';
         final replyToText = _getReplyPreviewText(replyTo);
         final replyToSender = replyTo['isMe'] == true ? 'You' : widget.userName;
         final idPart = replyToId.isNotEmpty ? '($replyToId) ' : '';
-        contentToSend = 'â†©ï¸ $idPart$replyToSender: $replyToText\n\n$messageText';
+        contentToSend =
+            'â†©ï¸ $idPart$replyToSender: $replyToText\n\n$messageText';
       }
-      
+
       final sentMessage = await AdsyConnectService.sendTextMessage(
         chatroomId: widget.chatroomId,
         receiverId: widget.userId,
         content: contentToSend,
       );
-      
+
       print('ðŸŸ¢ Message sent: ${sentMessage['id']}');
-      
+
       if (mounted) {
         setState(() {
           // Remove the optimistic temp entry and add the real server entry.
@@ -1195,16 +1212,18 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
 
         final errorStr = e.toString().toLowerCase();
-        if (errorStr.contains('403') || errorStr.contains('permission denied') || errorStr.contains('blocked')) {
+        if (errorStr.contains('403') ||
+            errorStr.contains('permission denied') ||
+            errorStr.contains('blocked')) {
           setState(() {
             _isChatBlocked = true;
             _blockedByMe = false;
           });
         }
-        
+
         // Restore the message text
         _messageController.text = messageText;
-        
+
         // Show professional error message
         NetworkErrorHandler.showErrorSnackbar(
           context,
@@ -1221,30 +1240,38 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final isSeen = msg['is_read'] == true;
     final readAt = _tryParseTimestamp(msg['read_at']);
 
-    final rawText = msg['display_content']?.toString() ?? msg['content']?.toString() ?? '';
+    final rawText =
+        msg['display_content']?.toString() ?? msg['content']?.toString() ?? '';
     final replyMeta = _tryParseReplyFromText(rawText);
-    
+
     return {
-      'id': msg['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      'id': msg['id']?.toString() ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       'senderId': 'me',
       'message': replyMeta?['messageText']?.toString() ?? rawText,
       'replyToId': replyMeta?['replyToId']?.toString(),
       'replyToSender': replyMeta?['replyToSender']?.toString(),
       'replyPreview': replyMeta?['replyPreview']?.toString(),
-      'timestamp': msg['created_at'] != null 
-          ? DateTime.parse(msg['created_at']) 
+      'timestamp': msg['created_at'] != null
+          ? DateTime.parse(msg['created_at'])
           : DateTime.now(),
       'timeDisplay': msg['time_display']?.toString(),
       'isMe': true,
       'type': msg['message_type']?.toString() ?? 'text',
-      'mediaUrl': msg['media_url']?.toString(), // Backend returns media_url, not media_file
+      'mediaUrl': msg['media_url']
+          ?.toString(), // Backend returns media_url, not media_file
       'thumbnailUrl': msg['thumbnail_url']?.toString(),
       'fileName': msg['file_name']?.toString(),
-      'voice_duration': (msg['voice_duration'] as int?) ?? (msg['voiceDuration'] as int?) ?? 0,
+      'voice_duration': (msg['voice_duration'] as int?) ??
+          (msg['voiceDuration'] as int?) ??
+          0,
       'isSeen': isSeen, // Changed from isRead to isSeen for clarity
       'is_read': isSeen,
       'readAt': readAt,
-      'isDeleted': (msg['is_deleted'] == true || msg['is_deleted'] == 1 || msg['is_deleted'] == '1' || msg['is_deleted'] == 'true'),
+      'isDeleted': (msg['is_deleted'] == true ||
+          msg['is_deleted'] == 1 ||
+          msg['is_deleted'] == '1' ||
+          msg['is_deleted'] == 'true'),
       'showTimestamp': true, // Always show timestamp for sent messages
     };
   }
@@ -1313,7 +1340,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Microphone permission is required to record voice messages'),
+              content: Text(
+                  'Microphone permission is required to record voice messages'),
               backgroundColor: Color(0xFFEF4444),
             ),
           );
@@ -1325,8 +1353,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       if (await _audioRecorder.hasPermission()) {
         // Get temporary directory for recording
         final directory = await getTemporaryDirectory();
-        final path = '${directory.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
-        
+        final path =
+            '${directory.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
         // Start recording
         await _audioRecorder.start(
           const RecordConfig(
@@ -1375,8 +1404,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
         // Send voice message to backend
         try {
-          print('ðŸ”µ Sending voice message: $path, duration: $_recordDuration seconds');
-          
+          print(
+              'ðŸ”µ Sending voice message: $path, duration: $_recordDuration seconds');
+
           final sentMessage = await AdsyConnectService.sendMediaMessage(
             chatroomId: widget.chatroomId,
             receiverId: widget.userId,
@@ -1384,15 +1414,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             mediaFilePath: path,
             voiceDuration: _recordDuration,
           );
-          
+
           print('ðŸŸ¢ Voice message sent: ${sentMessage['id']}');
-          
+
           if (mounted) {
             setState(() {
               final parsed = _parseSingleMessage(sentMessage);
-              parsed['voice_duration'] = (sentMessage['voice_duration'] as int?) ??
-                  (sentMessage['voiceDuration'] as int?) ??
-                  _recordDuration;
+              parsed['voice_duration'] =
+                  (sentMessage['voice_duration'] as int?) ??
+                      (sentMessage['voiceDuration'] as int?) ??
+                      _recordDuration;
               parsed['voiceDuration'] = parsed['voice_duration'];
               _upsertMessage(parsed);
               _isSendingMessage = false;
@@ -1429,7 +1460,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     try {
       await _audioRecorder.stop();
       _recordTimer?.cancel();
-      
+
       setState(() {
         _isRecording = false;
         _recordDuration = 0;
@@ -1449,7 +1480,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   // This ensures consistent boolean evaluation in both debug and release builds
   bool _isMessageDeleted(Map<String, dynamic> message) {
     final isDeleted = message['isDeleted'];
-    return isDeleted == true || isDeleted == 1 || isDeleted == '1' || isDeleted == 'true';
+    return isDeleted == true ||
+        isDeleted == 1 ||
+        isDeleted == '1' ||
+        isDeleted == 'true';
   }
 
   void _showMessageOptions(Map<String, dynamic> message) {
@@ -1458,7 +1492,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final isDeleted = _isMessageDeleted(message);
     final isTextLike = messageType == 'text';
     final canEdit = isMe && isTextLike && !isDeleted;
-    final canCopy = isTextLike && !isDeleted &&
+    final canCopy = isTextLike &&
+        !isDeleted &&
         (message['message'] ?? '').toString().trim().isNotEmpty;
     final canReply = !isDeleted;
     final canDelete = isMe && !isDeleted;
@@ -1560,7 +1595,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: destructive ? const Color(0xFFEF4444) : const Color(0xFF1F2937),
+          color:
+              destructive ? const Color(0xFFEF4444) : const Color(0xFF1F2937),
         ),
       ),
       onTap: () {
@@ -1571,9 +1607,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _showEditMessageDialog(Map<String, dynamic> message) {
-    final currentText = (message['message'] ?? message['content'] ?? '').toString();
+    final currentText =
+        (message['message'] ?? message['content'] ?? '').toString();
     final editController = TextEditingController(text: currentText);
-    
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -1672,13 +1709,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                           Navigator.pop(context);
                           return;
                         }
-                        
+
                         Navigator.pop(context);
-                        
+
                         // Update UI immediately
                         if (mounted) {
                           setState(() {
-                            final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
+                            final index = _messages.indexWhere((m) =>
+                                m['id'].toString() == message['id'].toString());
                             if (index != -1) {
                               _messages[index] = {
                                 ..._messages[index],
@@ -1686,18 +1724,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                 'content': newText,
                                 'isEdited': true,
                               };
-                              _messages = List.from(_addSmartTimestamps(_messages));
+                              _messages =
+                                  List.from(_addSmartTimestamps(_messages));
                             }
                           });
                         }
-                        
+
                         // Call backend to update
                         try {
                           await AdsyConnectService.editMessage(
                             message['id'].toString(),
                             newText,
                           );
-                          
+
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -1712,7 +1751,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                           // Revert on error
                           if (mounted) {
                             setState(() {
-                              final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
+                              final index = _messages.indexWhere((m) =>
+                                  m['id'].toString() ==
+                                  message['id'].toString());
                               if (index != -1) {
                                 _messages[index] = {
                                   ..._messages[index],
@@ -1720,7 +1761,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                   'content': currentText,
                                   'isEdited': message['isEdited'] ?? false,
                                 };
-                                _messages = List.from(_addSmartTimestamps(_messages));
+                                _messages =
+                                    List.from(_addSmartTimestamps(_messages));
                               }
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1835,12 +1877,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                     child: ElevatedButton(
                       onPressed: () async {
                         Navigator.pop(context);
-                        
+
                         // Update UI immediately for better UX
                         if (mounted) {
                           setState(() {
-                            final index = _messages.indexWhere((m) => m['id'].toString() == message['id'].toString());
-                            
+                            final index = _messages.indexWhere((m) =>
+                                m['id'].toString() == message['id'].toString());
+
                             if (index != -1) {
                               // Update the message to show as deleted
                               _messages[index] = {
@@ -1849,19 +1892,21 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                 'message': 'Message removed',
                                 'type': 'text',
                               };
-                              
+
                               // Force rebuild with updated timestamps
-                              _messages = List.from(_addSmartTimestamps(_messages));
+                              _messages =
+                                  List.from(_addSmartTimestamps(_messages));
                             }
                           });
                         }
-                        
+
                         // Then call backend to soft delete
                         try {
                           print('ðŸ”µ Deleting message ID: ${message['id']}');
-                          await AdsyConnectService.deleteMessage(message['id'].toString());
+                          await AdsyConnectService.deleteMessage(
+                              message['id'].toString());
                           print('ðŸŸ¢ Message deleted successfully');
-                          
+
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -2039,7 +2084,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   Future<void> _pickImageFromGallery() async {
     try {
       final List<XFile> images = await _imagePicker.pickMultiImage();
-      
+
       if (images.isNotEmpty) {
         // Check if adding these images exceeds the limit
         if (_selectedImages.length + images.length > 8) {
@@ -2053,9 +2098,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           }
           return;
         }
-        
+
         setState(() => _isUploadingAttachment = true);
-        
+
         // Compress all images
         List<String> compressed = [];
         for (var image in images) {
@@ -2066,12 +2111,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             maxDimension: 1920,
             verbose: true,
           );
-          
+
           if (compressedBase64 != null) {
             compressed.add(compressedBase64);
           }
         }
-        
+
         setState(() {
           _selectedImages.addAll(images);
           _compressedImages.addAll(compressed);
@@ -2106,14 +2151,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         }
         return;
       }
-      
+
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.camera,
       );
-      
+
       if (image != null) {
         setState(() => _isUploadingAttachment = true);
-        
+
         // Compress image
         final compressedBase64 = await ImageCompressor.compressToBase64(
           image,
@@ -2122,7 +2167,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           maxDimension: 1920,
           verbose: true,
         );
-        
+
         if (compressedBase64 != null) {
           setState(() {
             _selectedImages.add(image);
@@ -2154,7 +2199,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       final XFile? video = await _imagePicker.pickVideo(
         source: ImageSource.gallery,
       );
-      
+
       if (video != null) {
         _sendMediaMessage(video.path, 'video');
       }
@@ -2204,7 +2249,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${_compressedImages.length} photos sent successfully'),
+            content:
+                Text('${_compressedImages.length} photos sent successfully'),
             backgroundColor: const Color(0xFF10B981),
           ),
         );
@@ -2234,8 +2280,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       if (result != null) {
         // For web/desktop, use bytes if path is null
         if (result.files.single.path != null) {
-          _sendMediaMessage(result.files.single.path!, 'document', 
-            fileName: result.files.single.name);
+          _sendMediaMessage(result.files.single.path!, 'document',
+              fileName: result.files.single.name);
         } else if (result.files.single.bytes != null) {
           // Handle web/desktop file selection
           ScaffoldMessenger.of(context).showSnackBar(
@@ -2259,7 +2305,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
-  Future<void> _sendMediaMessage(String filePath, String type, {String? fileName}) async {
+  Future<void> _sendMediaMessage(String filePath, String type,
+      {String? fileName}) async {
     if (_isChatBlocked) return;
     setState(() {
       _isSendingMessage = true;
@@ -2268,7 +2315,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     try {
       print('ðŸ”µ Sending $type message: $filePath');
-      
+
       final sentMessage = await AdsyConnectService.sendMediaMessage(
         chatroomId: widget.chatroomId,
         receiverId: widget.userId,
@@ -2276,11 +2323,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         mediaFilePath: filePath,
         fileName: fileName,
       );
-      
+
       print('ðŸŸ¢ Media message sent: ${sentMessage['id']}');
       print('ðŸŸ¢ Media URL: ${sentMessage['media_url']}');
       print('ðŸŸ¢ Full response: $sentMessage');
-      
+
       if (mounted) {
         setState(() {
           _upsertMessage(_parseSingleMessage(sentMessage));
@@ -2298,25 +2345,29 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
 
         final errorStr = e.toString().toLowerCase();
-        if (errorStr.contains('403') || errorStr.contains('permission denied') || errorStr.contains('blocked')) {
+        if (errorStr.contains('403') ||
+            errorStr.contains('permission denied') ||
+            errorStr.contains('blocked')) {
           setState(() {
             _isChatBlocked = true;
             _blockedByMe = false;
           });
         }
-        
+
         // Show professional error message
         NetworkErrorHandler.showErrorSnackbar(
           context,
           e,
-          customMessage: 'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
+          customMessage:
+              'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
           onRetry: () => _sendMediaMessage(filePath, type, fileName: fileName),
         );
       }
     }
   }
 
-  Future<void> _sendMediaMessageWeb(List<int> bytes, String type, {String? fileName}) async {
+  Future<void> _sendMediaMessageWeb(List<int> bytes, String type,
+      {String? fileName}) async {
     if (_isChatBlocked) return;
     setState(() {
       _isSendingMessage = true;
@@ -2325,7 +2376,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     try {
       print('ðŸ”µ Sending $type message from web: ${bytes.length} bytes');
-      
+
       final sentMessage = await AdsyConnectService.sendMediaMessage(
         chatroomId: widget.chatroomId,
         receiverId: widget.userId,
@@ -2333,11 +2384,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         mediaBytes: bytes,
         fileName: fileName,
       );
-      
+
       print('ðŸŸ¢ Media message sent (web): ${sentMessage['id']}');
       print('ðŸŸ¢ Media URL (web): ${sentMessage['media_url']}');
       print('ðŸŸ¢ Full response (web): $sentMessage');
-      
+
       if (mounted) {
         setState(() {
           _upsertMessage(_parseSingleMessage(sentMessage));
@@ -2355,18 +2406,21 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         });
 
         final errorStr = e.toString().toLowerCase();
-        if (errorStr.contains('403') || errorStr.contains('permission denied') || errorStr.contains('blocked')) {
+        if (errorStr.contains('403') ||
+            errorStr.contains('permission denied') ||
+            errorStr.contains('blocked')) {
           setState(() {
             _isChatBlocked = true;
             _blockedByMe = false;
           });
         }
-        
+
         // Show professional error message
         NetworkErrorHandler.showErrorSnackbar(
           context,
           e,
-          customMessage: 'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
+          customMessage:
+              'Failed to send ${type == "image" ? "image" : type == "video" ? "video" : "file"}',
           onRetry: () => _sendMediaMessageWeb(bytes, type, fileName: fileName),
         );
       }
@@ -2467,7 +2521,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 color: const Color(0xFFF59E0B).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.block_rounded, color: Color(0xFFF59E0B), size: 20),
+              child: const Icon(Icons.block_rounded,
+                  color: Color(0xFFF59E0B), size: 20),
             ),
             const SizedBox(width: 12),
             const Text(
@@ -2483,7 +2538,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
+            child:
+                Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -2493,7 +2549,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFF59E0B),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Block'),
           ),
@@ -2515,7 +2572,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 color: const Color(0xFF10B981).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.lock_open_rounded, color: Color(0xFF10B981), size: 20),
+              child: const Icon(Icons.lock_open_rounded,
+                  color: Color(0xFF10B981), size: 20),
             ),
             const SizedBox(width: 12),
             const Text(
@@ -2531,7 +2589,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
+            child:
+                Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -2540,7 +2599,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Unblock'),
           ),
@@ -2551,12 +2611,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   void _showReportDialog() {
     String? selectedReason;
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Container(
@@ -2565,7 +2626,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   color: const Color(0xFFEF4444).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.flag_rounded, color: Color(0xFFEF4444), size: 20),
+                child: const Icon(Icons.flag_rounded,
+                    color: Color(0xFFEF4444), size: 20),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -2583,7 +2645,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 16),
-              ...['Spam', 'Harassment', 'Inappropriate content', 'Scam or fraud', 'Other'].map(
+              ...[
+                'Spam',
+                'Harassment',
+                'Inappropriate content',
+                'Scam or fraud',
+                'Other'
+              ].map(
                 (reason) => RadioListTile<String>(
                   title: Text(reason, style: const TextStyle(fontSize: 13)),
                   value: reason,
@@ -2598,7 +2666,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
+              child:
+                  Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
             ),
             ElevatedButton(
               onPressed: selectedReason != null
@@ -2607,7 +2676,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                       // TODO: Submit report
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Report submitted. We\'ll review it shortly.'),
+                          content: Text(
+                              'Report submitted. We\'ll review it shortly.'),
                           backgroundColor: Color(0xFFEF4444),
                         ),
                       );
@@ -2615,7 +2685,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFEF4444),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: const Text('Report'),
             ),
@@ -2639,18 +2710,19 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     if (AgoraCallService.isInCall) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('You are already in a call. End it before starting a new one.'),
+          content: Text(
+              'You are already in a call. End it before starting a new one.'),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
-    
+
     final channelName = AgoraCallService.generateChannelName(
       currentUser.id,
       widget.userId,
     );
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -2691,137 +2763,152 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                 // Messages List
                 Expanded(
                   child: _isLoadingMessages
-                ? ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: 8,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
-                          mainAxisAlignment: index % 2 == 0 
-                              ? MainAxisAlignment.start 
-                              : MainAxisAlignment.end,
-                          children: [
-                            Container(
-                              constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width * 0.7,
-                              ),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                      ? ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: 8,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Row(
+                                mainAxisAlignment: index % 2 == 0
+                                    ? MainAxisAlignment.start
+                                    : MainAxisAlignment.end,
                                 children: [
-                                  SkeletonLoader.box(
-                                    width: 150,
-                                    height: 12,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  SkeletonLoader.box(
-                                    width: 100,
-                                    height: 12,
+                                  Container(
+                                    constraints: BoxConstraints(
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width *
+                                              0.7,
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade300,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SkeletonLoader.box(
+                                          width: 150,
+                                          height: 12,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        SkeletonLoader.box(
+                                          width: 100,
+                                          height: 12,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
+                            );
+                          },
+                        )
+                      : _messages.isEmpty
+                          ? _buildEmptyState()
+                          : ScrollablePositionedList.builder(
+                              itemScrollController: _itemScrollController,
+                              itemPositionsListener: _itemPositionsListener,
+                              reverse: true,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 12),
+                              itemCount: _messages.length +
+                                  (_isLoadingMoreMessages || !_hasMoreMessages
+                                      ? 1
+                                      : 0),
+                              itemBuilder: (context, index) {
+                                // With reverse: true, index 0 is at bottom (newest message)
+                                // Header for loading older messages should be at the top (highest index)
+                                final hasHeader =
+                                    _isLoadingMoreMessages || !_hasMoreMessages;
+                                final isHeaderIndex =
+                                    hasHeader && index == _messages.length;
+
+                                if (isHeaderIndex) {
+                                  if (_isLoadingMoreMessages) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(16),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                const Color(0xFF10B981),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            'Loading older messages...',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey.shade600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  if (!_hasMoreMessages &&
+                                      _messages.length >= 20) {
+                                    return Container(
+                                      padding: const EdgeInsets.all(12),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.check_circle_rounded,
+                                            size: 14,
+                                            color: Colors.grey.shade400,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'No more messages',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.grey.shade500,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+
+                                  return const SizedBox.shrink();
+                                }
+
+                                // With reverse: true and messages stored oldest-to-newest,
+                                // index 0 should map to the last (newest) message
+                                final listIndex = _messages.length - 1 - index;
+                                if (listIndex < 0 ||
+                                    listIndex >= _messages.length) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                final message = _messages[listIndex];
+
+                                // Show avatar if this is the last message from this sender in a group
+                                final showAvatar = listIndex == 0 ||
+                                    _messages[listIndex - 1]['isMe'] !=
+                                        message['isMe'];
+
+                                return _buildMessageBubble(message, showAvatar);
+                              },
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  )
-                : _messages.isEmpty
-                    ? _buildEmptyState()
-                    : ScrollablePositionedList.builder(
-                        itemScrollController: _itemScrollController,
-                        itemPositionsListener: _itemPositionsListener,
-                        reverse: true,
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                        itemCount: _messages.length + (_isLoadingMoreMessages || !_hasMoreMessages ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          // With reverse: true, index 0 is at bottom (newest message)
-                          // Header for loading older messages should be at the top (highest index)
-                          final hasHeader = _isLoadingMoreMessages || !_hasMoreMessages;
-                          final isHeaderIndex = hasHeader && index == _messages.length;
-
-                          if (isHeaderIndex) {
-                            if (_isLoadingMoreMessages) {
-                              return Container(
-                                padding: const EdgeInsets.all(16),
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          const Color(0xFF10B981),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'Loading older messages...',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-
-                            if (!_hasMoreMessages && _messages.length >= 20) {
-                              return Container(
-                                padding: const EdgeInsets.all(12),
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle_rounded,
-                                      size: 14,
-                                      color: Colors.grey.shade400,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'No more messages',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey.shade500,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-
-                            return const SizedBox.shrink();
-                          }
-
-                          // With reverse: true and messages stored oldest-to-newest,
-                          // index 0 should map to the last (newest) message
-                          final listIndex = _messages.length - 1 - index;
-                          if (listIndex < 0 || listIndex >= _messages.length) {
-                            return const SizedBox.shrink();
-                          }
-
-                          final message = _messages[listIndex];
-
-                          // Show avatar if this is the last message from this sender in a group
-                          final showAvatar = listIndex == 0 ||
-                              _messages[listIndex - 1]['isMe'] != message['isMe'];
-
-                          return _buildMessageBubble(message, showAvatar);
-                        },
-                      ),
-          ),
+                ),
                 // Message Input
                 _buildMessageInput(),
               ],
@@ -2958,7 +3045,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       case 'document':
         return 'ðŸ“„ ${message['file_name'] ?? message['fileName'] ?? 'Document'}';
       default:
-        final text = (message['message'] ?? message['content'] ?? '').toString();
+        final text =
+            (message['message'] ?? message['content'] ?? '').toString();
         if (text.startsWith('ðŸ“ž')) return text;
         return text.length > 50 ? '${text.substring(0, 50)}...' : text;
     }
@@ -2999,7 +3087,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _viewImage(String filePath) {
-    final isUrl = filePath.startsWith('http://') || filePath.startsWith('https://');
+    final isUrl =
+        filePath.startsWith('http://') || filePath.startsWith('https://');
 
     showDialog(
       context: context,
@@ -3023,7 +3112,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                             if (loadingProgress == null) return child;
                             return Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
                                     ? loadingProgress.cumulativeBytesLoaded /
                                         loadingProgress.expectedTotalBytes!
                                     : null,
@@ -3036,11 +3126,13 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.error_outline, size: 64, color: Colors.grey.shade400),
+                                  Icon(Icons.error_outline,
+                                      size: 64, color: Colors.grey.shade400),
                                   const SizedBox(height: 16),
                                   Text(
                                     'Failed to load image',
-                                    style: TextStyle(color: Colors.grey.shade400),
+                                    style:
+                                        TextStyle(color: Colors.grey.shade400),
                                   ),
                                 ],
                               ),
@@ -3058,7 +3150,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               top: 40,
               right: 16,
               child: IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                icon: const Icon(Icons.close_rounded,
+                    color: Colors.white, size: 28),
                 onPressed: () => Navigator.pop(context),
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.black45,
@@ -3071,7 +3164,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
                     color: Colors.black45,
                     borderRadius: BorderRadius.circular(20),
@@ -3101,7 +3195,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.download_rounded, color: Color(0xFF3B82F6)),
+              leading:
+                  const Icon(Icons.download_rounded, color: Color(0xFF3B82F6)),
               title: const Text('Download Image'),
               onTap: () async {
                 Navigator.pop(context);
@@ -3111,14 +3206,16 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.delete_rounded, color: Colors.red),
-              title: const Text('Delete Image', style: TextStyle(color: Colors.red)),
+              title: const Text('Delete Image',
+                  style: TextStyle(color: Colors.red)),
               onTap: () async {
                 Navigator.pop(context);
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Delete Image'),
-                    content: const Text('Are you sure you want to delete this image?'),
+                    content: const Text(
+                        'Are you sure you want to delete this image?'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -3126,7 +3223,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                        child: const Text('Delete',
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                   ),
@@ -3202,7 +3300,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _searchQuery.trim().isNotEmpty &&
         messageId.isNotEmpty &&
         _searchMatchedMessageIds.contains(messageId);
-    final isCurrentSearchHit = isSearchHit && _currentSearchMessageId == messageId;
+    final isCurrentSearchHit =
+        isSearchHit && _currentSearchMessageId == messageId;
     return ChatMessageBubble(
       key: ValueKey(messageId.isNotEmpty ? messageId : message.hashCode),
       message: message,
@@ -3214,7 +3313,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       playingVoiceMessageId: _playingVoiceMessageId,
       voicePosition: _voicePosition,
       voiceDuration: _voiceDuration,
-      onLongPress: _isMessageDeleted(message) ? null : () => _showMessageOptions(message),
+      onLongPress: _isMessageDeleted(message)
+          ? null
+          : () => _showMessageOptions(message),
       onReply: (msg) => _setReplyingTo(msg),
       onPlayVoice: (id, url) => _playVoiceMessage(id, url),
       onViewImage: _viewImage,
@@ -3271,4 +3372,3 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 }
-    
