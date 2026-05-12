@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'telemetry.dart';
 import 'package:flutter/foundation.dart';
 
 void _log(String message) {
@@ -269,6 +270,10 @@ class AgoraCallService {
       engine.registerEventHandler(
         RtcEngineEventHandler(
           onJoinChannelSuccess: (connection, _) {
+            Telemetry.event('agora.joined', tags: {
+              'channel': connection.channelId,
+              'local_uid': connection.localUid,
+            });
             try {
               final localUid = connection.localUid;
               if (localUid != null) {
@@ -277,6 +282,7 @@ class AgoraCallService {
             } catch (_) {}
           },
           onUserJoined: (_, remoteUid, __) {
+            Telemetry.event('agora.remote_joined', tags: {'remote_uid': remoteUid});
             _ensureActiveInfo();
             _activeCallInfo!['remoteUid'] = remoteUid;
             _schedulePersistedCallStateSync();
@@ -294,6 +300,7 @@ class AgoraCallService {
               _log('ℹ️ Ignoring onUserOffline for unknown uid $remoteUid (known: $knownRemote)');
               return;
             }
+            Telemetry.event('agora.remote_left', tags: {'remote_uid': remoteUid});
             _activeCallInfo!['remoteUid'] = null;
             _schedulePersistedCallStateSync();
             try {
@@ -302,6 +309,10 @@ class AgoraCallService {
           },
           onConnectionStateChanged: (_, state, reason) {
             _log('🔗 Connection state: $state, reason: $reason');
+            Telemetry.event('agora.connection_state', tags: {
+              'state': state.toString().split('.').last,
+              'reason': reason.toString().split('.').last,
+            });
             if (state == ConnectionStateType.connectionStateFailed ||
                 state == ConnectionStateType.connectionStateDisconnected) {
               _lastError = 'Connection lost. Please try again.';
@@ -312,6 +323,10 @@ class AgoraCallService {
           },
           onError: (error, message) {
             _lastError = _friendlyAgoraError(error, message);
+            Telemetry.event('agora.error', tags: {
+              'code': error.toString().split('.').last,
+              'message': message,
+            }, severity: TelemetrySeverity.error);
             try {
               _engineErrorController.add(_lastError!);
             } catch (_) {}

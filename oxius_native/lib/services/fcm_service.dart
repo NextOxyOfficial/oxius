@@ -18,6 +18,7 @@ import 'adsyconnect_realtime_service.dart';
 import 'business_network_service.dart';
 import 'agora_call_service.dart';
 import 'rideshare_service.dart';
+import 'telemetry.dart';
 import '../firebase_options.dart';
 import '../screens/business_network/profile_screen.dart';
 import '../screens/business_network/post_detail_screen.dart';
@@ -1088,6 +1089,7 @@ class FCMService {
       // Listen for token refresh
       _firebaseMessaging.onTokenRefresh.listen((newToken) {
         _log('🔄 FCM Token refreshed: $newToken');
+        Telemetry.event('fcm.token_refresh');
         _fcmToken = newToken;
         _persistFcmToken(newToken);
         _sendTokenToBackend(newToken);
@@ -1097,12 +1099,21 @@ class FCMService {
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
       // Handle foreground messages
-      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      FirebaseMessaging.onMessage.listen((message) {
+        _traceForegroundMessage(message);
+        _handleForegroundMessage(message);
+      });
 
       _attachAdsyConnectRealtimeBridge();
 
       // Handle notification tap when app is in background
-      FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
+      FirebaseMessaging.onMessageOpenedApp.listen((message) {
+        Telemetry.event('fcm.tap', tags: {
+          'type': message.data['type']?.toString(),
+          'message_id': message.messageId,
+        });
+        _handleNotificationTap(message);
+      });
 
       // Check if app was opened from a notification
       // Skip if we already have an accepted_call pending (from CallKit accept)
@@ -1909,6 +1920,35 @@ class FCMService {
       _activeCallIds.remove(callId);
       _callTimestamps.remove(callId);
       _log('🧹 Cleaned up expired call: $callId');
+    }
+  }
+
+  /// Emit a structured telemetry breadcrumb for every foreground push.
+  /// Also computes a delivery-latency metric when the backend stamps the
+  /// payload with `sent_at` (Unix ms or ISO-8601). Safe no-op if absent.
+  static void _traceForegroundMessage(RemoteMessage message) {
+    final data = message.data;
+    int? deliveryMs;
+    final sentAtRaw = data['sent_at']?.toString();
+    if (sentAtRaw != null && sentAtRaw.isNotEmpty) {
+      try {
+        final sentAt = int.tryParse(sentAtRaw) != null
+            ? DateTime.fromMillisecondsSinceEpoch(int.parse(sentAtRaw))
+            : DateTime.tryParse(sentAtRaw);
+        if (sentAt != null) {
+          deliveryMs = DateTime.now().difference(sentAt).inMilliseconds;
+        }
+      } catch (_) {}
+    }
+    Telemetry.event('fcm.received', tags: {
+      'type': data['type']?.toString(),
+      'message_id': message.messageId,
+      if (deliveryMs != null) 'delivery_ms': deliveryMs,
+    });
+    if (deliveryMs != null) {
+      Telemetry.metric('fcm.delivery_ms', deliveryMs, tags: {
+        'type': data['type']?.toString(),
+      });
     }
   }
 

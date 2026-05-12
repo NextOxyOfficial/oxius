@@ -55,6 +55,7 @@ import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
 import 'services/online_status_service.dart';
+import 'services/telemetry.dart';
 import 'models/cart_item.dart';
 import 'screens/call_screen.dart';
 import 'widgets/ongoing_call_bar.dart';
@@ -69,29 +70,22 @@ Future<void> _safeInit(
   Future<void> Function() task, {
   Duration timeout = const Duration(seconds: 8),
 }) async {
+  final span = Telemetry.startSpan('init.$name');
   try {
     await task().timeout(timeout);
-    print('[init] $name OK');
-  } catch (e) {
-    print('[init] $name FAILED (non-fatal): $e');
+    span.stop(success: true);
+  } catch (e, stack) {
+    span.stop(success: false, extra: {'error_type': e.runtimeType.toString()});
+    Telemetry.recordError(e, stack, reason: 'init:$name', fatal: false);
   }
 }
 
 void main() async {
-  // Catch any otherwise-unhandled framework errors so we never end up with a
-  // blank screen in release builds.
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-  };
-
-  // Catch uncaught async (platform/engine) errors. Without this, a single
-  // unhandled Future error in release mode can leave the app in an
-  // inconsistent state on iOS / iPad.
-  PlatformDispatcher.instance.onError = (error, stack) {
-    // ignore: avoid_print
-    print('[FATAL] Uncaught async error: $error\n$stack');
-    return true; // mark as handled
-  };
+  // Production telemetry: capture every uncaught framework / platform /
+  // zone error and route it through Telemetry. External sinks (e.g.
+  // FirebaseCrashlytics) can plug in by assigning Telemetry.onError /
+  // Telemetry.onBreadcrumb after Firebase is initialised.
+  Telemetry.installGlobalErrorHandlers();
 
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -127,6 +121,11 @@ void main() async {
   // Show the app NOW. MyApp will render the splash because
   // userState.isInitializing is true until _bootstrap completes.
   runApp(MyApp(userState: userState));
+
+  // App lifecycle (foreground/background/inactive/detached) breadcrumbs.
+  // Cheap — single observer, no per-frame work.
+  WidgetsBinding.instance.addObserver(TelemetryLifecycleObserver());
+  Telemetry.event('app.start');
 
   // Bootstrap everything else in the background, with timeouts.
   // ignore: unawaited_futures
@@ -267,7 +266,10 @@ class MyApp extends StatelessWidget {
               return GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: () {
-                  final FocusScopeNode currentFocus = FocusScope.of(context);
+                  final FocusScop
+              FCMService.routeObserver,
+              TelemetryNavigatorObserver(),
+            usScope.of(context);
                   if (!currentFocus.hasPrimaryFocus &&
                       currentFocus.focusedChild != null) {
                     currentFocus.focusedChild!.unfocus();

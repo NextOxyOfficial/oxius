@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'api_service.dart';
-
+import 'telemetry.dart';
 class RideshareRealtimeService {
   static const String _tokenKey = 'adsyclub_token';
   static const Duration _initialReconnectDelay = Duration(seconds: 2);
@@ -183,6 +183,11 @@ class RideshareRealtimeService {
       final channel = WebSocketChannel.connect(await _buildRideUri(rideId));
       _rideChannel = channel;
       _rideConnectedAt = DateTime.now();
+      Telemetry.event('ws.connected', tags: {
+        'socket': 'ride',
+        'ride_id': rideId,
+        'attempt': _rideReconnectAttempts,
+      });
       _ridePingTimer = Timer.periodic(_pingInterval, (_) {
         if (_rideChannel != null) {
           _rideChannel!.sink.add(jsonEncode({'event': 'ping'}));
@@ -223,6 +228,10 @@ class RideshareRealtimeService {
       final channel = WebSocketChannel.connect(await _buildDispatchUri());
       _dispatchChannel = channel;
       _dispatchConnectedAt = DateTime.now();
+      Telemetry.event('ws.connected', tags: {
+        'socket': 'dispatch',
+        'attempt': _dispatchReconnectAttempts,
+      });
       _dispatchPingTimer = Timer.periodic(_pingInterval, (_) {
         if (_dispatchChannel != null) {
           _dispatchChannel!.sink.add(jsonEncode({'event': 'ping'}));
@@ -314,6 +323,10 @@ class RideshareRealtimeService {
 
     if (_rideImmediateFailures >= _maxImmediateFailures) {
       _rideAuthSuspended = true;
+      Telemetry.event('ws.auth_suspended', tags: {
+        'socket': 'ride',
+        'immediate_failures': _rideImmediateFailures,
+      }, severity: TelemetrySeverity.error);
       if (!_authFailureController.isClosed) {
         _authFailureController.add('ride_socket_auth_failed');
       }
@@ -322,6 +335,12 @@ class RideshareRealtimeService {
 
     _rideReconnectAttempts += 1;
     final delay = _computeBackoff(_rideReconnectAttempts);
+    Telemetry.event('ws.reconnect_scheduled', tags: {
+      'socket': 'ride',
+      'attempt': _rideReconnectAttempts,
+      'backoff_ms': delay.inMilliseconds,
+      'immediate_failures': _rideImmediateFailures,
+    });
 
     _rideReconnectTimer?.cancel();
     _rideReconnectTimer = Timer(delay, _openRideSocket);
@@ -348,6 +367,10 @@ class RideshareRealtimeService {
 
     if (_dispatchImmediateFailures >= _maxImmediateFailures) {
       _dispatchAuthSuspended = true;
+      Telemetry.event('ws.auth_suspended', tags: {
+        'socket': 'dispatch',
+        'immediate_failures': _dispatchImmediateFailures,
+      }, severity: TelemetrySeverity.error);
       if (!_authFailureController.isClosed) {
         _authFailureController.add('dispatch_socket_auth_failed');
       }
@@ -356,6 +379,12 @@ class RideshareRealtimeService {
 
     _dispatchReconnectAttempts += 1;
     final delay = _computeBackoff(_dispatchReconnectAttempts);
+    Telemetry.event('ws.reconnect_scheduled', tags: {
+      'socket': 'dispatch',
+      'attempt': _dispatchReconnectAttempts,
+      'backoff_ms': delay.inMilliseconds,
+      'immediate_failures': _dispatchImmediateFailures,
+    });
 
     _dispatchReconnectTimer?.cancel();
     _dispatchReconnectTimer = Timer(delay, _openDispatchSocket);

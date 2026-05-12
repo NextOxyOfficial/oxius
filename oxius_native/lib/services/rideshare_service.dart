@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show compute;
 import 'package:http/http.dart' as http;
 import '../models/rideshare_models.dart';
 import 'api_service.dart';
+import 'telemetry.dart';
 import '../utils/network_error_handler.dart';
 
 class RideshareApiResult<T> {
@@ -73,6 +74,20 @@ class RideshareService {
     http.Response response,
     T Function(dynamic)? parser,
   ) async {
+    // Emit a metric for API latency / size so slow endpoints surface in
+    // production telemetry dashboards. The request URL is the most
+    // informative tag without leaking PII.
+    final endpoint = response.request?.url.path ?? 'unknown';
+    Telemetry.metric('rideshare.api.bytes', response.bodyBytes.length, tags: {
+      'endpoint': endpoint,
+      'status': response.statusCode,
+    });
+    if (response.statusCode >= 500) {
+      Telemetry.event('rideshare.api.5xx', tags: {
+        'endpoint': endpoint,
+        'status': response.statusCode,
+      }, severity: TelemetrySeverity.error);
+    }
     try {
       // Decode JSON on a background isolate when the body is large enough
       // to noticeably block the UI (~8KB+). For small payloads keep the
@@ -239,6 +254,7 @@ class RideshareService {
     String? dropAddress,
     String paymentMethod = 'wallet',
   }) async {
+    return Telemetry.trace<RideshareApiResult<Ride>>('rideshare.api.createRide', () async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
@@ -265,6 +281,7 @@ class RideshareService {
         message: 'Network error: $e',
       );
     }
+    });
   }
 
   // ==================== Ride List & Details ====================
@@ -344,6 +361,8 @@ class RideshareService {
   // ==================== Ride Actions ====================
   
   static Future<RideshareApiResult<Ride>> acceptRide(String rideId) async {
+    return Telemetry.trace<RideshareApiResult<Ride>>('rideshare.api.acceptRide',
+        tags: {'ride_id': rideId}, () async {
     try {
       final headers = await _getHeaders();
       final response = await http.post(
@@ -361,6 +380,7 @@ class RideshareService {
         message: 'Network error: $e',
       );
     }
+    });
   }
 
   static Future<RideshareApiResult<void>> skipRideRequest(String rideId) async {
