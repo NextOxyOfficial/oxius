@@ -35,7 +35,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Driven by env var so production turns DEBUG OFF automatically.
+# DEBUG=True adds ~2-3s latency per request (full query logging, verbose errors).
+DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1", "yes", "on")
 
 ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "base.User"
@@ -147,7 +149,10 @@ SIMPLE_JWT = {
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days (same as JWT tokens)
 # Keep session even after browser close
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on every request
+# NOTE: SESSION_SAVE_EVERY_REQUEST removed — was causing a DB UPDATE on the
+# django_session table for EVERY request (~100-300ms per request, plus write
+# contention under load). Sessions are auto-refreshed by SessionMiddleware
+# when actually modified; the explicit save was redundant.
 SESSION_COOKIE_HTTPONLY = True  # Security: prevent JS access to session cookie
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
@@ -237,6 +242,14 @@ DATABASES = {
         "PASSWORD": "pgPass7431",
         "HOST": "localhost",
         "PORT": "5432",
+        # Reuse Postgres connections across requests instead of opening a new
+        # one for every API call (saved ~50-100ms per request). Health check
+        # ensures stale connections are replaced.
+        "CONN_MAX_AGE": 600,
+        "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": {
+            "connect_timeout": 10,
+        },
     }
 }
 

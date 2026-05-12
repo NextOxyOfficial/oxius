@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:http/http.dart' as http;
 import '../models/rideshare_models.dart';
 import 'api_service.dart';
@@ -62,6 +63,57 @@ class RideshareService {
       }
     }
     return const <dynamic>[];
+  }
+
+  /// Top-level helper used with [compute] to parse JSON on a background isolate.
+  /// Must be top-level / static for [compute] to serialise it.
+  static dynamic _decodeJsonInIsolate(String body) => json.decode(body);
+
+  static Future<RideshareApiResult<T>> _parseResponseAsync<T>(
+    http.Response response,
+    T Function(dynamic)? parser,
+  ) async {
+    try {
+      // Decode JSON on a background isolate when the body is large enough
+      // to noticeably block the UI (~8KB+). For small payloads keep the
+      // sync path to avoid the isolate hand-off overhead.
+      final body = response.body;
+      final dynamic data = body.length > 8192
+          ? await compute(_decodeJsonInIsolate, body)
+          : json.decode(body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (data is Map && data.containsKey('success')) {
+          return RideshareApiResult<T>(
+            success: data['success'] == true,
+            message: data['message'] ?? 'Success',
+            data: parser != null && data['data'] != null
+                ? parser(data['data'])
+                : data['data'] as T?,
+            errors: data['errors'],
+          );
+        }
+        return RideshareApiResult<T>(
+          success: true,
+          message: 'Success',
+          data: parser != null ? parser(data) : data as T?,
+        );
+      } else {
+        return RideshareApiResult<T>(
+          success: false,
+          message: data is Map
+              ? (data['message'] ?? data['detail'] ?? 'Request failed')
+              : 'Request failed',
+          errors: data is Map ? (data['errors'] ?? data) : data,
+        );
+      }
+    } catch (e) {
+      return RideshareApiResult<T>(
+        success: false,
+        message: NetworkErrorHandler.getErrorMessage(e),
+        errors: e.toString(),
+      );
+    }
   }
 
   static RideshareApiResult<T> _parseResponse<T>(
@@ -163,7 +215,7 @@ class RideshareService {
           'destination_address': destinationAddress ?? '',
         }),
       );
-      return _parseResponse<RoutePreview>(
+      return _parseResponseAsync<RoutePreview>(
         response,
         (data) => RoutePreview.fromJson(data as Map<String, dynamic>),
       );
@@ -203,7 +255,7 @@ class RideshareService {
           'payment_method': paymentMethod,
         }),
       );
-      return _parseResponse<Ride>(
+      return _parseResponseAsync<Ride>(
         response,
         (data) => Ride.fromJson(data as Map<String, dynamic>),
       );
@@ -231,7 +283,7 @@ class RideshareService {
       if (asDriver) params['as_driver'] = 'true';
       final uri = Uri.parse('$_baseUrl/').replace(queryParameters: params);
       final response = await http.get(uri, headers: headers);
-      return _parseResponse<List<Ride>>(
+      return _parseResponseAsync<List<Ride>>(
         response,
         (data) {
           // Handle both paginated {results: [...], count: N} and plain list responses
@@ -258,7 +310,7 @@ class RideshareService {
         Uri.parse('$_baseUrl/active/'),
         headers: headers,
       );
-      return _parseResponse<Ride?>(
+      return _parseResponseAsync<Ride?>(
         response,
         (data) => data != null ? Ride.fromJson(data as Map<String, dynamic>) : null,
       );
@@ -277,7 +329,7 @@ class RideshareService {
         Uri.parse('$_baseUrl/$rideId/'),
         headers: headers,
       );
-      return _parseResponse<Ride>(
+      return _parseResponseAsync<Ride>(
         response,
         (data) => Ride.fromJson(data as Map<String, dynamic>),
       );
@@ -299,7 +351,7 @@ class RideshareService {
         headers: headers,
         body: json.encode({}),
       );
-      return _parseResponse<Ride>(
+      return _parseResponseAsync<Ride>(
         response,
         (data) => Ride.fromJson(data as Map<String, dynamic>),
       );
@@ -347,7 +399,7 @@ class RideshareService {
         headers: headers,
         body: json.encode({'reason': reason}),
       );
-      return _parseResponse<Ride>(
+      return _parseResponseAsync<Ride>(
         response,
         (data) => Ride.fromJson(data as Map<String, dynamic>),
       );
@@ -377,7 +429,7 @@ class RideshareService {
         headers: headers,
         body: json.encode(body),
       );
-      return _parseResponse<Ride>(
+      return _parseResponseAsync<Ride>(
         response,
         (data) => Ride.fromJson(data as Map<String, dynamic>),
       );
@@ -404,7 +456,7 @@ class RideshareService {
         headers: headers,
         body: json.encode(body),
       );
-      return _parseResponse<Ride>(
+      return _parseResponseAsync<Ride>(
         response,
         (data) => Ride.fromJson(data as Map<String, dynamic>),
       );
@@ -428,7 +480,7 @@ class RideshareService {
         headers: headers,
         body: json.encode({'confirm': confirm, 'payment_method': paymentMethod}),
       );
-      return _parseResponse<Ride>(
+      return _parseResponseAsync<Ride>(
         response,
         (data) => Ride.fromJson(data as Map<String, dynamic>),
       );

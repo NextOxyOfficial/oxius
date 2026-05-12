@@ -71,6 +71,17 @@ class DriverProfile(models.Model):
 
     class Meta:
         ordering = ["-updated_at"]
+        indexes = [
+            # Hot path: NearestDriverDispatch scans this combination every
+            # ride creation. Without this index Postgres falls back to a
+            # sequential scan of DriverProfile.
+            models.Index(
+                fields=["approval_status", "is_online", "is_available", "-last_seen_at"],
+                name="rs_driver_dispatch_idx",
+            ),
+            models.Index(fields=["is_online", "is_available"], name="rs_driver_online_idx"),
+            models.Index(fields=["-last_seen_at"], name="rs_driver_lastseen_idx"),
+        ]
 
     def __str__(self):
         return f"DriverProfile({self.user_id})"
@@ -124,6 +135,18 @@ class Vehicle(models.Model):
 
     class Meta:
         ordering = ["-is_default", "-updated_at"]
+        indexes = [
+            # Used by get_driver_default_vehicle() on every available-rides
+            # request and on every dispatch matching pass.
+            models.Index(
+                fields=["driver", "is_active", "is_default"],
+                name="rs_vehicle_driver_default_idx",
+            ),
+            models.Index(
+                fields=["driver", "is_active", "vehicle_type"],
+                name="rs_vehicle_driver_type_idx",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.registration_number}"
@@ -446,6 +469,26 @@ class Ride(models.Model):
             models.Index(fields=["rider"]),
             models.Index(fields=["assigned_driver"]),
             models.Index(fields=["created_at"]),
+            # Composite indexes for the hottest lookup patterns observed in
+            # views.py / services.py. Eliminates sequential scans on
+            # Ride history queries and dispatch cascade checks.
+            models.Index(
+                fields=["rider", "status", "-created_at"],
+                name="rs_ride_rider_status_idx",
+            ),
+            models.Index(
+                fields=["assigned_driver", "status", "-created_at"],
+                name="rs_ride_driver_status_idx",
+            ),
+            models.Index(
+                fields=["requested_vehicle_type", "status"],
+                name="rs_ride_vehicletype_status_idx",
+            ),
+            models.Index(
+                fields=["status", "targeted_driver", "targeted_at"],
+                name="rs_ride_cascade_idx",
+            ),
+            models.Index(fields=["payment_status"], name="rs_ride_payment_status_idx"),
         ]
 
     def __str__(self):
@@ -578,6 +621,9 @@ class DriverLocation(models.Model):
         ordering = ["-recorded_at"]
         indexes = [
             models.Index(fields=["driver", "-recorded_at"]),
+            # Used when fetching the latest location for an active ride
+            # (consumers.py + early-completion service).
+            models.Index(fields=["ride", "-recorded_at"], name="rs_loc_ride_recent_idx"),
         ]
 
     def __str__(self):

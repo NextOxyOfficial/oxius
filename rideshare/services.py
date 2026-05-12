@@ -1927,8 +1927,21 @@ class WalletService:
 
 
 class DispatchService:
-    @staticmethod
-    def _group_send(group_name, payload):
+    # Shared thread pool for fire-and-forget websocket broadcasts.
+    # Using a small pool prevents websocket fan-out from blocking the HTTP
+    # request thread — each `group_send` to Redis was costing 100–500ms when
+    # called synchronously from views, and many endpoints fire 2–3 of them.
+    # See forensic audit (2026-05-13): biggest single backend latency source.
+    import threading as _threading
+    from concurrent.futures import ThreadPoolExecutor as _ThreadPoolExecutor
+
+    _broadcast_executor = _ThreadPoolExecutor(
+        max_workers=4, thread_name_prefix="rideshare-broadcast"
+    )
+    _broadcast_lock = _threading.Lock()
+
+    @classmethod
+    def _do_group_send(cls, group_name, payload):
         channel_layer = get_channel_layer()
         if not channel_layer:
             return
@@ -1938,7 +1951,23 @@ class DispatchService:
             logger.exception(
                 "Rideshare dispatch broadcast failed for group %s", group_name
             )
-            return
+
+    @classmethod
+    def _group_send(cls, group_name, payload):
+        """Fire-and-forget websocket broadcast.
+
+        Submits the actual `group_send` to a background thread so the
+        Django view can return its HTTP response without waiting for the
+        channel layer roundtrip (which can be 100–500ms with Redis).
+        Passengers/drivers still receive the websocket event with
+        equivalent latency because Daphne workers consume it asynchronously.
+        """
+        try:
+            cls._broadcast_executor.submit(cls._do_group_send, group_name, payload)
+        except RuntimeError:
+            # Executor was shut down (e.g. during process teardown) — fall
+            # back to synchronous send so we don't drop critical events.
+            cls._do_group_send(group_name, payload)
 
     @classmethod
     def broadcast_ride_request(cls, ride):

@@ -43,6 +43,10 @@ class RideUserSerializer(serializers.ModelSerializer):
         return obj.image.url
 
     def get_completed_trips(self, obj):
+        # Use annotation set by the view's queryset (avoid per-row COUNT()).
+        annotated = getattr(obj, "_completed_trips", None)
+        if annotated is not None:
+            return annotated
         return obj.rides_requested.filter(status=Ride.STATUS_COMPLETED).count()
 
 
@@ -111,18 +115,33 @@ class DriverProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_default_vehicle(self, obj):
-        vehicle = obj.vehicles.filter(is_active=True, is_default=True).first()
-        if not vehicle:
-            vehicle = obj.vehicles.filter(is_active=True).first()
+        # Prefer prefetch cache (set via Prefetch in the queryset) to avoid
+        # an extra SELECT per driver in list endpoints.
+        cached = getattr(obj, "_prefetched_default_vehicle", None)
+        if cached is not None:
+            vehicle = cached[0] if cached else None
+        else:
+            vehicle = obj.vehicles.filter(is_active=True, is_default=True).first()
+            if not vehicle:
+                vehicle = obj.vehicles.filter(is_active=True).first()
         return VehicleSerializer(vehicle).data if vehicle else None
 
     def get_outstanding_cash_due_count(self, obj):
+        annotated = getattr(obj, "_outstanding_cash_due_count", None)
+        if annotated is not None:
+            return annotated
         return obj.outstanding_cash_due_count
 
     def get_outstanding_cash_due_amount(self, obj):
+        annotated = getattr(obj, "_outstanding_cash_due_amount", None)
+        if annotated is not None:
+            return annotated
         return obj.outstanding_cash_due_amount
 
     def get_cash_due_limit_reached(self, obj):
+        annotated = getattr(obj, "_outstanding_cash_due_count", None)
+        if annotated is not None:
+            return annotated >= 2
         return obj.cash_due_limit_reached
 
     def validate(self, attrs):

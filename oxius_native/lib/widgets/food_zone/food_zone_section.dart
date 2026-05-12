@@ -90,8 +90,8 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
 
   @override
   Widget build(BuildContext context) {
-    // Don't show section if no posts
-    if (!_isLoading && _posts.isEmpty) {
+    // Don't show section if loading (no data yet) or empty after load
+    if (_posts.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -212,42 +212,7 @@ class _FoodZoneSectionState extends State<FoodZoneSection> {
           const SizedBox(height: 12),
           
           // Posts List
-          if (_isLoading)
-            const SizedBox(
-              height: 180,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFFE91E63),
-                  strokeWidth: 2,
-                ),
-              ),
-            )
-          else if (_posts.isEmpty)
-            SizedBox(
-              height: 180,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.restaurant_outlined,
-                      size: 40,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'No food items available',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            SizedBox(
+          SizedBox(
               height: 195,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
