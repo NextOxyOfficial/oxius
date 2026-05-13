@@ -26,6 +26,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   Timer? _pollingTimer;
   Timer? _onlineStatusTimer;
   StreamSubscription<Map<String, dynamic>>? _realtimeSubscription;
+  String? _openingChatroomId;
+  OverlayEntry? _activeChatOverlay;
+  String? _activeOverlayChatroomId;
 
   final TextEditingController _chatSearchController = TextEditingController();
   String _chatSearchQuery = '';
@@ -197,6 +200,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _pollingTimer?.cancel();
     _onlineStatusTimer?.cancel();
     _realtimeSubscription?.cancel();
+    _removeActiveChatOverlay(refreshAfterClose: false);
     _chatSearchController.dispose();
     super.dispose();
   }
@@ -372,23 +376,106 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
   }
 
-  void _openChat(Map<String, dynamic> chat) async {
+  Future<void> _openChat(Map<String, dynamic> chat) async {
+    final chatroomId = chat['id']?.toString();
+    if (chatroomId == null || chatroomId.isEmpty) return;
+    if (_openingChatroomId != null) return;
+
+    _openingChatroomId = chatroomId;
     try {
-      await AdsyConnectService.markChatroomAsRead(chat['id']);
+      await AdsyConnectService.markChatroomAsRead(chatroomId);
     } catch (e) {
       print('Error marking chatroom as read: $e');
     }
 
-    if (mounted) {
-      AdsyConnectChatInterface.open(
-        context,
-        chatroomId: chat['id'],
-        userId: chat['userId'],
-        userName: chat['userName'],
-        userAvatar: chat['userAvatar'],
-        profession: chat['profession'],
-        isOnline: chat['isOnline'] ?? false,
-      ).then((_) => _refreshChats());
+    try {
+      if (!mounted) return;
+      _showChatOverlay(<String, dynamic>{
+        ...chat,
+        'id': chatroomId,
+        'userId': chat['userId']?.toString() ?? '',
+        'userName': chat['userName']?.toString() ?? 'Unknown',
+      });
+    } finally {
+      if (_openingChatroomId == chatroomId) {
+        _openingChatroomId = null;
+      }
+    }
+  }
+
+  void _showChatOverlay(Map<String, dynamic> chat) {
+    final chatroomId = chat['id']?.toString() ?? '';
+    if (chatroomId.isEmpty) return;
+    if (_activeChatOverlay != null && _activeOverlayChatroomId == chatroomId) {
+      return;
+    }
+
+    _removeActiveChatOverlay(refreshAfterClose: false);
+
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final entry = OverlayEntry(
+      builder: (_) => Positioned.fill(
+        child: Material(
+          color: const Color(0xFFF0F9FF),
+          child: ScaffoldMessenger(
+            child: Navigator(
+              onGenerateRoute: (settings) {
+                final chatRouteName =
+                    AdsyConnectChatInterface.routeNameFor(chatroomId);
+                if (settings.name == Navigator.defaultRouteName ||
+                    settings.name == chatRouteName) {
+                  return MaterialPageRoute<void>(
+                    settings: RouteSettings(name: chatRouteName),
+                    builder: (_) => AdsyConnectChatInterface(
+                      key: ValueKey('adsy_chat_overlay_$chatroomId'),
+                      chatroomId: chatroomId,
+                      userId: chat['userId']?.toString() ?? '',
+                      userName: chat['userName']?.toString() ?? 'Unknown',
+                      userAvatar: chat['userAvatar']?.toString(),
+                      profession: chat['profession']?.toString(),
+                      isOnline: _parseBool(chat['isOnline']),
+                      onClose: _closeActiveChatOverlay,
+                    ),
+                  );
+                }
+
+                return MaterialPageRoute<void>(
+                  builder: (_) => Scaffold(
+                    appBar: AppBar(title: const Text('Page not found')),
+                    body: Center(
+                      child: Text(
+                        'Unknown chat route: ${settings.name ?? ''}',
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+
+    _activeOverlayChatroomId = chatroomId;
+    _activeChatOverlay = entry;
+    overlay.insert(entry);
+  }
+
+  void _closeActiveChatOverlay() {
+    _removeActiveChatOverlay(refreshAfterClose: true);
+  }
+
+  void _removeActiveChatOverlay({required bool refreshAfterClose}) {
+    final entry = _activeChatOverlay;
+    _activeChatOverlay = null;
+    _activeOverlayChatroomId = null;
+
+    if (entry != null && entry.mounted) {
+      entry.remove();
+    }
+
+    if (refreshAfterClose && mounted) {
+      unawaited(_refreshChats());
     }
   }
 
@@ -433,7 +520,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
       return;
     }
 
-    _openChat(chat);
+    unawaited(_openChat(chat));
   }
 
   @override
@@ -626,7 +713,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     final bool isTyping = chat['isTyping'] ?? false;
 
     return InkWell(
-      onTap: () => _openChat(chat),
+      onTap: () => unawaited(_openChat(chat)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(

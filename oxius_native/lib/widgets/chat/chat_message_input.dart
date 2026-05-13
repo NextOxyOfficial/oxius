@@ -20,6 +20,7 @@ class ChatMessageInput extends StatelessWidget {
   final bool blockedByMe;
   final bool isTyping;
   final bool isUploadingAttachment;
+  final bool isCompressingImages;
 
   // Reply preview (null = no active reply)
   final String? replyFromName;
@@ -52,6 +53,7 @@ class ChatMessageInput extends StatelessWidget {
     required this.blockedByMe,
     required this.isTyping,
     required this.isUploadingAttachment,
+    this.isCompressingImages = false,
     this.replyFromName,
     this.replyPreviewText,
     required this.compressedImages,
@@ -267,8 +269,37 @@ class ChatMessageInput extends StatelessWidget {
         // --- Image preview strip ---
         if (hasImages) _buildImagePreview(),
 
-        // --- Upload progress ---
-        if (isUploadingAttachment)
+        // --- Compressing progress ---
+        if (isCompressingImages)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Compressing...',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF8B5CF6),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        // --- Uploading progress ---
+        if (isUploadingAttachment && !isCompressingImages)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             color: const Color(0xFF3B82F6).withOpacity(0.1),
@@ -285,11 +316,11 @@ class ChatMessageInput extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'Compressing images...',
+                  'Uploading...',
                   style: TextStyle(
                     fontSize: 13,
                     color: Color(0xFF3B82F6),
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -316,14 +347,14 @@ class ChatMessageInput extends StatelessWidget {
               children: [
                 // Attachment button
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: const Color(0xFF3B82F6).withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: IconButton(
-                    icon: const Icon(Icons.attach_file_rounded, size: 18),
+                    icon: const Icon(Icons.attach_file_rounded, size: 22),
                     color: const Color(0xFF3B82F6),
                     padding: EdgeInsets.zero,
                     onPressed: onShowAttachmentOptions,
@@ -367,16 +398,16 @@ class ChatMessageInput extends StatelessWidget {
                 // Send / Mic button
                 if (isTyping)
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.send_rounded, size: 18),
+                      icon: const Icon(Icons.send_rounded, size: 22),
                       color: Colors.white,
                       padding: EdgeInsets.zero,
                       onPressed: onSend,
@@ -386,15 +417,15 @@ class ChatMessageInput extends StatelessWidget {
                   GestureDetector(
                     onLongPress: onStartRecording,
                     child: Container(
-                      width: 36,
-                      height: 36,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
                         Icons.mic_rounded,
-                        size: 18,
+                        size: 22,
                         color: Color(0xFF10B981),
                       ),
                     ),
@@ -426,12 +457,15 @@ class ChatMessageInput extends StatelessWidget {
                 ),
               ),
               TextButton.icon(
-                onPressed: onSendImages,
+                onPressed: isUploadingAttachment ? null : onSendImages,
                 icon: const Icon(Icons.send_rounded, size: 16),
-                label: const Text('Send All'),
+                label: const Text('Send'),
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF3B82F6),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  foregroundColor: isUploadingAttachment
+                      ? Colors.grey
+                      : const Color(0xFF3B82F6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 ),
               ),
             ],

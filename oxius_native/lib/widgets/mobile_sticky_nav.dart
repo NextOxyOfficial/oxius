@@ -348,8 +348,14 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
       // Navigate to AdsyPay page using named route
       Navigator.pushNamed(context, '/deposit-withdraw');
     } else if (destination == 'Mobile Recharge') {
-      // Navigate to mobile recharge route
-      Navigator.pushNamed(context, '/mobile-recharge_screen');
+      // Navigate to mobile recharge route.
+      // CRITICAL: route name must match the one registered in `main.dart`
+      // (`/mobile-recharge`). The previous value `/mobile-recharge_screen`
+      // produced a "Could not find a generator for route" exception. On
+      // Flutter web that exception leaves `Navigator._debugLocked == true`,
+      // which silently breaks EVERY subsequent tap → push across the whole
+      // app until reload. Do NOT rename without also updating `main.dart`.
+      Navigator.pushNamed(context, '/mobile-recharge');
     } else if (destination == 'Business Network') {
       Navigator.pushNamed(context, '/business-network').then((_) {
         // Refresh notification count when returning from business network

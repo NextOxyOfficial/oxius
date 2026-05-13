@@ -652,12 +652,14 @@ class _InboxScreenState extends State<InboxScreen>
               indicatorColor: const Color(0xFF3B82F6),
               labelColor: const Color(0xFF3B82F6),
               unselectedLabelColor: const Color(0xFF6B7280),
+              indicatorWeight: 3,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 4),
               labelStyle: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   letterSpacing: -0.2),
               unselectedLabelStyle: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w500,
                   letterSpacing: -0.2),
               tabAlignment: TabAlignment.fill,
@@ -670,11 +672,11 @@ class _InboxScreenState extends State<InboxScreen>
                     children: [
                       Image.asset(
                         'assets/images/chat_icon.png',
-                        width: 15,
-                        height: 15,
+                        width: 20,
+                        height: 20,
                         errorBuilder: (context, error, stackTrace) {
                           return const Icon(Icons.chat_bubble_rounded,
-                              size: 15);
+                              size: 20);
                         },
                       ),
                       const SizedBox(width: 4),
@@ -708,7 +710,7 @@ class _InboxScreenState extends State<InboxScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.notifications_rounded, size: 16),
+                      const Icon(Icons.notifications_rounded, size: 20),
                       const SizedBox(width: 4),
                       const Text('Updates'),
                       if (updatesCount > 0) ...[
@@ -740,7 +742,7 @@ class _InboxScreenState extends State<InboxScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.support_agent_rounded, size: 16),
+                      const Icon(Icons.support_agent_rounded, size: 20),
                       const SizedBox(width: 4),
                       const Text('Support'),
                       if (supportTicketsCount > 0) ...[
@@ -1493,7 +1495,7 @@ class _InboxScreenState extends State<InboxScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _NewChatModal(),
+      builder: (context) => _NewChatModal(parentContext: this.context),
     );
   }
 
@@ -1708,6 +1710,10 @@ class _InboxScreenState extends State<InboxScreen>
 }
 
 class _NewChatModal extends StatefulWidget {
+  final BuildContext parentContext;
+
+  const _NewChatModal({required this.parentContext});
+
   @override
   State<_NewChatModal> createState() => _NewChatModalState();
 }
@@ -1821,9 +1827,9 @@ class _NewChatModalState extends State<_NewChatModal> {
       if (mounted) Navigator.pop(context);
 
       // Open chat (stack-deduplicated)
-      if (mounted) {
+      if (widget.parentContext.mounted) {
         AdsyConnectChatInterface.open(
-          context,
+          widget.parentContext,
           chatroomId: chatroom['id'].toString(),
           userId: user['id'].toString(),
           userName: user['first_name'] != null && user['last_name'] != null

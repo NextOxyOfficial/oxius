@@ -658,14 +658,20 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 ],
               ),
               
-              // Mobile Sticky Navigation at bottom
+              // Mobile Sticky Navigation at bottom — SafeArea handles iOS
+              // home indicator and Android gesture / 3-button nav bar insets.
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: MobileStickyNav(
-                  currentRoute: 'eShop',
-                  scrollController: _scrollController,
+                child: SafeArea(
+                  top: false,
+                  left: false,
+                  right: false,
+                  child: MobileStickyNav(
+                    currentRoute: 'eShop',
+                    scrollController: _scrollController,
+                  ),
                 ),
               ),
             ],

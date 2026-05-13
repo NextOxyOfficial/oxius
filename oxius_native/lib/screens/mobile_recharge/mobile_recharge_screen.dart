@@ -295,14 +295,20 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   ),
           ),
 
-          // Mobile Sticky Navigation
+          // Mobile Sticky Navigation — SafeArea handles iOS home indicator
+          // and Android gesture / 3-button nav bar insets.
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            child: MobileStickyNav(
-              currentRoute: 'MobileRecharge',
-              scrollController: _scrollController,
+            child: SafeArea(
+              top: false,
+              left: false,
+              right: false,
+              child: MobileStickyNav(
+                currentRoute: 'MobileRecharge',
+                scrollController: _scrollController,
+              ),
             ),
           ),
         ],
@@ -1040,7 +1046,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    Navigator.pushNamed(context, '/wallet');
+                                    Navigator.pushNamed(context, '/deposit-withdraw');
                                   },
                                   icon: const Icon(Icons.add_rounded, size: 18),
                                   label: const Text('Add Funds'),

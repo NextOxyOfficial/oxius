@@ -561,14 +561,20 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_isDropdownOpen)
             _buildUserDropdownMenu(context),
           
-          // Mobile Sticky Navigation
+          // Mobile Sticky Navigation — SafeArea guarantees correct inset on
+          // iOS (home indicator) AND Android (gesture / 3-button nav bar).
           Positioned(
             left: 0,
             right: 0,
-            bottom: MediaQuery.of(context).padding.bottom,
-            child: MobileStickyNav(
-              currentRoute: 'Home',
-              scrollController: _scrollController,
+            bottom: 0,
+            child: SafeArea(
+              top: false,
+              left: false,
+              right: false,
+              child: MobileStickyNav(
+                currentRoute: 'Home',
+                scrollController: _scrollController,
+              ),
             ),
           ),
         ],

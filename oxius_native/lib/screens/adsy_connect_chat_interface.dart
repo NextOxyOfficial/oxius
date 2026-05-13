@@ -25,6 +25,7 @@ import '../services/agora_call_service.dart';
 import '../widgets/chat/chat_app_bar.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
+import 'business_network/profile_screen.dart';
 import 'call_screen.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
@@ -36,6 +37,7 @@ class AdsyConnectChatInterface extends StatefulWidget {
   final bool isOnline;
   final bool isVerified;
   final bool isPro;
+  final VoidCallback? onClose;
 
   const AdsyConnectChatInterface({
     super.key,
@@ -47,6 +49,7 @@ class AdsyConnectChatInterface extends StatefulWidget {
     this.isOnline = false,
     this.isVerified = false,
     this.isPro = false,
+    this.onClose,
   });
 
   /// Stable route name used to identify a chat in the Navigator stack so the
@@ -55,14 +58,90 @@ class AdsyConnectChatInterface extends StatefulWidget {
   /// route and pop back to it instead of pushing a second copy. This matches
   /// WhatsApp / Telegram / Messenger behaviour where a single back press
   /// always returns to a different page (not the same chat repeated).
-  static String routeNameFor(String chatroomId) => 'adsy_chat:$chatroomId';
+  ///
+  /// NOTE: Must NOT contain a `:` separator. On Flutter web the Navigator
+  /// runs `Uri.parse(routeName)` for browser-history sync, and a name like
+  /// `adsy_chat:<id>` is interpreted as a URI with scheme `adsy_chat` —
+  /// which fails because `_` is illegal in URI schemes. The FormatException
+  /// then locks the Navigator (`_debugLocked = true`) and EVERY subsequent
+  /// push / showModalBottomSheet / showDialog in the app silently fails.
+  /// Using a leading slash makes Flutter treat this as a path, not a scheme.
+  static String routeNameFor(String chatroomId) => '/adsy_chat/$chatroomId';
   static final Set<String> _openRouteNames = <String>{};
+  static const Duration _navigatorSettleDelay = Duration(milliseconds: 380);
+  static bool _chatPushInFlight = false;
+
+  static MaterialPageRoute<T> _chatRoute<T>({
+    required String chatroomId,
+    required String userId,
+    required String userName,
+    String? userAvatar,
+    String? profession,
+    bool isOnline = false,
+    bool isVerified = false,
+    bool isPro = false,
+  }) {
+    return MaterialPageRoute<T>(
+      settings: RouteSettings(name: routeNameFor(chatroomId)),
+      builder: (_) => AdsyConnectChatInterface(
+        chatroomId: chatroomId,
+        userId: userId,
+        userName: userName,
+        userAvatar: userAvatar,
+        profession: profession,
+        isOnline: isOnline,
+        isVerified: isVerified,
+        isPro: isPro,
+      ),
+    );
+  }
+
+  static Future<void> _waitForCurrentRouteToSettle(
+    BuildContext context,
+  ) async {
+    await WidgetsBinding.instance.endOfFrame;
+    if (!context.mounted) return;
+
+    final animation = ModalRoute.of(context)?.animation;
+    if (animation == null ||
+        animation.status == AnimationStatus.completed ||
+        animation.status == AnimationStatus.dismissed) {
+      return;
+    }
+
+    final completer = Completer<void>();
+    late AnimationStatusListener listener;
+    listener = (status) {
+      if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
+        animation.removeStatusListener(listener);
+        if (!completer.isCompleted) completer.complete();
+      }
+    };
+    animation.addStatusListener(listener);
+
+    try {
+      await completer.future.timeout(_navigatorSettleDelay);
+    } on TimeoutException {
+      animation.removeStatusListener(listener);
+    }
+
+    await WidgetsBinding.instance.endOfFrame;
+  }
+
+  static bool _isNavigatorLockedError(Object error) {
+    final message = error.toString();
+    return message.contains('_debugLocked') ||
+        message.contains('!navigator._debugLocked');
+  }
+
+  static void _releaseChatPushGateAfterTransition() {
+    unawaited(Future<void>.delayed(_navigatorSettleDelay, () {
+      _chatPushInFlight = false;
+    }));
+  }
 
   /// Open a chat with built-in stack deduplication.
-  ///
-  /// - If a route for this [chatroomId] is already in the navigator stack,
-  ///   pop back to it (removing any duplicate routes above it).
-  /// - Otherwise push a new full-screen chat route.
   ///
   /// Returns a Future that completes when the chat route is popped.
   static Future<T?> open<T>(
@@ -76,33 +155,58 @@ class AdsyConnectChatInterface extends StatefulWidget {
     bool isVerified = false,
     bool isPro = false,
     bool useRootNavigator = false,
-  }) {
-    final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
-    final targetName = routeNameFor(chatroomId);
-
-    // 1. If it exists, collapse everything above it so a single back press
-    //    from the user always returns to a different page.
-    if (_openRouteNames.contains(targetName)) {
-      navigator.popUntil((route) => route.settings.name == targetName);
+  }) async {
+    if (_chatPushInFlight) {
       return Future<T?>.value(null);
     }
+    _chatPushInFlight = true;
 
-    // 2. Otherwise push a new full-screen chat route with the stable name.
-    return navigator.push<T>(
-      MaterialPageRoute<T>(
-        settings: RouteSettings(name: targetName),
-        builder: (_) => AdsyConnectChatInterface(
-          chatroomId: chatroomId,
-          userId: userId,
-          userName: userName,
-          userAvatar: userAvatar,
-          profession: profession,
-          isOnline: isOnline,
-          isVerified: isVerified,
-          isPro: isPro,
-        ),
-      ),
-    );
+    Future<T?>? pushedRoute;
+    try {
+      await _waitForCurrentRouteToSettle(context);
+      if (!context.mounted) return null;
+
+      final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+
+      try {
+        pushedRoute = navigator.push<T>(
+          _chatRoute<T>(
+            chatroomId: chatroomId,
+            userId: userId,
+            userName: userName,
+            userAvatar: userAvatar,
+            profession: profession,
+            isOnline: isOnline,
+            isVerified: isVerified,
+            isPro: isPro,
+          ),
+        );
+      } catch (error) {
+        if (!_isNavigatorLockedError(error)) rethrow;
+        await Future<void>.delayed(_navigatorSettleDelay);
+        if (!context.mounted) return null;
+        pushedRoute =
+            Navigator.of(context, rootNavigator: useRootNavigator).push<T>(
+          _chatRoute<T>(
+            chatroomId: chatroomId,
+            userId: userId,
+            userName: userName,
+            userAvatar: userAvatar,
+            profession: profession,
+            isOnline: isOnline,
+            isVerified: isVerified,
+            isPro: isPro,
+          ),
+        );
+      }
+
+      _releaseChatPushGateAfterTransition();
+      return await pushedRoute;
+    } finally {
+      if (pushedRoute == null) {
+        _chatPushInFlight = false;
+      }
+    }
   }
 
   @override
@@ -134,6 +238,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   bool _isLoadingMoreMessages = false;
   bool _isSendingMessage = false;
   bool _isUploadingAttachment = false;
+  bool _isCompressingImages = false;
   bool _isRecording = false;
   int _recordDuration = 0;
   int _currentPage = 1;
@@ -2099,7 +2204,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           return;
         }
 
-        setState(() => _isUploadingAttachment = true);
+        setState(() => _isCompressingImages = true);
 
         // Compress all images
         List<String> compressed = [];
@@ -2120,12 +2225,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         setState(() {
           _selectedImages.addAll(images);
           _compressedImages.addAll(compressed);
-          _isUploadingAttachment = false;
+          _isCompressingImages = false;
         });
       }
     } catch (e) {
       print('Error picking images: $e');
-      setState(() => _isUploadingAttachment = false);
+      setState(() => _isCompressingImages = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -2157,7 +2262,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       );
 
       if (image != null) {
-        setState(() => _isUploadingAttachment = true);
+        setState(() => _isCompressingImages = true);
 
         // Compress image
         final compressedBase64 = await ImageCompressor.compressToBase64(
@@ -2172,17 +2277,17 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           setState(() {
             _selectedImages.add(image);
             _compressedImages.add(compressedBase64);
-            _isUploadingAttachment = false;
+            _isCompressingImages = false;
           });
         } else {
           throw Exception('Image compression failed');
         }
       } else {
-        setState(() => _isUploadingAttachment = false);
+        setState(() => _isCompressingImages = false);
       }
     } catch (e) {
       print('Error taking photo: $e');
-      setState(() => _isUploadingAttachment = false);
+      setState(() => _isCompressingImages = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -2433,12 +2538,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _openSearch();
         break;
       case 'view_profile':
-        // Navigate to user's ABN profile
-        Navigator.pushNamed(
-          context,
-          '/business-network/profile',
-          arguments: {'userId': widget.userId},
-        );
+        _openUserProfile();
         break;
       case 'block':
         // TODO: Show block confirmation
@@ -2741,7 +2841,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      // Must NOT be transparent: a MaterialPageRoute's underlying background
+      // is opaque black, so a transparent Scaffold leaks black behind the
+      // status bar / app bar / during transition animations. Use the first
+      // gradient color so the screen looks seamless before the body paints.
+      backgroundColor: const Color(0xFFF0F9FF),
       extendBodyBehindAppBar: false,
       appBar: _buildAppBar(),
       body: Container(
@@ -2971,13 +3075,27 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       currentMatchPosition: _currentSearchMatchPosition,
       onBack: () {
         FocusManager.instance.primaryFocus?.unfocus();
-        Navigator.pop(context);
+        if (widget.onClose != null) {
+          widget.onClose!();
+        } else {
+          Navigator.pop(context);
+        }
       },
       onCloseSearch: _closeSearch,
       onPrevMatch: _goToPrevSearchMatch,
       onNextMatch: _goToNextSearchMatch,
+      onViewProfile: _openUserProfile,
       onStartCall: _startCall,
       onMenuAction: _handleMenuAction,
+    );
+  }
+
+  void _openUserProfile() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProfileScreen(userId: widget.userId),
+      ),
     );
   }
 
@@ -3333,6 +3451,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       blockedByMe: _blockedByMe,
       isTyping: _isTyping,
       isUploadingAttachment: _isUploadingAttachment,
+      isCompressingImages: _isCompressingImages,
       replyFromName: _replyingToMessage != null
           ? (_replyingToMessage!['isMe'] == true ? 'You' : widget.userName)
           : null,

@@ -51,14 +51,51 @@ import PushKit
     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
   ) {
     let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-#if DEBUG
-    Messaging.messaging().setAPNSToken(deviceToken, type: .sandbox)
-    print("[AdsyClub] APNS device token registered (sandbox): \(token)")
-#else
-    Messaging.messaging().setAPNSToken(deviceToken, type: .prod)
-    print("[AdsyClub] APNS device token registered (production): \(token)")
-#endif
+
+    // ROOT-CAUSE FIX for "iOS notifications never arrive":
+    // Compile-time `#if DEBUG` is unreliable — a Release-mode binary signed
+    // with a Development provisioning profile (or vice versa) creates a
+    // mismatch between the APNs environment the device registered on
+    // (sandbox vs production) and the type we hand to Firebase. APNs
+    // SILENTLY DROPS pushes when these don't match, with no error anywhere.
+    //
+    // The only reliable source of truth is the `aps-environment` value
+    // baked into the embedded provisioning profile at code-sign time. We
+    // parse it at launch and use it for the lifetime of the process.
+    let apnsType: MessagingAPNSTokenType = AppDelegate.detectAPNSEnvironment()
+    Messaging.messaging().setAPNSToken(deviceToken, type: apnsType)
+    print("[AdsyClub] APNS device token registered (\(apnsType == .sandbox ? "sandbox" : "production")): \(token)")
     super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+  }
+
+  /// Reads the embedded.mobileprovision shipped inside the app bundle and
+  /// returns `.sandbox` when `aps-environment = development`, `.prod` when
+  /// `aps-environment = production`. Simulators always return `.sandbox`.
+  /// Falls back to `.prod` only if the file cannot be parsed — production
+  /// IPAs (App Store / TestFlight) never ship without an embedded profile.
+  private static func detectAPNSEnvironment() -> MessagingAPNSTokenType {
+    #if targetEnvironment(simulator)
+    return .sandbox
+    #else
+    guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
+          let data = try? Data(contentsOf: url),
+          let raw = String(data: data, encoding: .isoLatin1) else {
+      return .prod
+    }
+    // The profile is CMS-wrapped binary, but the inner plist is plain ASCII
+    // and contains <key>aps-environment</key><string>development|production</string>.
+    if let envRange = raw.range(of: "aps-environment") {
+      let suffix = raw[envRange.upperBound...]
+      if let openTag = suffix.range(of: "<string>"),
+         let closeTag = suffix.range(of: "</string>", range: openTag.upperBound..<suffix.endIndex) {
+        let value = suffix[openTag.upperBound..<closeTag.lowerBound]
+          .trimmingCharacters(in: .whitespacesAndNewlines)
+        if value == "development" { return .sandbox }
+        if value == "production"  { return .prod }
+      }
+    }
+    return .prod
+    #endif
   }
 
   // Catches APNs registration failures (certificate mismatch, entitlement issues,

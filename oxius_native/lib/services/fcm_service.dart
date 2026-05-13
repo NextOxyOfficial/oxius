@@ -2157,6 +2157,19 @@ class FCMService {
     final data = message.data;
 
     if (notification != null) {
+      // iOS ROOT-CAUSE FIX: When a remote message carries a `notification`
+      // payload, iOS already presents a banner via AppDelegate.willPresent
+      // (we explicitly return .banner/.sound/.badge there). Calling
+      // flutter_local_notifications.show() afterwards stacks a *second*
+      // notification on top of the one iOS just rendered — which iOS
+      // de-duplicates by *suppressing* the visible alert, so the end user
+      // sees nothing on screen even though the payload arrived correctly.
+      // Skip the local-notification re-render on iOS; Android still needs
+      // it because Firebase auto-renders only when the app is killed.
+      if (Platform.isIOS) {
+        return;
+      }
+
       const AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
         'oxius_messages',

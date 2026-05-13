@@ -287,7 +287,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               colors: [Colors.amber.shade500, Colors.orange.shade600],
             ),
             onTap: () {
-              Navigator.pushNamed(context, '/news');
+              Navigator.pushNamed(context, '/adsy-news');
             },
           ),
         ],

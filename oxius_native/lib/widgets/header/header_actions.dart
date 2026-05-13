@@ -105,7 +105,7 @@ class _HeaderActionsState extends State<HeaderActions> {
     final isVerified = user.isVerified ?? false;
 
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/profile'),
+      onTap: () => Navigator.pushNamed(context, '/settings'),
       child: Container(
         width: avatarSize,
         height: avatarSize,

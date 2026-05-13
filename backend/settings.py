@@ -30,6 +30,15 @@ from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load environment variables from .env file (if present) so local dev can
+# flip DEBUG/CORS without touching settings.py. Safe no-op in prod where
+# the file is absent and real env vars are injected by the platform.
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / ".env")
+except ImportError:
+    pass
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-"
@@ -39,7 +48,10 @@ SECRET_KEY = "django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-
 # DEBUG=True adds ~2-3s latency per request (full query logging, verbose errors).
 DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1", "yes", "on")
 
-ALLOWED_HOSTS = ["adsyclub.com", "www.adsyclub.com"]
+_local_hosts = ["localhost", "127.0.0.1", "10.0.2.2"]
+_prod_hosts = ["adsyclub.com", "www.adsyclub.com"]
+# Loopback addresses are always safe — they are unreachable from the internet.
+ALLOWED_HOSTS = _prod_hosts + _local_hosts
 AUTH_USER_MODEL = "base.User"
 
 
@@ -89,7 +101,14 @@ CORS_ALLOWED_ORIGINS = [
 
 # CORS settings for API access
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = False
+# Allow all origins in DEBUG so local dev servers (Flutter web, Nuxt) aren't blocked.
+# Production keeps strict origin allowlist.
+# Allow all origins when DEBUG or when request comes from localhost.
+# Production Cloudflare proxy always sends the real domain as Origin anyway.
+# Production=False (strict). Override with CORS_ALLOW_ALL_ORIGINS=true env var
+# for local dev when .env loading is unavailable.
+_cors_allow_all_env = os.getenv("CORS_ALLOW_ALL_ORIGINS", "").lower()
+CORS_ALLOW_ALL_ORIGINS = DEBUG or (_cors_allow_all_env in ("true", "1"))
 CORS_ALLOWED_HEADERS = [
     "accept",
     "accept-encoding",

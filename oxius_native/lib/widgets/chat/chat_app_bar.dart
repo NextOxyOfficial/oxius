@@ -95,6 +95,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isPro;
   final bool isOnline;
   final bool isTyping;
+
   /// Pre-formatted "last seen …" string (e.g. "Last seen 2h ago").
   final String lastSeenLabel;
   final bool blockedByMe;
@@ -112,6 +113,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onCloseSearch;
   final VoidCallback onPrevMatch;
   final VoidCallback onNextMatch;
+  final VoidCallback onViewProfile;
   final void Function(String callType) onStartCall;
   final void Function(String action) onMenuAction;
 
@@ -136,6 +138,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onCloseSearch,
     required this.onPrevMatch,
     required this.onNextMatch,
+    required this.onViewProfile,
     required this.onStartCall,
     required this.onMenuAction,
   });
@@ -165,14 +168,15 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: Padding(
         padding: const EdgeInsets.only(left: 4),
         child: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: Colors.white, size: 22),
           onPressed: () {
             if (isSearchMode) {
               onCloseSearch();
               return;
             }
             FocusManager.instance.primaryFocus?.unfocus();
-            Navigator.pop(context);
+            onBack();
           },
           padding: EdgeInsets.zero,
         ),
@@ -209,11 +213,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildTitleRow(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
-        context,
-        '/business-network/profile',
-        arguments: {'userId': userId},
-      ),
+      onTap: onViewProfile,
       child: Row(
         children: [
           _buildAvatar(),
@@ -244,7 +244,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
+              border:
+                  Border.all(color: Colors.white.withOpacity(0.3), width: 2),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -325,7 +326,8 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               final textPainter = TextPainter(
                 text: TextSpan(
                   text: userName,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                      fontSize: 17, fontWeight: FontWeight.w700),
                 ),
                 maxLines: 1,
                 textDirection: TextDirection.ltr,
@@ -335,18 +337,21 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               final needsScroll = textPainter.width > availableWidth;
 
               const nameStyle = TextStyle(
-                fontSize: 15,
+                fontSize: 17,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 letterSpacing: -0.3,
                 shadows: [
-                  Shadow(color: Colors.black26, offset: Offset(0, 1), blurRadius: 2),
+                  Shadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 1),
+                      blurRadius: 2),
                 ],
               );
 
               if (needsScroll) {
                 return SizedBox(
-                  height: 20,
+                  height: 22,
                   child: MarqueeText(text: userName, style: nameStyle),
                 );
               }
@@ -423,7 +428,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ? 'Online'
                   : lastSeenLabel,
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
             color: isTyping
                 ? const Color(0xFF93C5FD)
@@ -457,11 +462,13 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       IconButton(
         onPressed: hasMatches ? onPrevMatch : null,
-        icon: const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white, size: 22),
+        icon: const Icon(Icons.keyboard_arrow_up_rounded,
+            color: Colors.white, size: 22),
       ),
       IconButton(
         onPressed: hasMatches ? onNextMatch : null,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 22),
+        icon: const Icon(Icons.keyboard_arrow_down_rounded,
+            color: Colors.white, size: 22),
       ),
       IconButton(
         onPressed: onCloseSearch,
@@ -474,28 +481,50 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     return [
       IconButton(
         onPressed: () => onStartCall('audio'),
-        icon: const Icon(Icons.call_rounded, color: Colors.white, size: 20),
+        icon: const Icon(Icons.call_rounded, color: Colors.white, size: 24),
       ),
       IconButton(
         onPressed: () => onStartCall('video'),
-        icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
+        icon: const Icon(Icons.videocam_rounded, color: Colors.white, size: 26),
       ),
-      PopupMenuButton<String>(
-        icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 20),
-        offset: const Offset(0, 50),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        itemBuilder: (context) => [
-          _menuItem('search', Icons.search_rounded, 'Search messages', const Color(0xFF3B82F6)),
-          _menuItem('view_profile', Icons.person_rounded, 'View ABN Profile', const Color(0xFF3B82F6)),
-          _menuItem(
-            blockedByMe ? 'unblock' : 'block',
-            blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
-            blockedByMe ? 'Unblock' : 'Block',
-            blockedByMe ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
-          ),
-          _menuItem('report', Icons.flag_rounded, 'Report', const Color(0xFFEF4444)),
-        ],
-        onSelected: onMenuAction,
+      Builder(
+        builder: (ctx) => IconButton(
+          icon: const Icon(Icons.more_vert_rounded,
+              color: Colors.white, size: 24),
+          onPressed: () async {
+            final box = ctx.findRenderObject() as RenderBox?;
+            final overlay =
+                Overlay.of(ctx).context.findRenderObject() as RenderBox?;
+            if (box == null || overlay == null) return;
+            final position = RelativeRect.fromRect(
+              box.localToGlobal(Offset.zero, ancestor: overlay) & box.size,
+              Offset.zero & overlay.size,
+            );
+            final result = await showMenu<String>(
+              context: ctx,
+              position: position,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              items: [
+                _menuItem('search', Icons.search_rounded, 'Search messages',
+                    const Color(0xFF3B82F6)),
+                _menuItem('view_profile', Icons.person_rounded,
+                    'View ABN Profile', const Color(0xFF3B82F6)),
+                _menuItem(
+                  blockedByMe ? 'unblock' : 'block',
+                  blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
+                  blockedByMe ? 'Unblock' : 'Block',
+                  blockedByMe
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFF59E0B),
+                ),
+                _menuItem('report', Icons.flag_rounded, 'Report',
+                    const Color(0xFFEF4444)),
+              ],
+            );
+            if (result != null) onMenuAction(result);
+          },
+        ),
       ),
     ];
   }

@@ -45,6 +45,7 @@ import 'screens/terms_and_conditions_screen.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/elearning_screen.dart';
 import 'screens/food_zone_screen.dart';
+import 'screens/settings_screen.dart';
 import 'pages/login_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/register_page.dart';
@@ -336,6 +337,7 @@ class MyApp extends StatelessWidget {
                   const TermsAndConditionsScreen(),
               '/privacy-policy': (context) => const PrivacyPolicyScreen(),
               '/food-zone': (context) => const FoodZoneScreen(),
+              '/settings': (context) => const SettingsScreen(),
               '/rideshare': (context) => const RideshareScreen(),
               '/rideshare/history': (context) => const RideshareHistoryScreen(),
               '/rideshare/driver-history': (context) =>
@@ -454,6 +456,34 @@ class MyApp extends StatelessWidget {
                 );
               }
               return null;
+            },
+            // CRITICAL SAFETY NET: if any code calls `Navigator.pushNamed`
+            // with a route that does not exist in `routes` or `onGenerateRoute`,
+            // Flutter will throw "Could not find a generator for route ...".
+            // That exception leaves `Navigator._debugLocked == true` on web,
+            // which silently bricks every subsequent tap / push across the
+            // entire app until full reload. Returning a fallback route here
+            // keeps the navigator transaction clean and surfaces the bug as
+            // a visible screen instead of a frozen UI.
+            onUnknownRoute: (settings) {
+              Telemetry.event('nav.unknown_route', tags: {
+                'name': settings.name ?? '<null>',
+              });
+              return MaterialPageRoute(
+                settings: settings,
+                builder: (_) => Scaffold(
+                  appBar: AppBar(title: const Text('Page not found')),
+                  body: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        'Route "${settings.name}" is not registered.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+              );
             },
           ),
         );
