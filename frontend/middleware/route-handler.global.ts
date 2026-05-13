@@ -2,6 +2,14 @@
 export default defineNuxtRouteMiddleware((to, from) => {
   // Handle routes with special characters that might cause issues in Capacitor
   if (process.client && typeof window !== 'undefined') {
+    if (
+      window.location.protocol === 'http:' &&
+      ['adsyclub.com', 'www.adsyclub.com'].includes(window.location.hostname)
+    ) {
+      window.location.replace(`https://${window.location.host}${to.fullPath}`);
+      return;
+    }
+
     // Check if we're in a Capacitor environment
     const isCapacitor = window.location.protocol === 'capacitor:' || 
                        window.location.protocol === 'https:' && 

@@ -48,6 +48,29 @@ def generate_unique_slug(model_class, field_value, instance=None):
     return unique_slug
 
 
+def generate_unique_username(user):
+    name_source = f"{user.first_name or ''} {user.last_name or ''}".strip()
+    if not name_source:
+        name_source = (user.name or "").strip()
+    if not name_source and user.email:
+        name_source = user.email.split("@", 1)[0]
+
+    base = slugify(name_source).replace("-", "")
+    if not base:
+        base = re.sub(r"[^A-Za-z0-9]+", "", name_source).lower()
+    base = (base or "adsyclub")[:32]
+
+    while True:
+        suffix_length = random.randint(2, 4)
+        suffix = "".join(random.choices(string.digits, k=suffix_length))
+        username = f"{base}{suffix}"
+        queryset = User.objects.filter(username__iexact=username)
+        if user.pk:
+            queryset = queryset.exclude(pk=user.pk)
+        if not queryset.exists():
+            return username
+
+
 # Create your models here.
 
 
@@ -121,6 +144,9 @@ class User(AbstractUser):
         return self.email
 
     def save(self, *args, **kwargs):
+        if not self.username or "@" in self.username:
+            self.username = generate_unique_username(self)
+
         if not self.referral_code:
             # Generate a unique referral code
             while True:

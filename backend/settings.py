@@ -39,7 +39,7 @@ SECRET_KEY = "django-insecure-!fhx-*zsy791frr7y538j7bt5mx_*5pr@*inb$w!bxzszqs0^-
 # DEBUG=True adds ~2-3s latency per request (full query logging, verbose errors).
 DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1", "yes", "on")
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["adsyclub.com", "www.adsyclub.com"]
 AUTH_USER_MODEL = "base.User"
 
 
@@ -83,18 +83,13 @@ INSTALLED_APPS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://localhost",
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://adsyclub.com",
     "https://adsyclub.com",
-    "http://www.adsyclub.com",
     "https://www.adsyclub.com",
 ]
 
 # CORS settings for API access
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for API access
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_HEADERS = [
     "accept",
     "accept-encoding",
@@ -110,17 +105,12 @@ CORS_ALLOWED_HEADERS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://localhost",
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://adsyclub.com",
     "https://adsyclub.com",
-    "http://www.adsyclub.com",
     "https://www.adsyclub.com",
 ]
 
 # CSRF settings for API compatibility
-CSRF_COOKIE_SECURE = False  # Set to True only with HTTPS in production
+CSRF_COOKIE_SECURE = True
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
 
@@ -154,12 +144,13 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # contention under load). Sessions are auto-refreshed by SessionMiddleware
 # when actually modified; the explicit save was redundant.
 SESSION_COOKIE_HTTPONLY = True  # Security: prevent JS access to session cookie
-SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = True
 SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
 
 MIDDLEWARE = [
     "base.middleware.BlockConnectMethodMiddleware",  # Block HTTP CONNECT proxy requests
     "django.middleware.security.SecurityMiddleware",
+    "backend.https_redirect_middleware.CloudflareHttpsRedirectMiddleware",
     # Add whitenoise middleware right after security middleware
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

@@ -1,4 +1,5 @@
 import json
+import logging
 import secrets
 from decimal import Decimal, InvalidOperation
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
@@ -13,6 +14,9 @@ from rest_framework.response import Response
 from shurjopay_plugin import *
 
 from .models import Balance
+
+
+logger = logging.getLogger(__name__)
 
 
 _PAYMENT_STATE_MAX_AGE = 60 * 60 * 6
@@ -69,6 +73,38 @@ def _serialize_payment_details(payment_details):
     if hasattr(payment_details, "__dict__"):
         return payment_details.__dict__
     return None
+
+
+_PENDING_PAYMENT_MARKERS = [
+    "not found",
+    "no data",
+    "invalid sp order id",
+    "invalid order",
+    "does not exist",
+    "unable to verify",
+    "merchant order",
+    "initiated",
+    "pending",
+]
+
+
+def _is_pending_payment_error(message):
+    normalized_message = str(message or "").lower()
+    return any(marker in normalized_message for marker in _PENDING_PAYMENT_MARKERS)
+
+
+def _pending_payment_response(order_id=None, *, include_success=False):
+    payload = {
+        "status": "pending",
+        "bank_status": "pending",
+        "shurjopay_message": "Pending",
+        "message": "Payment is not confirmed yet.",
+    }
+    if order_id:
+        payload["sp_order_id"] = order_id
+    if include_success:
+        payload["success"] = False
+    return Response(payload, status=status.HTTP_200_OK)
 
 
 def _find_checkout_url(payload):
@@ -254,31 +290,13 @@ def verifyPayment(request):
         return Response(payment_details_dict, status=status.HTTP_200_OK)
     except Exception as e:
         message = str(e)
-        normalized_message = message.lower()
+        if _is_pending_payment_error(message):
+            logger.info("Shurjopay verification still pending for order %s", oid)
+            return _pending_payment_response(oid)
 
-        pending_markers = [
-            "not found",
-            "no data",
-            "invalid sp order id",
-            "invalid order",
-            "does not exist",
-            "unable to verify",
-            "merchant order",
-        ]
-
-        if any(marker in normalized_message for marker in pending_markers):
-            return Response(
-                {
-                    "sp_order_id": oid,
-                    "bank_status": "pending",
-                    "shurjopay_message": "Pending",
-                    "message": "Payment is not confirmed yet.",
-                },
-                status=status.HTTP_200_OK,
-            )
-
+        logger.exception("Unexpected Shurjopay verification error for order %s", oid)
         return Response(
-            {"error": message},
+            {"error": "Payment verification failed."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
@@ -403,26 +421,12 @@ def finalizePaymentWithState(request):
             raise ValueError("Payment details could not be serialized.")
     except Exception as exc:
         message = str(exc)
-        normalized_message = message.lower()
-        pending_markers = [
-            "not found",
-            "no data",
-            "invalid sp order id",
-            "invalid order",
-            "does not exist",
-            "unable to verify",
-            "merchant order",
-        ]
-        if any(marker in normalized_message for marker in pending_markers):
-            return Response(
-                {
-                    "success": False,
-                    "status": "pending",
-                    "message": "Payment is not confirmed yet.",
-                },
-                status=status.HTTP_200_OK,
-            )
-        return Response({"error": message}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if _is_pending_payment_error(message):
+            logger.info("Shurjopay finalization still pending for order %s", order_id)
+            return _pending_payment_response(order_id, include_success=True)
+
+        logger.exception("Unexpected Shurjopay finalization error for order %s", order_id)
+        return Response({"error": "Payment verification failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     bank_status = str(payment_details_dict.get("bank_status") or "").lower()
     sp_message = str(payment_details_dict.get("shurjopay_message") or "").lower()

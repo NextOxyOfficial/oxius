@@ -487,8 +487,19 @@ function handleItemsPerPageChange(value) {
 function resetPagination() {
   currentPage.value = 1;
 }
-const { data } = await get("/micro-gigs/");
-microGigs.value = data;
+
+function normalizeList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+}
+
+async function loadMicroGigs(url = "/micro-gigs/") {
+  const { data } = await get(url);
+  microGigs.value = normalizeList(data);
+}
+
+await loadMicroGigs();
 const res = await get("/classified-categories/");
 services.value = res.data;
 const classifiedLatestPosts = ref([]);
@@ -529,49 +540,52 @@ function getProgressBarColor(gig) {
 }
 
 async function getMicroGigsCategories() {
-  const categoryCounts = microGigs.value.reduce((acc, gig) => {
-    const category = gig.category_details.title;
-    const id = gig.category_details.id;
+  const [categoriesRes, allGigsRes] = await Promise.all([
+    get("/micro-gigs-categories/"),
+    get("/micro-gigs/?show_all=true"),
+  ]);
+
+  const categories = normalizeList(categoriesRes.data);
+  const allGigs = normalizeList(allGigsRes.data);
+
+  const categoryCounts = allGigs.reduce((acc, gig) => {
+    const id = gig.category_details?.id || gig.category;
+    if (!id) return acc;
     const isActiveAndApproved =
       gig.active_gig && gig.gig_status === "approved" && gig.user?.id;
 
-    if (!acc[category]) {
-      acc[category] = { total: 0, active: 0, id: id };
+    if (!acc[id]) {
+      acc[id] = { total: 0, active: 0 };
     }
 
-    acc[category].total++;
+    acc[id].total++;
     if (isActiveAndApproved) {
-      acc[category].active++;
+      acc[id].active++;
     }
 
     return acc;
   }, {});
 
-  categoryArray.value = Object.entries(categoryCounts).map(
-    ([category, { total, active, id }]) => ({
-      category,
-      total,
-      active,
-      id,
-    })
-  );
+  categoryArray.value = categories.map((category) => ({
+    category: category.title,
+    total: categoryCounts[category.id]?.total || 0,
+    active: categoryCounts[category.id]?.active || 0,
+    id: category.id,
+  }));
 }
 
-setTimeout(() => {
-  getMicroGigsCategories();
-}, 20);
+await getMicroGigsCategories();
 
 async function getMicroGigsByAvailability(e) {
+  const value = typeof e === "object" ? e?.value : e;
   resetPagination();
-  if (e === "completed") {
-    const { data, error } = await get(`/micro-gigs/?show_submitted=true`);
-    microGigs.value = data;
-  } else if (e === "approved") {
-    const { data, error } = await get(`/micro-gigs/?show_submitted=false`);
-    microGigs.value = data;
+  selectedCategory.value = null;
+  if (value === "completed") {
+    await loadMicroGigs(`/micro-gigs/?show_submitted=true`);
+  } else if (value === "approved") {
+    await loadMicroGigs(`/micro-gigs/?show_submitted=false`);
   } else {
-    const { data, error } = await get(`/micro-gigs/`);
-    microGigs.value = data;
+    await loadMicroGigs(`/micro-gigs/`);
   }
 }
 
@@ -579,10 +593,7 @@ const selectCategory = async (category) => {
   selectedCategory.value = category || null;
   resetPagination();
   try {
-    const { data, error } = await get(
-      `/micro-gigs/?category=${category.id}&show_submitted=${false}`
-    );
-    microGigs.value = data;
+    await loadMicroGigs(`/micro-gigs/?category=${category.id}&show_submitted=false`);
   } catch (error) {
     console.error(error);
     toast.add({ title: "error" });
@@ -593,9 +604,7 @@ const selectAllCategories = async () => {
   selectedCategory.value = null;
   resetPagination();
   try {
-    const { data, error } = await get(`/micro-gigs/`);
-    microGigs.value = data;
-    getMicroGigsCategories();
+    await loadMicroGigs(`/micro-gigs/`);
   } catch (error) {
     console.error(error);
     toast.add({ title: "error" });
