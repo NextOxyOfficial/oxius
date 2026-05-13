@@ -76,7 +76,20 @@ class _VerificationScreenState extends State<VerificationScreen> {
     return ((completed / 3) * 100).floor();
   }
 
+  /// Documents are considered locked once they have been submitted for
+  /// review (pending) or approved. In both states the user must not be able
+  /// to upload / replace / delete — verification is out of their hands until
+  /// support resets it. This is the single source of truth used by the
+  /// upload cards, the submit button and the picker/delete handlers.
+  bool get _isLocked => _isPending || _isVerified;
+
   Future<void> _pickImage(String field) async {
+    if (_isLocked) {
+      // Defensive: UI already hides the entry points, but if anything still
+      // triggers a pick (e.g. an in-flight tap during state transition) we
+      // refuse silently to keep submitted documents immutable.
+      return;
+    }
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -135,6 +148,11 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   void _deleteImage(String field) {
+    if (_isLocked) {
+      // Submitted / approved documents are immutable. UI hides the Remove
+      // button, this is the defensive backstop.
+      return;
+    }
     setState(() {
       switch (field) {
         case 'front':
@@ -151,6 +169,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   Future<void> _submitDocuments() async {
+    if (_isLocked) {
+      return;
+    }
     setState(() {
       _errors['front'] = _frontImage == null;
       _errors['back'] = _backImage == null;
@@ -877,44 +898,48 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ],
               ),
               const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submitDocuments,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F766E),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+              // Hide the submit button entirely once the user has already
+              // submitted (pending review) or been approved. Keeping it
+              // visible — even disabled — invites confusion and tap retries.
+              if (!_isLocked)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _submitDocuments,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F766E),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
                     ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.send_rounded, size: 18),
-                            SizedBox(width: 8),
-                            Text(
-                              'Submit Documents',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.send_rounded, size: 18),
+                              SizedBox(width: 8),
+                              Text(
+                                'Submit Documents',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
@@ -923,6 +948,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   Widget _buildUploadField(String label, String field, String? image, bool hasError) {
+    final bool locked = _isLocked;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -975,46 +1001,97 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           fit: BoxFit.cover,
                         ),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _pickImage(field),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF0F766E),
-                          side: const BorderSide(color: Color(0xFF99F6E4)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('Replace'),
+                // Once documents are submitted (pending review) or already
+                // approved, the Replace / Remove actions must not appear —
+                // submitted documents are immutable until support resets the
+                // verification state. Show a read-only status chip instead.
+                if (locked) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: _isVerified
+                          ? const Color(0xFFECFDF5)
+                          : const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _isVerified
+                            ? const Color(0xFFA7F3D0)
+                            : const Color(0xFFFED7AA),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () => _deleteImage(field),
-                        style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFFDC2626),
-                          backgroundColor: const Color(0xFFFEF2F2),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _isVerified
+                              ? Icons.verified_rounded
+                              : Icons.hourglass_top_rounded,
+                          size: 16,
+                          color: _isVerified
+                              ? const Color(0xFF059669)
+                              : const Color(0xFFD97706),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _isVerified
+                              ? 'Approved'
+                              : 'Submitted — awaiting review',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _isVerified
+                                ? const Color(0xFF065F46)
+                                : const Color(0xFF9A3412),
                           ),
                         ),
-                        icon: const Icon(Icons.delete_outline_rounded, size: 18),
-                        label: const Text('Remove'),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _pickImage(field),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF0F766E),
+                            side: const BorderSide(color: Color(0xFF99F6E4)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: const Text('Replace'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: () => _deleteImage(field),
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFDC2626),
+                            backgroundColor: const Color(0xFFFEF2F2),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                          label: const Text('Remove'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           )
-        else
+        else if (!locked)
           GestureDetector(
             onTap: () => _pickImage(field),
             child: Container(

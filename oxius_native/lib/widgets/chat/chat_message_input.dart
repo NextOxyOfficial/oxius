@@ -287,7 +287,7 @@ class ChatMessageInput extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'Compressing...',
+                  'Uploading...',
                   style: TextStyle(
                     fontSize: 13,
                     color: Color(0xFF8B5CF6),
