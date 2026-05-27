@@ -44,6 +44,10 @@ class TipsAndSuggestionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class BreakingNewsSerializer(serializers.ModelSerializer):
+    news_slug = serializers.CharField(source='news.slug', read_only=True)
+    news_title = serializers.CharField(source='news.title', read_only=True)
+    news_image = serializers.ImageField(source='news.image', read_only=True)
+
     class Meta:
         model = BreakingNews
         fields = '__all__'

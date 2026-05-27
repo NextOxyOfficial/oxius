@@ -170,7 +170,7 @@ class PostsByCategory(generics.ListAPIView):
 
 
 class BreakingNewsListView(generics.ListAPIView):
-    queryset = BreakingNews.objects.all()
+    queryset = BreakingNews.objects.select_related('news').order_by('-created_at')
     serializer_class = BreakingNewsSerializer
     permission_classes = [AllowAny]
 

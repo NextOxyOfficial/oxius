@@ -191,6 +191,38 @@ class TipSuggestion {
   }
 }
 
+class BreakingNewsItem {
+  final dynamic id;
+  final String title;
+  final String? newsSlug;
+  final String? newsTitle;
+  final String? newsImage;
+
+  BreakingNewsItem({
+    required this.id,
+    required this.title,
+    this.newsSlug,
+    this.newsTitle,
+    this.newsImage,
+  });
+
+  factory BreakingNewsItem.fromJson(Map<String, dynamic> json) {
+    return BreakingNewsItem(
+      id: json['id'],
+      title: json['title']?.toString() ?? '',
+      newsSlug: json['news_slug']?.toString(),
+      newsTitle: json['news_title']?.toString(),
+      newsImage: json['news_image']?.toString(),
+    );
+  }
+
+  String get displayTitle {
+    final linkedTitle = (newsTitle ?? '').trim();
+    if (linkedTitle.isNotEmpty) return linkedTitle;
+    return title.trim();
+  }
+}
+
 class PaginatedNewsResponse {
   final int count;
   final String? next;

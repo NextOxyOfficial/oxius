@@ -15,6 +15,6 @@ class TipsAndSuggestionAdmin(admin.ModelAdmin):
 
 @admin.register(BreakingNews)
 class BreakingNewsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'created_at', 'updated_at')
-    search_fields = ('title', 'description')
+    list_display = ('id', 'title', 'news', 'created_at', 'updated_at')
+    search_fields = ('title', 'news__title')
     

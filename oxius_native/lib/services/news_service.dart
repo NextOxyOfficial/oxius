@@ -127,8 +127,7 @@ class NewsService {
 
     try {
       final response = await http.get(
-        Uri.parse(
-            '$baseUrl/api/news/categories/$categorySlug/?page=$page'),
+        Uri.parse('$baseUrl/api/news/categories/$categorySlug/?page=$page'),
       );
 
       if (response.statusCode == 200) {
@@ -136,8 +135,9 @@ class NewsService {
         List<NewsPost> posts;
 
         if (data is Map && data.containsKey('results')) {
-          posts =
-              (data['results'] as List).map((p) => NewsPost.fromJson(p)).toList();
+          posts = (data['results'] as List)
+              .map((p) => NewsPost.fromJson(p))
+              .toList();
         } else if (data is List) {
           posts = data.map((p) => NewsPost.fromJson(p)).toList();
         } else {
@@ -194,6 +194,43 @@ class NewsService {
       }
     } catch (e) {
       throw Exception('Error fetching tips and suggestions: $e');
+    }
+  }
+
+  static Future<List<BreakingNewsItem>> getBreakingNews() async {
+    const cacheKey = 'breaking_news';
+
+    if (_isCacheValid(cacheKey)) {
+      return _cache[cacheKey] as List<BreakingNewsItem>;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/news/breaking-news/'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final rawItems = data is Map && data.containsKey('results')
+            ? data['results'] as List
+            : data is List
+                ? data
+                : <dynamic>[];
+        final items = rawItems
+            .whereType<Map>()
+            .map((item) =>
+                BreakingNewsItem.fromJson(Map<String, dynamic>.from(item)))
+            .where((item) => item.displayTitle.isNotEmpty)
+            .toList();
+
+        _cache[cacheKey] = items;
+        _cacheTimestamps[cacheKey] = DateTime.now();
+        return items;
+      }
+      throw Exception('Failed to load breaking news: ${response.statusCode}');
+    } catch (e) {
+      print('Error fetching breaking news: $e');
+      return [];
     }
   }
 

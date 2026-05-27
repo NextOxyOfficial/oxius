@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
+import '../services/news_service.dart';
 import '../services/translation_service.dart';
 import '../services/notification_service.dart';
 import '../services/user_state_service.dart';
+import '../models/news_models.dart';
 import '../config/app_config.dart';
 import '../screens/eshop_screen.dart';
 import '../screens/elearning_screen.dart';
 import '../screens/news_screen.dart';
+import '../screens/news_detail_screen.dart';
 import '../screens/rideshare/rideshare_screen.dart';
 import 'ios_web_redirect_screen.dart';
 
@@ -22,9 +25,13 @@ class HeroBanner extends StatefulWidget {
 class _HeroBannerState extends State<HeroBanner> {
   final PageController _heroController = PageController();
   Timer? _heroTimer;
+  Timer? _newsTickerTimer;
   int _currentHeroIndex = 0;
+  int _newsTickerIndex = 0;
   List<dynamic> bannerImages = [];
+  List<BreakingNewsItem> _featuredNews = [];
   bool isLoading = true;
+  bool _newsGlow = true;
   final TranslationService _translationService = TranslationService();
   final UserStateService _userStateService = UserStateService();
   int _unreadNotificationCount = 0;
@@ -142,6 +149,7 @@ class _HeroBannerState extends State<HeroBanner> {
       if (mounted) setState(() {});
     });
     _loadBannerImages();
+    _loadFeaturedNews();
     _startHeroTimer();
 
     // Listen to user state changes
@@ -187,6 +195,28 @@ class _HeroBannerState extends State<HeroBanner> {
     }
   }
 
+  Future<void> _loadFeaturedNews() async {
+    final items = await NewsService.getBreakingNews();
+    if (!mounted) return;
+    setState(() {
+      _featuredNews = items.take(8).toList();
+      _newsTickerIndex = 0;
+    });
+    _startNewsTicker();
+  }
+
+  void _startNewsTicker() {
+    _newsTickerTimer?.cancel();
+    if (_featuredNews.length <= 1) return;
+    _newsTickerTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted || _featuredNews.isEmpty) return;
+      setState(() {
+        _newsTickerIndex = (_newsTickerIndex + 1) % _featuredNews.length;
+        _newsGlow = !_newsGlow;
+      });
+    });
+  }
+
   // Load banner images from API
   Future<void> _loadBannerImages() async {
     try {
@@ -228,6 +258,7 @@ class _HeroBannerState extends State<HeroBanner> {
   @override
   void dispose() {
     _heroTimer?.cancel();
+    _newsTickerTimer?.cancel();
     _heroController.dispose();
     _translationService.removeListener(_onTranslationsChanged);
     _userStateService.removeListener(_onUserStateChanged);
@@ -254,8 +285,6 @@ class _HeroBannerState extends State<HeroBanner> {
 
   // Professional card that wraps the services with a clean header
   Widget _buildServicesSection() {
-    final title = _translationService.t('social_business_network',
-        fallback: 'Social Business Network');
     return Container(
       // Mobile-only margin
       margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -275,77 +304,210 @@ class _HeroBannerState extends State<HeroBanner> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header bar - professional pill with icon and translated title
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF6F8FB), Color(0xFFF2F4F7)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
-            ),
-            child: Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.grey.shade200),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
-                        ),
-                        borderRadius: BorderRadius.circular(9),
-                      ),
-                      child:
-                          const Icon(Icons.apps, size: 12, color: Colors.white),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: Colors.grey.shade800,
-                              ) ??
-                          TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.grey.shade800,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _buildFeaturedNewsTicker(),
           // Grid area
           Padding(
-            padding: const EdgeInsets.only(top: 4, bottom: 8),
+            padding: const EdgeInsets.only(top: 2, bottom: 8),
             child: _buildMobileServicesGrid(
               margin: EdgeInsets.zero,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFeaturedNewsTicker() {
+    if (_featuredNews.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF6F8FB), Color(0xFFF2F4F7)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+        ),
+        child: Center(
+          child: _buildTickerLabel(
+            _translationService.t('social_business_network',
+                fallback: 'Social Business Network'),
+          ),
+        ),
+      );
+    }
+
+    final item = _featuredNews[_newsTickerIndex % _featuredNews.length];
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 850),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _newsGlow
+              ? const [Color(0xFFFFFBEB), Color(0xFFECFDF5)]
+              : const [Color(0xFFF8FAFC), Color(0xFFEFF6FF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        border: const Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+        boxShadow: [
+          BoxShadow(
+            color:
+                (_newsGlow ? const Color(0xFFF59E0B) : const Color(0xFF10B981))
+                    .withOpacity(0.14),
+            blurRadius: _newsGlow ? 18 : 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () => _openFeaturedNews(item),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEF4444),
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEF4444).withOpacity(0.28),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.bolt_rounded, size: 13, color: Colors.white),
+                  SizedBox(width: 3),
+                  Text(
+                    'Featured',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ClipRect(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 450),
+                  transitionBuilder: (child, animation) {
+                    final offset = Tween<Offset>(
+                      begin: const Offset(0.08, 0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ));
+                    return SlideTransition(
+                      position: offset,
+                      child: FadeTransition(opacity: animation, child: child),
+                    );
+                  },
+                  child: Text(
+                    item.displayTitle,
+                    key: ValueKey('${item.id}_${item.displayTitle}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'বিস্তারিত',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0D9488),
+              ),
+            ),
+            const SizedBox(width: 2),
+            const Icon(Icons.chevron_right_rounded,
+                size: 18, color: Color(0xFF0D9488)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTickerLabel(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF10B981), Color(0xFF06B6D4)],
+              ),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: const Icon(Icons.apps, size: 12, color: Colors.white),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey.shade800,
+                    ) ??
+                TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.grey.shade800,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openFeaturedNews(BreakingNewsItem item) {
+    final slug = (item.newsSlug ?? '').trim();
+    if (slug.isEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const NewsScreen()),
+      );
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => NewsDetailScreen(slug: slug)),
     );
   }
 
