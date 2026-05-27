@@ -223,8 +223,13 @@ class NewsService {
             .where((item) => item.displayTitle.isNotEmpty)
             .toList();
 
-        _cache[cacheKey] = items;
-        _cacheTimestamps[cacheKey] = DateTime.now();
+        if (items.isNotEmpty) {
+          _cache[cacheKey] = items;
+          _cacheTimestamps[cacheKey] = DateTime.now();
+        } else {
+          _cache.remove(cacheKey);
+          _cacheTimestamps.remove(cacheKey);
+        }
         return items;
       }
       throw Exception('Failed to load breaking news: ${response.statusCode}');

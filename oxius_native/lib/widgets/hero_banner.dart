@@ -343,24 +343,28 @@ class _HeroBannerState extends State<HeroBanner> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 850),
       curve: Curves.easeInOut,
-      padding: const EdgeInsets.fromLTRB(10, 9, 10, 9),
+      margin: const EdgeInsets.fromLTRB(8, 8, 8, 10),
+      padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: _newsGlow
-              ? const [Color(0xFFFFFBEB), Color(0xFFECFDF5)]
-              : const [Color(0xFFF8FAFC), Color(0xFFEFF6FF)],
+              ? const [Color(0xFFFFF7ED), Color(0xFFEFF6FF)]
+              : const [Color(0xFFECFDF5), Color(0xFFFFFBEB)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        border: const Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _newsGlow ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
+          width: 1.1,
+        ),
         boxShadow: [
           BoxShadow(
             color:
                 (_newsGlow ? const Color(0xFFF59E0B) : const Color(0xFF10B981))
-                    .withOpacity(0.14),
-            blurRadius: _newsGlow ? 18 : 8,
-            offset: const Offset(0, 4),
+                    .withOpacity(_newsGlow ? 0.22 : 0.12),
+            blurRadius: _newsGlow ? 20 : 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -369,82 +373,124 @@ class _HeroBannerState extends State<HeroBanner> {
         onTap: () => _openFeaturedNews(item),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEF4444),
-                borderRadius: BorderRadius.circular(999),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFEF4444).withOpacity(0.28),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.bolt_rounded, size: 13, color: Colors.white),
-                  SizedBox(width: 3),
-                  Text(
-                    'Featured',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildBreakingBadge(),
             const SizedBox(width: 8),
-            Expanded(
-              child: ClipRect(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 450),
-                  transitionBuilder: (child, animation) {
-                    final offset = Tween<Offset>(
-                      begin: const Offset(0.08, 0),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ));
-                    return SlideTransition(
-                      position: offset,
-                      child: FadeTransition(opacity: animation, child: child),
-                    );
-                  },
-                  child: Text(
-                    item.displayTitle,
-                    key: ValueKey('${item.id}_${item.displayTitle}'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                      height: 1.15,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            Expanded(child: _buildFeaturedNewsTitle(item)),
             const SizedBox(width: 8),
-            const Text(
-              'বিস্তারিত',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0D9488),
-              ),
-            ),
-            const SizedBox(width: 2),
-            const Icon(Icons.chevron_right_rounded,
-                size: 18, color: Color(0xFF0D9488)),
+            _buildDetailsPill(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBreakingBadge() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 850),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFEF4444).withOpacity(_newsGlow ? 0.35 : 0.18),
+            blurRadius: _newsGlow ? 12 : 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.bolt_rounded, size: 13, color: Colors.white),
+          SizedBox(width: 3),
+          Text(
+            'NEWS',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturedNewsTitle(BreakingNewsItem item) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text(
+          'Featured Breaking',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 9.5,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F766E),
+            height: 1,
+          ),
+        ),
+        const SizedBox(height: 3),
+        ClipRect(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 450),
+            transitionBuilder: (child, animation) {
+              final offset = Tween<Offset>(
+                begin: const Offset(0.10, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              ));
+              return SlideTransition(
+                position: offset,
+                child: FadeTransition(opacity: animation, child: child),
+              );
+            },
+            child: Text(
+              item.displayTitle,
+              key: ValueKey('${item.id}_${item.displayTitle}'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+                height: 1.15,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailsPill() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.78),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFF99F6E4)),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'বিস্তারিত',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF0D9488),
+            ),
+          ),
+          SizedBox(width: 1),
+          Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF0D9488)),
+        ],
       ),
     );
   }
