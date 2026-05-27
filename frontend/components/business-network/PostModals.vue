@@ -400,8 +400,8 @@
                           <!-- Regular comment with mention processing -->
                           <div
                             v-else
-                            class="text-sm sm:text-sm text-gray-800 dark:text-gray-300"
-                            style="word-break: break-word"
+                            class="text-base text-gray-800 dark:text-gray-300"
+                            style="word-break: break-word; line-height: 1.7; white-space: pre-wrap"
                             v-html="processMentionsInComment(comment?.content)"
                           ></div>
                           <CommonFirstLinkPreview v-if="!comment?.is_gift_comment" :text="comment?.content || ''" />

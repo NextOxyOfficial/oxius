@@ -246,6 +246,9 @@ async function fetchBanners() {
     }
     
     const res = await get(endpoint);
+    if (res.error || !Array.isArray(res.data)) {
+      throw res.error || new Error("Invalid banner response");
+    }
     banners.value = res.data;
     
     // Start the slider interval only if there are multiple banners

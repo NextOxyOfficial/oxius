@@ -272,11 +272,11 @@
               <!-- Regular comment with mention processing -->
               <div
                 v-else
-                class="text-sm text-gray-800 dark:text-gray-300 comment-content"
+                class="text-base text-gray-800 dark:text-gray-300 comment-content"
                 style="
                   word-break: break-word;
                   white-space: pre-wrap;
-                  line-height: 2;
+                  line-height: 1.7;
                 "
                 v-html="processMentionsInComment(comment?.content)"
               ></div>

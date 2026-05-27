@@ -167,6 +167,9 @@ async function fetchBanners() {
     error.value = null;
     
     const res = await get("/eshop-banner/mobile/");
+    if (res.error || !Array.isArray(res.data)) {
+      throw res.error || new Error("Invalid banner response");
+    }
     banners.value = res.data;
     
     // Start the slider interval only if there are multiple banners

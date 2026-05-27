@@ -14,6 +14,22 @@ from .models import *
 from .models import Product, ProductCategory, ProductMedia
 
 
+def _absolute_media_url(request, media_url):
+    if not media_url:
+        return None
+
+    if request:
+        absolute_url = request.build_absolute_uri(media_url)
+        host = request.get_host().split(":")[0].lower()
+        if host in {"adsyclub.com", "www.adsyclub.com"}:
+            return absolute_url.replace("http://", "https://", 1)
+        return absolute_url
+
+    if not settings.DEBUG:
+        return f"https://adsyclub.com{media_url}"
+    return media_url
+
+
 class UserSerializer(serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
@@ -110,8 +126,7 @@ class UserSerializer(serializers.ModelSerializer):
         # Convert image field to absolute URL
         if representation.get('image'):
             request = self.context.get('request')
-            if request:
-                representation['image'] = request.build_absolute_uri(representation['image'])
+            representation['image'] = _absolute_media_url(request, representation['image'])
         
         return representation
 
@@ -169,8 +184,7 @@ class UserSerializerGet(serializers.ModelSerializer):
         # Convert image field to absolute URL
         if representation.get('image'):
             request = self.context.get('request')
-            if request:
-                representation['image'] = request.build_absolute_uri(representation['image'])
+            representation['image'] = _absolute_media_url(request, representation['image'])
         
         return representation
 
@@ -187,12 +201,7 @@ class ClassifiedServicesSerializer(serializers.ModelSerializer):
         if obj.image and obj.image.name:
             try:
                 request = self.context.get("request")
-                if request:
-                    return request.build_absolute_uri(obj.image.url)
-                # Fallback to absolute URL in production
-                if not settings.DEBUG:
-                    return f"https://adsyclub.com{obj.image.url}"
-                return obj.image.url
+                return _absolute_media_url(request, obj.image.url)
             except Exception as e:
                 print(f"Error getting image URL for {obj.title}: {e}")
                 return None
@@ -441,20 +450,23 @@ class ProductMediaSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         if obj.image:
             request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            # Fallback to absolute URL in production
-            if not settings.DEBUG:
-                return f"https://adsyclub.com{obj.image.url}"
-            return obj.image.url
+            return _absolute_media_url(request, obj.image.url)
         return None
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductCategory
         fields = "__all__"
         read_only_fields = ["slug"]
+
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get("request")
+            return _absolute_media_url(request, obj.image.url)
+        return None
 
 
 # Serializer for ProductBenefit model
@@ -647,6 +659,8 @@ class ProductSlotPackageSerializer(serializers.ModelSerializer):
 
 
 class EshopBannerSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    mobile_image = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
     mobile_image_url = serializers.SerializerMethodField()
 
@@ -669,18 +683,20 @@ class EshopBannerSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):
         if obj.image:
             request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.image.url)
-            return obj.image.url
+            return _absolute_media_url(request, obj.image.url)
         return None
+
+    def get_image(self, obj):
+        return self.get_image_url(obj)
 
     def get_mobile_image_url(self, obj):
         if obj.mobile_image:
             request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(obj.mobile_image.url)
-            return obj.mobile_image.url
+            return _absolute_media_url(request, obj.mobile_image.url)
         return None
+
+    def get_mobile_image(self, obj):
+        return self.get_mobile_image_url(obj)
 
 
 class MobileBannerSerializer(serializers.ModelSerializer):
@@ -697,9 +713,7 @@ class MobileBannerSerializer(serializers.ModelSerializer):
         image_field = obj.mobile_image if obj.mobile_image else obj.image
         if image_field:
             request = self.context.get("request")
-            if request:
-                return request.build_absolute_uri(image_field.url)
-            return image_field.url
+            return _absolute_media_url(request, image_field.url)
         return None
 
 
