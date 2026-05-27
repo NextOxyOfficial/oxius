@@ -362,53 +362,74 @@ class _HeroBannerState extends State<HeroBanner> {
           BoxShadow(
             color:
                 (_newsGlow ? const Color(0xFFF59E0B) : const Color(0xFF10B981))
-                    .withOpacity(_newsGlow ? 0.22 : 0.12),
-            blurRadius: _newsGlow ? 20 : 10,
-            offset: const Offset(0, 5),
+                    .withOpacity(_newsGlow ? 0.10 : 0.07),
+            blurRadius: _newsGlow ? 9 : 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: () => _openFeaturedNews(item),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildBreakingBadge(),
-            const SizedBox(width: 8),
-            Expanded(child: _buildFeaturedNewsTitle(item)),
-            const SizedBox(width: 8),
-            _buildDetailsPill(),
+            Row(
+              children: [
+                _buildBreakingBadge(),
+                const Spacer(),
+                _buildDetailsPill(),
+              ],
+            ),
+            const SizedBox(height: 6),
+            _buildFeaturedNewsTitle(item),
           ],
         ),
       ),
     );
   }
 
+  String get _breakingNewsLabel {
+    final languageCode = _translationService.currentLanguage
+        .toLowerCase()
+        .split(RegExp(r'[-_]'))
+        .first;
+    return _translationService.t(
+      'breaking_news',
+      fallback: languageCode.startsWith('en')
+          ? 'Breaking News'
+          : '\u09ac\u09bf\u09b6\u09c7\u09b7 \u09b8\u0982\u09ac\u09be\u09a6',
+    );
+  }
+
   Widget _buildBreakingBadge() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 850),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444),
         borderRadius: BorderRadius.circular(999),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFEF4444).withOpacity(_newsGlow ? 0.35 : 0.18),
-            blurRadius: _newsGlow ? 12 : 6,
-            offset: const Offset(0, 3),
+            color: const Color(0xFFEF4444).withOpacity(_newsGlow ? 0.22 : 0.10),
+            blurRadius: _newsGlow ? 7 : 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.bolt_rounded, size: 13, color: Colors.white),
-          SizedBox(width: 3),
+          const Icon(Icons.campaign_rounded, size: 13, color: Colors.white),
+          const SizedBox(width: 4),
           Text(
-            'NEWS',
-            style: TextStyle(
+            _breakingNewsLabel,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
               color: Colors.white,
-              fontSize: 10,
+              fontSize: 10.5,
               fontWeight: FontWeight.w900,
               letterSpacing: 0,
             ),
@@ -423,18 +444,6 @@ class _HeroBannerState extends State<HeroBanner> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Featured Breaking',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF0F766E),
-            height: 1,
-          ),
-        ),
-        const SizedBox(height: 3),
         ClipRect(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 450),
@@ -454,13 +463,13 @@ class _HeroBannerState extends State<HeroBanner> {
             child: Text(
               item.displayTitle,
               key: ValueKey('${item.id}_${item.displayTitle}'),
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 13.5,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF111827),
-                height: 1.15,
+                height: 1.2,
               ),
             ),
           ),
