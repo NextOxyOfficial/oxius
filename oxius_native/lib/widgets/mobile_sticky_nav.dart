@@ -9,7 +9,7 @@ import '../screens/news_screen.dart';
 class MobileStickyNav extends StatefulWidget {
   final String? currentRoute;
   final ScrollController? scrollController;
-  
+
   const MobileStickyNav({
     super.key,
     this.currentRoute,
@@ -33,12 +33,12 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
     super.initState();
     // Listen to user state changes
     _userStateService.addListener(_onUserStateChanged);
-    
+
     // Load notification count if authenticated
     if (_userStateService.isAuthenticated) {
       _loadUnreadNotificationCount();
     }
-    
+
     // Attach scroll listener
     _scrollController = widget.scrollController;
     _scrollController?.addListener(_onScroll);
@@ -71,7 +71,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
       final result = await NotificationService.getNotifications(page: 1);
       final count = result['unreadCount'] ?? 0;
       print('📱 Mobile Sticky Nav: Got notification count: $count');
-      
+
       if (mounted) {
         setState(() {
           unreadCount = count;
@@ -85,13 +85,13 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
 
   void _onScroll() {
     if (_scrollController == null || !mounted) return;
-    
+
     final currentScrollPosition = _scrollController!.position.pixels;
     final scrollDelta = currentScrollPosition - _lastScrollPosition;
-    
+
     // Only react to significant scroll movements
     if (scrollDelta.abs() < 5) return;
-    
+
     // Check if user is scrolling down or up
     if (scrollDelta > 0 && currentScrollPosition > 50) {
       // Scrolling down - hide navbar
@@ -104,7 +104,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
         setState(() => _isVisible = true);
       }
     }
-    
+
     _lastScrollPosition = currentScrollPosition;
   }
 
@@ -113,8 +113,15 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
     // The Positioned in home_screen already offsets by padding.bottom,
     // so we just need a small consistent gap above the home indicator.
     final bottomMargin = 8.0;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    // AnimatedSlide offset is relative to this widget's own height. On iOS the
+    // caller wraps the nav in SafeArea, so offset 1.0 only moves the bar into
+    // the safe-area gap and leaves a visible slice above the home indicator.
+    // Add enough extra travel to cover that external inset on iPhone.
+    final hiddenYOffset = 1.0 + (bottomInset / 56.0).clamp(0.0, 1.0);
+
     return AnimatedSlide(
-      offset: _isVisible ? Offset.zero : const Offset(0, 1),
+      offset: _isVisible ? Offset.zero : Offset(0, hiddenYOffset),
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       child: Container(
@@ -122,7 +129,8 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF34D399).withOpacity(0.15), width: 1),
+          border: Border.all(
+              color: const Color(0xFF34D399).withOpacity(0.15), width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.08),
@@ -253,7 +261,7 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final iconSize = (screenWidth * 0.065).clamp(24.0, 28.0);
-    
+
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -276,7 +284,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
                     return Icon(
                       icon,
                       size: iconSize,
-                      color: isActive ? const Color(0xFF10B981) : const Color(0xFF34D399),
+                      color: isActive
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF34D399),
                     );
                   },
                 )
@@ -284,7 +294,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
                 Icon(
                   icon,
                   size: iconSize,
-                  color: isActive ? const Color(0xFF10B981) : const Color(0xFF34D399),
+                  color: isActive
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF34D399),
                 ),
               if (hasNotification && notificationCount > 0)
                 Positioned(
@@ -301,7 +313,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
                       minHeight: 18,
                     ),
                     child: Text(
-                      notificationCount > 99 ? '99+' : notificationCount.toString(),
+                      notificationCount > 99
+                          ? '99+'
+                          : notificationCount.toString(),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -320,12 +334,15 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
 
   void _handleNavigation(BuildContext context, String destination) {
     // Prevent navigation to current page
-    if ((destination == 'eShop Manager' && widget.currentRoute == 'eShop Manager') ||
+    if ((destination == 'eShop Manager' &&
+            widget.currentRoute == 'eShop Manager') ||
         (destination == 'Home' && widget.currentRoute == 'Home') ||
         (destination == 'AdsyPay' && widget.currentRoute == 'Wallet') ||
         (destination == 'Wallet' && widget.currentRoute == 'Wallet') ||
-        (destination == 'Mobile Recharge' && widget.currentRoute == 'Recharge') ||
-        (destination == 'Business Network' && widget.currentRoute == 'Network') ||
+        (destination == 'Mobile Recharge' &&
+            widget.currentRoute == 'Recharge') ||
+        (destination == 'Business Network' &&
+            widget.currentRoute == 'Network') ||
         (destination == 'MindForce' && widget.currentRoute == 'MindForce') ||
         (destination == 'News' && widget.currentRoute == 'News') ||
         (destination == 'Microgigs' && widget.currentRoute == 'Gigs')) {
