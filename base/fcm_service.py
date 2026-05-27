@@ -17,6 +17,12 @@ _FCM_EXECUTOR = ThreadPoolExecutor(
 def _safe_print(message):
     print(message.encode("ascii", errors="ignore").decode("ascii"))
 
+
+def _token_ref(token):
+    if not token or not isinstance(token, str):
+        return "invalid-token"
+    return f"token_len={len(token)}"
+
 try:
     cred_path = os.path.join(settings.BASE_DIR, 'firebase-adminsdk.json')
     
@@ -64,7 +70,7 @@ def send_fcm_notification(fcm_token, title, body, data=None):
     try:
         # Validate token
         if not fcm_token or not isinstance(fcm_token, str):
-            _safe_print(f'[ERROR] Invalid FCM token: {fcm_token}')
+            _safe_print(f'[ERROR] Invalid FCM token: {_token_ref(fcm_token)}')
             return False
         
         message = messaging.Message(
@@ -103,14 +109,17 @@ def send_fcm_notification(fcm_token, title, body, data=None):
         _safe_print(f'Notification sent successfully: {response}')
         return True
     except messaging.UnregisteredError:
-        _safe_print(f'[ERROR] Token is invalid or unregistered: {fcm_token[:50]}...')
+        _safe_print(f'[ERROR] Token is invalid or unregistered: {_token_ref(fcm_token)}')
         return False
     except messaging.SenderIdMismatchError:
-        _safe_print(f'[ERROR] Token does not match Firebase project: {fcm_token[:50]}...')
+        _safe_print(f'[ERROR] Token does not match Firebase project: {_token_ref(fcm_token)}')
+        return False
+    except messaging.ThirdPartyAuthError:
+        _safe_print('[ERROR] APNS authentication failed for iOS FCM delivery')
         return False
     except Exception as e:
         _safe_print(f'[ERROR] Error sending notification: {e}')
-        _safe_print(f'Token: {fcm_token[:50]}...')
+        _safe_print(f'Token reference: {_token_ref(fcm_token)}')
         _safe_print(f'Title: {title}')
         import traceback
         traceback.print_exc()
@@ -152,7 +161,7 @@ def send_fcm_data_message(fcm_token, data, ttl_seconds=60):
 
     try:
         if not fcm_token or not isinstance(fcm_token, str):
-            _safe_print(f'[ERROR] Invalid FCM token: {fcm_token}')
+            _safe_print(f'[ERROR] Invalid FCM token: {_token_ref(fcm_token)}')
             return False
 
         # Ensure every value is a string (FCM data payload requirement)
@@ -186,10 +195,13 @@ def send_fcm_data_message(fcm_token, data, ttl_seconds=60):
         _safe_print(f'Data message sent successfully: {response}')
         return True
     except messaging.UnregisteredError:
-        _safe_print(f'[ERROR] Token is invalid or unregistered: {fcm_token[:50]}...')
+        _safe_print(f'[ERROR] Token is invalid or unregistered: {_token_ref(fcm_token)}')
         return False
     except messaging.SenderIdMismatchError:
-        _safe_print(f'[ERROR] Token does not match Firebase project: {fcm_token[:50]}...')
+        _safe_print(f'[ERROR] Token does not match Firebase project: {_token_ref(fcm_token)}')
+        return False
+    except messaging.ThirdPartyAuthError:
+        _safe_print('[ERROR] APNS authentication failed for iOS data-message delivery')
         return False
     except Exception as e:
         _safe_print(f'[ERROR] Error sending data message: {e}')

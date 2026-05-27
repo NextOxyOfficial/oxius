@@ -1097,11 +1097,7 @@ class FCMService {
       // here prevents the first-launch race where iOS returns null and the
       // backend never receives any token for this device.
       _fcmToken = await _resolveUsableFcmToken();
-      _log('\n📱 FCM TOKEN (DEBUG ONLY):');
-      _log('=' * 60);
-      _log(_fcmToken ?? 'null');
-      _log('=' * 60);
-      _log('');
+      _log('\n📱 FCM token resolved: ${_fcmToken?.isNotEmpty == true}');
 
       if (_fcmToken != null && _fcmToken!.isNotEmpty) {
         await _persistFcmToken(_fcmToken!);
@@ -1118,7 +1114,7 @@ class FCMService {
       if (!_firebaseMessageListenersRegistered) {
         // Listen for token refresh
         _firebaseMessaging.onTokenRefresh.listen((newToken) {
-          _log('🔄 FCM Token refreshed: $newToken');
+          _log('🔄 FCM token refreshed');
           Telemetry.event('fcm.token_refresh');
           _fcmToken = newToken;
           _persistFcmToken(newToken);
