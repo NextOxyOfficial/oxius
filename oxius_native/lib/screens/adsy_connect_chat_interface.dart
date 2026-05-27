@@ -1042,11 +1042,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       print('ðŸ”´ Error loading messages: $e');
       if (mounted) {
         setState(() => _isLoadingMessages = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load messages: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
+        NetworkErrorHandler.showErrorSnackbar(
+          context,
+          e,
+          onRetry: () => _loadMessages(loadMore: loadMore),
         );
       }
     }

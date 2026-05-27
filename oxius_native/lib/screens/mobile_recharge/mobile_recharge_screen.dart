@@ -3,6 +3,7 @@ import '../../services/translation_service.dart';
 import '../../services/mobile_recharge_service.dart';
 import '../../services/wallet_service.dart';
 import '../../models/wallet_models.dart';
+import '../../utils/network_error_handler.dart';
 import '../../widgets/mobile_sticky_nav.dart';
 
 class MobileRechargeScreen extends StatefulWidget {
@@ -1046,7 +1047,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: () {
                                     Navigator.pop(context);
-                                    Navigator.pushNamed(context, '/deposit-withdraw');
+                                    Navigator.pushNamed(
+                                        context, '/deposit-withdraw');
                                   },
                                   icon: const Icon(Icons.add_rounded, size: 18),
                                   label: const Text('Add Funds'),
@@ -1390,6 +1392,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       final errorMessage = snapshot.data?['message'] ??
                           snapshot.error?.toString() ??
                           'Failed to load history';
+                      final friendlyErrorMessage =
+                          NetworkErrorHandler.getErrorMessage(errorMessage);
 
                       return Center(
                         child: Padding(
@@ -1420,7 +1424,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                errorMessage,
+                                friendlyErrorMessage,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade600,

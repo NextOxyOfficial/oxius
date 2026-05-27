@@ -7,60 +7,77 @@ class NetworkErrorHandler {
   /// Get user-friendly error message from exception
   static String getErrorMessage(dynamic error) {
     if (error is http.ClientException) {
-      return 'Connection error. Please check your internet connection.';
+      return 'No internet connection. Please check your connection and try again.';
     }
-    
+
     if (error is FormatException) {
       return 'Unable to process response. Please try again.';
     }
-    
+
     if (error is TimeoutException) {
       return 'Connection timeout. Please try again.';
     }
-    
+
     // Check if error string contains common network-related keywords
     final errorString = error.toString().toLowerCase();
-    
-    if (errorString.contains('socket') || errorString.contains('network')) {
-      return 'Network connection issue. Please check your internet.';
+
+    if (errorString.contains('failed host lookup') ||
+        errorString.contains('nodename nor servname') ||
+        errorString.contains('no address associated') ||
+        errorString.contains('network is unreachable') ||
+        errorString.contains('connection failed')) {
+      return 'No internet connection. Please check your connection and try again.';
     }
-    
+
+    if (errorString.contains('bad file descriptor') ||
+        errorString.contains('connection reset') ||
+        errorString.contains('connection closed')) {
+      return 'Connection interrupted. Please try again.';
+    }
+
+    if (errorString.contains('socket') || errorString.contains('network')) {
+      return 'No internet connection. Please check your connection and try again.';
+    }
+
     if (errorString.contains('timeout')) {
       return 'Request timed out. Please try again.';
     }
-    
+
     if (errorString.contains('401') || errorString.contains('unauthorized')) {
       return 'Session expired. Please log in again.';
     }
-    
+
     if (errorString.contains('403') || errorString.contains('forbidden')) {
       return 'You don\'t have permission to perform this action.';
     }
-    
+
     if (errorString.contains('404') || errorString.contains('not found')) {
       return 'Requested resource not found.';
     }
-    
+
     if (errorString.contains('500') || errorString.contains('server error')) {
       return 'Server error. Please try again later.';
     }
-    
-    if (errorString.contains('503') || errorString.contains('service unavailable')) {
+
+    if (errorString.contains('503') ||
+        errorString.contains('service unavailable')) {
       return 'Service temporarily unavailable. Please try again later.';
     }
-    
+
     // Generic error message for unknown errors
     return 'Something went wrong. Please try again.';
   }
-  
+
   /// Show professional error snackbar
-  static void showErrorSnackbar(BuildContext context, dynamic error, {
+  static void showErrorSnackbar(
+    BuildContext context,
+    dynamic error, {
     String? customMessage,
     Duration duration = const Duration(seconds: 4),
     VoidCallback? onRetry,
   }) {
     final message = customMessage ?? getErrorMessage(error);
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -93,35 +110,35 @@ class NetworkErrorHandler {
       ),
     );
   }
-  
+
   /// Check if error is network-related
   static bool isNetworkError(dynamic error) {
     if (error is http.ClientException) {
       return true;
     }
-    
+
     final errorString = error.toString().toLowerCase();
-    return errorString.contains('socket') || 
-           errorString.contains('network') ||
-           errorString.contains('connection');
+    return errorString.contains('socket') ||
+        errorString.contains('network') ||
+        errorString.contains('connection');
   }
-  
+
   /// Get appropriate icon for error type
   static IconData getErrorIcon(dynamic error) {
     if (isNetworkError(error)) {
       return Icons.wifi_off_rounded;
     }
-    
+
     final errorString = error.toString().toLowerCase();
-    
+
     if (errorString.contains('401') || errorString.contains('403')) {
       return Icons.lock_rounded;
     }
-    
+
     if (errorString.contains('404')) {
       return Icons.search_off_rounded;
     }
-    
+
     return Icons.error_outline_rounded;
   }
 }
