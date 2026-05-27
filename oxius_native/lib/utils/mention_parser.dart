@@ -101,7 +101,8 @@ class MentionParser {
       }
 
       // Add mention as a styled chip
-      final mentionName = (match.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
+      final mentionName =
+          (match.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
       spans.add(WidgetSpan(
         alignment: PlaceholderAlignment.baseline,
         baseline: TextBaseline.alphabetic,
@@ -143,7 +144,8 @@ class MentionParser {
     if (lastIndex < text.length) {
       final remaining = text.substring(lastIndex);
       int localLast = 0;
-      for (final match in _mentionRegexCapitalizedFallback.allMatches(remaining)) {
+      for (final match
+          in _mentionRegexCapitalizedFallback.allMatches(remaining)) {
         if (match.start > localLast) {
           spans.add(TextSpan(
             text: remaining.substring(localLast, match.start),
@@ -151,7 +153,8 @@ class MentionParser {
           ));
         }
 
-        final mentionName = (match.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
+        final mentionName =
+            (match.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
         spans.add(WidgetSpan(
           alignment: PlaceholderAlignment.baseline,
           baseline: TextBaseline.alphabetic,
@@ -176,7 +179,7 @@ class MentionParser {
               child: Text(
                 '@$mentionName',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.blue.shade700,
                   height: 1.0,
@@ -241,7 +244,8 @@ class MentionParser {
       final urlMatch = _urlRegex.matchAsPrefix(text, index);
 
       if (mentionMatch != null) {
-        final mentionName = (mentionMatch.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
+        final mentionName =
+            (mentionMatch.group(1) ?? '').replaceAll('\u00A0', ' ').trim();
         spans.add(WidgetSpan(
           alignment: PlaceholderAlignment.baseline,
           baseline: TextBaseline.alphabetic,
@@ -266,7 +270,7 @@ class MentionParser {
               child: Text(
                 '@$mentionName',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.blue.shade700,
                   height: 1.0,
@@ -303,7 +307,8 @@ class MentionParser {
 
       final substring = text.substring(index);
       final nextMentionDelimited = _mentionRegexDelimited.firstMatch(substring);
-      final nextMentionFallback = _mentionRegexCapitalizedFallback.firstMatch(substring);
+      final nextMentionFallback =
+          _mentionRegexCapitalizedFallback.firstMatch(substring);
       final nextUrl = _urlRegex.firstMatch(substring);
 
       int nextIndex = text.length;
@@ -354,6 +359,7 @@ class MentionParser {
 
   /// Check if text contains mentions
   static bool hasMentions(String text) {
-    return _mentionRegexDelimited.hasMatch(text) || _mentionRegexCapitalizedFallback.hasMatch(text);
+    return _mentionRegexDelimited.hasMatch(text) ||
+        _mentionRegexCapitalizedFallback.hasMatch(text);
   }
 }
