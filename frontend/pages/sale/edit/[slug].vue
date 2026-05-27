@@ -742,7 +742,7 @@ const handleFileUpload = async (event) => {
       }
     }
   } catch (error) {
-    console.error("Error compressing image:", error);
+    console.error("Error uploading image:", error);
     uploadError.value = "Failed to process image. Please try again.";
   } finally {
     isUploading.value = false;

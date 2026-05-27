@@ -22,6 +22,7 @@ urlpatterns = [
     path("logo/", getLogo, name="logo"),
     path("eshop-logo/", get_eshop_logo, name="eshop_logo"),
     path("faq/", get_faq, name="faq"),
+    path("unsubscribe/", email_unsubscribe, name="email_unsubscribe"),
     path(
         "authentication-banner/", getAuthenticationBanner, name="authenticationBanner"
     ),

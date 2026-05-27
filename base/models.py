@@ -139,6 +139,7 @@ class User(AbstractUser):
     store_logo = models.ImageField(upload_to="images/", blank=True, null=True)
     store_banner = models.ImageField(upload_to="images/", blank=True, null=True)
     product_limit = models.IntegerField(default=10)
+    email_notifications = models.BooleanField(default=True)
 
     def __str__(self):
         return self.email

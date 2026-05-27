@@ -231,7 +231,7 @@
                             ? 'text-blue-500'
                             : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-500'
                         ]"
-                      >{{ isCompressing ? 'Compressing...' : 'Add Photo' }}</span>
+                      >{{ isCompressing ? 'Uploading...' : 'Add Photo' }}</span>
                     </label>
                   </div>
                 </div>
@@ -589,7 +589,7 @@ const handlePhotoUpload = async (event) => {
     const compressedDataUrl = await compressImage(file, 0.85, 1200, 1200);
     formData.value.images.push(compressedDataUrl);
   } catch (error) {
-    console.error('Error compressing image:', error);
+    console.error('Error uploading image:', error);
     // Fallback to original file if compression fails
     const reader = new FileReader();
     reader.onload = () => {

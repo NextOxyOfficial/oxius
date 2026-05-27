@@ -2502,7 +2502,7 @@ async function handleImageSelect(event) {
         const compressedFile = await compressImage(file);
         await sendMediaMessage(compressedFile, 'image');
       } catch (error) {
-        console.error('Error compressing image:', error);
+        console.error('Error uploading image:', error);
         // Fallback to original file if compression fails
         await sendMediaMessage(file, 'image');
       }
@@ -2578,7 +2578,7 @@ async function handleCameraCapture(event) {
       const compressedFile = await compressImage(file);
       await sendMediaMessage(compressedFile, 'image');
     } catch (error) {
-      console.error('Error compressing camera image:', error);
+      console.error('Error uploading camera image:', error);
       // Fallback to original file if compression fails
       await sendMediaMessage(file, 'image');
     }

@@ -1537,7 +1537,32 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+            validated = serializer.validated_data
+
+            # Send login notification email asynchronously (non-blocking)
+            try:
+                import threading
+                from .email_service import send_login_notification_email
+
+                user_email = (validated.get("user") or {}).get("email") or ""
+                if user_email:
+                    logged_in_user = User.objects.filter(email=user_email).first()
+                    if logged_in_user:
+                        ip = (
+                            request.META.get("HTTP_X_FORWARDED_FOR", "").split(",")[0].strip()
+                            or request.META.get("REMOTE_ADDR", "")
+                        )
+                        ua = request.META.get("HTTP_USER_AGENT", "")
+                        t = threading.Thread(
+                            target=send_login_notification_email,
+                            args=(logged_in_user, ip, ua),
+                            daemon=True,
+                        )
+                        t.start()
+            except Exception as email_err:
+                print(f"Login email notification error (non-blocking): {email_err}")
+
+            return Response(validated, status=status.HTTP_200_OK)
         except ValidationError:
             error_message = serializer.errors.get(
                 "non_field_errors", ["Invalid credentials"]
@@ -1572,6 +1597,43 @@ class TokenValidationView(APIView):
         }
 
         return Response(data)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def email_unsubscribe(request):
+    """Handle email unsubscribe via signed token link."""
+    from django.core import signing
+    from django.http import HttpResponse
+
+    token = request.GET.get("token", "")
+    if not token:
+        return HttpResponse(
+            "<html><body style='font-family:sans-serif;text-align:center;padding:60px;'>"
+            "<h2>Invalid unsubscribe link.</h2></body></html>",
+            content_type="text/html", status=400
+        )
+    try:
+        email = signing.loads(token, salt="email-unsub", max_age=86400 * 90)
+        user = User.objects.filter(email=email).first()
+        if user:
+            user.email_notifications = False
+            user.save(update_fields=["email_notifications"])
+        return HttpResponse(
+            "<html><body style='font-family:-apple-system,sans-serif;text-align:center;padding:80px 20px;'>"
+            "<div style='max-width:420px;margin:0 auto;'>"
+            "<div style='font-size:48px;margin-bottom:20px;'>&#10003;</div>"
+            "<h2 style='color:#0f172a;margin:0 0 10px;'>Unsubscribed</h2>"
+            "<p style='color:#64748b;font-size:15px;margin:0;'>You have been unsubscribed from AdsyClub email notifications.</p>"
+            "</div></body></html>",
+            content_type="text/html"
+        )
+    except signing.BadSignature:
+        return HttpResponse(
+            "<html><body style='font-family:sans-serif;text-align:center;padding:60px;'>"
+            "<h2>This unsubscribe link is invalid or has expired.</h2></body></html>",
+            content_type="text/html", status=400
+        )
 
 
 @api_view(["GET"])

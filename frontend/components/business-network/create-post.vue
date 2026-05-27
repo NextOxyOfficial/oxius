@@ -1091,7 +1091,7 @@ const processImageWithProgress = (file, index) => {
             resolve(compressedImage);
           }, index * 150); // Stagger by 150ms per image
         } catch (error) {
-          console.error(`Error compressing image ${file.name}:`, error);
+          console.error(`Error uploading image ${file.name}:`, error);
           reject(error);
         }
       };
