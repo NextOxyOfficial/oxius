@@ -52,6 +52,7 @@ import 'pages/register_page.dart';
 import 'services/deep_link_service.dart';
 import 'services/adsyconnect_realtime_service.dart';
 import 'services/agora_call_service.dart';
+import 'services/app_update_service.dart';
 import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
 import 'services/translation_service.dart';
@@ -267,26 +268,28 @@ class MyApp extends StatelessWidget {
               // Global tap-to-dismiss keyboard. Wrapping at MaterialApp.builder
               // level means every screen inherits the behavior without each
               // route needing its own GestureDetector.
-              return GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  final currentFocus = FocusScope.of(context);
-                  if (!currentFocus.hasPrimaryFocus &&
-                      currentFocus.focusedChild != null) {
-                    currentFocus.focusedChild!.unfocus();
-                  }
-                },
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    child ?? const SizedBox.shrink(),
-                    const Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: OngoingCallBar(),
-                    ),
-                  ],
+              return AppUpdateGate(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    final currentFocus = FocusScope.of(context);
+                    if (!currentFocus.hasPrimaryFocus &&
+                        currentFocus.focusedChild != null) {
+                      currentFocus.focusedChild!.unfocus();
+                    }
+                  },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      child ?? const SizedBox.shrink(),
+                      const Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: OngoingCallBar(),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

@@ -36,6 +36,7 @@ urlpatterns = urlpatterns + [
     path("api/sale/", include("sale.urls")),  # Add the sale app URLs here
     path("api/bn/", include("business_network.urls")),
     path("api/rides/", include("rideshare.urls")),
+    path("api/app-version/", include("app_versioning.urls")),
     path("api/news/", include("news.urls")),
     path(
         "api/",

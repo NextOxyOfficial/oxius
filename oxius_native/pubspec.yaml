@@ -74,6 +74,7 @@ dependencies:
   # Utilities
   flutter_inappwebview: ^6.1.5
   url_launcher: ^6.2.1
+  package_info_plus: 9.0.0
   webview_flutter: ^4.10.0
   share_plus: ^7.2.1
   connectivity_plus: ^5.0.2

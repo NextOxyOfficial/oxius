@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "referral_rewards",  # New Year referral reward program
     "raise_up",  # Raise Up crowdfunding system
     "rideshare",  # Ride share MVP
+    "app_versioning",  # Mobile app update prompts
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
