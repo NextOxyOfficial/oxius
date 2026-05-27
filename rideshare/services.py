@@ -219,6 +219,17 @@ def get_google_maps_api_key():
 
 class RoutingService:
     @staticmethod
+    def _external_timeout(setting_name, default_seconds):
+        timeout = float(getattr(settings, setting_name, default_seconds))
+        return httpx.Timeout(
+            timeout,
+            connect=min(timeout, 0.5),
+            read=timeout,
+            write=min(timeout, 0.5),
+            pool=min(timeout, 0.5),
+        )
+
+    @staticmethod
     def _decode_polyline(encoded, precision=6):
         if not encoded:
             return []
@@ -286,7 +297,7 @@ class RoutingService:
         }
 
         try:
-            timeout = float(getattr(settings, "RIDESHARE_ROUTE_HTTP_TIMEOUT_SECONDS", 3.0))
+            timeout = cls._external_timeout("RIDESHARE_ROUTE_HTTP_TIMEOUT_SECONDS", 1.5)
             with httpx.Client(timeout=timeout, headers=headers) as client:
                 response = client.get(route_url, params=params)
                 response.raise_for_status()
@@ -351,7 +362,7 @@ class RoutingService:
             )
 
             try:
-                timeout = float(getattr(settings, "RIDESHARE_ROUTE_HTTP_TIMEOUT_SECONDS", 3.0))
+                timeout = cls._external_timeout("RIDESHARE_ROUTE_HTTP_TIMEOUT_SECONDS", 1.5)
                 with httpx.Client(timeout=timeout) as client:
                     response = client.get(url, params=params)
                     response.raise_for_status()
@@ -415,6 +426,17 @@ class RoutingService:
 
 
 class LocationService:
+    @staticmethod
+    def _external_timeout():
+        timeout = float(getattr(settings, "RIDESHARE_LOCATION_HTTP_TIMEOUT_SECONDS", 1.5))
+        return httpx.Timeout(
+            timeout,
+            connect=min(timeout, 0.5),
+            read=timeout,
+            write=min(timeout, 0.5),
+            pool=min(timeout, 0.5),
+        )
+
     @staticmethod
     def _normalize_search_text(value):
         return re.sub(r"\s+", " ", str(value or "").strip().lower())
@@ -1312,7 +1334,7 @@ class LocationService:
         headers = {"User-Agent": "adsyclub-rideshare/1.0"}
 
         try:
-            timeout = float(getattr(settings, "RIDESHARE_LOCATION_HTTP_TIMEOUT_SECONDS", 3.0))
+            timeout = LocationService._external_timeout()
             with httpx.Client(timeout=timeout, headers=headers) as client:
                 response = client.get(url, params=params)
                 response.raise_for_status()
@@ -1444,7 +1466,7 @@ class LocationService:
         headers = {"User-Agent": "adsyclub-rideshare/1.0"}
 
         try:
-            timeout = float(getattr(settings, "RIDESHARE_LOCATION_HTTP_TIMEOUT_SECONDS", 3.0))
+            timeout = cls._external_timeout()
             with httpx.Client(timeout=timeout, headers=headers) as client:
                 response = client.get(url, params=params)
                 response.raise_for_status()
