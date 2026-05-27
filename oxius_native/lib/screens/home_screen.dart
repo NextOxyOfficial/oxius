@@ -12,6 +12,7 @@ import '../widgets/eshop_section.dart';
 import '../widgets/micro_gigs_section.dart';
 import '../widgets/mobile_sticky_nav.dart';
 import '../widgets/ads_scroll_widget.dart';
+import '../widgets/business_network/gold_sponsors_slider.dart';
 import '../services/scroll_direction_service.dart';
 import '../services/user_state_service.dart';
 import '../services/auth_service.dart';
@@ -434,20 +435,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: topPadding + 56 + 8),
                   // 1. Hero Banner - Main banner slider + service menu grid
                   const HeroBanner(),
+
+                  // 2. Gold Sponsors - existing business network sponsor slider
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: GoldSponsorsSlider(),
+                  ),
                   
-                  // 2. Sale Category - eShop product categories
+                  // 3. Sale Category - eShop product categories
                   const SaleCategory(),
                   
-                  // 3. Food Zone Section - FoodPanda style food listings
+                  // 4. Food Zone Section - FoodPanda style food listings
                   FoodZoneSection(baseUrl: ApiService.baseUrl),
                   
-                  // 4. Classified Services - Service categories
+                  // 5. Classified Services - Service categories
                   Container(
                     key: _classifiedSectionKey,
                     child: const ClassifiedServicesSection(),
                   ),
                   
-                  // 5. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
+                  // 6. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
                   if (_isLoadingPosts)
                     Container(
                       margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
@@ -496,10 +503,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   
-                  // 6. eShop Product Slider - Product carousel
+                  // 7. eShop Product Slider - Product carousel
                   const EshopSection(),
                   
-                  // 7. Micro Gigs Section (with Account Balance & Mobile Recharge inside)
+                  // 8. Micro Gigs Section (with Account Balance & Mobile Recharge inside)
                   Container(
                     key: _microGigsSectionKey,
                     child: const MicroGigsSection(),

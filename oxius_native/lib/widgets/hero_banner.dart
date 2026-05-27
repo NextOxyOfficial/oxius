@@ -371,19 +371,13 @@ class _HeroBannerState extends State<HeroBanner> {
       child: InkWell(
         borderRadius: BorderRadius.circular(10),
         onTap: () => _openFeaturedNews(item),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: [
             _buildBreakingHeader(),
-            const SizedBox(height: 5),
-            Row(
-              children: [
-                Expanded(child: _buildFeaturedNewsTitle(item)),
-                const SizedBox(width: 8),
-                _buildDetailsPill(),
-              ],
-            ),
+            const SizedBox(width: 7),
+            Expanded(child: _buildFeaturedNewsTitle(item)),
+            const SizedBox(width: 8),
+            _buildDetailsPill(),
           ],
         ),
       ),
@@ -404,95 +398,72 @@ class _HeroBannerState extends State<HeroBanner> {
   }
 
   Widget _buildBreakingHeader() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 850),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEF4444),
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFEF4444)
-                    .withOpacity(_newsGlow ? 0.20 : 0.10),
-                blurRadius: _newsGlow ? 6 : 3,
-                offset: const Offset(0, 1),
-              ),
-            ],
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 850),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEF4444),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFEF4444).withOpacity(_newsGlow ? 0.20 : 0.10),
+            blurRadius: _newsGlow ? 6 : 3,
+            offset: const Offset(0, 1),
           ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.campaign_rounded, size: 12, color: Colors.white),
-              SizedBox(width: 3),
-              Text(
-                'NEWS',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.campaign_rounded, size: 12, color: Colors.white),
+          const SizedBox(width: 3),
+          Text(
             _breakingNewsLabel,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFFB91C1C),
+              color: Colors.white,
+              fontSize: 9.5,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0,
               height: 1,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildFeaturedNewsTitle(BreakingNewsItem item) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ClipRect(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 450),
-            transitionBuilder: (child, animation) {
-              final offset = Tween<Offset>(
-                begin: const Offset(0.10, 0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              ));
-              return SlideTransition(
-                position: offset,
-                child: FadeTransition(opacity: animation, child: child),
-              );
-            },
-            child: Text(
-              item.displayTitle,
-              key: ValueKey('${item.id}_${item.displayTitle}'),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
-                height: 1.2,
-              ),
-            ),
+    return ClipRect(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 450),
+        transitionBuilder: (child, animation) {
+          final offset = Tween<Offset>(
+            begin: const Offset(0.10, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ));
+          return SlideTransition(
+            position: offset,
+            child: FadeTransition(opacity: animation, child: child),
+          );
+        },
+        child: Text(
+          item.displayTitle,
+          key: ValueKey('${item.id}_${item.displayTitle}'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF111827),
+            height: 1.2,
           ),
         ),
-      ],
+      ),
     );
   }
 
