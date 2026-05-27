@@ -375,15 +375,15 @@ class _HeroBannerState extends State<HeroBanner> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
+            _buildBreakingHeader(),
+            const SizedBox(height: 5),
             Row(
               children: [
-                _buildBreakingBadge(),
-                const Spacer(),
+                Expanded(child: _buildFeaturedNewsTitle(item)),
+                const SizedBox(width: 8),
                 _buildDetailsPill(),
               ],
             ),
-            const SizedBox(height: 6),
-            _buildFeaturedNewsTitle(item),
           ],
         ),
       ),
@@ -403,39 +403,57 @@ class _HeroBannerState extends State<HeroBanner> {
     );
   }
 
-  Widget _buildBreakingBadge() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 850),
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEF4444),
-        borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFEF4444).withOpacity(_newsGlow ? 0.22 : 0.10),
-            blurRadius: _newsGlow ? 7 : 4,
-            offset: const Offset(0, 2),
+  Widget _buildBreakingHeader() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 850),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEF4444),
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFEF4444)
+                    .withOpacity(_newsGlow ? 0.20 : 0.10),
+                blurRadius: _newsGlow ? 6 : 3,
+                offset: const Offset(0, 1),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.campaign_rounded, size: 13, color: Colors.white),
-          const SizedBox(width: 4),
-          Text(
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.campaign_rounded, size: 12, color: Colors.white),
+              SizedBox(width: 3),
+              Text(
+                'NEWS',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
             _breakingNewsLabel,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 10.5,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFFB91C1C),
+              height: 1,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
