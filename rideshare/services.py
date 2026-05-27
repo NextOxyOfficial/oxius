@@ -21,7 +21,7 @@ from django.utils import timezone
 from channels.layers import get_channel_layer
 
 from base.models import Balance, FCMToken, User
-from base.fcm_service import send_fcm_notification
+from base.fcm_service import send_fcm_notification_async
 
 from .models import (
     DriverLocation,
@@ -286,7 +286,8 @@ class RoutingService:
         }
 
         try:
-            with httpx.Client(timeout=10.0, headers=headers) as client:
+            timeout = float(getattr(settings, "RIDESHARE_ROUTE_HTTP_TIMEOUT_SECONDS", 3.0))
+            with httpx.Client(timeout=timeout, headers=headers) as client:
                 response = client.get(route_url, params=params)
                 response.raise_for_status()
                 payload = response.json()
@@ -350,7 +351,8 @@ class RoutingService:
             )
 
             try:
-                with httpx.Client(timeout=10.0) as client:
+                timeout = float(getattr(settings, "RIDESHARE_ROUTE_HTTP_TIMEOUT_SECONDS", 3.0))
+                with httpx.Client(timeout=timeout) as client:
                     response = client.get(url, params=params)
                     response.raise_for_status()
                     payload = response.json()
@@ -1310,7 +1312,8 @@ class LocationService:
         headers = {"User-Agent": "adsyclub-rideshare/1.0"}
 
         try:
-            with httpx.Client(timeout=10.0, headers=headers) as client:
+            timeout = float(getattr(settings, "RIDESHARE_LOCATION_HTTP_TIMEOUT_SECONDS", 3.0))
+            with httpx.Client(timeout=timeout, headers=headers) as client:
                 response = client.get(url, params=params)
                 response.raise_for_status()
                 data = response.json()
@@ -1441,7 +1444,8 @@ class LocationService:
         headers = {"User-Agent": "adsyclub-rideshare/1.0"}
 
         try:
-            with httpx.Client(timeout=10.0, headers=headers) as client:
+            timeout = float(getattr(settings, "RIDESHARE_LOCATION_HTTP_TIMEOUT_SECONDS", 3.0))
+            with httpx.Client(timeout=timeout, headers=headers) as client:
                 response = client.get(url, params=params)
                 response.raise_for_status()
                 item = response.json()
@@ -2347,7 +2351,7 @@ class RideNotificationService:
         # Send to all user's devices
         success = False
         for token in tokens:
-            if send_fcm_notification(token, title, body, data):
+            if send_fcm_notification_async(token, title, body, data):
                 success = True
 
         return success
@@ -2369,7 +2373,7 @@ class RideNotificationService:
                 "mode": "passenger",
             }
             for token in cls._get_user_fcm_tokens(ride.rider):
-                send_fcm_notification(token, rider_title, rider_body, rider_data)
+                send_fcm_notification_async(token, rider_title, rider_body, rider_data)
         else:
             cls.send_ride_notification(ride.rider, ride.status, ride)
 
@@ -2407,7 +2411,7 @@ class RideNotificationService:
                 "mode": "driver",
             }
             for token in tokens:
-                send_fcm_notification(token, driver_title, driver_body, data)
+                send_fcm_notification_async(token, driver_title, driver_body, data)
 
     @classmethod
     def notify_new_ride_request(cls, ride):
@@ -2434,13 +2438,13 @@ class RideNotificationService:
             "vehicle_type": ride.requested_vehicle_type,
         }
 
-        from base.fcm_service import send_fcm_data_message
+        from base.fcm_service import send_fcm_data_message_async
         for driver in drivers:
             tokens = cls._get_user_fcm_tokens(driver.user)
             for token in tokens:
                 # 45s TTL: ride broadcast is short-lived; if a driver's device
                 # can't be woken in 45s, the ride has likely been re-targeted.
-                send_fcm_data_message(token, data, ttl_seconds=45)
+                send_fcm_data_message_async(token, data, ttl_seconds=45)
 
 
 class RideAutoCancel:
@@ -2785,12 +2789,12 @@ class NearestDriverDispatch:
             "expires_at": expires_at.isoformat(),
         }
 
-        from base.fcm_service import send_fcm_data_message
+        from base.fcm_service import send_fcm_data_message_async
         tokens = RideNotificationService._get_user_fcm_tokens(driver.user)
         for token in tokens:
             # 45s TTL aligns with driver_timeout_seconds; if the device can't
             # be reached in that window the targeted offer is moot.
-            send_fcm_data_message(token, data, ttl_seconds=45)
+            send_fcm_data_message_async(token, data, ttl_seconds=45)
 
         # Also send websocket event to specific driver
         DispatchService._group_send(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:http/http.dart' as http;
@@ -22,6 +23,58 @@ class RideshareApiResult<T> {
 
 class RideshareService {
   static String get _baseUrl => '${ApiService.baseUrl}/rides';
+  static const Duration _requestTimeout = Duration(seconds: 12);
+
+  static Future<http.Response> _get(
+    Uri url, {
+    Map<String, String>? headers,
+  }) {
+    return http.get(url, headers: headers).timeout(_requestTimeout);
+  }
+
+  static Future<http.Response> _post(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) {
+    return http
+        .post(url, headers: headers, body: body, encoding: encoding)
+        .timeout(_requestTimeout);
+  }
+
+  static Future<http.Response> _put(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) {
+    return http
+        .put(url, headers: headers, body: body, encoding: encoding)
+        .timeout(_requestTimeout);
+  }
+
+  static Future<http.Response> _patch(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) {
+    return http
+        .patch(url, headers: headers, body: body, encoding: encoding)
+        .timeout(_requestTimeout);
+  }
+
+  static Future<http.Response> _delete(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+  }) {
+    return http
+        .delete(url, headers: headers, body: body, encoding: encoding)
+        .timeout(_requestTimeout);
+  }
 
   static double _roundToPrecision(double value, int fractionDigits) {
     return double.parse(value.toStringAsFixed(fractionDigits));
@@ -83,10 +136,12 @@ class RideshareService {
       'status': response.statusCode,
     });
     if (response.statusCode >= 500) {
-      Telemetry.event('rideshare.api.5xx', tags: {
-        'endpoint': endpoint,
-        'status': response.statusCode,
-      }, severity: TelemetrySeverity.error);
+      Telemetry.event('rideshare.api.5xx',
+          tags: {
+            'endpoint': endpoint,
+            'status': response.statusCode,
+          },
+          severity: TelemetrySeverity.error);
     }
     try {
       // Decode JSON on a background isolate when the body is large enough
@@ -137,14 +192,14 @@ class RideshareService {
   ) {
     try {
       final data = json.decode(response.body);
-      
+
       if (response.statusCode >= 200 && response.statusCode < 300) {
         if (data is Map && data.containsKey('success')) {
           return RideshareApiResult<T>(
             success: data['success'] == true,
             message: data['message'] ?? 'Success',
-            data: parser != null && data['data'] != null 
-                ? parser(data['data']) 
+            data: parser != null && data['data'] != null
+                ? parser(data['data'])
                 : data['data'] as T?,
             errors: data['errors'],
           );
@@ -171,7 +226,7 @@ class RideshareService {
   }
 
   // ==================== Ride Estimation ====================
-  
+
   static Future<RideshareApiResult<RideEstimate>> estimateRide({
     required double pickupLatitude,
     required double pickupLongitude,
@@ -183,7 +238,7 @@ class RideshareService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/estimate/'),
         headers: headers,
         body: json.encode({
@@ -218,7 +273,7 @@ class RideshareService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/route-preview/'),
         headers: headers,
         body: json.encode({
@@ -243,7 +298,7 @@ class RideshareService {
   }
 
   // ==================== Ride Creation ====================
-  
+
   static Future<RideshareApiResult<Ride>> createRide({
     required double pickupLatitude,
     required double pickupLongitude,
@@ -254,38 +309,39 @@ class RideshareService {
     String? dropAddress,
     String paymentMethod = 'wallet',
   }) async {
-    return Telemetry.trace<RideshareApiResult<Ride>>('rideshare.api.createRide', () async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$_baseUrl/create/'),
-        headers: headers,
-        body: json.encode({
-          'pickup_latitude': pickupLatitude,
-          'pickup_longitude': pickupLongitude,
-          'drop_latitude': dropLatitude,
-          'drop_longitude': dropLongitude,
-          'vehicle_type': vehicleType,
-          'pickup_address': pickupAddress ?? '',
-          'drop_address': dropAddress ?? '',
-          'payment_method': paymentMethod,
-        }),
-      );
-      return _parseResponseAsync<Ride>(
-        response,
-        (data) => Ride.fromJson(data as Map<String, dynamic>),
-      );
-    } catch (e) {
-      return RideshareApiResult<Ride>(
-        success: false,
-        message: 'Network error: $e',
-      );
-    }
+    return Telemetry.trace<RideshareApiResult<Ride>>('rideshare.api.createRide',
+        () async {
+      try {
+        final headers = await _getHeaders();
+        final response = await _post(
+          Uri.parse('$_baseUrl/create/'),
+          headers: headers,
+          body: json.encode({
+            'pickup_latitude': pickupLatitude,
+            'pickup_longitude': pickupLongitude,
+            'drop_latitude': dropLatitude,
+            'drop_longitude': dropLongitude,
+            'vehicle_type': vehicleType,
+            'pickup_address': pickupAddress ?? '',
+            'drop_address': dropAddress ?? '',
+            'payment_method': paymentMethod,
+          }),
+        );
+        return _parseResponseAsync<Ride>(
+          response,
+          (data) => Ride.fromJson(data as Map<String, dynamic>),
+        );
+      } catch (e) {
+        return RideshareApiResult<Ride>(
+          success: false,
+          message: 'Network error: $e',
+        );
+      }
     });
   }
 
   // ==================== Ride List & Details ====================
-  
+
   static Future<RideshareApiResult<List<Ride>>> listRides({
     bool asDriver = false,
     int page = 1,
@@ -299,7 +355,7 @@ class RideshareService {
       };
       if (asDriver) params['as_driver'] = 'true';
       final uri = Uri.parse('$_baseUrl/').replace(queryParameters: params);
-      final response = await http.get(uri, headers: headers);
+      final response = await _get(uri, headers: headers);
       return _parseResponseAsync<List<Ride>>(
         response,
         (data) {
@@ -309,7 +365,9 @@ class RideshareService {
                 .map((r) => Ride.fromJson(r as Map<String, dynamic>))
                 .toList();
           }
-          return (data as List).map((r) => Ride.fromJson(r as Map<String, dynamic>)).toList();
+          return (data as List)
+              .map((r) => Ride.fromJson(r as Map<String, dynamic>))
+              .toList();
         },
       );
     } catch (e) {
@@ -323,13 +381,14 @@ class RideshareService {
   static Future<RideshareApiResult<Ride?>> getActiveRide() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await _get(
         Uri.parse('$_baseUrl/active/'),
         headers: headers,
       );
       return _parseResponseAsync<Ride?>(
         response,
-        (data) => data != null ? Ride.fromJson(data as Map<String, dynamic>) : null,
+        (data) =>
+            data != null ? Ride.fromJson(data as Map<String, dynamic>) : null,
       );
     } catch (e) {
       return RideshareApiResult<Ride?>(
@@ -342,7 +401,7 @@ class RideshareService {
   static Future<RideshareApiResult<Ride>> getRide(String rideId) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await _get(
         Uri.parse('$_baseUrl/$rideId/'),
         headers: headers,
       );
@@ -359,34 +418,34 @@ class RideshareService {
   }
 
   // ==================== Ride Actions ====================
-  
+
   static Future<RideshareApiResult<Ride>> acceptRide(String rideId) async {
     return Telemetry.trace<RideshareApiResult<Ride>>('rideshare.api.acceptRide',
         tags: {'ride_id': rideId}, () async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$_baseUrl/$rideId/accept/'),
-        headers: headers,
-        body: json.encode({}),
-      );
-      return _parseResponseAsync<Ride>(
-        response,
-        (data) => Ride.fromJson(data as Map<String, dynamic>),
-      );
-    } catch (e) {
-      return RideshareApiResult<Ride>(
-        success: false,
-        message: 'Network error: $e',
-      );
-    }
+      try {
+        final headers = await _getHeaders();
+        final response = await _post(
+          Uri.parse('$_baseUrl/$rideId/accept/'),
+          headers: headers,
+          body: json.encode({}),
+        );
+        return _parseResponseAsync<Ride>(
+          response,
+          (data) => Ride.fromJson(data as Map<String, dynamic>),
+        );
+      } catch (e) {
+        return RideshareApiResult<Ride>(
+          success: false,
+          message: 'Network error: $e',
+        );
+      }
     });
   }
 
   static Future<RideshareApiResult<void>> skipRideRequest(String rideId) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/$rideId/skip/'),
         headers: headers,
         body: json.encode({}),
@@ -411,10 +470,11 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<Ride>> cancelRide(String rideId, {String reason = ''}) async {
+  static Future<RideshareApiResult<Ride>> cancelRide(String rideId,
+      {String reason = ''}) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/$rideId/cancel/'),
         headers: headers,
         body: json.encode({'reason': reason}),
@@ -444,7 +504,7 @@ class RideshareService {
         body['final_fare'] = finalFare;
       }
       body['payment_method'] = paymentMethod;
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/$rideId/status/'),
         headers: headers,
         body: json.encode(body),
@@ -471,7 +531,7 @@ class RideshareService {
       final body = <String, dynamic>{};
       if (latitude != null) body['latitude'] = latitude;
       if (longitude != null) body['longitude'] = longitude;
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/$rideId/early-complete/'),
         headers: headers,
         body: json.encode(body),
@@ -495,10 +555,11 @@ class RideshareService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/$rideId/confirm-early-complete/'),
         headers: headers,
-        body: json.encode({'confirm': confirm, 'payment_method': paymentMethod}),
+        body:
+            json.encode({'confirm': confirm, 'payment_method': paymentMethod}),
       );
       return _parseResponseAsync<Ride>(
         response,
@@ -512,13 +573,14 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<Map<String, dynamic>>> reportDriverCancellation(
+  static Future<RideshareApiResult<Map<String, dynamic>>>
+      reportDriverCancellation(
     String rideId, {
     String details = '',
   }) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/$rideId/report-cancellation/'),
         headers: headers,
         body: json.encode({'details': details}),
@@ -536,7 +598,7 @@ class RideshareService {
   }
 
   // ==================== Location Services ====================
-  
+
   static Future<RideshareApiResult<List<RidePoint>>> searchLocations(
     String query, {
     int limit = 5,
@@ -556,10 +618,12 @@ class RideshareService {
       final uri = Uri.parse('$_baseUrl/location/search/').replace(
         queryParameters: queryParameters,
       );
-      final response = await http.get(uri, headers: headers);
+      final response = await _get(uri, headers: headers);
       return _parseResponse<List<RidePoint>>(
         response,
-        (data) => (data as List).map((p) => RidePoint.fromJson(p as Map<String, dynamic>)).toList(),
+        (data) => (data as List)
+            .map((p) => RidePoint.fromJson(p as Map<String, dynamic>))
+            .toList(),
       );
     } catch (e) {
       return RideshareApiResult<List<RidePoint>>(
@@ -581,10 +645,12 @@ class RideshareService {
           'lng': longitude.toString(),
         },
       );
-      final response = await http.get(uri, headers: headers);
+      final response = await _get(uri, headers: headers);
       return _parseResponse<RidePoint?>(
         response,
-        (data) => data != null ? RidePoint.fromJson(data as Map<String, dynamic>) : null,
+        (data) => data != null
+            ? RidePoint.fromJson(data as Map<String, dynamic>)
+            : null,
       );
     } catch (e) {
       return RideshareApiResult<RidePoint?>(
@@ -594,7 +660,8 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<CustomRideLocationPurchase>> createCustomLocation({
+  static Future<RideshareApiResult<CustomRideLocationPurchase>>
+      createCustomLocation({
     required String name,
     String subtitle = '',
     String searchKeywords = '',
@@ -603,7 +670,7 @@ class RideshareService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/location/custom/'),
         headers: headers,
         body: json.encode({
@@ -616,7 +683,8 @@ class RideshareService {
       );
       return _parseResponse<CustomRideLocationPurchase>(
         response,
-        (data) => CustomRideLocationPurchase.fromJson(data as Map<String, dynamic>),
+        (data) =>
+            CustomRideLocationPurchase.fromJson(data as Map<String, dynamic>),
       );
     } catch (e) {
       return RideshareApiResult<CustomRideLocationPurchase>(
@@ -626,10 +694,11 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<List<CustomRideLocation>>> getMyLocations() async {
+  static Future<RideshareApiResult<List<CustomRideLocation>>>
+      getMyLocations() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await _get(
         Uri.parse('$_baseUrl/location/my/'),
         headers: headers,
       );
@@ -659,7 +728,7 @@ class RideshareService {
       if (name != null) body['name'] = name;
       if (subtitle != null) body['subtitle'] = subtitle;
       if (searchKeywords != null) body['search_keywords'] = searchKeywords;
-      final response = await http.patch(
+      final response = await _patch(
         Uri.parse('$_baseUrl/location/my/$id/'),
         headers: headers,
         body: json.encode(body),
@@ -679,13 +748,13 @@ class RideshareService {
   static Future<RideshareApiResult<void>> deleteMyLocation(String id) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.delete(
+      final response = await _delete(
         Uri.parse('$_baseUrl/location/my/$id/'),
         headers: headers,
       );
       return _parseResponse<void>(
         response,
-        (_) => null,
+        null,
       );
     } catch (e) {
       return RideshareApiResult<void>(
@@ -709,10 +778,12 @@ class RideshareService {
           'vehicle_type': vehicleType,
         },
       );
-      final response = await http.get(uri, headers: headers);
+      final response = await _get(uri, headers: headers);
       return _parseResponse<List<NearbyDriver>>(
         response,
-        (data) => (data as List).map((d) => NearbyDriver.fromJson(d as Map<String, dynamic>)).toList(),
+        (data) => (data as List)
+            .map((d) => NearbyDriver.fromJson(d as Map<String, dynamic>))
+            .toList(),
       );
     } catch (e) {
       return RideshareApiResult<List<NearbyDriver>>(
@@ -723,11 +794,11 @@ class RideshareService {
   }
 
   // ==================== Driver Profile ====================
-  
+
   static Future<RideshareApiResult<DriverProfile>> getDriverProfile() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await _get(
         Uri.parse('$_baseUrl/drivers/profile/'),
         headers: headers,
       );
@@ -754,14 +825,26 @@ class RideshareService {
     try {
       final headers = await _getHeaders();
       final body = <String, dynamic>{};
-      if (licenseNumber != null) body['license_number'] = licenseNumber;
-      if (nationalIdNumber != null) body['national_id_number'] = nationalIdNumber;
-      if (driverDetails != null) body['driver_details'] = driverDetails;
-      if (additionalDocuments != null) body['additional_documents'] = additionalDocuments;
-      if (serviceRadiusKm != null) body['service_radius_km'] = serviceRadiusKm;
-      if (maxRideDistanceKm != null) body['max_ride_distance_km'] = maxRideDistanceKm;
-      
-      final response = await http.put(
+      if (licenseNumber != null) {
+        body['license_number'] = licenseNumber;
+      }
+      if (nationalIdNumber != null) {
+        body['national_id_number'] = nationalIdNumber;
+      }
+      if (driverDetails != null) {
+        body['driver_details'] = driverDetails;
+      }
+      if (additionalDocuments != null) {
+        body['additional_documents'] = additionalDocuments;
+      }
+      if (serviceRadiusKm != null) {
+        body['service_radius_km'] = serviceRadiusKm;
+      }
+      if (maxRideDistanceKm != null) {
+        body['max_ride_distance_km'] = maxRideDistanceKm;
+      }
+
+      final response = await _put(
         Uri.parse('$_baseUrl/drivers/profile/'),
         headers: headers,
         body: json.encode(body),
@@ -787,11 +870,19 @@ class RideshareService {
     try {
       final headers = await _getHeaders();
       final body = <String, dynamic>{};
-      if (licenseNumber != null) body['license_number'] = licenseNumber;
-      if (nationalIdNumber != null) body['national_id_number'] = nationalIdNumber;
-      if (driverDetails != null) body['driver_details'] = driverDetails;
-      if (additionalDocuments != null) body['additional_documents'] = additionalDocuments;
-      final response = await http.post(
+      if (licenseNumber != null) {
+        body['license_number'] = licenseNumber;
+      }
+      if (nationalIdNumber != null) {
+        body['national_id_number'] = nationalIdNumber;
+      }
+      if (driverDetails != null) {
+        body['driver_details'] = driverDetails;
+      }
+      if (additionalDocuments != null) {
+        body['additional_documents'] = additionalDocuments;
+      }
+      final response = await _post(
         Uri.parse('$_baseUrl/drivers/apply/'),
         headers: headers,
         body: json.encode(body),
@@ -808,10 +899,11 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<DriverProfile>> toggleDriverOnline(bool isOnline) async {
+  static Future<RideshareApiResult<DriverProfile>> toggleDriverOnline(
+      bool isOnline) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/drivers/toggle-online/'),
         headers: headers,
         body: json.encode({'is_online': isOnline}),
@@ -833,7 +925,7 @@ class RideshareService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/drivers/settle-cash-dues/'),
         headers: headers,
         body: json.encode({'go_online_after_payment': goOnlineAfterPayment}),
@@ -869,12 +961,20 @@ class RideshareService {
         'latitude': normalizedLatitude,
         'longitude': normalizedLongitude,
       };
-      if (rideId != null && rideId.isNotEmpty) body['ride_id'] = rideId;
-      if (normalizedHeading != null) body['heading'] = normalizedHeading;
-      if (normalizedSpeed != null) body['speed_kph'] = normalizedSpeed;
-      if (normalizedAccuracy != null) body['accuracy_meters'] = normalizedAccuracy;
-      
-      final response = await http.post(
+      if (rideId != null && rideId.isNotEmpty) {
+        body['ride_id'] = rideId;
+      }
+      if (normalizedHeading != null) {
+        body['heading'] = normalizedHeading;
+      }
+      if (normalizedSpeed != null) {
+        body['speed_kph'] = normalizedSpeed;
+      }
+      if (normalizedAccuracy != null) {
+        body['accuracy_meters'] = normalizedAccuracy;
+      }
+
+      final response = await _post(
         Uri.parse('$_baseUrl/drivers/location/update/'),
         headers: headers,
         body: json.encode(body),
@@ -891,10 +991,11 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<DriverEarningsSummary>> getDriverEarningsSummary() async {
+  static Future<RideshareApiResult<DriverEarningsSummary>>
+      getDriverEarningsSummary() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await _get(
         Uri.parse('$_baseUrl/drivers/earnings-summary/'),
         headers: headers,
       );
@@ -911,11 +1012,11 @@ class RideshareService {
   }
 
   // ==================== Vehicles ====================
-  
+
   static Future<RideshareApiResult<List<Vehicle>>> listVehicles() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await _get(
         Uri.parse('$_baseUrl/drivers/vehicles/'),
         headers: headers,
       );
@@ -945,7 +1046,7 @@ class RideshareService {
   }) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _post(
         Uri.parse('$_baseUrl/drivers/vehicles/'),
         headers: headers,
         body: json.encode({
@@ -984,16 +1085,32 @@ class RideshareService {
     try {
       final headers = await _getHeaders();
       final body = <String, dynamic>{};
-      if (vehicleType != null) body['vehicle_type'] = vehicleType;
-      if (registrationNumber != null) body['registration_number'] = registrationNumber;
-      if (brand != null) body['brand'] = brand;
-      if (modelName != null) body['model_name'] = modelName;
-      if (color != null) body['color'] = color;
-      if (seatCapacity != null) body['seat_capacity'] = seatCapacity;
-      if (isActive != null) body['is_active'] = isActive;
-      if (isDefault != null) body['is_default'] = isDefault;
-      
-      final response = await http.patch(
+      if (vehicleType != null) {
+        body['vehicle_type'] = vehicleType;
+      }
+      if (registrationNumber != null) {
+        body['registration_number'] = registrationNumber;
+      }
+      if (brand != null) {
+        body['brand'] = brand;
+      }
+      if (modelName != null) {
+        body['model_name'] = modelName;
+      }
+      if (color != null) {
+        body['color'] = color;
+      }
+      if (seatCapacity != null) {
+        body['seat_capacity'] = seatCapacity;
+      }
+      if (isActive != null) {
+        body['is_active'] = isActive;
+      }
+      if (isDefault != null) {
+        body['is_default'] = isDefault;
+      }
+
+      final response = await _patch(
         Uri.parse('$_baseUrl/drivers/vehicles/$vehicleId/'),
         headers: headers,
         body: json.encode(body),
@@ -1010,10 +1127,11 @@ class RideshareService {
     }
   }
 
-  static Future<RideshareApiResult<void>> deleteVehicle(String vehicleId) async {
+  static Future<RideshareApiResult<void>> deleteVehicle(
+      String vehicleId) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.delete(
+      final response = await _delete(
         Uri.parse('$_baseUrl/drivers/vehicles/$vehicleId/'),
         headers: headers,
       );
@@ -1037,17 +1155,20 @@ class RideshareService {
   }
 
   // ==================== Available Ride Requests (Driver) ====================
-  
-  static Future<RideshareApiResult<List<Ride>>> listAvailableRideRequests() async {
+
+  static Future<RideshareApiResult<List<Ride>>>
+      listAvailableRideRequests() async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(
+      final response = await _get(
         Uri.parse('$_baseUrl/driver/available/'),
         headers: headers,
       );
       return _parseResponse<List<Ride>>(
         response,
-        (data) => (data as List).map((r) => Ride.fromJson(r as Map<String, dynamic>)).toList(),
+        (data) => (data as List)
+            .map((r) => Ride.fromJson(r as Map<String, dynamic>))
+            .toList(),
       );
     } catch (e) {
       return RideshareApiResult<List<Ride>>(
@@ -1062,7 +1183,7 @@ class RideshareService {
   static Future<void> sendDriverHeartbeat() async {
     try {
       final headers = await _getHeaders();
-      await http.post(
+      await _post(
         Uri.parse('$_baseUrl/drivers/heartbeat/'),
         headers: headers,
       );

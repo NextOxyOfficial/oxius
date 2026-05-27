@@ -1,11 +1,17 @@
 import firebase_admin
 from firebase_admin import credentials, messaging
 import os
+from concurrent.futures import ThreadPoolExecutor
 from django.conf import settings
 
 # Initialize Firebase Admin SDK
 FIREBASE_INITIALIZED = False
 FIREBASE_ERROR = None
+FCM_ASYNC_WORKERS = int(os.getenv("FCM_ASYNC_WORKERS", "4"))
+_FCM_EXECUTOR = ThreadPoolExecutor(
+    max_workers=max(1, FCM_ASYNC_WORKERS),
+    thread_name_prefix="fcm-send",
+)
 
 
 def _safe_print(message):
@@ -111,6 +117,22 @@ def send_fcm_notification(fcm_token, title, body, data=None):
         return False
 
 
+def _enqueue_fcm_send(func, *args, **kwargs):
+    if not FIREBASE_INITIALIZED:
+        _safe_print('Cannot queue notification: Firebase Admin SDK not initialized')
+        return False
+
+    try:
+        _FCM_EXECUTOR.submit(func, *args, **kwargs)
+        return True
+    except RuntimeError:
+        return func(*args, **kwargs)
+
+
+def send_fcm_notification_async(fcm_token, title, body, data=None):
+    return _enqueue_fcm_send(send_fcm_notification, fcm_token, title, body, data)
+
+
 def send_fcm_data_message(fcm_token, data, ttl_seconds=60):
     """
     Send a data-only FCM message (no notification field).
@@ -174,6 +196,10 @@ def send_fcm_data_message(fcm_token, data, ttl_seconds=60):
         import traceback
         traceback.print_exc()
         return False
+
+
+def send_fcm_data_message_async(fcm_token, data, ttl_seconds=60):
+    return _enqueue_fcm_send(send_fcm_data_message, fcm_token, data, ttl_seconds)
 
 
 def send_fcm_notification_multicast(fcm_tokens, title, body, data=None):
