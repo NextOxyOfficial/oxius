@@ -295,6 +295,34 @@ class _EshopScreenState extends State<EshopScreen>
     }
   }
 
+  String _normalizeSearchQuery(String query) {
+    return query.trim().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  bool _sameSearchQuery(String a, String b) {
+    return _normalizeSearchQuery(a).toLowerCase() ==
+        _normalizeSearchQuery(b).toLowerCase();
+  }
+
+  List<String> _dedupeRecentSearches(Iterable<String> searches) {
+    final seen = <String>{};
+    final deduped = <String>[];
+
+    for (final raw in searches) {
+      final query = _normalizeSearchQuery(raw);
+      if (query.length < 3) continue;
+
+      final key = query.toLowerCase();
+      if (seen.add(key)) {
+        deduped.add(query);
+      }
+
+      if (deduped.length >= 10) break;
+    }
+
+    return deduped;
+  }
+
   Future<void> _loadSearchHistory() async {
     try {
       print('EshopScreen: Loading search history...');
@@ -304,12 +332,7 @@ class _EshopScreenState extends State<EshopScreen>
 
       if (mounted) {
         setState(() {
-          _recentSearches = history;
-          // For testing: If no history from backend, add some mock data
-          if (_recentSearches.isEmpty) {
-            print(
-                'EshopScreen: No search history from backend, using empty list');
-          }
+          _recentSearches = _dedupeRecentSearches(history);
         });
         print(
             'EshopScreen: Updated state with ${_recentSearches.length} recent searches');
@@ -592,24 +615,17 @@ class _EshopScreenState extends State<EshopScreen>
     }
   }
 
-  /// Persist a user-intent search (submit / suggestion / recent tap with new
-  /// keyword) to the backend history. Deduplicated against in-memory list to
-  /// avoid POSTing values that are already known to be present.
+  /// Persist a user-intent search and keep the latest unique query at the top.
   Future<void> _commitSearchToHistory(String rawQuery) async {
-    final query = rawQuery.trim();
+    final query = _normalizeSearchQuery(rawQuery);
     if (query.length < 3) return;
-    if (_recentSearches.any((s) => s.toLowerCase() == query.toLowerCase())) {
-      return; // already saved
-    }
     try {
-      await EshopService.saveSearchHistory(query);
+      final saved = await EshopService.saveSearchHistory(query);
       if (!mounted) return;
-      // Optimistically prepend so it appears immediately; refresh from
-      // backend in the background to keep ordering consistent.
+      if (!saved) return;
       setState(() {
-        _recentSearches = [query, ..._recentSearches].take(10).toList();
+        _recentSearches = _dedupeRecentSearches([query, ..._recentSearches]);
       });
-      _loadSearchHistory();
     } catch (e) {
       print('EshopScreen: Failed to commit search history: $e');
     }
@@ -961,24 +977,47 @@ class _EshopScreenState extends State<EshopScreen>
 
   /// Delete a single search term from history (optimistic: removes locally first).
   Future<void> _deleteSearchItem(String query) async {
+    final previousSearches = List<String>.from(_recentSearches);
     setState(() {
-      _recentSearches = _recentSearches.where((s) => s != query).toList();
+      _recentSearches =
+          _recentSearches.where((s) => !_sameSearchQuery(s, query)).toList();
     });
     try {
-      await EshopService.deleteSearchHistoryItem(query);
+      final deleted = await EshopService.deleteSearchHistoryItem(query);
+      if (!deleted && mounted) {
+        setState(() {
+          _recentSearches = previousSearches;
+        });
+      }
     } catch (e) {
+      if (mounted) {
+        setState(() {
+          _recentSearches = previousSearches;
+        });
+      }
       print('EshopScreen: Failed to delete search item: $e');
     }
   }
 
   /// Clear all search history.
   Future<void> _clearAllSearchHistory() async {
+    final previousSearches = List<String>.from(_recentSearches);
     setState(() {
       _recentSearches = [];
     });
     try {
-      await EshopService.clearSearchHistory();
+      final cleared = await EshopService.clearSearchHistory();
+      if (!cleared && mounted) {
+        setState(() {
+          _recentSearches = previousSearches;
+        });
+      }
     } catch (e) {
+      if (mounted) {
+        setState(() {
+          _recentSearches = previousSearches;
+        });
+      }
       print('EshopScreen: Failed to clear search history: $e');
     }
   }

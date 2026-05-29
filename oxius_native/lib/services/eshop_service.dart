@@ -6,6 +6,35 @@ class EshopService {
   static String get baseUrl => ApiService.baseUrl;
   static String get _originBase => ApiService.baseUrl.replaceFirst('/api', '');
 
+  static Future<Map<String, String>> _jsonHeaders() async {
+    final headers = await ApiService.getHeaders();
+    headers['Accept'] = 'application/json';
+    return headers;
+  }
+
+  static String _normalizeSearchQuery(String query) {
+    return query.trim().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  static List<String> _dedupeSearchHistory(Iterable<String> searches) {
+    final seen = <String>{};
+    final deduped = <String>[];
+
+    for (final raw in searches) {
+      final query = _normalizeSearchQuery(raw);
+      if (query.length < 3) continue;
+
+      final key = query.toLowerCase();
+      if (seen.add(key)) {
+        deduped.add(query);
+      }
+
+      if (deduped.length >= 10) break;
+    }
+
+    return deduped;
+  }
+
   static String _abs(String? url) {
     if (url == null || url.isEmpty) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -32,7 +61,8 @@ class EshopService {
   static List<Map<String, dynamic>> _extractProductList(dynamic data) {
     if (data is Map && data['results'] is List) {
       return List<Map<String, dynamic>>.from(
-        (data['results'] as List).map((e) => _transformProduct(Map<String, dynamic>.from(e))),
+        (data['results'] as List)
+            .map((e) => _transformProduct(Map<String, dynamic>.from(e))),
       );
     }
     if (data is List) {
@@ -45,12 +75,14 @@ class EshopService {
     }
     return [];
   }
-  
+
   // Transform backend Product model to expected frontend format
-  static Map<String, dynamic> _transformProduct(Map<String, dynamic> backendProduct) {
+  static Map<String, dynamic> _transformProduct(
+      Map<String, dynamic> backendProduct) {
     try {
-      print('DEBUG _transformProduct: Input product keys: ${backendProduct.keys.toList()}');
-      
+      print(
+          'DEBUG _transformProduct: Input product keys: ${backendProduct.keys.toList()}');
+
       // Extract image from image_details (ProductMediaSerializer)
       String? imageUrl;
       final imageDetails = backendProduct['image_details'];
@@ -60,44 +92,50 @@ class EshopService {
           imageUrl = _abs(firstImage['image'].toString());
         }
       }
-      
-      // Extract store name from owner_details (UserSerializer)  
+
+      // Extract store name from owner_details (UserSerializer)
       final ownerDetails = backendProduct['owner_details'];
-      print('DEBUG _transformProduct: ownerDetails type: ${ownerDetails.runtimeType}');
+      print(
+          'DEBUG _transformProduct: ownerDetails type: ${ownerDetails.runtimeType}');
       print('DEBUG _transformProduct: ownerDetails value: $ownerDetails');
-      
+
       String storeName = 'Store'; // Default fallback
       String storeUsername = '';
       if (ownerDetails is Map<String, dynamic>) {
-        print('DEBUG _transformProduct: ownerDetails keys: ${ownerDetails.keys.toList()}');
+        print(
+            'DEBUG _transformProduct: ownerDetails keys: ${ownerDetails.keys.toList()}');
         // Prioritize store_name first, then other fields
         storeName = ownerDetails['store_name']?.toString() ??
-                    ownerDetails['name']?.toString() ??
-                    ownerDetails['username']?.toString() ??
-                    ownerDetails['first_name']?.toString() ??
-                    'Store';
+            ownerDetails['name']?.toString() ??
+            ownerDetails['username']?.toString() ??
+            ownerDetails['first_name']?.toString() ??
+            'Store';
         storeUsername = ownerDetails['store_username']?.toString() ??
-          ownerDetails['username']?.toString() ??
-          '';
-        
+            ownerDetails['username']?.toString() ??
+            '';
+
         print('DEBUG _transformProduct: Extracted storeName: "$storeName"');
-        
+
         // Add last name if available and we're using first_name
-        if (ownerDetails['first_name'] != null && ownerDetails['last_name'] != null && 
+        if (ownerDetails['first_name'] != null &&
+            ownerDetails['last_name'] != null &&
             storeName == ownerDetails['first_name']?.toString() &&
             ownerDetails['last_name'].toString().isNotEmpty) {
           storeName += ' ${ownerDetails['last_name']}';
-          print('DEBUG _transformProduct: storeName with last name: "$storeName"');
+          print(
+              'DEBUG _transformProduct: storeName with last name: "$storeName"');
         }
       }
-      
+
       final transformed = {
         'id': backendProduct['id']?.toString() ?? '',
         'name': backendProduct['name']?.toString() ?? '',
-        'title': backendProduct['name']?.toString() ?? '', // Alias for compatibility
+        'title':
+            backendProduct['name']?.toString() ?? '', // Alias for compatibility
         'slug': backendProduct['slug']?.toString() ?? '',
         'description': backendProduct['description']?.toString() ?? '',
-        'short_description': backendProduct['short_description']?.toString() ?? '',
+        'short_description':
+            backendProduct['short_description']?.toString() ?? '',
         'regular_price': backendProduct['regular_price'] ?? 0.0,
         'sale_price': backendProduct['sale_price'],
         'price': backendProduct['regular_price'] ?? 0.0, // Fallback alias
@@ -110,49 +148,73 @@ class EshopService {
         'updated_at': backendProduct['updated_at']?.toString() ?? '',
         'weight': backendProduct['weight'] ?? 0.0,
         'keywords': backendProduct['keywords']?.toString() ?? '',
-        
+
         // Images
         'image': imageUrl ?? '',
         'image_details': backendProduct['image_details'] ?? [],
-        'medias': backendProduct['image_details'] ?? [], // Alias for compatibility
-        
+        'medias':
+            backendProduct['image_details'] ?? [], // Alias for compatibility
+
         // Owner/Store information
-        'owner': storeName, // Use the extracted store name instead of raw owner ID
+        'owner':
+            storeName, // Use the extracted store name instead of raw owner ID
         'owner_details': {
           'id': ownerDetails is Map ? ownerDetails['id']?.toString() ?? '' : '',
           'store_name': storeName,
           'name': storeName,
           'store_username': storeUsername,
-          'username': ownerDetails is Map ? (ownerDetails['username']?.toString() ?? '') : '',
-          'email': ownerDetails is Map ? (ownerDetails['email']?.toString() ?? '') : '',
-          'image': ownerDetails is Map && ownerDetails['image'] != null ? _abs(ownerDetails['image'].toString()) : null,
-          'store_logo': ownerDetails is Map && ownerDetails['store_logo'] != null ? _abs(ownerDetails['store_logo'].toString()) : null,
-          'store_banner': ownerDetails is Map && ownerDetails['store_banner'] != null ? _abs(ownerDetails['store_banner'].toString()) : null,
-          'store_description': ownerDetails is Map ? ownerDetails['store_description']?.toString() ?? '' : '',
-          'is_verified': ownerDetails is Map ? (ownerDetails['kyc'] == true || ownerDetails['is_verified'] == true) : false,
+          'username': ownerDetails is Map
+              ? (ownerDetails['username']?.toString() ?? '')
+              : '',
+          'email': ownerDetails is Map
+              ? (ownerDetails['email']?.toString() ?? '')
+              : '',
+          'image': ownerDetails is Map && ownerDetails['image'] != null
+              ? _abs(ownerDetails['image'].toString())
+              : null,
+          'store_logo':
+              ownerDetails is Map && ownerDetails['store_logo'] != null
+                  ? _abs(ownerDetails['store_logo'].toString())
+                  : null,
+          'store_banner':
+              ownerDetails is Map && ownerDetails['store_banner'] != null
+                  ? _abs(ownerDetails['store_banner'].toString())
+                  : null,
+          'store_description': ownerDetails is Map
+              ? ownerDetails['store_description']?.toString() ?? ''
+              : '',
+          'is_verified': ownerDetails is Map
+              ? (ownerDetails['kyc'] == true ||
+                  ownerDetails['is_verified'] == true)
+              : false,
           'rating': ownerDetails is Map ? ownerDetails['rating'] : null,
-          'followers_count': ownerDetails is Map ? ownerDetails['followers_count'] : null,
+          'followers_count':
+              ownerDetails is Map ? ownerDetails['followers_count'] : null,
         },
-        
+
         // Categories
         'category': backendProduct['category'] ?? [],
         'category_details': backendProduct['category_details'] ?? [],
-        
+
         // Additional product details
         'benefits': backendProduct['benefits'] ?? [],
         'faqs': backendProduct['faqs'] ?? [],
         'trust_badges': backendProduct['trust_badges'] ?? [],
         'order_count': backendProduct['order_count'] ?? 0,
         'total_items_ordered': backendProduct['total_items_ordered'] ?? 0,
-        
+
         // Delivery information
-        'delivery_information': backendProduct['delivery_information']?.toString() ?? '',
+        'delivery_information':
+            backendProduct['delivery_information']?.toString() ?? '',
         'delivery_fee_free': backendProduct['delivery_fee_free'] ?? 0.0,
-        'delivery_fee_inside_dhaka': backendProduct['delivery_fee_inside_dhaka'] ?? 0.0,
-        'delivery_fee_outside_dhaka': backendProduct['delivery_fee_outside_dhaka'] ?? 0.0,
+        'delivery_fee_inside_dhaka':
+            backendProduct['delivery_fee_inside_dhaka'] ?? 0.0,
+        'delivery_fee_outside_dhaka':
+            backendProduct['delivery_fee_outside_dhaka'] ?? 0.0,
       };
-      
-      print('DEBUG _transformProduct: Final transformed owner_details: ${transformed['owner_details']}');
+
+      print(
+          'DEBUG _transformProduct: Final transformed owner_details: ${transformed['owner_details']}');
       return transformed;
     } catch (e) {
       print('EshopService: Error transforming product: $e');
@@ -176,7 +238,7 @@ class EshopService {
       };
     }
   }
-  
+
   static Future<List<Map<String, dynamic>>> fetchEshopProducts({
     String? query,
     String? categoryId,
@@ -189,11 +251,11 @@ class EshopService {
         'page': page.toString(),
         'page_size': pageSize.toString(),
       };
-      
+
       if (query != null && query.isNotEmpty) {
         queryParams['search'] = query;
       }
-      
+
       // Prefer category_slug over category ID (matches Vue implementation)
       if (categorySlug != null && categorySlug.isNotEmpty) {
         queryParams['category_slug'] = categorySlug;
@@ -201,12 +263,13 @@ class EshopService {
         queryParams['category'] = categoryId;
       }
 
-  // Correct backend path for public product listing -> api/all-products/
-  // NOTE: /api/products/ is owner-only (auth-required, returns only own products)
-  //       /api/all-products/ is AllProductsListView (AllowAny, supports category/search/price filters)
-  final uri = Uri.parse('$baseUrl/all-products/').replace(queryParameters: queryParams);
+      // Correct backend path for public product listing -> api/all-products/
+      // NOTE: /api/products/ is owner-only (auth-required, returns only own products)
+      //       /api/all-products/ is AllProductsListView (AllowAny, supports category/search/price filters)
+      final uri = Uri.parse('$baseUrl/all-products/')
+          .replace(queryParameters: queryParams);
       print('EshopService: Fetching products from: $uri');
-      
+
       final response = await http.get(
         uri,
         headers: {
@@ -216,17 +279,19 @@ class EshopService {
       ).timeout(const Duration(seconds: 10));
 
       print('EshopService: Response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
         if (data is Map && data['results'] is List) {
           final products = _extractProductList(data);
-          print('EshopService: Successfully fetched ${products.length} products (paginated)');
+          print(
+              'EshopService: Successfully fetched ${products.length} products (paginated)');
           return products;
         } else if (data is List) {
           final products = _extractProductList(data);
-          print('EshopService: Successfully fetched ${products.length} products (direct array)');
+          print(
+              'EshopService: Successfully fetched ${products.length} products (direct array)');
           return products;
         } else if (data is Map<String, dynamic>) {
           // Single product object
@@ -235,10 +300,11 @@ class EshopService {
           return [product];
         }
       }
-      
-      print('EshopService: Failed to fetch products. Status: ${response.statusCode}');
+
+      print(
+          'EshopService: Failed to fetch products. Status: ${response.statusCode}');
       print('EshopService: Response body: ${response.body}');
-      
+
       return [];
     } catch (e, stackTrace) {
       print('EshopService: Error fetching products: $e');
@@ -313,7 +379,8 @@ class EshopService {
     return null;
   }
 
-  static Future<Map<String, dynamic>?> fetchStoreDetails(String storeIdentity) async {
+  static Future<Map<String, dynamic>?> fetchStoreDetails(
+      String storeIdentity) async {
     try {
       final uri = Uri.parse('$baseUrl/store/$storeIdentity/');
       final response = await http.get(
@@ -360,7 +427,8 @@ class EshopService {
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to load store products: ${response.statusCode}');
+        throw Exception(
+            'Failed to load store products: ${response.statusCode}');
       }
 
       final data = json.decode(response.body);
@@ -381,7 +449,7 @@ class EshopService {
     try {
       final uri = Uri.parse('$baseUrl/product-categories/');
       print('EshopService: Fetching categories from: $uri');
-      
+
       final response = await http.get(
         uri,
         headers: {
@@ -391,22 +459,25 @@ class EshopService {
       ).timeout(const Duration(seconds: 10));
 
       print('EshopService: Categories response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         if (data is Map && data['results'] is List) {
           final categories = List<Map<String, dynamic>>.from(data['results']);
-          print('EshopService: Successfully fetched ${categories.length} categories');
+          print(
+              'EshopService: Successfully fetched ${categories.length} categories');
           return categories;
         } else if (data is List) {
           final categories = List<Map<String, dynamic>>.from(data);
-          print('EshopService: Successfully fetched ${categories.length} categories (direct array)');
+          print(
+              'EshopService: Successfully fetched ${categories.length} categories (direct array)');
           return categories;
         }
       }
-      
-      print('EshopService: Failed to fetch categories. Status: ${response.statusCode}');
+
+      print(
+          'EshopService: Failed to fetch categories. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
       print('EshopService: Error fetching categories: $e');
@@ -421,7 +492,7 @@ class EshopService {
   }) async {
     try {
       final Map<String, String> queryParams = {};
-      
+
       if (specialOffer != null) {
         queryParams['special_offer'] = specialOffer.toString();
       }
@@ -429,9 +500,10 @@ class EshopService {
         queryParams['hot_arrival'] = hotArrival.toString();
       }
 
-      final uri = Uri.parse('$baseUrl/product-categories/').replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
+      final uri = Uri.parse('$baseUrl/product-categories/').replace(
+          queryParameters: queryParams.isNotEmpty ? queryParams : null);
       print('EshopService: Fetching product categories from: $uri');
-      
+
       final response = await http.get(
         uri,
         headers: {
@@ -440,31 +512,34 @@ class EshopService {
         },
       ).timeout(const Duration(seconds: 10));
 
-      print('EshopService: Product categories response status: ${response.statusCode}');
-      
+      print(
+          'EshopService: Product categories response status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         List<Map<String, dynamic>> categories = [];
-        
+
         if (data is Map && data['results'] is List) {
           categories = List<Map<String, dynamic>>.from(data['results']);
         } else if (data is List) {
           categories = List<Map<String, dynamic>>.from(data);
         }
-        
+
         // Transform image URLs to absolute
         for (var category in categories) {
           if (category['image'] != null) {
             category['image'] = _abs(category['image'].toString());
           }
         }
-        
-        print('EshopService: Successfully fetched ${categories.length} product categories');
+
+        print(
+            'EshopService: Successfully fetched ${categories.length} product categories');
         return categories;
       }
-      
-      print('EshopService: Failed to fetch product categories. Status: ${response.statusCode}');
+
+      print(
+          'EshopService: Failed to fetch product categories. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
       print('EshopService: Error fetching product categories: $e');
@@ -473,11 +548,12 @@ class EshopService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> fetchEshopBanners({String endpoint = '/eshop-banner/'}) async {
+  static Future<List<Map<String, dynamic>>> fetchEshopBanners(
+      {String endpoint = '/eshop-banner/'}) async {
     try {
       final uri = Uri.parse('$baseUrl$endpoint');
       print('EshopService: Fetching banners from: $uri');
-      
+
       final response = await http.get(
         uri,
         headers: {
@@ -487,18 +563,18 @@ class EshopService {
       ).timeout(const Duration(seconds: 10));
 
       print('EshopService: Banners response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         List<Map<String, dynamic>> banners = [];
-        
+
         if (data is Map && data['results'] is List) {
           banners = List<Map<String, dynamic>>.from(data['results']);
         } else if (data is List) {
           banners = List<Map<String, dynamic>>.from(data);
         }
-        
+
         // Transform banner URLs to absolute
         for (var banner in banners) {
           if (banner['image'] != null) {
@@ -508,12 +584,13 @@ class EshopService {
             banner['mobile_image'] = _abs(banner['mobile_image'].toString());
           }
         }
-        
+
         print('EshopService: Successfully fetched ${banners.length} banners');
         return banners;
       }
-      
-      print('EshopService: Failed to fetch banners. Status: ${response.statusCode}');
+
+      print(
+          'EshopService: Failed to fetch banners. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
       print('EshopService: Error fetching banners: $e');
@@ -532,10 +609,10 @@ class EshopService {
         'page_size': '20',
         'ordering': '-created_at',
       });
-      
+
       print('EshopService: Searching products with query: $query');
       print('EshopService: Search URL: $uri');
-      
+
       final response = await http.get(
         uri,
         headers: {
@@ -543,13 +620,13 @@ class EshopService {
           'Accept': 'application/json',
         },
       ).timeout(const Duration(seconds: 10));
-      
+
       print('EshopService: Search response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         List<Map<String, dynamic>> products = [];
-        
+
         if (data is Map && data.containsKey('results')) {
           // Paginated response
           final results = data['results'];
@@ -576,17 +653,18 @@ class EshopService {
             }
           }
         }
-        
-        print('EshopService: Successfully searched ${products.length} products for query: "$query"');
-        
+
+        print(
+            'EshopService: Successfully searched ${products.length} products for query: "$query"');
+
         // NOTE: Search history is saved explicitly from the UI layer on user
         // intent (submit / suggestion tap) — NOT here. Saving on every API
         // call caused duplicates because each debounced keystroke fired a
         // search and each one was persisted.
-        
+
         return products;
       }
-      
+
       print('EshopService: Search failed. Status: ${response.statusCode}');
       print('EshopService: Response body: ${response.body}');
       return [];
@@ -602,21 +680,22 @@ class EshopService {
     try {
       final uri = Uri.parse('$baseUrl/search-history/');
       print('EshopService: Fetching search history from: $uri');
-      
-      final response = await http.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final headers = await _jsonHeaders();
 
-      print('EshopService: Search history response status: ${response.statusCode}');
-      
+      final response = await http
+          .get(
+            uri,
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      print(
+          'EshopService: Search history response status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         List<String> searches = [];
-        
+
         if (data is List) {
           for (var item in data) {
             if (item is Map<String, dynamic> && item['query'] != null) {
@@ -624,12 +703,15 @@ class EshopService {
             }
           }
         }
-        
-        print('EshopService: Successfully fetched ${searches.length} search history items');
-        return searches;
+
+        final deduped = _dedupeSearchHistory(searches);
+        print(
+            'EshopService: Successfully fetched ${deduped.length} search history items');
+        return deduped;
       }
-      
-      print('EshopService: Failed to fetch search history. Status: ${response.statusCode}');
+
+      print(
+          'EshopService: Failed to fetch search history. Status: ${response.statusCode}');
       return [];
     } catch (e, stackTrace) {
       print('EshopService: Error fetching search history: $e');
@@ -639,52 +721,69 @@ class EshopService {
   }
 
   // Save search query to history
-  static Future<void> saveSearchHistory(String query) async {
+  static Future<bool> saveSearchHistory(String query) async {
     try {
+      final normalizedQuery = _normalizeSearchQuery(query);
+      if (normalizedQuery.length < 3) return false;
+
       final uri = Uri.parse('$baseUrl/search-history/save/');
-      
-      final response = await http.post(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode({
-          'query': query,
-          'search_type': 'product',
-        }),
-      ).timeout(const Duration(seconds: 5));
+      final headers = await _jsonHeaders();
+
+      final response = await http
+          .post(
+            uri,
+            headers: headers,
+            body: json.encode({
+              'query': normalizedQuery,
+              'search_type': 'product',
+            }),
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('EshopService: Search history saved for query: "$query"');
+        final data = json.decode(response.body);
+        if (data is Map && data['saved'] == false) {
+          print('EshopService: Search history was not saved for anonymous user');
+          return false;
+        }
+        print(
+            'EshopService: Search history saved for query: "$normalizedQuery"');
+        return true;
       } else {
-        print('EshopService: Failed to save search history. Status: ${response.statusCode}');
+        print(
+            'EshopService: Failed to save search history. Status: ${response.statusCode}');
+        return false;
       }
     } catch (e) {
       print('EshopService: Error saving search history: $e');
+      return false;
     }
   }
 
   // Delete a single search history item by query string
   static Future<bool> deleteSearchHistoryItem(String query) async {
     try {
-      final uri = Uri.parse('$baseUrl/search-history/delete/');
+      final normalizedQuery = _normalizeSearchQuery(query);
+      if (normalizedQuery.isEmpty) return true;
 
-      final response = await http.delete(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode({'query': query}),
-      ).timeout(const Duration(seconds: 5));
+      final uri = Uri.parse('$baseUrl/search-history/delete/');
+      final headers = await _jsonHeaders();
+
+      final response = await http
+          .delete(
+            uri,
+            headers: headers,
+            body: json.encode({'query': normalizedQuery}),
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        print('EshopService: Search item deleted: $query');
+        print('EshopService: Search item deleted: $normalizedQuery');
         return true;
       }
 
-      print('EshopService: Failed to delete search item. Status: ${response.statusCode}');
+      print(
+          'EshopService: Failed to delete search item. Status: ${response.statusCode}');
       return false;
     } catch (e) {
       print('EshopService: Error deleting search item: $e');
@@ -696,21 +795,22 @@ class EshopService {
   static Future<bool> clearSearchHistory() async {
     try {
       final uri = Uri.parse('$baseUrl/search-history/clear/');
-      
-      final response = await http.delete(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 5));
+      final headers = await _jsonHeaders();
+
+      final response = await http
+          .delete(
+            uri,
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         print('EshopService: Search history cleared');
         return true;
       }
-      
-      print('EshopService: Failed to clear search history. Status: ${response.statusCode}');
+
+      print(
+          'EshopService: Failed to clear search history. Status: ${response.statusCode}');
       return false;
     } catch (e) {
       print('EshopService: Error clearing search history: $e');
@@ -723,7 +823,7 @@ class EshopService {
     try {
       final uri = Uri.parse('$baseUrl/eshop-logo/');
       print('EshopService: Fetching eShop logo from: $uri');
-      
+
       final response = await http.get(
         uri,
         headers: {
@@ -747,7 +847,7 @@ class EshopService {
           print('EshopService: Logo URL is null or empty');
         }
       }
-      
+
       print('EshopService: Returning null for logo');
       return null;
     } catch (e) {
@@ -755,5 +855,4 @@ class EshopService {
       return null;
     }
   }
-
 }
