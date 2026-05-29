@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import 'package:flutter_html/flutter_html.dart';
 import '../../models/gold_sponsor_models.dart';
+import '../../screens/business_network/gold_sponsors_screen.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../utils/url_launcher_utils.dart';
 
@@ -98,7 +99,12 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
                 const Spacer(),
                 GestureDetector(
                   onTap: () {
-                    // TODO: Navigate to full sponsors page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const GoldSponsorsScreen(),
+                      ),
+                    );
                   },
                   child: Row(
                     children: [
