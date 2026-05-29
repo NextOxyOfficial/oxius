@@ -16,6 +16,7 @@ import '../workspace/workspace_screen.dart';
 import '../settings_screen.dart';
 import '../verification_screen.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
   const ProfileOptionsScreen({super.key});
@@ -118,7 +119,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   String _resolvedName(User? user) {
     final firstName = _stringValue(_profileData?['first_name']);
     final lastName = _stringValue(_profileData?['last_name']);
-    final fullName = [firstName, lastName].where((value) => value.isNotEmpty).join(' ');
+    final fullName =
+        [firstName, lastName].where((value) => value.isNotEmpty).join(' ');
     if (fullName.isNotEmpty) {
       return fullName;
     }
@@ -191,172 +193,177 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
-        body: RefreshIndicator(
+        body: AdsyRefreshIndicator(
           color: const Color(0xFF6366F1),
           onRefresh: () => _loadProfileSummary(refreshAuth: true),
           child: FadeTransition(
             opacity: _fadeAnimation,
             child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-            slivers: [
-              // Premium Gradient Header
-              SliverToBoxAdapter(
-                child: _buildPremiumHeader(
-                  context,
-                  name: name,
-                  profession: profession,
-                  address: address,
-                  avatarUrl: avatarUrl,
-                  bannerUrl: bannerUrl,
-                  isVerified: isVerified,
-                  isPro: isPro,
-                  user: user,
-                ),
-              ),
-
-              // Quick Actions
-              SliverToBoxAdapter(
-                child: _buildQuickActions(context),
-              ),
-
-              // Small gap
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
-
-              // Verification Banner
-              if (!isVerified)
+              physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics()),
+              slivers: [
+                // Premium Gradient Header
                 SliverToBoxAdapter(
-                  child: _buildVerificationBanner(context),
+                  child: _buildPremiumHeader(
+                    context,
+                    name: name,
+                    profession: profession,
+                    address: address,
+                    avatarUrl: avatarUrl,
+                    bannerUrl: bannerUrl,
+                    isVerified: isVerified,
+                    isPro: isPro,
+                    user: user,
+                  ),
                 ),
 
-              // Menu Sections
-              SliverToBoxAdapter(
-                child: _buildMenuSection(
-                  context,
-                  title: 'Account',
-                  items: [
-                    _MenuItem(
-                      icon: Icons.person_outline_rounded,
-                      label: 'My Profile',
-                      subtitle: 'View and edit your profile',
-                      gradient: const [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                      onTap: () => _navigateToProfile(context),
-                    ),
-                    _MenuItem(
-                      icon: Icons.account_balance_wallet_outlined,
-                      label: 'Wallet & Transactions',
-                      subtitle: 'Manage your funds',
-                      gradient: const [Color(0xFF10B981), Color(0xFF059669)],
-                      onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
-                    ),
-                    // _MenuItem(
-                    //   icon: Icons.history_rounded,
-                    //   label: 'Activity History',
-                    //   subtitle: 'View your recent activity',
-                    //   gradient: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-                    //   onTap: () => Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //       builder: (context) => const ActivityHistoryScreen(),
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
+                // Quick Actions
+                SliverToBoxAdapter(
+                  child: _buildQuickActions(context),
                 ),
-              ),
 
-              SliverToBoxAdapter(
-                child: _buildMenuSection(
-                  context,
-                  title: 'Features',
-                  items: [
-                    _MenuItem(
-                      icon: Icons.play_circle_outline_rounded,
-                      label: 'Shorts',
-                      subtitle: 'Watch and create short videos',
-                      gradient: const [Color(0xFFEC4899), Color(0xFFDB2777)],
-                      onTap: () => _openShorts(context),
-                    ),
-                    _MenuItem(
-                      icon: Icons.chat_bubble_outline_rounded,
-                      label: 'AdsyConnect',
-                      subtitle: 'Messages and conversations',
-                      gradient: const [Color(0xFF06B6D4), Color(0xFF0891B2)],
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const InboxScreen()),
+                // Small gap
+                const SliverToBoxAdapter(child: SizedBox(height: 12)),
+
+                // Verification Banner
+                if (!isVerified)
+                  SliverToBoxAdapter(
+                    child: _buildVerificationBanner(context),
+                  ),
+
+                // Menu Sections
+                SliverToBoxAdapter(
+                  child: _buildMenuSection(
+                    context,
+                    title: 'Account',
+                    items: [
+                      _MenuItem(
+                        icon: Icons.person_outline_rounded,
+                        label: 'My Profile',
+                        subtitle: 'View and edit your profile',
+                        gradient: const [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                        onTap: () => _navigateToProfile(context),
                       ),
-                    ),
-                    _MenuItem(
-                      icon: Icons.work_outline_rounded,
-                      label: 'Workspace',
-                      subtitle: 'Post your about expertise and get order',
-                      gradient: const [Color(0xFFF59E0B), Color(0xFFD97706)],
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const WorkspaceScreen()),
+                      _MenuItem(
+                        icon: Icons.account_balance_wallet_outlined,
+                        label: 'Wallet & Transactions',
+                        subtitle: 'Manage your funds',
+                        gradient: const [Color(0xFF10B981), Color(0xFF059669)],
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/deposit-withdraw'),
                       ),
-                    ),
-                  ],
+                      // _MenuItem(
+                      //   icon: Icons.history_rounded,
+                      //   label: 'Activity History',
+                      //   subtitle: 'View your recent activity',
+                      //   gradient: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                      //   onTap: () => Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder: (context) => const ActivityHistoryScreen(),
+                      //     ),
+                      //   ),
+                      // ),
+                    ],
+                  ),
                 ),
-              ),
 
-              SliverToBoxAdapter(
-                child: _buildMenuSection(
-                  context,
-                  title: 'Earn & Grow',
-                  items: [
-                    _MenuItem(
-                      icon: Icons.monetization_on_outlined,
-                      label: 'Earn Money',
-                      subtitle: 'Complete tasks and earn rewards',
-                      gradient: const [Color(0xFF22C55E), Color(0xFF16A34A)],
-                      onTap: () => Navigator.pushNamed(context, '/micro-gigs'),
-                    ),
-                    _MenuItem(
-                      icon: Icons.psychology_outlined,
-                      label: 'Mindforce',
-                      subtitle: 'Problem solving colaborative network',
-                      gradient: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
-                      onTap: () => Navigator.pushNamed(context, '/mindforce'),
-                    ),
-                  ],
+                SliverToBoxAdapter(
+                  child: _buildMenuSection(
+                    context,
+                    title: 'Features',
+                    items: [
+                      _MenuItem(
+                        icon: Icons.play_circle_outline_rounded,
+                        label: 'Shorts',
+                        subtitle: 'Watch and create short videos',
+                        gradient: const [Color(0xFFEC4899), Color(0xFFDB2777)],
+                        onTap: () => _openShorts(context),
+                      ),
+                      _MenuItem(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        label: 'AdsyConnect',
+                        subtitle: 'Messages and conversations',
+                        gradient: const [Color(0xFF06B6D4), Color(0xFF0891B2)],
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const InboxScreen()),
+                        ),
+                      ),
+                      _MenuItem(
+                        icon: Icons.work_outline_rounded,
+                        label: 'Workspace',
+                        subtitle: 'Post your about expertise and get order',
+                        gradient: const [Color(0xFFF59E0B), Color(0xFFD97706)],
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const WorkspaceScreen()),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              SliverToBoxAdapter(
-                child: _buildMenuSection(
-                  context,
-                  title: 'Support',
-                  items: [
-                    _MenuItem(
-                      icon: Icons.help_outline_rounded,
-                      label: 'Help Center',
-                      subtitle: 'FAQs and support',
-                      gradient: const [Color(0xFF64748B), Color(0xFF475569)],
-                      onTap: () => Navigator.pushNamed(context, '/faq'),
-                    ),
-                    _MenuItem(
-                      icon: Icons.settings_outlined,
-                      label: 'Settings',
-                      subtitle: 'App preferences',
-                      gradient: const [Color(0xFF78716C), Color(0xFF57534E)],
-                      onTap: () => _openSettings(context),
-                    ),
-                  ],
+                SliverToBoxAdapter(
+                  child: _buildMenuSection(
+                    context,
+                    title: 'Earn & Grow',
+                    items: [
+                      _MenuItem(
+                        icon: Icons.monetization_on_outlined,
+                        label: 'Earn Money',
+                        subtitle: 'Complete tasks and earn rewards',
+                        gradient: const [Color(0xFF22C55E), Color(0xFF16A34A)],
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/micro-gigs'),
+                      ),
+                      _MenuItem(
+                        icon: Icons.psychology_outlined,
+                        label: 'Mindforce',
+                        subtitle: 'Problem solving colaborative network',
+                        gradient: const [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                        onTap: () => Navigator.pushNamed(context, '/mindforce'),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              // Logout Button
-              SliverToBoxAdapter(
-                child: _buildLogoutButton(context),
-              ),
+                SliverToBoxAdapter(
+                  child: _buildMenuSection(
+                    context,
+                    title: 'Support',
+                    items: [
+                      _MenuItem(
+                        icon: Icons.help_outline_rounded,
+                        label: 'Help Center',
+                        subtitle: 'FAQs and support',
+                        gradient: const [Color(0xFF64748B), Color(0xFF475569)],
+                        onTap: () => Navigator.pushNamed(context, '/faq'),
+                      ),
+                      _MenuItem(
+                        icon: Icons.settings_outlined,
+                        label: 'Settings',
+                        subtitle: 'App preferences',
+                        gradient: const [Color(0xFF78716C), Color(0xFF57534E)],
+                        onTap: () => _openSettings(context),
+                      ),
+                    ],
+                  ),
+                ),
 
-              // Bottom Spacing
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
-              ),
-            ],
-          ),
+                // Logout Button
+                SliverToBoxAdapter(
+                  child: _buildLogoutButton(context),
+                ),
+
+                // Bottom Spacing
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 100),
+                ),
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: isMobile
@@ -398,7 +405,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                     ? Image.network(
                         bannerUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildHeaderBannerFallback(),
+                        errorBuilder: (_, __, ___) =>
+                            _buildHeaderBannerFallback(),
                       )
                     : _buildHeaderBannerFallback(),
               ),
@@ -448,7 +456,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                           ? Image.network(
                               avatarUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(name),
+                              errorBuilder: (_, __, ___) =>
+                                  _buildAvatarPlaceholder(name),
                             )
                           : _buildAvatarPlaceholder(name),
                     ),
@@ -477,12 +486,14 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                     ),
                     if (isVerified) ...[
                       const SizedBox(width: 5),
-                      const Icon(Icons.verified_rounded, color: Color(0xFF3B82F6), size: 18),
+                      const Icon(Icons.verified_rounded,
+                          color: Color(0xFF3B82F6), size: 18),
                     ],
                     if (isPro) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFF0F172A),
                           borderRadius: BorderRadius.circular(4),
@@ -516,7 +527,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFF94A3B8)),
+                      const Icon(Icons.location_on_outlined,
+                          size: 13, color: Color(0xFF94A3B8)),
                       const SizedBox(width: 3),
                       Flexible(
                         child: Text(
@@ -540,10 +552,12 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                     _buildStat(_resolvedPostCount(), 'Posts'),
                     _buildStatDivider(),
                     _buildStat(_resolvedFollowersCount(), 'Followers',
-                        onTap: () => _showFollowListSheet(context, 'followers')),
+                        onTap: () =>
+                            _showFollowListSheet(context, 'followers')),
                     _buildStatDivider(),
                     _buildStat(_resolvedFollowingCount(), 'Following',
-                        onTap: () => _showFollowListSheet(context, 'following')),
+                        onTap: () =>
+                            _showFollowListSheet(context, 'following')),
                     if (_resolvedDiamondBalance() > 0) ...[
                       _buildStatDivider(),
                       _buildStat(_resolvedDiamondBalance(), '💎'),
@@ -567,7 +581,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         child: Column(
           children: [
             Text(
-              value >= 1000 ? '${(value / 1000).toStringAsFixed(1)}K' : value.toString(),
+              value >= 1000
+                  ? '${(value / 1000).toStringAsFixed(1)}K'
+                  : value.toString(),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -580,7 +596,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: isClickable ? const Color(0xFF6366F1) : const Color(0xFF94A3B8),
+                color: isClickable
+                    ? const Color(0xFF6366F1)
+                    : const Color(0xFF94A3B8),
                 fontWeight: isClickable ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -657,7 +675,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   void _shareProfile(BuildContext context) {
     final user = AuthService.currentUser;
     if (user == null) return;
-    final profileUrl = '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
+    final profileUrl =
+        '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
     Share.share(
       'Check out my profile on Oxius: $profileUrl',
       subject: 'My Oxius Profile',
@@ -667,8 +686,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   void _showQrCode(BuildContext context) {
     final user = AuthService.currentUser;
     if (user == null) return;
-    final profileUrl = '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
-    
+    final profileUrl =
+        '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -820,7 +840,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 label: 'Create Post',
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CreatePostScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const CreatePostScreen()),
                 ),
               ),
               _buildActionTile(
@@ -833,7 +854,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 label: 'Notifications',
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen()),
                 ),
               ),
               _buildActionTile(
@@ -901,7 +923,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         ),
         child: Row(
           children: [
-            const Icon(Icons.verified_user_outlined, color: Color(0xFFD97706), size: 20),
+            const Icon(Icons.verified_user_outlined,
+                color: Color(0xFFD97706), size: 20),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
@@ -913,7 +936,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: Color(0xFFD97706), size: 18),
+            const Icon(Icons.chevron_right_rounded,
+                color: Color(0xFFD97706), size: 18),
           ],
         ),
       ),
@@ -1088,7 +1112,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Sign Out', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -1137,7 +1162,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
       barrierDismissible: false,
       builder: (context) {
         return const Center(
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             color: Color(0xFF10B981),
             strokeWidth: 2,
           ),
@@ -1152,7 +1177,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         pageWindow: 3,
       );
       if (!context.mounted) return;
-      final posts = (result['posts'] as List<BusinessNetworkPost>?) ?? <BusinessNetworkPost>[];
+      final posts = (result['posts'] as List<BusinessNetworkPost>?) ??
+          <BusinessNetworkPost>[];
 
       BusinessNetworkPost? firstPost;
       PostMedia? firstMedia;
@@ -1227,7 +1253,8 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
           if (AuthService.isAuthenticated) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen()),
             );
           } else {
             Navigator.pushNamed(context, '/login');
@@ -1305,8 +1332,10 @@ class _FollowListSheetState extends State<_FollowListSheet> {
   Future<void> _loadUsers() async {
     setState(() => _isLoading = true);
     final result = widget.type == 'followers'
-        ? await BusinessNetworkService.getUserFollowers(widget.userId, page: _page)
-        : await BusinessNetworkService.getUserFollowing(widget.userId, page: _page);
+        ? await BusinessNetworkService.getUserFollowers(widget.userId,
+            page: _page)
+        : await BusinessNetworkService.getUserFollowing(widget.userId,
+            page: _page);
     if (mounted) {
       setState(() {
         _users = List<Map<String, dynamic>>.from(result['results'] ?? []);
@@ -1319,8 +1348,10 @@ class _FollowListSheetState extends State<_FollowListSheet> {
   Future<void> _loadMore() async {
     _page++;
     final result = widget.type == 'followers'
-        ? await BusinessNetworkService.getUserFollowers(widget.userId, page: _page)
-        : await BusinessNetworkService.getUserFollowing(widget.userId, page: _page);
+        ? await BusinessNetworkService.getUserFollowers(widget.userId,
+            page: _page)
+        : await BusinessNetworkService.getUserFollowing(widget.userId,
+            page: _page);
     if (mounted) {
       setState(() {
         _users.addAll(List<Map<String, dynamic>>.from(result['results'] ?? []));
@@ -1343,7 +1374,8 @@ class _FollowListSheetState extends State<_FollowListSheet> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.03),
@@ -1391,9 +1423,10 @@ class _FollowListSheetState extends State<_FollowListSheet> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(
+                    child: AdsyLoadingIndicator(
                       strokeWidth: 2,
-                      valueColor: const AlwaysStoppedAnimation(Color(0xFF3B82F6)),
+                      valueColor:
+                          const AlwaysStoppedAnimation(Color(0xFF3B82F6)),
                     ),
                   )
                 : _users.isEmpty
@@ -1429,16 +1462,21 @@ class _FollowListSheetState extends State<_FollowListSheet> {
                                 child: SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: AdsyLoadingIndicator(strokeWidth: 2),
                                 ),
                               ),
                             );
                           }
                           final item = _users[index];
                           final userData = widget.type == 'followers'
-                              ? item['follower_details'] ?? item['follower'] ?? item
-                              : item['following_details'] ?? item['following'] ?? item;
-                          final String? userImage = userData['image']?.toString();
+                              ? item['follower_details'] ??
+                                  item['follower'] ??
+                                  item
+                              : item['following_details'] ??
+                                  item['following'] ??
+                                  item;
+                          final String? userImage =
+                              userData['image']?.toString();
                           final bool hasImage =
                               userImage != null && userImage.isNotEmpty;
                           String displayName = 'Unknown';

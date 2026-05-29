@@ -1,13 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/rideshare_models.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/rideshare_drawer.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class RideshareHistoryScreen extends StatefulWidget {
   final bool asDriver;
-  
+
   const RideshareHistoryScreen({
     super.key,
     this.asDriver = false,
@@ -45,7 +46,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
     super.dispose();
   }
 
-  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+  String t(String key, {required String fallback}) =>
+      _ts.t(key, fallback: fallback);
 
   void _onTranslationsChanged() {
     if (mounted) setState(() {});
@@ -117,7 +119,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8FAFC),
-      drawer: RideshareDrawer(activeTab: widget.asDriver ? 'driver' : 'history'),
+      drawer:
+          RideshareDrawer(activeTab: widget.asDriver ? 'driver' : 'history'),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -127,7 +130,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
         ),
         title: Text(
           widget.asDriver
-              ? t('rideshare_history_driver_title', fallback: 'My Trips (Driver)')
+              ? t('rideshare_history_driver_title',
+                  fallback: 'My Trips (Driver)')
               : t('rideshare_history_title', fallback: 'Ride History'),
           style: GoogleFonts.inter(
             fontSize: 16,
@@ -148,7 +152,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                   color: const Color(0xFFEFF2FF),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.menu_rounded, size: 20, color: Color(0xFF6366F1)),
+                child: const Icon(Icons.menu_rounded,
+                    size: 20, color: Color(0xFF6366F1)),
               ),
             ),
           ),
@@ -160,10 +165,10 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: AdsyLoadingIndicator());
     }
 
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadRides,
       child: _rides.isNotEmpty
           ? ListView.builder(
@@ -180,7 +185,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: AdsyLoadingIndicator(strokeWidth: 2),
                             )
                           : TextButton(
                               onPressed: _loadMore,
@@ -227,7 +232,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: _loadRides,
-                                child: Text(t('try_again', fallback: 'Try Again')),
+                                child:
+                                    Text(t('try_again', fallback: 'Try Again')),
                               ),
                             ],
                           )
@@ -248,7 +254,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                t('rideshare_no_rides_title', fallback: 'No rides yet'),
+                                t('rideshare_no_rides_title',
+                                    fallback: 'No rides yet'),
                                 style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -258,8 +265,12 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 widget.asDriver
-                                    ? t('rideshare_no_rides_driver', fallback: 'Your completed trips will appear here')
-                                    : t('rideshare_no_rides_passenger', fallback: 'Your ride history will appear here'),
+                                    ? t('rideshare_no_rides_driver',
+                                        fallback:
+                                            'Your completed trips will appear here')
+                                    : t('rideshare_no_rides_passenger',
+                                        fallback:
+                                            'Your ride history will appear here'),
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
                                   color: const Color(0xFF64748B),
@@ -289,7 +300,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: _getStatusColor(ride.status).withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(11)),
             ),
             child: Row(
               children: [
@@ -321,7 +333,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: _getStatusColor(ride.status),
                     borderRadius: BorderRadius.circular(12),
@@ -338,7 +351,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
               ],
             ),
           ),
-          
+
           // Route info
           Padding(
             padding: const EdgeInsets.all(16),
@@ -368,11 +381,11 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                   label: t('rideshare_drop', fallback: 'Drop'),
                   address: ride.dropAddress,
                 ),
-                
+
                 const SizedBox(height: 12),
                 const Divider(height: 1),
                 const SizedBox(height: 12),
-                
+
                 // Stats row — distance | duration | [spacer] | payment method | amount
                 Row(
                   children: [
@@ -387,7 +400,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F5F9),
@@ -425,12 +439,13 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                     ),
                   ],
                 ),
-                
+
                 // Driver earnings breakdown — only shown to drivers for completed rides
                 if (widget.asDriver && ride.status == 'completed') ...[
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF0FDF4),
                       borderRadius: BorderRadius.circular(10),
@@ -440,10 +455,12 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.receipt_long_rounded, size: 13, color: Color(0xFF16A34A)),
+                            const Icon(Icons.receipt_long_rounded,
+                                size: 13, color: Color(0xFF16A34A)),
                             const SizedBox(width: 6),
                             Text(
-                              t('rideshare_fare_breakdown', fallback: 'Fare Breakdown'),
+                              t('rideshare_fare_breakdown',
+                                  fallback: 'Fare Breakdown'),
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -469,7 +486,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                           child: Divider(height: 1, color: Color(0xFFBBF7D0)),
                         ),
                         _buildFareRow(
-                          t('rideshare_your_earnings', fallback: 'Your Earnings'),
+                          t('rideshare_your_earnings',
+                              fallback: 'Your Earnings'),
                           '$_bdtSymbol${ride.driverPayoutAmount.toStringAsFixed(0)}',
                           const Color(0xFF16A34A),
                           bold: true,
@@ -493,7 +511,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                             ? NetworkImage(ride.riderAvatar!)
                             : null,
                         child: ride.riderAvatar == null
-                            ? const Icon(Icons.person_rounded, size: 16, color: Color(0xFF64748B))
+                            ? const Icon(Icons.person_rounded,
+                                size: 16, color: Color(0xFF64748B))
                             : null,
                       ),
                       const SizedBox(width: 10),
@@ -522,7 +541,7 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                     ],
                   ),
                 ],
-                
+
                 if (!widget.asDriver && ride.assignedDriver != null) ...[
                   const SizedBox(height: 12),
                   const Divider(height: 1),
@@ -536,7 +555,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
                             ? NetworkImage(ride.assignedDriver!.userAvatar!)
                             : null,
                         child: ride.assignedDriver!.userAvatar == null
-                            ? const Icon(Icons.person_rounded, size: 16, color: Color(0xFF64748B))
+                            ? const Icon(Icons.person_rounded,
+                                size: 16, color: Color(0xFF64748B))
                             : null,
                       ),
                       const SizedBox(width: 10),
@@ -633,7 +653,8 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
     );
   }
 
-  Widget _buildFareRow(String label, String value, Color valueColor, {bool bold = false}) {
+  Widget _buildFareRow(String label, String value, Color valueColor,
+      {bool bold = false}) {
     return Row(
       children: [
         Expanded(
@@ -676,8 +697,20 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
   }
 
   String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
@@ -701,4 +734,3 @@ class _RideshareHistoryScreenState extends State<RideshareHistoryScreen> {
     }
   }
 }
-

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import '../../../widgets/ios_web_redirect_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -1124,7 +1125,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation(Colors.white),
                             ),
@@ -1292,7 +1293,7 @@ class _AddProductBottomSheetState extends State<AddProductBottomSheet> {
                 child: SizedBox(
                   width: 22,
                   height: 22,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(_indigo),
                   ),

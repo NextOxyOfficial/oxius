@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/elearning_models.dart';
 import '../../services/elearning_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class DivisionSelector extends StatefulWidget {
   final String? batch;
@@ -64,7 +65,8 @@ class _DivisionSelectorState extends State<DivisionSelector> {
         _error = null;
       });
 
-      final divisions = await ElearningService.fetchDivisionsForBatch(widget.batch!);
+      final divisions =
+          await ElearningService.fetchDivisionsForBatch(widget.batch!);
 
       setState(() {
         _divisions = divisions;
@@ -84,7 +86,8 @@ class _DivisionSelectorState extends State<DivisionSelector> {
       return {'bg': Colors.green.shade100, 'text': Colors.green.shade600};
     } else if (lowerCode.contains('humanities') || lowerCode.contains('arts')) {
       return {'bg': Colors.blue.shade100, 'text': Colors.blue.shade600};
-    } else if (lowerCode.contains('commerce') || lowerCode.contains('business')) {
+    } else if (lowerCode.contains('commerce') ||
+        lowerCode.contains('business')) {
       return {'bg': Colors.amber.shade100, 'text': Colors.amber.shade600};
     }
     return {'bg': Colors.grey.shade100, 'text': Colors.grey.shade600};
@@ -96,7 +99,8 @@ class _DivisionSelectorState extends State<DivisionSelector> {
       return Icons.science;
     } else if (lowerCode.contains('humanities') || lowerCode.contains('arts')) {
       return Icons.menu_book;
-    } else if (lowerCode.contains('commerce') || lowerCode.contains('business')) {
+    } else if (lowerCode.contains('commerce') ||
+        lowerCode.contains('business')) {
       return Icons.attach_money;
     }
     return Icons.school;
@@ -138,77 +142,79 @@ class _DivisionSelectorState extends State<DivisionSelector> {
             onTap: isCollapsed ? widget.onTapExpand : null,
             borderRadius: BorderRadius.circular(14),
             child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_indigo, _violet],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.account_tree_rounded,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Choose division',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: _slate800,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [_indigo, _violet],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Keep the syllabus focused',
+                      child: const Icon(
+                        Icons.account_tree_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Choose division',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: _slate800,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Keep the syllabus focused',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: _slate500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: _indigo.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'Step 2/4',
                         style: TextStyle(
                           fontSize: 11,
-                          color: _slate500,
+                          color: _indigo,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
+                    ),
+                    if (isCollapsed) ...[
+                      const SizedBox(width: 8),
+                      const Icon(Icons.expand_more_rounded,
+                          size: 18, color: _slate500),
                     ],
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: _indigo.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: const Text(
-                      'Step 2/4',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: _indigo,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  if (isCollapsed) ...[
-                    const SizedBox(width: 8),
-                    const Icon(Icons.expand_more_rounded, size: 18, color: _slate500),
                   ],
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -217,7 +223,7 @@ class _DivisionSelectorState extends State<DivisionSelector> {
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(32.0),
-                child: CircularProgressIndicator(),
+                child: AdsyLoadingIndicator(),
               ),
             ),
 
@@ -257,7 +263,8 @@ class _DivisionSelectorState extends State<DivisionSelector> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _divisions.length,
-              separatorBuilder: (context, index) => Divider(color: _slate200, height: 1),
+              separatorBuilder: (context, index) =>
+                  Divider(color: _slate200, height: 1),
               itemBuilder: (context, index) {
                 final division = _divisions[index];
                 final isSelected = widget.selectedDivision == division.code;
@@ -313,7 +320,8 @@ class _DivisionSelectorState extends State<DivisionSelector> {
                         if (isSelected)
                           const Padding(
                             padding: EdgeInsets.only(left: 8, top: 2),
-                            child: Icon(Icons.check_circle_rounded, size: 18, color: _indigo),
+                            child: Icon(Icons.check_circle_rounded,
+                                size: 18, color: _indigo),
                           ),
                       ],
                     ),

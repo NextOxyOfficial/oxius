@@ -3,6 +3,7 @@ import '../../models/business_network_models.dart';
 import '../../utils/time_utils.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PostHeader extends StatelessWidget {
   final BusinessNetworkPost post;
@@ -15,7 +16,7 @@ class PostHeader extends StatelessWidget {
     this.onFollowToggle,
     this.onMorePressed,
   });
-  
+
   void _navigateToProfile(BuildContext context) {
     final userId = post.user.uuid ?? post.user.id.toString();
     Navigator.push(
@@ -29,17 +30,18 @@ class PostHeader extends StatelessWidget {
   Widget _buildUserAvatar() {
     // Priority: image > avatar (matching profile_screen.dart behavior)
     final rawAvatarUrl = post.user.image ?? post.user.avatar;
-    
+
     // Convert relative URLs to absolute using AppConfig
     final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
-    
+
     // Debug logging
     if (avatarUrl.isEmpty) {
-      print('⚠️ No avatar for ${post.user.name} - image: ${post.user.image}, avatar: ${post.user.avatar}');
+      print(
+          '⚠️ No avatar for ${post.user.name} - image: ${post.user.image}, avatar: ${post.user.avatar}');
     } else {
       print('✅ Avatar URL for ${post.user.name}: $avatarUrl');
     }
-    
+
     if (avatarUrl.isNotEmpty) {
       return Image.network(
         avatarUrl,
@@ -52,9 +54,10 @@ class PostHeader extends StatelessWidget {
               child: SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
                       : null,
                   strokeWidth: 2,
                   color: Colors.grey.shade400,
@@ -69,7 +72,7 @@ class PostHeader extends StatelessWidget {
         },
       );
     }
-    
+
     return _buildDefaultAvatar();
   }
 
@@ -145,11 +148,13 @@ class PostHeader extends StatelessWidget {
                           WidgetSpan(
                             alignment: PlaceholderAlignment.middle,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.indigo.shade600,
                                 borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: Colors.white.withOpacity(0.18)),
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.18)),
                               ),
                               child: const Text(
                                 'Pro',
@@ -185,11 +190,12 @@ class PostHeader extends StatelessWidget {
             TextButton(
               onPressed: onFollowToggle,
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                backgroundColor: post.user.isFollowing 
-                    ? Colors.grey.shade200 
+                backgroundColor: post.user.isFollowing
+                    ? Colors.grey.shade200
                     : const Color(0xFF3B82F6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(6),
@@ -199,8 +205,8 @@ class PostHeader extends StatelessWidget {
                 post.user.isFollowing ? 'Unfollow' : 'Follow',
                 style: TextStyle(
                   fontSize: 12,
-                  color: post.user.isFollowing 
-                      ? Colors.grey.shade700 
+                  color: post.user.isFollowing
+                      ? Colors.grey.shade700
                       : Colors.white,
                   fontWeight: FontWeight.w600,
                 ),

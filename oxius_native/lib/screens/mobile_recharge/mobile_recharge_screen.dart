@@ -5,6 +5,7 @@ import '../../services/wallet_service.dart';
 import '../../models/wallet_models.dart';
 import '../../utils/network_error_handler.dart';
 import '../../widgets/mobile_sticky_nav.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MobileRechargeScreen extends StatefulWidget {
   const MobileRechargeScreen({super.key});
@@ -154,8 +155,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
           SafeArea(
             child: _isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF10B981)))
-                : RefreshIndicator(
+                    child: AdsyLoadingIndicator(color: Color(0xFF10B981)))
+                : AdsyRefreshIndicator(
                     onRefresh: _refreshData,
                     color: const Color(0xFF10B981),
                     child: SingleChildScrollView(
@@ -216,7 +217,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                           const SizedBox(
                                             height: 12,
                                             width: 12,
-                                            child: CircularProgressIndicator(
+                                            child: AdsyLoadingIndicator(
                                               strokeWidth: 2,
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
@@ -414,7 +415,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                       child: SizedBox(
                                         width: 12,
                                         height: 12,
-                                        child: CircularProgressIndicator(
+                                        child: AdsyLoadingIndicator(
                                           strokeWidth: 1.5,
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
@@ -1175,7 +1176,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(
+                                  child: AdsyLoadingIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
                                   ),
@@ -1379,7 +1380,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         child: SizedBox(
                           height: 32,
                           width: 32,
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 3,
                             color: Color(0xFF10B981),
                           ),

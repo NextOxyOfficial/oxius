@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../services/rideshare_service.dart';
 import '../../utils/payment_policy.dart';
 import '../../widgets/ios_payment_blocked_widget.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const double customLocationFee = 199.0;
 
@@ -47,7 +48,8 @@ class CustomLocationSheetResult {
 ///
 /// Returns a [CustomLocationSheetResult] when the user selects or creates a
 /// location, or `null` if the sheet was dismissed.
-Future<CustomLocationSheetResult?> showCustomLocationSheet(BuildContext context) {
+Future<CustomLocationSheetResult?> showCustomLocationSheet(
+    BuildContext context) {
   return showModalBottomSheet<CustomLocationSheetResult>(
     context: context,
     isScrollControlled: true,
@@ -174,7 +176,10 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
       setState(() => _error = 'Location name is required.');
       return;
     }
-    setState(() { _isEditSaving = true; _error = null; });
+    setState(() {
+      _isEditSaving = true;
+      _error = null;
+    });
     final result = await RideshareService.updateMyLocation(
       id: locId,
       name: name,
@@ -208,7 +213,10 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
   }
 
   Future<void> _executeDelete(String locId) async {
-    setState(() { _isDeleting = true; _error = null; });
+    setState(() {
+      _isDeleting = true;
+      _error = null;
+    });
     final result = await RideshareService.deleteMyLocation(locId);
     if (!mounted) return;
     setState(() {
@@ -225,7 +233,8 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
   }
 
   void _selectLocation(CustomRideLocation loc) {
-    Navigator.of(context).pop(CustomLocationSheetResult(point: loc.asRidePoint));
+    Navigator.of(context)
+        .pop(CustomLocationSheetResult(point: loc.asRidePoint));
   }
 
   Future<void> _submitNewLocation() async {
@@ -234,7 +243,8 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          content: const IOSPaymentBlockedWidget(featureName: 'Custom Location'),
+          content:
+              const IOSPaymentBlockedWidget(featureName: 'Custom Location'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -259,7 +269,10 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
       return;
     }
 
-    setState(() { _error = null; _isSubmitting = true; });
+    setState(() {
+      _error = null;
+      _isSubmitting = true;
+    });
     final result = await RideshareService.createCustomLocation(
       name: name,
       subtitle: _subtitleCtl.text.trim(),
@@ -306,16 +319,19 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // ── Drag handle ─────────────────────────────────────────
               const SizedBox(height: 10),
               Container(
-                width: 40, height: 4,
+                width: 40,
+                height: 4,
                 decoration: BoxDecoration(
                   color: const Color(0xFFCBD5E1),
                   borderRadius: BorderRadius.circular(2),
@@ -347,7 +363,8 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                   padding: const EdgeInsets.fromLTRB(18, 0, 18, 10),
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.red.shade50,
                       borderRadius: BorderRadius.circular(10),
@@ -399,20 +416,31 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             color: active ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(11),
             boxShadow: active
-                ? [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2))]
+                ? [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2))
+                  ]
                 : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 16, color: active ? const Color(0xFFEA580C) : const Color(0xFF94A3B8)),
+              Icon(icon,
+                  size: 16,
+                  color: active
+                      ? const Color(0xFFEA580C)
+                      : const Color(0xFF94A3B8)),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: active ? FontWeight.w800 : FontWeight.w600,
-                  color: active ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                  color: active
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFF94A3B8),
                 ),
               ),
             ],
@@ -430,7 +458,9 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
     if (_isLoadingLocations) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 40),
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFEA580C))),
+        child: Center(
+            child:
+                AdsyLoadingIndicator(strokeWidth: 2, color: Color(0xFFEA580C))),
       );
     }
 
@@ -442,34 +472,47 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
           children: [
             const SizedBox(height: 20),
             Container(
-              width: 64, height: 64,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF7ED),
                 borderRadius: BorderRadius.circular(22),
               ),
-              child: const Icon(Icons.location_off_rounded, color: Color(0xFFEA580C), size: 30),
+              child: const Icon(Icons.location_off_rounded,
+                  color: Color(0xFFEA580C), size: 30),
             ),
             const SizedBox(height: 16),
             Text(
               'আপনি এখনো কোনো লোকেশন অ্যাড করেননি',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700, color: const Color(0xFF334155)),
+              style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF334155)),
             ),
             const SizedBox(height: 8),
             Text(
               'আপনার বাড়ি, অফিস বা পছন্দের জায়গা সেভ করে রাখুন যাতে দ্রুত রাইড নিতে পারেন।',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF94A3B8), height: 1.4),
+              style: GoogleFonts.inter(
+                  fontSize: 12, color: const Color(0xFF94A3B8), height: 1.4),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              onPressed: () => setState(() { _activeTab = 1; _error = null; }),
+              onPressed: () => setState(() {
+                _activeTab = 1;
+                _error = null;
+              }),
               icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text('লোকেশন অ্যাড করুন', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700)),
+              label: Text('লোকেশন অ্যাড করুন',
+                  style: GoogleFonts.inter(
+                      fontSize: 14, fontWeight: FontWeight.w700)),
               style: FilledButton.styleFrom(
                 backgroundColor: const Color(0xFFEA580C),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
             ),
             const SizedBox(height: 10),
@@ -507,12 +550,18 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 20),
+            Icon(Icons.warning_amber_rounded,
+                color: Colors.red.shade700, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                _deleteSecondConfirm ? 'সত্যিই ডিলিট করবেন?' : '"${loc.name}" ডিলিট করবেন?',
-                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.red.shade800),
+                _deleteSecondConfirm
+                    ? 'সত্যিই ডিলিট করবেন?'
+                    : '"${loc.name}" ডিলিট করবেন?',
+                style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.red.shade800),
               ),
             ),
           ]),
@@ -521,22 +570,30 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             _deleteSecondConfirm
                 ? '⚠ এই অ্যাকশন ফেরানো যাবে না। লোকেশন অ্যাড করতে দেওয়া ৳199 রিফান্ড করা হবে না।'
                 : 'লোকেশন ডিলিট করলে এটি সার্চ থেকে সরিয়ে দেওয়া হবে। পেমেন্ট রিফান্ড করা হবে না।',
-            style: GoogleFonts.inter(fontSize: 12, color: Colors.red.shade700, height: 1.4),
+            style: GoogleFonts.inter(
+                fontSize: 12, color: Colors.red.shade700, height: 1.4),
           ),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: _isDeleting ? null : () => setState(() {
-                  _deletePendingId = null;
-                  _deleteSecondConfirm = false;
-                }),
+                onPressed: _isDeleting
+                    ? null
+                    : () => setState(() {
+                          _deletePendingId = null;
+                          _deleteSecondConfirm = false;
+                        }),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   side: BorderSide(color: Colors.red.shade200),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Text('বাতিল', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.red.shade700)),
+                child: Text('বাতিল',
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.red.shade700)),
               ),
             ),
             const SizedBox(width: 10),
@@ -544,15 +601,25 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
               child: FilledButton(
                 onPressed: _isDeleting ? null : () => _onDeleteTap(loc.id),
                 style: FilledButton.styleFrom(
-                  backgroundColor: _deleteSecondConfirm ? const Color(0xFFDC2626) : Colors.red.shade600,
+                  backgroundColor: _deleteSecondConfirm
+                      ? const Color(0xFFDC2626)
+                      : Colors.red.shade600,
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 child: _isDeleting
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: AdsyLoadingIndicator(
+                            strokeWidth: 2, color: Colors.white))
                     : Text(
-                        _deleteSecondConfirm ? 'হ্যাঁ, ডিলিট করুন' : 'ডিলিট করুন',
-                        style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800),
+                        _deleteSecondConfirm
+                            ? 'হ্যাঁ, ডিলিট করুন'
+                            : 'ডিলিট করুন',
+                        style: GoogleFonts.inter(
+                            fontSize: 13, fontWeight: FontWeight.w800),
                       ),
               ),
             ),
@@ -575,24 +642,45 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('এডিট করুন', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800, color: const Color(0xFF9A3412))),
+          Text('এডিট করুন',
+              style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF9A3412))),
           const SizedBox(height: 10),
-          _textField(controller: _editNameCtl, label: 'Name', hint: 'Location name'),
+          _textField(
+              controller: _editNameCtl, label: 'Name', hint: 'Location name'),
           const SizedBox(height: 8),
-          _textField(controller: _editSubtitleCtl, label: 'Area / details', hint: 'Area'),
+          _textField(
+              controller: _editSubtitleCtl,
+              label: 'Area / details',
+              hint: 'Area'),
           const SizedBox(height: 8),
-          _textField(controller: _editKeywordsCtl, label: 'Keywords', hint: 'Comma-separated'),
+          _textField(
+              controller: _editKeywordsCtl,
+              label: 'Keywords',
+              hint: 'Comma-separated'),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: _isEditSaving ? null : () => setState(() { _editingId = null; _error = null; }),
+                onPressed: _isEditSaving
+                    ? null
+                    : () => setState(() {
+                          _editingId = null;
+                          _error = null;
+                        }),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
-                child: Text('বাতিল', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF475569))),
+                child: Text('বাতিল',
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF475569))),
               ),
             ),
             const SizedBox(width: 10),
@@ -602,11 +690,18 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFEA580C),
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 child: _isEditSaving
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text('সেভ করুন', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w800)),
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: AdsyLoadingIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : Text('সেভ করুন',
+                        style: GoogleFonts.inter(
+                            fontSize: 13, fontWeight: FontWeight.w800)),
               ),
             ),
           ]),
@@ -632,12 +727,14 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
           ),
           child: Row(children: [
             Container(
-              width: 38, height: 38,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: const Color(0xFFEA580C).withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.location_on_rounded, color: Color(0xFFEA580C), size: 20),
+              child: const Icon(Icons.location_on_rounded,
+                  color: Color(0xFFEA580C), size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -646,15 +743,21 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                 children: [
                   Text(
                     loc.name,
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   if (loc.subtitle.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
                       loc.subtitle,
-                      style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B)),
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                          fontSize: 12, color: const Color(0xFF64748B)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ],
@@ -662,7 +765,8 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             ),
             IconButton(
               onPressed: () => _startEdit(loc),
-              icon: const Icon(Icons.edit_rounded, size: 18, color: Color(0xFF64748B)),
+              icon: const Icon(Icons.edit_rounded,
+                  size: 18, color: Color(0xFF64748B)),
               tooltip: 'Edit',
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
@@ -670,7 +774,8 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
             ),
             IconButton(
               onPressed: () => _onDeleteTap(loc.id),
-              icon: Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red.shade400),
+              icon: Icon(Icons.delete_outline_rounded,
+                  size: 18, color: Colors.red.shade400),
               tooltip: 'Delete',
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
@@ -696,12 +801,14 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
           // ── Header ───
           Row(children: [
             Container(
-              width: 42, height: 42,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
                 color: const Color(0xFFEA580C).withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.add_location_alt_rounded, color: Color(0xFFEA580C)),
+              child: const Icon(Icons.add_location_alt_rounded,
+                  color: Color(0xFFEA580C)),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -710,12 +817,18 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
                 children: [
                   Text(
                     'নতুন লোকেশন অ্যাড',
-                    style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w800, color: const Color(0xFF0F172A)),
+                    style: GoogleFonts.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A)),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     'প্রতি লোকেশন সেভ করতে ৳199 AdsyPay ব্যালেন্স থেকে কাটা হবে।',
-                    style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B), height: 1.35),
+                    style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF64748B),
+                        height: 1.35),
                   ),
                 ],
               ),
@@ -725,9 +838,21 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
 
           // ── Coordinates ───
           Row(children: [
-            Expanded(child: _textField(controller: _latCtl, label: 'Latitude', hint: '23.905722', keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
+            Expanded(
+                child: _textField(
+                    controller: _latCtl,
+                    label: 'Latitude',
+                    hint: '23.905722',
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true))),
             const SizedBox(width: 10),
-            Expanded(child: _textField(controller: _lonCtl, label: 'Longitude', hint: '89.136444', keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true))),
+            Expanded(
+                child: _textField(
+                    controller: _lonCtl,
+                    label: 'Longitude',
+                    hint: '89.136444',
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true))),
           ]),
           const SizedBox(height: 14),
 
@@ -745,18 +870,30 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
           const SizedBox(height: 16),
 
           // ── Fields ───
-          _textField(controller: _nameCtl, label: 'Location name', hint: 'যেমন: আমার বাড়ির নাম, গ্রামের মোড়'),
+          _textField(
+              controller: _nameCtl,
+              label: 'Location name',
+              hint: 'যেমন: আমার বাড়ির নাম, গ্রামের মোড়'),
           const SizedBox(height: 12),
-          _textField(controller: _subtitleCtl, label: 'Area / details', hint: 'যেমন: মিরপুর, ঢাকা'),
+          _textField(
+              controller: _subtitleCtl,
+              label: 'Area / details',
+              hint: 'যেমন: মিরপুর, ঢাকা'),
           const SizedBox(height: 12),
-          _textField(controller: _keywordsCtl, label: 'Search keywords', hint: 'কমা দিয়ে alias লিখুন, যেমন: bari, village home'),
+          _textField(
+              controller: _keywordsCtl,
+              label: 'Search keywords',
+              hint: 'কমা দিয়ে alias লিখুন, যেমন: bari, village home'),
           const SizedBox(height: 18),
 
           // ── Low balance warning ───
           if (!hasEnoughBalance) ...[
             Text(
               'আপনার ব্যালেন্স কম আছে। আগে wallet-এ টাকা add করলে লোকেশন সেভ করতে পারবেন।',
-              style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFFB91C1C)),
+              style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFB91C1C)),
             ),
             const SizedBox(height: 12),
           ],
@@ -765,27 +902,42 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
           Row(children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                onPressed:
+                    _isSubmitting ? null : () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
-                child: Text('Cancel', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFF475569))),
+                child: Text('Cancel',
+                    style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF475569))),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: FilledButton(
-                onPressed: (!hasEnoughBalance || _isSubmitting) ? null : _submitNewLocation,
+                onPressed: (!hasEnoughBalance || _isSubmitting)
+                    ? null
+                    : _submitNewLocation,
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFFEA580C),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 child: _isSubmitting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text('Pay ৳199 & Save', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w800)),
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: AdsyLoadingIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : Text('Pay ৳199 & Save',
+                        style: GoogleFonts.inter(
+                            fontSize: 14, fontWeight: FontWeight.w800)),
               ),
             ),
           ]),
@@ -807,21 +959,37 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: const Color(0xFF334155))),
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF334155))),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           keyboardType: keyboardType,
-          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+          style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF0F172A)),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
+            hintStyle:
+                GoogleFonts.inter(fontSize: 13, color: const Color(0xFF94A3B8)),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFEA580C), width: 1.4)),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide:
+                    const BorderSide(color: Color(0xFFEA580C), width: 1.4)),
           ),
         ),
       ],
@@ -835,16 +1003,22 @@ class _CustomLocationSheetState extends State<_CustomLocationSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: onTap == null ? const Color(0xFFF1F5F9) : const Color(0xFFEEF2FF),
+          color:
+              onTap == null ? const Color(0xFFF1F5F9) : const Color(0xFFEEF2FF),
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: onTap == null ? const Color(0xFFE2E8F0) : const Color(0xFFC7D2FE)),
+          border: Border.all(
+              color: onTap == null
+                  ? const Color(0xFFE2E8F0)
+                  : const Color(0xFFC7D2FE)),
         ),
         child: Text(
           label,
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w700,
-            color: onTap == null ? const Color(0xFF94A3B8) : const Color(0xFF4338CA),
+            color: onTap == null
+                ? const Color(0xFF94A3B8)
+                : const Color(0xFF4338CA),
           ),
         ),
       ),

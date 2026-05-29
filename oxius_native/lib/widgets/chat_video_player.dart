@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ChatVideoPlayer extends StatefulWidget {
   final String videoUrl;
@@ -35,7 +36,8 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
   Future<void> _initializePlayer() async {
     try {
       // Check if it's a URL or local file path
-      if (widget.videoUrl.startsWith('http://') || widget.videoUrl.startsWith('https://')) {
+      if (widget.videoUrl.startsWith('http://') ||
+          widget.videoUrl.startsWith('https://')) {
         _videoPlayerController = VideoPlayerController.networkUrl(
           Uri.parse(widget.videoUrl),
         );
@@ -140,7 +142,7 @@ class _ChatVideoPlayerState extends State<ChatVideoPlayer> {
           border: Border.all(color: Colors.grey.shade300, width: 1),
         ),
         child: const Center(
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             color: Color(0xFF3B82F6),
           ),
         ),

@@ -5,6 +5,7 @@ import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
 import 'order_chat_screen.dart';
 import 'gig_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class GigsOrderedTab extends StatefulWidget {
   const GigsOrderedTab({super.key});
@@ -15,7 +16,7 @@ class GigsOrderedTab extends StatefulWidget {
 
 class _GigsOrderedTabState extends State<GigsOrderedTab> {
   final WorkspaceService _workspaceService = WorkspaceService();
-  
+
   List<Map<String, dynamic>> _orders = [];
   bool _isLoading = true;
   String _selectedFilter = 'all';
@@ -37,7 +38,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
 
   Future<void> _loadOrders() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final result = await _workspaceService.fetchMyOrders(
         status: _selectedFilter == 'all' ? null : _selectedFilter,
@@ -93,7 +94,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
     } catch (e) {
       if (mounted) {
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           customMessage: 'Unable to complete order',
         );
@@ -139,7 +140,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Request Revision'),
-        content: const Text('Are you sure you want to request a revision for this order? The seller will be notified.'),
+        content: const Text(
+            'Are you sure you want to request a revision for this order? The seller will be notified.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -155,7 +157,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
     );
 
     if (confirm == true) {
-      final success = await _workspaceService.updateOrderStatus(orderId, 'reopen');
+      final success =
+          await _workspaceService.updateOrderStatus(orderId, 'reopen');
       if (success) {
         _loadOrders();
         if (mounted) {
@@ -177,7 +180,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
   Future<void> _showDisputeDialog(String orderId) async {
     String? selectedReason;
     final descriptionController = TextEditingController();
-    
+
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -213,7 +216,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                   // Title
                   Row(
                     children: [
-                      Icon(Icons.report_problem, color: Colors.orange[700], size: 20),
+                      Icon(Icons.report_problem,
+                          color: Colors.orange[700], size: 20),
                       const SizedBox(width: 8),
                       const Text(
                         'Raise a Dispute',
@@ -241,12 +245,14 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                     ),
                     items: WorkspaceService.disputeReasons.map((reason) {
                       return DropdownMenuItem(
                         value: reason['value'],
-                        child: Text(reason['label']!, style: const TextStyle(fontSize: 13)),
+                        child: Text(reason['label']!,
+                            style: const TextStyle(fontSize: 13)),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -263,7 +269,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                       labelText: 'Description',
                       labelStyle: const TextStyle(fontSize: 13),
                       hintText: 'Describe your issue (min 20 chars)',
-                      hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                      hintStyle:
+                          TextStyle(fontSize: 12, color: Colors.grey[400]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -284,7 +291,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text('Cancel', style: TextStyle(fontSize: 13)),
+                          child: const Text('Cancel',
+                              style: TextStyle(fontSize: 13)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -293,13 +301,16 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                           onPressed: () {
                             if (selectedReason == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please select a reason')),
+                                const SnackBar(
+                                    content: Text('Please select a reason')),
                               );
                               return;
                             }
                             if (descriptionController.text.trim().length < 20) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Description must be at least 20 characters')),
+                                const SnackBar(
+                                    content: Text(
+                                        'Description must be at least 20 characters')),
                               );
                               return;
                             }
@@ -313,7 +324,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text('Submit', style: TextStyle(fontSize: 13)),
+                          child: const Text('Submit',
+                              style: TextStyle(fontSize: 13)),
                         ),
                       ),
                     ],
@@ -337,7 +349,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
         if (response['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response['message'] ?? 'Dispute raised successfully'),
+              content:
+                  Text(response['message'] ?? 'Dispute raised successfully'),
               backgroundColor: Colors.green,
             ),
           );
@@ -356,7 +369,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadOrders,
       child: Column(
         children: [
@@ -380,11 +393,12 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
           // Orders List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: AdsyLoadingIndicator())
                 : _orders.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
                         itemCount: _orders.length,
                         itemBuilder: (context, index) {
                           return _buildOrderCard(_orders[index]);
@@ -448,7 +462,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.grey[50],
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(10)),
             ),
             child: Row(
               children: [
@@ -464,7 +479,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
               ],
             ),
           ),
-          
+
           // Order Content
           Padding(
             padding: const EdgeInsets.all(10),
@@ -478,9 +493,11 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                     width: 56,
                     height: 56,
                     child: CachedNetworkImage(
-                      imageUrl: _getImageUrl(gig?['image_url'] ?? gig?['image']),
+                      imageUrl:
+                          _getImageUrl(gig?['image_url'] ?? gig?['image']),
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: Colors.grey[200]),
+                      placeholder: (context, url) =>
+                          Container(color: Colors.grey[200]),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[200],
                         child: const Icon(Icons.image, color: Colors.grey),
@@ -489,7 +506,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                
+
                 // Order Details
                 Expanded(
                   child: Column(
@@ -498,7 +515,9 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => GigDetailScreen(gigId: gig?['id']?.toString() ?? '')),
+                          MaterialPageRoute(
+                              builder: (context) => GigDetailScreen(
+                                  gigId: gig?['id']?.toString() ?? '')),
                         ),
                         child: Text(
                           gig?['title'] ?? 'Unknown Gig',
@@ -518,7 +537,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                           CircleAvatar(
                             radius: 8,
                             backgroundImage: seller?['avatar'] != null
-                                ? CachedNetworkImageProvider(_getImageUrl(seller!['avatar']))
+                                ? CachedNetworkImageProvider(
+                                    _getImageUrl(seller!['avatar']))
                                 : null,
                             child: seller?['avatar'] == null
                                 ? Text(
@@ -531,24 +551,34 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                           Flexible(
                             child: Text(
                               'from ${seller?['name'] ?? 'Unknown'}',
-                              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey[600]),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (seller?['kyc'] == true)
                             const Padding(
                               padding: EdgeInsets.only(left: 3),
-                              child: Icon(Icons.verified, size: 12, color: Colors.blue),
+                              child: Icon(Icons.verified,
+                                  size: 12, color: Colors.blue),
                             ),
                           if (seller?['is_pro'] == true)
                             Container(
                               margin: const EdgeInsets.only(left: 3),
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 1),
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                                gradient: const LinearGradient(colors: [
+                                  Color(0xFFF59E0B),
+                                  Color(0xFFF97316)
+                                ]),
                                 borderRadius: BorderRadius.circular(3),
                               ),
-                              child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+                              child: const Text('PRO',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 7,
+                                      fontWeight: FontWeight.bold)),
                             ),
                         ],
                       ),
@@ -566,7 +596,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
                           ),
                           Text(
                             _formatDate(createdAt),
-                            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey[500]),
                           ),
                         ],
                       ),
@@ -576,7 +607,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
               ],
             ),
           ),
-          
+
           // Action Buttons (including Chat)
           if (_canTakeAction(status))
             Container(
@@ -586,7 +617,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
               ),
               child: Row(
                 children: _buildActionButtons(
-                  order, 
+                  order,
                   status,
                   hasDispute: order['has_dispute'] == true,
                 ),
@@ -601,10 +632,11 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
     return status != 'cancelled';
   }
 
-  List<Widget> _buildActionButtons(Map<String, dynamic> order, String status, {bool hasDispute = false}) {
+  List<Widget> _buildActionButtons(Map<String, dynamic> order, String status,
+      {bool hasDispute = false}) {
     final orderId = order['id'].toString();
     final buttons = <Widget>[];
-    
+
     // Chat button - always show first (except cancelled)
     final unreadCount = order['unread_messages'] ?? 0;
     buttons.add(
@@ -664,7 +696,7 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
         ],
       ),
     );
-    
+
     if (status == 'pending') {
       buttons.add(const SizedBox(width: 6));
       buttons.add(
@@ -676,7 +708,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
           child: const Text('Cancel', style: TextStyle(fontSize: 12)),
         ),
@@ -692,7 +725,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
           child: const Text('Reopen', style: TextStyle(fontSize: 12)),
         ),
@@ -707,7 +741,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
           child: const Text('Complete', style: TextStyle(fontSize: 12)),
         ),
@@ -724,7 +759,8 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6)),
             ),
             child: const Text('Dispute', style: TextStyle(fontSize: 12)),
           ),
@@ -767,13 +803,14 @@ class _GigsOrderedTabState extends State<GigsOrderedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
           child: const Text('Write Review', style: TextStyle(fontSize: 12)),
         ),
       );
     }
-    
+
     return buttons;
   }
 

@@ -10,6 +10,7 @@ import '../../utils/mention_parser.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../config/app_config.dart';
 import '../../widgets/link_preview_card.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PostCommentsPreview extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -640,7 +641,7 @@ class _ReplyInputState extends State<_ReplyInput> {
                     ? SizedBox(
                         width: 14,
                         height: 14,
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           strokeWidth: 2,
                           color: Colors.blue.shade700,
                         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -14,7 +15,7 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   final WorkspaceService _workspaceService = WorkspaceService();
-  
+
   Map<String, dynamic>? _order;
   bool _isLoading = true;
   String? _error;
@@ -35,7 +36,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       // For now, we'll show a placeholder since the API endpoint might need adjustment
       // The order should be fetched from either buyer or seller orders
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -79,7 +80,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AdsyLoadingIndicator())
           : _error != null
               ? _buildErrorState()
               : _buildContent(),
@@ -144,7 +145,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 16),
-                
+
                 // Price
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -202,12 +203,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           width: 60,
                           height: 60,
                           child: CachedNetworkImage(
-                            imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
+                            imageUrl:
+                                _getImageUrl(gig['image_url'] ?? gig['image']),
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(color: Colors.grey[200]),
+                            placeholder: (context, url) =>
+                                Container(color: Colors.grey[200]),
                             errorWidget: (context, url, error) => Container(
                               color: Colors.grey[200],
-                              child: const Icon(Icons.image, color: Colors.grey),
+                              child:
+                                  const Icon(Icons.image, color: Colors.grey),
                             ),
                           ),
                         ),

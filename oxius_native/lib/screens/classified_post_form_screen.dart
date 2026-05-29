@@ -12,6 +12,7 @@ import '../services/classified_post_service.dart';
 import '../services/geo_location_service.dart';
 import '../services/api_service.dart';
 import '../widgets/geo_selector_dialog.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -28,7 +29,7 @@ const _slate800 = Color(0xFF1E293B);
 class ClassifiedPostFormScreen extends StatefulWidget {
   final String? postId;
   final String? categoryId;
-  
+
   const ClassifiedPostFormScreen({
     Key? key,
     this.postId,
@@ -36,31 +37,34 @@ class ClassifiedPostFormScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ClassifiedPostFormScreen> createState() => _ClassifiedPostFormScreenState();
+  State<ClassifiedPostFormScreen> createState() =>
+      _ClassifiedPostFormScreenState();
 }
 
 class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   late final ClassifiedPostService _postService;
   late final GeoLocationService _geoService;
-  
+
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _instructionsController = TextEditingController();
   final _priceController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _isSubmitting = false;
   bool _negotiable = false;
   bool _acceptedPrivacy = false;
-  
+
   List<CategoryDetails> _categories = [];
   String? _selectedCategoryId;
-  
+
   GeoLocation? _location;
-  List<dynamic> _selectedImages = []; // Mix of URLs, File objects, and XFile objects
-  
-  String? _actualPostId; // Store the actual UUID for updates (different from slug)
-  
+  List<dynamic> _selectedImages =
+      []; // Mix of URLs, File objects, and XFile objects
+
+  String?
+      _actualPostId; // Store the actual UUID for updates (different from slug)
+
   bool get _isEditMode => widget.postId != null;
 
   @override
@@ -74,14 +78,14 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
   Future<void> _initialize() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load categories
       _categories = await _postService.fetchAllCategories();
-      
+
       // Load saved location
       _location = await _geoService.getSavedLocation();
-      
+
       // Load existing post data if editing
       if (_isEditMode) {
         await _loadPostData();
@@ -97,33 +101,36 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     try {
       print('Loading post data for ID: ${widget.postId}');
       final postData = await _postService.fetchPostForEdit(widget.postId!);
-      
+
       if (postData == null) {
         print('ERROR: Post data is null!');
         _showError('Failed to load post data');
         return;
       }
-      
+
       print('Post data loaded: ${postData.title}');
       print('Post ID (UUID): ${postData.id}');
       print('Category ID: ${postData.categoryId}');
       print('Images count: ${postData.medias.length}');
-      
+
       if (mounted) {
         setState(() {
           // Store the actual UUID for updates (important!)
           _actualPostId = postData.id;
-          
+
           _titleController.text = postData.title;
           _instructionsController.text = postData.instructions;
-          _priceController.text = postData.price > 0 ? postData.price.toString() : '';
+          _priceController.text =
+              postData.price > 0 ? postData.price.toString() : '';
           _negotiable = postData.negotiable;
           _selectedCategoryId = postData.categoryId;
           _acceptedPrivacy = postData.acceptedPrivacy;
           _selectedImages = List<dynamic>.from(postData.medias);
-          
+
           // Load location
-          if (postData.state != null || postData.city != null || postData.upazila != null) {
+          if (postData.state != null ||
+              postData.city != null ||
+              postData.upazila != null) {
             _location = GeoLocation(
               country: postData.country,
               state: postData.state,
@@ -142,7 +149,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     try {
       final ImagePicker picker = ImagePicker();
       final List<XFile> images = await picker.pickMultiImage();
-      
+
       if (images.isNotEmpty && mounted) {
         setState(() {
           for (var image in images) {
@@ -163,7 +170,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
     if (image is String) {
       return Image.network(image, fit: BoxFit.cover);
     }
-    
+
     // Handle XFile (from image picker)
     if (image is XFile) {
       if (kIsWeb) {
@@ -174,12 +181,12 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         return Image.file(File(image.path), fit: BoxFit.cover);
       }
     }
-    
+
     // Handle File objects (shouldn't happen on web, but kept for backwards compatibility)
     if (image is File) {
       return Image.file(image, fit: BoxFit.cover);
     }
-    
+
     // Fallback
     return const Icon(Icons.image, size: 40, color: Colors.grey);
   }
@@ -193,7 +200,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
   /// Convert images to base64 strings for API submission
   Future<List<String>> _convertImagesToBase64() async {
     List<String> base64Images = [];
-    
+
     for (var image in _selectedImages) {
       try {
         // If it's already a URL string (existing image), skip conversion
@@ -201,20 +208,23 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           // Keep existing URLs as-is (backend will handle them)
           continue;
         }
-        
+
         // Convert XFile to base64
         if (image is XFile) {
           final bytes = await image.readAsBytes();
           final base64String = base64Encode(bytes);
-          
+
           // Get file extension
           final extension = image.path.split('.').last.toLowerCase();
           String mimeType = 'image/jpeg';
-          if (extension == 'png') mimeType = 'image/png';
-          else if (extension == 'jpg' || extension == 'jpeg') mimeType = 'image/jpeg';
-          else if (extension == 'gif') mimeType = 'image/gif';
+          if (extension == 'png')
+            mimeType = 'image/png';
+          else if (extension == 'jpg' || extension == 'jpeg')
+            mimeType = 'image/jpeg';
+          else if (extension == 'gif')
+            mimeType = 'image/gif';
           else if (extension == 'webp') mimeType = 'image/webp';
-          
+
           // Format as data URL
           final dataUrl = 'data:$mimeType;base64,$base64String';
           base64Images.add(dataUrl);
@@ -223,15 +233,18 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         else if (image is File) {
           final bytes = await image.readAsBytes();
           final base64String = base64Encode(bytes);
-          
+
           // Get file extension
           final extension = image.path.split('.').last.toLowerCase();
           String mimeType = 'image/jpeg';
-          if (extension == 'png') mimeType = 'image/png';
-          else if (extension == 'jpg' || extension == 'jpeg') mimeType = 'image/jpeg';
-          else if (extension == 'gif') mimeType = 'image/gif';
+          if (extension == 'png')
+            mimeType = 'image/png';
+          else if (extension == 'jpg' || extension == 'jpeg')
+            mimeType = 'image/jpeg';
+          else if (extension == 'gif')
+            mimeType = 'image/gif';
           else if (extension == 'webp') mimeType = 'image/webp';
-          
+
           // Format as data URL
           final dataUrl = 'data:$mimeType;base64,$base64String';
           base64Images.add(dataUrl);
@@ -240,7 +253,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         print('Error converting image to base64: $e');
       }
     }
-    
+
     return base64Images;
   }
 
@@ -256,7 +269,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         onLocationSelected: (location) {},
       ),
     );
-    
+
     if (selectedLocation != null && mounted) {
       setState(() => _location = selectedLocation);
       await _geoService.saveLocation(selectedLocation);
@@ -278,9 +291,11 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       return;
     }
 
-    if (_location == null || 
-        (!_location!.allOverBangladesh && 
-         (_location!.state == null || _location!.city == null || _location!.upazila == null))) {
+    if (_location == null ||
+        (!_location!.allOverBangladesh &&
+            (_location!.state == null ||
+                _location!.city == null ||
+                _location!.upazila == null))) {
       _showError('Please select your location');
       return;
     }
@@ -292,7 +307,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       print('Converting ${_selectedImages.length} images to base64...');
       final base64Images = await _convertImagesToBase64();
       print('Converted ${base64Images.length} images successfully');
-      
+
       // Build location string from geo data
       String locationString = '';
       if (_location!.allOverBangladesh) {
@@ -310,7 +325,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         }
         locationString = locationParts.join(', ');
       }
-      
+
       final form = ClassifiedPostForm(
         // Use actual UUID for updates, widget.postId might be a slug
         id: _isEditMode ? (_actualPostId ?? widget.postId) : null,
@@ -330,7 +345,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
 
       print('Form created, submitting to API...');
       Map<String, dynamic>? response;
-      
+
       if (_isEditMode) {
         // Use actual UUID for update API call
         final postIdForUpdate = _actualPostId ?? widget.postId!;
@@ -343,7 +358,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
       if (response != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isEditMode ? 'Post updated successfully!' : 'Post created successfully!'),
+            content: Text(_isEditMode
+                ? 'Post updated successfully!'
+                : 'Post created successfully!'),
             backgroundColor: const Color(0xFF10B981),
           ),
         );
@@ -415,13 +432,14 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: _slate800, size: 22),
+          icon:
+              const Icon(Icons.arrow_back_rounded, color: _slate800, size: 22),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(_indigo),
                 strokeWidth: 2,
               ),
@@ -462,7 +480,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              _isEditMode ? Icons.edit_note_rounded : Icons.add_business_rounded,
+              _isEditMode
+                  ? Icons.edit_note_rounded
+                  : Icons.add_business_rounded,
               color: Colors.white,
               size: 22,
             ),
@@ -473,7 +493,9 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isEditMode ? 'Update Your Post' : 'Create New Classified Post',
+                  _isEditMode
+                      ? 'Update Your Post'
+                      : 'Create New Classified Post',
                   style: GoogleFonts.inter(
                     fontSize: isMobile ? 15 : 16,
                     fontWeight: FontWeight.w700,
@@ -650,7 +672,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         DropdownButtonFormField<String>(
           initialValue: _selectedCategoryId,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: _slate200),
@@ -667,11 +690,14 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             fillColor: _slate50,
             hintText: 'Select a category',
             hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
-            prefixIcon: const Icon(Icons.grid_view_rounded, size: 18, color: _slate400),
+            prefixIcon:
+                const Icon(Icons.grid_view_rounded, size: 18, color: _slate400),
           ),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _slate500, size: 18),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: _slate500, size: 18),
           dropdownColor: Colors.white,
-          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
+          style: GoogleFonts.inter(
+              fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
           items: _categories.map((category) {
             return DropdownMenuItem<String>(
               value: category.id,
@@ -729,7 +755,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           maxLines: maxLines,
           maxLength: maxLength,
           keyboardType: keyboardType,
-          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
+          style: GoogleFonts.inter(
+              fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
@@ -754,7 +781,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Colors.red),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             counterStyle: GoogleFonts.inter(fontSize: 10, color: _slate400),
           ),
           validator: required
@@ -824,7 +852,6 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ),
           ),
         ),
-        
         if (!_negotiable) ...[
           const SizedBox(height: 8),
           TextFormField(
@@ -833,7 +860,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
             ],
-            style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
+            style: GoogleFonts.inter(
+                fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               hintText: 'Enter price',
               prefixText: '৳ ',
@@ -860,7 +888,8 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                 borderRadius: BorderRadius.circular(10),
                 borderSide: const BorderSide(color: _indigo, width: 1.8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
             validator: (value) {
               if (!_negotiable && (value == null || value.trim().isEmpty)) {
@@ -919,13 +948,18 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
                         ? 'Select your location'
                         : _location!.allOverBangladesh
                             ? 'All over Bangladesh'
-                            : [_location!.upazila, _location!.city, _location!.state]
+                            : [
+                                _location!.upazila,
+                                _location!.city,
+                                _location!.state
+                              ]
                                 .where((e) => e != null && e.isNotEmpty)
                                 .join(', '),
                     style: TextStyle(
                       fontSize: 13,
                       color: _location == null ? _slate400 : _slate700,
-                      fontWeight: _location == null ? FontWeight.w400 : FontWeight.w500,
+                      fontWeight:
+                          _location == null ? FontWeight.w400 : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -968,7 +1002,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
           ],
         ),
         const SizedBox(height: 8),
-        
+
         // Image Grid
         if (_selectedImages.isNotEmpty)
           Wrap(
@@ -1138,7 +1172,7 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
             ? const SizedBox(
                 height: 18,
                 width: 18,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),

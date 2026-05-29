@@ -3,6 +3,7 @@ import '../../services/diamond_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/payment_policy.dart';
 import 'diamond_purchase_bottom_sheet.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class DiamondGiftBottomSheet extends StatefulWidget {
   final String postId;
@@ -47,7 +48,7 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
   int? _selectedPreset;
   String _giftMessage = '';
   bool _isSending = false;
-  
+
   late int _currentDiamondBalance;
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
@@ -68,9 +69,9 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
   }
 
   bool _canSendGift() {
-    return _giftAmount != null && 
-           _giftAmount! > 0 && 
-           _giftAmount! <= _currentDiamondBalance;
+    return _giftAmount != null &&
+        _giftAmount! > 0 &&
+        _giftAmount! <= _currentDiamondBalance;
   }
 
   Future<void> _sendGift() async {
@@ -102,7 +103,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully sent ${_giftAmount!} diamonds to ${widget.postAuthorName}! 🎁'),
+            content: Text(
+                'Successfully sent ${_giftAmount!} diamonds to ${widget.postAuthorName}! 🎁'),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
           ),
@@ -215,7 +217,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                         color: Colors.white.withOpacity(0.18),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, color: Colors.white, size: 16),
+                      child: const Icon(Icons.close,
+                          color: Colors.white, size: 16),
                     ),
                   ),
                 ],
@@ -233,7 +236,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     children: [
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFDF4FF),
                             borderRadius: BorderRadius.circular(12),
@@ -276,7 +280,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                             DiamondPurchaseBottomSheet.show(context);
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF7C3AED), Color(0xFFDB2777)],
@@ -286,7 +291,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.add_rounded, color: Colors.white, size: 14),
+                                const Icon(Icons.add_rounded,
+                                    color: Colors.white, size: 14),
                                 const SizedBox(width: 4),
                                 const Text(
                                   'Buy More',
@@ -338,15 +344,24 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                             decoration: BoxDecoration(
                               gradient: isSelected
                                   ? const LinearGradient(
-                                      colors: [Color(0xFF7C3AED), Color(0xFFDB2777)],
+                                      colors: [
+                                        Color(0xFF7C3AED),
+                                        Color(0xFFDB2777)
+                                      ],
                                     )
                                   : null,
-                              color: isSelected ? null : (canAfford ? const Color(0xFFF9F5FF) : Colors.grey.shade100),
+                              color: isSelected
+                                  ? null
+                                  : (canAfford
+                                      ? const Color(0xFFF9F5FF)
+                                      : Colors.grey.shade100),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: isSelected
                                     ? Colors.transparent
-                                    : (canAfford ? const Color(0xFFDDD6FE) : Colors.grey.shade200),
+                                    : (canAfford
+                                        ? const Color(0xFFDDD6FE)
+                                        : Colors.grey.shade200),
                               ),
                             ),
                             child: Center(
@@ -357,7 +372,9 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                                   fontWeight: FontWeight.w700,
                                   color: isSelected
                                       ? Colors.white
-                                      : (canAfford ? const Color(0xFF7C3AED) : Colors.grey.shade400),
+                                      : (canAfford
+                                          ? const Color(0xFF7C3AED)
+                                          : Colors.grey.shade400),
                                 ),
                               ),
                             ),
@@ -383,7 +400,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                   TextField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
                       hintText: 'Enter diamond amount',
                       hintStyle: TextStyle(
@@ -395,7 +413,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                         padding: EdgeInsets.only(left: 12, right: 8),
                         child: Text('💎', style: TextStyle(fontSize: 18)),
                       ),
-                      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+                      prefixIconConstraints:
+                          const BoxConstraints(minWidth: 0, minHeight: 0),
                       filled: true,
                       fillColor: const Color(0xFFFAFAFA),
                       border: OutlineInputBorder(
@@ -408,9 +427,11 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF7C3AED), width: 1.5),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 14),
                     ),
                     onChanged: (value) {
                       setState(() {
@@ -419,16 +440,19 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                       });
                     },
                   ),
-                  if (_giftAmount != null && _giftAmount! > _currentDiamondBalance)
+                  if (_giftAmount != null &&
+                      _giftAmount! > _currentDiamondBalance)
                     Padding(
                       padding: const EdgeInsets.only(top: 6, left: 4),
                       child: Row(
                         children: [
-                          Icon(Icons.error_outline, size: 13, color: Colors.red.shade500),
+                          Icon(Icons.error_outline,
+                              size: 13, color: Colors.red.shade500),
                           const SizedBox(width: 4),
                           Text(
                             'Insufficient diamond balance',
-                            style: TextStyle(fontSize: 12, color: Colors.red.shade500),
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.red.shade500),
                           ),
                         ],
                       ),
@@ -453,7 +477,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     style: const TextStyle(fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Write a nice message... ✨',
-                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                      hintStyle:
+                          TextStyle(fontSize: 13, color: Colors.grey.shade400),
                       filled: true,
                       fillColor: const Color(0xFFFAFAFA),
                       border: OutlineInputBorder(
@@ -466,7 +491,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
+                        borderSide: const BorderSide(
+                            color: Color(0xFF7C3AED), width: 1.5),
                       ),
                       contentPadding: const EdgeInsets.all(14),
                     ),
@@ -494,7 +520,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                         boxShadow: _canSendGift()
                             ? [
                                 BoxShadow(
-                                  color: const Color(0xFF7C3AED).withOpacity(0.35),
+                                  color:
+                                      const Color(0xFF7C3AED).withOpacity(0.35),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -506,9 +533,10 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                             ? const SizedBox(
                                 width: 22,
                                 height: 22,
-                                child: CircularProgressIndicator(
+                                child: AdsyLoadingIndicator(
                                   strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Colors.white),
                                 ),
                               )
                             : Row(
@@ -518,7 +546,9 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                                     '🎁',
                                     style: TextStyle(
                                       fontSize: 18,
-                                      color: _canSendGift() ? Colors.white : Colors.grey.shade400,
+                                      color: _canSendGift()
+                                          ? Colors.white
+                                          : Colors.grey.shade400,
                                     ),
                                   ),
                                   const SizedBox(width: 10),
@@ -529,7 +559,9 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
-                                      color: _canSendGift() ? Colors.white : Colors.grey.shade400,
+                                      color: _canSendGift()
+                                          ? Colors.white
+                                          : Colors.grey.shade400,
                                       letterSpacing: -0.2,
                                     ),
                                   ),
@@ -544,7 +576,8 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.orange.shade50,
                           borderRadius: BorderRadius.circular(8),
@@ -552,12 +585,15 @@ class _DiamondGiftBottomSheetState extends State<DiamondGiftBottomSheet> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.info_outline_rounded, size: 14, color: Colors.orange.shade600),
+                            Icon(Icons.info_outline_rounded,
+                                size: 14, color: Colors.orange.shade600),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'You need diamonds to send a gift',
-                                style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.orange.shade700),
                               ),
                             ),
                           ],

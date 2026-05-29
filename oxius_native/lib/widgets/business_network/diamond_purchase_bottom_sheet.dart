@@ -5,6 +5,7 @@ import '../../services/diamond_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/payment_policy.dart';
 import '../ios_payment_blocked_widget.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class DiamondPurchaseBottomSheet extends StatefulWidget {
   final VoidCallback? onPurchaseSuccess;
@@ -37,7 +38,8 @@ class DiamondPurchaseBottomSheet extends StatefulWidget {
   }
 
   @override
-  State<DiamondPurchaseBottomSheet> createState() => _DiamondPurchaseBottomSheetState();
+  State<DiamondPurchaseBottomSheet> createState() =>
+      _DiamondPurchaseBottomSheetState();
 }
 
 class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
@@ -59,7 +61,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
   final TextEditingController _customAmountController = TextEditingController();
 
   bool _hasPurchased = false;
-  
+
   // Local balance state for immediate updates
   late int _currentDiamondBalance;
   late double _currentAccountBalance;
@@ -70,7 +72,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
     // Initialize local balance from current user
     _currentDiamondBalance = AuthService.currentUser?.diamondBalance ?? 0;
     _currentAccountBalance = AuthService.currentUser?.balance ?? 0.0;
-    
+
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 1) {
@@ -140,7 +142,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
 
   double _calculateTotal() {
     if (_selectedPackage != null) {
-      final package = _packages.firstWhere((p) => p.diamonds == _selectedPackage);
+      final package =
+          _packages.firstWhere((p) => p.diamonds == _selectedPackage);
       return package.price;
     }
     if (_customAmount != null && _customAmount! >= 10) {
@@ -153,7 +156,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
     final user = AuthService.currentUser;
     if (user == null) return false;
 
-    final hasAmount = _selectedPackage != null || (_customAmount != null && _customAmount! >= 10);
+    final hasAmount = _selectedPackage != null ||
+        (_customAmount != null && _customAmount! >= 10);
     final total = _calculateTotal();
     // Use local balance state for immediate validation
     final hasBalance = _currentAccountBalance >= total;
@@ -189,7 +193,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
           _currentDiamondBalance = newDiamondBalance;
           _currentAccountBalance = newAccountBalance;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Successfully purchased $amount diamonds! 🎉'),
@@ -197,20 +201,20 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
             duration: const Duration(seconds: 2),
           ),
         );
-        
+
         widget.onPurchaseSuccess?.call();
-        
+
         // Mark that purchase happened
         _hasPurchased = true;
-        
+
         // Refresh user data in background
         AuthService.refreshUserData();
-        
+
         _customAmountController.clear();
-        
+
         // Switch to history tab to show the purchase
         _tabController.animateTo(1);
-        
+
         // Close after a short delay to let user see the updated balance
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
@@ -234,7 +238,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
   Widget build(BuildContext context) {
     final user = AuthService.currentUser;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Container(
       height: screenHeight * 0.85,
       decoration: const BoxDecoration(
@@ -249,7 +253,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
               gradient: LinearGradient(
                 colors: [Colors.pink.shade500, Colors.purple.shade500],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Column(
               children: [
@@ -274,7 +279,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.diamond, color: Colors.white, size: 16),
+                        child: const Icon(Icons.diamond,
+                            color: Colors.white, size: 16),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -332,7 +338,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.diamond, size: 16, color: Colors.pink.shade500),
+                        Icon(Icons.diamond,
+                            size: 16, color: Colors.pink.shade500),
                         const SizedBox(width: 4),
                         Text(
                           '$_currentDiamondBalance',
@@ -440,7 +447,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
 
           // Packages grid
           _isLoadingPackages
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: AdsyLoadingIndicator())
               : GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -454,7 +461,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                   itemBuilder: (context, index) {
                     final package = _packages[index];
                     final isSelected = _selectedPackage == package.diamonds;
-                    
+
                     return GestureDetector(
                       onTap: () {
                         setState(() {
@@ -472,12 +479,17 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                         decoration: BoxDecoration(
                           gradient: isSelected
                               ? LinearGradient(
-                                  colors: [Colors.pink.shade50, Colors.purple.shade50],
+                                  colors: [
+                                    Colors.pink.shade50,
+                                    Colors.purple.shade50
+                                  ],
                                 )
                               : null,
                           color: isSelected ? null : Colors.white,
                           border: Border.all(
-                            color: isSelected ? Colors.pink.shade300 : Colors.grey.shade300,
+                            color: isSelected
+                                ? Colors.pink.shade300
+                                : Colors.grey.shade300,
                             width: isSelected ? 2 : 1,
                           ),
                           borderRadius: BorderRadius.circular(12),
@@ -513,7 +525,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                               top: 0,
                               right: 0,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 4, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.pink.shade100,
                                   borderRadius: BorderRadius.circular(8),
@@ -536,11 +549,15 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                                   padding: const EdgeInsets.all(2),
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: [Colors.pink.shade500, Colors.purple.shade500],
+                                      colors: [
+                                        Colors.pink.shade500,
+                                        Colors.purple.shade500
+                                      ],
                                     ),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.check, size: 12, color: Colors.white),
+                                  child: const Icon(Icons.check,
+                                      size: 12, color: Colors.white),
                                 ),
                               ),
                           ],
@@ -568,7 +585,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
             decoration: InputDecoration(
               hintText: 'Enter diamond amount',
               hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-              suffixIcon: Icon(Icons.auto_awesome, color: Colors.pink.shade400, size: 18),
+              suffixIcon: Icon(Icons.auto_awesome,
+                  color: Colors.pink.shade400, size: 18),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey.shade300),
@@ -577,7 +595,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.pink.shade500, width: 2),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
             onChanged: (value) {
               setState(() {
@@ -616,11 +635,13 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, size: 14, color: Colors.blue.shade700),
+                    Icon(Icons.info_outline,
+                        size: 14, color: Colors.blue.shade700),
                     const SizedBox(width: 6),
                     Text(
                       '10 diamonds = 1 BDT',
-                      style: TextStyle(fontSize: 12, color: Colors.blue.shade700),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.blue.shade700),
                     ),
                   ],
                 ),
@@ -640,7 +661,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
             width: double.infinity,
             height: 44,
             child: ElevatedButton(
-              onPressed: _canPurchase() && !_isLoading ? _purchaseDiamonds : null,
+              onPressed:
+                  _canPurchase() && !_isLoading ? _purchaseDiamonds : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.pink.shade600,
                 foregroundColor: Colors.white,
@@ -653,7 +675,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation(Colors.white),
                       ),
@@ -696,7 +718,7 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(48),
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
     }
@@ -778,7 +800,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                         color: Colors.pink.shade50,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.diamond, size: 20, color: Colors.pink.shade500),
+                      child: Icon(Icons.diamond,
+                          size: 20, color: Colors.pink.shade500),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -793,7 +816,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                             ),
                           ),
                           Text(
-                            DateFormat('MMM d, y • h:mm a').format(transaction.createdAt),
+                            DateFormat('MMM d, y • h:mm a')
+                                .format(transaction.createdAt),
                             style: TextStyle(
                               fontSize: 11,
                               color: Colors.grey.shade600,
@@ -814,7 +838,8 @@ class _DiamondPurchaseBottomSheetState extends State<DiamondPurchaseBottomSheet>
                         ),
                         Container(
                           margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.green.shade100,
                             borderRadius: BorderRadius.circular(12),

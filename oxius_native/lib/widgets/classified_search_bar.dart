@@ -10,6 +10,7 @@ import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
 import '../services/translation_service.dart';
 import 'classified_categories_grid.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ClassifiedSearchBar extends StatefulWidget {
   final ValueChanged<String> onSearch;
@@ -235,18 +236,22 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       final data = json.decode(response.body);
       final results = data is List
           ? data
-          : (data is Map && data['results'] is List ? data['results'] as List : <dynamic>[]);
+          : (data is Map && data['results'] is List
+              ? data['results'] as List
+              : <dynamic>[]);
 
       return results
           .whereType<Map>()
-          .map((json) => ClassifiedCategory.fromJson(json.cast<String, dynamic>()))
+          .map((json) =>
+              ClassifiedCategory.fromJson(json.cast<String, dynamic>()))
           .toList();
     } catch (_) {
       return [];
     }
   }
 
-  Future<Map<String, dynamic>> _searchPosts(String query, {int page = 1}) async {
+  Future<Map<String, dynamic>> _searchPosts(String query,
+      {int page = 1}) async {
     try {
       final uri = Uri.parse(
         '${ApiService.baseUrl}/classified-posts/?title=${Uri.encodeComponent(query)}&page=$page',
@@ -269,7 +274,10 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       }
 
       if (data is List) {
-        final results = data.whereType<Map>().map((e) => e.cast<String, dynamic>()).toList();
+        final results = data
+            .whereType<Map>()
+            .map((e) => e.cast<String, dynamic>())
+            .toList();
         return {'results': results, 'next': null, 'count': results.length};
       }
     } catch (_) {
@@ -302,7 +310,9 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
 
     final position = _dropdownScrollController.position;
     if (position.pixels >= position.maxScrollExtent - 50) {
-      if (_hasMorePosts && !_isLoadingMorePosts && _currentSearchQuery.isNotEmpty) {
+      if (_hasMorePosts &&
+          !_isLoadingMorePosts &&
+          _currentSearchQuery.isNotEmpty) {
         _loadMorePosts();
       }
     }
@@ -324,7 +334,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       if (!mounted) return;
 
       setState(() {
-        _searchedPosts.addAll(postsData['results'] as List<Map<String, dynamic>>);
+        _searchedPosts
+            .addAll(postsData['results'] as List<Map<String, dynamic>>);
         _currentPostsPage = nextPage;
         _hasMorePosts = postsData['next'] != null;
         _isLoadingMorePosts = false;
@@ -340,14 +351,18 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
   }
 
   Widget _buildDropdown() {
-    final categoriesLabel = _ts.t('search_results_categories', fallback: 'Categories');
-    final servicesLabel = _ts.t('search_results_services', fallback: 'Services');
-    final loadingMoreLabel = _ts.t('classified_loading_more', fallback: 'Loading more...');
+    final categoriesLabel =
+        _ts.t('search_results_categories', fallback: 'Categories');
+    final servicesLabel =
+        _ts.t('search_results_services', fallback: 'Services');
+    final loadingMoreLabel =
+        _ts.t('classified_loading_more', fallback: 'Loading more...');
     final allResultsLoadedLabel = _ts.t(
       'classified_all_results_loaded',
       fallback: 'All results loaded',
     );
-    final noResultsLabel = _ts.t('classified_no_results_found', fallback: 'No results found');
+    final noResultsLabel =
+        _ts.t('classified_no_results_found', fallback: 'No results found');
     final tryDifferentKeywordsLabel = _ts.t(
       'classified_try_different_keywords',
       fallback: 'Try different keywords',
@@ -379,7 +394,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                   ? const Center(
                       child: Padding(
                         padding: EdgeInsets.all(24),
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           color: Color(0xFF06B6D4),
                           strokeWidth: 2,
                         ),
@@ -404,9 +419,11 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                               label: servicesLabel,
                               topPadding: _filteredCategories.isEmpty ? 12 : 10,
                               trailing: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
@@ -428,7 +445,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                     const SizedBox(
                                       width: 16,
                                       height: 16,
-                                      child: CircularProgressIndicator(
+                                      child: AdsyLoadingIndicator(
                                         strokeWidth: 2,
                                         color: Color(0xFF10B981),
                                       ),
@@ -468,9 +485,12 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                                 ),
                               ),
                           ],
-                          if (_filteredCategories.isEmpty && _searchedPosts.isEmpty && !_loadingSearchResults)
+                          if (_filteredCategories.isEmpty &&
+                              _searchedPosts.isEmpty &&
+                              !_loadingSearchResults)
                             Container(
-                              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 32, horizontal: 24),
                               child: Center(
                                 child: Column(
                                   children: [
@@ -600,12 +620,14 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                             ? category.image!
                             : '${AppConfig.mediaBaseUrl}${category.image}',
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildCategoryFallbackIcon(),
+                        errorBuilder: (_, __, ___) =>
+                            _buildCategoryFallbackIcon(),
                       )
                     : Image.asset(
                         category.getIconAsset(),
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildCategoryFallbackIcon(),
+                        errorBuilder: (_, __, ___) =>
+                            _buildCategoryFallbackIcon(),
                       ),
               ),
             ),
@@ -717,7 +739,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
       imageUrl = post['image'].toString();
     } else if (post['images'] is List && (post['images'] as List).isNotEmpty) {
       imageUrl = (post['images'] as List).first.toString();
-    } else if (post['featured_image'] != null && post['featured_image'].toString().isNotEmpty) {
+    } else if (post['featured_image'] != null &&
+        post['featured_image'].toString().isNotEmpty) {
       imageUrl = post['featured_image'].toString();
     }
 
@@ -814,7 +837,7 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
                         child: SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2,
                             color: Color(0xFF06B6D4),
                           ),
@@ -863,7 +886,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
             child: TextButton.icon(
               onPressed: _clear,
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 foregroundColor: const Color(0xFF0F766E),
                 backgroundColor: Colors.white.withValues(alpha: 0.75),
                 shape: RoundedRectangleBorder(
@@ -886,7 +910,8 @@ class _ClassifiedSearchBarState extends State<ClassifiedSearchBar> {
     );
 
     return Container(
-      margin: widget.margin ?? EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24),
+      margin:
+          widget.margin ?? EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24),
       child: TapRegion(
         groupId: _tapRegionGroupId,
         onTapOutside: (_) => _dismissDropdown(),

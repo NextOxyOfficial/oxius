@@ -9,6 +9,7 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../utils/url_launcher_utils.dart';
 import '../widgets/home/account_balance_section.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MyGigsScreen extends StatefulWidget {
   const MyGigsScreen({super.key});
@@ -20,27 +21,27 @@ class MyGigsScreen extends StatefulWidget {
 class _MyGigsScreenState extends State<MyGigsScreen> {
   final UserStateService _userService = UserStateService();
   final GigsService _gigsService = GigsService();
-  
+
   List<Map<String, dynamic>> _userGigs = [];
   List<Map<String, dynamic>> _filteredGigs = [];
   bool _isLoadingGigs = true;
   String _selectedFilter = 'all';
-  
+
   @override
   void initState() {
     super.initState();
     _loadUserGigs();
   }
-  
+
   Future<void> _loadUserGigs() async {
     setState(() => _isLoadingGigs = true);
-    
+
     final currentUser = _userService.currentUser;
-    
+
     if (currentUser?.id != null) {
       try {
         final userGigs = await _gigsService.fetchUserGigs(currentUser!.id);
-        
+
         if (mounted) {
           setState(() {
             _userGigs = userGigs;
@@ -61,7 +62,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       });
     }
   }
-  
+
   // Helper method to safely get gig status as string
   // Ensures consistent string evaluation in both debug and release builds
   String _getGigStatus(Map<String, dynamic> gig) {
@@ -69,14 +70,18 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     if (status == null) return '';
     return status.toString().toLowerCase().trim();
   }
-  
+
   // Helper method to safely check if gig is active
   // Handles various boolean representations from backend
   bool _isGigActive(Map<String, dynamic> gig) {
     final active = gig['active_gig'];
     if (active == null) return false;
     // Handle boolean, int, and string representations
-    return active == true || active == 1 || active == '1' || active == 'true' || active == 'True';
+    return active == true ||
+        active == 1 ||
+        active == '1' ||
+        active == 'true' ||
+        active == 'True';
   }
 
   int _countGigsForFilter(String filter) {
@@ -124,10 +129,12 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     final hasAnyGigs = _userGigs.isNotEmpty;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(isMobile ? 12 : 18, 14, isMobile ? 12 : 18, 20),
+      padding:
+          EdgeInsets.fromLTRB(isMobile ? 12 : 18, 14, isMobile ? 12 : 18, 20),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 18, isMobile ? 14 : 18, 16),
+        padding:
+            EdgeInsets.fromLTRB(isMobile ? 14 : 18, 18, isMobile ? 14 : 18, 16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFFF8FAFC), Color(0xFFFFFFFF)],
@@ -169,7 +176,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(999),
@@ -186,7 +194,9 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        hasAnyGigs ? 'No gigs in ${_getSelectedFilterLabel()}' : 'No gigs found yet',
+                        hasAnyGigs
+                            ? 'No gigs in ${_getSelectedFilterLabel()}'
+                            : 'No gigs found yet',
                         style: const TextStyle(
                           fontSize: 20,
                           height: 1.1,
@@ -257,7 +267,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       color: const Color(0xFF10B981).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.insights_outlined, size: 18, color: Color(0xFF10B981)),
+                    child: const Icon(Icons.insights_outlined,
+                        size: 18, color: Color(0xFF10B981)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -281,7 +292,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () => Navigator.pushNamed(context, '/post-a-gig'),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/post-a-gig'),
                     style: ElevatedButton.styleFrom(
                       elevation: 0,
                       backgroundColor: const Color(0xFF111827),
@@ -294,7 +306,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     icon: const Icon(Icons.add_rounded, size: 18),
                     label: Text(
                       hasAnyGigs ? 'Post Another Gig' : 'Create Your First Gig',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                          fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                   ),
                   if (hasAnyGigs) ...[
@@ -317,7 +330,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
                       label: const Text(
                         'Clear Filter',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ],
@@ -328,7 +342,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () => Navigator.pushNamed(context, '/post-a-gig'),
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/post-a-gig'),
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: const Color(0xFF111827),
@@ -340,8 +355,11 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       ),
                       icon: const Icon(Icons.add_rounded, size: 18),
                       label: Text(
-                        hasAnyGigs ? 'Post Another Gig' : 'Create Your First Gig',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        hasAnyGigs
+                            ? 'Post Another Gig'
+                            : 'Create Your First Gig',
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -363,10 +381,12 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        icon: const Icon(Icons.filter_alt_off_rounded, size: 18),
+                        icon:
+                            const Icon(Icons.filter_alt_off_rounded, size: 18),
                         label: const Text(
                           'Clear Filter',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ),
@@ -418,22 +438,22 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         categoryDetails?['imageUrl'];
     return ApiService.getAbsoluteUrl(raw?.toString());
   }
-  
+
   void _applyFilter() {
     print('🔍 Applying filter: $_selectedFilter');
     print('📊 Total gigs: ${_userGigs.length}');
-    
+
     List<Map<String, dynamic>> filtered;
-    
+
     if (_selectedFilter == 'all') {
       filtered = List.from(_userGigs);
     } else {
       filtered = _userGigs.where((gig) {
         final gigStatus = _getGigStatus(gig);
         final isActive = _isGigActive(gig);
-        
+
         print('Gig: ${gig['title']}, Status: $gigStatus, Active: $isActive');
-        
+
         switch (_selectedFilter) {
           case 'live':
             return gigStatus == 'approved' && isActive;
@@ -450,11 +470,11 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         }
       }).toList();
     }
-    
+
     print('✅ Filtered gigs: ${filtered.length}');
     _filteredGigs = filtered;
   }
-  
+
   Future<void> _handleGigAction(String gigId, String action, bool value) async {
     // Show loading indicator
     ScaffoldMessenger.of(context).showSnackBar(
@@ -464,42 +484,42 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             const SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child: AdsyLoadingIndicator(strokeWidth: 2, color: Colors.white),
             ),
             const SizedBox(width: 12),
-            Text('${action == "completed" ? "Stopping" : value ? "Activating" : "Pausing"} gig...'),
+            Text(
+                '${action == "completed" ? "Stopping" : value ? "Activating" : "Pausing"} gig...'),
           ],
         ),
         duration: const Duration(seconds: 30), // Longer duration for API call
       ),
     );
-    
+
     try {
       final success = await _gigsService.updateGigStatus(gigId, action, value);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        
+
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                action == "completed" 
-                    ? "Gig stopped successfully" 
-                    : value 
-                        ? "Gig activated successfully" 
-                        : "Gig paused successfully"
-              ),
+              content: Text(action == "completed"
+                  ? "Gig stopped successfully"
+                  : value
+                      ? "Gig activated successfully"
+                      : "Gig paused successfully"),
               backgroundColor: Colors.green,
             ),
           );
-          
+
           // Refresh gigs
           _loadUserGigs();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to ${action == "completed" ? "stop" : value ? "activate" : "pause"} gig'),
+              content: Text(
+                  'Failed to ${action == "completed" ? "stop" : value ? "activate" : "pause"} gig'),
               backgroundColor: Colors.red,
             ),
           );
@@ -522,17 +542,17 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     // Navigate to edit gig page (to be implemented)
     // For now, show a dialog to increase quantity
     final gigId = gig['id']?.toString() ?? '';
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         int additionalQuantity = 0;
         // Handle price as either String or number
         final priceValue = gig['price'];
-        final price = priceValue is String 
-            ? double.tryParse(priceValue) ?? 0.0 
+        final price = priceValue is String
+            ? double.tryParse(priceValue) ?? 0.0
             : (priceValue is num ? priceValue.toDouble() : 0.0);
-        
+
         return AlertDialog(
           title: const Text('Increase Gig Quantity'),
           content: StatefulBuilder(
@@ -559,8 +579,10 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   ),
                   const SizedBox(height: 16),
                   if (additionalQuantity > 0) ...[
-                    Text('Cost: ৳${(price * additionalQuantity).toStringAsFixed(2)}'),
-                    Text('Fee (10%): ৳${(price * additionalQuantity * 0.1).toStringAsFixed(2)}'),
+                    Text(
+                        'Cost: ৳${(price * additionalQuantity).toStringAsFixed(2)}'),
+                    Text(
+                        'Fee (10%): ৳${(price * additionalQuantity * 0.1).toStringAsFixed(2)}'),
                     Text(
                       'Total: ৳${(price * additionalQuantity * 1.1).toStringAsFixed(2)}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
@@ -580,15 +602,14 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 if (additionalQuantity > 0) {
                   Navigator.of(context).pop();
                   // Call update API
-                  final success = await _updateGigQuantity(gigId, additionalQuantity, price);
+                  final success = await _updateGigQuantity(
+                      gigId, additionalQuantity, price);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                          success 
-                            ? 'Gig quantity increased successfully' 
-                            : 'Failed to increase quantity'
-                        ),
+                        content: Text(success
+                            ? 'Gig quantity increased successfully'
+                            : 'Failed to increase quantity'),
                         backgroundColor: success ? Colors.green : Colors.red,
                       ),
                     );
@@ -605,13 +626,15 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       },
     );
   }
-  
-  Future<bool> _updateGigQuantity(String gigId, int additionalQuantity, double price) async {
+
+  Future<bool> _updateGigQuantity(
+      String gigId, int additionalQuantity, double price) async {
     try {
       final headers = await ApiService.getHeaders();
-      final additionalCost = price * additionalQuantity * 1.1; // Include 10% fee
+      final additionalCost =
+          price * additionalQuantity * 1.1; // Include 10% fee
       final balance = price * additionalQuantity;
-      
+
       final response = await http.put(
         Uri.parse(ApiService.getApiUrl('update-user-micro-gig/$gigId/')),
         headers: headers,
@@ -621,7 +644,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           'balance': balance,
         }),
       );
-      
+
       return response.statusCode == 200;
     } catch (e) {
       return false;
@@ -631,13 +654,14 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   Future<void> _handleResubmitGig(Map<String, dynamic> gig) async {
     final gigId = gig['id']?.toString() ?? '';
     final rejectionReason = gig['rejection_reason'] ?? 'No reason provided';
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         final titleController = TextEditingController(text: gig['title']);
-        final instructionsController = TextEditingController(text: gig['instructions']);
-        
+        final instructionsController =
+            TextEditingController(text: gig['instructions']);
+
         return AlertDialog(
           title: const Text('Edit & Resubmit Gig'),
           content: SingleChildScrollView(
@@ -707,7 +731,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                
+
                 // Show loading indicator
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -716,7 +740,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                         SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: AdsyLoadingIndicator(
+                              strokeWidth: 2, color: Colors.white),
                         ),
                         SizedBox(width: 12),
                         Text('Resubmitting gig...'),
@@ -725,22 +750,20 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                     duration: Duration(seconds: 30),
                   ),
                 );
-                
+
                 final success = await _resubmitGig(
                   gigId,
                   titleController.text,
                   instructionsController.text,
                 );
-                
+
                 if (mounted) {
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        success
-                            ? 'Gig resubmitted successfully! Waiting for approval.'
-                            : 'Failed to resubmit gig'
-                      ),
+                      content: Text(success
+                          ? 'Gig resubmitted successfully! Waiting for approval.'
+                          : 'Failed to resubmit gig'),
                       backgroundColor: success ? Colors.green : Colors.red,
                     ),
                   );
@@ -751,7 +774,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              child: const Text('Resubmit for Approval', style: TextStyle(color: Colors.white)),
+              child: const Text('Resubmit for Approval',
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -759,10 +783,11 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
     );
   }
 
-  Future<bool> _resubmitGig(String gigId, String title, String instructions) async {
+  Future<bool> _resubmitGig(
+      String gigId, String title, String instructions) async {
     try {
       final headers = await ApiService.getHeaders();
-      
+
       final response = await http.put(
         Uri.parse(ApiService.getApiUrl('update-user-micro-gig/$gigId/')),
         headers: headers,
@@ -773,13 +798,13 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           'rejection_reason': '', // Clear rejection reason
         }),
       );
-      
+
       if (response.statusCode == 200) {
         // Small delay to ensure backend processes the update
         await Future.delayed(const Duration(milliseconds: 500));
         return true;
       }
-      
+
       return false;
     } catch (e) {
       return false;
@@ -789,13 +814,13 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   Future<void> _handleGigDetails(Map<String, dynamic> gig) async {
     try {
       final gigDetails = await _gigsService.getGigDetails(gig['id'].toString());
-      
+
       if (mounted && gigDetails != null) {
         final isRejected = _getGigStatus(gigDetails) == 'rejected';
         final rejectionReason = gigDetails['rejection_reason'] ?? '';
         final gigStatus = _getGigStatus(gigDetails);
         final isActive = _isGigActive(gigDetails);
-        
+
         showModalBottomSheet(
           context: context,
           isScrollControlled: true,
@@ -874,14 +899,23 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                             ),
                             child: Column(
                               children: [
-                                if (gigDetails['category_details'] != null && gigDetails['category_details']['title'] != null)
-                                  _buildDetailRow('Category', gigDetails['category_details']['title']),
-                                _buildDetailRow('Status', _getStatusText(gigStatus, isActive)),
-                                _buildDetailRow('Price', '৳${gigDetails['price']}'),
-                                _buildDetailRow('Progress', '${gigDetails['filled_quantity']}/${gigDetails['required_quantity']}'),
-                                _buildDetailRow('Balance', '৳${gigDetails['balance']}'),
-                                _buildDetailRow('Total Cost', '৳${gigDetails['total_cost']}'),
-                                _buildDetailRow('Created', _formatDate(gigDetails['created_at'])),
+                                if (gigDetails['category_details'] != null &&
+                                    gigDetails['category_details']['title'] !=
+                                        null)
+                                  _buildDetailRow('Category',
+                                      gigDetails['category_details']['title']),
+                                _buildDetailRow('Status',
+                                    _getStatusText(gigStatus, isActive)),
+                                _buildDetailRow(
+                                    'Price', '৳${gigDetails['price']}'),
+                                _buildDetailRow('Progress',
+                                    '${gigDetails['filled_quantity']}/${gigDetails['required_quantity']}'),
+                                _buildDetailRow(
+                                    'Balance', '৳${gigDetails['balance']}'),
+                                _buildDetailRow('Total Cost',
+                                    '৳${gigDetails['total_cost']}'),
+                                _buildDetailRow('Created',
+                                    _formatDate(gigDetails['created_at'])),
                               ],
                             ),
                           ),
@@ -899,7 +933,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.error_outline, size: 18, color: Colors.red.shade700),
+                                      Icon(Icons.error_outline,
+                                          size: 18, color: Colors.red.shade700),
                                       const SizedBox(width: 8),
                                       Text(
                                         'Rejection Reason',
@@ -913,13 +948,17 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                                   const SizedBox(height: 8),
                                   Text(
                                     rejectionReason,
-                                    style: TextStyle(color: Colors.red.shade800),
+                                    style:
+                                        TextStyle(color: Colors.red.shade800),
                                   ),
                                 ],
                               ),
                             ),
                           ],
-                          if (gigDetails['instructions'] != null && gigDetails['instructions'].toString().isNotEmpty) ...[
+                          if (gigDetails['instructions'] != null &&
+                              gigDetails['instructions']
+                                  .toString()
+                                  .isNotEmpty) ...[
                             const SizedBox(height: 16),
                             const Text(
                               'Instructions',
@@ -967,7 +1006,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                        border: Border(
+                            top: BorderSide(color: Colors.grey.shade200)),
                       ),
                       child: SizedBox(
                         width: double.infinity,
@@ -1029,10 +1069,11 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    print('🔨 Building MyGigsScreen - Filter: $_selectedFilter, Filtered: ${_filteredGigs.length}, Total: ${_userGigs.length}');
+    print(
+        '🔨 Building MyGigsScreen - Filter: $_selectedFilter, Filtered: ${_filteredGigs.length}, Total: ${_userGigs.length}');
     final bool isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
@@ -1079,7 +1120,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
             children: [
               // Account Balance Section
               const AccountBalanceSection(),
-              
+
               // User Gigs Section
               _buildUserGigsSection(isMobile),
             ],
@@ -1088,7 +1129,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ),
     );
   }
-  
+
   Widget _buildUserGigsSection(bool isMobile) {
     if (!AuthService.isAuthenticated) {
       return Container(
@@ -1118,7 +1159,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         ),
       );
     }
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1166,7 +1207,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(6),
@@ -1182,16 +1224,19 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                       DropdownMenuItem(value: 'all', child: Text('All')),
                       DropdownMenuItem(value: 'live', child: Text('Live')),
                       DropdownMenuItem(value: 'paused', child: Text('Paused')),
-                      DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                      DropdownMenuItem(value: 'completed', child: Text('Completed')),
-                      DropdownMenuItem(value: 'rejected', child: Text('Rejected')),
+                      DropdownMenuItem(
+                          value: 'pending', child: Text('Pending')),
+                      DropdownMenuItem(
+                          value: 'completed', child: Text('Completed')),
+                      DropdownMenuItem(
+                          value: 'rejected', child: Text('Rejected')),
                     ],
                     onChanged: (String? newValue) {
                       if (newValue != null) {
                         print('🔄 Dropdown changed to: $newValue');
                         setState(() {
                           _selectedFilter = newValue;
-                          
+
                           // Apply filter inline to ensure state update
                           if (_selectedFilter == 'all') {
                             _filteredGigs = List.from(_userGigs);
@@ -1199,7 +1244,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                             _filteredGigs = _userGigs.where((gig) {
                               final gigStatus = _getGigStatus(gig);
                               final isActive = _isGigActive(gig);
-                              
+
                               switch (_selectedFilter) {
                                 case 'live':
                                   return gigStatus == 'approved' && isActive;
@@ -1216,8 +1261,9 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                               }
                             }).toList();
                           }
-                          
-                          print('✅ Filter applied. Showing ${_filteredGigs.length} gigs');
+
+                          print(
+                              '✅ Filter applied. Showing ${_filteredGigs.length} gigs');
                         });
                       }
                     },
@@ -1226,18 +1272,19 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
               ],
             ),
           ),
-          
+
           // Content
           if (_isLoadingGigs)
             const Padding(
               padding: EdgeInsets.all(40),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: AdsyLoadingIndicator()),
             )
           else if (_filteredGigs.isEmpty)
             _buildEmptyState(isMobile)
           else
             ListView.separated(
-              key: ValueKey('gigs_list_${_selectedFilter}_${_filteredGigs.length}'),
+              key: ValueKey(
+                  'gigs_list_${_selectedFilter}_${_filteredGigs.length}'),
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _filteredGigs.length,
@@ -1251,13 +1298,13 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ),
     );
   }
-  
+
   Widget _buildGigCard(Map<String, dynamic> gig, bool isMobile) {
     final categoryDetails = gig['category_details'];
     final gigStatus = _getGigStatus(gig);
     final isActive = _isGigActive(gig);
     final isCompleted = gigStatus == 'completed';
-    
+
     return Container(
       padding: EdgeInsets.all(isMobile ? 16 : 20),
       decoration: BoxDecoration(
@@ -1281,7 +1328,8 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
               children: [
                 Expanded(
                   flex: 2,
-                  child: _buildGigHeader(gig, categoryDetails, gigStatus, isActive),
+                  child: _buildGigHeader(
+                      gig, categoryDetails, gigStatus, isActive),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
@@ -1295,8 +1343,9 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ),
     );
   }
-  
-  Widget _buildGigHeader(Map<String, dynamic> gig, Map<String, dynamic>? categoryDetails, String gigStatus, bool isActive) {
+
+  Widget _buildGigHeader(Map<String, dynamic> gig,
+      Map<String, dynamic>? categoryDetails, String gigStatus, bool isActive) {
     final categoryIconUrl = _getGigCategoryIconUrl(categoryDetails);
     return Row(
       children: [
@@ -1330,7 +1379,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 ),
         ),
         const SizedBox(width: 16),
-        
+
         // Gig Info
         Expanded(
           child: Column(
@@ -1388,7 +1437,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ],
     );
   }
-  
+
   Widget _buildGigInfo(Map<String, dynamic> gig) {
     return Row(
       children: [
@@ -1405,12 +1454,13 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           ],
         ),
         const SizedBox(width: 16),
-        
+
         // Amount
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('৳', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            const Text('৳',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             Text(
               '${gig['balance'] ?? 0}',
               style: const TextStyle(
@@ -1426,7 +1476,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
           ],
         ),
         const Spacer(),
-        
+
         // Date posted
         Text(
           _formatDate(gig['created_at']),
@@ -1435,14 +1485,15 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ],
     );
   }
-  
-  Widget _buildGigActions(Map<String, dynamic> gig, bool isActive, bool isCompleted, bool isMobile) {
+
+  Widget _buildGigActions(Map<String, dynamic> gig, bool isActive,
+      bool isCompleted, bool isMobile) {
     final gigId = gig['id']?.toString() ?? '';
     final gigStatus = _getGigStatus(gig);
     final isRejected = gigStatus == 'rejected';
     final isPending = gigStatus == 'pending';
     final isApproved = gigStatus == 'approved';
-    
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -1486,7 +1537,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ],
     );
   }
-  
+
   Widget _buildActionButton(String label, Color color, VoidCallback onPressed) {
     return SizedBox(
       height: 32,
@@ -1504,7 +1555,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
       ),
     );
   }
-  
+
   void _showStopConfirmation(String gigId) {
     showDialog(
       context: context,
@@ -1525,14 +1576,15 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
                 _handleGigAction(gigId, 'completed', false);
               },
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Stop Gig', style: TextStyle(color: Colors.white)),
+              child:
+                  const Text('Stop Gig', style: TextStyle(color: Colors.white)),
             ),
           ],
         );
       },
     );
   }
-  
+
   Color _getStatusColor(String status, bool isActive) {
     switch (status) {
       case 'approved':
@@ -1547,7 +1599,7 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         return Colors.grey;
     }
   }
-  
+
   String _getStatusText(String status, bool isActive) {
     switch (status) {
       case 'approved':
@@ -1562,14 +1614,14 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
         return 'Unknown';
     }
   }
-  
+
   String _formatDate(dynamic createdAt) {
     if (createdAt == null) return '';
     try {
       final date = DateTime.parse(createdAt.toString());
       final now = DateTime.now();
       final difference = now.difference(date);
-      
+
       if (difference.inDays > 0) {
         return '${difference.inDays}d ago';
       } else if (difference.inHours > 0) {

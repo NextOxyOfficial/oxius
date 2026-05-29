@@ -20,6 +20,7 @@ import 'profile_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_options.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
   const BusinessNetworkScreen({super.key});
@@ -29,8 +30,6 @@ class BusinessNetworkScreen extends StatefulWidget {
 }
 
 class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
-  
-  
   List<BusinessNetworkPost> _posts = [];
   List<Map<String, dynamic>> _shuffledSponsoredProducts = [];
   bool _isLoading = true;
@@ -41,7 +40,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   int _currentNavIndex = 0;
   String? _errorMessage;
   int _unreadNotificationCount = 0;
-  
+
   final ScrollController _scrollController = ScrollController();
   bool _isChromeVisible = true;
   bool _disposed = false;
@@ -56,7 +55,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     _loadSponsoredProducts();
     _loadUnreadNotificationCount();
     _scrollController.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkCommunityGuidelines());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _checkCommunityGuidelines());
   }
 
   /// Apple Guideline 1.2 — Block first-time users from UGC until they
@@ -75,7 +75,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         builder: (dialogCtx) => WillPopScope(
           onWillPop: () async => false,
           child: Dialog(
-            insetPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
+            insetPadding:
+                const EdgeInsets.symmetric(horizontal: 4, vertical: 20),
             backgroundColor: Colors.transparent,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
@@ -144,11 +145,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        _buildGuidelineItem('Not post content that is objectionable, abusive, harassing, hateful, sexually explicit, discriminatory, or illegal.'),
+                        _buildGuidelineItem(
+                            'Not post content that is objectionable, abusive, harassing, hateful, sexually explicit, discriminatory, or illegal.'),
                         const SizedBox(height: 10),
-                        _buildGuidelineItem('Not impersonate others, spread misinformation, or infringe intellectual property.'),
+                        _buildGuidelineItem(
+                            'Not impersonate others, spread misinformation, or infringe intellectual property.'),
                         const SizedBox(height: 10),
-                        _buildGuidelineItem('Respect other users. You can block or report any user or post at any time.'),
+                        _buildGuidelineItem(
+                            'Respect other users. You can block or report any user or post at any time.'),
                         const SizedBox(height: 16),
                         Container(
                           width: double.infinity,
@@ -171,10 +175,12 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                           children: [
                             Expanded(
                               child: TextButton(
-                                onPressed: () => Navigator.of(dialogCtx).pop(false),
+                                onPressed: () =>
+                                    Navigator.of(dialogCtx).pop(false),
                                 style: TextButton.styleFrom(
                                   foregroundColor: const Color(0xFFDC2626),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(999),
                                   ),
@@ -191,12 +197,14 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => Navigator.of(dialogCtx).pop(true),
+                                onPressed: () =>
+                                    Navigator.of(dialogCtx).pop(true),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF2563EB),
                                   foregroundColor: Colors.white,
                                   elevation: 0,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(999),
                                   ),
@@ -263,7 +271,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
   Future<void> _loadSponsoredProducts() async {
     try {
-      final products = await UserSuggestionsService.getSponsoredProducts(limit: 20);
+      final products =
+          await UserSuggestionsService.getSponsoredProducts(limit: 20);
       if (mounted) {
         setState(() {
           _shuffledSponsoredProducts = List<Map<String, dynamic>>.from(products)
@@ -277,7 +286,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
   Future<void> _loadUnreadNotificationCount() async {
     if (!AuthService.isAuthenticated) return;
-    
+
     try {
       final result = await NotificationService.getNotifications(page: 1);
       if (mounted) {
@@ -290,7 +299,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     }
   }
 
-  List<Map<String, dynamic>> _getSponsoredProductsForSlot(int slotIndex, int count) {
+  List<Map<String, dynamic>> _getSponsoredProductsForSlot(
+      int slotIndex, int count) {
     if (_shuffledSponsoredProducts.isEmpty) {
       return [];
     }
@@ -300,11 +310,13 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       return [];
     }
 
-    final startIndex = (slotIndex * safeCount) % _shuffledSponsoredProducts.length;
+    final startIndex =
+        (slotIndex * safeCount) % _shuffledSponsoredProducts.length;
     final selectedProducts = <Map<String, dynamic>>[];
 
     for (int offset = 0; offset < safeCount; offset++) {
-      final productIndex = (startIndex + offset) % _shuffledSponsoredProducts.length;
+      final productIndex =
+          (startIndex + offset) % _shuffledSponsoredProducts.length;
       selectedProducts.add(_shuffledSponsoredProducts[productIndex]);
     }
 
@@ -317,20 +329,20 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
   int _calculateTotalItems(List<BusinessNetworkPost> visiblePosts) {
     int total = visiblePosts.length + 1; // +1 for gold sponsors at top
-    
+
     // Add user suggestions cards (every 10th post) - only for logged in users
     if (AuthService.isAuthenticated) {
       final suggestionsCount = (visiblePosts.length / 10).floor();
       total += suggestionsCount;
     }
-    
+
     // Add sponsored product cards (every 5th post)
     final productsCount = (visiblePosts.length / 5).floor();
     total += productsCount;
-    
+
     // +1 for loading/end indicator
     total += 1;
-    
+
     return total;
   }
 
@@ -348,7 +360,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final scrollDelta = currentScrollPosition - _lastScrollPosition;
 
     // Load more posts when near bottom
-    if (currentScrollPosition >= _scrollController.position.maxScrollExtent - 200) {
+    if (currentScrollPosition >=
+        _scrollController.position.maxScrollExtent - 200) {
       if (!_isLoadingMore && _hasMore) {
         _loadMorePosts();
       }
@@ -385,15 +398,15 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     final result = await BusinessNetworkService.getPosts(page: 1, pageSize: 5);
-    
+
     if (mounted) {
       setState(() {
         _posts = result['posts'] as List<BusinessNetworkPost>;
         _hasMore = result['hasMore'] as bool;
         _isLoading = false;
-        
+
         // Check for errors
         if (result.containsKey('error')) {
           if (result['error'] == 'unauthorized') {
@@ -402,7 +415,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
             _errorMessage = 'Failed to load posts. Please try again.';
           }
         }
-        
+
         if (_posts.isNotEmpty) {
           _lastCreatedAt = _posts.last.createdAt;
         }
@@ -412,16 +425,16 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
   Future<void> _loadMorePosts() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     setState(() => _isLoadingMore = true);
-    
+
     _currentPage++;
     final result = await BusinessNetworkService.getPosts(
       page: _currentPage,
       pageSize: 5,
       olderThan: _lastCreatedAt,
     );
-    
+
     if (mounted) {
       final newPosts = result['posts'] as List<BusinessNetworkPost>;
       setState(() {
@@ -466,7 +479,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final visiblePosts = _getVisiblePosts();
     final topPadding = MediaQuery.of(context).padding.top;
     final headerHeight = topPadding + kToolbarHeight;
-    
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.white,
@@ -476,13 +489,16 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         backgroundColor: const Color(0xFFF9FAFB),
-        drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network') : null,
+        drawer: isMobile
+            ? const BusinessNetworkDrawer(currentRoute: '/business-network')
+            : null,
         body: Stack(
           children: [
             Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 672), // max-w-3xl (768px - padding)
-                child: RefreshIndicator(
+                constraints: const BoxConstraints(
+                    maxWidth: 672), // max-w-3xl (768px - padding)
+                child: AdsyRefreshIndicator(
                   onRefresh: _refreshPosts,
                   color: const Color(0xFF3B82F6),
                   edgeOffset: headerHeight,
@@ -536,7 +552,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ProfileScreen(userId: currentUser.id),
+                          builder: (context) =>
+                              ProfileScreen(userId: currentUser.id),
                         ),
                       );
                     }
@@ -588,7 +605,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
   void _handleNavTap(int index) {
     final isLoggedIn = AuthService.isAuthenticated;
-    
+
     switch (index) {
       case 0:
         // Recent - already on this screen, refresh
@@ -659,7 +676,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     // Calculate actual post position considering injected cards
     int currentIndex = 1; // Start after gold sponsors
     int sponsoredSlotIndex = 0;
-    
+
     for (int i = 0; i < visiblePosts.length; i++) {
       // Check if we should inject user suggestions (every 10th post) - only for logged in users
       if (i > 0 && i % 10 == 0 && AuthService.isAuthenticated) {
@@ -668,9 +685,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         }
         currentIndex++;
       }
-      
+
       // Check if we should inject sponsored products (every 5th post)
-      if (i > 0 && i % 5 == 0 && i % 10 != 0) { // Don't overlap with suggestions
+      if (i > 0 && i % 5 == 0 && i % 10 != 0) {
+        // Don't overlap with suggestions
         if (currentIndex == index) {
           return SponsoredProductsCard(
             key: ValueKey('sponsored_products_$sponsoredSlotIndex'),
@@ -680,7 +698,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         sponsoredSlotIndex++;
         currentIndex++;
       }
-      
+
       // Show the post
       if (currentIndex == index) {
         final post = visiblePosts[i];
@@ -688,20 +706,21 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           key: ValueKey('post_${post.id}'),
           post: post,
           onPostUpdated: _handlePostUpdated,
-          onCommentAdded: (comment) => _handleCommentAddedByPostId(post.id, comment),
+          onCommentAdded: (comment) =>
+              _handleCommentAddedByPostId(post.id, comment),
           onPostDeleted: () => _handlePostDeletedByPostId(post.id),
         );
       }
       currentIndex++;
     }
-    
+
     // Show loading or end indicator after all posts
     if (_isLoadingMore) {
       return _buildLoadingMoreIndicator();
     } else if (!_hasMore && visiblePosts.isNotEmpty) {
       return _buildEndOfFeedIndicator();
     }
-    
+
     return const SizedBox(height: 80);
   }
 
@@ -835,7 +854,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF3B82F6),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -936,21 +956,21 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Content skeleton
           _buildShimmerBox(14, double.infinity),
           const SizedBox(height: 6),
           _buildShimmerBox(14, double.infinity),
           const SizedBox(height: 6),
           _buildShimmerBox(14, 200),
-          
+
           const SizedBox(height: 12),
-          
+
           // Image skeleton
           _buildShimmerBox(180, double.infinity, borderRadius: 8),
-          
+
           const SizedBox(height: 12),
-          
+
           // Actions skeleton
           Row(
             children: [

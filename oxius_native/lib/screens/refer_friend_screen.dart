@@ -10,6 +10,7 @@ import '../widgets/ios_web_redirect_screen.dart';
 import '../services/referral_service.dart';
 import '../models/referral_models.dart';
 import '../models/referral_reward_models.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ReferFriendScreen extends StatefulWidget {
   const ReferFriendScreen({super.key});
@@ -18,26 +19,27 @@ class ReferFriendScreen extends StatefulWidget {
   State<ReferFriendScreen> createState() => _ReferFriendScreenState();
 }
 
-class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTickerProviderStateMixin {
+class _ReferFriendScreenState extends State<ReferFriendScreen>
+    with SingleTickerProviderStateMixin {
   bool _isLoadingPlatform = true;
   bool _isLoadingCommissions = false;
   bool _isLoadingUsers = false;
-  
+
   PlatformStats? _platformStats;
   CommissionData? _commissionData;
   List<ReferredUser> _referredUsers = [];
   String? _referralCode;
   String? _referralLink;
-  
+
   String? _commissionError;
   String? _usersError;
-  
+
   // Referral Reward Program
   MyClaimsResponse? _claimsData;
   CheckConditionsResponse? _conditionsData;
   bool _isLoadingClaims = false;
   bool _isClaimingReward = false;
-  
+
   late TabController _tabController;
   int _activeTab = 0;
   bool _isLoggedIn = false;
@@ -105,7 +107,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       _isLoadingCommissions = true;
       _commissionError = null;
     });
-    
+
     try {
       final data = await ReferralService.getCommissionHistory();
       if (mounted) {
@@ -129,7 +131,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       _isLoadingUsers = true;
       _usersError = null;
     });
-    
+
     try {
       final users = await ReferralService.getReferredUsers();
       if (mounted) {
@@ -197,7 +199,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     final claims = _claimsData?.claims;
     if (claims == null) return;
 
-    final eligible = claims.where((c) => c.claimType == 'referrer' && c.status == 'eligible').toList();
+    final eligible = claims
+        .where((c) => c.claimType == 'referrer' && c.status == 'eligible')
+        .toList();
     if (eligible.isEmpty) return;
 
     setState(() => _isClaimingReward = true);
@@ -222,7 +226,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               ? 'Claimed $successCount reward(s) (৳${totalAmount.toStringAsFixed(0)})'
               : 'Failed to claim rewards',
         ),
-        backgroundColor: successCount > 0 ? const Color(0xFF10B981) : Colors.red,
+        backgroundColor:
+            successCount > 0 ? const Color(0xFF10B981) : Colors.red,
       ),
     );
 
@@ -239,7 +244,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result.message),
-            backgroundColor: result.success ? const Color(0xFF10B981) : Colors.red,
+            backgroundColor:
+                result.success ? const Color(0xFF10B981) : Colors.red,
           ),
         );
         if (result.success) {
@@ -250,7 +256,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to claim reward'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('Failed to claim reward'),
+              backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -354,14 +362,20 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                             onPressed: () => _copyToClipboard(link),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF10B981),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                               elevation: 0,
                             ),
-                            icon: const Icon(Icons.copy_rounded, size: 16, color: Colors.white),
+                            icon: const Icon(Icons.copy_rounded,
+                                size: 16, color: Colors.white),
                             label: Text(
                               'Copy',
-                              style: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                              style: AppFonts.roboto(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white),
                             ),
                           ),
                         ),
@@ -388,7 +402,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   Center(
                     child: Text(
                       'Scan to open referral link',
-                      style: AppFonts.roboto(fontSize: 11, color: Colors.grey.shade600),
+                      style: AppFonts.roboto(
+                          fontSize: 11, color: Colors.grey.shade600),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -404,10 +419,23 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildSocialButton('Facebook', Icons.facebook, const Color(0xFF1877F2), () => _shareOnSocial('facebook')),
-                      _buildSocialButton('Twitter', Icons.alternate_email, const Color(0xFF1DA1F2), () => _shareOnSocial('twitter')),
-                      _buildSocialButton('WhatsApp', Icons.chat, const Color(0xFF25D366), () => _shareOnSocial('whatsapp')),
-                      _buildSocialButton('More', Icons.share_rounded, const Color(0xFF10B981), _shareLink),
+                      _buildSocialButton(
+                          'Facebook',
+                          Icons.facebook,
+                          const Color(0xFF1877F2),
+                          () => _shareOnSocial('facebook')),
+                      _buildSocialButton(
+                          'Twitter',
+                          Icons.alternate_email,
+                          const Color(0xFF1DA1F2),
+                          () => _shareOnSocial('twitter')),
+                      _buildSocialButton(
+                          'WhatsApp',
+                          Icons.chat,
+                          const Color(0xFF25D366),
+                          () => _shareOnSocial('whatsapp')),
+                      _buildSocialButton('More', Icons.share_rounded,
+                          const Color(0xFF10B981), _shareLink),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -420,7 +448,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     );
   }
 
-  Widget _buildSocialButton(String label, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildSocialButton(
+      String label, IconData icon, Color color, VoidCallback onTap) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -439,7 +468,10 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               const SizedBox(height: 4),
               Text(
                 label,
-                style: AppFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+                style: AppFonts.roboto(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1F2937)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -452,7 +484,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
 
   void _shareOnSocial(String platform) async {
     if (_referralLink == null) return;
-    
+
     final encodedLink = Uri.encodeComponent(_referralLink!);
     final text = Uri.encodeComponent('Join me on AdsyClub and start earning!');
     String url = '';
@@ -468,7 +500,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         url = 'https://wa.me/?text=$text%20$encodedLink';
         break;
       case 'linkedin':
-        url = 'https://www.linkedin.com/sharing/share-offsite/?url=$encodedLink';
+        url =
+            'https://www.linkedin.com/sharing/share-offsite/?url=$encodedLink';
         break;
     }
 
@@ -513,7 +546,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, size: 22, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.arrow_back_rounded,
+              size: 22, color: Color(0xFF1F2937)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -555,7 +589,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -605,12 +640,14 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => Navigator.pushNamed(context, '/register'),
+                        onPressed: () =>
+                            Navigator.pushNamed(context, '/register'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: const Color(0xFF10B981),
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
                         ),
                         child: Text(
@@ -651,8 +688,16 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildStep(1, 'Create Account', 'Sign up for a free account and get your unique referral link instantly', Icons.person_add_rounded),
-                _buildStep(2, 'Share Your Link', 'Share your referral link with friends via email, social media, or messaging apps', Icons.share_rounded),
+                _buildStep(
+                    1,
+                    'Create Account',
+                    'Sign up for a free account and get your unique referral link instantly',
+                    Icons.person_add_rounded),
+                _buildStep(
+                    2,
+                    'Share Your Link',
+                    'Share your referral link with friends via email, social media, or messaging apps',
+                    Icons.share_rounded),
                 _buildStep(
                   3,
                   'Earn Commissions',
@@ -671,10 +716,15 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             margin: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
-                Expanded(child: _buildStatCard('5-20%', 'Commission Rate', Colors.green)),
+                Expanded(
+                    child: _buildStatCard(
+                        '5-20%', 'Commission Rate', Colors.green)),
                 const SizedBox(width: 8),
-                Expanded(child: _buildStatCard(
-                  _isLoadingPlatform ? '...' : '${_platformStats?.activeReferrers ?? 500}+',
+                Expanded(
+                    child: _buildStatCard(
+                  _isLoadingPlatform
+                      ? '...'
+                      : '${_platformStats?.activeReferrers ?? 500}+',
                   'Active Referrers',
                   Colors.blue,
                 )),
@@ -686,14 +736,20 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
             margin: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               children: [
-                Expanded(child: _buildStatCard(
-                  _isLoadingPlatform ? '...' : '৳ ${_platformStats?.topEarnerAmount.toStringAsFixed(0) ?? '10000'}',
+                Expanded(
+                    child: _buildStatCard(
+                  _isLoadingPlatform
+                      ? '...'
+                      : '৳ ${_platformStats?.topEarnerAmount.toStringAsFixed(0) ?? '10000'}',
                   'Top Earner',
                   Colors.amber,
                 )),
                 const SizedBox(width: 8),
-                Expanded(child: _buildStatCard(
-                  _isLoadingPlatform ? '...' : _platformStats?.quickPayoutTime ?? '24hr',
+                Expanded(
+                    child: _buildStatCard(
+                  _isLoadingPlatform
+                      ? '...'
+                      : _platformStats?.quickPayoutTime ?? '24hr',
                   'Quick Payouts',
                   Colors.purple,
                 )),
@@ -743,7 +799,9 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3), width: 2),
+                    border: Border.all(
+                        color: const Color(0xFF10B981).withOpacity(0.3),
+                        width: 2),
                   ),
                   child: Text(
                     _referralCode ?? 'Loading...',
@@ -764,13 +822,15 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF10B981),
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
                         ),
                         icon: const Icon(Icons.copy_rounded, size: 16),
                         label: Text(
                           'Copy Link',
-                          style: AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: AppFonts.roboto(
+                              fontSize: 13, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -781,9 +841,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: Color(0xFF10B981)),
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
-                        icon: const Icon(Icons.share_rounded, size: 16, color: Color(0xFF10B981)),
+                        icon: const Icon(Icons.share_rounded,
+                            size: 16, color: Color(0xFF10B981)),
                         label: Text(
                           'Share',
                           style: AppFonts.roboto(
@@ -871,25 +933,33 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   _buildBreakdownItem(
                     title: 'Gig Completions',
                     color: Colors.blue,
-                    rate: _commissionData!.commissionBreakdown.gigCompletion.rate,
-                    count: _commissionData!.commissionBreakdown.gigCompletion.count,
-                    amount: _commissionData!.commissionBreakdown.gigCompletion.totalAmount,
+                    rate:
+                        _commissionData!.commissionBreakdown.gigCompletion.rate,
+                    count: _commissionData!
+                        .commissionBreakdown.gigCompletion.count,
+                    amount: _commissionData!
+                        .commissionBreakdown.gigCompletion.totalAmount,
                   ),
                   const SizedBox(height: 10),
                   _buildBreakdownItem(
                     title: 'Pro Subscriptions',
                     color: Colors.purple,
-                    rate: _commissionData!.commissionBreakdown.proSubscription.rate,
-                    count: _commissionData!.commissionBreakdown.proSubscription.count,
-                    amount: _commissionData!.commissionBreakdown.proSubscription.totalAmount,
+                    rate: _commissionData!
+                        .commissionBreakdown.proSubscription.rate,
+                    count: _commissionData!
+                        .commissionBreakdown.proSubscription.count,
+                    amount: _commissionData!
+                        .commissionBreakdown.proSubscription.totalAmount,
                   ),
                   const SizedBox(height: 10),
                   _buildBreakdownItem(
                     title: 'Gold Sponsors',
                     color: Colors.amber,
                     rate: _commissionData!.commissionBreakdown.goldSponsor.rate,
-                    count: _commissionData!.commissionBreakdown.goldSponsor.count,
-                    amount: _commissionData!.commissionBreakdown.goldSponsor.totalAmount,
+                    count:
+                        _commissionData!.commissionBreakdown.goldSponsor.count,
+                    amount: _commissionData!
+                        .commissionBreakdown.goldSponsor.totalAmount,
                   ),
                 ],
               ),
@@ -910,11 +980,14 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   controller: _tabController,
                   labelColor: const Color(0xFF10B981),
                   unselectedLabelColor: Colors.grey.shade600,
-                  labelStyle: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w600),
+                  labelStyle: AppFonts.roboto(
+                      fontSize: 12, fontWeight: FontWeight.w600),
                   indicatorColor: const Color(0xFF10B981),
                   indicatorSize: TabBarIndicatorSize.tab,
                   tabs: [
-                    Tab(text: 'Earnings (${_commissionData?.recentTransactions.length ?? 0})'),
+                    Tab(
+                        text:
+                            'Earnings (${_commissionData?.recentTransactions.length ?? 0})'),
                     Tab(text: 'Referred & Bonus'),
                   ],
                 ),
@@ -938,7 +1011,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
     );
   }
 
-  Widget _buildStep(int number, String title, String description, IconData icon) {
+  Widget _buildStep(
+      int number, String title, String description, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -1117,7 +1191,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
 
   Widget _buildEarningsTab() {
     if (_isLoadingCommissions) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)));
+      return const Center(
+          child: AdsyLoadingIndicator(color: Color(0xFF10B981)));
     }
 
     if (_commissionError != null) {
@@ -1129,12 +1204,14 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       );
     }
 
-    if (_commissionData == null || _commissionData!.recentTransactions.isEmpty) {
+    if (_commissionData == null ||
+        _commissionData!.recentTransactions.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_rounded, size: 48, color: Colors.grey.shade300),
+            Icon(Icons.receipt_long_rounded,
+                size: 48, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
               'No earnings yet',
@@ -1220,7 +1297,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
   Widget _buildReferredAndBonusTab() {
     // Loading state
     if (_isLoadingUsers || _isLoadingClaims) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF10B981)));
+      return const Center(
+          child: AdsyLoadingIndicator(color: Color(0xFF10B981)));
     }
 
     // Not logged in
@@ -1229,7 +1307,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock_outline_rounded, size: 40, color: Colors.grey.shade300),
+            Icon(Icons.lock_outline_rounded,
+                size: 40, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
               'Login to view referrals & bonus',
@@ -1250,7 +1329,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.people_outline_rounded, size: 40, color: Colors.grey.shade300),
+            Icon(Icons.people_outline_rounded,
+                size: 40, color: Colors.grey.shade300),
             const SizedBox(height: 8),
             Text(
               'No referred users or bonus yet',
@@ -1266,7 +1346,7 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
       children: [
         // Bonus Program Card (compact)
         if (hasBonus) _buildCompactBonusCard(),
-        
+
         // Referred Users Section
         if (hasReferredUsers) ...[
           if (hasBonus) const SizedBox(height: 8),
@@ -1303,13 +1383,17 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 16),
+                child: const Icon(Icons.card_giftcard_rounded,
+                    color: Colors.white, size: 16),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   claims.program?.name ?? 'Referral Reward',
-                  style: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                  style: AppFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white),
                 ),
               ),
               if (_eligibleReferrerClaimsCount > 0)
@@ -1320,12 +1404,21 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6)),
                       elevation: 0,
                     ),
                     child: _isClaimingReward
-                        ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0EA5E9)))
-                        : Text('Claim All ($_eligibleReferrerClaimsCount)', style: AppFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF0EA5E9))),
+                        ? const SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: AdsyLoadingIndicator(
+                                strokeWidth: 2, color: Color(0xFF0EA5E9)))
+                        : Text('Claim All ($_eligibleReferrerClaimsCount)',
+                            style: AppFonts.roboto(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0EA5E9))),
                   ),
                 ),
             ],
@@ -1337,28 +1430,41 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
               spacing: 6,
               runSpacing: 6,
               children: [
-                if (refereeClaim != null) _buildMiniClaimChip(refereeClaim, isReferee: true),
-                ...referrerClaims.take(3).map((c) => _buildMiniClaimChip(c, isReferee: false)),
+                if (refereeClaim != null)
+                  _buildMiniClaimChip(refereeClaim, isReferee: true),
+                ...referrerClaims
+                    .take(3)
+                    .map((c) => _buildMiniClaimChip(c, isReferee: false)),
                 if (referrerClaims.length > 3)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(6)),
-                    child: Text('+${referrerClaims.length - 3} more', style: AppFonts.roboto(fontSize: 9, color: Colors.white)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(6)),
+                    child: Text('+${referrerClaims.length - 3} more',
+                        style:
+                            AppFonts.roboto(fontSize: 9, color: Colors.white)),
                   ),
               ],
             )
           else
-            Text('Refer friends to earn rewards!', style: AppFonts.roboto(fontSize: 10, color: Colors.white.withOpacity(0.9))),
+            Text('Refer friends to earn rewards!',
+                style: AppFonts.roboto(
+                    fontSize: 10, color: Colors.white.withOpacity(0.9))),
         ],
       ),
     );
   }
 
-  Widget _buildMiniClaimChip(ReferralRewardClaim claim, {required bool isReferee}) {
+  Widget _buildMiniClaimChip(ReferralRewardClaim claim,
+      {required bool isReferee}) {
     final isClaimed = claim.isClaimed;
     final isEligible = claim.isEligible;
     return GestureDetector(
-      onTap: isEligible && !_isClaimingReward ? () => _claimReward(claim.id) : null,
+      onTap: isEligible && !_isClaimingReward
+          ? () => _claimReward(claim.id)
+          : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
@@ -1369,14 +1475,25 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              isClaimed ? Icons.check_circle_rounded : isEligible ? Icons.card_giftcard_rounded : Icons.hourglass_empty_rounded,
+              isClaimed
+                  ? Icons.check_circle_rounded
+                  : isEligible
+                      ? Icons.card_giftcard_rounded
+                      : Icons.hourglass_empty_rounded,
               size: 12,
-              color: isClaimed ? Colors.green : isEligible ? const Color(0xFF10B981) : Colors.amber.shade700,
+              color: isClaimed
+                  ? Colors.green
+                  : isEligible
+                      ? const Color(0xFF10B981)
+                      : Colors.amber.shade700,
             ),
             const SizedBox(width: 4),
             Text(
               '৳${claim.rewardAmount.toStringAsFixed(0)}',
-              style: AppFonts.roboto(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+              style: AppFonts.roboto(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1F2937)),
             ),
           ],
         ),
@@ -1392,7 +1509,10 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
           children: [
             Text(
               'Referred Users (${_referredUsers.length})',
-              style: AppFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF1F2937)),
+              style: AppFonts.roboto(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1F2937)),
             ),
           ],
         ),
@@ -1420,7 +1540,8 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                           width: 28,
                           height: 28,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildUserInitial(user.initial),
+                          errorBuilder: (_, __, ___) =>
+                              _buildUserInitial(user.initial),
                         ),
                       )
                     : _buildUserInitial(user.initial),
@@ -1432,13 +1553,17 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
                     children: [
                       Text(
                         user.displayName,
-                        style: AppFonts.roboto(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF1F2937)),
+                        style: AppFonts.roboto(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1F2937)),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         _formatDate(user.joinedDate),
-                        style: AppFonts.roboto(fontSize: 9, color: Colors.grey.shade500),
+                        style: AppFonts.roboto(
+                            fontSize: 9, color: Colors.grey.shade500),
                       ),
                     ],
                   ),
@@ -1462,7 +1587,11 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         borderRadius: BorderRadius.circular(14),
       ),
       child: Center(
-        child: Text(initial, style: AppFonts.roboto(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF10B981))),
+        child: Text(initial,
+            style: AppFonts.roboto(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF10B981))),
       ),
     );
   }
@@ -1474,43 +1603,71 @@ class _ReferFriendScreenState extends State<ReferFriendScreen> with SingleTicker
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: user.isActive ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+            color: user.isActive
+                ? Colors.green.withOpacity(0.1)
+                : Colors.grey.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             user.isActive ? 'Active' : 'Inactive',
-            style: AppFonts.roboto(fontSize: 8, fontWeight: FontWeight.w600, color: user.isActive ? Colors.green : Colors.grey),
+            style: AppFonts.roboto(
+                fontSize: 8,
+                fontWeight: FontWeight.w600,
+                color: user.isActive ? Colors.green : Colors.grey),
           ),
         ),
         const SizedBox(width: 6),
         if (claim != null)
           claim.isClaimed
               ? Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                  child: Text('Claimed', style: AppFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.green)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8)),
+                  child: Text('Claimed',
+                      style: AppFonts.roboto(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.green)),
                 )
               : claim.isEligible
                   ? SizedBox(
                       height: 24,
                       child: ElevatedButton(
-                        onPressed: _isClaimingReward ? null : () => _claimReward(claim.id),
+                        onPressed: _isClaimingReward
+                            ? null
+                            : () => _claimReward(claim.id),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF10B981),
                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6)),
                           elevation: 0,
                         ),
-                        child: Text('৳${claim.rewardAmount.toStringAsFixed(0)}', style: AppFonts.roboto(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
+                        child: Text('৳${claim.rewardAmount.toStringAsFixed(0)}',
+                            style: AppFonts.roboto(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white)),
                       ),
                     )
                   : Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.amber.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: Text('Incompleted', style: AppFonts.roboto(fontSize: 8, fontWeight: FontWeight.w700, color: Colors.amber.shade700)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Text('Incompleted',
+                          style: AppFonts.roboto(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.amber.shade700)),
                     )
         else
-          Text('-', style: AppFonts.roboto(fontSize: 10, color: Colors.grey.shade400)),
+          Text('-',
+              style:
+                  AppFonts.roboto(fontSize: 10, color: Colors.grey.shade400)),
       ],
     );
   }

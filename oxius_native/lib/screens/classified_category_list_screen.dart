@@ -15,6 +15,7 @@ import '../widgets/geo_selector_dialog.dart';
 import '../widgets/geo_location_breadcrumb.dart';
 import '../widgets/skeleton_loader.dart';
 import 'classified_post_details_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ClassifiedCategoryListScreen extends StatefulWidget {
   final String categoryId;
@@ -223,15 +224,32 @@ class _ClassifiedCategoryListScreenState
     final lower = email.toLowerCase();
     // Block all known fake / placeholder / hallucinated domains
     const fakeDomains = {
-      'example.com', 'example.org', 'example.net',
-      'test.com', 'test.org', 'test.net',
-      'placeholder.com', 'sample.com', 'dummy.com',
-      'yourmail.com', 'youremail.com', 'yourdomain.com',
-      'domain.com', 'company.com', 'yourcompany.com',
-      'businessname.com', 'shopname.com', 'sitename.com',
-      'yoursite.com', 'yourwebsite.com', 'website.com',
-      'email.com', 'mail.com', 'address.com',
-      'info.com', 'contact.com',
+      'example.com',
+      'example.org',
+      'example.net',
+      'test.com',
+      'test.org',
+      'test.net',
+      'placeholder.com',
+      'sample.com',
+      'dummy.com',
+      'yourmail.com',
+      'youremail.com',
+      'yourdomain.com',
+      'domain.com',
+      'company.com',
+      'yourcompany.com',
+      'businessname.com',
+      'shopname.com',
+      'sitename.com',
+      'yoursite.com',
+      'yourwebsite.com',
+      'website.com',
+      'email.com',
+      'mail.com',
+      'address.com',
+      'info.com',
+      'contact.com',
     };
     final at = lower.indexOf('@');
     if (at <= 0) return false;
@@ -625,7 +643,7 @@ class _ClassifiedCategoryListScreenState
           Expanded(
             child: _isLoading && _posts.isEmpty
                 ? SkeletonLoader.gridView(itemCount: 6, crossAxisCount: 2)
-                : RefreshIndicator(
+                : AdsyRefreshIndicator(
                     color: const Color(0xFF10B981),
                     onRefresh: _handleRefresh,
                     child: SingleChildScrollView(
@@ -674,7 +692,7 @@ class _ClassifiedCategoryListScreenState
                               const Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(20.0),
-                                  child: CircularProgressIndicator(
+                                  child: AdsyLoadingIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                         Color(0xFF10B981)),
                                   ),
@@ -694,7 +712,7 @@ class _ClassifiedCategoryListScreenState
                             const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(20.0),
-                                child: CircularProgressIndicator(
+                                child: AdsyLoadingIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                       Color(0xFFF59E0B)),
                                 ),
@@ -896,7 +914,7 @@ class _ClassifiedCategoryListScreenState
                   ? const SizedBox(
                       height: 18,
                       width: 18,
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
@@ -970,7 +988,7 @@ class _ClassifiedCategoryListScreenState
                                 child: SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(
+                                  child: AdsyLoadingIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                         Color(0xFF10B981)),
@@ -1457,7 +1475,7 @@ class _ClassifiedCategoryListScreenState
 
             const SizedBox(height: 16),
 
-            const CircularProgressIndicator(
+            const AdsyLoadingIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
             ),
 
@@ -2008,7 +2026,7 @@ class _ClassifiedCategoryListScreenState
                             child: SizedBox(
                               width: 12,
                               height: 12,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                     Color(0xFFF59E0B)),

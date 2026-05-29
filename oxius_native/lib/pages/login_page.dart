@@ -6,6 +6,7 @@ import '../services/fcm_service.dart';
 import '../utils/network_error_handler.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/terms_and_conditions_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class LoginPageRedesigned extends StatefulWidget {
   const LoginPageRedesigned({super.key});
@@ -30,7 +31,7 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
   static const _bodyTextColor = Color(0xFF475569);
   static const _mutedTextColor = Color(0xFF64748B);
   static const _linkTextColor = _primaryColor;
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   String _errorMessage = '';
@@ -72,9 +73,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
               duration: Duration(seconds: 2),
             ),
           );
-          
+
           await Future.delayed(const Duration(milliseconds: 300));
-          
+
           if (mounted) {
             Navigator.of(context).pushReplacementNamed('/');
           }
@@ -164,11 +165,11 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
     );
   }
 
-
   Widget _buildAuthCard(bool isMobile) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(isMobile ? 14 : 18, 14, isMobile ? 14 : 18, 18),
+      padding:
+          EdgeInsets.fromLTRB(isMobile ? 14 : 18, 14, isMobile ? 14 : 18, 18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
@@ -227,7 +228,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
             border: Border.all(color: _cardBorderColor),
           ),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: _headingTextColor, size: 20),
+            icon: const Icon(Icons.arrow_back_rounded,
+                color: _headingTextColor, size: 20),
             onPressed: () => Navigator.of(context).pushReplacementNamed('/'),
             padding: const EdgeInsets.all(10),
             constraints: const BoxConstraints(),
@@ -244,7 +246,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.verified_user_rounded, size: 16, color: _primaryColor),
+              const Icon(Icons.verified_user_rounded,
+                  size: 16, color: _primaryColor),
               const SizedBox(width: 6),
               Text(
                 'Secure login',
@@ -400,7 +403,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/reset-password'),
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/reset-password'),
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
                   minimumSize: Size.zero,
@@ -453,9 +457,10 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2.4,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : Row(
@@ -479,7 +484,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
             const SizedBox(height: 18),
             Row(
               children: [
-                Expanded(child: Divider(color: const Color(0xFFD8E1EA), thickness: 1)),
+                Expanded(
+                    child:
+                        Divider(color: const Color(0xFFD8E1EA), thickness: 1)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
@@ -492,7 +499,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                     ),
                   ),
                 ),
-                Expanded(child: Divider(color: const Color(0xFFD8E1EA), thickness: 1)),
+                Expanded(
+                    child:
+                        Divider(color: const Color(0xFFD8E1EA), thickness: 1)),
               ],
             ),
             const SizedBox(height: 14),
@@ -505,7 +514,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
               child: TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/register'),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                   foregroundColor: _headingTextColor,
                 ),
                 child: Row(
@@ -520,7 +530,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_rounded, size: 18, color: _primaryColor),
+                    const Icon(Icons.arrow_forward_rounded,
+                        size: 18, color: _primaryColor),
                   ],
                 ),
               ),
@@ -542,7 +553,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 18),
+          const Icon(Icons.error_outline_rounded,
+              color: Color(0xFFDC2626), size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -582,8 +594,10 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       decoration: InputDecoration(
         hintText: 'Enter your email',
         hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
-        prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
-        prefixIcon: const Icon(Icons.alternate_email_rounded, color: _primaryColor, size: 18),
+        prefixIconConstraints:
+            const BoxConstraints(minWidth: 54, minHeight: 44),
+        prefixIcon: const Icon(Icons.alternate_email_rounded,
+            color: _primaryColor, size: 18),
         filled: true,
         fillColor: _surfaceColor,
         border: OutlineInputBorder(
@@ -598,7 +612,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: _primaryColor, width: 1.8),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Email is required';
@@ -622,11 +637,15 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       decoration: InputDecoration(
         hintText: 'Enter your password',
         hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
-        prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
-        prefixIcon: const Icon(Icons.lock_outline_rounded, color: _primaryColor, size: 18),
+        prefixIconConstraints:
+            const BoxConstraints(minWidth: 54, minHeight: 44),
+        prefixIcon: const Icon(Icons.lock_outline_rounded,
+            color: _primaryColor, size: 18),
         suffixIcon: IconButton(
           icon: Icon(
-            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            _obscurePassword
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
             color: _bodyTextColor,
             size: 18,
           ),
@@ -646,7 +665,8 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: _primaryColor, width: 1.8),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Password is required';

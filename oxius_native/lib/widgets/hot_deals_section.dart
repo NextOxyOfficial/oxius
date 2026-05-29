@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class HotDealsSection extends StatefulWidget {
   final Function(String)? onCategorySelected;
-  
+
   const HotDealsSection({
     super.key,
     this.onCategorySelected,
@@ -34,10 +35,11 @@ class _HotDealsSectionState extends State<HotDealsSection> {
   Future<void> _fetchSpecialDeals() async {
     try {
       setState(() => _isLoading = true);
-      
+
       // Fetch categories with special_offer filter
-      final response = await EshopService.fetchProductCategories(specialOffer: true);
-      
+      final response =
+          await EshopService.fetchProductCategories(specialOffer: true);
+
       if (mounted) {
         setState(() {
           _specialDeals = response;
@@ -54,7 +56,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
 
   Color _getBadgeColor(String? badgeColor) {
     if (badgeColor == null) return Colors.red.shade500;
-    
+
     // Parse Tailwind-like color classes
     if (badgeColor.contains('red')) return Colors.red.shade500;
     if (badgeColor.contains('orange')) return Colors.orange.shade500;
@@ -73,7 +75,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
     if (badgeColor.contains('fuchsia')) return Colors.pink.shade600;
     if (badgeColor.contains('pink')) return Colors.pink.shade400;
     if (badgeColor.contains('rose')) return Colors.red.shade400;
-    
+
     return Colors.red.shade500;
   }
 
@@ -92,7 +94,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Center(
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),
         ),
@@ -139,7 +141,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -156,7 +159,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Scrollable Cards
                 SizedBox(
                   height: 95,
@@ -165,7 +168,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     itemCount: _specialDeals.length,
-                    separatorBuilder: (context, index) => const SizedBox(width: 4),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 4),
                     itemBuilder: (context, index) {
                       final deal = _specialDeals[index];
                       return _buildDealCard(deal);
@@ -185,7 +189,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
     final name = deal['name']?.toString() ?? '';
     final badge = deal['badge']?.toString() ?? 'SALE';
     final badgeColor = _getBadgeColor(deal['badge_color']?.toString());
-    
+
     return GestureDetector(
       onTap: () {
         if (deal['id'] == null) return;
@@ -236,7 +240,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
               Container(
                 height: 55,
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -251,7 +256,8 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                     // Product Image
                     if (imageUrl.isNotEmpty)
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12)),
                         child: Image.network(
                           imageUrl,
                           width: double.infinity,
@@ -278,13 +284,14 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                           color: Colors.grey.shade400,
                         ),
                       ),
-                    
+
                     // Badge
                     Positioned(
                       top: 3,
                       left: 3,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
                           color: badgeColor,
                           borderRadius: BorderRadius.circular(4),
@@ -302,7 +309,7 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                   ],
                 ),
               ),
-              
+
               // Name - Single line with ellipsis
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),

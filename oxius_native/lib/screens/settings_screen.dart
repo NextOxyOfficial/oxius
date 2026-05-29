@@ -14,7 +14,7 @@ import '../services/geo_location_service.dart';
 import '../services/settings_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/app_fonts.dart';
-
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 enum _SettingsTab { profile, privacy, security }
 
@@ -244,7 +244,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _loadCities(String divisionName, {bool resetSelection = true}) async {
+  Future<void> _loadCities(String divisionName,
+      {bool resetSelection = true}) async {
     if (mounted) {
       setState(() {
         _isLoadingCities = true;
@@ -274,7 +275,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _loadUpazilas(String cityName, {bool resetSelection = true}) async {
+  Future<void> _loadUpazilas(String cityName,
+      {bool resetSelection = true}) async {
     if (mounted) {
       setState(() {
         _isLoadingUpazilas = true;
@@ -310,15 +312,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return false;
     }
 
-    return _normalized(_firstNameController.text) != _normalized(original.firstName) ||
-        _normalized(_lastNameController.text) != _normalized(original.lastName) ||
+    return _normalized(_firstNameController.text) !=
+            _normalized(original.firstName) ||
+        _normalized(_lastNameController.text) !=
+            _normalized(original.lastName) ||
         _normalized(_phoneController.text) != _normalized(original.phone) ||
-        _normalized(_professionController.text) != _normalized(original.profession) ||
+        _normalized(_professionController.text) !=
+            _normalized(original.profession) ||
         _normalized(_companyController.text) != _normalized(original.company) ||
         _normalized(_websiteController.text) != _normalized(original.website) ||
-        _normalized(_facebookController.text) != _normalized(original.faceLink) ||
-        _normalized(_instagramController.text) != _normalized(original.instagramLink) ||
-        _normalized(_whatsappController.text) != _normalized(original.whatsappLink) ||
+        _normalized(_facebookController.text) !=
+            _normalized(original.faceLink) ||
+        _normalized(_instagramController.text) !=
+            _normalized(original.instagramLink) ||
+        _normalized(_whatsappController.text) !=
+            _normalized(original.whatsappLink) ||
         _normalized(_addressController.text) != _normalized(original.address) ||
         _normalized(_zipController.text) != _normalized(original.zip) ||
         _normalized(_aboutController.text) != _normalized(original.about) ||
@@ -336,11 +344,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return (current.emailPublic ?? false) != (original.emailPublic ?? false) ||
         (current.phonePublic ?? false) != (original.phonePublic ?? false) ||
-        (current.professionPublic ?? true) != (original.professionPublic ?? true) ||
+        (current.professionPublic ?? true) !=
+            (original.professionPublic ?? true) ||
         (current.companyPublic ?? true) != (original.companyPublic ?? true) ||
         (current.websitePublic ?? true) != (original.websitePublic ?? true) ||
         (current.facebookPublic ?? true) != (original.facebookPublic ?? true) ||
-        (current.instagramPublic ?? true) != (original.instagramPublic ?? true) ||
+        (current.instagramPublic ?? true) !=
+            (original.instagramPublic ?? true) ||
         (current.whatsappPublic ?? true) != (original.whatsappPublic ?? true) ||
         (current.aboutPublic ?? true) != (original.aboutPublic ?? true);
   }
@@ -355,10 +365,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (password.length >= 8) {
       score++;
     }
-    if (RegExp(r'[A-Z]').hasMatch(password) && RegExp(r'[a-z]').hasMatch(password)) {
+    if (RegExp(r'[A-Z]').hasMatch(password) &&
+        RegExp(r'[a-z]').hasMatch(password)) {
       score++;
     }
-    if (RegExp(r'[0-9]').hasMatch(password) || RegExp(r'[^A-Za-z0-9]').hasMatch(password)) {
+    if (RegExp(r'[0-9]').hasMatch(password) ||
+        RegExp(r'[^A-Za-z0-9]').hasMatch(password)) {
       score++;
     }
     return score;
@@ -555,7 +567,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       SnackBar(
         content: Text(
           message,
-          style: AppFonts.roboto(color: Colors.white, fontWeight: FontWeight.w600),
+          style:
+              AppFonts.roboto(color: Colors.white, fontWeight: FontWeight.w600),
         ),
         backgroundColor: isError ? _dangerColor : _successColor,
         behavior: SnackBarBehavior.floating,
@@ -608,14 +621,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         });
       }
 
-      final result = await SettingsService.updateProfile(_userProfile!.email, payload);
-      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+      final result =
+          await SettingsService.updateProfile(_userProfile!.email, payload);
+      if ((result['success'] ?? false) == true &&
+          result['data'] is Map<String, dynamic>) {
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
           successMessage: 'Profile updated successfully',
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to update profile', isError: true);
+        _showSnackBar(result['message'] ?? 'Failed to update profile',
+            isError: true);
       }
     } catch (_) {
       _showSnackBar('Failed to update profile', isError: true);
@@ -647,14 +663,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         'about_public': _userProfile?.aboutPublic ?? true,
       };
 
-      final result = await SettingsService.updateProfile(_userProfile!.email, payload);
-      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+      final result =
+          await SettingsService.updateProfile(_userProfile!.email, payload);
+      if ((result['success'] ?? false) == true &&
+          result['data'] is Map<String, dynamic>) {
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
           successMessage: 'Business Network privacy updated',
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to update privacy', isError: true);
+        _showSnackBar(result['message'] ?? 'Failed to update privacy',
+            isError: true);
       }
     } catch (_) {
       _showSnackBar('Failed to update privacy', isError: true);
@@ -685,7 +704,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() {});
         _showSnackBar(result['message'] ?? 'Password changed successfully');
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to change password', isError: true);
+        _showSnackBar(result['message'] ?? 'Failed to change password',
+            isError: true);
       }
     } catch (_) {
       _showSnackBar('Failed to change password', isError: true);
@@ -705,14 +725,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       barrierDismissible: false,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             children: [
               Icon(Icons.warning_amber_rounded, color: _dangerColor, size: 24),
               const SizedBox(width: 8),
               Text(
                 'Delete Account',
-                style: AppFonts.roboto(fontSize: 18, fontWeight: FontWeight.w700, color: _dangerColor),
+                style: AppFonts.roboto(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: _dangerColor),
               ),
             ],
           ),
@@ -722,12 +746,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Text(
                 'This will permanently delete your account and all associated data. This action cannot be undone.',
-                style: AppFonts.roboto(fontSize: 14, color: _bodyTextColor, height: 1.5),
+                style: AppFonts.roboto(
+                    fontSize: 14, color: _bodyTextColor, height: 1.5),
               ),
               const SizedBox(height: 16),
               Text(
                 'Enter your password to confirm:',
-                style: AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600, color: _headingTextColor),
+                style: AppFonts.roboto(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _headingTextColor),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -735,10 +763,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 obscureText: !showPassword,
                 decoration: InputDecoration(
                   hintText: 'Your current password',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   suffixIcon: IconButton(
-                    icon: Icon(showPassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setDialogState(() => showPassword = !showPassword),
+                    icon: Icon(
+                        showPassword ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () =>
+                        setDialogState(() => showPassword = !showPassword),
                   ),
                 ),
               ),
@@ -747,12 +778,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancel', style: AppFonts.roboto(fontWeight: FontWeight.w600)),
+              child: Text('Cancel',
+                  style: AppFonts.roboto(fontWeight: FontWeight.w600)),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
               style: FilledButton.styleFrom(backgroundColor: _dangerColor),
-              child: Text('Delete', style: AppFonts.roboto(fontWeight: FontWeight.w600)),
+              child: Text('Delete',
+                  style: AppFonts.roboto(fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -785,10 +818,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Navigator.of(context).pushNamedAndRemoveUntil('/login', (_) => false);
         }
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to delete account', isError: true);
+        _showSnackBar(result['message'] ?? 'Failed to delete account',
+            isError: true);
       }
     } catch (_) {
-      _showSnackBar('Failed to delete account. Please try again.', isError: true);
+      _showSnackBar('Failed to delete account. Please try again.',
+          isError: true);
     } finally {
       passwordController.dispose();
       if (mounted) {
@@ -875,40 +910,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return;
       }
 
-        final shouldResize = decoded.width > targetWidth;
-        final resized = shouldResize
-          ? img.copyResize(decoded, width: targetWidth)
-          : decoded;
+      final shouldResize = decoded.width > targetWidth;
+      final resized =
+          shouldResize ? img.copyResize(decoded, width: targetWidth) : decoded;
       final compressed = img.encodeJpg(resized, quality: quality);
       final payload = 'data:image/jpeg;base64,${base64Encode(compressed)}';
 
-      final previousImageUrl = fieldName == 'image' ? _userProfile?.image : _userProfile?.storeBanner;
+      final previousImageUrl = fieldName == 'image'
+          ? _userProfile?.image
+          : _userProfile?.storeBanner;
       final result = await SettingsService.updateProfile(
         _userProfile!.email,
         {fieldName: payload},
       );
 
-      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+      if ((result['success'] ?? false) == true &&
+          result['data'] is Map<String, dynamic>) {
         final updatedData = Map<String, dynamic>.from(result['data']);
         final cacheStamp = DateTime.now().millisecondsSinceEpoch.toString();
         final rawValue = updatedData[fieldName]?.toString();
         if (rawValue != null && rawValue.trim().isNotEmpty) {
           updatedData[fieldName] = AppConfig.getAbsoluteUrl(rawValue);
-          final separator = updatedData[fieldName].toString().contains('?') ? '&' : '?';
-          updatedData[fieldName] = '${updatedData[fieldName]}${separator}v=$cacheStamp';
+          final separator =
+              updatedData[fieldName].toString().contains('?') ? '&' : '?';
+          updatedData[fieldName] =
+              '${updatedData[fieldName]}${separator}v=$cacheStamp';
         }
         if (previousImageUrl != null && previousImageUrl.isNotEmpty) {
           await CachedNetworkImage.evictFromCache(previousImageUrl);
         }
         if (mounted) {
-          setState(() => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
+          setState(
+              () => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
         }
         await _applyUpdatedProfile(
           updatedData,
           successMessage: successMessage,
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to upload image', isError: true);
+        _showSnackBar(result['message'] ?? 'Failed to upload image',
+            isError: true);
       }
     } catch (_) {
       _showSnackBar('Failed to upload image', isError: true);
@@ -934,7 +975,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final confirmed = await _confirmAction(
       title: 'Remove profile photo?',
-      message: 'Your profile will fall back to the default avatar until you upload a new photo.',
+      message:
+          'Your profile will fall back to the default avatar until you upload a new photo.',
       actionLabel: 'Remove',
     );
     if (!confirmed) {
@@ -944,10 +986,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _isUploadingMedia = true);
 
     try {
-      final success = await SettingsService.deleteProfileImage(_userProfile!.email);
+      final success =
+          await SettingsService.deleteProfileImage(_userProfile!.email);
       if (success) {
         if (mounted) {
-          setState(() => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
+          setState(
+              () => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
         }
         await _loadUserProfile();
         await _refreshUserCaches();
@@ -986,16 +1030,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         {'store_banner': ''},
       );
 
-      if ((result['success'] ?? false) == true && result['data'] is Map<String, dynamic>) {
+      if ((result['success'] ?? false) == true &&
+          result['data'] is Map<String, dynamic>) {
         if (mounted) {
-          setState(() => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
+          setState(
+              () => _mediaRefreshTick = DateTime.now().millisecondsSinceEpoch);
         }
         await _applyUpdatedProfile(
           Map<String, dynamic>.from(result['data']),
           successMessage: 'Banner removed',
         );
       } else {
-        _showSnackBar(result['message'] ?? 'Failed to remove banner', isError: true);
+        _showSnackBar(result['message'] ?? 'Failed to remove banner',
+            isError: true);
       }
     } catch (_) {
       _showSnackBar('Failed to remove banner', isError: true);
@@ -1015,7 +1062,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             title,
             style: AppFonts.roboto(
@@ -1026,14 +1074,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           content: Text(
             message,
-            style: AppFonts.roboto(fontSize: 14, color: _bodyTextColor, height: 1.5),
+            style: AppFonts.roboto(
+                fontSize: 14, color: _bodyTextColor, height: 1.5),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
                 'Cancel',
-                style: AppFonts.roboto(fontWeight: FontWeight.w600, color: _mutedTextColor),
+                style: AppFonts.roboto(
+                    fontWeight: FontWeight.w600, color: _mutedTextColor),
               ),
             ),
             FilledButton(
@@ -1174,11 +1224,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: Row(
           children: [
-            Expanded(child: _buildTabChip(_SettingsTab.profile, 'Profile', Icons.badge_rounded)),
+            Expanded(
+                child: _buildTabChip(
+                    _SettingsTab.profile, 'Profile', Icons.badge_rounded)),
             const SizedBox(width: 6),
-            Expanded(child: _buildTabChip(_SettingsTab.privacy, 'Privacy', Icons.privacy_tip_rounded)),
+            Expanded(
+                child: _buildTabChip(_SettingsTab.privacy, 'Privacy',
+                    Icons.privacy_tip_rounded)),
             const SizedBox(width: 6),
-            Expanded(child: _buildTabChip(_SettingsTab.security, 'Security', Icons.lock_rounded)),
+            Expanded(
+                child: _buildTabChip(
+                    _SettingsTab.security, 'Security', Icons.lock_rounded)),
           ],
         ),
       ),
@@ -1215,7 +1271,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 16, color: isActive ? Colors.white : _mutedTextColor),
+            Icon(icon,
+                size: 16, color: isActive ? Colors.white : _mutedTextColor),
             const SizedBox(width: 6),
             Text(
               label,
@@ -1233,7 +1290,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildBody() {
     if (_isInitialLoading) {
-      return const Center(child: CircularProgressIndicator(color: _primaryColor));
+      return const Center(child: AdsyLoadingIndicator(color: _primaryColor));
     }
 
     if (_userProfile == null) {
@@ -1251,7 +1308,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.settings_outlined, size: 42, color: _primaryColor),
+                const Icon(Icons.settings_outlined,
+                    size: 42, color: _primaryColor),
                 const SizedBox(height: 14),
                 Text(
                   'Unable to load settings',
@@ -1265,15 +1323,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   'Try loading your account again. If the problem continues, check authentication and network status.',
                   textAlign: TextAlign.center,
-                  style: AppFonts.roboto(fontSize: 13, color: _bodyTextColor, height: 1.5),
+                  style: AppFonts.roboto(
+                      fontSize: 13, color: _bodyTextColor, height: 1.5),
                 ),
                 const SizedBox(height: 18),
                 FilledButton(
                   onPressed: _loadUserProfile,
                   style: FilledButton.styleFrom(
                     backgroundColor: _primaryColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                   ),
                   child: Text(
                     'Retry',
@@ -1310,7 +1371,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.verified_user_rounded,
                 color: _warningColor,
                 title: 'KYC lock active',
-                message: 'After KYC verification, name and address details are locked. Other profile details remain editable.',
+                message:
+                    'After KYC verification, name and address details are locked. Other profile details remain editable.',
               ),
               const SizedBox(height: 10),
             ],
@@ -1327,7 +1389,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       hintText: 'Enter your first name',
                       icon: Icons.badge_outlined,
                       enabled: !_isKycLocked,
-                      validator: (value) => _normalized(value).isEmpty ? 'First name is required' : null,
+                      validator: (value) => _normalized(value).isEmpty
+                          ? 'First name is required'
+                          : null,
                     ),
                     right: _buildTextField(
                       controller: _lastNameController,
@@ -1335,7 +1399,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       hintText: 'Enter your last name',
                       icon: Icons.person_outline_rounded,
                       enabled: !_isKycLocked,
-                      validator: (value) => _normalized(value).isEmpty ? 'Last name is required' : null,
+                      validator: (value) => _normalized(value).isEmpty
+                          ? 'Last name is required'
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -1417,14 +1483,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       items: _upazilas.map((item) => item.nameEng).toList(),
                       isLoading: _isLoadingUpazilas,
                       enabled: !_isKycLocked && _selectedCity != null,
-                      onChanged: (value) => setState(() => _selectedUpazila = value),
+                      onChanged: (value) =>
+                          setState(() => _selectedUpazila = value),
                     ),
                     right: _buildTextField(
                       controller: _zipController,
                       label: 'Postal code',
                       hintText: 'ZIP / postal code',
                       icon: Icons.markunread_mailbox_outlined,
-                        enabled: !_isKycLocked,
+                      enabled: !_isKycLocked,
                       keyboardType: TextInputType.number,
                     ),
                   ),
@@ -1495,14 +1562,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: _buildTextField(
                 controller: _aboutController,
                 label: 'Bio / about',
-                hintText: 'Describe your work, business focus, and what people can expect from your profile.',
+                hintText:
+                    'Describe your work, business focus, and what people can expect from your profile.',
                 icon: Icons.subject_rounded,
                 maxLines: 5,
               ),
             ),
             const SizedBox(height: 14),
             _buildPrimaryButton(
-              label: _hasProfileChanges ? 'Save profile changes' : 'Profile is up to date',
+              label: _hasProfileChanges
+                  ? 'Save profile changes'
+                  : 'Profile is up to date',
               icon: Icons.save_rounded,
               isBusy: _isSavingProfile,
               enabled: _hasProfileChanges && !_isSavingProfile,
@@ -1566,19 +1636,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: _primarySoftColor,
                       ),
                       child: ClipOval(
-                        child: profile.image != null && profile.image!.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: _mediaUrl(profile.image),
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) => _buildAvatarFallback(),
-                              )
-                            : _buildAvatarFallback(),
+                        child:
+                            profile.image != null && profile.image!.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: _mediaUrl(profile.image),
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, url, error) =>
+                                        _buildAvatarFallback(),
+                                  )
+                                : _buildAvatarFallback(),
                       ),
                     ),
-                    primaryLabel: profile.image != null && profile.image!.isNotEmpty ? 'Change photo' : 'Upload photo',
+                    primaryLabel:
+                        profile.image != null && profile.image!.isNotEmpty
+                            ? 'Change photo'
+                            : 'Upload photo',
                     primaryAction: _pickProfileImage,
-                    secondaryLabel: profile.image != null && profile.image!.isNotEmpty ? 'Remove' : null,
-                    secondaryAction: profile.image != null && profile.image!.isNotEmpty ? _removeProfileImage : null,
+                    secondaryLabel:
+                        profile.image != null && profile.image!.isNotEmpty
+                            ? 'Remove'
+                            : null,
+                    secondaryAction:
+                        profile.image != null && profile.image!.isNotEmpty
+                            ? _removeProfileImage
+                            : null,
                   )
                 : _buildCompactMediaPanel(
                     key: const ValueKey('profile-banner-panel'),
@@ -1589,23 +1670,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
                         color: _primarySoftColor,
-                        image: profile.storeBanner != null && profile.storeBanner!.isNotEmpty
+                        image: profile.storeBanner != null &&
+                                profile.storeBanner!.isNotEmpty
                             ? DecorationImage(
-                                image: CachedNetworkImageProvider(_mediaUrl(profile.storeBanner)),
+                                image: CachedNetworkImageProvider(
+                                    _mediaUrl(profile.storeBanner)),
                                 fit: BoxFit.cover,
                               )
                             : null,
                       ),
-                      child: profile.storeBanner != null && profile.storeBanner!.isNotEmpty
+                      child: profile.storeBanner != null &&
+                              profile.storeBanner!.isNotEmpty
                           ? null
                           : const Center(
-                              child: Icon(Icons.add_photo_alternate_outlined, size: 24, color: _primaryColor),
+                              child: Icon(Icons.add_photo_alternate_outlined,
+                                  size: 24, color: _primaryColor),
                             ),
                     ),
-                    primaryLabel: profile.storeBanner != null && profile.storeBanner!.isNotEmpty ? 'Change banner' : 'Upload banner',
+                    primaryLabel: profile.storeBanner != null &&
+                            profile.storeBanner!.isNotEmpty
+                        ? 'Change banner'
+                        : 'Upload banner',
                     primaryAction: _pickBannerImage,
-                    secondaryLabel: profile.storeBanner != null && profile.storeBanner!.isNotEmpty ? 'Remove' : null,
-                    secondaryAction: profile.storeBanner != null && profile.storeBanner!.isNotEmpty ? _removeBannerImage : null,
+                    secondaryLabel: profile.storeBanner != null &&
+                            profile.storeBanner!.isNotEmpty
+                        ? 'Remove'
+                        : null,
+                    secondaryAction: profile.storeBanner != null &&
+                            profile.storeBanner!.isNotEmpty
+                        ? _removeBannerImage
+                        : null,
                   ),
           ),
         ],
@@ -1633,7 +1727,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 16, color: isActive ? _primaryColor : _mutedTextColor),
+            Icon(icon,
+                size: 16, color: isActive ? _primaryColor : _mutedTextColor),
             const SizedBox(width: 6),
             Text(
               label,
@@ -1683,7 +1778,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 3),
               Text(
                 subtitle,
-                style: AppFonts.roboto(fontSize: 12, color: _bodyTextColor, height: 1.4),
+                style: AppFonts.roboto(
+                    fontSize: 12, color: _bodyTextColor, height: 1.4),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -1695,13 +1791,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: FilledButton.styleFrom(
                       backgroundColor: _primarySoftColor,
                       foregroundColor: _primaryDarkColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
                       minimumSize: const Size(0, 40),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     child: Text(
                       primaryLabel,
-                      style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w700),
+                      style: AppFonts.roboto(
+                          fontSize: 12.5, fontWeight: FontWeight.w700),
                     ),
                   ),
                   if (secondaryLabel != null && secondaryAction != null)
@@ -1709,11 +1808,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: _isUploadingMedia ? null : secondaryAction,
                       style: TextButton.styleFrom(
                         minimumSize: const Size(0, 40),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 10),
                       ),
                       child: Text(
                         secondaryLabel,
-                        style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w700, color: _dangerColor),
+                        style: AppFonts.roboto(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: _dangerColor),
                       ),
                     ),
                 ],
@@ -1764,14 +1867,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           _buildSectionCard(
             title: 'Contact visibility',
-            subtitle: 'Control how core contact details appear on your Business Network profile.',
+            subtitle:
+                'Control how core contact details appear on your Business Network profile.',
             icon: Icons.visibility_outlined,
             child: Column(
               children: [
                 _buildPrivacyTile(
                   icon: Icons.alternate_email_rounded,
                   title: 'Show email address',
-                  description: 'Allow people to see your full email on your Business Network profile.',
+                  description:
+                      'Allow people to see your full email on your Business Network profile.',
                   previewLabel: _maskEmail(profile.email, emailPublic),
                   value: emailPublic,
                   onChanged: (value) {
@@ -1784,8 +1889,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.phone_outlined,
                   title: 'Show phone number',
-                  description: 'Display your contact number to network visitors and potential leads.',
-                  previewLabel: phonePreview.isEmpty ? 'No phone added yet' : phonePreview,
+                  description:
+                      'Display your contact number to network visitors and potential leads.',
+                  previewLabel: phonePreview.isEmpty
+                      ? 'No phone added yet'
+                      : phonePreview,
                   value: phonePublic,
                   onChanged: (value) {
                     setState(() {
@@ -1806,7 +1914,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.badge_outlined,
                   title: 'Show profession',
-                  description: 'Display your profession or role under your name.',
+                  description:
+                      'Display your profession or role under your name.',
                   previewLabel: _visibilityPreview(
                     profile.profession,
                     professionPublic,
@@ -1815,7 +1924,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: professionPublic,
                   onChanged: (value) {
                     setState(() {
-                      _userProfile = _userProfile?.copyWith(professionPublic: value);
+                      _userProfile =
+                          _userProfile?.copyWith(professionPublic: value);
                     });
                   },
                 ),
@@ -1823,7 +1933,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.business_rounded,
                   title: 'Show company / brand',
-                  description: 'Keep your company or brand visible on the profile summary.',
+                  description:
+                      'Keep your company or brand visible on the profile summary.',
                   previewLabel: _visibilityPreview(
                     profile.company,
                     companyPublic,
@@ -1832,7 +1943,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: companyPublic,
                   onChanged: (value) {
                     setState(() {
-                      _userProfile = _userProfile?.copyWith(companyPublic: value);
+                      _userProfile =
+                          _userProfile?.copyWith(companyPublic: value);
                     });
                   },
                 ),
@@ -1840,7 +1952,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.language_rounded,
                   title: 'Show website',
-                  description: 'Let visitors open your business website directly from the profile.',
+                  description:
+                      'Let visitors open your business website directly from the profile.',
                   previewLabel: _visibilityPreview(
                     profile.website,
                     websitePublic,
@@ -1849,7 +1962,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: websitePublic,
                   onChanged: (value) {
                     setState(() {
-                      _userProfile = _userProfile?.copyWith(websitePublic: value);
+                      _userProfile =
+                          _userProfile?.copyWith(websitePublic: value);
                     });
                   },
                 ),
@@ -1857,7 +1971,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.facebook_rounded,
                   title: 'Show Facebook link',
-                  description: 'Make your Facebook page or profile link public.',
+                  description:
+                      'Make your Facebook page or profile link public.',
                   previewLabel: _visibilityPreview(
                     profile.faceLink,
                     facebookPublic,
@@ -1866,7 +1981,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: facebookPublic,
                   onChanged: (value) {
                     setState(() {
-                      _userProfile = _userProfile?.copyWith(facebookPublic: value);
+                      _userProfile =
+                          _userProfile?.copyWith(facebookPublic: value);
                     });
                   },
                 ),
@@ -1874,7 +1990,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.camera_alt_outlined,
                   title: 'Show Instagram link',
-                  description: 'Display your Instagram profile link in the contact section.',
+                  description:
+                      'Display your Instagram profile link in the contact section.',
                   previewLabel: _visibilityPreview(
                     profile.instagramLink,
                     instagramPublic,
@@ -1883,7 +2000,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: instagramPublic,
                   onChanged: (value) {
                     setState(() {
-                      _userProfile = _userProfile?.copyWith(instagramPublic: value);
+                      _userProfile =
+                          _userProfile?.copyWith(instagramPublic: value);
                     });
                   },
                 ),
@@ -1891,7 +2009,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.chat_bubble_outline_rounded,
                   title: 'Show WhatsApp link',
-                  description: 'Allow direct WhatsApp contact from your Business Network profile.',
+                  description:
+                      'Allow direct WhatsApp contact from your Business Network profile.',
                   previewLabel: _visibilityPreview(
                     profile.whatsappLink,
                     whatsappPublic,
@@ -1900,7 +2019,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: whatsappPublic,
                   onChanged: (value) {
                     setState(() {
-                      _userProfile = _userProfile?.copyWith(whatsappPublic: value);
+                      _userProfile =
+                          _userProfile?.copyWith(whatsappPublic: value);
                     });
                   },
                 ),
@@ -1908,7 +2028,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildPrivacyTile(
                   icon: Icons.subject_rounded,
                   title: 'Show bio / about',
-                  description: 'Control whether your profile summary and business intro are visible.',
+                  description:
+                      'Control whether your profile summary and business intro are visible.',
                   previewLabel: _visibilityPreview(
                     profile.about,
                     aboutPublic,
@@ -1926,7 +2047,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 14),
           _buildPrimaryButton(
-            label: _hasPrivacyChanges ? 'Apply privacy settings' : 'Privacy is up to date',
+            label: _hasPrivacyChanges
+                ? 'Apply privacy settings'
+                : 'Privacy is up to date',
             icon: Icons.shield_outlined,
             isBusy: _isSavingPrivacy,
             enabled: _hasPrivacyChanges && !_isSavingPrivacy,
@@ -1969,17 +2092,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: AppFonts.roboto(fontSize: 15, fontWeight: FontWeight.w700, color: _headingTextColor),
+                  style: AppFonts.roboto(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: _headingTextColor),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: AppFonts.roboto(fontSize: 12.5, color: _bodyTextColor, height: 1.35),
+                  style: AppFonts.roboto(
+                      fontSize: 12.5, color: _bodyTextColor, height: 1.35),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   previewLabel,
-                  style: AppFonts.roboto(fontSize: 12, fontWeight: FontWeight.w700, color: _primaryDarkColor),
+                  style: AppFonts.roboto(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: _primaryDarkColor),
                 ),
               ],
             ),
@@ -2015,8 +2145,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     icon: Icons.lock_outline_rounded,
                     isPassword: true,
                     isVisible: _showOldPassword,
-                    onToggleVisibility: () => setState(() => _showOldPassword = !_showOldPassword),
-                    validator: (value) => _normalized(value).isEmpty ? 'Current password is required' : null,
+                    onToggleVisibility: () =>
+                        setState(() => _showOldPassword = !_showOldPassword),
+                    validator: (value) => _normalized(value).isEmpty
+                        ? 'Current password is required'
+                        : null,
                   ),
                   const SizedBox(height: 10),
                   _buildResponsivePair(
@@ -2027,7 +2160,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.lock_reset_rounded,
                       isPassword: true,
                       isVisible: _showNewPassword,
-                      onToggleVisibility: () => setState(() => _showNewPassword = !_showNewPassword),
+                      onToggleVisibility: () =>
+                          setState(() => _showNewPassword = !_showNewPassword),
                       validator: (value) {
                         if (_normalized(value).isEmpty) {
                           return 'New password is required';
@@ -2045,7 +2179,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.verified_user_outlined,
                       isPassword: true,
                       isVisible: _showConfirmPassword,
-                      onToggleVisibility: () => setState(() => _showConfirmPassword = !_showConfirmPassword),
+                      onToggleVisibility: () => setState(
+                          () => _showConfirmPassword = !_showConfirmPassword),
                       validator: (value) {
                         if (_normalized(value).isEmpty) {
                           return 'Please confirm the password';
@@ -2081,18 +2216,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: _dangerColor.withOpacity(0.06),
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(15)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: _dangerColor, size: 20),
+                        Icon(Icons.warning_amber_rounded,
+                            color: _dangerColor, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           'Danger Zone',
-                          style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w700, color: _dangerColor),
+                          style: AppFonts.roboto(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: _dangerColor),
                         ),
                       ],
                     ),
@@ -2104,30 +2245,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Text(
                           'Delete Account',
-                          style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w700, color: _headingTextColor),
+                          style: AppFonts.roboto(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: _headingTextColor),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'Permanently delete your account and all associated data. This cannot be undone.',
-                          style: AppFonts.roboto(fontSize: 13, color: _bodyTextColor, height: 1.4),
+                          style: AppFonts.roboto(
+                              fontSize: 13, color: _bodyTextColor, height: 1.4),
                         ),
                         const SizedBox(height: 14),
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: _isDeletingAccount ? null : _showDeleteAccountDialog,
+                            onPressed: _isDeletingAccount
+                                ? null
+                                : _showDeleteAccountDialog,
                             icon: _isDeletingAccount
-                                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Icon(Icons.delete_forever_rounded, size: 18),
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: AdsyLoadingIndicator(strokeWidth: 2))
+                                : const Icon(Icons.delete_forever_rounded,
+                                    size: 18),
                             label: Text(
-                              _isDeletingAccount ? 'Deleting...' : 'Delete My Account',
-                              style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w600),
+                              _isDeletingAccount
+                                  ? 'Deleting...'
+                                  : 'Delete My Account',
+                              style: AppFonts.roboto(
+                                  fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: _dangerColor,
                               side: BorderSide(color: _dangerColor),
                               padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                             ),
                           ),
                         ),
@@ -2147,7 +2302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Key key,
     required Widget child,
   }) {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       key: key,
       color: _primaryColor,
       onRefresh: _handleRefresh,
@@ -2167,7 +2322,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildPasswordStrengthCard() {
     final labels = ['Too weak', 'Fair', 'Strong', 'Excellent'];
-    final colors = [const Color(0xFFE5E7EB), const Color(0xFFEF4444), const Color(0xFFF59E0B), const Color(0xFF10B981)];
+    final colors = [
+      const Color(0xFFE5E7EB),
+      const Color(0xFFEF4444),
+      const Color(0xFFF59E0B),
+      const Color(0xFF10B981)
+    ];
     final currentScore = _passwordStrength;
 
     return Container(
@@ -2181,13 +2341,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           Text(
             'Password strength',
-            style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w700, color: _headingTextColor),
+            style: AppFonts.roboto(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: _headingTextColor),
           ),
           const SizedBox(height: 8),
           Row(
             children: List.generate(3, (index) {
               final isActive = currentScore > index;
-              final color = currentScore == 0 ? colors[0] : colors[currentScore];
+              final color =
+                  currentScore == 0 ? colors[0] : colors[currentScore];
               return Expanded(
                 child: Container(
                   height: 8,
@@ -2256,7 +2420,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: AppFonts.roboto(fontSize: 12, color: _bodyTextColor, height: 1.35),
+                      style: AppFonts.roboto(
+                          fontSize: 12, color: _bodyTextColor, height: 1.35),
                     ),
                   ],
                 ),
@@ -2294,12 +2459,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: AppFonts.roboto(fontSize: 14, fontWeight: FontWeight.w700, color: _headingTextColor),
+                  style: AppFonts.roboto(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: _headingTextColor),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   message,
-                  style: AppFonts.roboto(fontSize: 12.5, color: _bodyTextColor, height: 1.35),
+                  style: AppFonts.roboto(
+                      fontSize: 12.5, color: _bodyTextColor, height: 1.35),
                 ),
               ],
             ),
@@ -2360,13 +2529,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         labelText: label,
         hintText: hintText,
         hintStyle: AppFonts.roboto(fontSize: 13, color: _mutedTextColor),
-        labelStyle: AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
-        prefixIcon: Icon(icon, color: enabled ? _primaryColor : _mutedTextColor, size: 20),
+        labelStyle: AppFonts.roboto(
+            fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
+        prefixIcon: Icon(icon,
+            color: enabled ? _primaryColor : _mutedTextColor, size: 20),
         suffixIcon: isPassword
             ? IconButton(
                 onPressed: onToggleVisibility,
                 icon: Icon(
-                  isVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  isVisible
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                   color: _mutedTextColor,
                 ),
               )
@@ -2397,7 +2570,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: _dangerColor, width: 1.4),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
     );
   }
@@ -2424,9 +2598,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     final normalizedValue = value?.trim();
-    final effectiveValue = normalizedValue != null && seenItems.contains(normalizedValue)
-        ? normalizedValue
-        : null;
+    final effectiveValue =
+        normalizedValue != null && seenItems.contains(normalizedValue)
+            ? normalizedValue
+            : null;
 
     return DropdownButtonFormField<String>(
       initialValue: effectiveValue,
@@ -2447,15 +2622,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ? const SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: _primaryColor),
+              child: AdsyLoadingIndicator(strokeWidth: 2, color: _primaryColor),
             )
-          : Icon(Icons.keyboard_arrow_down_rounded, color: enabled ? _mutedTextColor : const Color(0xFF94A3B8)),
+          : Icon(Icons.keyboard_arrow_down_rounded,
+              color: enabled ? _mutedTextColor : const Color(0xFF94A3B8)),
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText,
         hintStyle: AppFonts.roboto(fontSize: 13, color: _mutedTextColor),
-        labelStyle: AppFonts.roboto(fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
-        prefixIcon: Icon(icon, color: enabled ? _primaryColor : _mutedTextColor, size: 20),
+        labelStyle: AppFonts.roboto(
+            fontSize: 13, fontWeight: FontWeight.w600, color: _bodyTextColor),
+        prefixIcon: Icon(icon,
+            color: enabled ? _primaryColor : _mutedTextColor, size: 20),
         filled: true,
         fillColor: enabled ? _softSurfaceColor : const Color(0xFFF1F5F9),
         border: OutlineInputBorder(
@@ -2474,7 +2652,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: _primaryColor, width: 1.4),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
       borderRadius: BorderRadius.circular(14),
       dropdownColor: Colors.white,
@@ -2514,17 +2693,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 disabledBackgroundColor: Colors.transparent,
-                foregroundColor: enabled ? Colors.white : const Color(0xFF94A3B8),
+                foregroundColor:
+                    enabled ? Colors.white : const Color(0xFF94A3B8),
                 disabledForegroundColor: const Color(0xFF94A3B8),
                 shadowColor: Colors.transparent,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: isBusy
                   ? const SizedBox(
                       height: 18,
                       width: 18,
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2.2,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),

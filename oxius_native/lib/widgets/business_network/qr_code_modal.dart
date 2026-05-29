@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../../config/app_config.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class QrCodeModal extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -58,7 +59,7 @@ class _QrCodeModalState extends State<QrCodeModal> {
                 SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 2,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
@@ -97,7 +98,8 @@ class _QrCodeModalState extends State<QrCodeModal> {
         throw Exception('Could not access storage directory');
       }
 
-      final sanitizedName = userName.replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '-').toLowerCase();
+      final sanitizedName =
+          userName.replaceAll(RegExp(r'[^a-zA-Z0-9-_]'), '-').toLowerCase();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = '$sanitizedName-profile-qr-$timestamp.png';
       final filePath = '${directory.path}/$fileName';
@@ -353,7 +355,8 @@ class _QrCodeModalState extends State<QrCodeModal> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.blue.shade100, width: 3),
+                          border:
+                              Border.all(color: Colors.blue.shade100, width: 3),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.blue.shade200,

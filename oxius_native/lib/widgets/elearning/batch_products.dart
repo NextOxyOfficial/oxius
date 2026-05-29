@@ -3,6 +3,7 @@ import 'dart:math';
 import '../../services/elearning_service.dart';
 import '../../models/cart_item.dart';
 import '../product_card.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class BatchProducts extends StatefulWidget {
   final String? selectedBatch;
@@ -155,7 +156,8 @@ class _BatchProductsState extends State<BatchProducts> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(999),
@@ -179,7 +181,7 @@ class _BatchProductsState extends State<BatchProducts> {
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(32.0),
-                child: CircularProgressIndicator(),
+                child: AdsyLoadingIndicator(),
               ),
             ),
 
@@ -219,7 +221,8 @@ class _BatchProductsState extends State<BatchProducts> {
             Builder(
               builder: (context) {
                 final screenWidth = MediaQuery.of(context).size.width;
-                final cardWidth = ProductCardLayout.horizontalCardWidth(screenWidth);
+                final cardWidth =
+                    ProductCardLayout.horizontalCardWidth(screenWidth);
                 final cardHeight = ProductCardLayout.horizontalCardHeight(
                   screenWidth,
                   cardWidth: cardWidth,
@@ -280,7 +283,8 @@ class _BatchProductsState extends State<BatchProducts> {
         id: product['id'],
         name: product['name'] ?? product['title'] ?? 'Product',
         description: product['description'],
-        regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
+        regularPrice:
+            _parseDouble(product['regular_price'] ?? product['price']),
         salePrice: product['sale_price'] != null
             ? _parseDouble(product['sale_price'])
             : null,
@@ -294,7 +298,8 @@ class _BatchProductsState extends State<BatchProducts> {
             : null,
         imageDetails: product['image_details'] != null
             ? (product['image_details'] as List)
-                .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+                .map(
+                    (img) => ProductImage.fromJson(img as Map<String, dynamic>))
                 .toList()
             : null,
       );

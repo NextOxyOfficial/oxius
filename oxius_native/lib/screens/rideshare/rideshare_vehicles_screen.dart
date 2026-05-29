@@ -6,12 +6,14 @@ import '../../services/auth_service.dart';
 import '../../services/rideshare_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/rideshare_drawer.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class RideshareVehiclesScreen extends StatefulWidget {
   const RideshareVehiclesScreen({super.key});
 
   @override
-  State<RideshareVehiclesScreen> createState() => _RideshareVehiclesScreenState();
+  State<RideshareVehiclesScreen> createState() =>
+      _RideshareVehiclesScreenState();
 }
 
 class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
@@ -35,7 +37,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   static const Color _warningSoft = Color(0xFFFFFBEB);
 
   final TranslationService _ts = TranslationService();
-  String t(String key, {required String fallback}) => _ts.t(key, fallback: fallback);
+  String t(String key, {required String fallback}) =>
+      _ts.t(key, fallback: fallback);
 
   bool _isLoading = true;
   bool _isSubmitting = false;
@@ -103,13 +106,14 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
     setState(() {
       _isLoading = false;
       _driverProfile = driverProfile;
-      
+
       if (driverProfile != null && driverProfile.isPending) {
         _isKYCPending = true;
         _needsDriverApproval = false;
         _errorMessage = null;
         _vehicles = const [];
-      } else if ((driverProfile != null && !driverProfile.isApproved) || profileIsMissing) {
+      } else if ((driverProfile != null && !driverProfile.isApproved) ||
+          profileIsMissing) {
         _isKYCPending = false;
         _needsDriverApproval = true;
         _errorMessage = null;
@@ -131,23 +135,30 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: Text(
             t('rideshare_kyc_required', fallback: 'KYC Approval Required'),
-            style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
+            style: GoogleFonts.inter(
+                fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
           ),
           content: Text(
-            t('rideshare_kyc_required_desc', fallback: 'Your KYC must be approved before you can add a vehicle. Please complete your driver registration and wait for admin approval.'),
-            style: GoogleFonts.inter(fontSize: 13, color: _textSecondary, height: 1.5),
+            t('rideshare_kyc_required_desc',
+                fallback:
+                    'Your KYC must be approved before you can add a vehicle. Please complete your driver registration and wait for admin approval.'),
+            style: GoogleFonts.inter(
+                fontSize: 13, color: _textSecondary, height: 1.5),
           ),
           actions: [
             FilledButton(
               onPressed: () => Navigator.pop(ctx),
               style: FilledButton.styleFrom(
                 backgroundColor: _primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
-              child: Text(t('ok', fallback: 'OK'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+              child: Text(t('ok', fallback: 'OK'),
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -188,20 +199,26 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
           t('rideshare_contact_support', fallback: 'Contact Support'),
-          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
+          style: GoogleFonts.inter(
+              fontSize: 16, fontWeight: FontWeight.w700, color: _textPrimary),
         ),
         content: Text(
-          t('rideshare_vehicle_edit_note', fallback: 'Vehicle information cannot be edited directly. Please contact our support center to make changes to your vehicle details.'),
-          style: GoogleFonts.inter(fontSize: 13, color: _textSecondary, height: 1.5),
+          t('rideshare_vehicle_edit_note',
+              fallback:
+                  'Vehicle information cannot be edited directly. Please contact our support center to make changes to your vehicle details.'),
+          style: GoogleFonts.inter(
+              fontSize: 13, color: _textSecondary, height: 1.5),
         ),
         actions: [
           FilledButton(
             onPressed: () => Navigator.pop(ctx),
             style: FilledButton.styleFrom(
               backgroundColor: _primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
-            child: Text('OK', style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+            child: Text('OK',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -256,7 +273,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   onPressed: () => Navigator.of(context).pop(false),
                   child: Text(
                     t('cancel', fallback: 'Cancel'),
-                    style: const TextStyle(color: _textSecondary, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        color: _textSecondary, fontWeight: FontWeight.w600),
                   ),
                 ),
                 FilledButton(
@@ -268,7 +286,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     ),
                   ),
                   onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(t('rideshare_delete_vehicle', fallback: 'Delete')),
+                  child:
+                      Text(t('rideshare_delete_vehicle', fallback: 'Delete')),
                 ),
               ],
             );
@@ -295,7 +314,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   Future<void> _showVehicleForm({Vehicle? vehicle}) async {
     final formKey = GlobalKey<FormState>();
     final brandController = TextEditingController(text: vehicle?.brand ?? '');
-    final modelController = TextEditingController(text: vehicle?.modelName ?? '');
+    final modelController =
+        TextEditingController(text: vehicle?.modelName ?? '');
     final colorController = TextEditingController(text: vehicle?.color ?? '');
     final regController = TextEditingController(
       text: vehicle?.registrationNumber ?? '',
@@ -322,7 +342,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               }
 
               setSheetState(() => isSaving = true);
-              final seatCapacity = int.tryParse(seatController.text.trim()) ?? 1;
+              final seatCapacity =
+                  int.tryParse(seatController.text.trim()) ?? 1;
 
               final result = vehicle == null
                   ? await RideshareService.createVehicle(
@@ -369,7 +390,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: _card,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(22)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.06),
@@ -401,7 +423,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                               ),
                               const SizedBox(height: 14),
                               Text(
-                                vehicle == null ? 'Add vehicle' : 'Edit vehicle',
+                                vehicle == null
+                                    ? 'Add vehicle'
+                                    : 'Edit vehicle',
                                 style: GoogleFonts.inter(
                                   color: _textPrimary,
                                   fontSize: 18,
@@ -410,7 +434,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                t('rideshare_vehicle_accuracy_note', fallback: 'Keep your vehicle details accurate so ride assignment stays smooth.'),
+                                t('rideshare_vehicle_accuracy_note',
+                                    fallback:
+                                        'Keep your vehicle details accurate so ride assignment stays smooth.'),
                                 style: GoogleFonts.inter(
                                   color: _textSecondary,
                                   fontSize: 12,
@@ -430,9 +456,18 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                                 items: [
-                                  DropdownMenuItem(value: 'bike', child: Text(t('rideshare_vehicle_bike', fallback: 'Bike'))),
-                                  DropdownMenuItem(value: 'car', child: Text(t('rideshare_vehicle_car', fallback: 'Car'))),
-                                  DropdownMenuItem(value: 'cng', child: Text(t('rideshare_vehicle_cng', fallback: 'CNG'))),
+                                  DropdownMenuItem(
+                                      value: 'bike',
+                                      child: Text(t('rideshare_vehicle_bike',
+                                          fallback: 'Bike'))),
+                                  DropdownMenuItem(
+                                      value: 'car',
+                                      child: Text(t('rideshare_vehicle_car',
+                                          fallback: 'Car'))),
+                                  DropdownMenuItem(
+                                      value: 'cng',
+                                      child: Text(t('rideshare_vehicle_cng',
+                                          fallback: 'CNG'))),
                                 ],
                                 onChanged: (value) {
                                   if (value == null) return;
@@ -444,33 +479,42 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: brandController,
-                                decoration: _inputDecoration(hint: 'Honda, Toyota, Bajaj'),
-                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                                decoration: _inputDecoration(
+                                    hint: 'Honda, Toyota, Bajaj'),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
                               _buildSectionLabel('Model'),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: modelController,
-                                decoration: _inputDecoration(hint: 'Civic, Discover, Auto'),
-                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                                decoration: _inputDecoration(
+                                    hint: 'Civic, Discover, Auto'),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
                               _buildSectionLabel('Color'),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: colorController,
-                                decoration: _inputDecoration(hint: 'Red, Black, Silver'),
-                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                                decoration: _inputDecoration(
+                                    hint: 'Red, Black, Silver'),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13, color: _textPrimary),
                               ),
                               const SizedBox(height: 12),
                               _buildSectionLabel('Registration number'),
                               const SizedBox(height: 6),
                               TextFormField(
                                 controller: regController,
-                                textCapitalization: TextCapitalization.characters,
-                                decoration: _inputDecoration(hint: 'DHAKA METRO-GA-12-3456'),
-                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                decoration: _inputDecoration(
+                                    hint: 'DHAKA METRO-GA-12-3456'),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13, color: _textPrimary),
                                 validator: (value) {
                                   if (value == null || value.trim().isEmpty) {
                                     return 'Registration number is required';
@@ -485,9 +529,11 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                                 controller: seatController,
                                 keyboardType: TextInputType.number,
                                 decoration: _inputDecoration(hint: '1'),
-                                style: GoogleFonts.inter(fontSize: 13, color: _textPrimary),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13, color: _textPrimary),
                                 validator: (value) {
-                                  final seats = int.tryParse(value?.trim() ?? '');
+                                  final seats =
+                                      int.tryParse(value?.trim() ?? '');
                                   if (seats == null || seats < 1) {
                                     return 'Enter a valid seat count';
                                   }
@@ -497,7 +543,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                               const SizedBox(height: 12),
                               _buildToggleTile(
                                 title: 'Set as default vehicle',
-                                subtitle: 'This vehicle will be used first for ride matching.',
+                                subtitle:
+                                    'This vehicle will be used first for ride matching.',
                                 value: isDefault,
                                 onChanged: (value) {
                                   setSheetState(() => isDefault = value);
@@ -507,7 +554,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                                 const SizedBox(height: 10),
                                 _buildToggleTile(
                                   title: 'Vehicle active',
-                                  subtitle: 'Inactive vehicles will stay hidden from dispatch.',
+                                  subtitle:
+                                      'Inactive vehicles will stay hidden from dispatch.',
                                   value: isActive,
                                   onChanged: (value) {
                                     setSheetState(() => isActive = value);
@@ -521,7 +569,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                                   style: FilledButton.styleFrom(
                                     backgroundColor: _primary,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 13),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 13),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -531,13 +580,17 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                                       ? const SizedBox(
                                           width: 20,
                                           height: 20,
-                                          child: CircularProgressIndicator(
+                                          child: AdsyLoadingIndicator(
                                             strokeWidth: 2.4,
-                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    Colors.white),
                                           ),
                                         )
                                       : Text(
-                                          vehicle == null ? 'Save vehicle' : 'Update vehicle',
+                                          vehicle == null
+                                              ? 'Save vehicle'
+                                              : 'Update vehicle',
                                           style: GoogleFonts.inter(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w700,
@@ -566,7 +619,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
     seatController.dispose();
 
     if (saved == true) {
-      _showMessage(vehicle == null ? 'Vehicle added successfully.' : 'Vehicle updated successfully.');
+      _showMessage(vehicle == null
+          ? 'Vehicle added successfully.'
+          : 'Vehicle updated successfully.');
       await _loadVehicles();
     }
   }
@@ -834,7 +889,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      t('rideshare_my_vehicles_desc', fallback: 'Manage your listed and active vehicles from one compact garage dashboard.'),
+                      t('rideshare_my_vehicles_desc',
+                          fallback:
+                              'Manage your listed and active vehicles from one compact garage dashboard.'),
                       style: GoogleFonts.inter(
                         color: const Color(0xFFD6E2FF),
                         fontSize: 11,
@@ -859,7 +916,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
               const SizedBox(width: 8),
               _buildStatCard(
                 label: 'Active now',
-                value: '${_vehicles.where((vehicle) => vehicle.isActive).length}',
+                value:
+                    '${_vehicles.where((vehicle) => vehicle.isActive).length}',
                 icon: Icons.check_circle_rounded,
                 accent: _success,
                 tint: const Color(0x3322C55E),
@@ -876,7 +934,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.verified_rounded, color: Colors.white, size: 16),
+                const Icon(Icons.verified_rounded,
+                    color: Colors.white, size: 16),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -907,7 +966,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       decoration: BoxDecoration(
         color: _card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDefault ? _primary.withOpacity(0.18) : _line),
+        border:
+            Border.all(color: isDefault ? _primary.withOpacity(0.18) : _line),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -929,7 +989,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(15)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -938,7 +999,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: isDefault ? Colors.white.withOpacity(0.16) : Colors.white,
+                    color: isDefault
+                        ? Colors.white.withOpacity(0.16)
+                        : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -964,7 +1027,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       Text(
                         vehicle.registrationNumber,
                         style: GoogleFonts.inter(
-                          color: isDefault ? const Color(0xFFE8E7FF) : _textSecondary,
+                          color: isDefault
+                              ? const Color(0xFFE8E7FF)
+                              : _textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                         ),
@@ -974,7 +1039,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                 ),
                 if (isDefault)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.16),
                       borderRadius: BorderRadius.circular(999),
@@ -996,94 +1062,104 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-          Wrap(
-            spacing: 14,
-            runSpacing: 8,
-            children: [
-              _buildMetaText(
-                icon: _vehicleIcon(vehicle.vehicleType),
-                label: _vehicleTypeLabel(vehicle.vehicleType),
-              ),
-              _buildMetaText(
-                icon: Icons.event_seat_rounded,
-                label: '${vehicle.seatCapacity} seats',
-              ),
-              if (vehicle.color.trim().isNotEmpty)
-                _buildMetaText(
-                  icon: Icons.circle,
-                  label: vehicle.color.trim(),
-                  iconColor: _vehicleColorValue(vehicle.color),
-                ),
-              _buildMetaText(
-                icon: isActive ? Icons.check_circle_rounded : Icons.pause_circle_rounded,
-                label: isActive ? 'Active' : 'Inactive',
-                iconColor: isActive ? _success : _danger,
-                textColor: isActive ? _success : _danger,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _textSecondary,
-                    side: const BorderSide(color: _line),
-                    backgroundColor: _surfaceSoft,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                Wrap(
+                  spacing: 14,
+                  runSpacing: 8,
+                  children: [
+                    _buildMetaText(
+                      icon: _vehicleIcon(vehicle.vehicleType),
+                      label: _vehicleTypeLabel(vehicle.vehicleType),
                     ),
-                  ),
-                  onPressed: () => _showContactSupportDialog(),
-                  icon: const Icon(Icons.support_agent_rounded, size: 18),
-                  label: Text(
-                    t('rideshare_edit_via_support', fallback: 'Edit via Support'),
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: isDefault ? _surfaceSoft : _primary,
-                    foregroundColor: isDefault ? _textSecondary : Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    _buildMetaText(
+                      icon: Icons.event_seat_rounded,
+                      label: '${vehicle.seatCapacity} seats',
                     ),
-                  ),
-                  onPressed: _isSubmitting || isDefault
-                      ? null
-                      : () => _setDefaultVehicle(vehicle),
-                  icon: Icon(
-                    isDefault ? Icons.verified_rounded : Icons.stars_rounded,
-                    size: 18,
-                  ),
-                  label: Text(
-                    isDefault ? 'Selected' : 'Set Default',
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 12),
-                  ),
+                    if (vehicle.color.trim().isNotEmpty)
+                      _buildMetaText(
+                        icon: Icons.circle,
+                        label: vehicle.color.trim(),
+                        iconColor: _vehicleColorValue(vehicle.color),
+                      ),
+                    _buildMetaText(
+                      icon: isActive
+                          ? Icons.check_circle_rounded
+                          : Icons.pause_circle_rounded,
+                      label: isActive ? 'Active' : 'Inactive',
+                      iconColor: isActive ? _success : _danger,
+                      textColor: isActive ? _success : _danger,
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: _isSubmitting ? null : () => _deleteVehicle(vehicle),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: _dangerSoft,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.delete_outline_rounded, color: _danger),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _textSecondary,
+                          side: const BorderSide(color: _line),
+                          backgroundColor: _surfaceSoft,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => _showContactSupportDialog(),
+                        icon: const Icon(Icons.support_agent_rounded, size: 18),
+                        label: Text(
+                          t('rideshare_edit_via_support',
+                              fallback: 'Edit via Support'),
+                          style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: isDefault ? _surfaceSoft : _primary,
+                          foregroundColor:
+                              isDefault ? _textSecondary : Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _isSubmitting || isDefault
+                            ? null
+                            : () => _setDefaultVehicle(vehicle),
+                        icon: Icon(
+                          isDefault
+                              ? Icons.verified_rounded
+                              : Icons.stars_rounded,
+                          size: 18,
+                        ),
+                        label: Text(
+                          isDefault ? 'Selected' : 'Set Default',
+                          style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap:
+                          _isSubmitting ? null : () => _deleteVehicle(vehicle),
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: _dangerSoft,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.delete_outline_rounded,
+                            color: _danger),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
               ],
             ),
           ),
@@ -1118,11 +1194,11 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: _primary),
+        child: AdsyLoadingIndicator(color: _primary),
       );
     }
 
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       color: _primary,
       onRefresh: _loadVehicles,
       child: ListView(
@@ -1156,7 +1232,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    t('rideshare_kyc_under_review', fallback: 'Driver Profile Under Review'),
+                    t('rideshare_kyc_under_review',
+                        fallback: 'Driver Profile Under Review'),
                     style: GoogleFonts.inter(
                       color: _textPrimary,
                       fontSize: 18,
@@ -1166,7 +1243,9 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    t('rideshare_kyc_pending_vehicle_desc', fallback: 'Your driver registration is currently under review by our admin team. You\'ll be able to add vehicles once your profile is approved.'),
+                    t('rideshare_kyc_pending_vehicle_desc',
+                        fallback:
+                            'Your driver registration is currently under review by our admin team. You\'ll be able to add vehicles once your profile is approved.'),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       color: _textSecondary,
@@ -1180,7 +1259,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     decoration: BoxDecoration(
                       color: _warningSoft,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: _warning.withValues(alpha: 0.3)),
+                      border:
+                          Border.all(color: _warning.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
@@ -1188,7 +1268,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            t('rideshare_kyc_timeline', fallback: 'Approval usually takes 24-48 hours'),
+                            t('rideshare_kyc_timeline',
+                                fallback: 'Approval usually takes 24-48 hours'),
                             style: GoogleFonts.inter(
                               color: _warning,
                               fontSize: 12,
@@ -1228,7 +1309,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    t('rideshare_driver_not_approved_title', fallback: 'ড্রাইভার অনুমোদন এখনো মেলেনি'),
+                    t('rideshare_driver_not_approved_title',
+                        fallback: 'ড্রাইভার অনুমোদন এখনো মেলেনি'),
                     style: GoogleFonts.inter(
                       color: _textPrimary,
                       fontSize: 18,
@@ -1240,7 +1322,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   Text(
                     t(
                       'rideshare_driver_not_approved_desc',
-                      fallback: 'আপনার ড্রাইভার প্রোফাইল এখনো অনুমোদিত হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন সম্পন্ন করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
+                      fallback:
+                          'আপনার ড্রাইভার প্রোফাইল এখনো অনুমোদিত হয়নি। আগে ড্রাইভার রেজিস্ট্রেশন সম্পন্ন করে অ্যাডমিন অনুমোদন পেলে তারপর এখানে গাড়ি যোগ করতে পারবেন।',
                     ),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
@@ -1255,17 +1338,20 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                     decoration: BoxDecoration(
                       color: _warningSoft,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: _warning.withValues(alpha: 0.3)),
+                      border:
+                          Border.all(color: _warning.withValues(alpha: 0.3)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded, color: _warning, size: 18),
+                        const Icon(Icons.info_outline_rounded,
+                            color: _warning, size: 18),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             t(
                               'rideshare_driver_not_approved_hint',
-                              fallback: 'অনুমোদন হয়ে গেলে এই পেইজে আপনার গাড়ির তালিকা দেখা যাবে।',
+                              fallback:
+                                  'অনুমোদন হয়ে গেলে এই পেইজে আপনার গাড়ির তালিকা দেখা যাবে।',
                             ),
                             style: GoogleFonts.inter(
                               color: _warning,
@@ -1307,7 +1393,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    t('rideshare_load_error', fallback: 'Unable to load vehicles'),
+                    t('rideshare_load_error',
+                        fallback: 'Unable to load vehicles'),
                     style: GoogleFonts.inter(
                       color: _textPrimary,
                       fontSize: 16,
@@ -1334,120 +1421,129 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                       ),
                     ),
                     onPressed: _loadVehicles,
-                    child: Text(t('try_again', fallback: 'Try again'), style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
+                    child: Text(t('try_again', fallback: 'Try again'),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
             )
           else ...[
-          _buildOverview(),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
+            _buildOverview(),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        t('rideshare_your_vehicles', fallback: 'Your vehicles'),
+                        style: GoogleFonts.inter(
+                          color: _textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        t('rideshare_vehicles_manage_desc',
+                            fallback:
+                                'Manage which vehicles are active and ready for rides.'),
+                        style: GoogleFonts.inter(
+                          color: _textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: _warningSoft,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.tips_and_updates_outlined,
+                          color: _warning, size: 14),
+                      const SizedBox(width: 5),
+                      Text(
+                        t('rideshare_keep_one_default',
+                            fallback: 'Keep one default'),
+                        style: GoogleFonts.inter(
+                          color: _warning,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_vehicles.isEmpty)
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: _card,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _line),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [_primary, _secondary],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car_filled_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Text(
-                      t('rideshare_your_vehicles', fallback: 'Your vehicles'),
+                      t('rideshare_no_vehicles',
+                          fallback: 'No vehicles added yet'),
                       style: GoogleFonts.inter(
                         color: _textPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 6),
                     Text(
-                      t('rideshare_vehicles_manage_desc', fallback: 'Manage which vehicles are active and ready for rides.'),
+                      t('rideshare_no_vehicles_desc',
+                          fallback:
+                              'Add your bike, car, or CNG to start receiving rides with the right vehicle type.'),
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         color: _textSecondary,
                         fontSize: 12,
+                        height: 1.5,
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                decoration: BoxDecoration(
-                  color: _warningSoft,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.tips_and_updates_outlined, color: _warning, size: 14),
-                    const SizedBox(width: 5),
-                    Text(
-                      t('rideshare_keep_one_default', fallback: 'Keep one default'),
-                      style: GoogleFonts.inter(
-                        color: _warning,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (_vehicles.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: _card,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _line),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_primary, _secondary],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.directions_car_filled_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    t('rideshare_no_vehicles', fallback: 'No vehicles added yet'),
-                    style: GoogleFonts.inter(
-                      color: _textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    t('rideshare_no_vehicles_desc', fallback: 'Add your bike, car, or CNG to start receiving rides with the right vehicle type.'),
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      color: _textSecondary,
-                      fontSize: 12,
-                      height: 1.5,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else
-            ..._vehicles.map(_buildVehicleCard),
+              )
+            else
+              ..._vehicles.map(_buildVehicleCard),
           ],
         ],
       ),
@@ -1482,7 +1578,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
             ),
             const SizedBox(height: 1),
             Text(
-              t('rideshare_garage_subtitle', fallback: 'Compact garage management'),
+              t('rideshare_garage_subtitle',
+                  fallback: 'Compact garage management'),
               style: GoogleFonts.inter(
                 color: _textSecondary,
                 fontSize: 11,
@@ -1514,7 +1611,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
                   color: const Color(0xFFEFF2FF),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.menu_rounded, size: 20, color: _primary),
+                child:
+                    const Icon(Icons.menu_rounded, size: 20, color: _primary),
               ),
             ),
           ),
@@ -1523,7 +1621,8 @@ class _RideshareVehiclesScreenState extends State<RideshareVehiclesScreen> {
       body: _buildBody(),
       floatingActionButton: FloatingActionButton.extended(
         elevation: 0,
-        backgroundColor: _driverProfile?.isApproved == true ? _primary : _textMuted,
+        backgroundColor:
+            _driverProfile?.isApproved == true ? _primary : _textMuted,
         foregroundColor: Colors.white,
         onPressed: _isSubmitting ? null : () => _handleAddVehicle(),
         icon: const Icon(Icons.add_rounded),

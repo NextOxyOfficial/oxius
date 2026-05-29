@@ -7,6 +7,7 @@ import '../services/user_state_service.dart';
 import '../screens/gig_details_screen.dart';
 import 'home/account_balance_section.dart';
 import 'home/mobile_recharge_section.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MicroGigsSection extends StatefulWidget {
   const MicroGigsSection({super.key});
@@ -30,20 +31,20 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   static const Color _slate400 = Color(0xFF94A3B8);
   static const Color _slate500 = Color(0xFF64748B);
   static const Color _slate800 = Color(0xFF1E293B);
-  
+
   List<Map<String, dynamic>> _microGigs = [];
   List<Map<String, dynamic>> _categories = [];
-  
+
   bool _isLoading = true;
   String? _loadError;
   String? _selectedCategory;
   String _filterStatus = 'all'; // 'all', 'available', 'completed'
-  
+
   // Pagination
   int _currentPage = 1;
   final int _itemsPerPage = 10;
   int _totalCount = 0;
-  
+
   @override
   void initState() {
     super.initState();
@@ -75,7 +76,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       _isLoading = true;
       _loadError = null;
     });
-    
+
     try {
       // Load gigs with pagination and categories in parallel
       final results = await Future.wait([
@@ -86,11 +87,11 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         ),
         _gigsService.fetchMicroGigCategories(),
       ]);
-      
+
       if (mounted) {
         final gigsData = results[0] as Map<String, dynamic>;
         final gigsList = gigsData['results'] as List<Map<String, dynamic>>;
-        
+
         setState(() {
           _microGigs = gigsList;
           _totalCount = gigsData['count'] as int;
@@ -112,20 +113,21 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     }
   }
 
-  List<Map<String, dynamic>> _processCategories(List<Map<String, dynamic>> gigs) {
+  List<Map<String, dynamic>> _processCategories(
+      List<Map<String, dynamic>> gigs) {
     final Map<String, Map<String, dynamic>> categoryCounts = {};
-    
+
     for (final gig in gigs) {
       final categoryDetails = gig['category_details'];
       if (categoryDetails == null) continue;
-      
+
       final categoryName = categoryDetails['title'] ?? '';
       final categoryId = categoryDetails['id'];
-      
-      final isActive = gig['active_gig'] == true && 
-                       gig['gig_status'] == 'approved' && 
-                       gig['user']?['id'] != null;
-      
+
+      final isActive = gig['active_gig'] == true &&
+          gig['gig_status'] == 'approved' &&
+          gig['user']?['id'] != null;
+
       if (!categoryCounts.containsKey(categoryName)) {
         categoryCounts[categoryName] = {
           'category': categoryName,
@@ -134,23 +136,23 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           'active': 0,
         };
       }
-      
-      categoryCounts[categoryName]!['total'] = 
+
+      categoryCounts[categoryName]!['total'] =
           (categoryCounts[categoryName]!['total'] as int) + 1;
-      
+
       if (isActive) {
-        categoryCounts[categoryName]!['active'] = 
+        categoryCounts[categoryName]!['active'] =
             (categoryCounts[categoryName]!['active'] as int) + 1;
       }
     }
-    
+
     return categoryCounts.values.toList();
   }
 
   List<Map<String, dynamic>> get _paginatedGigs {
     final startIndex = (_currentPage - 1) * _itemsPerPage;
     final endIndex = startIndex + _itemsPerPage;
-    
+
     if (startIndex >= _microGigs.length) return [];
     return _microGigs.sublist(
       startIndex,
@@ -167,7 +169,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       _isLoading = true;
       _loadError = null;
     });
-    
+
     try {
       final gigsData = categoryId == null
           ? await _gigsService.fetchMicroGigs(
@@ -176,12 +178,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               pageSize: _itemsPerPage,
             )
           : await _gigsService.fetchMicroGigsByCategory(
-              categoryId, 
+              categoryId,
               showSubmitted: _filterStatus == 'completed',
               page: _currentPage,
               pageSize: _itemsPerPage,
             );
-      
+
       if (mounted) {
         setState(() {
           _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
@@ -210,7 +212,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       _isLoading = true;
       _loadError = null;
     });
-    
+
     try {
       // For 'all' and 'available', show non-submitted gigs (showSubmitted: false)
       // For 'completed', show submitted gigs (showSubmitted: true)
@@ -227,7 +229,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               page: _currentPage,
               pageSize: _itemsPerPage,
             );
-      
+
       if (mounted) {
         setState(() {
           _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
@@ -260,13 +262,13 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
 
   Future<void> _goToPage(int page) async {
     if (page < 1 || page > _totalPages || page == _currentPage) return;
-    
+
     setState(() {
       _currentPage = page;
       _isLoading = true;
       _loadError = null;
     });
-    
+
     try {
       final gigsData = _selectedCategory == null
           ? await _gigsService.fetchMicroGigs(
@@ -280,7 +282,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               page: _currentPage,
               pageSize: _itemsPerPage,
             );
-      
+
       if (mounted) {
         setState(() {
           _microGigs = gigsData['results'] as List<Map<String, dynamic>>;
@@ -306,11 +308,11 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     final pages = <int>[];
     final start = (_currentPage - 2).clamp(1, _totalPages);
     final end = (_currentPage + 2).clamp(1, _totalPages);
-    
+
     for (int i = start; i <= end; i++) {
       pages.add(i);
     }
-    
+
     return pages;
   }
 
@@ -325,7 +327,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
@@ -358,7 +360,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: _violet.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(6),
@@ -376,15 +379,15 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             ),
           ),
           const SizedBox(height: 8),
-          
+
           // Account Balance Section (shows if logged in)
           const AccountBalanceSection(),
-          
+
           // Mobile Recharge Section
           const MobileRechargeSection(),
-          
+
           const SizedBox(height: 4),
-          
+
           // Main Card
           Container(
             decoration: BoxDecoration(
@@ -402,9 +405,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
               ],
             ),
-            child: isMobile
-                ? _buildMobileLayout()
-                : _buildDesktopLayout(),
+            child: isMobile ? _buildMobileLayout() : _buildDesktopLayout(),
           ),
         ],
       ),
@@ -416,12 +417,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
       children: [
         // Categories Dropdown (Mobile)
         _buildMobileCategoriesDropdown(),
-        
+
         const SizedBox(height: 16),
-        
+
         // Gigs List
         _buildGigsList(),
-        
+
         // Pagination - only show if more than one page
         if (_microGigs.isNotEmpty && _totalPages > 1) _buildPagination(),
       ],
@@ -446,7 +447,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           ),
           child: _buildCategoriesSidebar(),
         ),
-        
+
         // Right Content - Gigs
         Expanded(
           child: Column(
@@ -482,11 +483,13 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   color: _indigo.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Icon(Icons.category_outlined, size: 13, color: _indigo),
+                child: const Icon(Icons.category_outlined,
+                    size: 13, color: _indigo),
               ),
               const SizedBox(width: 7),
               Text(
-                _translationService.t('all_category', fallback: 'All Categories'),
+                _translationService.t('all_category',
+                    fallback: 'All Categories'),
                 style: AppFonts.roboto(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -501,7 +504,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             child: DropdownButtonFormField<String>(
               isExpanded: true,
               initialValue: _selectedCategory,
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: _slate500),
+              icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                  size: 20, color: _slate500),
               style: AppFonts.roboto(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -511,21 +515,24 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 isDense: true,
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(9),
                   borderSide: BorderSide(color: _slate200),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(9),
-                  borderSide: BorderSide(color: _indigo.withValues(alpha: 0.75), width: 1.2),
+                  borderSide: BorderSide(
+                      color: _indigo.withValues(alpha: 0.75), width: 1.2),
                 ),
               ),
               items: [
                 DropdownMenuItem<String>(
                   value: null,
                   child: Text(
-                    _translationService.t('all_category', fallback: 'All Categories'),
+                    _translationService.t('all_category',
+                        fallback: 'All Categories'),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -565,7 +572,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           selectedTileColor: Colors.blue.shade50,
         ),
         const Divider(height: 1),
-        
+
         // Category List
         Expanded(
           child: ListView.builder(
@@ -574,17 +581,19 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             itemBuilder: (context, index) {
               final category = _categories[index];
               final isSelected = _selectedCategory == category['id'].toString();
-              
+
               return ListTile(
                 title: Text(
                   category['category'] ?? '',
                   style: AppFonts.roboto(
                     fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.green.shade50,
                     borderRadius: BorderRadius.circular(12),
@@ -630,12 +639,14 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                       color: _indigo.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(7),
                     ),
-                    child: const Icon(Icons.work_outline_rounded, size: 14, color: _indigo),
+                    child: const Icon(Icons.work_outline_rounded,
+                        size: 14, color: _indigo),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      _translationService.t('available_gigs', fallback: 'Available Gigs'),
+                      _translationService.t('available_gigs',
+                          fallback: 'Available Gigs'),
                       style: AppFonts.roboto(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -645,7 +656,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                   ),
                   const SizedBox(width: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
                       color: _indigo.withValues(alpha: 0.10),
                       borderRadius: BorderRadius.circular(12),
@@ -680,7 +692,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.info_outline_rounded, size: 16, color: _violet),
+                const Icon(Icons.info_outline_rounded,
+                    size: 16, color: _violet),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -695,7 +708,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 TextButton(
                   onPressed: _refreshGigs,
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -714,7 +728,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         if (_isLoading)
           Container(
             padding: const EdgeInsets.all(30),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: AdsyLoadingIndicator()),
           )
         else if (_microGigs.isEmpty)
           Container(
@@ -762,21 +776,23 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
             ),
           )
         else
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _paginatedGigs.length,
-          padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
-          itemBuilder: (context, index) => _buildGigCard(_paginatedGigs[index]),
-        ),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _paginatedGigs.length,
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            itemBuilder: (context, index) =>
+                _buildGigCard(_paginatedGigs[index]),
+          ),
       ],
     );
   }
 
   Widget _buildStatusFilter() {
     final isLoggedIn = _userStateService.isAuthenticated;
-    final currentValue = isLoggedIn || _filterStatus != 'completed' ? _filterStatus : 'all';
+    final currentValue =
+        isLoggedIn || _filterStatus != 'completed' ? _filterStatus : 'all';
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -786,7 +802,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
         _buildStatusChip('available', 'Open', currentValue == 'available'),
         if (isLoggedIn) ...[
           const SizedBox(width: 6),
-          _buildStatusChip('completed', 'Complete', currentValue == 'completed'),
+          _buildStatusChip(
+              'completed', 'Complete', currentValue == 'completed'),
         ],
       ],
     );
@@ -833,7 +850,7 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
   Widget _buildGigCard(Map<String, dynamic> gig) {
     final user = gig['user'];
     if (user == null) return const SizedBox.shrink();
-    
+
     final categoryDetails = gig['category_details'];
     final imageUrl = _getImageUrl(categoryDetails?['image']);
     final title = gig['title'] ?? '';
@@ -843,7 +860,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
     final createdAt = gig['created_at'] ?? '';
     final completion = requiredQty > 0 ? filledQty / requiredQty : 0.0;
     final progress = completion.clamp(0.0, 1.0).toDouble();
-    final slotsLeft = (requiredQty - filledQty) > 0 ? (requiredQty - filledQty) : 0;
+    final slotsLeft =
+        (requiredQty - filledQty) > 0 ? (requiredQty - filledQty) : 0;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -885,7 +903,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
               ),
               const SizedBox(width: 12),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -906,7 +923,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                       runSpacing: 6,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
                           decoration: BoxDecoration(
                             color: _emerald.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(14),
@@ -929,7 +947,8 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
                           decoration: BoxDecoration(
                             color: _slate100,
                             borderRadius: BorderRadius.circular(14),
@@ -952,13 +971,16 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
                           decoration: BoxDecoration(
                             color: _indigo.withValues(alpha: 0.10),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Text(
-                            slotsLeft > 0 ? '$slotsLeft slots left' : 'Filling soon',
+                            slotsLeft > 0
+                                ? '$slotsLeft slots left'
+                                : 'Filling soon',
                             style: AppFonts.roboto(
                               fontSize: 11,
                               color: _indigo,
@@ -973,7 +995,6 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               ),
             ],
           ),
-
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
@@ -986,13 +1007,13 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
               ),
             ),
           ),
-
           const SizedBox(height: 11),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: _indigo.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(8),
@@ -1051,28 +1072,31 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 label: 'Previous',
                 icon: Icons.chevron_left,
                 isEnabled: _currentPage > 1,
-                onPressed: _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
+                onPressed:
+                    _currentPage > 1 ? () => _goToPage(_currentPage - 1) : null,
                 isIconLeft: true,
               ),
-              
+
               // Page Numbers
               ..._getVisiblePages().map((page) {
                 return _buildPageNumberButton(page);
               }),
-              
+
               // Next Button
               _buildPaginationButton(
                 label: 'Next',
                 icon: Icons.chevron_right,
                 isEnabled: _currentPage < _totalPages,
-                onPressed: _currentPage < _totalPages ? () => _goToPage(_currentPage + 1) : null,
+                onPressed: _currentPage < _totalPages
+                    ? () => _goToPage(_currentPage + 1)
+                    : null,
                 isIconLeft: false,
               ),
             ],
           ),
-          
+
           const SizedBox(height: 4),
-          
+
           // Results Info
           Text(
             'Page $_currentPage of $_totalPages  •  Showing ${(_currentPage - 1) * _itemsPerPage + 1}-${(_currentPage * _itemsPerPage).clamp(0, _totalCount)} of $_totalCount gigs',
@@ -1112,11 +1136,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (isIconLeft) Icon(
-                icon,
-                size: 14,
-                color: isEnabled ? _indigo : _slate400,
-              ),
+              if (isIconLeft)
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isEnabled ? _indigo : _slate400,
+                ),
               if (isIconLeft) const SizedBox(width: 2),
               Text(
                 label,
@@ -1127,11 +1152,12 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
               ),
               if (!isIconLeft) const SizedBox(width: 2),
-              if (!isIconLeft) Icon(
-                icon,
-                size: 14,
-                color: isEnabled ? _indigo : _slate400,
-              ),
+              if (!isIconLeft)
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isEnabled ? _indigo : _slate400,
+                ),
             ],
           ),
         ),

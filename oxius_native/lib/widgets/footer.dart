@@ -6,10 +6,11 @@ import '../screens/eshop_screen.dart';
 import '../config/app_config.dart';
 import '../utils/url_launcher_utils.dart';
 import 'ios_web_redirect_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class AppFooter extends StatefulWidget {
   final bool showMobileNav;
-  
+
   const AppFooter({
     super.key,
     this.showMobileNav = true,
@@ -19,7 +20,8 @@ class AppFooter extends StatefulWidget {
   State<AppFooter> createState() => _AppFooterState();
 }
 
-class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixin {
+class _AppFooterState extends State<AppFooter>
+    with AutomaticKeepAliveClientMixin {
   Map<String, dynamic>? logoData;
   List<dynamic> footerBanners = [];
   bool isLoading = true;
@@ -79,16 +81,17 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   // Load footer banners from API
   Future<void> _loadFooterBanners() async {
     if (_disposed) return;
-    
+
     try {
-      final response = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/banner-images/'));
-      
+      final response =
+          await http.get(Uri.parse('${AppConfig.apiBaseUrl}/banner-images/'));
+
       if (_disposed) return;
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         List<dynamic> banners = data is List ? data : (data['results'] ?? []);
-        
+
         if (!_disposed && mounted) {
           setState(() {
             footerBanners = banners;
@@ -115,12 +118,13 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   // Load logo dynamically from API (matching Vue.js PublicLogo component)
   Future<void> _loadLogo() async {
     if (_disposed) return;
-    
+
     try {
-      final response = await http.get(Uri.parse('${AppConfig.apiBaseUrl}/logo/'));
-      
+      final response =
+          await http.get(Uri.parse('${AppConfig.apiBaseUrl}/logo/'));
+
       if (_disposed) return;
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         // Normalize possible relative image URLs to absolute
@@ -153,7 +157,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
-    
+
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
 
@@ -190,7 +194,11 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
               margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.transparent, Colors.grey.shade300, Colors.transparent],
+                  colors: [
+                    Colors.transparent,
+                    Colors.grey.shade300,
+                    Colors.transparent
+                  ],
                 ),
               ),
             ),
@@ -230,8 +238,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
       {'title': 'আমার সেবা', 'route': '/'},
       {'title': 'আয় করুন', 'route': '/micro-gigs'},
       {'title': 'মোবাইল রিচার্জ', 'route': '/mobile-recharge'},
-      if (!isIOSPlatform)
-        {'title': 'প্রো আপগ্রেড', 'route': '/upgrade-to-pro'},
+      if (!isIOSPlatform) {'title': 'প্রো আপগ্রেড', 'route': '/upgrade-to-pro'},
       {'title': 'রেফার প্রোগ্রাম', 'route': '/refer-a-friend'},
       {'title': 'আমাদের সম্পর্কে', 'route': '/about'},
       {'title': 'সাধারণ প্রশ্ন', 'route': '/faq'},
@@ -288,7 +295,8 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.verified_user_rounded, size: 12, color: Colors.grey.shade400),
+            Icon(Icons.verified_user_rounded,
+                size: 12, color: Colors.grey.shade400),
             const SizedBox(width: 4),
             Text(
               'নিরাপদ পেমেন্ট',
@@ -312,7 +320,8 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
               height: 70,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(6),
@@ -424,9 +433,10 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
                   child: SizedBox(
                     width: 14,
                     height: 14,
-                    child: CircularProgressIndicator(
+                    child: AdsyLoadingIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade400),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.grey.shade400),
                     ),
                   ),
                 ),
@@ -438,7 +448,8 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
                       logoData!['image'],
                       fit: BoxFit.contain,
                       height: 40,
-                      errorBuilder: (context, error, stackTrace) => _buildFallbackLogo(context, isMobile),
+                      errorBuilder: (context, error, stackTrace) =>
+                          _buildFallbackLogo(context, isMobile),
                     ),
                   )
                 : _buildFallbackLogo(context, isMobile),
@@ -480,7 +491,6 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          
           Text(
             'তৈরি করেছে ❤️ Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
             style: AppFonts.roboto(
@@ -497,18 +507,14 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   Widget _buildMobileNavigationBar(BuildContext context) {
     // Mock user data - replace with actual user state management
     final bool isLoggedIn = true; // Replace with actual user state
-    
+
     return Positioned(
       left: 24,
       right: 24,
       bottom: 8,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 500),
-        transform: Matrix4.translationValues(
-          0, 
-          isScrollingDown ? 80 : 0, 
-          0
-        ),
+        transform: Matrix4.translationValues(0, isScrollingDown ? 80 : 0, 0),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.9),
@@ -526,7 +532,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
             borderRadius: BorderRadius.circular(12),
             child: Container(
               color: Colors.white.withOpacity(0.9),
-              child: isLoggedIn 
+              child: isLoggedIn
                   ? _buildLoggedInNavigation(context)
                   : _buildGuestNavigation(context),
             ),
@@ -635,7 +641,9 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
                     minHeight: 16,
                   ),
                   child: Text(
-                    notificationCount > 99 ? '99+' : notificationCount.toString(),
+                    notificationCount > 99
+                        ? '99+'
+                        : notificationCount.toString(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
@@ -653,7 +661,8 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
 
   // Helper methods
   void _handleNavigation(BuildContext context, String destination) {
-    if (destination.startsWith('http://') || destination.startsWith('https://')) {
+    if (destination.startsWith('http://') ||
+        destination.startsWith('https://')) {
       UrlLauncherUtils.launchExternalUrl(destination);
       return;
     }
@@ -674,7 +683,7 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
 
     // Map destinations to routes
     String? route;
-    
+
     switch (destination.toLowerCase()) {
       case 'home':
       case '/':
@@ -766,10 +775,10 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
         );
         return;
     }
-    
+
     // Navigate using named route
     Navigator.pushNamed(context, route);
-    }
+  }
 
   void _showComingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -784,7 +793,8 @@ class _AppFooterState extends State<AppFooter> with AutomaticKeepAliveClientMixi
   void _downloadAndroidApp(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Download Started - AdsyClub Android app is downloading...'),
+        content:
+            Text('Download Started - AdsyClub Android app is downloading...'),
         backgroundColor: Color(0xFF10B981),
         duration: Duration(seconds: 2),
       ),

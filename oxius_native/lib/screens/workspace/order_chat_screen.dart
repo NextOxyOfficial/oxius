@@ -6,6 +6,7 @@ import '../../services/workspace_service.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class OrderChatScreen extends StatefulWidget {
   final String orderId;
@@ -70,7 +71,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
         _isLoading = false;
       });
       _scrollToBottom();
-      
+
       // Mark messages as read
       await _workspaceService.markMessagesAsRead(widget.orderId);
       widget.onMessagesRead?.call();
@@ -80,7 +81,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
   void _startPolling() {
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) async {
       if (!mounted) return;
-      
+
       final messages = await _workspaceService.getOrderMessages(widget.orderId);
       if (mounted && messages.length != _messages.length) {
         setState(() {
@@ -113,7 +114,8 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
 
   bool _isMyMessage(Map<String, dynamic> message) {
     if (_currentUserId == null) return false;
-    final senderId = message['sender']?['id']?.toString() ?? message['sender']?.toString();
+    final senderId =
+        message['sender']?['id']?.toString() ?? message['sender']?.toString();
     return senderId == _currentUserId;
   }
 
@@ -163,7 +165,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
           _messages.removeWhere((m) => m['id'] == tempMessage['id']);
         });
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           'Failed to send message',
           customMessage: 'Unable to send message',
         );
@@ -176,10 +178,10 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
       source: ImageSource.gallery,
       imageQuality: 70,
     );
-    
+
     if (image != null) {
       setState(() => _isSending = true);
-      
+
       final result = await _workspaceService.sendOrderMessage(
         orderId: widget.orderId,
         content: '',
@@ -193,7 +195,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
           await _loadMessages();
         } else {
           NetworkErrorHandler.showErrorSnackbar(
-            context, 
+            context,
             'Failed to send image',
             customMessage: 'Unable to send image',
           );
@@ -208,12 +210,12 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
       final date = DateTime.parse(dateString);
       final now = DateTime.now();
       final diff = now.difference(date);
-      
+
       if (diff.inSeconds < 60) return 'now';
       if (diff.inMinutes < 60) return '${diff.inMinutes}m';
       if (diff.inHours < 24) return '${diff.inHours}h';
       if (diff.inDays < 7) return '${diff.inDays}d';
-      
+
       return '${date.day}/${date.month}';
     } catch (e) {
       return '';
@@ -236,7 +238,8 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
             CircleAvatar(
               radius: 18,
               backgroundImage: widget.otherUser['avatar'] != null
-                  ? CachedNetworkImageProvider(_getImageUrl(widget.otherUser['avatar']))
+                  ? CachedNetworkImageProvider(
+                      _getImageUrl(widget.otherUser['avatar']))
                   : null,
               child: widget.otherUser['avatar'] == null
                   ? const Icon(Icons.person, size: 20)
@@ -263,7 +266,8 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                       if (widget.otherUser['kyc'] == true)
                         const Padding(
                           padding: EdgeInsets.only(left: 4),
-                          child: Icon(Icons.verified, size: 16, color: Colors.blue),
+                          child: Icon(Icons.verified,
+                              size: 16, color: Colors.blue),
                         ),
                     ],
                   ),
@@ -285,7 +289,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
           // Messages List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: AdsyLoadingIndicator())
                 : _messages.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
@@ -297,7 +301,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                         },
                       ),
           ),
-          
+
           // Input Area
           _buildInputArea(),
         ],
@@ -347,14 +351,16 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) ...[
             CircleAvatar(
               radius: 14,
               backgroundImage: widget.otherUser['avatar'] != null
-                  ? CachedNetworkImageProvider(_getImageUrl(widget.otherUser['avatar']))
+                  ? CachedNetworkImageProvider(
+                      _getImageUrl(widget.otherUser['avatar']))
                   : null,
               child: widget.otherUser['avatar'] == null
                   ? const Icon(Icons.person, size: 14)
@@ -388,7 +394,8 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                 // Image message
                 if (mediaUrl != null && messageType == 'image')
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16)),
                     child: CachedNetworkImage(
                       imageUrl: _getImageUrl(mediaUrl),
                       width: 200,
@@ -397,7 +404,8 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                         width: 200,
                         height: 150,
                         color: Colors.grey[200],
-                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        child: const Center(
+                            child: AdsyLoadingIndicator(strokeWidth: 2)),
                       ),
                       errorWidget: (context, url, error) => Container(
                         width: 200,
@@ -407,7 +415,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                       ),
                     ),
                   ),
-                
+
                 // Text content
                 if (content.isNotEmpty)
                   Padding(
@@ -420,7 +428,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                       ),
                     ),
                   ),
-                
+
                 // Time and read status
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -516,7 +524,7 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                 color: _isSending ? Colors.grey[300] : Colors.grey[600],
               ),
             ),
-            
+
             // Message input
             Expanded(
               child: Container(
@@ -531,16 +539,17 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                     hintText: 'Type a message...',
                     hintStyle: TextStyle(color: Colors.grey),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   ),
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _sendMessage(),
                 ),
               ),
             ),
-            
+
             const SizedBox(width: 8),
-            
+
             // Send button
             Container(
               decoration: BoxDecoration(
@@ -555,9 +564,10 @@ class _OrderChatScreenState extends State<OrderChatScreen> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : const Icon(Icons.send, color: Colors.white, size: 20),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../services/eshop_manager_service.dart';
 import '../../services/auth_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class CreateStoreScreen extends StatefulWidget {
   final VoidCallback onStoreCreated;
@@ -19,7 +20,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
   final _formKey = GlobalKey<FormState>();
   final _storeNameController = TextEditingController();
   final _storeUsernameController = TextEditingController();
-  
+
   bool _isSubmitting = false;
   bool _isCheckingUsername = false;
   bool _usernameChecked = false;
@@ -36,7 +37,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
 
   Future<void> _checkUsernameAvailability() async {
     final username = _storeUsernameController.text.trim().toLowerCase();
-    
+
     if (username.isEmpty || username.length < 3) {
       setState(() {
         _usernameChecked = false;
@@ -50,15 +51,17 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
 
     try {
       final result = await EshopManagerService.checkStoreUsername(username);
-      
+
       if (mounted) {
         setState(() {
           _usernameChecked = true;
           _usernameAvailable = result['available'] ?? false;
           _usernameSuggestions = (result['suggestions'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ?? [];
-          _usernameError = _usernameAvailable ? null : 'This username is already taken';
+                  ?.map((e) => e.toString())
+                  .toList() ??
+              [];
+          _usernameError =
+              _usernameAvailable ? null : 'This username is already taken';
         });
       }
     } catch (e) {
@@ -303,7 +306,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Color(0xFF10B981)),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF10B981)),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -349,7 +353,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                   child: SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(
+                                    child: AdsyLoadingIndicator(
                                       strokeWidth: 2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
                                         Color(0xFF10B981),
@@ -368,7 +372,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Color(0xFF10B981)),
+                            borderSide:
+                                const BorderSide(color: Color(0xFF10B981)),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -377,7 +382,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                         ),
                         style: const TextStyle(fontSize: 13),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[a-z0-9_-]')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-z0-9_-]')),
                           LowerCaseTextFormatter(),
                         ],
                         onChanged: (value) {
@@ -404,7 +410,8 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                       const SizedBox(height: 8),
 
                       // Username availability status
-                      if (_usernameChecked && _storeUsernameController.text.isNotEmpty)
+                      if (_usernameChecked &&
+                          _storeUsernameController.text.isNotEmpty)
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
@@ -552,7 +559,7 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(
+                                  child: AdsyLoadingIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                       Colors.white,
@@ -568,9 +575,10 @@ class _CreateStoreScreenState extends State<CreateStoreScreen> {
                                 ),
                         ),
                       ),
-                      
+
                       // Safe area bottom padding for devices with gesture navigation
-                      SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+                      SizedBox(
+                          height: MediaQuery.of(context).padding.bottom + 16),
                     ],
                   ),
                 ),

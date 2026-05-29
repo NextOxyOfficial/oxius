@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/support_ticket_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class CreateTicketScreen extends StatefulWidget {
   const CreateTicketScreen({super.key});
@@ -160,7 +161,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF3B82F6), width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -210,7 +212,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+                  borderSide:
+                      const BorderSide(color: Color(0xFF3B82F6), width: 2),
                 ),
                 contentPadding: const EdgeInsets.all(12),
               ),
@@ -244,9 +247,10 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : const Text(
@@ -258,7 +262,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                       ),
               ),
             ),
-            
+
             // Safe area bottom padding for devices with gesture navigation
             SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
           ],

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/scroll_direction_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MobileNavigationBar extends StatefulWidget {
   final ScrollDirectionService? scrollService;
-  
+
   const MobileNavigationBar({
     super.key,
     this.scrollService,
@@ -25,15 +26,15 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
   @override
   void initState() {
     super.initState();
-    
+
     // Create or use provided scroll service
     _scrollService = widget.scrollService ?? ScrollDirectionService();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0, 2), // Slide down by 2x height
@@ -51,25 +52,26 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
   @override
   void dispose() {
     _disposed = true;
-    
+
     // Remove listener before disposing
     if (_scrollService != null && !_scrollService!.isDisposed) {
       _scrollService!.removeListener(_onScrollDirectionChanged);
     }
-    
+
     // Only dispose if we created the scroll service
     if (widget.scrollService == null && _scrollService != null) {
       _scrollService!.dispose();
     }
-    
+
     _animationController.dispose();
     _scrollService = null;
     super.dispose();
   }
 
   void _onScrollDirectionChanged() {
-    if (_disposed || _scrollService == null || _scrollService!.isDisposed) return;
-    
+    if (_disposed || _scrollService == null || _scrollService!.isDisposed)
+      return;
+
     try {
       if (mounted) {
         if (_scrollService!.isVisible) {
@@ -79,7 +81,8 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
         }
       }
     } catch (e) {
-      debugPrint('MobileNavigationBar: Error in scroll direction change handler - $e');
+      debugPrint(
+          'MobileNavigationBar: Error in scroll direction change handler - $e');
     }
   }
 
@@ -88,7 +91,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
     final mediaQuery = MediaQuery.of(context);
     final screenWidth = mediaQuery.size.width;
     final isMobile = screenWidth < 640;
-    
+
     if (!isMobile) return const SizedBox.shrink();
 
     return Container(
@@ -165,22 +168,24 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _loadingButtons.contains(label) ? null : () {
-            if (_disposed) return;
-            setState(() {
-              _loadingButtons.add(label);
-            });
-            onTap();
-            
-            // Remove loading state after a delay
-            Future.delayed(const Duration(milliseconds: 300), () {
-              if (!_disposed && mounted) {
-                setState(() {
-                  _loadingButtons.remove(label);
-                });
-              }
-            });
-          },
+          onTap: _loadingButtons.contains(label)
+              ? null
+              : () {
+                  if (_disposed) return;
+                  setState(() {
+                    _loadingButtons.add(label);
+                  });
+                  onTap();
+
+                  // Remove loading state after a delay
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    if (!_disposed && mounted) {
+                      setState(() {
+                        _loadingButtons.remove(label);
+                      });
+                    }
+                  });
+                },
           borderRadius: BorderRadius.circular(36),
           child: Container(
             height: 72,
@@ -192,18 +197,22 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                   SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(
+                    child: AdsyLoadingIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        isHighlighted 
+                        isHighlighted
                             ? const Color(0xFF10B981)
-                            : (isSelected ? const Color(0xFF3B82F6) : Colors.grey.shade600),
+                            : (isSelected
+                                ? const Color(0xFF3B82F6)
+                                : Colors.grey.shade600),
                       ),
                     ),
                   )
                 else
                   Container(
-                    padding: isHighlighted ? const EdgeInsets.all(6) : EdgeInsets.zero,
+                    padding: isHighlighted
+                        ? const EdgeInsets.all(6)
+                        : EdgeInsets.zero,
                     decoration: isHighlighted
                         ? BoxDecoration(
                             gradient: const LinearGradient(
@@ -225,7 +234,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                       isSelected ? selectedIcon : icon,
                       color: isHighlighted
                           ? Colors.white
-                          : (isSelected 
+                          : (isSelected
                               ? const Color(0xFF3B82F6)
                               : Colors.grey.shade600),
                       size: isHighlighted ? 20 : 24,
@@ -239,7 +248,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isHighlighted
                         ? const Color(0xFF10B981)
-                        : (isSelected 
+                        : (isSelected
                             ? const Color(0xFF3B82F6)
                             : Colors.grey.shade600),
                   ),
@@ -256,7 +265,7 @@ class _MobileNavigationBarState extends State<MobileNavigationBar>
 
   void _handleNavigation(String destination) {
     if (_disposed) return;
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Navigate to $destination'),

@@ -9,6 +9,7 @@ import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import 'payment_verification_screen.dart';
 import '../settings_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -71,8 +72,8 @@ class _DepositTabState extends State<DepositTab> {
 
     // Check if required profile fields are filled
     return (user.phone != null && user.phone!.isNotEmpty) &&
-           (user.address != null && user.address!.isNotEmpty) &&
-           (user.city != null && user.city!.isNotEmpty);
+        (user.address != null && user.address!.isNotEmpty) &&
+        (user.city != null && user.city!.isNotEmpty);
   }
 
   void _showProfileIncompleteDialog() {
@@ -181,7 +182,8 @@ class _DepositTabState extends State<DepositTab> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -226,7 +228,8 @@ class _DepositTabState extends State<DepositTab> {
     _validateAmount();
 
     setState(() {
-      _termsError = _acceptedTerms ? null : 'Please accept terms and conditions';
+      _termsError =
+          _acceptedTerms ? null : 'Please accept terms and conditions';
     });
 
     if (_amountError != null || _termsError != null) {
@@ -259,7 +262,7 @@ class _DepositTabState extends State<DepositTab> {
             response['merchant_invoice_no']?.toString() ??
             DateTime.now().millisecondsSinceEpoch.toString();
         final verificationOrderId =
-          WalletService.extractVerificationOrderId(response) ?? orderId;
+            WalletService.extractVerificationOrderId(response) ?? orderId;
         final checkoutUrl = response['checkout_url']?.toString();
 
         if (checkoutUrl == null || checkoutUrl.isEmpty) {
@@ -314,10 +317,10 @@ class _DepositTabState extends State<DepositTab> {
       if (mounted) {
         // Extract clean error message
         String errorMessage = e.toString().replaceAll('Exception: ', '');
-        
+
         // Check if it's a profile-related error
-        if (errorMessage.contains('profile') || 
-            errorMessage.contains('phone') || 
+        if (errorMessage.contains('profile') ||
+            errorMessage.contains('phone') ||
             errorMessage.contains('address')) {
           _showProfileIncompleteDialog();
         } else {
@@ -359,7 +362,7 @@ class _DepositTabState extends State<DepositTab> {
             onChanged: _validateAmount,
           ),
           const SizedBox(height: 16),
-          
+
           // Payment Method Card
           Container(
             padding: const EdgeInsets.all(16),
@@ -436,7 +439,7 @@ class _DepositTabState extends State<DepositTab> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Terms Checkbox
           TermsCheckbox(
             value: _acceptedTerms,
@@ -449,7 +452,7 @@ class _DepositTabState extends State<DepositTab> {
             errorText: _termsError,
           ),
           const SizedBox(height: 16),
-          
+
           // Deposit Button
           Container(
             width: double.infinity,
@@ -481,7 +484,7 @@ class _DepositTabState extends State<DepositTab> {
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2,
                         color: Colors.white,
                       ),
@@ -502,7 +505,7 @@ class _DepositTabState extends State<DepositTab> {
                     ),
             ),
           ),
-          
+
           // Safe area bottom padding for devices with gesture navigation
           SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
         ],

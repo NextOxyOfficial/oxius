@@ -5,6 +5,7 @@ import '../../models/microgig_models.dart';
 import '../../services/microgig_service.dart';
 import '../../services/translation_service.dart';
 import '../../widgets/linkify_text.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PendingTasksScreen extends StatefulWidget {
   const PendingTasksScreen({super.key});
@@ -22,7 +23,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
   final TranslationService _translationService = TranslationService();
   Timer? _timer;
   final ScrollController _scrollController = ScrollController();
-  
+
   // Pagination and filtering
   int _currentPage = 1;
   bool _hasMore = true;
@@ -68,14 +69,14 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
         _tasks.clear();
       });
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     final response = await MicrogigService.getPendingTasks(
       page: _currentPage,
       filter: _selectedFilter,
     );
-    
+
     if (mounted) {
       setState(() {
         _tasks = response['tasks'] as List<MicroGigTask>;
@@ -87,14 +88,14 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
 
   Future<void> _loadMoreTasks() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     setState(() => _isLoadingMore = true);
-    
+
     final response = await MicrogigService.getPendingTasks(
       page: _currentPage + 1,
       filter: _selectedFilter,
     );
-    
+
     if (mounted) {
       setState(() {
         _tasks.addAll(response['tasks'] as List<MicroGigTask>);
@@ -120,22 +121,23 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
 
   String _stripHtmlTags(String htmlString) {
     // Remove HTML tags using regex
-    final RegExp exp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: false);
+    final RegExp exp =
+        RegExp(r'<[^>]*>', multiLine: true, caseSensitive: false);
     return htmlString.replaceAll(exp, '').trim();
   }
 
   String _formatCountdown(MicroGigTask task) {
     final elapsed = DateTime.now().difference(task.createdAt);
     final remaining = const Duration(hours: 48) - elapsed;
-    
+
     if (remaining.isNegative) {
       return 'Auto-approved';
     }
-    
+
     final hours = remaining.inHours;
     final minutes = remaining.inMinutes.remainder(60);
     final seconds = remaining.inSeconds.remainder(60);
-    
+
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
@@ -203,7 +205,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
     required IconData icon,
   }) {
     final isSelected = _selectedFilter == value;
-    
+
     Color getColor() {
       if (!isSelected) return Colors.grey[300]!;
       switch (value) {
@@ -298,7 +300,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
           // Task List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: AdsyLoadingIndicator())
                 : _tasks.isEmpty
                     ? Center(
                         child: Column(
@@ -322,7 +324,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                       )
                     : Stack(
                         children: [
-                          RefreshIndicator(
+                          AdsyRefreshIndicator(
                             onRefresh: () => _loadPendingTasks(isRefresh: true),
                             child: ListView.builder(
                               controller: _scrollController,
@@ -334,7 +336,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                                   return const Center(
                                     child: Padding(
                                       padding: EdgeInsets.all(16),
-                                      child: CircularProgressIndicator(),
+                                      child: AdsyLoadingIndicator(),
                                     ),
                                   );
                                 }
@@ -424,7 +426,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              
+
               // Price and Auto-approval countdown row
               Row(
                 children: [
@@ -458,7 +460,7 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                       ],
                     ),
                   ),
-                  
+
                   // Auto-approval countdown for pending tasks
                   if (!task.approved && !task.rejected) ...[
                     const Spacer(),
@@ -619,7 +621,8 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                                           url,
                                           height: 120,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stack) {
+                                          errorBuilder:
+                                              (context, error, stack) {
                                             return Container(
                                               height: 120,
                                               width: 120,
@@ -640,7 +643,8 @@ class _PendingTasksScreenState extends State<PendingTasksScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.red.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                                border: Border.all(
+                                    color: Colors.red.withOpacity(0.3)),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

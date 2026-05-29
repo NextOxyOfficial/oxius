@@ -10,6 +10,7 @@ import '../../config/app_config.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../widgets/linkify_text.dart';
 import '../../widgets/link_preview_card.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MindForceDetailScreen extends StatefulWidget {
   final String problemId;
@@ -64,7 +65,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         _comments = comments;
         _isLoading = false;
       });
-      
+
       // Increment view count after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted && _problem != null) {
@@ -197,7 +198,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     );
 
     if (confirmed == true) {
-      final success = await MindForceService.markProblemAsSolved(widget.problemId);
+      final success =
+          await MindForceService.markProblemAsSolved(widget.problemId);
       if (success && mounted) {
         setState(() {
           _problem = _problem!.copyWith(status: 'solved');
@@ -227,7 +229,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
 
   bool get isOwner {
     final user = AuthService.currentUser;
-    return user != null && _problem != null && user.id == _problem!.userDetails.id;
+    return user != null &&
+        _problem != null &&
+        user.id == _problem!.userDetails.id;
   }
 
   bool _isCommentAuthor(MindForceComment comment) {
@@ -272,7 +276,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               if (canDelete)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  title:
+                      const Text('Delete', style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _deleteComment(comment);
@@ -335,7 +340,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to update comment'), backgroundColor: Colors.red),
+            const SnackBar(
+                content: Text('Failed to update comment'),
+                backgroundColor: Colors.red),
           );
         }
       }
@@ -380,7 +387,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('Failed to delete comment'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -399,16 +408,21 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         ),
         title: const Text(
           'Problem Details',
-          style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600),
         ),
         actions: [
           if (isOwner && _problem!.status != 'solved')
             TextButton.icon(
               onPressed: _markAsSolved,
-              icon: const Icon(Icons.check_circle, size: 18, color: Colors.green),
+              icon:
+                  const Icon(Icons.check_circle, size: 18, color: Colors.green),
               label: const Text(
                 'Mark as Solved',
-                style: TextStyle(color: Colors.green, fontSize: 14, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600),
               ),
             ),
         ],
@@ -427,7 +441,7 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                           children: [
                             // Compact Header Card
                             _buildCompactHeader(),
-                            
+
                             // Problem Content
                             Container(
                               padding: const EdgeInsets.all(16),
@@ -443,18 +457,20 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                                 ],
                               ),
                             ),
-                            
+
                             const SizedBox(height: 8),
-                            
+
                             // Comments Section
                             _buildCommentsSection(),
                           ],
                         ),
                       ),
                     ),
-                    if (AuthService.currentUser != null && _problem!.status != 'solved')
+                    if (AuthService.currentUser != null &&
+                        _problem!.status != 'solved')
                       _buildCommentInput()
-                    else if (AuthService.currentUser == null && _problem!.status != 'solved')
+                    else if (AuthService.currentUser == null &&
+                        _problem!.status != 'solved')
                       _buildLoginPrompt()
                     else if (_problem!.status == 'solved')
                       _buildSolvedMessage(),
@@ -485,12 +501,14 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                 ),
                 child: ClipOval(
                   child: () {
-                    final avatarUrl = AppConfig.getAbsoluteUrl(_problem!.userDetails.image);
+                    final avatarUrl =
+                        AppConfig.getAbsoluteUrl(_problem!.userDetails.image);
                     if (avatarUrl.isNotEmpty) {
                       return Image.network(
                         avatarUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildAvatarFallback(),
                       );
                     }
                     return _buildAvatarFallback();
@@ -518,12 +536,14 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                         ),
                         if (_problem!.userDetails.kyc) ...[
                           const SizedBox(width: 4),
-                          const Icon(Icons.verified, size: 14, color: Color(0xFF3B82F6)),
+                          const Icon(Icons.verified,
+                              size: 14, color: Color(0xFF3B82F6)),
                         ],
                         if (_problem!.userDetails.isPro) ...[
                           const SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF7f00ff), Color(0xFFe100ff)],
@@ -555,9 +575,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Title
           Text(
             _problem!.title,
@@ -568,15 +588,16 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               height: 1.3,
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Badges Row
           Row(
             children: [
               if (_problem!.category != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: Colors.purple.shade50,
                     borderRadius: BorderRadius.circular(6),
@@ -584,7 +605,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.category, size: 12, color: Colors.purple.shade700),
+                      Icon(Icons.category,
+                          size: 12, color: Colors.purple.shade700),
                       const SizedBox(width: 4),
                       Text(
                         _problem!.category!.name,
@@ -599,28 +621,38 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                 ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: _problem!.paymentOption == 'paid' ? Colors.green.shade50 : Colors.blue.shade50,
+                  color: _problem!.paymentOption == 'paid'
+                      ? Colors.green.shade50
+                      : Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      _problem!.paymentOption == 'paid' ? Icons.payments : Icons.volunteer_activism,
+                      _problem!.paymentOption == 'paid'
+                          ? Icons.payments
+                          : Icons.volunteer_activism,
                       size: 12,
-                      color: _problem!.paymentOption == 'paid' ? Colors.green.shade700 : Colors.blue.shade700,
+                      color: _problem!.paymentOption == 'paid'
+                          ? Colors.green.shade700
+                          : Colors.blue.shade700,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _problem!.paymentOption == 'paid' && _problem!.paymentAmount != null
+                      _problem!.paymentOption == 'paid' &&
+                              _problem!.paymentAmount != null
                           ? '৳${_problem!.paymentAmount!.toStringAsFixed(0)}'
                           : 'Free',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: _problem!.paymentOption == 'paid' ? Colors.green.shade700 : Colors.blue.shade700,
+                        color: _problem!.paymentOption == 'paid'
+                            ? Colors.green.shade700
+                            : Colors.blue.shade700,
                       ),
                     ),
                   ],
@@ -641,7 +673,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey.shade500),
+                  Icon(Icons.chat_bubble_outline,
+                      size: 14, color: Colors.grey.shade500),
                   const SizedBox(width: 4),
                   Text(
                     '${_comments.length}',
@@ -690,9 +723,13 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(_problem!.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, height: 1.3)),
+        Text(_problem!.title,
+            style: const TextStyle(
+                fontSize: 18, fontWeight: FontWeight.w600, height: 1.3)),
         const SizedBox(height: 12),
-        LinkifyText(_problem!.description, style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.5)),
+        LinkifyText(_problem!.description,
+            style: TextStyle(
+                fontSize: 15, color: Colors.grey.shade700, height: 1.5)),
         FirstLinkPreview(text: _problem!.description),
       ],
     );
@@ -706,7 +743,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           children: [
             Icon(Icons.image, size: 20, color: Colors.blue.shade500),
             const SizedBox(width: 8),
-            const Text('Photos', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text('Photos',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ],
         ),
         const SizedBox(height: 12),
@@ -720,7 +758,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           ),
           itemCount: _problem!.media.length,
           itemBuilder: (context, index) {
-            final imageUrl = AppConfig.getAbsoluteUrl(_problem!.media[index].image);
+            final imageUrl =
+                AppConfig.getAbsoluteUrl(_problem!.media[index].image);
             return ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
@@ -746,7 +785,9 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
           children: [
             Icon(Icons.chat_bubble, size: 20, color: Colors.blue.shade500),
             const SizedBox(width: 8),
-            Text('Advice (${_comments.length})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text('Advice (${_comments.length})',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ],
         ),
         const SizedBox(height: 16),
@@ -761,7 +802,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey.shade400),
+                  Icon(Icons.chat_bubble_outline,
+                      size: 48, color: Colors.grey.shade400),
                   const SizedBox(height: 12),
                   Text(
                     'No advice has been posted yet.\nBe the first to help!',
@@ -777,7 +819,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _comments.length,
-            itemBuilder: (context, index) => _buildCommentItem(_comments[index]),
+            itemBuilder: (context, index) =>
+                _buildCommentItem(_comments[index]),
           ),
       ],
     );
@@ -795,146 +838,175 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         decoration: BoxDecoration(
           color: comment.isSolved ? Colors.green.shade50 : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: comment.isSolved ? Colors.green.shade200 : Colors.grey.shade200),
+          border: Border.all(
+              color: comment.isSolved
+                  ? Colors.green.shade200
+                  : Colors.grey.shade200),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: ClipOval(
-                  child: () {
-                    final avatarUrl = AppConfig.getAbsoluteUrl(comment.userDetails.image);
-                    if (avatarUrl.isNotEmpty) {
-                      return Image.network(
-                        avatarUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey.shade200,
-                          child: Icon(Icons.person, color: Colors.grey.shade400),
-                        ),
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: ClipOval(
+                    child: () {
+                      final avatarUrl =
+                          AppConfig.getAbsoluteUrl(comment.userDetails.image);
+                      if (avatarUrl.isNotEmpty) {
+                        return Image.network(
+                          avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            color: Colors.grey.shade200,
+                            child:
+                                Icon(Icons.person, color: Colors.grey.shade400),
+                          ),
+                        );
+                      }
+                      return Container(
+                        color: Colors.grey.shade200,
+                        child: Icon(Icons.person, color: Colors.grey.shade400),
                       );
-                    }
-                    return Container(
-                      color: Colors.grey.shade200,
-                      child: Icon(Icons.person, color: Colors.grey.shade400),
-                    );
-                  }(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            comment.userDetails.name, 
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (comment.userDetails.kyc) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.verified, size: 14, color: Color(0xFF3B82F6)),
-                        ],
-                        if (comment.userDetails.isPro) ...[
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                              ),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: const Text(
-                              'PRO',
-                              style: TextStyle(
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                        if (comment.isSolved) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: [Colors.green.shade500, Colors.green.shade600]),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.check_circle, size: 12, color: Colors.white),
-                                SizedBox(width: 4),
-                                Text('Solution', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    Text(TimeUtils.formatTimeAgo(comment.createdAt), style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                  ],
-                ),
-              ),
-              if (isOwner && _problem!.status != 'solved' && !comment.isSolved)
-                OutlinedButton.icon(
-                  onPressed: () => _markCommentAsSolution(comment.id),
-                  icon: const Icon(Icons.check_circle, size: 14),
-                  label: const Text('Mark Solution', style: TextStyle(fontSize: 12)),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    minimumSize: const Size(0, 32),
+                    }(),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          LinkifyText(comment.content, style: TextStyle(fontSize: 14, color: Colors.grey.shade800, height: 1.4)),
-          FirstLinkPreview(text: comment.content),
-          if (comment.media.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: comment.media.map((mediaItem) {
-                final image = mediaItem.image;
-                final imageUrl = AppConfig.getAbsoluteUrl(image);
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    imageUrl,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              comment.userDetails.name,
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w600),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (comment.userDetails.kyc) ...[
+                            const SizedBox(width: 4),
+                            const Icon(Icons.verified,
+                                size: 14, color: Color(0xFF3B82F6)),
+                          ],
+                          if (comment.userDetails.isPro) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFFD700),
+                                    Color(0xFFFFA500)
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: const Text(
+                                'PRO',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                          if (comment.isSolved) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(colors: [
+                                  Colors.green.shade500,
+                                  Colors.green.shade600
+                                ]),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.check_circle,
+                                      size: 12, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text('Solution',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      Text(TimeUtils.formatTimeAgo(comment.createdAt),
+                          style: TextStyle(
+                              fontSize: 12, color: Colors.grey.shade600)),
+                    ],
+                  ),
+                ),
+                if (isOwner &&
+                    _problem!.status != 'solved' &&
+                    !comment.isSolved)
+                  OutlinedButton.icon(
+                    onPressed: () => _markCommentAsSolution(comment.id),
+                    icon: const Icon(Icons.check_circle, size: 14),
+                    label: const Text('Mark Solution',
+                        style: TextStyle(fontSize: 12)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      minimumSize: const Size(0, 32),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            LinkifyText(comment.content,
+                style: TextStyle(
+                    fontSize: 14, color: Colors.grey.shade800, height: 1.4)),
+            FirstLinkPreview(text: comment.content),
+            if (comment.media.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: comment.media.map((mediaItem) {
+                  final image = mediaItem.image;
+                  final imageUrl = AppConfig.getAbsoluteUrl(image);
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      imageUrl,
                       width: 80,
                       height: 80,
-                      color: Colors.grey.shade200,
-                      child: Icon(Icons.image, color: Colors.grey.shade400),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey.shade200,
+                        child: Icon(Icons.image, color: Colors.grey.shade400),
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ),
+                  );
+                }).toList(),
+              ),
+            ],
           ],
-        ],
-      ),
+        ),
       ),
     );
   }
@@ -944,7 +1016,12 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -2))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2))
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -954,7 +1031,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             children: [
               Icon(Icons.send, size: 16, color: Colors.blue.shade500),
               const SizedBox(width: 8),
-              const Text('Write an advice', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const Text('Write an advice',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: 12),
@@ -964,8 +1042,12 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             decoration: InputDecoration(
               hintText: 'Share your solution or ask for clarification...',
               hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.blue, width: 2)),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.blue, width: 2)),
               contentPadding: const EdgeInsets.all(12),
             ),
           ),
@@ -976,22 +1058,31 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                 onPressed: _isCompressing ? null : _pickImage,
                 icon: const Icon(Icons.add_photo_alternate, size: 18),
                 label: const Text('Add Photo'),
-                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8)),
               ),
               const SizedBox(width: 8),
-              Text('${_commentImages.length}/3 images', style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
+              Text('${_commentImages.length}/3 images',
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600)),
               const Spacer(),
               ElevatedButton.icon(
                 onPressed: _isSubmittingComment ? null : _submitComment,
                 icon: _isSubmittingComment
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: AdsyLoadingIndicator(
+                            strokeWidth: 2, color: Colors.white))
                     : const Icon(Icons.send, size: 18),
                 label: Text(_isSubmittingComment ? 'Submitting...' : 'Submit'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
             ],
@@ -1004,7 +1095,10 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
               children: _commentImages.asMap().entries.map((entry) {
                 return Stack(
                   children: [
-                    ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.file(entry.value, width: 80, height: 80, fit: BoxFit.cover)),
+                    ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(entry.value,
+                            width: 80, height: 80, fit: BoxFit.cover)),
                     Positioned(
                       top: 4,
                       right: 4,
@@ -1012,8 +1106,10 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
                         onTap: () => _removeImage(entry.key),
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                          child: const Icon(Icons.close, size: 14, color: Colors.white),
+                          decoration: const BoxDecoration(
+                              color: Colors.red, shape: BoxShape.circle),
+                          child: const Icon(Icons.close,
+                              size: 14, color: Colors.white),
                         ),
                       ),
                     ),
@@ -1038,7 +1134,8 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.amber.shade100, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: Colors.amber.shade100, shape: BoxShape.circle),
             child: Icon(Icons.lock, size: 20, color: Colors.amber.shade700),
           ),
           const SizedBox(width: 12),
@@ -1046,8 +1143,11 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Authentication Required', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                Text('Please login to add your advice', style: TextStyle(fontSize: 13)),
+                Text('Authentication Required',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                Text('Please login to add your advice',
+                    style: TextStyle(fontSize: 13)),
               ],
             ),
           ),
@@ -1067,16 +1167,21 @@ class _MindForceDetailScreenState extends State<MindForceDetailScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.green.shade100, shape: BoxShape.circle),
-            child: Icon(Icons.check_circle, size: 20, color: Colors.green.shade700),
+            decoration: BoxDecoration(
+                color: Colors.green.shade100, shape: BoxShape.circle),
+            child: Icon(Icons.check_circle,
+                size: 20, color: Colors.green.shade700),
           ),
           const SizedBox(width: 12),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('This problem has been marked as solved', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                Text('New advice cannot be added to solved problems', style: TextStyle(fontSize: 13)),
+                Text('This problem has been marked as solved',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                Text('New advice cannot be added to solved problems',
+                    style: TextStyle(fontSize: 13)),
               ],
             ),
           ),

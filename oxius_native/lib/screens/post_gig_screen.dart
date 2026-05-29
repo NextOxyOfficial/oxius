@@ -6,6 +6,7 @@ import '../services/gigs_service.dart';
 import '../services/auth_service.dart';
 import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -29,7 +30,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
   final GigsService _gigsService = GigsService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
-  
+
   // Form fields
   String? _selectedCategory;
   final TextEditingController _titleController = TextEditingController();
@@ -37,12 +38,12 @@ class _PostGigScreenState extends State<PostGigScreen> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _instructionsController = TextEditingController();
   final TextEditingController _actionLinkController = TextEditingController();
-  
+
   List<String> _selectedDevices = [];
   List<String> _selectedNetworks = [];
   final List<String> _uploadedImages = [];
   String _targetCountry = 'Bangladesh';
-  
+
   bool _isLoading = false;
   bool _isLoadingData = true;
   bool _isUploading = false;
@@ -66,14 +67,14 @@ class _PostGigScreenState extends State<PostGigScreen> {
 
   Future<void> _loadInitialData() async {
     setState(() => _isLoadingData = true);
-    
+
     try {
       final results = await Future.wait([
         _gigsService.fetchMicroGigCategories(),
         _gigsService.fetchTargetDevices(),
         _gigsService.fetchTargetNetworks(),
       ]);
-      
+
       if (mounted) {
         setState(() {
           _categories = results[0];
@@ -147,7 +148,7 @@ class _PostGigScreenState extends State<PostGigScreen> {
 
         // Convert to base64
         final base64String = base64Encode(bytes);
-        
+
         setState(() {
           _uploadedImages.add('data:image/jpeg;base64,$base64String');
           _isUploading = false;
@@ -169,15 +170,15 @@ class _PostGigScreenState extends State<PostGigScreen> {
 
   bool _validateForm() {
     return _selectedCategory != null &&
-           _titleController.text.trim().isNotEmpty &&
-           _priceController.text.trim().isNotEmpty &&
-           _quantityController.text.trim().isNotEmpty &&
-           _instructionsController.text.trim().isNotEmpty &&
-           double.tryParse(_priceController.text) != null &&
-           int.tryParse(_quantityController.text) != null &&
-           _targetCountry.isNotEmpty &&
-           _selectedDevices.isNotEmpty &&
-           _selectedNetworks.isNotEmpty;
+        _titleController.text.trim().isNotEmpty &&
+        _priceController.text.trim().isNotEmpty &&
+        _quantityController.text.trim().isNotEmpty &&
+        _instructionsController.text.trim().isNotEmpty &&
+        double.tryParse(_priceController.text) != null &&
+        int.tryParse(_quantityController.text) != null &&
+        _targetCountry.isNotEmpty &&
+        _selectedDevices.isNotEmpty &&
+        _selectedNetworks.isNotEmpty;
   }
 
   bool _isValidUrl(String url) {
@@ -238,7 +239,8 @@ class _PostGigScreenState extends State<PostGigScreen> {
         !_isValidUrl(_actionLinkController.text.trim())) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Invalid URL format. Please enter a valid URL (e.g., https://example.com)'),
+          content: Text(
+              'Invalid URL format. Please enter a valid URL (e.g., https://example.com)'),
           backgroundColor: Colors.red,
         ),
       );
@@ -251,7 +253,8 @@ class _PostGigScreenState extends State<PostGigScreen> {
       // Process action link
       String? actionLink = _actionLinkController.text.trim();
       if (actionLink.isNotEmpty) {
-        if (!actionLink.startsWith('http://') && !actionLink.startsWith('https://')) {
+        if (!actionLink.startsWith('http://') &&
+            !actionLink.startsWith('https://')) {
           actionLink = 'https://$actionLink';
         }
       } else {
@@ -422,7 +425,8 @@ class _PostGigScreenState extends State<PostGigScreen> {
                 backgroundColor: const Color(0xFF10B981),
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -451,139 +455,140 @@ class _PostGigScreenState extends State<PostGigScreen> {
         elevation: 0,
         surfaceTintColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: _slate800, size: 22),
+          icon:
+              const Icon(Icons.arrow_back_rounded, color: _slate800, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [_indigo, _violet]),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(
+                Icons.work_outline_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Post a Gig',
+              style: GoogleFonts.inter(
+                color: _slate800,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
+      ),
+      body: _isLoadingData
+          ? const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: AdsyLoadingIndicator(),
+              ),
+            )
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Header Section
+                  _buildHeader(isMobile),
+
+                  // Form Section
+                  _buildForm(isMobile),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildHeader(bool isMobile) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            _indigo.withValues(alpha: 0.12),
+            _violet.withValues(alpha: 0.12),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _indigo.withValues(alpha: 0.2)),
+      ),
+      child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(7),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [_indigo, _violet]),
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
-              Icons.work_outline_rounded,
-              size: 16,
+              Icons.auto_awesome_rounded,
               color: Colors.white,
+              size: 22,
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            'Post a Gig',
-            style: GoogleFonts.inter(
-              color: _slate800,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-      centerTitle: true,
-    ),
-    body: _isLoadingData
-        ? const Center(
-            child: Padding(
-              padding: EdgeInsets.all(40),
-              child: CircularProgressIndicator(),
-            ),
-          )
-        : SingleChildScrollView(
+          const SizedBox(width: 12),
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Section
-                _buildHeader(isMobile),
-
-                // Form Section
-                _buildForm(isMobile),
+                Text(
+                  'Create New Gig',
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: _slate800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Design clear tasks and reach the right workers fast',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: _slate500,
+                  ),
+                ),
               ],
             ),
           ),
-  );
-}
-
-Widget _buildHeader(bool isMobile) {
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          _indigo.withValues(alpha: 0.12),
-          _violet.withValues(alpha: 0.12),
         ],
       ),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: _indigo.withValues(alpha: 0.2)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [_indigo, _violet]),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.auto_awesome_rounded,
-            color: Colors.white,
-            size: 22,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Create New Gig',
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: _slate800,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Design clear tasks and reach the right workers fast',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: _slate500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
+    );
+  }
 
-Widget _buildForm(bool isMobile) {
-  return Container(
-    margin: const EdgeInsets.fromLTRB(4, 0, 4, 10),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: _slate200),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.035),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          // Basic Details Section
-          _buildSectionCard(
+  Widget _buildForm(bool isMobile) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(4, 0, 4, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _slate200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            // Basic Details Section
+            _buildSectionCard(
               title: 'Basic Details',
               icon: Icons.description,
               child: Column(
@@ -591,11 +596,14 @@ Widget _buildForm(bool isMobile) {
                   _buildDropdownField(
                     label: 'Category',
                     value: _selectedCategory,
-                    items: _categories.map((cat) => DropdownMenuItem<String>(
-                      value: cat['id'].toString(),
-                      child: Text(cat['title']),
-                    )).toList(),
-                    onChanged: (value) => setState(() => _selectedCategory = value),
+                    items: _categories
+                        .map((cat) => DropdownMenuItem<String>(
+                              value: cat['id'].toString(),
+                              child: Text(cat['title']),
+                            ))
+                        .toList(),
+                    onChanged: (value) =>
+                        setState(() => _selectedCategory = value),
                     isRequired: true,
                   ),
                   const SizedBox(height: 20),
@@ -655,23 +663,41 @@ Widget _buildForm(bool isMobile) {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Subtotal:', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: _slate700, fontSize: 12)),
-                            Text('৳${((double.tryParse(_priceController.text) ?? 0) * (int.tryParse(_quantityController.text) ?? 0)).toStringAsFixed(2)}'),
+                            Text('Subtotal:',
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600,
+                                    color: _slate700,
+                                    fontSize: 12)),
+                            Text(
+                                '৳${((double.tryParse(_priceController.text) ?? 0) * (int.tryParse(_quantityController.text) ?? 0)).toStringAsFixed(2)}'),
                           ],
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Service Fee (10%):', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: _slate700, fontSize: 12)),
-                            Text('৳${(((double.tryParse(_priceController.text) ?? 0) * (int.tryParse(_quantityController.text) ?? 0)) * 0.1).toStringAsFixed(2)}'),
+                            Text('Service Fee (10%):',
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w600,
+                                    color: _slate700,
+                                    fontSize: 12)),
+                            Text(
+                                '৳${(((double.tryParse(_priceController.text) ?? 0) * (int.tryParse(_quantityController.text) ?? 0)) * 0.1).toStringAsFixed(2)}'),
                           ],
                         ),
                         const Divider(height: 18),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Total Cost:', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14, color: _slate800)),
-                            Text('৳${totalCost.toStringAsFixed(2)}', style: GoogleFonts.inter(fontWeight: FontWeight.w800, fontSize: 14, color: _indigo)),
+                            Text('Total Cost:',
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: _slate800)),
+                            Text('৳${totalCost.toStringAsFixed(2)}',
+                                style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: _indigo)),
                           ],
                         ),
                       ],
@@ -740,7 +766,8 @@ Widget _buildForm(bool isMobile) {
                   // Country + Device grouped responsively for better mobile sizing
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final bool useVerticalLayout = isMobile || constraints.maxWidth < 680;
+                      final bool useVerticalLayout =
+                          isMobile || constraints.maxWidth < 680;
                       if (useVerticalLayout) {
                         return Column(
                           children: [
@@ -753,8 +780,8 @@ Widget _buildForm(bool isMobile) {
                                         child: Text(c['title']),
                                       ))
                                   .toList(),
-                              onChanged: (value) =>
-                                  setState(() => _targetCountry = value ?? 'Bangladesh'),
+                              onChanged: (value) => setState(
+                                  () => _targetCountry = value ?? 'Bangladesh'),
                               isRequired: true,
                             ),
                             const SizedBox(height: 14),
@@ -783,8 +810,8 @@ Widget _buildForm(bool isMobile) {
                                         child: Text(c['title']),
                                       ))
                                   .toList(),
-                              onChanged: (value) =>
-                                  setState(() => _targetCountry = value ?? 'Bangladesh'),
+                              onChanged: (value) => setState(
+                                  () => _targetCountry = value ?? 'Bangladesh'),
                               isRequired: true,
                             ),
                           ),
@@ -810,7 +837,8 @@ Widget _buildForm(bool isMobile) {
                     label: 'Target Network',
                     options: _networks,
                     selectedValues: _selectedNetworks,
-                    onChanged: (selected) => setState(() => _selectedNetworks = selected),
+                    onChanged: (selected) =>
+                        setState(() => _selectedNetworks = selected),
                     isRequired: true,
                   ),
                 ],
@@ -834,7 +862,8 @@ Widget _buildForm(bool isMobile) {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Color(0xFFEF4444)),
+                          const Icon(Icons.error_outline,
+                              color: Color(0xFFEF4444)),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -849,7 +878,8 @@ Widget _buildForm(bool isMobile) {
                                 ),
                                 const SizedBox(height: 4),
                                 GestureDetector(
-                                  onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                                  onTap: () => Navigator.pushNamed(
+                                      context, '/deposit-withdraw'),
                                   child: Text(
                                     'Click here to make a deposit',
                                     style: GoogleFonts.inter(
@@ -901,7 +931,8 @@ Widget _buildForm(bool isMobile) {
                                 ),
                                 const SizedBox(height: 4),
                                 GestureDetector(
-                                  onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                                  onTap: () => Navigator.pushNamed(
+                                      context, '/deposit-withdraw'),
                                   child: Text(
                                     'Click here to make a deposit',
                                     style: GoogleFonts.inter(
@@ -922,7 +953,9 @@ Widget _buildForm(bool isMobile) {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: (_isLoading || hasInsufficientBalance) ? null : _handleSubmit,
+                      onPressed: (_isLoading || hasInsufficientBalance)
+                          ? null
+                          : _handleSubmit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _indigo,
                         foregroundColor: Colors.white,
@@ -937,9 +970,10 @@ Widget _buildForm(bool isMobile) {
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : Row(
@@ -1030,12 +1064,14 @@ Widget _buildForm(bool isMobile) {
               fontWeight: FontWeight.w600,
               color: _slate700,
             ),
-            children: isRequired ? [
-              const TextSpan(
-                text: ' *',
-                style: TextStyle(color: Colors.red),
-              ),
-            ] : null,
+            children: isRequired
+                ? [
+                    const TextSpan(
+                      text: ' *',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ]
+                : null,
           ),
         ),
         const SizedBox(height: 8),
@@ -1043,11 +1079,13 @@ Widget _buildForm(bool isMobile) {
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
-          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
+          style: GoogleFonts.inter(
+              fontSize: 13, color: _slate800, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
-            prefixIcon: icon != null ? Icon(icon, size: 18, color: _slate400) : null,
+            prefixIcon:
+                icon != null ? Icon(icon, size: 18, color: _slate400) : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: _slate200),
@@ -1066,13 +1104,17 @@ Widget _buildForm(bool isMobile) {
             ),
             filled: true,
             fillColor: _slate50,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
           validator: isRequired && _checkSubmit
-              ? (value) => value?.trim().isEmpty == true ? 'This field is required' : null
+              ? (value) => value?.trim().isEmpty == true
+                  ? 'This field is required'
+                  : null
               : null,
           onChanged: (value) {
-            if (controller == _priceController || controller == _quantityController) {
+            if (controller == _priceController ||
+                controller == _quantityController) {
               setState(() {}); // Rebuild to update cost calculator
             }
           },
@@ -1099,12 +1141,14 @@ Widget _buildForm(bool isMobile) {
               fontWeight: FontWeight.w600,
               color: _slate700,
             ),
-            children: isRequired ? [
-              const TextSpan(
-                text: ' *',
-                style: TextStyle(color: Colors.red),
-              ),
-            ] : null,
+            children: isRequired
+                ? [
+                    const TextSpan(
+                      text: ' *',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ]
+                : null,
           ),
         ),
         const SizedBox(height: 8),
@@ -1112,7 +1156,8 @@ Widget _buildForm(bool isMobile) {
           initialValue: value,
           items: items,
           onChanged: onChanged,
-          style: GoogleFonts.inter(fontSize: 13, color: _slate800, fontWeight: FontWeight.w600),
+          style: GoogleFonts.inter(
+              fontSize: 13, color: _slate800, fontWeight: FontWeight.w600),
           iconEnabledColor: _slate500,
           dropdownColor: Colors.white,
           decoration: InputDecoration(
@@ -1130,7 +1175,8 @@ Widget _buildForm(bool isMobile) {
             ),
             filled: true,
             fillColor: _slate50,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
           validator: isRequired && _checkSubmit
               ? (value) => value == null ? 'Please select an option' : null
@@ -1158,12 +1204,14 @@ Widget _buildForm(bool isMobile) {
               fontWeight: FontWeight.w600,
               color: _slate700,
             ),
-            children: isRequired ? [
-              const TextSpan(
-                text: ' *',
-                style: TextStyle(color: Colors.red),
-              ),
-            ] : null,
+            children: isRequired
+                ? [
+                    const TextSpan(
+                      text: ' *',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ]
+                : null,
           ),
         ),
         const SizedBox(height: 8),
@@ -1175,7 +1223,9 @@ Widget _buildForm(bool isMobile) {
             final optionTitle = option['title'];
             final isSelected = selectedValues.contains(optionId);
             return FilterChip(
-              label: Text(optionTitle, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+              label: Text(optionTitle,
+                  style: GoogleFonts.inter(
+                      fontSize: 12, fontWeight: FontWeight.w600)),
               selected: isSelected,
               onSelected: (selected) {
                 final newSelected = List<String>.from(selectedValues);
@@ -1225,10 +1275,10 @@ Widget _buildForm(bool isMobile) {
             ..._uploadedImages.asMap().entries.map((entry) {
               final index = entry.key;
               final imageData = entry.value;
-              
+
               // Decode base64 to display
               final bytes = base64Decode(imageData.split(',')[1]);
-              
+
               return Container(
                 width: 120,
                 height: 120,
@@ -1278,7 +1328,7 @@ Widget _buildForm(bool isMobile) {
                 ),
               );
             }),
-            
+
             // Upload button
             GestureDetector(
               onTap: _isUploading ? null : _handleImageUpload,
@@ -1301,7 +1351,7 @@ Widget _buildForm(bool isMobile) {
                       const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(_indigo),
                         ),

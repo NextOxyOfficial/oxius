@@ -3,6 +3,7 @@ import '../services/user_state_service.dart';
 import '../services/subscription_service.dart';
 import '../utils/payment_policy.dart';
 import '../widgets/ios_payment_blocked_widget.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class UpgradeToProScreen extends StatefulWidget {
   const UpgradeToProScreen({super.key});
@@ -31,8 +32,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   final int _monthlyPrice = 149;
   final int _yearlyDiscount = 289;
 
-  int get _totalPrice => _selectedMonths == 1 
-      ? _monthlyPrice 
+  int get _totalPrice => _selectedMonths == 1
+      ? _monthlyPrice
       : (_monthlyPrice * _selectedMonths) - _yearlyDiscount;
 
   @override
@@ -155,7 +156,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(999),
@@ -199,7 +201,6 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                       color: Colors.white.withValues(alpha: 0.88),
                     ),
                   ),
-
                 ],
               ),
             ),
@@ -258,7 +259,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: isPro ? _mint.withValues(alpha: 0.12) : _gold.withValues(alpha: 0.12),
+              color: isPro
+                  ? _mint.withValues(alpha: 0.12)
+                  : _gold.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Row(
@@ -294,12 +297,15 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.account_balance_wallet_rounded, size: 14, color: _mint),
+                  Icon(Icons.account_balance_wallet_rounded,
+                      size: 14, color: _mint),
                   const SizedBox(width: 5),
                   _isLoadingBalance
                       ? const SizedBox(
-                          width: 12, height: 12,
-                          child: CircularProgressIndicator(strokeWidth: 1.5, color: _mint),
+                          width: 12,
+                          height: 12,
+                          child: AdsyLoadingIndicator(
+                              strokeWidth: 1.5, color: _mint),
                         )
                       : Text(
                           '৳${balance.toStringAsFixed(0)}',
@@ -310,7 +316,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                           ),
                         ),
                   const SizedBox(width: 4),
-                  Icon(Icons.refresh_rounded, size: 12, color: _mint.withValues(alpha: 0.7)),
+                  Icon(Icons.refresh_rounded,
+                      size: 12, color: _mint.withValues(alpha: 0.7)),
                 ],
               ),
             ),
@@ -372,7 +379,6 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             accent: _sage,
             badge: 'Save ৳$_yearlyDiscount',
           ),
-
         ],
       ),
     );
@@ -417,7 +423,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     final total = months == 1
         ? 'Total ৳$_monthlyPrice'
         : 'Total ৳${(_monthlyPrice * 12) - _yearlyDiscount}';
-    
+
     return GestureDetector(
       onTap: () => setState(() => _selectedMonths = months),
       child: Container(
@@ -436,11 +442,15 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withValues(alpha: 0.12) : Colors.white,
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.12)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Icon(
-                months == 1 ? Icons.flash_on_rounded : Icons.workspace_premium_rounded,
+                months == 1
+                    ? Icons.flash_on_rounded
+                    : Icons.workspace_premium_rounded,
                 color: isSelected ? Colors.white : _ink,
               ),
             ),
@@ -463,9 +473,12 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                       ),
                       if (badge != null)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isSelected ? _gold.withValues(alpha: 0.18) : Colors.white,
+                            color: isSelected
+                                ? _gold.withValues(alpha: 0.18)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
@@ -473,7 +486,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
-                              color: isSelected ? const Color(0xFFFFF3C4) : _ink,
+                              color:
+                                  isSelected ? const Color(0xFFFFF3C4) : _ink,
                             ),
                           ),
                         ),
@@ -515,7 +529,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             ),
             const SizedBox(width: 10),
             Icon(
-              isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+              isSelected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
               color: isSelected ? Colors.white : _muted,
             ),
           ],
@@ -554,14 +570,22 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             ),
           ),
           const SizedBox(height: 18),
-          _buildFeature(Icons.storefront_rounded, 'Access to eShop Manager', _peach),
-          _buildFeature(Icons.shopping_bag_rounded, 'Sell products across AdsyClub', _sage),
-          _buildFeature(Icons.inventory_2_rounded, 'Add up to 10 products', const Color(0xFFE5DEFF)),
-          _buildFeature(Icons.all_inbox_rounded, 'Receive unlimited orders', const Color(0xFFFFE2E2)),
-          _buildFeature(Icons.campaign_rounded, 'Post unlimited ads', const Color(0xFFDFF7F0)),
-          _buildFeature(Icons.task_alt_rounded, 'Earn from completing tasks', const Color(0xFFFDE9D5)),
-          _buildFeature(Icons.account_balance_wallet_rounded, 'Fast deposit and withdraw', const Color(0xFFE0F2FE)),
-          _buildFeature(Icons.support_agent_rounded, 'Priority support 24/7', const Color(0xFFFFF1CC)),
+          _buildFeature(
+              Icons.storefront_rounded, 'Access to eShop Manager', _peach),
+          _buildFeature(Icons.shopping_bag_rounded,
+              'Sell products across AdsyClub', _sage),
+          _buildFeature(Icons.inventory_2_rounded, 'Add up to 10 products',
+              const Color(0xFFE5DEFF)),
+          _buildFeature(Icons.all_inbox_rounded, 'Receive unlimited orders',
+              const Color(0xFFFFE2E2)),
+          _buildFeature(Icons.campaign_rounded, 'Post unlimited ads',
+              const Color(0xFFDFF7F0)),
+          _buildFeature(Icons.task_alt_rounded, 'Earn from completing tasks',
+              const Color(0xFFFDE9D5)),
+          _buildFeature(Icons.account_balance_wallet_rounded,
+              'Fast deposit and withdraw', const Color(0xFFE0F2FE)),
+          _buildFeature(Icons.support_agent_rounded, 'Priority support 24/7',
+              const Color(0xFFFFF1CC)),
         ],
       ),
     );
@@ -642,7 +666,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF1F2),
                     borderRadius: BorderRadius.circular(10),
@@ -650,7 +675,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_rounded, size: 16, color: Color(0xFFE11D48)),
+                      const Icon(Icons.info_rounded,
+                          size: 16, color: Color(0xFFE11D48)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -663,9 +689,11 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/deposit-withdraw'),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE11D48),
                             borderRadius: BorderRadius.circular(8),
@@ -717,7 +745,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: hasEnoughFunds ? _mint : const Color(0xFFE11D48),
+                            color: hasEnoughFunds
+                                ? _mint
+                                : const Color(0xFFE11D48),
                           ),
                         ),
                     ],
@@ -739,10 +769,12 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                     ),
                     child: _isSubscribing
                         ? const SizedBox(
-                            height: 20, width: 20,
-                            child: CircularProgressIndicator(
+                            height: 20,
+                            width: 20,
+                            child: AdsyLoadingIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : Text(
@@ -766,7 +798,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                   SizedBox(width: 6),
                   _TrustPill(icon: Icons.bolt_rounded, label: 'Instant'),
                   SizedBox(width: 6),
-                  _TrustPill(icon: Icons.receipt_long_rounded, label: 'Wallet billing'),
+                  _TrustPill(
+                      icon: Icons.receipt_long_rounded,
+                      label: 'Wallet billing'),
                 ],
               ),
             ],

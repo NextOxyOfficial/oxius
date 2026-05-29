@@ -11,6 +11,7 @@ import '../business_network/profile_screen.dart';
 import '../business_network/post_detail_screen.dart';
 import '../business_network/create_post_screen.dart';
 import 'profile_options.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -48,49 +49,55 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _loadNotifications({bool isInitial = false}) async {
     print('📱 Loading notifications... isInitial: $isInitial');
-    
+
     // Only show loading indicator on initial load
     if (isInitial) {
       setState(() => _isLoading = true);
     } else {
       _isRefreshing = true;
     }
-    
+
     try {
       final result = await NotificationService.getNotifications(page: 1);
-      print('📱 Got result from service: ${result['notifications']?.length} notifications');
-      
+      print(
+          '📱 Got result from service: ${result['notifications']?.length} notifications');
+
       if (mounted) {
         final notifications = result['notifications'];
         print('📱 Notifications type: ${notifications.runtimeType}');
         print('📱 Notifications value: $notifications');
-        
+
         print('📱 Raw notifications from result: $notifications');
-        print('📱 Notifications is List<NotificationModel>: ${notifications is List<NotificationModel>}');
+        print(
+            '📱 Notifications is List<NotificationModel>: ${notifications is List<NotificationModel>}');
         print('📱 Notifications is List: ${notifications is List}');
-        
+
         setState(() {
           if (notifications is List<NotificationModel>) {
             print('📱 Case 1: Direct assignment');
             _notifications = notifications;
           } else if (notifications is List) {
-            print('📱 Case 2: Converting list - length: ${notifications.length}');
+            print(
+                '📱 Case 2: Converting list - length: ${notifications.length}');
             _notifications = List<NotificationModel>.from(notifications);
             print('📱 After conversion: ${_notifications.length}');
           } else {
-            print('📱 Case 3: Empty - notifications is: ${notifications.runtimeType}');
+            print(
+                '📱 Case 3: Empty - notifications is: ${notifications.runtimeType}');
             _notifications = [];
           }
-          
+
           _hasMore = result['hasMore'] ?? false;
           _unreadCount = result['unreadCount'] ?? 0;
           _currentPage = 1;
           _isLoading = false;
         });
-        
-        print('📱 State updated: ${_notifications.length} notifications, $_unreadCount unread, loading: $_isLoading');
-        print('📱 First notification: ${_notifications.isNotEmpty ? _notifications.first : 'none'}');
-        
+
+        print(
+            '📱 State updated: ${_notifications.length} notifications, $_unreadCount unread, loading: $_isLoading');
+        print(
+            '📱 First notification: ${_notifications.isNotEmpty ? _notifications.first : 'none'}');
+
         _isRefreshing = false;
       }
     } catch (e) {
@@ -99,14 +106,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         setState(() {
           _isLoading = false;
         });
-        
+
         // Show error message
         if (!isInitial) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                  const Icon(Icons.error_outline,
+                      color: Colors.white, size: 20),
                   const SizedBox(width: 8),
                   const Text('Failed to refresh notifications'),
                 ],
@@ -115,7 +123,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 3),
               margin: const EdgeInsets.all(16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
             ),
           );
         }
@@ -126,12 +135,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _loadMoreNotifications() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     setState(() => _isLoadingMore = true);
-    
+
     final nextPage = _currentPage + 1;
     final result = await NotificationService.getNotifications(page: nextPage);
-    
+
     if (mounted) {
       setState(() {
         _notifications.addAll(result['notifications']);
@@ -144,7 +153,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _markAsRead(int notificationId) async {
     final success = await NotificationService.markAsRead(notificationId);
-    
+
     if (success && mounted) {
       setState(() {
         final index = _notifications.indexWhere((n) => n.id == notificationId);
@@ -177,7 +186,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           );
         }
         break;
-        
+
       case NotificationType.likePost:
       case NotificationType.comment:
       case NotificationType.mention:
@@ -189,7 +198,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
         }
         break;
-        
+
       case NotificationType.likeComment:
       case NotificationType.reply:
         // Navigate to post detail using parent_id
@@ -200,7 +209,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
         }
         break;
-        
+
       case NotificationType.solution:
         // Navigate to MindForce post detail
         if (notification.targetId != null) {
@@ -210,7 +219,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
         }
         break;
-        
+
       case NotificationType.giftDiamonds:
         // Navigate to post detail for gift diamonds
         if (notification.targetId != null) {
@@ -220,7 +229,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
         }
         break;
-        
+
       default:
         // Default to business network home
         Navigator.pushNamed(context, '/business-network');
@@ -320,11 +329,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
       // Fetch the post
       final post = await BusinessNetworkService.getPost(postId);
-      
+
       // Close loading indicator
       if (mounted) {
         Navigator.pop(context);
-        
+
         // Check if post was fetched successfully
         if (post != null) {
           // Navigate to post detail
@@ -346,11 +355,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       }
     } catch (e) {
       print('Error fetching post: $e');
-      
+
       // Close loading indicator
       if (mounted) {
         Navigator.pop(context);
-        
+
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -408,7 +417,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
@@ -437,7 +446,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
         },
       ),
-      drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network/notifications') : null,
+      drawer: isMobile
+          ? const BusinessNetworkDrawer(
+              currentRoute: '/business-network/notifications')
+          : null,
       body: Column(
         children: [
           // Compact Professional Header
@@ -478,7 +490,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 if (_unreadCount > 0) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
@@ -498,15 +511,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ],
             ),
           ),
-          
+
           // Content
           Expanded(
             child: Container(
               color: const Color(0xFFF9FAFB),
               child: Builder(
                 builder: (context) {
-                  print('📱 Building content: isLoading=$_isLoading, count=${_notifications.length}, isEmpty=${_notifications.isEmpty}');
-                  
+                  print(
+                      '📱 Building content: isLoading=$_isLoading, count=${_notifications.length}, isEmpty=${_notifications.isEmpty}');
+
                   if (_isLoading) {
                     return _buildLoadingState();
                   } else if (_notifications.isEmpty) {
@@ -612,7 +626,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadNotifications,
       color: const Color(0xFF3B82F6),
       backgroundColor: Colors.white,
@@ -666,7 +680,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                   const SizedBox(height: 24),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(20),
@@ -701,7 +716,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildNotificationsList() {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadNotifications,
       color: const Color(0xFF3B82F6),
       backgroundColor: Colors.white,
@@ -715,7 +730,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           if (index == _notifications.length) {
             return _buildLoadMoreButton();
           }
-          
+
           final notification = _notifications[index];
           return NotificationItem(
             notification: notification,
@@ -736,15 +751,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [const Color(0xFF3B82F6).withOpacity(0.1), const Color(0xFF6366F1).withOpacity(0.1)],
+                    colors: [
+                      const Color(0xFF3B82F6).withOpacity(0.1),
+                      const Color(0xFF6366F1).withOpacity(0.1)
+                    ],
                   ),
                   shape: BoxShape.circle,
                 ),
                 child: const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                  child: AdsyLoadingIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
                     strokeWidth: 2.5,
                   ),
                 ),
@@ -754,7 +773,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF3B82F6),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                     side: BorderSide(color: Colors.grey.shade200),

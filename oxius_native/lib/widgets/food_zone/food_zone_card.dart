@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/classified_post.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class FoodZoneCard extends StatelessWidget {
   final ClassifiedPost post;
@@ -14,10 +15,9 @@ class FoodZoneCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = post.medias?.isNotEmpty == true 
-        ? post.medias!.first.image
-        : null;
-    
+    final imageUrl =
+        post.medias?.isNotEmpty == true ? post.medias!.first.image : null;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -41,7 +41,8 @@ class FoodZoneCard extends StatelessWidget {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
                   child: imageUrl != null
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
@@ -54,20 +55,22 @@ class FoodZoneCard extends StatelessWidget {
                             height: 100,
                             color: Colors.grey[200],
                             child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: AdsyLoadingIndicator(strokeWidth: 2),
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
                             height: 100,
                             color: Colors.grey[200],
-                            child: const Icon(Icons.restaurant, size: 40, color: Colors.grey),
+                            child: const Icon(Icons.restaurant,
+                                size: 40, color: Colors.grey),
                           ),
                         )
                       : Container(
                           height: 100,
                           color: Colors.grey[200],
                           child: const Center(
-                            child: Icon(Icons.restaurant, size: 40, color: Colors.grey),
+                            child: Icon(Icons.restaurant,
+                                size: 40, color: Colors.grey),
                           ),
                         ),
                 ),
@@ -77,7 +80,8 @@ class FoodZoneCard extends StatelessWidget {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE91E63),
                         borderRadius: BorderRadius.circular(4),
@@ -98,7 +102,8 @@ class FoodZoneCard extends StatelessWidget {
                     bottom: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.7),
                         borderRadius: BorderRadius.circular(4),
@@ -149,7 +154,9 @@ class FoodZoneCard extends StatelessWidget {
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
-                              [post.upazila, post.city].where((e) => e != null && e.isNotEmpty).join(', '),
+                              [post.upazila, post.city]
+                                  .where((e) => e != null && e.isNotEmpty)
+                                  .join(', '),
                               style: const TextStyle(
                                 fontSize: 9,
                                 color: Color(0xFF9CA3AF),
@@ -206,10 +213,9 @@ class FoodZoneListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = post.medias?.isNotEmpty == true 
-        ? post.medias!.first.image
-        : null;
-    
+    final imageUrl =
+        post.medias?.isNotEmpty == true ? post.medias!.first.image : null;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -231,7 +237,8 @@ class FoodZoneListCard extends StatelessWidget {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                  borderRadius:
+                      const BorderRadius.horizontal(left: Radius.circular(12)),
                   child: imageUrl != null
                       ? CachedNetworkImage(
                           imageUrl: imageUrl,
@@ -246,14 +253,15 @@ class FoodZoneListCard extends StatelessWidget {
                             width: 100,
                             color: Colors.grey[200],
                             child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                              child: AdsyLoadingIndicator(strokeWidth: 2),
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
                             height: 100,
                             width: 100,
                             color: Colors.grey[200],
-                            child: const Icon(Icons.restaurant, size: 30, color: Colors.grey),
+                            child: const Icon(Icons.restaurant,
+                                size: 30, color: Colors.grey),
                           ),
                         )
                       : Container(
@@ -261,7 +269,8 @@ class FoodZoneListCard extends StatelessWidget {
                           width: 100,
                           color: Colors.grey[200],
                           child: const Center(
-                            child: Icon(Icons.restaurant, size: 30, color: Colors.grey),
+                            child: Icon(Icons.restaurant,
+                                size: 30, color: Colors.grey),
                           ),
                         ),
                 ),
@@ -271,7 +280,8 @@ class FoodZoneListCard extends StatelessWidget {
                     top: 6,
                     left: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE91E63),
                         borderRadius: BorderRadius.circular(4),
@@ -299,7 +309,8 @@ class FoodZoneListCard extends StatelessWidget {
                     // Category
                     if (post.categoryDetails?.title != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         margin: const EdgeInsets.only(bottom: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFEE2E2),
@@ -339,7 +350,9 @@ class FoodZoneListCard extends StatelessWidget {
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
-                              [post.upazila, post.city].where((e) => e != null && e.isNotEmpty).join(', '),
+                              [post.upazila, post.city]
+                                  .where((e) => e != null && e.isNotEmpty)
+                                  .join(', '),
                               style: const TextStyle(
                                 fontSize: 10,
                                 color: Color(0xFF9CA3AF),

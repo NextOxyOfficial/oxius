@@ -8,6 +8,7 @@ import '../../services/adsyconnect_service.dart';
 import '../../models/wallet_models.dart';
 import '../../screens/wallet/wallet_screen.dart';
 import '../../screens/microgig/pending_tasks_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class AccountBalanceSection extends StatefulWidget {
   const AccountBalanceSection({super.key});
@@ -16,7 +17,8 @@ class AccountBalanceSection extends StatefulWidget {
   State<AccountBalanceSection> createState() => AccountBalanceSectionState();
 }
 
-class AccountBalanceSectionState extends State<AccountBalanceSection> with RouteAware {
+class AccountBalanceSectionState extends State<AccountBalanceSection>
+    with RouteAware {
   final TranslationService _translationService = TranslationService();
   WalletBalance? _balance;
   bool _isLoading = true;
@@ -38,7 +40,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
     if (!AuthService.isAuthenticated) {
       return;
     }
-    
+
     _fetchUnreadMessageCount();
     _messageCountTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted && AuthService.isAuthenticated) {
@@ -60,7 +62,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
       }
       return;
     }
-    
+
     try {
       final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
       int totalUnread = 0;
@@ -86,14 +88,15 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
 
   void _checkAndRefresh() {
     // Refresh if more than 3 seconds have passed since last refresh
-    if (_lastRefresh == null || DateTime.now().difference(_lastRefresh!).inSeconds > 3) {
+    if (_lastRefresh == null ||
+        DateTime.now().difference(_lastRefresh!).inSeconds > 3) {
       loadBalance();
     }
   }
 
   Future<void> loadBalance() async {
     if (!mounted) return;
-    
+
     setState(() => _isLoading = true);
     final balance = await WalletService.getBalance();
     if (mounted) {
@@ -184,12 +187,12 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
               ),
             ),
           ),
-          
+
           // Content
           _isLoading
               ? Padding(
                   padding: EdgeInsets.all(isSmallMobile ? 16.0 : 24.0),
-                  child: const Center(child: CircularProgressIndicator()),
+                  child: const Center(child: AdsyLoadingIndicator()),
                 )
               : Column(
                   children: [
@@ -203,12 +206,16 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                               ? Column(
                                   children: [
                                     _buildBalanceCard(
-                                      icon: Icons.account_balance_wallet_outlined,
+                                      icon:
+                                          Icons.account_balance_wallet_outlined,
                                       label: t('balance'),
                                       amount: _balance?.balance ?? 0.0,
                                       color: const Color(0xFF10B981),
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
+                                        colors: [
+                                          Color(0xFF10B981),
+                                          Color(0xFF14B8A6)
+                                        ],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
@@ -225,12 +232,16 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                                   children: [
                                     Expanded(
                                       child: _buildBalanceCard(
-                                        icon: Icons.account_balance_wallet_outlined,
+                                        icon: Icons
+                                            .account_balance_wallet_outlined,
                                         label: t('balance'),
                                         amount: _balance?.balance ?? 0.0,
                                         color: const Color(0xFF10B981),
                                         gradient: const LinearGradient(
-                                          colors: [Color(0xFF10B981), Color(0xFF14B8A6)],
+                                          colors: [
+                                            Color(0xFF10B981),
+                                            Color(0xFF14B8A6)
+                                          ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
@@ -246,17 +257,18 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                                     ),
                                   ],
                                 ),
-                          
+
                           // Action buttons
                           SizedBox(height: isSmallMobile ? 12 : 16),
-                          _buildActionButtons(context, isSmallMobile: isSmallMobile),
+                          _buildActionButtons(context,
+                              isSmallMobile: isSmallMobile),
                         ],
                       ),
                     ),
-                    
+
                     // Divider with dot accent
                     _buildDividerWithDot(),
-                    
+
                     // Referral section
                     _buildReferralSection(isSmallMobile: isSmallMobile),
                   ],
@@ -305,7 +317,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
     final user = AuthService.currentUser;
     if (user == null) return const SizedBox.shrink();
 
-    final referralLink = 'https://adsyclub.com/auth/register/?ref=${user.referralCode ?? ''}';
+    final referralLink =
+        'https://adsyclub.com/auth/register/?ref=${user.referralCode ?? ''}';
 
     return Container(
       padding: EdgeInsets.all(isSmallMobile ? 12 : 16),
@@ -342,7 +355,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Referral link input with copy button
           Container(
             decoration: BoxDecoration(
@@ -357,7 +370,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     child: Text(
                       referralLink,
                       style: TextStyle(
@@ -387,7 +401,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                       bottomRight: Radius.circular(8),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
                       decoration: const BoxDecoration(
                         color: Color(0xFF10B981),
                         borderRadius: BorderRadius.only(
@@ -417,7 +432,7 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Referral stats
           Container(
             padding: const EdgeInsets.all(12),
@@ -439,7 +454,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                 ),
                 _buildStatItem(
                   label: t('earnings'),
-                  value: '৳${user.commissionEarned?.toStringAsFixed(2) ?? '0.00'}',
+                  value:
+                      '৳${user.commissionEarned?.toStringAsFixed(2) ?? '0.00'}',
                 ),
               ],
             ),
@@ -516,7 +532,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                     ),
                   ],
                 ),
-                child: Icon(icon, color: Colors.white, size: isSmallMobile ? 18 : 20),
+                child: Icon(icon,
+                    color: Colors.white, size: isSmallMobile ? 18 : 20),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -566,7 +583,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
     );
   }
 
-  Widget _buildPendingTasksCard({required double amount, bool isSmallMobile = false}) {
+  Widget _buildPendingTasksCard(
+      {required double amount, bool isSmallMobile = false}) {
     return Container(
       padding: EdgeInsets.all(isSmallMobile ? 12 : 14),
       decoration: BoxDecoration(
@@ -608,7 +626,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                     ),
                   ],
                 ),
-                child: Icon(Icons.watch_later_outlined, color: Colors.white, size: isSmallMobile ? 18 : 20),
+                child: Icon(Icons.watch_later_outlined,
+                    color: Colors.white, size: isSmallMobile ? 18 : 20),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -662,7 +681,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
                   }
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFBBF24).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
@@ -695,7 +715,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, {bool isSmallMobile = false}) {
+  Widget _buildActionButtons(BuildContext context,
+      {bool isSmallMobile = false}) {
     final buttons = [
       _buildActionButton(
         context: context,
@@ -748,7 +769,8 @@ class AccountBalanceSectionState extends State<AccountBalanceSection> with Route
 
     return Row(
       children: [
-        for (int i = 0; i < buttons.length; i++) ...[          if (i > 0) SizedBox(width: isSmallMobile ? 6 : 8),
+        for (int i = 0; i < buttons.length; i++) ...[
+          if (i > 0) SizedBox(width: isSmallMobile ? 6 : 8),
           Expanded(child: buttons[i]),
         ],
       ],

@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/eshop_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MobileBannerWidget extends StatefulWidget {
   final int autoplayInterval;
   final bool autoplayEnabled;
   final bool showSwipeHint;
   final String endpoint;
-  
+
   const MobileBannerWidget({
     super.key,
     this.autoplayInterval = 4000,
@@ -28,7 +29,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
   Timer? _autoplayTimer;
   Timer? _progressTimer;
   double _progressWidth = 0.0;
-  
+
   // Touch handling
   double _touchStartX = 0;
   double _touchEndX = 0;
@@ -55,8 +56,9 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       });
 
       // Use the endpoint from widget parameter
-      final response = await EshopService.fetchEshopBanners(endpoint: widget.endpoint);
-      
+      final response =
+          await EshopService.fetchEshopBanners(endpoint: widget.endpoint);
+
       if (mounted) {
         setState(() {
           _banners = response;
@@ -82,7 +84,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
   void _startAutoplay() {
     _progressTimer?.cancel();
     _autoplayTimer?.cancel();
-    
+
     setState(() {
       _progressWidth = 0.0;
     });
@@ -100,7 +102,8 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
     });
 
     // Slide transition
-    _autoplayTimer = Timer.periodic(Duration(milliseconds: widget.autoplayInterval), (timer) {
+    _autoplayTimer = Timer.periodic(
+        Duration(milliseconds: widget.autoplayInterval), (timer) {
       if (mounted && !_isHandlingTouch) {
         _nextSlide();
       }
@@ -190,7 +193,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
         child: Container(
           color: Colors.grey.shade200,
           child: const Center(
-            child: CircularProgressIndicator(
+            child: AdsyLoadingIndicator(
               strokeWidth: 3,
               valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
             ),
@@ -292,7 +295,8 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(12),
@@ -346,7 +350,8 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                 color: Colors.black.withOpacity(0.1),
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(8),
@@ -354,7 +359,8 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.chevron_left, size: 16, color: Colors.grey.shade700),
+                        Icon(Icons.chevron_left,
+                            size: 16, color: Colors.grey.shade700),
                         const SizedBox(width: 8),
                         Text(
                           'Swipe to see more',
@@ -365,7 +371,8 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(Icons.chevron_right, size: 16, color: Colors.grey.shade700),
+                        Icon(Icons.chevron_right,
+                            size: 16, color: Colors.grey.shade700),
                       ],
                     ),
                   ),
@@ -394,7 +401,7 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
               return Container(
                 color: Colors.grey.shade200,
                 child: const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: AdsyLoadingIndicator(strokeWidth: 2),
                 ),
               );
             },

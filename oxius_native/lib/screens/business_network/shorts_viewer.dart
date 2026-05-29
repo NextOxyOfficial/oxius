@@ -13,6 +13,7 @@ import '../../widgets/business_network/post_comments_preview.dart';
 import '../../widgets/business_network/diamond_gift_bottom_sheet.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import 'profile_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ShortsViewer extends StatefulWidget {
   final List<BusinessNetworkPost> posts;
@@ -50,10 +51,12 @@ class _ShortsCommentsBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_ShortsCommentsBottomSheet> createState() => _ShortsCommentsBottomSheetState();
+  State<_ShortsCommentsBottomSheet> createState() =>
+      _ShortsCommentsBottomSheetState();
 }
 
-class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> {
+class _ShortsCommentsBottomSheetState
+    extends State<_ShortsCommentsBottomSheet> {
   bool _isLoading = true;
   late BusinessNetworkPost _post;
 
@@ -69,11 +72,13 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
       _isLoading = true;
     });
 
-    final comments = await BusinessNetworkService.getPostComments(postId: widget.post.id);
+    final comments =
+        await BusinessNetworkService.getPostComments(postId: widget.post.id);
     if (!mounted) return;
 
     setState(() {
-      final nextCount = _post.commentsCount > 0 ? _post.commentsCount : comments.length;
+      final nextCount =
+          _post.commentsCount > 0 ? _post.commentsCount : comments.length;
       _post = _post.copyWith(
         comments: comments,
         commentsCount: nextCount,
@@ -139,7 +144,8 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
                 const Divider(height: 1),
                 Expanded(
                   child: _isLoading
-                      ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                      ? const Center(
+                          child: AdsyLoadingIndicator(strokeWidth: 2))
                       : _post.comments.isEmpty
                           ? Center(
                               child: Text(
@@ -159,7 +165,8 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
                                 showAll: true,
                                 showHeader: false,
                                 onReplySubmit: (comment, content) async {
-                                  final newComment = await BusinessNetworkService.addComment(
+                                  final newComment =
+                                      await BusinessNetworkService.addComment(
                                     postId: _post.id,
                                     content: content,
                                     parentCommentId: comment.id,
@@ -169,7 +176,10 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
                                     setState(() {
                                       _post = _post.copyWith(
                                         commentsCount: _post.commentsCount + 1,
-                                        comments: [..._post.comments, newComment],
+                                        comments: [
+                                          ..._post.comments,
+                                          newComment
+                                        ],
                                       );
                                     });
                                     widget.onCommentAdded();
@@ -179,7 +189,9 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
                                   if (!mounted) return;
                                   setState(() {
                                     _post = _post.copyWith(
-                                      commentsCount: _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
+                                      commentsCount: _post.commentsCount > 0
+                                          ? _post.commentsCount - 1
+                                          : 0,
                                     );
                                   });
                                 },
@@ -189,7 +201,8 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+                    border: Border(
+                        top: BorderSide(color: Colors.grey.shade200, width: 1)),
                   ),
                   child: PostCommentInput(
                     onSubmit: (content) async {
@@ -210,7 +223,8 @@ class _ShortsCommentsBottomSheetState extends State<_ShortsCommentsBottomSheet> 
                     },
                     userAvatar: AuthService.currentUser?.profilePicture,
                     postId: widget.post.id.toString(),
-                    postAuthorId: widget.post.user.uuid ?? widget.post.user.id.toString(),
+                    postAuthorId:
+                        widget.post.user.uuid ?? widget.post.user.id.toString(),
                     postAuthorName: widget.post.user.name,
                     onGiftSent: isLoggedIn ? _loadComments : null,
                   ),
@@ -243,7 +257,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
   void initState() {
     super.initState();
     _items = widget.posts
-        .expand((p) => p.media.where((m) => m.isVideo).map((m) => _ShortItem(post: p, media: m)))
+        .expand((p) => p.media
+            .where((m) => m.isVideo)
+            .map((m) => _ShortItem(post: p, media: m)))
         .toList();
 
     _currentIndex = _findInitialIndex(widget.initialVideoUrl, _items);
@@ -287,12 +303,14 @@ class _ShortsViewerState extends State<ShortsViewer> {
   void didUpdateWidget(covariant ShortsViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
     final nextItems = widget.posts
-        .expand((p) => p.media.where((m) => m.isVideo).map((m) => _ShortItem(post: p, media: m)))
+        .expand((p) => p.media
+            .where((m) => m.isVideo)
+            .map((m) => _ShortItem(post: p, media: m)))
         .toList();
 
     final wasOnEndPage = _currentIndex >= _items.length;
     final oldItemsLength = _items.length;
-    
+
     setState(() {
       _items
         ..clear()
@@ -303,7 +321,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
     // Otherwise keep current position
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      
+
       if (wasOnEndPage) {
         // If new items were loaded, user can continue watching
         // If no new items, stay on end page
@@ -322,7 +340,8 @@ class _ShortsViewerState extends State<ShortsViewer> {
         }
       } else {
         // User was watching a video - keep position
-        final target = _currentIndex.clamp(0, _items.isEmpty ? 0 : _items.length - 1);
+        final target =
+            _currentIndex.clamp(0, _items.isEmpty ? 0 : _items.length - 1);
         if (_pageController.page?.round() != target) {
           _pageController.jumpToPage(target);
         }
@@ -349,16 +368,16 @@ class _ShortsViewerState extends State<ShortsViewer> {
     for (int i = 1; i <= 2; i++) {
       final nextIndex = currentIndex + i;
       if (nextIndex >= _items.length) break;
-      
+
       final item = _items[nextIndex];
       final mediaId = item.media.id;
-      
+
       // Skip if already preloaded
       if (_preloadedControllers.containsKey(mediaId)) continue;
-      
+
       final url = item.media.bestUrl;
       if (url.isEmpty) continue;
-      
+
       try {
         final controller = VideoPlayerController.networkUrl(
           Uri.parse(url),
@@ -367,23 +386,23 @@ class _ShortsViewerState extends State<ShortsViewer> {
           },
           videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
         );
-        
+
         await controller.initialize();
         await controller.setLooping(true);
         await controller.setVolume(0.0); // Muted until active
-        
+
         if (!mounted) {
           controller.dispose();
           return;
         }
-        
+
         _preloadedControllers[mediaId] = controller;
         print('Preloaded video at index $nextIndex (mediaId: $mediaId)');
       } catch (e) {
         print('Failed to preload video at index $nextIndex: $e');
       }
     }
-    
+
     // Clean up old preloaded videos (keep only next 2)
     final validIds = <int>{};
     for (int i = 1; i <= 2; i++) {
@@ -392,8 +411,10 @@ class _ShortsViewerState extends State<ShortsViewer> {
         validIds.add(_items[nextIndex].media.id);
       }
     }
-    
-    final toRemove = _preloadedControllers.keys.where((id) => !validIds.contains(id)).toList();
+
+    final toRemove = _preloadedControllers.keys
+        .where((id) => !validIds.contains(id))
+        .toList();
     for (final id in toRemove) {
       _preloadedControllers[id]?.dispose();
       _preloadedControllers.remove(id);
@@ -444,8 +465,9 @@ class _ShortsViewerState extends State<ShortsViewer> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          AdsyLoadingIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                             strokeWidth: 3,
                           ),
                           SizedBox(height: 16),
@@ -461,7 +483,7 @@ class _ShortsViewerState extends State<ShortsViewer> {
                     ),
                   );
                 }
-                
+
                 // Show "All Caught Up" page
                 return Container(
                   decoration: BoxDecoration(
@@ -498,7 +520,8 @@ class _ShortsViewerState extends State<ShortsViewer> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF667eea).withOpacity(0.4),
+                                    color: const Color(0xFF667eea)
+                                        .withOpacity(0.4),
                                     blurRadius: 30,
                                     spreadRadius: 5,
                                   ),
@@ -541,15 +564,20 @@ class _ShortsViewerState extends State<ShortsViewer> {
                                 // Navigate to create post with video
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32, vertical: 16),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                    colors: [
+                                      Color(0xFF667eea),
+                                      Color(0xFF764ba2)
+                                    ],
                                   ),
                                   borderRadius: BorderRadius.circular(30),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF667eea).withOpacity(0.3),
+                                      color: const Color(0xFF667eea)
+                                          .withOpacity(0.3),
                                       blurRadius: 20,
                                       offset: const Offset(0, 8),
                                     ),
@@ -558,7 +586,8 @@ class _ShortsViewerState extends State<ShortsViewer> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: const [
-                                    Icon(Icons.videocam_rounded, color: Colors.white, size: 22),
+                                    Icon(Icons.videocam_rounded,
+                                        color: Colors.white, size: 22),
                                     SizedBox(width: 10),
                                     Text(
                                       'Create Your Short',
@@ -643,16 +672,20 @@ class _ShortsViewerState extends State<ShortsViewer> {
                   const Spacer(),
                   if (_currentIndex < _items.length)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.16)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.visibility_outlined, size: 16, color: Colors.white.withValues(alpha: 0.9)),
+                          Icon(Icons.visibility_outlined,
+                              size: 16,
+                              color: Colors.white.withValues(alpha: 0.9)),
                           const SizedBox(width: 6),
                           Text(
                             _currentViewsCount().toString(),
@@ -703,7 +736,8 @@ class _ShortVideoPage extends StatefulWidget {
   State<_ShortVideoPage> createState() => _ShortVideoPageState();
 }
 
-class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObserver {
+class _ShortVideoPageState extends State<_ShortVideoPage>
+    with WidgetsBindingObserver {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
@@ -732,7 +766,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       // App went to background or another screen pushed - pause video
       _wasPlayingBeforePause = _controller?.value.isPlaying ?? false;
       _controller?.pause();
@@ -777,7 +812,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
   Future<void> _init() async {
     try {
       final url = widget.media.bestUrl;
-      print('ShortsViewer: initializing video url=$url mediaId=${widget.media.id}');
+      print(
+          'ShortsViewer: initializing video url=$url mediaId=${widget.media.id}');
       if (url.isEmpty) {
         setState(() {
           _hasError = true;
@@ -791,13 +827,14 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
 
       // Use preloaded controller if available
       if (widget.preloadedController != null) {
-        print('ShortsViewer: using preloaded controller for mediaId=${widget.media.id}');
+        print(
+            'ShortsViewer: using preloaded controller for mediaId=${widget.media.id}');
         _controller = widget.preloadedController;
         widget.onControllerCreated?.call(widget.preloadedController!);
-        
+
         // Controller is already initialized, just set volume and play
         await _controller!.setVolume(1.0);
-        
+
         if (!mounted) return;
         setState(() {
           _isInitialized = true;
@@ -821,7 +858,7 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
       );
       _controller = controller;
       widget.onControllerCreated?.call(controller);
-      
+
       await controller.initialize();
       await controller.setLooping(true);
       await controller.setVolume(1.0);
@@ -837,7 +874,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
         _maybeScheduleViewCount();
       }
     } catch (e, stackTrace) {
-      print('ShortsViewer: failed to initialize video url=${widget.media.bestUrl} mediaId=${widget.media.id} error=$e');
+      print(
+          'ShortsViewer: failed to initialize video url=${widget.media.bestUrl} mediaId=${widget.media.id} error=$e');
       print('ShortsViewer: stackTrace=$stackTrace');
       if (!mounted) return;
       setState(() {
@@ -879,7 +917,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
       if (_viewCounted) return;
 
       try {
-        final next = await BusinessNetworkService.incrementMediaViews(widget.media.id.toString());
+        final next = await BusinessNetworkService.incrementMediaViews(
+            widget.media.id.toString());
         if (!mounted) return;
         final nextViews = next ?? (_viewsCount + 1);
         setState(() {
@@ -926,7 +965,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
 
     final postUser = _post.user;
     final postUsername = (postUser.username ?? '').trim();
-    if (postUsername.isNotEmpty && postUsername == currentUser.username) return true;
+    if (postUsername.isNotEmpty && postUsername == currentUser.username)
+      return true;
 
     final postUuid = (postUser.uuid ?? '').trim();
     if (postUuid.isNotEmpty && postUuid == currentUser.id) return true;
@@ -956,15 +996,18 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
       setState(() {
         _post = _post.copyWith(
           isLiked: !originalIsLiked,
-          likesCount: originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1,
+          likesCount:
+              originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1,
         );
       });
     }
 
     try {
-      final success = await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
+      final success =
+          await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
       if (!success) {
-        throw Exception('Failed to ${originalIsLiked ? 'unlike' : 'like'} post');
+        throw Exception(
+            'Failed to ${originalIsLiked ? 'unlike' : 'like'} post');
       }
       widget.onLike?.call(_post);
     } catch (e) {
@@ -997,7 +1040,8 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
       }
 
       shareText += plainPostContent;
-      shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
+      shareText +=
+          '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
 
       await Share.share(
         shareText,
@@ -1128,314 +1172,318 @@ class _ShortVideoPageState extends State<_ShortVideoPage> with WidgetsBindingObs
       child: Stack(
         fit: StackFit.expand,
         children: [
-        if (_hasError)
-          Container(
-            color: Colors.black,
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Failed to load video',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.85)),
-                      textAlign: TextAlign.center,
-                    ),
-                    if ((_errorUrl ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        _errorUrl!,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.65),
-                          fontSize: 11,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                    if ((_errorText ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        _errorText!,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.55),
-                          fontSize: 11,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          )
-        else if (!_isInitialized || _controller == null)
-          Stack(
-            fit: StackFit.expand,
-            children: [
-              if (thumbUrl.isNotEmpty)
-                Image.network(
-                  thumbUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return thumbFallback();
-                  },
-                )
-              else
-                thumbFallback(),
-              Align(
-                alignment: Alignment.bottomCenter,
+          if (_hasError)
+            Container(
+              color: Colors.black,
+              child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 10,
-                        width: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
+                      Text(
+                        'Failed to load video',
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85)),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 10,
-                        width: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(999),
+                      if ((_errorUrl ?? '').isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          _errorUrl!,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.65),
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
+                      ],
+                      if ((_errorText ?? '').isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          _errorText!,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.55),
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
-            ],
-          )
-        else
-          Stack(
-            fit: StackFit.expand,
-            children: [
-              Container(color: Colors.black),
-              Center(
-                child: AspectRatio(
-                  aspectRatio: _controller!.value.aspectRatio,
-                  child: VideoPlayer(_controller!),
+            )
+          else if (!_isInitialized || _controller == null)
+            Stack(
+              fit: StackFit.expand,
+              children: [
+                if (thumbUrl.isNotEmpty)
+                  Image.network(
+                    thumbUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return thumbFallback();
+                    },
+                  )
+                else
+                  thumbFallback(),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 10,
+                          width: 180,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          height: 10,
+                          width: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 220,
-          child: IgnorePointer(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.75),
-                  ],
+              ],
+            )
+          else
+            Stack(
+              fit: StackFit.expand,
+              children: [
+                Container(color: Colors.black),
+                Center(
+                  child: AspectRatio(
+                    aspectRatio: _controller!.value.aspectRatio,
+                    child: VideoPlayer(_controller!),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ),
-        ),
-
-        if (_showPlayHint)
-          IgnorePointer(
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                ),
-                child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 54),
-              ),
-            ),
-          ),
-
-        if (_isInitialized && _controller != null)
           Positioned(
-            left: 12,
-            right: 12,
-            bottom: 6,
-            child: SafeArea(
-              top: false,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(999),
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 220,
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.75),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          if (_showPlayHint)
+            IgnorePointer(
+              child: Center(
                 child: Container(
-                  color: Colors.black.withValues(alpha: 0.25),
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                  child: VideoProgressIndicator(
-                    _controller!,
-                    allowScrubbing: true,
-                    colors: VideoProgressColors(
-                      playedColor: const Color(0xFF3B82F6),
-                      bufferedColor: Colors.white.withValues(alpha: 0.35),
-                      backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    shape: BoxShape.circle,
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                  ),
+                  child: const Icon(Icons.play_arrow_rounded,
+                      color: Colors.white, size: 54),
+                ),
+              ),
+            ),
+          if (_isInitialized && _controller != null)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 6,
+              child: SafeArea(
+                top: false,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    child: VideoProgressIndicator(
+                      _controller!,
+                      allowScrubbing: true,
+                      colors: VideoProgressColors(
+                        playedColor: const Color(0xFF3B82F6),
+                        bufferedColor: Colors.white.withValues(alpha: 0.35),
+                        backgroundColor: Colors.white.withValues(alpha: 0.15),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-
-        Positioned(
-          right: 12,
-          bottom: 96,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ActionButton(
-                iconPath: post.isLiked ? 'assets/icons/like.png' : 'assets/icons/unlike.png',
-                label: post.likesCount.toString(),
-                onTap: _handleLike,
-                applyGrayFill: !post.isLiked,
-              ),
-              const SizedBox(height: 14),
-              _ActionButton(
-                iconPath: 'assets/icons/comments.png',
-                label: _commentsCount.toString(),
-                onTap: _openCommentsSheet,
-              ),
-              const SizedBox(height: 14),
-              if (!_isOwnPost()) ...[
+          Positioned(
+            right: 12,
+            bottom: 96,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 _ActionButton(
-                  materialIcon: Icons.card_giftcard,
-                  label: 'Gift',
-                  onTap: () {
-                    // ignore: discarded_futures
-                    _openGiftSheet();
-                  },
+                  iconPath: post.isLiked
+                      ? 'assets/icons/like.png'
+                      : 'assets/icons/unlike.png',
+                  label: post.likesCount.toString(),
+                  onTap: _handleLike,
+                  applyGrayFill: !post.isLiked,
                 ),
                 const SizedBox(height: 14),
-              ],
-              _ActionButton(
-                iconPath: 'assets/icons/share.png',
-                label: 'Share',
-                onTap: _handleShare,
-              ),
-            ],
-          ),
-        ),
-
-        Positioned(
-          left: 12,
-          right: 80,
-          bottom: 50,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-            GestureDetector(
-              onTap: () {
-                // Pause video before navigating
-                _controller?.pause();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileScreen(
-                      userId: post.user.uuid ?? post.user.id.toString(),
-                    ),
+                _ActionButton(
+                  iconPath: 'assets/icons/comments.png',
+                  label: _commentsCount.toString(),
+                  onTap: _openCommentsSheet,
+                ),
+                const SizedBox(height: 14),
+                if (!_isOwnPost()) ...[
+                  _ActionButton(
+                    materialIcon: Icons.card_giftcard,
+                    label: 'Gift',
+                    onTap: () {
+                      // ignore: discarded_futures
+                      _openGiftSheet();
+                    },
                   ),
-                ).then((_) {
-                  // Resume video when returning if still active
-                  if (mounted && widget.isActive) {
-                    _controller?.play();
-                  }
-                });
-              },
-              child: RichText(
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: post.user.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (post.user.isVerified) ...[
-                      const TextSpan(text: ' '),
-                      const WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Icon(
-                          Icons.verified,
-                          size: 15,
-                          color: Color(0xFF3B82F6),
+                  const SizedBox(height: 14),
+                ],
+                _ActionButton(
+                  iconPath: 'assets/icons/share.png',
+                  label: 'Share',
+                  onTap: _handleShare,
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 12,
+            right: 80,
+            bottom: 50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // Pause video before navigating
+                    _controller?.pause();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProfileScreen(
+                          userId: post.user.uuid ?? post.user.id.toString(),
                         ),
                       ),
-                    ],
-                    if (post.user.isPro) ...[
-                      const TextSpan(text: ' '),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.indigo.shade600,
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                    ).then((_) {
+                      // Resume video when returning if still active
+                      if (mounted && widget.isActive) {
+                        _controller?.play();
+                      }
+                    });
+                  },
+                  child: RichText(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: post.user.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
                           ),
-                          child: const Text(
-                            'Pro',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
+                        ),
+                        if (post.user.isVerified) ...[
+                          const TextSpan(text: ' '),
+                          const WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Icon(
+                              Icons.verified,
+                              size: 15,
+                              color: Color(0xFF3B82F6),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
-                  ],
+                        ],
+                        if (post.user.isPro) ...[
+                          const TextSpan(text: ' '),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.shade600,
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.18)),
+                              ),
+                              child: const Text(
+                                'Pro',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                if (post.title.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    post.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.95),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+                if (post.content.trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    post.content,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ],
             ),
-            if (post.title.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                post.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.95),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  height: 1.2,
-                ),
-              ),
-            ],
-            if (post.content.trim().isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                post.content,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.85),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  height: 1.3,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+          ),
         ],
       ),
     );
@@ -1455,7 +1503,8 @@ class _ActionButton extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.applyGrayFill = false,
-  }) : assert(iconPath != null || materialIcon != null, 'Either iconPath or materialIcon must be provided');
+  }) : assert(iconPath != null || materialIcon != null,
+            'Either iconPath or materialIcon must be provided');
 
   @override
   Widget build(BuildContext context) {

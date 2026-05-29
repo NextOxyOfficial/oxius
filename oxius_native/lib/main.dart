@@ -64,6 +64,7 @@ import 'widgets/ongoing_call_bar.dart';
 import 'screens/rideshare/rideshare_screen.dart';
 import 'screens/rideshare/rideshare_history_screen.dart';
 import 'screens/rideshare/rideshare_vehicles_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Runs an async task with a hard timeout. Logs and swallows errors so a single
 /// failing init step never blocks app startup (root cause of iPad blank screen).
@@ -247,7 +248,7 @@ class MyApp extends StatelessWidget {
             ),
             home: const Scaffold(
               body: Center(
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   color: Color(0xFF10B981),
                 ),
               ),

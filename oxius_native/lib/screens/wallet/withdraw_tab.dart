@@ -5,6 +5,7 @@ import '../../services/wallet_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/payment_method_selector.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -86,7 +87,8 @@ class _WithdrawTabState extends State<WithdrawTab> {
     _validatePhone();
 
     setState(() {
-      _termsError = _acceptedTerms ? null : 'Please accept terms and conditions';
+      _termsError =
+          _acceptedTerms ? null : 'Please accept terms and conditions';
     });
 
     if (_amountError != null || _phoneError != null || _termsError != null) {
@@ -111,7 +113,8 @@ class _WithdrawTabState extends State<WithdrawTab> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              response['message'] ?? 'Withdrawal request submitted successfully',
+              response['message'] ??
+                  'Withdrawal request submitted successfully',
             ),
             backgroundColor: const Color(0xFF10B981),
             duration: const Duration(seconds: 3),
@@ -149,9 +152,8 @@ class _WithdrawTabState extends State<WithdrawTab> {
   @override
   Widget build(BuildContext context) {
     final amount = double.tryParse(_amountController.text) ?? 0;
-    final totalDeduction = amount > 0
-        ? WalletService.calculateWithdrawalTotal(amount)
-        : 0.0;
+    final totalDeduction =
+        amount > 0 ? WalletService.calculateWithdrawalTotal(amount) : 0.0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -177,13 +179,18 @@ class _WithdrawTabState extends State<WithdrawTab> {
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             onChanged: (value) => _validatePhone(),
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
+            style: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
             decoration: InputDecoration(
-              labelText: '${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} Number',
-              hintText: 'Enter ${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} number',
-              labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
+              labelText:
+                  '${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} Number',
+              hintText:
+                  'Enter ${_selectedMethod == 'nagad' ? 'Nagad' : 'bKash'} number',
+              labelStyle: GoogleFonts.inter(
+                  fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
               hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
-              prefixIcon: const Icon(Icons.phone_android_rounded, size: 18, color: _slate400),
+              prefixIcon: const Icon(Icons.phone_android_rounded,
+                  size: 18, color: _slate400),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: _slate200),
@@ -199,7 +206,8 @@ class _WithdrawTabState extends State<WithdrawTab> {
               filled: true,
               fillColor: _slate50,
               errorText: _phoneError,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             ),
           ),
           const SizedBox(height: 12),
@@ -231,7 +239,10 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     children: [
                       Text(
                         'Withdrawal Amount:',
-                        style: GoogleFonts.inter(fontSize: 12, color: _slate700, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: _slate700,
+                            fontWeight: FontWeight.w600),
                       ),
                       Text(
                         '৳${amount.toStringAsFixed(2)}',
@@ -249,7 +260,10 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     children: [
                       Text(
                         'Charges (${WalletService.withdrawalChargePercent}%):',
-                        style: GoogleFonts.inter(fontSize: 12, color: _slate500, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: _slate500,
+                            fontWeight: FontWeight.w600),
                       ),
                       Text(
                         '৳${(amount * WalletService.withdrawalChargePercent / 100).toStringAsFixed(2)}',
@@ -333,7 +347,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2,
                         color: Colors.white,
                       ),
@@ -354,7 +368,7 @@ class _WithdrawTabState extends State<WithdrawTab> {
                     ),
             ),
           ),
-          
+
           // Safe area bottom padding for devices with gesture navigation
           SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
         ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/elearning_models.dart';
 import '../../services/elearning_service.dart';
 import '../../screens/elearning/video_player_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class VideoLessons extends StatefulWidget {
   final String? subject;
@@ -67,7 +68,8 @@ class _VideoLessonsState extends State<VideoLessons> {
         _error = null;
       });
 
-      final videos = await ElearningService.fetchVideoLessonsForSubject(widget.subject!);
+      final videos =
+          await ElearningService.fetchVideoLessonsForSubject(widget.subject!);
 
       setState(() {
         _videos = videos;
@@ -93,10 +95,13 @@ class _VideoLessonsState extends State<VideoLessons> {
   void _filterVideos() {
     setState(() {
       _filteredVideos = _videos.where((video) {
-        final matchesLesson = _selectedLesson == 'all' || video.lessonName == _selectedLesson;
+        final matchesLesson =
+            _selectedLesson == 'all' || video.lessonName == _selectedLesson;
         final matchesSearch = _searchQuery.isEmpty ||
             video.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            video.description.toLowerCase().contains(_searchQuery.toLowerCase());
+            video.description
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase());
         return matchesLesson && matchesSearch;
       }).toList();
     });
@@ -180,7 +185,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   decoration: BoxDecoration(
                     color: _indigo.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(999),
@@ -197,7 +203,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                 const SizedBox(width: 8),
                 if (!_loading)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade50,
                       border: Border.all(color: Colors.grey.shade100),
@@ -245,7 +252,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.filter_list, size: 20, color: Colors.blue.shade600),
+                      Icon(Icons.filter_list,
+                          size: 20, color: Colors.blue.shade600),
                       const SizedBox(width: 8),
                       const Text(
                         'Filter and Search',
@@ -268,12 +276,14 @@ class _VideoLessonsState extends State<VideoLessons> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade200),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       filled: true,
                       fillColor: Colors.white,
                     ),
                     items: [
-                      const DropdownMenuItem(value: 'all', child: Text('All Lessons')),
+                      const DropdownMenuItem(
+                          value: 'all', child: Text('All Lessons')),
                       ..._lessons.map((lesson) => DropdownMenuItem(
                             value: lesson,
                             child: Text(lesson),
@@ -294,7 +304,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                       labelText: 'Search Videos',
                       labelStyle: const TextStyle(fontSize: 14),
                       hintText: 'Search by title or description',
-                      hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                      hintStyle:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade400),
                       prefixIcon: const Icon(Icons.search, size: 20),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
@@ -312,7 +323,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade200),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       filled: true,
                       fillColor: Colors.white,
                     ),
@@ -332,7 +344,7 @@ class _VideoLessonsState extends State<VideoLessons> {
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(32.0),
-                child: CircularProgressIndicator(),
+                child: AdsyLoadingIndicator(),
               ),
             ),
 
@@ -381,7 +393,10 @@ class _VideoLessonsState extends State<VideoLessons> {
             ),
 
           // Empty state
-          if (!_loading && _error == null && _filteredVideos.isEmpty && _videos.isNotEmpty)
+          if (!_loading &&
+              _error == null &&
+              _filteredVideos.isEmpty &&
+              _videos.isNotEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
@@ -441,7 +456,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey.shade300,
-                            child: const Icon(Icons.play_circle_outline, size: 32),
+                            child:
+                                const Icon(Icons.play_circle_outline, size: 32),
                           );
                         },
                       ),
@@ -475,7 +491,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                         bottom: 4,
                         right: 4,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.8),
                             borderRadius: BorderRadius.circular(4),
@@ -511,7 +528,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.blue.shade50,
                         borderRadius: BorderRadius.circular(4),
@@ -528,7 +546,8 @@ class _VideoLessonsState extends State<VideoLessons> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Icons.visibility, size: 12, color: Colors.grey.shade600),
+                        Icon(Icons.visibility,
+                            size: 12, color: Colors.grey.shade600),
                         const SizedBox(width: 4),
                         Text(
                           '${video.viewsCount} views',

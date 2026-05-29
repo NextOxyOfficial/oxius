@@ -27,6 +27,7 @@ import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
 import 'business_network/profile_screen.dart';
 import 'call_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -2941,7 +2942,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                                           SizedBox(
                                             width: 16,
                                             height: 16,
-                                            child: CircularProgressIndicator(
+                                            child: AdsyLoadingIndicator(
                                               strokeWidth: 2,
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
@@ -3228,7 +3229,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Center(
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 value: loadingProgress.expectedTotalBytes !=
                                         null
                                     ? loadingProgress.cumulativeBytesLoaded /

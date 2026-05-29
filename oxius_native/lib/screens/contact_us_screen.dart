@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/contact_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ContactUsScreen extends StatefulWidget {
   const ContactUsScreen({super.key});
@@ -129,7 +130,8 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, size: 22, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.arrow_back_rounded,
+              size: 22, color: Color(0xFF1F2937)),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -152,337 +154,354 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 color: Color(0xFF10B981),
               ),
             )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(4),
               child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Get in Touch',
-                    style: AppFonts.roboto(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Have questions? We\'d love to hear from you.',
-                    style: AppFonts.roboto(
-                      fontSize: 13,
-                      height: 1.5,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            
-            // Contact Info Cards
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildContactCard(
-                      Icons.email_outlined,
-                      'Email',
-                      _contactInfo?.email ?? 'support@adsyclub.com',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildContactCard(
-                      Icons.phone_outlined,
-                      'Phone',
-                      _contactInfo?.phone ?? '+880 1896 144066',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Contact Form
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Send us a Message',
-                      style: AppFonts.roboto(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.1,
-                        color: const Color(0xFF1F2937),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // Name
-                    TextFormField(
-                      controller: _nameController,
-                      style: AppFonts.roboto(fontSize: 14),
-                      decoration: InputDecoration(
-                        labelText: 'Your Name',
-                        labelStyle: AppFonts.roboto(fontSize: 13),
-                        hintText: 'Enter your full name',
-                        hintStyle: AppFonts.roboto(fontSize: 13),
-                        prefixIcon: const Icon(Icons.person_outline_rounded, size: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        isDense: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your name';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    
-                    // Email
-                    TextFormField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      style: AppFonts.roboto(fontSize: 14),
-                      decoration: InputDecoration(
-                        labelText: 'Email Address',
-                        labelStyle: AppFonts.roboto(fontSize: 13),
-                        hintText: 'your@email.com',
-                        hintStyle: AppFonts.roboto(fontSize: 13),
-                        prefixIcon: const Icon(Icons.email_outlined, size: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        isDense: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    
-                    // Phone
-                    TextFormField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      style: AppFonts.roboto(fontSize: 14),
-                      decoration: InputDecoration(
-                        labelText: 'Phone Number',
-                        labelStyle: AppFonts.roboto(fontSize: 13),
-                        hintText: '+880 1234 567890',
-                        hintStyle: AppFonts.roboto(fontSize: 13),
-                        prefixIcon: const Icon(Icons.phone_outlined, size: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        isDense: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your phone number';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    
-                    // Subject
-                    TextFormField(
-                      controller: _subjectController,
-                      style: AppFonts.roboto(fontSize: 14),
-                      decoration: InputDecoration(
-                        labelText: 'Subject',
-                        labelStyle: AppFonts.roboto(fontSize: 13),
-                        hintText: 'What is this about?',
-                        hintStyle: AppFonts.roboto(fontSize: 13),
-                        prefixIcon: const Icon(Icons.subject_outlined, size: 18),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        isDense: true,
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a subject';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    
-                    // Message
-                    TextFormField(
-                      controller: _messageController,
-                      maxLines: 4,
-                      style: AppFonts.roboto(fontSize: 14),
-                      decoration: InputDecoration(
-                        labelText: 'Message',
-                        labelStyle: AppFonts.roboto(fontSize: 13),
-                        hintText: 'Write your message here...',
-                        hintStyle: AppFonts.roboto(fontSize: 13),
-                        alignLabelWithHint: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your message';
-                        }
-                        if (value.length < 10) {
-                          return 'Message must be at least 10 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isSubmitting ? null : _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.send_rounded, size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Send Message',
-                                    style: AppFonts.roboto(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: -0.1,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Support Hours
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.access_time_rounded,
-                      color: Color(0xFF10B981),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
+                  // Header
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Support Hours',
+                          'Get in Touch',
                           style: AppFonts.roboto(
-                            fontSize: 13,
+                            fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            letterSpacing: -0.1,
+                            letterSpacing: -0.2,
                             color: const Color(0xFF1F2937),
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 6),
                         Text(
-                          _contactInfo?.supportHours ?? '24/7 Support Available',
+                          'Have questions? We\'d love to hear from you.',
                           style: AppFonts.roboto(
-                            fontSize: 11,
-                            height: 1.4,
-                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                            height: 1.5,
+                            color: Colors.grey.shade600,
                           ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 8),
+
+                  // Contact Info Cards
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _buildContactCard(
+                            Icons.email_outlined,
+                            'Email',
+                            _contactInfo?.email ?? 'support@adsyclub.com',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildContactCard(
+                            Icons.phone_outlined,
+                            'Phone',
+                            _contactInfo?.phone ?? '+880 1896 144066',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Contact Form
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade200),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Send us a Message',
+                            style: AppFonts.roboto(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.1,
+                              color: const Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Name
+                          TextFormField(
+                            controller: _nameController,
+                            style: AppFonts.roboto(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'Your Name',
+                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              hintText: 'Enter your full name',
+                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              prefixIcon: const Icon(
+                                  Icons.person_outline_rounded,
+                                  size: 18),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              isDense: true,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your name';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Email
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            style: AppFonts.roboto(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'Email Address',
+                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              hintText: 'your@email.com',
+                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              prefixIcon:
+                                  const Icon(Icons.email_outlined, size: 18),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              isDense: true,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!value.contains('@')) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Phone
+                          TextFormField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            style: AppFonts.roboto(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'Phone Number',
+                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              hintText: '+880 1234 567890',
+                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              prefixIcon:
+                                  const Icon(Icons.phone_outlined, size: 18),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              isDense: true,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your phone number';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Subject
+                          TextFormField(
+                            controller: _subjectController,
+                            style: AppFonts.roboto(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'Subject',
+                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              hintText: 'What is this about?',
+                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              prefixIcon:
+                                  const Icon(Icons.subject_outlined, size: 18),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              isDense: true,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a subject';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Message
+                          TextFormField(
+                            controller: _messageController,
+                            maxLines: 4,
+                            style: AppFonts.roboto(fontSize: 14),
+                            decoration: InputDecoration(
+                              labelText: 'Message',
+                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              hintText: 'Write your message here...',
+                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              alignLabelWithHint: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              contentPadding: const EdgeInsets.all(12),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your message';
+                              }
+                              if (value.length < 10) {
+                                return 'Message must be at least 10 characters';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Submit Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _isSubmitting ? null : _submitForm,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: _isSubmitting
+                                  ? const SizedBox(
+                                      height: 18,
+                                      width: 18,
+                                      child: AdsyLoadingIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.send_rounded,
+                                            size: 16),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Send Message',
+                                          style: AppFonts.roboto(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: -0.1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Support Hours
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: const Color(0xFF10B981).withOpacity(0.2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.access_time_rounded,
+                            color: Color(0xFF10B981),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Support Hours',
+                                style: AppFonts.roboto(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.1,
+                                  color: const Color(0xFF1F2937),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                _contactInfo?.supportHours ??
+                                    '24/7 Support Available',
+                                style: AppFonts.roboto(
+                                  fontSize: 11,
+                                  height: 1.4,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
     );
   }
 

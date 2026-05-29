@@ -9,7 +9,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
 
   Widget _buildBookingView() {
     if (_isCheckingLocationPermission) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFF6366F1)));
+      return const Center(
+          child: AdsyLoadingIndicator(color: Color(0xFF6366F1)));
     }
 
     if (!_locationGranted) {
@@ -26,7 +27,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             dropPoint: _dropPoint,
             routeGeometry: _bookingStep == 2 ? _estimate?.routeGeometry : null,
             nearbyDrivers: _nearbyDrivers,
-            activeSelection: _bookingStep == 0 ? 'drop' : (_bookingStep == 1 ? 'pickup' : ''),
+            activeSelection: _bookingStep == 0
+                ? 'drop'
+                : (_bookingStep == 1 ? 'pickup' : ''),
             vehicleType: _selectedVehicleType,
             onMapTap: _onMapTap,
             onCenterChanged: _onPlannerMapCenterChanged,
@@ -44,7 +47,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               final offset = Tween<Offset>(
                 begin: const Offset(0.15, 0),
                 end: Offset.zero,
-              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+              ).animate(CurvedAnimation(
+                  parent: animation, curve: Curves.easeOutCubic));
               return FadeTransition(
                 opacity: animation,
                 child: SlideTransition(position: offset, child: child),
@@ -81,7 +85,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       _hideDropSuggestionsUntilEdit ? const <RidePoint>[] : _dropSuggestions,
       true,
     );
-    final showingRecent = _dropSuggestions.isEmpty && dropSuggestions.isNotEmpty;
+    final showingRecent =
+        _dropSuggestions.isEmpty && dropSuggestions.isNotEmpty;
 
     return _buildStepSheetContainer(
       child: Column(
@@ -159,7 +164,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   _activeInput = 'pickup';
                 }),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -187,7 +193,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+                      const Icon(Icons.arrow_forward_rounded,
+                          size: 16, color: Colors.white),
                     ],
                   ),
                 ),
@@ -208,7 +215,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       _pickupSuggestions,
       true,
     );
-    final showingRecent = _pickupSuggestions.isEmpty && pickupSuggestions.isNotEmpty;
+    final showingRecent =
+        _pickupSuggestions.isEmpty && pickupSuggestions.isNotEmpty;
 
     return _buildStepSheetContainer(
       onBack: () => setState(() {
@@ -264,7 +272,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               child: GestureDetector(
                 onTap: () => setState(() => _bookingStep = 2),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
@@ -292,7 +301,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.white),
+                      const Icon(Icons.arrow_forward_rounded,
+                          size: 16, color: Colors.white),
                     ],
                   ),
                 ),
@@ -326,26 +336,35 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             ),
             child: Row(
               children: [
-                const Icon(Icons.trip_origin_rounded, size: 14, color: _kPurple),
+                const Icon(Icons.trip_origin_rounded,
+                    size: 14, color: _kPurple),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     _pickupController.text,
-                    style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF1E293B), fontWeight: FontWeight.w500),
+                    style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF1E293B),
+                        fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 6),
-                  child: Icon(Icons.arrow_forward_rounded, size: 14, color: _kSlate),
+                  child: Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: _kSlate),
                 ),
-                const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFFEF4444)),
+                const Icon(Icons.location_on_rounded,
+                    size: 14, color: Color(0xFFEF4444)),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     _dropController.text,
-                    style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF1E293B), fontWeight: FontWeight.w500),
+                    style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF1E293B),
+                        fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -379,13 +398,15 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
 
   // ── Sheet Container ──────────────────────────────────────────────────────────
 
-  Widget _buildStepSheetContainer({required Widget child, VoidCallback? onBack}) {
+  Widget _buildStepSheetContainer(
+      {required Widget child, VoidCallback? onBack}) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
-          BoxShadow(color: Color(0x26000000), blurRadius: 32, offset: Offset(0, -8)),
+          BoxShadow(
+              color: Color(0x26000000), blurRadius: 32, offset: Offset(0, -8)),
         ],
       ),
       child: Column(
@@ -421,7 +442,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                             color: const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(9),
                           ),
-                          child: const Icon(Icons.arrow_back_rounded, size: 16, color: Color(0xFF1E293B)),
+                          child: const Icon(Icons.arrow_back_rounded,
+                              size: 16, color: Color(0xFF1E293B)),
                         ),
                         const SizedBox(width: 6),
                       ],
@@ -466,10 +488,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               onChanged: onChanged,
               onTap: onTap,
               autofocus: true,
-              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: const Color(0xFF1E293B)),
+              style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF1E293B)),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.inter(fontSize: 14, color: const Color(0xFFB0B8CC)),
+                hintStyle: GoogleFonts.inter(
+                    fontSize: 14, color: const Color(0xFFB0B8CC)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -482,7 +508,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               child: SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 1.5,
                   color: Color(0xFF6366F1),
                 ),
@@ -526,36 +552,54 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     color: const Color(0xFFFFF7ED),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(Icons.location_on_rounded, color: Color(0xFFEA580C), size: 30),
+                  child: const Icon(Icons.location_on_rounded,
+                      color: Color(0xFFEA580C), size: 30),
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  t('rideshare_location_required_title', fallback: 'Location Access Required'),
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: const Color(0xFF1E293B)),
+                  t('rideshare_location_required_title',
+                      fallback: 'Location Access Required'),
+                  style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1E293B)),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  t('rideshare_enable_location_desc', fallback: 'Enable location to book rides and auto-set pickup.'),
-                  style: GoogleFonts.inter(fontSize: 13, color: _kSlate, height: 1.4),
+                  t('rideshare_enable_location_desc',
+                      fallback:
+                          'Enable location to book rides and auto-set pickup.'),
+                  style: GoogleFonts.inter(
+                      fontSize: 13, color: _kSlate, height: 1.4),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: _isLoadingLocation ? null : _requestLocationPermission,
+                    onPressed:
+                        _isLoadingLocation ? null : _requestLocationPermission,
                     icon: _isLoadingLocation
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: AdsyLoadingIndicator(
+                                strokeWidth: 2, color: Colors.white))
                         : const Icon(Icons.my_location_rounded, size: 18),
                     label: Text(
-                      _isLoadingLocation ? t('rideshare_enabling', fallback: 'Enabling...') : t('rideshare_enable_location', fallback: 'Enable Location'),
-                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700),
+                      _isLoadingLocation
+                          ? t('rideshare_enabling', fallback: 'Enabling...')
+                          : t('rideshare_enable_location',
+                              fallback: 'Enable Location'),
+                      style: GoogleFonts.inter(
+                          fontSize: 14, fontWeight: FontWeight.w700),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFFEA580C),
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                 ),
@@ -577,11 +621,15 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       children: [
         Row(
           children: [
-            const Icon(Icons.payment_rounded, size: 15, color: Color(0xFF6366F1)),
+            const Icon(Icons.payment_rounded,
+                size: 15, color: Color(0xFF6366F1)),
             const SizedBox(width: 6),
             Text(
               t('rideshare_payment_method', fallback: 'Payment Method'),
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: const Color(0xFF1E293B)),
+              style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1E293B)),
             ),
           ],
         ),
@@ -593,7 +641,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 onTap: () => setState(() => _selectedPaymentMethod = 'wallet'),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   decoration: BoxDecoration(
                     color: _selectedPaymentMethod == 'wallet'
                         ? const Color(0xFF6366F1).withValues(alpha: 0.08)
@@ -632,18 +681,21 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                           if (_selectedPaymentMethod == 'wallet')
                             const Padding(
                               padding: EdgeInsets.only(left: 4),
-                              child: Icon(Icons.check_circle_rounded, size: 13, color: Color(0xFF6366F1)),
+                              child: Icon(Icons.check_circle_rounded,
+                                  size: 13, color: Color(0xFF6366F1)),
                             ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '৳${walletBalance.toStringAsFixed(0)} ${t("rideshare_balance", fallback: "Balance")}',
-                        style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF94A3B8)),
+                        style: GoogleFonts.inter(
+                            fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
                       GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/deposit-withdraw'),
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/deposit-withdraw'),
                         child: Text(
                           t('rideshare_add_funds', fallback: '+ Add Funds'),
                           style: GoogleFonts.inter(
@@ -664,7 +716,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 onTap: () => setState(() => _selectedPaymentMethod = 'cash'),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   decoration: BoxDecoration(
                     color: _selectedPaymentMethod == 'cash'
                         ? const Color(0xFF10B981).withValues(alpha: 0.08)
@@ -703,19 +756,24 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                           if (_selectedPaymentMethod == 'cash')
                             const Padding(
                               padding: EdgeInsets.only(left: 4),
-                              child: Icon(Icons.check_circle_rounded, size: 13, color: Color(0xFF10B981)),
+                              child: Icon(Icons.check_circle_rounded,
+                                  size: 13, color: Color(0xFF10B981)),
                             ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        t('rideshare_pay_driver_directly', fallback: 'Pay driver directly'),
-                        style: GoogleFonts.inter(fontSize: 10.5, color: const Color(0xFF94A3B8)),
+                        t('rideshare_pay_driver_directly',
+                            fallback: 'Pay driver directly'),
+                        style: GoogleFonts.inter(
+                            fontSize: 10.5, color: const Color(0xFF94A3B8)),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        t('rideshare_no_wallet_needed', fallback: 'No wallet needed'),
-                        style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFFCBD5E1)),
+                        t('rideshare_no_wallet_needed',
+                            fallback: 'No wallet needed'),
+                        style: GoogleFonts.inter(
+                            fontSize: 10, color: const Color(0xFFCBD5E1)),
                       ),
                     ],
                   ),
@@ -741,10 +799,15 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
       _hideDropSuggestionsUntilEdit ? const <RidePoint>[] : _dropSuggestions,
       _activeInput == 'drop',
     );
-    final showingDropSuggestions = _activeInput == 'drop' && dropVisibleSuggestions.isNotEmpty;
-    final activeSuggestions = showingDropSuggestions ? dropVisibleSuggestions : pickupVisibleSuggestions;
+    final showingDropSuggestions =
+        _activeInput == 'drop' && dropVisibleSuggestions.isNotEmpty;
+    final activeSuggestions = showingDropSuggestions
+        ? dropVisibleSuggestions
+        : pickupVisibleSuggestions;
     final showingRecent = showingDropSuggestions
-        ? !_hideDropSuggestionsUntilEdit && _dropSuggestions.isEmpty && activeSuggestions.isNotEmpty
+        ? !_hideDropSuggestionsUntilEdit &&
+            _dropSuggestions.isEmpty &&
+            activeSuggestions.isNotEmpty
         : _pickupSuggestions.isEmpty && activeSuggestions.isNotEmpty;
 
     return Column(
@@ -789,8 +852,11 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 children: [
                   _buildLocationInput(
                     controller: _pickupController,
-                    label: t('rideshare_pickup_location', fallback: 'Pickup Location'),
-                    hint: t('rideshare_search_pickup', fallback: 'Search pickup...').toString(),
+                    label: t('rideshare_pickup_location',
+                        fallback: 'Pickup Location'),
+                    hint: t('rideshare_search_pickup',
+                            fallback: 'Search pickup...')
+                        .toString(),
                     isActive: _activeInput == 'pickup',
                     onTap: () => setState(() => _activeInput = 'pickup'),
                     onChanged: _onPickupSearch,
@@ -799,8 +865,10 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   const SizedBox(height: 12),
                   _buildLocationInput(
                     controller: _dropController,
-                    label: t('rideshare_drop_location', fallback: 'Drop Location'),
-                    hint: t('rideshare_search_drop', fallback: 'Search drop...').toString(),
+                    label:
+                        t('rideshare_drop_location', fallback: 'Drop Location'),
+                    hint: t('rideshare_search_drop', fallback: 'Search drop...')
+                        .toString(),
                     isActive: _activeInput == 'drop',
                     onTap: () => setState(() {
                       _activeInput = 'drop';
@@ -869,7 +937,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                     onChanged: onChanged,
                     onTap: onTap,
                     onSubmitted: onSubmitted,
-                    textInputAction: onSubmitted != null ? TextInputAction.search : TextInputAction.next,
+                    textInputAction: onSubmitted != null
+                        ? TextInputAction.search
+                        : TextInputAction.next,
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -948,7 +1018,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                 return InkWell(
                   onTap: () => onSuggestionTap(suggestion),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 12),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -998,11 +1069,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                                   if (badgeLabel.isNotEmpty) ...[
                                     const SizedBox(width: 8),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFFFEDD5),
-                                        borderRadius: BorderRadius.circular(999),
-                                        border: Border.all(color: const Color(0xFFFED7AA)),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
+                                        border: Border.all(
+                                            color: const Color(0xFFFED7AA)),
                                       ),
                                       child: Text(
                                         badgeLabel,
@@ -1059,7 +1133,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             ? const SizedBox(
                 width: 14,
                 height: 14,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 2,
                   color: Colors.white,
                 ),
@@ -1125,11 +1199,14 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         const SizedBox(height: 8),
         Row(
           children: [
-            _buildVehicleOption('bike', '🏍', t('rideshare_vehicle_bike', fallback: 'Bike')),
+            _buildVehicleOption(
+                'bike', '🏍', t('rideshare_vehicle_bike', fallback: 'Bike')),
             const SizedBox(width: 8),
-            _buildVehicleOption('car', '🚗', t('rideshare_vehicle_car', fallback: 'Car')),
+            _buildVehicleOption(
+                'car', '🚗', t('rideshare_vehicle_car', fallback: 'Car')),
             const SizedBox(width: 8),
-            _buildVehicleOption('cng', '🛺', t('rideshare_vehicle_cng', fallback: 'CNG')),
+            _buildVehicleOption(
+                'cng', '🛺', t('rideshare_vehicle_cng', fallback: 'CNG')),
           ],
         ),
       ],
@@ -1196,7 +1273,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             const SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 strokeWidth: 2,
                 color: Color(0xFF6366F1),
               ),
@@ -1232,7 +1309,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  t('rideshare_estimated_fare', fallback: 'Estimated Fare').toUpperCase(),
+                  t('rideshare_estimated_fare', fallback: 'Estimated Fare')
+                      .toUpperCase(),
                   style: GoogleFonts.inter(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -1256,7 +1334,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(8),
@@ -1282,7 +1361,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               ),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(8),
@@ -1316,8 +1396,9 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
   // ── Book Button ──────────────────────────────────────────────────────────────
 
   Widget _buildBookButton() {
-    final canBook = _pickupPoint != null && _dropPoint != null && _estimate != null;
-    
+    final canBook =
+        _pickupPoint != null && _dropPoint != null && _estimate != null;
+
     return SizedBox(
       width: double.infinity,
       child: Container(
@@ -1341,7 +1422,8 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
         child: ElevatedButton(
           onPressed: canBook && !_isCreatingRide ? _createRide : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: canBook ? Colors.transparent : const Color(0xFFE2E8F0),
+            backgroundColor:
+                canBook ? Colors.transparent : const Color(0xFFE2E8F0),
             foregroundColor: canBook ? Colors.white : const Color(0xFF94A3B8),
             disabledForegroundColor: const Color(0xFF94A3B8),
             disabledBackgroundColor: const Color(0xFFE2E8F0),
@@ -1356,7 +1438,7 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
               ? const SizedBox(
                   width: 22,
                   height: 22,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 2.5,
                     color: Colors.white,
                   ),
@@ -1365,12 +1447,18 @@ extension _RsBookingFormExtension on _RidesharePassengerPanelState {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      canBook ? Icons.directions_car_rounded : Icons.edit_location_alt_outlined,
+                      canBook
+                          ? Icons.directions_car_rounded
+                          : Icons.edit_location_alt_outlined,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      canBook ? t('rideshare_book_ride_now', fallback: 'Book Ride Now') : t('rideshare_enter_locations', fallback: 'Enter Locations'),
+                      canBook
+                          ? t('rideshare_book_ride_now',
+                              fallback: 'Book Ride Now')
+                          : t('rideshare_enter_locations',
+                              fallback: 'Enter Locations'),
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,

@@ -10,6 +10,7 @@ import '../services/auth_service.dart';
 import '../services/geo_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/network_error_handler.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class RegisterPage extends StatefulWidget {
   final String? referralCode;
@@ -267,7 +268,8 @@ class _RegisterPageState extends State<RegisterPage> {
       final formData = <String, dynamic>{
         'first_name': _firstNameController.text.trim(),
         'last_name': _lastNameController.text.trim(),
-        'name': '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+        'name':
+            '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
         'email': _emailController.text.trim(),
         'username': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
@@ -324,7 +326,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
           await Future.delayed(const Duration(milliseconds: 500));
           if (mounted) {
-            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            Navigator.of(context)
+                .pushNamedAndRemoveUntil('/', (route) => false);
           }
         }
       }
@@ -455,7 +458,8 @@ class _RegisterPageState extends State<RegisterPage> {
               color: _headingTextColor,
               size: 20,
             ),
-            onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
+            onPressed: () =>
+                Navigator.of(context).pushReplacementNamed('/login'),
             padding: const EdgeInsets.all(10),
             constraints: const BoxConstraints(),
           ),
@@ -471,7 +475,8 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.person_add_alt_1_rounded, size: 16, color: _primaryColor),
+              const Icon(Icons.person_add_alt_1_rounded,
+                  size: 16, color: _primaryColor),
               const SizedBox(width: 6),
               Text(
                 'Secured signup',
@@ -687,7 +692,8 @@ class _RegisterPageState extends State<RegisterPage> {
             icon: Icons.lock_outline_rounded,
             isPassword: true,
             isVisible: _showPassword,
-            onToggleVisibility: () => setState(() => _showPassword = !_showPassword),
+            onToggleVisibility: () =>
+                setState(() => _showPassword = !_showPassword),
             error: _errors['password'],
           ),
           const SizedBox(height: 12),
@@ -698,7 +704,8 @@ class _RegisterPageState extends State<RegisterPage> {
             icon: Icons.verified_user_outlined,
             isPassword: true,
             isVisible: _showConfirmPassword,
-            onToggleVisibility: () => setState(() => _showConfirmPassword = !_showConfirmPassword),
+            onToggleVisibility: () =>
+                setState(() => _showConfirmPassword = !_showConfirmPassword),
             error: _errors['confirm_password'],
           ),
           const SizedBox(height: 18),
@@ -741,7 +748,8 @@ class _RegisterPageState extends State<RegisterPage> {
               hintText: 'Choose area',
               icon: Icons.pin_drop_outlined,
               value: _selectedUpazila,
-              items: _upazilas.map((item) => item['name_eng'] as String).toList(),
+              items:
+                  _upazilas.map((item) => item['name_eng'] as String).toList(),
               onChanged: (value) => setState(() => _selectedUpazila = value),
             ),
           ),
@@ -780,7 +788,8 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.info_outline_rounded, size: 18, color: _primaryColor),
+                const Icon(Icons.info_outline_rounded,
+                    size: 18, color: _primaryColor),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -831,9 +840,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           strokeWidth: 2.4,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Row(
@@ -929,7 +939,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 color: _primaryColor,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white),
+              child: const Icon(Icons.camera_alt_rounded,
+                  size: 14, color: Colors.white),
             ),
           ),
         ],
@@ -968,14 +979,18 @@ class _RegisterPageState extends State<RegisterPage> {
               style: FilledButton.styleFrom(
                 backgroundColor: _primarySoftColor,
                 foregroundColor: _primaryDarkColor,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
               child: Text(
-                _profileImageBytes != null || _profileImageFile != null ? 'Change Photo' : 'Upload Photo',
-                style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w600),
+                _profileImageBytes != null || _profileImageFile != null
+                    ? 'Change Photo'
+                    : 'Upload Photo',
+                style: AppFonts.roboto(
+                    fontSize: 12.5, fontWeight: FontWeight.w600),
               ),
             ),
             if (_profileImageBytes != null || _profileImageFile != null)
@@ -983,11 +998,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 onPressed: _removeImage,
                 style: TextButton.styleFrom(
                   foregroundColor: _dangerColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                 ),
                 child: Text(
                   'Remove',
-                  style: AppFonts.roboto(fontSize: 12.5, fontWeight: FontWeight.w600),
+                  style: AppFonts.roboto(
+                      fontSize: 12.5, fontWeight: FontWeight.w600),
                 ),
               ),
           ],
@@ -1006,7 +1023,8 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline_rounded, color: _dangerColor, size: 18),
+          const Icon(Icons.error_outline_rounded,
+              color: _dangerColor, size: 18),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -1103,12 +1121,15 @@ class _RegisterPageState extends State<RegisterPage> {
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
-            prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 54, minHeight: 44),
             prefixIcon: _buildFieldIcon(icon),
             suffixIcon: isPassword
                 ? IconButton(
                     icon: Icon(
-                      isVisible ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      isVisible
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: _bodyTextColor,
                       size: 18,
                     ),
@@ -1139,7 +1160,8 @@ class _RegisterPageState extends State<RegisterPage> {
               borderRadius: BorderRadius.all(Radius.circular(16)),
               borderSide: BorderSide(color: _dangerColor, width: 1.5),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
       ],
@@ -1163,11 +1185,13 @@ class _RegisterPageState extends State<RegisterPage> {
         DropdownButtonFormField<String>(
           initialValue: value,
           isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _bodyTextColor),
+          icon: const Icon(Icons.keyboard_arrow_down_rounded,
+              color: _bodyTextColor),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
-            prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 44),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 54, minHeight: 44),
             prefixIcon: _buildFieldIcon(icon),
             filled: true,
             fillColor: _surfaceColor,
@@ -1193,7 +1217,8 @@ class _RegisterPageState extends State<RegisterPage> {
               borderRadius: BorderRadius.all(Radius.circular(16)),
               borderSide: BorderSide(color: _dangerColor, width: 1.5),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
           items: items
               .map(
@@ -1201,7 +1226,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   value: item,
                   child: Text(
                     item,
-                    style: AppFonts.roboto(fontSize: 13.5, color: _headingTextColor),
+                    style: AppFonts.roboto(
+                        fontSize: 13.5, color: _headingTextColor),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

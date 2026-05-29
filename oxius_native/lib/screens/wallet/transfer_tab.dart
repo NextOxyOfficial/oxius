@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../widgets/wallet/amount_input_field.dart';
 import '../../widgets/wallet/terms_checkbox.dart';
 import 'transfer_confirmation_dialog.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -173,8 +174,11 @@ class _TransferTabState extends State<TransferTab> {
               child: Column(
                 children: [
                   Text(
-                    '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim().isNotEmpty
-                        ? '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim()
+                    '${user.firstName ?? ''} ${user.lastName ?? ''}'
+                            .trim()
+                            .isNotEmpty
+                        ? '${user.firstName ?? ''} ${user.lastName ?? ''}'
+                            .trim()
                         : user.username,
                     style: const TextStyle(
                       fontSize: 16,
@@ -280,7 +284,8 @@ class _TransferTabState extends State<TransferTab> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+                content: Text(
+                    'Error: ${e.toString().replaceAll('Exception: ', '')}'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -301,7 +306,8 @@ class _TransferTabState extends State<TransferTab> {
     _validateAmount();
 
     setState(() {
-      _termsError = _acceptedTerms ? null : 'Please accept terms and conditions';
+      _termsError =
+          _acceptedTerms ? null : 'Please accept terms and conditions';
     });
 
     if (_contactError != null || _amountError != null || _termsError != null) {
@@ -343,11 +349,14 @@ class _TransferTabState extends State<TransferTab> {
             child: OutlinedButton.icon(
               onPressed: _showMyQrCode,
               icon: const Icon(Icons.qr_code, size: 18),
-              label: Text('Show My QR Code', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700)),
+              label: Text('Show My QR Code',
+                  style: GoogleFonts.inter(
+                      fontSize: 13, fontWeight: FontWeight.w700)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: _indigo,
                 side: const BorderSide(color: _indigo, width: 1.4),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -361,15 +370,19 @@ class _TransferTabState extends State<TransferTab> {
             controller: _contactController,
             keyboardType: TextInputType.text,
             onChanged: (value) => _validateContact(),
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
+            style: GoogleFonts.inter(
+                fontSize: 13, fontWeight: FontWeight.w600, color: _slate800),
             decoration: InputDecoration(
               labelText: 'Recipient ID, Email or Phone',
               hintText: 'Enter user ID, email or phone',
-              labelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
+              labelStyle: GoogleFonts.inter(
+                  fontSize: 12, fontWeight: FontWeight.w600, color: _slate500),
               hintStyle: GoogleFonts.inter(fontSize: 13, color: _slate400),
-              prefixIcon: const Icon(Icons.person_outline_rounded, size: 18, color: _slate400),
+              prefixIcon: const Icon(Icons.person_outline_rounded,
+                  size: 18, color: _slate400),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: _indigo),
+                icon: const Icon(Icons.qr_code_scanner_rounded,
+                    size: 18, color: _indigo),
                 onPressed: _scanQRCode,
                 tooltip: 'Scan Recipient QR Code',
               ),
@@ -388,7 +401,8 @@ class _TransferTabState extends State<TransferTab> {
               filled: true,
               fillColor: _slate50,
               errorText: _contactError,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             ),
           ),
           const SizedBox(height: 12),
@@ -448,7 +462,7 @@ class _TransferTabState extends State<TransferTab> {
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2,
                         color: Colors.white,
                       ),
@@ -469,7 +483,7 @@ class _TransferTabState extends State<TransferTab> {
                     ),
             ),
           ),
-          
+
           // Safe area bottom padding for devices with gesture navigation
           SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
         ],
@@ -518,25 +532,26 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             controller: controller,
             onDetect: (capture) {
               if (_isScanned) return;
-              
+
               final List<Barcode> barcodes = capture.barcodes;
               for (final barcode in barcodes) {
                 if (barcode.rawValue != null && barcode.rawValue!.isNotEmpty) {
                   setState(() => _isScanned = true);
-                  
+
                   // Extract user ID from QR code (format: adsypay://pay/{userId})
                   String scannedValue = barcode.rawValue!;
                   if (scannedValue.startsWith('adsypay://pay/')) {
-                    scannedValue = scannedValue.replaceFirst('adsypay://pay/', '');
+                    scannedValue =
+                        scannedValue.replaceFirst('adsypay://pay/', '');
                   }
-                  
+
                   Navigator.pop(context, scannedValue);
                   break;
                 }
               }
             },
           ),
-          
+
           // Scan Frame Overlay
           Center(
             child: Container(
@@ -612,7 +627,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               ),
             ),
           ),
-          
+
           // Instructions
           Positioned(
             bottom: 80,

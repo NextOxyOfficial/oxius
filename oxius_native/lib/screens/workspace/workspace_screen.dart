@@ -8,6 +8,7 @@ import 'my_gigs_tab.dart';
 import 'orders_received_tab.dart';
 import 'gigs_ordered_tab.dart';
 import 'create_gig_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -277,7 +278,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen>
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: Colors.grey[200],
-                    child: const Center(child: CircularProgressIndicator()),
+                    child: const Center(child: AdsyLoadingIndicator()),
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[200],

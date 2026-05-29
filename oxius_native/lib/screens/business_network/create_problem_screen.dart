@@ -5,6 +5,7 @@ import '../../models/mindforce_models.dart';
 import '../../utils/image_compressor.dart';
 import '../../utils/network_error_handler.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class CreateProblemScreen extends StatefulWidget {
   final List<MindForceCategory> categories;
@@ -99,15 +100,16 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       setState(() => _isSubmitting = true);
-      
+
       widget.onSubmit({
         'title': _titleController.text,
         'description': _descriptionController.text,
         'categoryId': _selectedCategoryId,
         'paymentOption': _paymentOption,
-        'paymentAmount': _paymentOption == 'paid' && _amountController.text.isNotEmpty
-            ? double.tryParse(_amountController.text)
-            : null,
+        'paymentAmount':
+            _paymentOption == 'paid' && _amountController.text.isNotEmpty
+                ? double.tryParse(_amountController.text)
+                : null,
         'images': _compressedImages, // Send compressed base64 images
       });
     }
@@ -217,7 +219,8 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                         decoration: _inputDecoration(
                           'Enter a clear, specific title',
                         ),
-                        validator: (v) => v?.isEmpty ?? true ? 'Title is required' : null,
+                        validator: (v) =>
+                            v?.isEmpty ?? true ? 'Title is required' : null,
                       ),
                       const SizedBox(height: 14),
 
@@ -230,7 +233,9 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                           'Describe your problem in detail',
                         ),
                         maxLines: 4,
-                        validator: (v) => v?.isEmpty ?? true ? 'Description is required' : null,
+                        validator: (v) => v?.isEmpty ?? true
+                            ? 'Description is required'
+                            : null,
                       ),
                       const SizedBox(height: 14),
 
@@ -240,7 +245,8 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                         children: [
                           _buildLabel('Photos (Optional)', Icons.image),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(12),
@@ -260,13 +266,15 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                       _isCompressing
                           ? Center(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 20),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
                                 child: Column(
                                   children: [
                                     const SizedBox(
                                       width: 24,
                                       height: 24,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                      child:
+                                          AdsyLoadingIndicator(strokeWidth: 2),
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
@@ -297,7 +305,8 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(Icons.info_outline, size: 16, color: Colors.grey.shade600),
+                                  Icon(Icons.info_outline,
+                                      size: 16, color: Colors.grey.shade600),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -313,14 +322,16 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                             )
                           : DropdownButtonFormField<int>(
                               value: _selectedCategoryId,
-                              decoration: _inputDecoration('Select a category (optional)'),
+                              decoration: _inputDecoration(
+                                  'Select a category (optional)'),
                               items: widget.categories.map((cat) {
                                 return DropdownMenuItem(
                                   value: cat.id,
                                   child: Text(cat.name),
                                 );
                               }).toList(),
-                              onChanged: (value) => setState(() => _selectedCategoryId = value),
+                              onChanged: (value) =>
+                                  setState(() => _selectedCategoryId = value),
                             ),
                       const SizedBox(height: 14),
 
@@ -357,7 +368,8 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                           decoration: _inputDecoration('Enter amount'),
                           keyboardType: TextInputType.number,
                           validator: (v) {
-                            if (_paymentOption == 'paid' && (v?.isEmpty ?? true)) {
+                            if (_paymentOption == 'paid' &&
+                                (v?.isEmpty ?? true)) {
                               return 'Amount is required for paid help';
                             }
                             return null;
@@ -387,9 +399,11 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+                    onPressed:
+                        _isSubmitting ? null : () => Navigator.pop(context),
                     style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
                     ),
                     child: Text(
                       'Cancel',
@@ -406,7 +420,8 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purple.shade600,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -416,9 +431,10 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text(
@@ -432,7 +448,7 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
                 ],
               ),
             ),
-            
+
             // Safe area bottom padding for devices with gesture navigation
             SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
           ],
@@ -576,7 +592,8 @@ class _CreateProblemScreenState extends State<CreateProblemScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey.shade400),
+            Icon(Icons.add_photo_alternate,
+                size: 32, color: Colors.grey.shade400),
             const SizedBox(height: 4),
             Text(
               'Add Photo',

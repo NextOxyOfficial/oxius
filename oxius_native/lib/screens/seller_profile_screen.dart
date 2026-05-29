@@ -11,6 +11,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import 'adsy_connect_chat_interface.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Seller Profile Screen - Display seller information and their listings
 class SellerProfileScreen extends StatefulWidget {
@@ -224,7 +225,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         children: [
           _isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF10B981)))
+                  child: AdsyLoadingIndicator(color: Color(0xFF10B981)))
               : _seller == null
                   ? _buildErrorState()
                   : _buildContent(),
@@ -359,8 +360,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                           ],
                           const SizedBox(width: 8),
                           GestureDetector(
-                            onTap: () => _openChatWithSeller(
-                                widget.userId ?? '', name),
+                            onTap: () =>
+                                _openChatWithSeller(widget.userId ?? '', name),
                             child: Image.asset(
                               'assets/icons/chat_icon.png',
                               width: 26,
@@ -413,9 +414,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                                 size: 13, color: Colors.grey.shade500),
                             const SizedBox(width: 5),
                             Text(
-                              _showPhone
-                                  ? phone
-                                  : _maskPhoneNumber(phone),
+                              _showPhone ? phone : _maskPhoneNumber(phone),
                               style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -465,8 +464,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                               child: Text(
                                 address,
                                 style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade600),
+                                    fontSize: 12, color: Colors.grey.shade600),
                               ),
                             ),
                           ],
@@ -511,8 +509,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                           style: TextStyle(
                               fontSize: 12, color: Colors.grey.shade600)),
                       icon: const Icon(Icons.arrow_drop_down, size: 18),
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade700),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade700),
                       isDense: true,
                       items: [
                         const DropdownMenuItem<String>(
@@ -544,8 +542,8 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                       value: _selectedSort,
                       icon: const Icon(Icons.arrow_drop_down, size: 18),
                       isDense: true,
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade700),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade700),
                       items: const [
                         DropdownMenuItem(
                             value: 'recent', child: Text('Recent')),
@@ -574,8 +572,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                 ? const Center(
                     child: Padding(
                       padding: EdgeInsets.all(40),
-                      child:
-                          CircularProgressIndicator(color: Color(0xFF10B981)),
+                      child: AdsyLoadingIndicator(color: Color(0xFF10B981)),
                     ),
                   )
                 : _sellerPosts.isEmpty
@@ -629,11 +626,10 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+          child: AdsyLoadingIndicator(color: Color(0xFF10B981)),
         ),
       );
-      final chatroom =
-          await AdsyConnectService.getOrCreateChatRoom(userId);
+      final chatroom = await AdsyConnectService.getOrCreateChatRoom(userId);
       if (mounted) Navigator.pop(context);
       if (mounted) {
         AdsyConnectChatInterface.open(
@@ -664,8 +660,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             Container(
@@ -680,8 +675,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
             const SizedBox(width: 12),
             const Expanded(
               child: Text('Login Required',
-                  style: TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w700)),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             ),
           ],
         ),
@@ -691,15 +685,11 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
           children: [
             Text('You need to be logged in to chat with the seller.',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
-                    height: 1.5)),
+                    fontSize: 14, color: Color(0xFF6B7280), height: 1.5)),
             SizedBox(height: 12),
             Text('Please login or create an account to continue.',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF6B7280),
-                    height: 1.5)),
+                    fontSize: 14, color: Color(0xFF6B7280), height: 1.5)),
           ],
         ),
         actions: [
@@ -707,8 +697,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel',
                 style: TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontWeight: FontWeight.w600)),
+                    color: Color(0xFF6B7280), fontWeight: FontWeight.w600)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -718,8 +707,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF10B981),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
             ),
@@ -785,7 +773,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
                         placeholder: (context, url) => Container(
                           color: Colors.grey.shade100,
                           child: const Center(
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                               color: Color(0xFF10B981),
                               strokeWidth: 2,
                             ),

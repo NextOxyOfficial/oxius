@@ -4,6 +4,7 @@ import 'package:flutter_html/flutter_html.dart';
 import '../models/news_models.dart';
 import '../services/news_service.dart';
 import '../utils/url_launcher_utils.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class NewsDetailScreen extends StatefulWidget {
   final String slug;
@@ -56,7 +57,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: Color(0xFF1F2937), size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -70,7 +72,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_rounded, color: Color(0xFF1F2937), size: 20),
+            icon: const Icon(Icons.share_rounded,
+                color: Color(0xFF1F2937), size: 20),
             onPressed: () {
               // TODO: Implement share
             },
@@ -83,7 +86,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
         ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AdsyLoadingIndicator())
           : _error != null
               ? Center(
                   child: Column(
@@ -117,12 +120,14 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                               placeholder: (context, url) => Container(
                                 height: 240,
                                 color: Colors.grey.shade200,
-                                child: const Center(child: CircularProgressIndicator()),
+                                child:
+                                    const Center(child: AdsyLoadingIndicator()),
                               ),
                               errorWidget: (context, url, error) => Container(
                                 height: 240,
                                 color: Colors.grey.shade200,
-                                child: const Icon(Icons.image_not_supported, size: 48),
+                                child: const Icon(Icons.image_not_supported,
+                                    size: 48),
                               ),
                             ),
                           ),
@@ -156,7 +161,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFE53E3E).withOpacity(0.1),
+                                        color: const Color(0xFFE53E3E)
+                                            .withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -192,10 +198,11 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                   if (_post!.authorDetails != null) ...[
                                     CircleAvatar(
                                       radius: 18,
-                                      backgroundImage: _post!.authorDetails!.image != null
-                                          ? CachedNetworkImageProvider(
-                                              _post!.authorDetails!.image!)
-                                          : null,
+                                      backgroundImage:
+                                          _post!.authorDetails!.image != null
+                                              ? CachedNetworkImageProvider(
+                                                  _post!.authorDetails!.image!)
+                                              : null,
                                       child: _post!.authorDetails!.image == null
                                           ? const Icon(Icons.person)
                                           : null,
@@ -203,7 +210,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             _post!.authorDetails!.displayName,
@@ -216,7 +224,11 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          if (_post!.authorDetails!.profession != null && _post!.authorDetails!.profession!.isNotEmpty)
+                                          if (_post!.authorDetails!
+                                                      .profession !=
+                                                  null &&
+                                              _post!.authorDetails!.profession!
+                                                  .isNotEmpty)
                                             Text(
                                               _post!.authorDetails!.profession!,
                                               style: TextStyle(
@@ -322,13 +334,15 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                   itemBuilder: (context, index) {
                                     final comment = _post!.comments[index];
                                     return Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             CircleAvatar(
                                               radius: 14,
-                                              backgroundColor: Colors.grey.shade300,
+                                              backgroundColor:
+                                                  Colors.grey.shade300,
                                               child: const Icon(
                                                 Icons.person,
                                                 size: 16,
@@ -342,10 +356,12 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    comment.userName ?? 'Anonymous',
+                                                    comment.userName ??
+                                                        'Anonymous',
                                                     style: const TextStyle(
                                                       fontSize: 13,
-                                                      fontWeight: FontWeight.w700,
+                                                      fontWeight:
+                                                          FontWeight.w700,
                                                       letterSpacing: -0.1,
                                                       color: Color(0xFF1F2937),
                                                     ),
@@ -355,7 +371,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                                         comment.createdAt),
                                                     style: TextStyle(
                                                       fontSize: 11,
-                                                      color: Colors.grey.shade500,
+                                                      color:
+                                                          Colors.grey.shade500,
                                                     ),
                                                   ),
                                                 ],
@@ -365,7 +382,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                         ),
                                         const SizedBox(height: 6),
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 38),
+                                          padding:
+                                              const EdgeInsets.only(left: 38),
                                           child: Text(
                                             comment.content,
                                             style: const TextStyle(

@@ -9,6 +9,7 @@ import 'widgets/my_orders_tab.dart';
 import 'widgets/my_products_tab.dart';
 import 'widgets/add_product_tab.dart';
 import 'create_store_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class EshopManagerScreen extends StatefulWidget {
   const EshopManagerScreen({super.key});
@@ -17,15 +18,17 @@ class EshopManagerScreen extends StatefulWidget {
   State<EshopManagerScreen> createState() => _EshopManagerScreenState();
 }
 
-class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTickerProviderStateMixin {
+class _EshopManagerScreenState extends State<EshopManagerScreen>
+    with SingleTickerProviderStateMixin {
   final TranslationService _translationService = TranslationService();
-  String t(String key, {String? fallback}) => _translationService.translate(key, fallback: fallback);
+  String t(String key, {String? fallback}) =>
+      _translationService.translate(key, fallback: fallback);
 
   late TabController _tabController;
   bool _isLoading = true;
   bool _isPro = false;
   bool _hasStore = false;
-  
+
   StoreDetails? _storeDetails;
   List<ShopProduct> _products = [];
   List<ShopOrder> _orders = [];
@@ -33,7 +36,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
   int _currentPage = 1;
   bool _hasMoreProducts = false;
   int _totalProducts = 0;
-  
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +44,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
     _tabController.addListener(_onTabChanged);
     _checkUserStatus();
   }
-  
+
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
       print('📦 Tab changed to index: ${_tabController.index}');
@@ -64,7 +67,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
 
   Future<void> _checkUserStatus() async {
     setState(() => _isLoading = true);
-    
+
     final user = AuthService.currentUser;
     if (user == null) {
       Navigator.pushReplacementNamed(context, '/login');
@@ -113,7 +116,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
       final user = AuthService.currentUser;
       if (user?.storeUsername == null) return;
 
-      final store = await EshopManagerService.getStoreDetails(user!.storeUsername!);
+      final store =
+          await EshopManagerService.getStoreDetails(user!.storeUsername!);
       if (mounted) {
         setState(() => _storeDetails = store);
       }
@@ -127,11 +131,12 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
     try {
       final page = loadMore ? _currentPage + 1 : 1;
       print('📦 Loading products - page: $page, loadMore: $loadMore');
-      
+
       final result = await EshopManagerService.getMyProducts(page: page);
-      
-      print('📦 Products loaded: ${(result['products'] as List).length}, total: ${result['total']}, hasMore: ${result['hasMore']}');
-      
+
+      print(
+          '📦 Products loaded: ${(result['products'] as List).length}, total: ${result['total']}, hasMore: ${result['hasMore']}');
+
       if (mounted) {
         setState(() {
           if (loadMore) {
@@ -144,7 +149,8 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
           _hasMoreProducts = result['hasMore'] as bool;
           _totalProducts = result['total'] as int;
         });
-        print('📦 State updated - _products.length: ${_products.length}, _totalProducts: $_totalProducts');
+        print(
+            '📦 State updated - _products.length: ${_products.length}, _totalProducts: $_totalProducts');
       }
     } catch (e) {
       print('❌ Error loading products: $e');
@@ -158,13 +164,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
       print('📦 Current user: ${AuthService.currentUser?.email}');
       final orders = await EshopManagerService.getSellerOrders();
       print('📦 Orders loaded: ${orders.length}');
-      
+
       if (orders.isEmpty) {
         print('⚠️ No orders returned from API');
       } else {
-        print('📦 First order: ID=${orders.first.id}, Status=${orders.first.orderStatus}, Total=${orders.first.total}');
+        print(
+            '📦 First order: ID=${orders.first.id}, Status=${orders.first.orderStatus}, Total=${orders.first.total}');
       }
-      
+
       if (mounted) {
         setState(() => _orders = orders);
         print('📦 State updated - _orders.length: ${_orders.length}');
@@ -198,14 +205,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
   Future<void> _handleStoreUpdated() async {
     // Refresh user data to get updated product limit
     await AuthService.refreshUserData();
-    
+
     final user = AuthService.currentUser;
     if (mounted && user != null) {
       setState(() {
         _productLimit = user.productLimit ?? 10;
       });
     }
-    
+
     // Also refresh store details
     await _loadStoreDetails();
   }
@@ -261,7 +268,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 color: Color(0xFF10B981),
               ),
             )
@@ -311,7 +318,10 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                       padding: const EdgeInsets.symmetric(vertical: 32),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.blue.shade600, Colors.purple.shade700],
+                          colors: [
+                            Colors.blue.shade600,
+                            Colors.purple.shade700
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -360,7 +370,9 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              isIOSPlatform ? 'Shop Manager Unavailable' : 'Premium Access Required',
+                              isIOSPlatform
+                                  ? 'Shop Manager Unavailable'
+                                  : 'Premium Access Required',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -381,37 +393,40 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                             ),
                             const SizedBox(height: 16),
                             if (!isIOSPlatform)
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/upgrade-to-pro');
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF10B981),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Upgrade to Pro',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushNamed(
+                                        context, '/upgrade-to-pro');
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF10B981),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                    SizedBox(width: 6),
-                                    Icon(Icons.arrow_forward_rounded, size: 16),
-                                  ],
+                                    elevation: 0,
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Upgrade to Pro',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      SizedBox(width: 6),
+                                      Icon(Icons.arrow_forward_rounded,
+                                          size: 16),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                       ),
@@ -424,10 +439,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                     // Top premium badge section
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 24, horizontal: 16),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.blue.shade600, Colors.purple.shade700],
+                          colors: [
+                            Colors.blue.shade600,
+                            Colors.purple.shade700
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -473,59 +492,63 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                      Text(
-                        isIOSPlatform ? 'Shop Manager Unavailable' : 'Premium Access Required',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF111827),
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        isIOSPlatform
-                            ? 'The Shop Manager is not available in this version of the app.'
-                            : 'Upgrade to Pro to access the Shop Manager and start selling your products.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
-                          height: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (!isIOSPlatform)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/upgrade-to-pro');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                          Text(
+                            isIOSPlatform
+                                ? 'Shop Manager Unavailable'
+                                : 'Premium Access Required',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF111827),
+                              letterSpacing: -0.3,
                             ),
-                            elevation: 0,
                           ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Upgrade to Pro',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                          const SizedBox(height: 8),
+                          Text(
+                            isIOSPlatform
+                                ? 'The Shop Manager is not available in this version of the app.'
+                                : 'Upgrade to Pro to access the Shop Manager and start selling your products.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade600,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          if (!isIOSPlatform)
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/upgrade-to-pro');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF10B981),
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Upgrade to Pro',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Icon(Icons.arrow_forward_rounded, size: 16),
+                                  ],
                                 ),
                               ),
-                              SizedBox(width: 6),
-                              Icon(Icons.arrow_forward_rounded, size: 16),
-                            ],
-                          ),
-                        ),
-                      ),
+                            ),
                         ],
                       ),
                     ),
@@ -551,10 +574,12 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
   }
 
   Widget _buildManagerContent(bool isMobile) {
-    final currentProductCount = _totalProducts > 0 ? _totalProducts : _products.length;
-    final remainingSlots = (_productLimit - currentProductCount).clamp(0, _productLimit);
+    final currentProductCount =
+        _totalProducts > 0 ? _totalProducts : _products.length;
+    final remainingSlots =
+        (_productLimit - currentProductCount).clamp(0, _productLimit);
 
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _refreshData,
       color: const Color(0xFF10B981),
       child: SingleChildScrollView(
@@ -574,7 +599,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                   totalProducts: _totalProducts,
                   onStoreUpdated: _handleStoreUpdated,
                 ),
-              
+
               const SizedBox(height: 12),
 
               // Tabs
@@ -599,12 +624,14 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                       ),
                       tabs: [
                         Tab(
-                          icon: const Icon(Icons.shopping_bag_rounded, size: 20),
+                          icon:
+                              const Icon(Icons.shopping_bag_rounded, size: 20),
                           text: 'Orders (${_orders.length})',
                         ),
                         Tab(
                           icon: const Icon(Icons.inventory_2_rounded, size: 20),
-                          text: 'Products (${_totalProducts > 0 ? _totalProducts : _products.length})',
+                          text:
+                              'Products (${_totalProducts > 0 ? _totalProducts : _products.length})',
                         ),
                         Tab(
                           icon: Icon(
@@ -648,7 +675,7 @@ class _EshopManagerScreenState extends State<EshopManagerScreen> with SingleTick
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 80),
             ],
           ),

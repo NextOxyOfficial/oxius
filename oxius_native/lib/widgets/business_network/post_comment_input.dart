@@ -6,6 +6,7 @@ import '../../utils/mention_parser.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import 'diamond_gift_bottom_sheet.dart';
 import '../../config/app_config.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PostCommentInput extends StatefulWidget {
   final Function(String) onSubmit;
@@ -30,8 +31,9 @@ class PostCommentInput extends StatefulWidget {
 }
 
 class _PostCommentInputState extends State<PostCommentInput> {
-  final GlobalKey<FlutterMentionsState> _mentionKey = GlobalKey<FlutterMentionsState>();
-  
+  final GlobalKey<FlutterMentionsState> _mentionKey =
+      GlobalKey<FlutterMentionsState>();
+
   bool _isSubmitting = false;
   bool _hasText = false;
   String _commentText = '';
@@ -87,13 +89,15 @@ class _PostCommentInputState extends State<PostCommentInput> {
   Future<List<Map<String, dynamic>>> _searchUsers(String query) async {
     try {
       final users = await UserSearchService.searchUsers(query);
-      return users.map((user) => {
-        'id': user.id.toString(),
-        // Replace spaces with non-breaking space (U+00A0) to keep full name as single token
-        'display': user.name.replaceAll(' ', '\u00A0'),
-        'full_name': user.name,
-        'photo': user.image ?? user.avatar,
-      }).toList();
+      return users
+          .map((user) => {
+                'id': user.id.toString(),
+                // Replace spaces with non-breaking space (U+00A0) to keep full name as single token
+                'display': user.name.replaceAll(' ', '\u00A0'),
+                'full_name': user.name,
+                'photo': user.image ?? user.avatar,
+              })
+          .toList();
     } catch (e) {
       print('Error searching users: $e');
       return [];
@@ -103,7 +107,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
   @override
   Widget build(BuildContext context) {
     final isLoggedIn = AuthService.currentUser != null;
-    
+
     // Show login prompt for non-logged-in users
     if (!isLoggedIn) {
       return Padding(
@@ -164,7 +168,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
         ),
       );
     }
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
@@ -184,7 +188,7 @@ class _PostCommentInputState extends State<PostCommentInput> {
               borderRadius: BorderRadius.circular(16),
               child: () {
                 final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
-                
+
                 if (avatarUrl.isNotEmpty) {
                   return Image.network(
                     avatarUrl,
@@ -216,165 +220,166 @@ class _PostCommentInputState extends State<PostCommentInput> {
           // Comment Input with Mentions
           Expanded(
             child: FlutterMentions(
-                key: _mentionKey,
-                suggestionPosition: SuggestionPosition.Top,
-                maxLines: 4,
-                minLines: 1,
-                decoration: InputDecoration(
-                  hintText: 'Write a comment...',
-                  hintStyle: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade500,
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(
-                      color: Colors.grey.shade200,
-                      width: 0.5,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(
-                      color: Colors.grey.shade200,
-                      width: 0.5,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF3B82F6),
-                      width: 1,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 4,
-                  ),
-                  isDense: true,
-                  suffixIcon: _isSubmitting
-                      ? const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : IconButton(
-                          onPressed: _handleSubmit,
-                          icon: Icon(
-                            Icons.send,
-                            size: 18,
-                            color: _hasText
-                                ? const Color(0xFF3B82F6)
-                                : Colors.grey.shade400,
-                          ),
-                          padding: const EdgeInsets.all(8),
-                        ),
+              key: _mentionKey,
+              suggestionPosition: SuggestionPosition.Top,
+              maxLines: 4,
+              minLines: 1,
+              decoration: InputDecoration(
+                hintText: 'Write a comment...',
+                hintStyle: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade500,
                 ),
-                style: const TextStyle(fontSize: 13),
-                onChanged: (value) async {
-                  setState(() {
-                    _hasText = value.trim().isNotEmpty;
-                    _commentText = value;
-                  });
-                  
-                  // Check if user is typing a mention
-                  if (value.contains('@')) {
-                    final lastAtIndex = value.lastIndexOf('@');
-                    final textAfterAt = value.substring(lastAtIndex + 1);
-                    
-                    // If there's text after @ and no space, search for users
-                    if (textAfterAt.isNotEmpty && !textAfterAt.contains(' ')) {
-                      final users = await _searchUsers(textAfterAt);
-                      if (mounted) {
-                        setState(() {
-                          _userData = users;
-                        });
-                      }
+                filled: true,
+                fillColor: Colors.grey.shade50,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide(
+                    color: Colors.grey.shade200,
+                    width: 0.5,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide(
+                    color: Colors.grey.shade200,
+                    width: 0.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF3B82F6),
+                    width: 1,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
+                isDense: true,
+                suffixIcon: _isSubmitting
+                    ? const Padding(
+                        padding: EdgeInsets.all(12.0),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: AdsyLoadingIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : IconButton(
+                        onPressed: _handleSubmit,
+                        icon: Icon(
+                          Icons.send,
+                          size: 18,
+                          color: _hasText
+                              ? const Color(0xFF3B82F6)
+                              : Colors.grey.shade400,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                      ),
+              ),
+              style: const TextStyle(fontSize: 13),
+              onChanged: (value) async {
+                setState(() {
+                  _hasText = value.trim().isNotEmpty;
+                  _commentText = value;
+                });
+
+                // Check if user is typing a mention
+                if (value.contains('@')) {
+                  final lastAtIndex = value.lastIndexOf('@');
+                  final textAfterAt = value.substring(lastAtIndex + 1);
+
+                  // If there's text after @ and no space, search for users
+                  if (textAfterAt.isNotEmpty && !textAfterAt.contains(' ')) {
+                    final users = await _searchUsers(textAfterAt);
+                    if (mounted) {
+                      setState(() {
+                        _userData = users;
+                      });
                     }
                   }
-                },
-                onMentionAdd: (Map<String, dynamic> mention) {
-                  print('✅ Mention added: $mention');
-                  setState(() {
-                    _hasText = true;
-                  });
-                },
-                mentions: [
-                  Mention(
-                    trigger: '@',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    data: _userData,
-                    matchAll: false,
-                    disableMarkup: false,
-                    suggestionBuilder: (data) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        child: Row(
-                              children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey.shade100,
-                                  ),
-                                  child: ClipOval(
-                                    child: () {
-                                      final avatarUrl = AppConfig.getAbsoluteUrl(data['photo']);
-                                      
-                                      if (avatarUrl.isNotEmpty) {
-                                        return Image.network(
-                                          avatarUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Icon(
-                                              Icons.person,
-                                              color: Colors.grey.shade400,
-                                              size: 18,
-                                            );
-                                          },
-                                        );
-                                      }
+                }
+              },
+              onMentionAdd: (Map<String, dynamic> mention) {
+                print('✅ Mention added: $mention');
+                setState(() {
+                  _hasText = true;
+                });
+              },
+              mentions: [
+                Mention(
+                  trigger: '@',
+                  style: TextStyle(
+                    color: Colors.blue.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  data: _userData,
+                  matchAll: false,
+                  disableMarkup: false,
+                  suggestionBuilder: (data) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey.shade100,
+                            ),
+                            child: ClipOval(
+                              child: () {
+                                final avatarUrl =
+                                    AppConfig.getAbsoluteUrl(data['photo']);
+
+                                if (avatarUrl.isNotEmpty) {
+                                  return Image.network(
+                                    avatarUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
                                       return Icon(
                                         Icons.person,
                                         color: Colors.grey.shade400,
                                         size: 18,
                                       );
-                                    }(),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    // Show full_name (with regular spaces) in suggestion list
-                                    data['full_name'] ?? data['display'] ?? '',
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                    },
+                                  );
+                                }
+                                return Icon(
+                                  Icons.person,
+                                  color: Colors.grey.shade400,
+                                  size: 18,
+                                );
+                              }(),
                             ),
-                      );
-                    },
-                  ),
-                ],
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              // Show full_name (with regular spaces) in suggestion list
+                              data['full_name'] ?? data['display'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
           // Gift Button
-          if (AuthService.currentUser != null && 
+          if (AuthService.currentUser != null &&
               AuthService.currentUser!.id != widget.postAuthorId)
             Padding(
               padding: const EdgeInsets.only(left: 4),

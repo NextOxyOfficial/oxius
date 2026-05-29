@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../services/eshop_manager_service.dart';
 import '../../../services/auth_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class BuySlotsBottomSheet extends StatefulWidget {
   final int currentProductCount;
@@ -33,12 +34,12 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final packages = await EshopManagerService.getProductSlotPackages();
       final user = AuthService.currentUser;
       final balance = user?.balance ?? 0.0;
-      
+
       if (mounted) {
         setState(() {
           _packages = packages;
@@ -66,14 +67,15 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
 
     final price = _selectedPackage!['price'] is String
         ? double.parse(_selectedPackage!['price'])
-        : (_selectedPackage!['price'] is int) 
-            ? (_selectedPackage!['price'] as int).toDouble() 
+        : (_selectedPackage!['price'] is int)
+            ? (_selectedPackage!['price'] as int).toDouble()
             : _selectedPackage!['price'] as double;
 
     if (_userBalance < price) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Insufficient balance. You need ৳${price.toStringAsFixed(0)}'),
+          content: Text(
+              'Insufficient balance. You need ৳${price.toStringAsFixed(0)}'),
           backgroundColor: const Color(0xFFEF4444),
           behavior: SnackBarBehavior.floating,
         ),
@@ -96,7 +98,8 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully purchased ${_selectedPackage!['slots']} slot(s)!'),
+            content: Text(
+                'Successfully purchased ${_selectedPackage!['slots']} slot(s)!'),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
           ),
@@ -200,7 +203,7 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                 ? const Center(
                     child: Padding(
                       padding: EdgeInsets.all(40),
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2.5,
                         valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
                       ),
@@ -213,11 +216,13 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.inbox_rounded, size: 48, color: Colors.grey.shade300),
+                              Icon(Icons.inbox_rounded,
+                                  size: 48, color: Colors.grey.shade300),
                               const SizedBox(height: 12),
                               Text(
                                 'No packages available',
-                                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                                style: TextStyle(
+                                    fontSize: 13, color: Colors.grey.shade600),
                               ),
                             ],
                           ),
@@ -234,11 +239,13 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF0FDF4),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFBBF7D0)),
+                                border:
+                                    Border.all(color: const Color(0xFFBBF7D0)),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.info_outline, size: 18, color: Color(0xFF10B981)),
+                                  const Icon(Icons.info_outline,
+                                      size: 18, color: Color(0xFF10B981)),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
@@ -257,11 +264,16 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                             // Balance
                             Row(
                               children: [
-                                const Icon(Icons.account_balance_wallet_outlined, size: 16, color: Color(0xFF6B7280)),
+                                const Icon(
+                                    Icons.account_balance_wallet_outlined,
+                                    size: 16,
+                                    color: Color(0xFF6B7280)),
                                 const SizedBox(width: 6),
                                 Text(
                                   'Balance:',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -274,14 +286,19 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                 ),
                                 const Spacer(),
                                 TextButton.icon(
-                                  onPressed: () => Navigator.pushNamed(context, '/deposit-withdraw'),
-                                  icon: const Icon(Icons.add_circle_outline, size: 14),
-                                  label: const Text('Add Funds', style: TextStyle(fontSize: 11)),
+                                  onPressed: () => Navigator.pushNamed(
+                                      context, '/deposit-withdraw'),
+                                  icon: const Icon(Icons.add_circle_outline,
+                                      size: 14),
+                                  label: const Text('Add Funds',
+                                      style: TextStyle(fontSize: 11)),
                                   style: TextButton.styleFrom(
                                     foregroundColor: const Color(0xFF10B981),
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                 ),
                               ],
@@ -289,38 +306,50 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                             const SizedBox(height: 16),
                             // Packages
                             ..._packages.map((pkg) {
-                              final isSelected = _selectedPackage?['id'] == pkg['id'];
+                              final isSelected =
+                                  _selectedPackage?['id'] == pkg['id'];
                               final price = pkg['price'] is String
                                   ? double.parse(pkg['price'])
-                                  : (pkg['price'] is int) 
-                                      ? (pkg['price'] as int).toDouble() 
+                                  : (pkg['price'] is int)
+                                      ? (pkg['price'] as int).toDouble()
                                       : pkg['price'] as double;
-                              final originalPrice = pkg['original_price'] != null
-                                  ? (pkg['original_price'] is String
-                                      ? double.parse(pkg['original_price'])
-                                      : (pkg['original_price'] is int) 
-                                          ? (pkg['original_price'] as int).toDouble() 
-                                          : pkg['original_price'] as double)
-                                  : null;
-                              final hasDiscount = originalPrice != null && originalPrice > price;
-                              final discount = hasDiscount 
-                                  ? ((originalPrice - price) / originalPrice * 100).round()
+                              final originalPrice =
+                                  pkg['original_price'] != null
+                                      ? (pkg['original_price'] is String
+                                          ? double.parse(pkg['original_price'])
+                                          : (pkg['original_price'] is int)
+                                              ? (pkg['original_price'] as int)
+                                                  .toDouble()
+                                              : pkg['original_price'] as double)
+                                      : null;
+                              final hasDiscount = originalPrice != null &&
+                                  originalPrice > price;
+                              final discount = hasDiscount
+                                  ? ((originalPrice - price) /
+                                          originalPrice *
+                                          100)
+                                      .round()
                                   : 0;
-                              
+
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 10),
                                 child: Material(
                                   color: Colors.transparent,
                                   child: InkWell(
-                                    onTap: () => setState(() => _selectedPackage = pkg),
+                                    onTap: () =>
+                                        setState(() => _selectedPackage = pkg),
                                     borderRadius: BorderRadius.circular(12),
                                     child: Container(
                                       padding: const EdgeInsets.all(14),
                                       decoration: BoxDecoration(
-                                        color: isSelected ? const Color(0xFFF0FDF4) : Colors.white,
+                                        color: isSelected
+                                            ? const Color(0xFFF0FDF4)
+                                            : Colors.white,
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade200,
+                                          color: isSelected
+                                              ? const Color(0xFF10B981)
+                                              : Colors.grey.shade200,
                                           width: isSelected ? 1.5 : 1,
                                         ),
                                       ),
@@ -333,20 +362,27 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade300,
+                                                color: isSelected
+                                                    ? const Color(0xFF10B981)
+                                                    : Colors.grey.shade300,
                                                 width: 2,
                                               ),
-                                              color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
+                                              color: isSelected
+                                                  ? const Color(0xFF10B981)
+                                                  : Colors.transparent,
                                             ),
                                             child: isSelected
-                                                ? const Icon(Icons.check, size: 12, color: Colors.white)
+                                                ? const Icon(Icons.check,
+                                                    size: 12,
+                                                    color: Colors.white)
                                                 : null,
                                           ),
                                           const SizedBox(width: 12),
                                           // Info
                                           Expanded(
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Row(
                                                   children: [
@@ -354,23 +390,35 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                                       '${pkg['slots']} Slots',
                                                       style: const TextStyle(
                                                         fontSize: 14,
-                                                        fontWeight: FontWeight.w700,
-                                                        color: Color(0xFF111827),
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color:
+                                                            Color(0xFF111827),
                                                       ),
                                                     ),
-                                                    if (pkg['is_featured'] == true) ...[
+                                                    if (pkg['is_featured'] ==
+                                                        true) ...[
                                                       const SizedBox(width: 6),
                                                       Container(
-                                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                        decoration: BoxDecoration(
-                                                          color: const Color(0xFF6366F1),
-                                                          borderRadius: BorderRadius.circular(4),
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 6,
+                                                                vertical: 2),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: const Color(
+                                                              0xFF6366F1),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(4),
                                                         ),
                                                         child: const Text(
                                                           'BEST',
                                                           style: TextStyle(
                                                             fontSize: 8,
-                                                            fontWeight: FontWeight.w800,
+                                                            fontWeight:
+                                                                FontWeight.w800,
                                                             color: Colors.white,
                                                             letterSpacing: 0.5,
                                                           ),
@@ -382,14 +430,18 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                                 const SizedBox(height: 2),
                                                 Text(
                                                   'Add ${pkg['slots']} more products',
-                                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                                  style: TextStyle(
+                                                      fontSize: 11,
+                                                      color:
+                                                          Colors.grey.shade600),
                                                 ),
                                               ],
                                             ),
                                           ),
                                           // Price
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
                                             children: [
                                               Text(
                                                 '৳${price.toStringAsFixed(0)}',
@@ -401,29 +453,41 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                                               ),
                                               if (hasDiscount)
                                                 Row(
-                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   children: [
                                                     Text(
                                                       '৳${originalPrice.toStringAsFixed(0)}',
                                                       style: TextStyle(
                                                         fontSize: 10,
-                                                        color: Colors.grey.shade400,
-                                                        decoration: TextDecoration.lineThrough,
+                                                        color: Colors
+                                                            .grey.shade400,
+                                                        decoration:
+                                                            TextDecoration
+                                                                .lineThrough,
                                                       ),
                                                     ),
                                                     const SizedBox(width: 4),
                                                     Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 4,
+                                                          vertical: 1),
                                                       decoration: BoxDecoration(
-                                                        color: const Color(0xFFFEF3C7),
-                                                        borderRadius: BorderRadius.circular(3),
+                                                        color: const Color(
+                                                            0xFFFEF3C7),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(3),
                                                       ),
                                                       child: Text(
                                                         '-$discount%',
                                                         style: const TextStyle(
                                                           fontSize: 9,
-                                                          fontWeight: FontWeight.w700,
-                                                          color: Color(0xFFD97706),
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color:
+                                                              Color(0xFFD97706),
                                                         ),
                                                       ),
                                                     ),
@@ -440,27 +504,36 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                             }).toList(),
                             // Warning
                             if (_selectedPackage != null &&
-                                _userBalance < (_selectedPackage!['price'] is String
-                                    ? double.parse(_selectedPackage!['price'])
-                                    : (_selectedPackage!['price'] is int) 
-                                        ? (_selectedPackage!['price'] as int).toDouble() 
-                                        : _selectedPackage!['price'] as double)) ...[
+                                _userBalance <
+                                    (_selectedPackage!['price'] is String
+                                        ? double.parse(
+                                            _selectedPackage!['price'])
+                                        : (_selectedPackage!['price'] is int)
+                                            ? (_selectedPackage!['price']
+                                                    as int)
+                                                .toDouble()
+                                            : _selectedPackage!['price']
+                                                as double)) ...[
                               const SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFEE2E2),
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFFECACA)),
+                                  border: Border.all(
+                                      color: const Color(0xFFFECACA)),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.warning_amber_rounded, size: 16, color: Color(0xFFEF4444)),
+                                    const Icon(Icons.warning_amber_rounded,
+                                        size: 16, color: Color(0xFFEF4444)),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         'Insufficient balance. Please add funds.',
-                                        style: TextStyle(fontSize: 11, color: Colors.red.shade900),
+                                        style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.red.shade900),
                                       ),
                                     ),
                                   ],
@@ -488,9 +561,12 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                         foregroundColor: const Color(0xFF6B7280),
                         side: BorderSide(color: Colors.grey.shade300),
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text('Cancel', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      child: const Text('Cancel',
+                          style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -499,18 +575,22 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                     child: ElevatedButton(
                       onPressed: _isPurchasing ||
                               _selectedPackage == null ||
-                              _userBalance < (_selectedPackage!['price'] is String
-                                  ? double.parse(_selectedPackage!['price'])
-                                  : (_selectedPackage!['price'] is int) 
-                                      ? (_selectedPackage!['price'] as int).toDouble() 
-                                      : _selectedPackage!['price'] as double)
+                              _userBalance <
+                                  (_selectedPackage!['price'] is String
+                                      ? double.parse(_selectedPackage!['price'])
+                                      : (_selectedPackage!['price'] is int)
+                                          ? (_selectedPackage!['price'] as int)
+                                              .toDouble()
+                                          : _selectedPackage!['price']
+                                              as double)
                           ? null
                           : _purchaseSlots,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         elevation: 0,
                         disabledBackgroundColor: Colors.grey.shade300,
                       ),
@@ -518,14 +598,16 @@ class _BuySlotsBottomSheetState extends State<BuySlotsBottomSheet> {
                           ? const SizedBox(
                               height: 18,
                               width: 18,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation(Colors.white),
                               ),
                             )
                           : const Text(
                               'Purchase Now',
-                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                              style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700),
                             ),
                     ),
                   ),

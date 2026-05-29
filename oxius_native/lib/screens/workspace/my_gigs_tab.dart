@@ -4,6 +4,7 @@ import '../../services/workspace_service.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/api_service.dart';
 import 'gig_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MyGigsTab extends StatefulWidget {
   const MyGigsTab({super.key});
@@ -14,7 +15,7 @@ class MyGigsTab extends StatefulWidget {
 
 class _MyGigsTabState extends State<MyGigsTab> {
   final WorkspaceService _workspaceService = WorkspaceService();
-  
+
   List<Map<String, dynamic>> _gigs = [];
   bool _isLoading = true;
   String _selectedFilter = 'all';
@@ -27,7 +28,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
 
   Future<void> _loadMyGigs() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final result = await _workspaceService.fetchMyGigs();
       if (mounted) {
@@ -40,7 +41,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
       if (mounted) {
         setState(() => _isLoading = false);
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           onRetry: () => _loadMyGigs(),
         );
@@ -69,8 +70,10 @@ class _MyGigsTabState extends State<MyGigsTab> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gig ${newStatus == 'active' ? 'activated' : 'paused'} successfully'),
-            backgroundColor: newStatus == 'active' ? Colors.green : Colors.grey[700],
+            content: Text(
+                'Gig ${newStatus == 'active' ? 'activated' : 'paused'} successfully'),
+            backgroundColor:
+                newStatus == 'active' ? Colors.green : Colors.grey[700],
           ),
         );
       }
@@ -91,7 +94,8 @@ class _MyGigsTabState extends State<MyGigsTab> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Gig'),
-        content: const Text('Are you sure you want to delete this gig? This action cannot be undone.'),
+        content: const Text(
+            'Are you sure you want to delete this gig? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -121,7 +125,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadMyGigs,
       child: Column(
         children: [
@@ -145,11 +149,12 @@ class _MyGigsTabState extends State<MyGigsTab> {
           // Gigs List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: AdsyLoadingIndicator())
                 : _filteredGigs.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
                         itemCount: _filteredGigs.length,
                         itemBuilder: (context, index) {
                           return _buildGigCard(_filteredGigs[index]);
@@ -215,16 +220,18 @@ class _MyGigsTabState extends State<MyGigsTab> {
                 child: CachedNetworkImage(
                   imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(color: Colors.grey[200]),
+                  placeholder: (context, url) =>
+                      Container(color: Colors.grey[200]),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[200],
-                    child: const Icon(Icons.image, color: Colors.grey, size: 20),
+                    child:
+                        const Icon(Icons.image, color: Colors.grey, size: 20),
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 10),
-            
+
             // Content
             Expanded(
               child: Column(
@@ -237,7 +244,9 @@ class _MyGigsTabState extends State<MyGigsTab> {
                         child: GestureDetector(
                           onTap: () => Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => GigDetailScreen(gigId: gig['id'].toString())),
+                            MaterialPageRoute(
+                                builder: (context) => GigDetailScreen(
+                                    gigId: gig['id'].toString())),
                           ),
                           child: Text(
                             gig['title'] ?? '',
@@ -256,7 +265,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  
+
                   // Stats row
                   Row(
                     children: [
@@ -269,7 +278,8 @@ class _MyGigsTabState extends State<MyGigsTab> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Icon(Icons.shopping_bag_outlined, size: 12, color: Colors.grey[500]),
+                      Icon(Icons.shopping_bag_outlined,
+                          size: 12, color: Colors.grey[500]),
                       const SizedBox(width: 2),
                       Text(
                         '$ordersCount',
@@ -287,7 +297,7 @@ class _MyGigsTabState extends State<MyGigsTab> {
                 ],
               ),
             ),
-            
+
             // Menu button
             PopupMenuButton(
               icon: Icon(Icons.more_vert, size: 18, color: Colors.grey[600]),
@@ -325,7 +335,9 @@ class _MyGigsTabState extends State<MyGigsTab> {
                       children: [
                         Icon(Icons.play_arrow, size: 16, color: Colors.green),
                         SizedBox(width: 8),
-                        Text('Activate', style: TextStyle(color: Colors.green, fontSize: 13)),
+                        Text('Activate',
+                            style:
+                                TextStyle(color: Colors.green, fontSize: 13)),
                       ],
                     ),
                   ),
@@ -336,7 +348,8 @@ class _MyGigsTabState extends State<MyGigsTab> {
                     children: [
                       Icon(Icons.delete, size: 16, color: Colors.red),
                       SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: Colors.red, fontSize: 13)),
+                      Text('Delete',
+                          style: TextStyle(color: Colors.red, fontSize: 13)),
                     ],
                   ),
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../pages/login_page.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Authentication Guard Middleware
 /// Similar to Vue's auth.ts middleware for protecting routes
@@ -40,7 +41,7 @@ class AuthGuard extends StatelessWidget {
           // Show loading while redirecting
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 color: Color(0xFF10B981),
               ),
             ),

@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../models/sale_post.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// My Sale Posts Screen - View and manage user's sale posts
 /// This screen has 2 tabs: My Posts & Post Sale
@@ -24,7 +25,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   late TabController _tabController;
   late SalePostService _postService;
   ScrollController? _scrollController;
-  
+
   List<SalePost> _myPosts = [];
   bool _isLoading = false;
   bool _isLoadingMore = false;
@@ -44,20 +45,20 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
     super.initState();
     _postService = SalePostService(baseUrl: ApiService.baseUrl);
     _scrollController = ScrollController();
-    
+
     // Initialize tab controller with 4 filter tabs
     _tabController = TabController(length: 4, vsync: this);
-    
+
     // Listen to tab changes
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         _onTabChanged(_tabController.index);
       }
     });
-    
+
     // Add scroll listener for pagination
     _scrollController?.addListener(_onScroll);
-    
+
     // Fetch initial data and stats
     _fetchMyPosts();
     _fetchAllStats();
@@ -88,7 +89,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         newFilter = 'pending';
         break;
     }
-    
+
     // Only fetch if filter actually changed
     if (newFilter != _currentStatusFilter) {
       setState(() {
@@ -100,8 +101,9 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   }
 
   void _onScroll() {
-    if (_scrollController != null && 
-        _scrollController!.position.pixels >= _scrollController!.position.maxScrollExtent - 200) {
+    if (_scrollController != null &&
+        _scrollController!.position.pixels >=
+            _scrollController!.position.maxScrollExtent - 200) {
       if (!_isLoadingMore && _hasMore) {
         _loadMorePosts();
       }
@@ -116,7 +118,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         _hasMore = true;
       });
     }
-    
+
     setState(() => _isLoading = true);
 
     try {
@@ -125,7 +127,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
         pageSize: 20,
         status: _currentStatusFilter,
       );
-      
+
       if (mounted) {
         setState(() {
           _myPosts = response.results;
@@ -203,15 +205,19 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       }
     }
   }
-  
+
   Future<void> _fetchAllStats() async {
     // Fetch counts for each status to display in tabs
     try {
-      final allResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: null);
-      final activeResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: 'active');
-      final soldResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: 'sold');
-      final pendingResponse = await _postService.fetchMyPosts(page: 1, pageSize: 1, status: 'pending');
-      
+      final allResponse =
+          await _postService.fetchMyPosts(page: 1, pageSize: 1, status: null);
+      final activeResponse = await _postService.fetchMyPosts(
+          page: 1, pageSize: 1, status: 'active');
+      final soldResponse =
+          await _postService.fetchMyPosts(page: 1, pageSize: 1, status: 'sold');
+      final pendingResponse = await _postService.fetchMyPosts(
+          page: 1, pageSize: 1, status: 'pending');
+
       if (mounted) {
         setState(() {
           _stats['total'] = allResponse.count;
@@ -380,7 +386,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
               ),
             ),
           ),
-          
+
           // Tab Views
           Expanded(
             child: TabBarView(
@@ -398,7 +404,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final result = await Navigator.pushNamed(context, '/create-sale-post');
+          final result =
+              await Navigator.pushNamed(context, '/create-sale-post');
           if (result == true) {
             // Refresh the list after creating a post
             _fetchMyPosts(refresh: true);
@@ -419,7 +426,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
   Widget _buildMyPostsTab() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: AdsyLoadingIndicator());
     }
 
     if (_myPosts.isEmpty) {
@@ -469,7 +476,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       );
     }
 
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: () => _fetchMyPosts(refresh: true),
       color: const Color(0xFF10B981),
       child: ListView.builder(
@@ -481,7 +488,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             return Container(
               padding: const EdgeInsets.symmetric(vertical: 20),
               alignment: Alignment.center,
-              child: const CircularProgressIndicator(
+              child: const AdsyLoadingIndicator(
                 color: Color(0xFF10B981),
                 strokeWidth: 3,
               ),
@@ -549,7 +556,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                       placeholder: (context, url) => Container(
                         color: Colors.grey.shade50,
                         child: Center(
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2,
                             color: const Color(0xFF10B981),
                           ),
@@ -567,7 +574,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                   ),
                 ),
                 const SizedBox(width: 10),
-              
+
                 // Details
                 Expanded(
                   child: Column(
@@ -600,7 +607,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                           ),
                           const Spacer(),
                           // View Count and Date on the right
-                          Icon(Icons.remove_red_eye_outlined, size: 11, color: Colors.grey.shade500),
+                          Icon(Icons.remove_red_eye_outlined,
+                              size: 11, color: Colors.grey.shade500),
                           const SizedBox(width: 3),
                           Text(
                             '${post.viewsCount}',
@@ -611,7 +619,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Icon(Icons.access_time, size: 11, color: Colors.grey.shade500),
+                          Icon(Icons.access_time,
+                              size: 11, color: Colors.grey.shade500),
                           const SizedBox(width: 3),
                           Text(
                             _formatDate(post.createdAt),
@@ -633,7 +642,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                             GestureDetector(
                               onTap: () => _markAsSold(post),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: Colors.blue.shade50,
                                   borderRadius: BorderRadius.circular(6),
@@ -669,7 +679,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                           GestureDetector(
                             onTap: () => _editPost(post),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 5),
                               decoration: BoxDecoration(
                                 color: Colors.blue.shade50,
                                 borderRadius: BorderRadius.circular(6),
@@ -704,7 +715,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                           GestureDetector(
                             onTap: () => _deletePost(post),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 5),
                               decoration: BoxDecoration(
                                 color: Colors.red.shade50,
                                 borderRadius: BorderRadius.circular(6),
@@ -737,9 +749,11 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                           const Spacer(),
                           // Status Badge
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 4),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(post.status).withOpacity(0.1),
+                              color:
+                                  _getStatusColor(post.status).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(5),
                               border: Border.all(
                                 color: _getStatusColor(post.status),
@@ -833,7 +847,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Features List
           _buildFeatureItem(
             icon: Icons.camera_alt_outlined,
@@ -863,7 +877,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             color: const Color(0xFFF59E0B),
           ),
           const SizedBox(height: 20),
-          
+
           // Coming Soon Notice
           Container(
             width: double.infinity,
@@ -914,7 +928,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
       ),
     );
   }
-  
+
   Widget _buildFeatureItem({
     required IconData icon,
     required String title,
@@ -1002,7 +1016,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
     // If post is 'pending', set to 'active' (activate)
     final newStatus = post.status == 'active' ? 'pending' : 'active';
     final isActivating = newStatus == 'active';
-    
+
     // Show loading indicator
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1011,7 +1025,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
@@ -1039,7 +1053,9 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                 Icon(Icons.check_circle, color: Colors.white, size: 18),
                 const SizedBox(width: 12),
                 Text(
-                  isActivating ? 'Post activated successfully' : 'Post deactivated successfully',
+                  isActivating
+                      ? 'Post activated successfully'
+                      : 'Post deactivated successfully',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -1052,7 +1068,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             duration: const Duration(seconds: 2),
           ),
         );
-        
+
         // Refresh the list
         _fetchMyPosts(refresh: true);
       } else if (mounted) {
@@ -1106,8 +1122,9 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
   }
 
   void _markAsSold(SalePost post) async {
-    print('Attempting to mark post as sold. Slug: ${post.slug}, Status: ${post.status}');
-    
+    print(
+        'Attempting to mark post as sold. Slug: ${post.slug}, Status: ${post.status}');
+
     // Show loading indicator
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -1116,7 +1133,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
@@ -1131,7 +1148,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
 
     try {
       final updatedPost = await _postService.markAsSold(post.slug);
-      print('Mark as sold result: ${updatedPost != null ? "Success" : "Failed"}');
+      print(
+          'Mark as sold result: ${updatedPost != null ? "Success" : "Failed"}');
 
       if (updatedPost != null && mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -1155,7 +1173,7 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
             duration: const Duration(seconds: 2),
           ),
         );
-        
+
         // Refresh the list
         _fetchMyPosts(refresh: true);
       } else if (mounted) {
@@ -1221,7 +1239,8 @@ class _MySalePostsScreenState extends State<MySalePostsScreen>
                 color: Colors.red.shade50,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.delete_outline, color: Colors.red, size: 22),
+              child:
+                  const Icon(Icons.delete_outline, color: Colors.red, size: 22),
             ),
             const SizedBox(width: 10),
             const Expanded(

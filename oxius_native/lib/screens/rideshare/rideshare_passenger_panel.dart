@@ -17,6 +17,7 @@ import '../adsy_connect_chat_interface.dart';
 import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
 import 'custom_location_sheet.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 part 'rideshare_passenger_panel_active_ride.dart';
 part 'rideshare_passenger_panel_booking.dart';
@@ -1234,7 +1235,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
+        builder: (_) => const Center(child: AdsyLoadingIndicator()),
       );
       loadingDialogShown = true;
 
@@ -1744,7 +1745,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
   Widget build(BuildContext context) {
     if (_isLoadingActiveRide) {
       return const Center(
-        child: CircularProgressIndicator(
+        child: AdsyLoadingIndicator(
           color: Color(0xFF6366F1),
         ),
       );
@@ -1752,7 +1753,7 @@ class _RidesharePassengerPanelState extends State<RidesharePassengerPanel>
 
     // Active ride takes full priority Ã¢â‚¬â€ booking form is completely hidden
     if (_activeRide != null) {
-      return RefreshIndicator(
+      return AdsyRefreshIndicator(
         color: const Color(0xFF6366F1),
         onRefresh: _loadActiveRide,
         child: _buildActiveRideView(),

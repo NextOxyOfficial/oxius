@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/news_models.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class NewsCard extends StatelessWidget {
   final NewsPost post;
@@ -43,7 +44,8 @@ class NewsCard extends StatelessWidget {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
               child: Stack(
                 children: [
                   CachedNetworkImage(
@@ -59,7 +61,7 @@ class NewsCard extends StatelessWidget {
                     placeholder: (context, url) => Container(
                       height: 180,
                       color: Colors.grey.shade200,
-                      child: const Center(child: CircularProgressIndicator()),
+                      child: const Center(child: AdsyLoadingIndicator()),
                     ),
                     errorWidget: (context, url, error) => Container(
                       height: 180,
@@ -142,7 +144,8 @@ class NewsCard extends StatelessWidget {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(12)),
               child: Stack(
                 children: [
                   CachedNetworkImage(
@@ -158,7 +161,7 @@ class NewsCard extends StatelessWidget {
                       height: 120,
                       color: Colors.grey.shade200,
                       child: const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: AdsyLoadingIndicator(strokeWidth: 2),
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(

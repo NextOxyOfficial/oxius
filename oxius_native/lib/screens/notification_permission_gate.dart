@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class NotificationPermissionGate extends StatefulWidget {
   final Widget child;
@@ -12,10 +13,12 @@ class NotificationPermissionGate extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<NotificationPermissionGate> createState() => _NotificationPermissionGateState();
+  State<NotificationPermissionGate> createState() =>
+      _NotificationPermissionGateState();
 }
 
-class _NotificationPermissionGateState extends State<NotificationPermissionGate> {
+class _NotificationPermissionGateState
+    extends State<NotificationPermissionGate> {
   static const String _skipPrefKey = 'notification_permission_skipped_v1';
 
   bool _hasPermission = false;
@@ -37,8 +40,9 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
     } catch (_) {}
     if (!mounted) return;
     setState(() {
-      _hasPermission = settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
+      _hasPermission =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
+              settings.authorizationStatus == AuthorizationStatus.provisional;
       _userSkipped = skipped;
       _isChecking = false;
     });
@@ -154,7 +158,7 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
     if (_isChecking) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
     }
@@ -173,12 +177,14 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
               // Scale against shortest side so iPad portrait & landscape both
               // feel spacious without looking like a phone window.
               final iconSize = isLargeTablet ? 88.0 : (isTablet ? 76.0 : 70.0);
-              final iconPadding = isLargeTablet ? 30.0 : (isTablet ? 26.0 : 24.0);
+              final iconPadding =
+                  isLargeTablet ? 30.0 : (isTablet ? 26.0 : 24.0);
               final titleSize = isLargeTablet ? 30.0 : (isTablet ? 26.0 : 24.0);
               final bodySize = isLargeTablet ? 17.0 : (isTablet ? 16.0 : 15.0);
               final hPad = isLargeTablet ? 56.0 : (isTablet ? 40.0 : 24.0);
               final vPad = isTablet ? 28.0 : 16.0;
-              final cardMaxWidth = isLargeTablet ? 640.0 : (isTablet ? 560.0 : double.infinity);
+              final cardMaxWidth =
+                  isLargeTablet ? 640.0 : (isTablet ? 560.0 : double.infinity);
 
               final content = ConstrainedBox(
                 constraints: BoxConstraints(minHeight: maxH),
@@ -186,7 +192,8 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: cardMaxWidth),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: hPad, vertical: vPad),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -199,7 +206,8 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
                               onPressed: _skipForNow,
                               style: TextButton.styleFrom(
                                 foregroundColor: const Color(0xFF6B7280),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
                               child: const Text(
                                 'Skip',
@@ -274,11 +282,22 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
                                   ),
                                 ),
                                 SizedBox(height: isTablet ? 14 : 12),
-                                _buildBenefit(Icons.chat_bubble_rounded, 'New messages from connections', isWide: isTablet),
-                                _buildBenefit(Icons.shopping_bag_rounded, 'Order updates and tracking', isWide: isTablet),
-                                _buildBenefit(Icons.support_agent_rounded, 'Support ticket replies', isWide: isTablet),
-                                _buildBenefit(Icons.campaign_rounded, 'Important announcements', isWide: isTablet),
-                                _buildBenefit(Icons.account_balance_wallet_rounded, 'Wallet transactions', isWide: isTablet),
+                                _buildBenefit(Icons.chat_bubble_rounded,
+                                    'New messages from connections',
+                                    isWide: isTablet),
+                                _buildBenefit(Icons.shopping_bag_rounded,
+                                    'Order updates and tracking',
+                                    isWide: isTablet),
+                                _buildBenefit(Icons.support_agent_rounded,
+                                    'Support ticket replies',
+                                    isWide: isTablet),
+                                _buildBenefit(Icons.campaign_rounded,
+                                    'Important announcements',
+                                    isWide: isTablet),
+                                _buildBenefit(
+                                    Icons.account_balance_wallet_rounded,
+                                    'Wallet transactions',
+                                    isWide: isTablet),
                               ],
                             ),
                           ),
@@ -318,7 +337,8 @@ class _NotificationPermissionGateState extends State<NotificationPermissionGate>
                               onPressed: _skipForNow,
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFF374151),
-                                side: BorderSide(color: Colors.grey.shade300, width: 1.2),
+                                side: BorderSide(
+                                    color: Colors.grey.shade300, width: 1.2),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),

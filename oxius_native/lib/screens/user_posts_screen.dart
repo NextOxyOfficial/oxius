@@ -10,6 +10,7 @@ import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import 'classified_post_details_screen.dart';
 import 'adsy_connect_chat_interface.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class UserPostsScreen extends StatefulWidget {
   final String userId;
@@ -73,7 +74,8 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _loadMore();
     }
   }
@@ -189,11 +191,13 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF10B981))),
+      builder: (context) =>
+          const Center(child: AdsyLoadingIndicator(color: Color(0xFF10B981))),
     );
 
     try {
-      final chatroom = await AdsyConnectService.getOrCreateChatRoom(widget.userId);
+      final chatroom =
+          await AdsyConnectService.getOrCreateChatRoom(widget.userId);
       if (!mounted) return;
       Navigator.pop(context);
 
@@ -243,7 +247,8 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/login');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981)),
             child: const Text('Login', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -276,7 +281,9 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                 final avatarUrl = AppConfig.getAbsoluteUrl(widget.userAvatar);
 
                 Widget fallback() {
-                  final initial = widget.userName.isNotEmpty ? widget.userName[0].toUpperCase() : 'U';
+                  final initial = widget.userName.isNotEmpty
+                      ? widget.userName[0].toUpperCase()
+                      : 'U';
                   return Center(
                     child: Text(
                       initial,
@@ -389,7 +396,8 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(left: 12),
-                    child: Icon(Icons.search_rounded, size: 20, color: Color(0xFF9CA3AF)),
+                    child: Icon(Icons.search_rounded,
+                        size: 20, color: Color(0xFF9CA3AF)),
                   ),
                   Expanded(
                     child: TextField(
@@ -397,15 +405,18 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'Search posts...',
-                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                        hintStyle:
+                            TextStyle(fontSize: 14, color: Colors.grey[400]),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 12),
                       ),
                     ),
                   ),
                   if (_searchQuery.isNotEmpty)
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF9CA3AF)),
+                      icon: const Icon(Icons.close_rounded,
+                          size: 20, color: Color(0xFF9CA3AF)),
                       onPressed: _clearSearch,
                     ),
                 ],
@@ -417,11 +428,11 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF10B981)),
+                    child: AdsyLoadingIndicator(color: Color(0xFF10B981)),
                   )
                 : _posts.isEmpty
                     ? _buildEmptyState()
-                    : RefreshIndicator(
+                    : AdsyRefreshIndicator(
                         onRefresh: _loadPosts,
                         color: const Color(0xFF10B981),
                         child: ListView.builder(
@@ -434,7 +445,7 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                                   ? const Padding(
                                       padding: EdgeInsets.all(16),
                                       child: Center(
-                                        child: CircularProgressIndicator(
+                                        child: AdsyLoadingIndicator(
                                           color: Color(0xFF10B981),
                                           strokeWidth: 2,
                                         ),
@@ -494,7 +505,8 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
               onPressed: _clearSearch,
               child: const Text(
                 'Clear Search',
-                style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Color(0xFF10B981), fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -504,7 +516,8 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
   }
 
   Widget _buildPostItem(ClassifiedPost post) {
-    final imageUrl = post.medias?.isNotEmpty == true ? post.medias!.first.image : null;
+    final imageUrl =
+        post.medias?.isNotEmpty == true ? post.medias!.first.image : null;
 
     return InkWell(
       onTap: () => _navigateToPost(post),
@@ -532,20 +545,23 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                         placeholder: (context, url) => Container(
                           color: const Color(0xFFF3F4F6),
                           child: const Center(
-                            child: Icon(Icons.image_outlined, color: Color(0xFF9CA3AF), size: 24),
+                            child: Icon(Icons.image_outlined,
+                                color: Color(0xFF9CA3AF), size: 24),
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: const Color(0xFFF3F4F6),
                           child: const Center(
-                            child: Icon(Icons.image_outlined, color: Color(0xFF9CA3AF), size: 24),
+                            child: Icon(Icons.image_outlined,
+                                color: Color(0xFF9CA3AF), size: 24),
                           ),
                         ),
                       )
                     : Container(
                         color: const Color(0xFFF3F4F6),
                         child: const Center(
-                          child: Icon(Icons.image_outlined, color: Color(0xFF9CA3AF), size: 24),
+                          child: Icon(Icons.image_outlined,
+                              color: Color(0xFF9CA3AF), size: 24),
                         ),
                       ),
               ),
@@ -584,12 +600,16 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
                   if (post.city != null || post.upazila != null)
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF9CA3AF)),
+                        const Icon(Icons.location_on_outlined,
+                            size: 12, color: Color(0xFF9CA3AF)),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
-                            [post.upazila, post.city].where((e) => e != null && e.isNotEmpty).join(', '),
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
+                            [post.upazila, post.city]
+                                .where((e) => e != null && e.isNotEmpty)
+                                .join(', '),
+                            style: const TextStyle(
+                                fontSize: 11, color: Color(0xFF9CA3AF)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

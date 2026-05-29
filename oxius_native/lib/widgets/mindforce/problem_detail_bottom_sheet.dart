@@ -10,6 +10,7 @@ import '../../utils/image_compressor.dart';
 import '../../config/app_config.dart';
 import '../../widgets/linkify_text.dart';
 import '../../widgets/link_preview_card.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ProblemDetailBottomSheet extends StatefulWidget {
   final String problemId;
@@ -20,7 +21,8 @@ class ProblemDetailBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<ProblemDetailBottomSheet> createState() => _ProblemDetailBottomSheetState();
+  State<ProblemDetailBottomSheet> createState() =>
+      _ProblemDetailBottomSheetState();
 }
 
 class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
@@ -65,7 +67,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
         _comments = comments;
         _isLoading = false;
       });
-      
+
       // Increment view count after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted && _problem != null) {
@@ -124,7 +126,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
               if (canDelete)
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  title:
+                      const Text('Delete', style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _deleteComment(comment);
@@ -187,7 +190,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to update comment'), backgroundColor: Colors.red),
+            const SnackBar(
+                content: Text('Failed to update comment'),
+                backgroundColor: Colors.red),
           );
         }
       }
@@ -232,7 +237,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to delete comment'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('Failed to delete comment'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -243,7 +250,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
 
     try {
       final comments = await MindForceService.getComments(widget.problemId);
-      
+
       if (mounted) {
         setState(() {
           _comments = comments;
@@ -362,10 +369,10 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
   Future<void> _markAsSolution(String commentId) async {
     try {
       await MindForceService.markCommentAsSolution(commentId);
-      
+
       // Reload only comments section
       await _reloadComments();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -452,7 +459,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
               // Content
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: AdsyLoadingIndicator())
                     : ListView(
                         controller: scrollController,
                         padding: const EdgeInsets.fromLTRB(4, 16, 4, 16),
@@ -467,7 +474,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
               ),
 
               // Comment Input
-              if (!_isLoading && _problem != null && _problem!.status != 'solved')
+              if (!_isLoading &&
+                  _problem != null &&
+                  _problem!.status != 'solved')
                 _buildCommentInput(),
             ],
           ),
@@ -495,7 +504,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                 radius: 16,
                 backgroundColor: Colors.blue.shade100,
                 backgroundImage: _problem!.userDetails.image != null
-                    ? NetworkImage(AppConfig.getAbsoluteUrl(_problem!.userDetails.image!))
+                    ? NetworkImage(
+                        AppConfig.getAbsoluteUrl(_problem!.userDetails.image!))
                     : null,
                 child: _problem!.userDetails.image == null
                     ? Text(
@@ -527,7 +537,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     if (_problem!.userDetails.isPro) ...[
                       const SizedBox(width: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
@@ -580,7 +591,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.visibility_outlined, size: 16, color: Colors.grey.shade600),
+                Icon(Icons.visibility_outlined,
+                    size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
                 Text(
                   '${_problem!.views} views',
@@ -609,7 +621,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.attach_money, size: 14, color: Colors.green.shade700),
+                    Icon(Icons.attach_money,
+                        size: 14, color: Colors.green.shade700),
                     Text(
                       '৳${_problem!.paymentAmount}',
                       style: TextStyle(
@@ -675,7 +688,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
           ),
           child: Row(
             children: [
-              Icon(Icons.lightbulb_outline, size: 16, color: Colors.grey.shade700),
+              Icon(Icons.lightbulb_outline,
+                  size: 16, color: Colors.grey.shade700),
               const SizedBox(width: 8),
               Text(
                 'Solutions',
@@ -705,7 +719,6 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
           ),
         ),
         const SizedBox(height: 8),
-
         if (_isLoadingComments)
           ..._buildSkeletonComments()
         else if (_comments.isEmpty)
@@ -719,7 +732,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.comment_outlined, size: 40, color: Colors.grey.shade400),
+                  Icon(Icons.comment_outlined,
+                      size: 40, color: Colors.grey.shade400),
                   const SizedBox(height: 8),
                   Text(
                     'No solutions yet',
@@ -748,65 +762,67 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
   }
 
   List<Widget> _buildSkeletonComments() {
-    return List.generate(3, (index) => Container(
-      margin: const EdgeInsets.only(bottom: 1),
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(color: Colors.grey.shade300, width: 3),
-          bottom: BorderSide(color: Colors.grey.shade200, width: 0.5),
-        ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-        color: Colors.white,
-        child: Row(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
+    return List.generate(
+        3,
+        (index) => Container(
+              margin: const EdgeInsets.only(bottom: 1),
               decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                shape: BoxShape.circle,
+                border: Border(
+                  left: BorderSide(color: Colors.grey.shade300, width: 3),
+                  bottom: BorderSide(color: Colors.grey.shade200, width: 0.5),
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(4),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                color: Colors.white,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    width: double.infinity,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(4),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: double.infinity,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 200,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    width: 200,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    ));
+            ));
   }
 
   Widget _buildCommentCard(MindForceComment comment) {
@@ -822,7 +838,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
         decoration: BoxDecoration(
           border: Border(
             left: BorderSide(
-              color: comment.isSolved ? Colors.green.shade400 : Colors.grey.shade300,
+              color: comment.isSolved
+                  ? Colors.green.shade400
+                  : Colors.grey.shade300,
               width: 3,
             ),
             bottom: BorderSide(
@@ -833,7 +851,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
         ),
         child: Container(
           padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-          color: comment.isSolved ? Colors.green.shade50.withOpacity(0.3) : Colors.white,
+          color: comment.isSolved
+              ? Colors.green.shade50.withOpacity(0.3)
+              : Colors.white,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -841,9 +861,12 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                 children: [
                   CircleAvatar(
                     radius: 12,
-                    backgroundColor: comment.isSolved ? Colors.green.shade100 : Colors.blue.shade100,
+                    backgroundColor: comment.isSolved
+                        ? Colors.green.shade100
+                        : Colors.blue.shade100,
                     backgroundImage: comment.userDetails.image != null
-                        ? NetworkImage(AppConfig.getAbsoluteUrl(comment.userDetails.image!))
+                        ? NetworkImage(AppConfig.getAbsoluteUrl(
+                            comment.userDetails.image!))
                         : null,
                     child: comment.userDetails.image == null
                         ? Text(
@@ -851,7 +874,9 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: comment.isSolved ? Colors.green.shade700 : Colors.blue.shade700,
+                              color: comment.isSolved
+                                  ? Colors.green.shade700
+                                  : Colors.blue.shade700,
                             ),
                           )
                         : null,
@@ -888,10 +913,14 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                                 if (comment.userDetails.isPro) ...[
                                   const SizedBox(width: 4),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4, vertical: 1),
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                                        colors: [
+                                          Color(0xFFFFD700),
+                                          Color(0xFFFFA500)
+                                        ],
                                       ),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
@@ -929,7 +958,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                         if (comment.isSolved) ...[
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.green.shade600,
                               borderRadius: BorderRadius.circular(8),
@@ -937,7 +967,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check_circle, size: 9, color: Colors.white),
+                                Icon(Icons.check_circle,
+                                    size: 9, color: Colors.white),
                                 SizedBox(width: 3),
                                 Text(
                                   'Solution',
@@ -954,21 +985,26 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                       ],
                     ),
                   ),
-                  if (isOwner && !comment.isSolved && _problem!.status != 'solved')
+                  if (isOwner &&
+                      !comment.isSolved &&
+                      _problem!.status != 'solved')
                     InkWell(
                       onTap: () => _markAsSolution(comment.id),
                       borderRadius: BorderRadius.circular(4),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.green.shade50,
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: Colors.green.shade300, width: 0.5),
+                          border: Border.all(
+                              color: Colors.green.shade300, width: 0.5),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.check_circle_outline, size: 12, color: Colors.green.shade700),
+                            Icon(Icons.check_circle_outline,
+                                size: 12, color: Colors.green.shade700),
                             const SizedBox(width: 4),
                             Text(
                               'Mark as solution',
@@ -1061,7 +1097,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.memory(
-                            base64Decode(_compressedImages[index].split(',').last),
+                            base64Decode(
+                                _compressedImages[index].split(',').last),
                             width: 80,
                             height: 80,
                             fit: BoxFit.cover,
@@ -1108,7 +1145,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: AdsyLoadingIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.image_outlined),
                 color: const Color(0xFF3B82F6),
@@ -1118,7 +1155,8 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                   controller: _commentController,
                   decoration: InputDecoration(
                     hintText: 'Add a solution...',
-                    hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                    hintStyle:
+                        TextStyle(fontSize: 14, color: Colors.grey.shade500),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide(color: Colors.grey.shade300),
@@ -1138,7 +1176,7 @@ class _ProblemDetailBottomSheetState extends State<ProblemDetailBottomSheet> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: AdsyLoadingIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.send_rounded),
                 color: const Color(0xFF3B82F6),

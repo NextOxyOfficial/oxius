@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../services/api_service.dart';
 import '../services/user_state_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -210,7 +211,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
         final data = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data['message'] ?? 'Documents submitted successfully!'),
+            content:
+                Text(data['message'] ?? 'Documents submitted successfully!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -410,7 +412,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               ),
               const SizedBox(width: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: chipColor,
                   borderRadius: BorderRadius.circular(999),
@@ -450,7 +453,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _isVerified ? 'Verification completed' : 'Verification progress',
+                        _isVerified
+                            ? 'Verification completed'
+                            : 'Verification progress',
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -492,11 +497,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       SizedBox(
                         width: 70,
                         height: 70,
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           value: progress / 100,
                           strokeWidth: 7,
                           backgroundColor: const Color(0xFFE2E8F0),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFF10B981)),
                         ),
                       ),
                       Text(
@@ -574,10 +580,12 @@ class _VerificationScreenState extends State<VerificationScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildInstructionItem('Capture all four corners of your document clearly'),
+          _buildInstructionItem(
+              'Capture all four corners of your document clearly'),
           _buildInstructionItem('Upload NID front, back, and a clear selfie'),
           _buildInstructionItem('We accept NID, Passport, and Driving License'),
-          _buildInstructionItem('Reviews usually complete within 24 to 48 hours'),
+          _buildInstructionItem(
+              'Reviews usually complete within 24 to 48 hours'),
         ],
       ),
     );
@@ -677,7 +685,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               child: LinearProgressIndicator(
                 value: null,
                 backgroundColor: Colors.transparent,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.amber.shade500),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(Colors.amber.shade500),
               ),
             ),
           ),
@@ -783,7 +792,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.badge_outlined, color: Colors.white, size: 20),
+                    const Icon(Icons.badge_outlined,
+                        color: Colors.white, size: 20),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
@@ -796,7 +806,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: const Color(0x29FFFFFF),
                         borderRadius: BorderRadius.circular(999),
@@ -827,11 +838,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    _buildUploadField('ID Front', 'front', _frontImage, _errors['front'] ?? false),
+                    _buildUploadField('ID Front', 'front', _frontImage,
+                        _errors['front'] ?? false),
                     const SizedBox(height: 18),
-                    _buildUploadField('ID Back', 'back', _backImage, _errors['back'] ?? false),
+                    _buildUploadField('ID Back', 'back', _backImage,
+                        _errors['back'] ?? false),
                     const SizedBox(height: 18),
-                    _buildUploadField('Selfie with ID', 'selfie', _selfieImage, _errors['selfie'] ?? false),
+                    _buildUploadField('Selfie with ID', 'selfie', _selfieImage,
+                        _errors['selfie'] ?? false),
                   ],
                 ),
               ),
@@ -886,15 +900,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   value: _calculateProgress() / 100,
                   minHeight: 10,
                   backgroundColor: const Color(0xFFE2E8F0),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
                 ),
               ),
               const SizedBox(height: 14),
               Row(
                 children: [
-                  Expanded(child: _buildProgressIndicator('ID Front', _frontImage != null)),
-                  Expanded(child: _buildProgressIndicator('ID Back', _backImage != null)),
-                  Expanded(child: _buildProgressIndicator('Selfie', _selfieImage != null)),
+                  Expanded(
+                      child: _buildProgressIndicator(
+                          'ID Front', _frontImage != null)),
+                  Expanded(
+                      child: _buildProgressIndicator(
+                          'ID Back', _backImage != null)),
+                  Expanded(
+                      child: _buildProgressIndicator(
+                          'Selfie', _selfieImage != null)),
                 ],
               ),
               const SizedBox(height: 18),
@@ -919,7 +940,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                               strokeWidth: 2,
                               color: Colors.white,
                             ),
@@ -947,7 +968,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
     );
   }
 
-  Widget _buildUploadField(String label, String field, String? image, bool hasError) {
+  Widget _buildUploadField(
+      String label, String field, String? image, bool hasError) {
     final bool locked = _isLocked;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -967,7 +989,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: image != null ? const Color(0xFF10B981) : Colors.grey.shade300,
+                color: image != null
+                    ? const Color(0xFF10B981)
+                    : Colors.grey.shade300,
                 shape: BoxShape.circle,
               ),
             ),
@@ -1081,7 +1105,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                          icon: const Icon(Icons.delete_outline_rounded,
+                              size: 18),
                           label: const Text('Remove'),
                         ),
                       ),
@@ -1105,7 +1130,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 ),
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: hasError ? Colors.red.shade300 : const Color(0xFF99F6E4),
+                  color:
+                      hasError ? Colors.red.shade300 : const Color(0xFF99F6E4),
                   width: 2,
                 ),
               ),
@@ -1200,7 +1226,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: completed ? const Color(0xFF047857) : Colors.grey.shade600,
+                color:
+                    completed ? const Color(0xFF047857) : Colors.grey.shade600,
               ),
             ),
           ),

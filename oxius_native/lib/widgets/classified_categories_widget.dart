@@ -3,13 +3,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../services/api_service.dart';
 import '../services/classified_category_service.dart';
 import '../screens/classified_category_list_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Widget to display classified categories in a grid
 /// Can be added to the home screen or any other screen
 class ClassifiedCategoriesWidget extends StatefulWidget {
   final int? maxCategories; // Limit number of categories to show, null for all
   final EdgeInsets? padding;
-  
+
   const ClassifiedCategoriesWidget({
     Key? key,
     this.maxCategories,
@@ -17,10 +18,12 @@ class ClassifiedCategoriesWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ClassifiedCategoriesWidget> createState() => _ClassifiedCategoriesWidgetState();
+  State<ClassifiedCategoriesWidget> createState() =>
+      _ClassifiedCategoriesWidgetState();
 }
 
-class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget> {
+class _ClassifiedCategoriesWidgetState
+    extends State<ClassifiedCategoriesWidget> {
   late final ClassifiedCategoryService _categoryService;
   List<ClassifiedCategory> _categories = [];
   bool _isLoading = true;
@@ -34,7 +37,7 @@ class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget>
 
   Future<void> _loadCategories() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final categories = await _categoryService.fetchCategories();
       if (mounted) {
@@ -71,32 +74,34 @@ class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget>
                   color: Color(0xFF1F2937),
                 ),
               ),
-              if (widget.maxCategories != null && _categories.length >= widget.maxCategories!)
+              if (widget.maxCategories != null &&
+                  _categories.length >= widget.maxCategories!)
                 TextButton(
                   onPressed: () {
                     // Navigate to all categories screen
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('View All Categories - Coming Soon')),
+                      const SnackBar(
+                          content: Text('View All Categories - Coming Soon')),
                     );
                   },
                   child: const Text('View All'),
                 ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Loading State
           if (_isLoading)
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   color: Color(0xFF10B981),
                 ),
               ),
             ),
-          
+
           // Categories Grid
           if (!_isLoading && _categories.isNotEmpty)
             GridView.builder(
@@ -114,7 +119,7 @@ class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget>
                 return _buildCategoryCard(category);
               },
             ),
-          
+
           // Empty State
           if (!_isLoading && _categories.isEmpty)
             const Center(
@@ -187,7 +192,7 @@ class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget>
                                 child: SizedBox(
                                   width: 24,
                                   height: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: AdsyLoadingIndicator(strokeWidth: 2),
                                 ),
                               ),
                               errorWidget: (context, url, error) => const Icon(
@@ -199,7 +204,8 @@ class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget>
                           : Image.asset(
                               category.image!,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
                                 Icons.category,
                                 color: Color(0xFF10B981),
                                 size: 32,
@@ -212,9 +218,9 @@ class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget>
                         ),
                 ),
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               // Category Title
               Text(
                 category.title,
@@ -239,18 +245,18 @@ class _ClassifiedCategoriesWidgetState extends State<ClassifiedCategoriesWidget>
 /// Useful for home screen hero sections
 class ClassifiedCategoriesHorizontalList extends StatefulWidget {
   final int maxCategories;
-  
+
   const ClassifiedCategoriesHorizontalList({
     Key? key,
     this.maxCategories = 6,
   }) : super(key: key);
 
   @override
-  State<ClassifiedCategoriesHorizontalList> createState() => 
+  State<ClassifiedCategoriesHorizontalList> createState() =>
       _ClassifiedCategoriesHorizontalListState();
 }
 
-class _ClassifiedCategoriesHorizontalListState 
+class _ClassifiedCategoriesHorizontalListState
     extends State<ClassifiedCategoriesHorizontalList> {
   late final ClassifiedCategoryService _categoryService;
   List<ClassifiedCategory> _categories = [];
@@ -265,7 +271,7 @@ class _ClassifiedCategoriesHorizontalListState
 
   Future<void> _loadCategories() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final categories = await _categoryService.fetchCategories();
       if (mounted) {
@@ -286,7 +292,7 @@ class _ClassifiedCategoriesHorizontalListState
     if (_isLoading) {
       return const SizedBox(
         height: 100,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: AdsyLoadingIndicator()),
       );
     }
 
@@ -357,7 +363,8 @@ class _ClassifiedCategoriesHorizontalListState
                           : Image.asset(
                               category.image!,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
                                 Icons.category,
                                 color: Color(0xFF10B981),
                                 size: 24,

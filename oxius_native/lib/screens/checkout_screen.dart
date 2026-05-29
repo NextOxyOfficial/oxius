@@ -4,6 +4,7 @@ import '../services/user_state_service.dart';
 import '../services/order_service.dart';
 import '../models/cart_item.dart';
 import '../models/order_model.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final List<CartItem> cartItems;
@@ -141,7 +142,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Only ${item.product.quantity} units available in stock'),
+          content:
+              Text('Only ${item.product.quantity} units available in stock'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -160,8 +162,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     if (!_formKey.currentState!.validate()) return;
 
     // Check if account funds are sufficient
-    if (_paymentMethod == 'account' &&
-        _userState.balance < _total) {
+    if (_paymentMethod == 'account' && _userState.balance < _total) {
       setState(() {
         _showInsufficientFundsModal = true;
       });
@@ -175,7 +176,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
     try {
       final orderData = CreateOrderRequest(
         order: OrderData(
-          userId: _userState.isAuthenticated ? _userState.currentUser?.id : null,
+          userId:
+              _userState.isAuthenticated ? _userState.currentUser?.id : null,
           name: _nameController.text,
           email: _userState.userEmail,
           address: _addressController.text,
@@ -243,7 +245,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('You have no products in the cart. Start adding some.'),
+              const Text(
+                  'You have no products in the cart. Start adding some.'),
               const SizedBox(height: 16),
               TextButton.icon(
                 onPressed: () => Navigator.pop(context),
@@ -267,7 +270,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4.0, vertical: 8.0),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -278,10 +282,12 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                           _buildCustomerInformation(),
                           const SizedBox(height: 12),
                           if (widget.cartItems.isNotEmpty &&
-                              widget.cartItems.first.product.isFreeDelivery != true)
+                              widget.cartItems.first.product.isFreeDelivery !=
+                                  true)
                             _buildDeliveryOptions(),
                           if (widget.cartItems.isNotEmpty &&
-                              widget.cartItems.first.product.isFreeDelivery != true)
+                              widget.cartItems.first.product.isFreeDelivery !=
+                                  true)
                             const SizedBox(height: 12),
                           _buildPaymentMethods(),
                           const SizedBox(height: 12),
@@ -499,7 +505,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                   width: 60,
                   height: 60,
                   color: const Color(0xFFE5E7EB),
-                  child: const Icon(Icons.image_rounded, color: Color(0xFF9CA3AF), size: 24),
+                  child: const Icon(Icons.image_rounded,
+                      color: Color(0xFF9CA3AF), size: 24),
                 );
               },
             ),
@@ -538,7 +545,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                         fontSize: 16,
                       ),
                     ),
-                    if (product.salePrice != null && product.salePrice! < product.regularPrice) ...[
+                    if (product.salePrice != null &&
+                        product.salePrice! < product.regularPrice) ...[
                       const SizedBox(width: 6),
                       Text(
                         '৳${product.regularPrice.toStringAsFixed(0)}',
@@ -565,15 +573,19 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () => _decreaseQuantity(index),
-                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(6)),
+                          borderRadius: const BorderRadius.horizontal(
+                              left: Radius.circular(6)),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            child: const Icon(Icons.remove, size: 14, color: Color(0xFF6B7280)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            child: const Icon(Icons.remove,
+                                size: 14, color: Color(0xFF6B7280)),
                           ),
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: const BoxDecoration(
                           border: Border(
                             left: BorderSide(color: Color(0xFFE5E7EB)),
@@ -593,10 +605,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                         color: Colors.transparent,
                         child: InkWell(
                           onTap: () => _increaseQuantity(index),
-                          borderRadius: const BorderRadius.horizontal(right: Radius.circular(6)),
+                          borderRadius: const BorderRadius.horizontal(
+                              right: Radius.circular(6)),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            child: const Icon(Icons.add, size: 14, color: Color(0xFF3B82F6)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
+                            child: const Icon(Icons.add,
+                                size: 14, color: Color(0xFF3B82F6)),
                           ),
                         ),
                       ),
@@ -653,7 +668,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             style: AppFonts.roboto(fontSize: 14),
             decoration: InputDecoration(
               labelText: 'Full Name',
-              labelStyle: AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
+              labelStyle:
+                  AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -664,10 +680,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+                borderSide:
+                    const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
               ),
-              prefixIcon: const Icon(Icons.person_outline_rounded, size: 18, color: Color(0xFF6B7280)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              prefixIcon: const Icon(Icons.person_outline_rounded,
+                  size: 18, color: Color(0xFF6B7280)),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               isDense: true,
             ),
             validator: (value) {
@@ -683,7 +702,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             style: AppFonts.roboto(fontSize: 14),
             decoration: InputDecoration(
               labelText: 'Phone Number',
-              labelStyle: AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
+              labelStyle:
+                  AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -694,10 +714,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+                borderSide:
+                    const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
               ),
-              prefixIcon: const Icon(Icons.phone_rounded, size: 18, color: Color(0xFF6B7280)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              prefixIcon: const Icon(Icons.phone_rounded,
+                  size: 18, color: Color(0xFF6B7280)),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               isDense: true,
             ),
             keyboardType: TextInputType.phone,
@@ -705,7 +728,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               if (value == null || value.isEmpty) {
                 return 'Phone number is required';
               }
-              if (!RegExp(r'^\d{10,11}$').hasMatch(value.replaceAll(RegExp(r'\D'), ''))) {
+              if (!RegExp(r'^\d{10,11}$')
+                  .hasMatch(value.replaceAll(RegExp(r'\D'), ''))) {
                 return 'Please enter a valid phone number';
               }
               return null;
@@ -717,7 +741,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             style: AppFonts.roboto(fontSize: 14),
             decoration: InputDecoration(
               labelText: 'Delivery Address',
-              labelStyle: AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
+              labelStyle:
+                  AppFonts.roboto(fontSize: 13, color: const Color(0xFF6B7280)),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
                 borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -728,10 +753,13 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(6),
-                borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
+                borderSide:
+                    const BorderSide(color: Color(0xFF3B82F6), width: 1.5),
               ),
-              prefixIcon: const Icon(Icons.location_on_rounded, size: 18, color: Color(0xFF6B7280)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              prefixIcon: const Icon(Icons.location_on_rounded,
+                  size: 18, color: Color(0xFF6B7280)),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               isDense: true,
             ),
             maxLines: 2,
@@ -827,11 +855,15 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+              color: isSelected
+                  ? const Color(0xFF3B82F6)
+                  : const Color(0xFFE5E7EB),
               width: isSelected ? 1.5 : 1,
             ),
             borderRadius: BorderRadius.circular(6),
-            color: isSelected ? const Color(0xFF3B82F6).withOpacity(0.05) : Colors.transparent,
+            color: isSelected
+                ? const Color(0xFF3B82F6).withOpacity(0.05)
+                : Colors.transparent,
           ),
           child: Row(
             children: [
@@ -841,7 +873,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
+                    color: isSelected
+                        ? const Color(0xFF3B82F6)
+                        : const Color(0xFF9CA3AF),
                     width: isSelected ? 5 : 2,
                   ),
                 ),
@@ -850,7 +884,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               Icon(
                 icon,
                 size: 18,
-                color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF6B7280),
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF6B7280),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -862,7 +898,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? const Color(0xFF1F2937) : const Color(0xFF4B5563),
+                        color: isSelected
+                            ? const Color(0xFF1F2937)
+                            : const Color(0xFF4B5563),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -881,7 +919,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 style: AppFonts.roboto(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF1F2937),
+                  color: isSelected
+                      ? const Color(0xFF3B82F6)
+                      : const Color(0xFF1F2937),
                 ),
               ),
             ],
@@ -935,8 +975,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               'Available: ৳${_userState.balance.toStringAsFixed(2)}',
               Icons.account_balance_wallet_rounded,
             ),
-          if (_userState.isAuthenticated)
-            const SizedBox(height: 8),
+          if (_userState.isAuthenticated) const SizedBox(height: 8),
           _buildPaymentOption(
             'cod',
             'Cash on Delivery',
@@ -968,11 +1007,15 @@ class _CheckoutScreenState extends State<CheckoutScreen>
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+              color: isSelected
+                  ? const Color(0xFF3B82F6)
+                  : const Color(0xFFE5E7EB),
               width: isSelected ? 1.5 : 1,
             ),
             borderRadius: BorderRadius.circular(6),
-            color: isSelected ? const Color(0xFF3B82F6).withOpacity(0.05) : Colors.transparent,
+            color: isSelected
+                ? const Color(0xFF3B82F6).withOpacity(0.05)
+                : Colors.transparent,
           ),
           child: Row(
             children: [
@@ -982,7 +1025,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF9CA3AF),
+                    color: isSelected
+                        ? const Color(0xFF3B82F6)
+                        : const Color(0xFF9CA3AF),
                     width: isSelected ? 5 : 2,
                   ),
                 ),
@@ -991,7 +1036,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               Icon(
                 icon,
                 size: 18,
-                color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF6B7280),
+                color: isSelected
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF6B7280),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1003,7 +1050,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       style: AppFonts.roboto(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? const Color(0xFF1F2937) : const Color(0xFF4B5563),
+                        color: isSelected
+                            ? const Color(0xFF1F2937)
+                            : const Color(0xFF4B5563),
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -1043,7 +1092,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 18),
+              const Icon(Icons.receipt_long_rounded,
+                  color: Colors.white, size: 18),
               const SizedBox(width: 8),
               Text(
                 'Order Summary',
@@ -1056,9 +1106,11 @@ class _CheckoutScreenState extends State<CheckoutScreen>
             ],
           ),
           const SizedBox(height: 12),
-          _buildSummaryRow('Subtotal ($_totalItems items)', '৳${_subtotal.toStringAsFixed(0)}'),
+          _buildSummaryRow('Subtotal ($_totalItems items)',
+              '৳${_subtotal.toStringAsFixed(0)}'),
           const SizedBox(height: 6),
-          _buildSummaryRow('Delivery Fee', '৳${_deliveryFee.toStringAsFixed(0)}'),
+          _buildSummaryRow(
+              'Delivery Fee', '৳${_deliveryFee.toStringAsFixed(0)}'),
           Container(
             margin: const EdgeInsets.symmetric(vertical: 10),
             height: 1,
@@ -1148,7 +1200,8 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       child: SafeArea(
         top: false,
         child: ElevatedButton(
-          onPressed: (_isLoading || _showSuccessModal) ? null : _processCheckout,
+          onPressed:
+              (_isLoading || _showSuccessModal) ? null : _processCheckout,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF10B981),
             foregroundColor: Colors.white,
@@ -1163,7 +1216,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
               ? const SizedBox(
                   height: 18,
                   width: 18,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     color: Colors.white,
                     strokeWidth: 2.5,
                   ),
@@ -1246,7 +1299,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Title
                     const Text(
                       'Insufficient Funds',
@@ -1257,7 +1310,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Description
                     Text(
                       'Your account balance (৳${_userState.balance.toStringAsFixed(2)}) is not sufficient to complete this purchase (৳${_total.toStringAsFixed(2)}).',
@@ -1269,7 +1322,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Action buttons
                     Row(
                       children: [
@@ -1320,7 +1373,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ],
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Cancel button
                     TextButton(
                       onPressed: () {
@@ -1408,7 +1461,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Title
                     Text(
                       'Order Successful!',
@@ -1420,7 +1473,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     const SizedBox(height: 6),
-                    
+
                     // Description
                     Text(
                       'Thank you for your purchase! Your order #$_orderNumber has been successfully placed.',
@@ -1432,7 +1485,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     const SizedBox(height: 14),
-                    
+
                     // Order details card
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -1470,7 +1523,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                             ],
                           ),
                           const SizedBox(height: 8),
-                          
+
                           // Estimated delivery
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1504,7 +1557,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Continue shopping button
                     SizedBox(
                       width: double.infinity,

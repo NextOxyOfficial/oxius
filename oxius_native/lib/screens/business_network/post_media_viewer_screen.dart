@@ -7,6 +7,7 @@ import 'create_post_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_options.dart';
 import 'shorts_player_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PostMediaViewerScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -52,7 +53,8 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
   void initState() {
     super.initState();
     _post = widget.post;
-    _currentIndex = widget.initialIndex.clamp(0, _post.media.isEmpty ? 0 : _post.media.length - 1);
+    _currentIndex = widget.initialIndex
+        .clamp(0, _post.media.isEmpty ? 0 : _post.media.length - 1);
     _pageController = PageController(initialPage: _currentIndex);
   }
 
@@ -68,8 +70,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
   }
 
   Future<void> _openShortsAsync(PostMedia media) async {
-    final updates = await Navigator.push<Map<int, BusinessNetworkPost>?>
-    (
+    final updates = await Navigator.push<Map<int, BusinessNetworkPost>?>(
       context,
       MaterialPageRoute(
         builder: (context) => ShortsPlayerScreen(
@@ -94,13 +95,15 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushNamedAndRemoveUntil(context, '/business-network', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/business-network', (route) => false);
         break;
       case 1:
         if (isLoggedIn) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+            MaterialPageRoute(
+                builder: (context) => const NotificationsScreen()),
           );
         } else {
           Navigator.pushNamed(context, '/login');
@@ -120,7 +123,8 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
         if (isLoggedIn) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ProfileOptionsScreen()),
+            MaterialPageRoute(
+                builder: (context) => const ProfileOptionsScreen()),
           );
         } else {
           Navigator.pushNamed(context, '/login');
@@ -159,7 +163,8 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white.withOpacity(0.18)),
               ),
-              child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 54),
+              child: const Icon(Icons.play_arrow_rounded,
+                  color: Colors.white, size: 54),
             ),
           ),
         ),
@@ -178,7 +183,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return const Center(
-              child: CircularProgressIndicator(color: Colors.white),
+              child: AdsyLoadingIndicator(color: Colors.white),
             );
           },
           errorBuilder: (context, error, stackTrace) {
@@ -249,18 +254,22 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.black.withOpacity(0.45),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white.withOpacity(0.16)),
+                                border: Border.all(
+                                    color: Colors.white.withOpacity(0.16)),
                               ),
-                              child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                              child: const Icon(Icons.arrow_back,
+                                  color: Colors.white, size: 22),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.45),
                               borderRadius: BorderRadius.circular(999),
-                              border: Border.all(color: Colors.white.withOpacity(0.16)),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.16)),
                             ),
                             child: Text(
                               '${_currentIndex + 1}/${_post.media.length}',

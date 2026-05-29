@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MyProductsTab extends StatefulWidget {
   final List<ShopProduct> products;
@@ -49,10 +50,10 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
   void _onScroll() {
     if (_isLoadingMore || !widget.hasMore) return;
-    
+
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    
+
     if (currentScroll >= maxScroll * 0.8) {
       _loadMore();
     }
@@ -60,7 +61,7 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
   Future<void> _loadMore() async {
     if (_isLoadingMore || !widget.hasMore || widget.onLoadMore == null) return;
-    
+
     setState(() => _isLoadingMore = true);
     await widget.onLoadMore!();
     if (mounted) {
@@ -73,15 +74,21 @@ class _MyProductsTabState extends State<MyProductsTab> {
     return widget.products.where((p) => p.status == _selectedFilter).toList();
   }
 
-  int get _activeCount => widget.products.where((p) => p.status == 'active').length;
-  int get _inactiveCount => widget.products.where((p) => p.status == 'inactive').length;
-  int get _outOfStockCount => widget.products.where((p) => p.status == 'out-of-stock').length;
+  int get _activeCount =>
+      widget.products.where((p) => p.status == 'active').length;
+  int get _inactiveCount =>
+      widget.products.where((p) => p.status == 'inactive').length;
+  int get _outOfStockCount =>
+      widget.products.where((p) => p.status == 'out-of-stock').length;
 
   void _showEditDialog(ShopProduct product) {
     final nameController = TextEditingController(text: product.name);
-    final descController = TextEditingController(text: product.description ?? '');
-    final priceController = TextEditingController(text: product.price.toString());
-    final stockController = TextEditingController(text: product.stock.toString());
+    final descController =
+        TextEditingController(text: product.description ?? '');
+    final priceController =
+        TextEditingController(text: product.price.toString());
+    final stockController =
+        TextEditingController(text: product.stock.toString());
     String selectedStatus = product.status;
 
     showModalBottomSheet(
@@ -189,7 +196,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                             'Active',
                             Icons.check_circle_rounded,
                             selectedStatus == 'active',
-                            () => setSheetState(() => selectedStatus = 'active'),
+                            () =>
+                                setSheetState(() => selectedStatus = 'active'),
                           ),
                           const SizedBox(width: 8),
                           _buildStatusChip(
@@ -197,7 +205,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                             'Inactive',
                             Icons.cancel_rounded,
                             selectedStatus == 'inactive',
-                            () => setSheetState(() => selectedStatus = 'inactive'),
+                            () => setSheetState(
+                                () => selectedStatus = 'inactive'),
                           ),
                           const SizedBox(width: 8),
                           _buildStatusChip(
@@ -205,18 +214,21 @@ class _MyProductsTabState extends State<MyProductsTab> {
                             'Out of Stock',
                             Icons.inventory_2_rounded,
                             selectedStatus == 'out-of-stock',
-                            () => setSheetState(() => selectedStatus = 'out-of-stock'),
+                            () => setSheetState(
+                                () => selectedStatus = 'out-of-stock'),
                           ),
                         ],
                       ),
                       const SizedBox(height: 20),
 
                       // Product Name
-                      _buildTextField('Product Name', nameController, required: true),
+                      _buildTextField('Product Name', nameController,
+                          required: true),
                       const SizedBox(height: 16),
 
                       // Description
-                      _buildTextField('Description', descController, maxLines: 3),
+                      _buildTextField('Description', descController,
+                          maxLines: 3),
                       const SizedBox(height: 16),
 
                       // Price & Stock
@@ -248,9 +260,12 @@ class _MyProductsTabState extends State<MyProductsTab> {
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: _isProcessing ? null : () => Navigator.pop(context),
+                              onPressed: _isProcessing
+                                  ? null
+                                  : () => Navigator.pop(context),
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -274,29 +289,40 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                   ? null
                                   : () async {
                                       if (nameController.text.trim().isEmpty) {
-                                        _showSnackBar('Product name is required', isError: true);
+                                        _showSnackBar(
+                                            'Product name is required',
+                                            isError: true);
                                         return;
                                       }
 
                                       setState(() => _isProcessing = true);
 
-                                      print('📝 Updating product: ${product.id}');
+                                      print(
+                                          '📝 Updating product: ${product.id}');
                                       print('📝 New status: $selectedStatus');
-                                      print('📝 New name: ${nameController.text.trim()}');
-                                      print('📝 New price: ${priceController.text}');
-                                      print('📝 New stock: ${stockController.text}');
+                                      print(
+                                          '📝 New name: ${nameController.text.trim()}');
+                                      print(
+                                          '📝 New price: ${priceController.text}');
+                                      print(
+                                          '📝 New stock: ${stockController.text}');
 
-                                      final result = await EshopManagerService.updateProduct(
+                                      final result = await EshopManagerService
+                                          .updateProduct(
                                         productId: product.id,
                                         name: nameController.text.trim(),
                                         description: descController.text.trim(),
-                                        price: double.tryParse(priceController.text),
-                                        stock: int.tryParse(stockController.text),
+                                        price: double.tryParse(
+                                            priceController.text),
+                                        stock:
+                                            int.tryParse(stockController.text),
                                         status: selectedStatus,
                                       );
 
-                                      print('📝 Update result: ${result['success']}');
-                                      print('📝 Update message: ${result['message']}');
+                                      print(
+                                          '📝 Update result: ${result['success']}');
+                                      print(
+                                          '📝 Update message: ${result['message']}');
 
                                       setState(() => _isProcessing = false);
 
@@ -306,32 +332,46 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
                                       if (result['success'] == true) {
                                         Navigator.pop(context);
-                                        _showSnackBar('Product updated successfully');
-                                        final updatedStock = selectedStatus == 'out-of-stock'
-                                            ? 0
-                                            : int.tryParse(stockController.text) ?? product.stock;
-                                        final updatedStatus = selectedStatus == 'inactive'
-                                            ? 'inactive'
-                                            : updatedStock <= 0
-                                                ? 'out-of-stock'
-                                                : 'active';
+                                        _showSnackBar(
+                                            'Product updated successfully');
+                                        final updatedStock =
+                                            selectedStatus == 'out-of-stock'
+                                                ? 0
+                                                : int.tryParse(
+                                                        stockController.text) ??
+                                                    product.stock;
+                                        final updatedStatus =
+                                            selectedStatus == 'inactive'
+                                                ? 'inactive'
+                                                : updatedStock <= 0
+                                                    ? 'out-of-stock'
+                                                    : 'active';
                                         // Update local state immediately
                                         setState(() {
-                                          final index = widget.products.indexWhere((p) => p.id == product.id);
+                                          final index = widget.products
+                                              .indexWhere(
+                                                  (p) => p.id == product.id);
                                           if (index != -1) {
                                             // Update the product in the list
-                                            widget.products[index] = ShopProduct(
+                                            widget.products[index] =
+                                                ShopProduct(
                                               id: product.id,
                                               name: nameController.text.trim(),
-                                              description: descController.text.trim(),
-                                              price: double.tryParse(priceController.text) ?? product.price,
+                                              description:
+                                                  descController.text.trim(),
+                                              price: double.tryParse(
+                                                      priceController.text) ??
+                                                  product.price,
                                               stock: updatedStock,
                                               status: updatedStatus,
                                               image: product.image,
-                                              imageDetails: product.imageDetails,
-                                              featuredImage: product.featuredImage,
+                                              imageDetails:
+                                                  product.imageDetails,
+                                              featuredImage:
+                                                  product.featuredImage,
                                               categoryId: product.categoryId,
-                                              categoryName: product.categoryName,
+                                              categoryName:
+                                                  product.categoryName,
                                               createdAt: product.createdAt,
                                               updatedAt: DateTime.now(),
                                               sellerId: product.sellerId,
@@ -343,13 +383,17 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                         // Also refresh from backend
                                         widget.onProductUpdated();
                                       } else {
-                                        _showSnackBar(result['message'] ?? 'Failed to update', isError: true);
+                                        _showSnackBar(
+                                            result['message'] ??
+                                                'Failed to update',
+                                            isError: true);
                                       }
                                     },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF10B981),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -359,13 +403,15 @@ class _MyProductsTabState extends State<MyProductsTab> {
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(
+                                      child: AdsyLoadingIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                                        valueColor: AlwaysStoppedAnimation(
+                                            Colors.white),
                                       ),
                                     )
                                   : const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(Icons.save_rounded, size: 18),
                                         SizedBox(width: 8),
@@ -407,17 +453,20 @@ class _MyProductsTabState extends State<MyProductsTab> {
 
     switch (value) {
       case 'active':
-        bgColor = isSelected ? const Color(0xFF10B981) : const Color(0xFFD1FAE5);
+        bgColor =
+            isSelected ? const Color(0xFF10B981) : const Color(0xFFD1FAE5);
         textColor = isSelected ? Colors.white : const Color(0xFF065F46);
         borderColor = const Color(0xFF10B981);
         break;
       case 'inactive':
-        bgColor = isSelected ? const Color(0xFFEF4444) : const Color(0xFFFEE2E2);
+        bgColor =
+            isSelected ? const Color(0xFFEF4444) : const Color(0xFFFEE2E2);
         textColor = isSelected ? Colors.white : const Color(0xFF991B1B);
         borderColor = const Color(0xFFEF4444);
         break;
       case 'out-of-stock':
-        bgColor = isSelected ? const Color(0xFFF59E0B) : const Color(0xFFFEF3C7);
+        bgColor =
+            isSelected ? const Color(0xFFF59E0B) : const Color(0xFFFEF3C7);
         textColor = isSelected ? Colors.white : const Color(0xFF92400E);
         borderColor = const Color(0xFFF59E0B);
         break;
@@ -496,7 +545,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
               Navigator.pop(context);
               setState(() => _isProcessing = true);
 
-              final success = await EshopManagerService.deleteProduct(product.id);
+              final success =
+                  await EshopManagerService.deleteProduct(product.id);
 
               setState(() => _isProcessing = false);
 
@@ -510,7 +560,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6)),
               elevation: 0,
             ),
             child: const Text('Delete'),
@@ -524,7 +575,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+        backgroundColor:
+            isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
@@ -548,7 +600,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                 const SizedBox(width: 6),
                 _buildFilterChip('inactive', 'Inactive', _inactiveCount),
                 const SizedBox(width: 6),
-                _buildFilterChip('out-of-stock', 'Out of Stock', _outOfStockCount),
+                _buildFilterChip(
+                    'out-of-stock', 'Out of Stock', _outOfStockCount),
               ],
             ),
           ),
@@ -566,7 +619,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                         padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                         itemCount: _filteredProducts.length,
                         itemBuilder: (context, index) {
-                          return _buildProductListItem(_filteredProducts[index]);
+                          return _buildProductListItem(
+                              _filteredProducts[index]);
                         },
                       ),
                     ),
@@ -579,9 +633,10 @@ class _MyProductsTabState extends State<MyProductsTab> {
                             SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
+                                valueColor:
+                                    AlwaysStoppedAnimation(Color(0xFF10B981)),
                               ),
                             ),
                             SizedBox(width: 8),
@@ -630,7 +685,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withOpacity(0.3) : Colors.grey.shade300,
+                color: isSelected
+                    ? Colors.white.withOpacity(0.3)
+                    : Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -667,7 +724,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
           ),
           const SizedBox(height: 16),
           Text(
-            _selectedFilter == 'all' ? 'No products yet' : 'No $_selectedFilter products',
+            _selectedFilter == 'all'
+                ? 'No products yet'
+                : 'No $_selectedFilter products',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -688,10 +747,10 @@ class _MyProductsTabState extends State<MyProductsTab> {
   }
 
   Widget _buildProductListItem(ShopProduct product) {
-    final imageUrl = product.featuredImage ?? 
-                     (product.imageDetails?.isNotEmpty == true 
-                         ? product.imageDetails!.first.image 
-                         : product.image);
+    final imageUrl = product.featuredImage ??
+        (product.imageDetails?.isNotEmpty == true
+            ? product.imageDetails!.first.image
+            : product.image);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -726,15 +785,17 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       placeholder: (context, url) => Container(
                         color: Colors.grey.shade100,
                         child: const Center(
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
+                            valueColor:
+                                AlwaysStoppedAnimation(Color(0xFF10B981)),
                           ),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey.shade100,
-                        child: const Icon(Icons.image_not_supported_rounded, size: 32),
+                        child: const Icon(Icons.image_not_supported_rounded,
+                            size: 32),
                       ),
                     )
                   : Container(
@@ -785,14 +846,16 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.inventory_2_rounded, size: 10, color: Color(0xFF6B7280)),
+                            const Icon(Icons.inventory_2_rounded,
+                                size: 10, color: Color(0xFF6B7280)),
                             const SizedBox(width: 3),
                             Text(
                               '${product.stock}',
@@ -807,14 +870,16 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.visibility_rounded, size: 10, color: Color(0xFF6B7280)),
+                            const Icon(Icons.visibility_rounded,
+                                size: 10, color: Color(0xFF6B7280)),
                             const SizedBox(width: 3),
                             Text(
                               '${product.views}',
@@ -837,7 +902,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       InkWell(
                         onTap: () => _showEditDialog(product),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
                             color: const Color(0xFF10B981),
                             borderRadius: BorderRadius.circular(6),
@@ -845,7 +911,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.edit_rounded, size: 14, color: Colors.white),
+                              Icon(Icons.edit_rounded,
+                                  size: 14, color: Colors.white),
                               SizedBox(width: 4),
                               Text(
                                 'Edit',
@@ -887,10 +954,10 @@ class _MyProductsTabState extends State<MyProductsTab> {
   }
 
   Widget _buildProductCard(ShopProduct product) {
-    final imageUrl = product.featuredImage ?? 
-                     (product.imageDetails?.isNotEmpty == true 
-                         ? product.imageDetails!.first.image 
-                         : product.image);
+    final imageUrl = product.featuredImage ??
+        (product.imageDetails?.isNotEmpty == true
+            ? product.imageDetails!.first.image
+            : product.image);
 
     return Container(
       decoration: BoxDecoration(
@@ -923,15 +990,17 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       placeholder: (context, url) => Container(
                         color: Colors.grey.shade100,
                         child: const Center(
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
+                            valueColor:
+                                AlwaysStoppedAnimation(Color(0xFF10B981)),
                           ),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey.shade100,
-                        child: const Icon(Icons.image_not_supported_rounded, size: 32),
+                        child: const Icon(Icons.image_not_supported_rounded,
+                            size: 32),
                       ),
                     )
                   : Container(
@@ -1022,7 +1091,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.edit_rounded, size: 14, color: Colors.white),
+                          Icon(Icons.edit_rounded,
+                              size: 14, color: Colors.white),
                           SizedBox(width: 4),
                           Text(
                             'Edit',
@@ -1090,7 +1160,9 @@ class _MyProductsTabState extends State<MyProductsTab> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        status == 'out-of-stock' ? 'Out of Stock' : status[0].toUpperCase() + status.substring(1),
+        status == 'out-of-stock'
+            ? 'Out of Stock'
+            : status[0].toUpperCase() + status.substring(1),
         style: TextStyle(
           fontSize: 9,
           fontWeight: FontWeight.w600,
@@ -1137,7 +1209,8 @@ class _MyProductsTabState extends State<MyProductsTab> {
           keyboardType: keyboardType,
           style: const TextStyle(fontSize: 13),
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey.shade300),

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import '../../services/api_service.dart';
 import '../../screens/product_details_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class DrawerFeaturedProduct extends StatefulWidget {
   const DrawerFeaturedProduct({super.key});
@@ -26,29 +27,30 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
 
   Future<void> _loadFeaturedProducts() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final response = await http.get(
-        Uri.parse('${ApiService.baseUrl}/all-products/?limit=20&is_featured=true'),
+        Uri.parse(
+            '${ApiService.baseUrl}/all-products/?limit=20&is_featured=true'),
       );
 
       print('Featured products response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         if (data['results'] != null && data['results'] is List) {
           final products = (data['results'] as List)
               .map((p) => Map<String, dynamic>.from(p))
               .toList();
-          
+
           if (mounted) {
             setState(() {
               _allProducts = products;
               _displayProduct = products.isNotEmpty ? products[0] : null;
             });
           }
-          
+
           print('Loaded ${products.length} featured products');
         }
       } else {
@@ -65,45 +67,48 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
 
   void _showRandomProduct() {
     if (_allProducts.isEmpty) return;
-    
+
     if (_allProducts.length == 1) {
       // Only one product, just keep showing it
       return;
     }
-    
+
     // Get current index
     final currentIndex = _displayProduct != null
         ? _allProducts.indexWhere((p) => p['id'] == _displayProduct!['id'])
         : -1;
-    
+
     // Pick a random different product
     int newIndex;
     do {
       newIndex = _random.nextInt(_allProducts.length);
     } while (newIndex == currentIndex);
-    
+
     setState(() {
       _displayProduct = _allProducts[newIndex];
     });
   }
 
   int _calculateDiscount(Map<String, dynamic> product) {
-    final salePrice = double.tryParse(product['sale_price']?.toString() ?? '0') ?? 0;
-    final regularPrice = double.tryParse(product['regular_price']?.toString() ?? '0') ?? 0;
-    
-    if (regularPrice <= 0 || salePrice <= 0 || salePrice >= regularPrice) return 0;
-    
+    final salePrice =
+        double.tryParse(product['sale_price']?.toString() ?? '0') ?? 0;
+    final regularPrice =
+        double.tryParse(product['regular_price']?.toString() ?? '0') ?? 0;
+
+    if (regularPrice <= 0 || salePrice <= 0 || salePrice >= regularPrice)
+      return 0;
+
     return ((regularPrice - salePrice) / regularPrice * 100).round();
   }
 
   String _getProductImage(Map<String, dynamic>? product) {
     if (product == null) return '';
-    
+
     try {
       // Check image_details
       if (product['image_details'] != null) {
         final imageDetails = product['image_details'];
-        
+
         if (imageDetails is List && imageDetails.isNotEmpty) {
           final firstImage = imageDetails[0];
           if (firstImage is Map && firstImage['image'] != null) {
@@ -113,12 +118,12 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
             return firstImage;
           }
         }
-        
+
         if (imageDetails is String) {
           return imageDetails;
         }
       }
-      
+
       // Check images array
       if (product['images'] != null) {
         final images = product['images'];
@@ -132,7 +137,7 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
           }
         }
       }
-      
+
       // Check direct image field
       if (product['image'] != null) {
         return product['image'].toString();
@@ -140,7 +145,7 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
     } catch (e) {
       print('Error getting product image: $e');
     }
-    
+
     return '';
   }
 
@@ -157,7 +162,8 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.shopping_bag, size: 14, color: Colors.grey.shade600),
+                  Icon(Icons.shopping_bag,
+                      size: 14, color: Colors.grey.shade600),
                   const SizedBox(width: 6),
                   Text(
                     'FEATURED PRODUCT',
@@ -171,7 +177,8 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
                 ],
               ),
               IconButton(
-                icon: Icon(Icons.refresh, size: 16, color: Colors.grey.shade600),
+                icon:
+                    Icon(Icons.refresh, size: 16, color: Colors.grey.shade600),
                 onPressed: _showRandomProduct,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -184,7 +191,7 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
             ],
           ),
         ),
-        
+
         // Content
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -206,15 +213,17 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
+        child: AdsyLoadingIndicator(strokeWidth: 2),
       ),
     );
   }
 
   Widget _buildProductCard() {
     final product = _displayProduct!;
-    final salePrice = double.tryParse(product['sale_price']?.toString() ?? '0') ?? 0;
-    final regularPrice = double.tryParse(product['regular_price']?.toString() ?? '0') ?? 0;
+    final salePrice =
+        double.tryParse(product['sale_price']?.toString() ?? '0') ?? 0;
+    final regularPrice =
+        double.tryParse(product['regular_price']?.toString() ?? '0') ?? 0;
     final finalPrice = salePrice > 0 ? salePrice : regularPrice;
     final discount = _calculateDiscount(product);
     final imageUrl = _getProductImage(product);
@@ -255,16 +264,18 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey.shade100,
-                            child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                            child: const Icon(Icons.image,
+                                size: 40, color: Colors.grey),
                           );
                         },
                       )
                     : Container(
                         color: Colors.grey.shade100,
-                        child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                        child: const Icon(Icons.image,
+                            size: 40, color: Colors.grey),
                       ),
               ),
-              
+
               // Gradient Overlay & Info
               Positioned(
                 bottom: 0,
@@ -300,7 +311,8 @@ class _DrawerFeaturedProductState extends State<DrawerFeaturedProduct> {
                           ),
                           if (discount > 0)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.red,
                                 borderRadius: BorderRadius.circular(4),

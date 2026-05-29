@@ -4,6 +4,7 @@ import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import 'order_chat_screen.dart';
 import 'gig_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class OrdersReceivedTab extends StatefulWidget {
   const OrdersReceivedTab({super.key});
@@ -14,7 +15,7 @@ class OrdersReceivedTab extends StatefulWidget {
 
 class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
   final WorkspaceService _workspaceService = WorkspaceService();
-  
+
   List<Map<String, dynamic>> _orders = [];
   bool _isLoading = true;
   String _selectedFilter = 'all';
@@ -36,7 +37,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
 
   Future<void> _loadOrders() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final result = await _workspaceService.fetchSellerOrders(
         status: _selectedFilter == 'all' ? null : _selectedFilter,
@@ -95,7 +96,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
   Future<void> _showDisputeDialog(String orderId) async {
     String? selectedReason;
     final descriptionController = TextEditingController();
-    
+
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -131,7 +132,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                   // Title
                   Row(
                     children: [
-                      Icon(Icons.report_problem, color: Colors.orange[700], size: 20),
+                      Icon(Icons.report_problem,
+                          color: Colors.orange[700], size: 20),
                       const SizedBox(width: 8),
                       const Text(
                         'Raise a Dispute',
@@ -159,12 +161,14 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                     ),
                     items: WorkspaceService.disputeReasons.map((reason) {
                       return DropdownMenuItem(
                         value: reason['value'],
-                        child: Text(reason['label']!, style: const TextStyle(fontSize: 13)),
+                        child: Text(reason['label']!,
+                            style: const TextStyle(fontSize: 13)),
                       );
                     }).toList(),
                     onChanged: (value) {
@@ -181,7 +185,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                       labelText: 'Description',
                       labelStyle: const TextStyle(fontSize: 13),
                       hintText: 'Describe your issue (min 20 chars)',
-                      hintStyle: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                      hintStyle:
+                          TextStyle(fontSize: 12, color: Colors.grey[400]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -202,7 +207,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text('Cancel', style: TextStyle(fontSize: 13)),
+                          child: const Text('Cancel',
+                              style: TextStyle(fontSize: 13)),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -211,13 +217,16 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                           onPressed: () {
                             if (selectedReason == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please select a reason')),
+                                const SnackBar(
+                                    content: Text('Please select a reason')),
                               );
                               return;
                             }
                             if (descriptionController.text.trim().length < 20) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Description must be at least 20 characters')),
+                                const SnackBar(
+                                    content: Text(
+                                        'Description must be at least 20 characters')),
                               );
                               return;
                             }
@@ -231,7 +240,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text('Submit', style: TextStyle(fontSize: 13)),
+                          child: const Text('Submit',
+                              style: TextStyle(fontSize: 13)),
                         ),
                       ),
                     ],
@@ -255,7 +265,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
         if (response['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response['message'] ?? 'Dispute raised successfully'),
+              content:
+                  Text(response['message'] ?? 'Dispute raised successfully'),
               backgroundColor: Colors.green,
             ),
           );
@@ -274,7 +285,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadOrders,
       child: Column(
         children: [
@@ -298,11 +309,12 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
           // Orders List
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: AdsyLoadingIndicator())
                 : _orders.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
                         itemCount: _orders.length,
                         itemBuilder: (context, index) {
                           return _buildOrderCard(_orders[index]);
@@ -366,7 +378,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.grey[50],
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(10)),
             ),
             child: Row(
               children: [
@@ -382,7 +395,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
               ],
             ),
           ),
-          
+
           // Order Content
           Padding(
             padding: const EdgeInsets.all(10),
@@ -396,9 +409,11 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                     width: 56,
                     height: 56,
                     child: CachedNetworkImage(
-                      imageUrl: _getImageUrl(gig?['image_url'] ?? gig?['image']),
+                      imageUrl:
+                          _getImageUrl(gig?['image_url'] ?? gig?['image']),
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: Colors.grey[200]),
+                      placeholder: (context, url) =>
+                          Container(color: Colors.grey[200]),
                       errorWidget: (context, url, error) => Container(
                         color: Colors.grey[200],
                         child: const Icon(Icons.image, color: Colors.grey),
@@ -407,7 +422,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                
+
                 // Order Details
                 Expanded(
                   child: Column(
@@ -416,7 +431,9 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => GigDetailScreen(gigId: gig?['id']?.toString() ?? '')),
+                          MaterialPageRoute(
+                              builder: (context) => GigDetailScreen(
+                                  gigId: gig?['id']?.toString() ?? '')),
                         ),
                         child: Text(
                           gig?['title'] ?? 'Unknown Gig',
@@ -436,7 +453,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                           CircleAvatar(
                             radius: 8,
                             backgroundImage: buyer?['avatar'] != null
-                                ? CachedNetworkImageProvider(_getImageUrl(buyer!['avatar']))
+                                ? CachedNetworkImageProvider(
+                                    _getImageUrl(buyer!['avatar']))
                                 : null,
                             child: buyer?['avatar'] == null
                                 ? Text(
@@ -449,24 +467,34 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                           Flexible(
                             child: Text(
                               'from ${buyer?['name'] ?? 'Unknown'}',
-                              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.grey[600]),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (buyer?['kyc'] == true)
                             const Padding(
                               padding: EdgeInsets.only(left: 3),
-                              child: Icon(Icons.verified, size: 12, color: Colors.blue),
+                              child: Icon(Icons.verified,
+                                  size: 12, color: Colors.blue),
                             ),
                           if (buyer?['is_pro'] == true)
                             Container(
                               margin: const EdgeInsets.only(left: 3),
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 1),
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                                gradient: const LinearGradient(colors: [
+                                  Color(0xFFF59E0B),
+                                  Color(0xFFF97316)
+                                ]),
                                 borderRadius: BorderRadius.circular(3),
                               ),
-                              child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+                              child: const Text('PRO',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 7,
+                                      fontWeight: FontWeight.bold)),
                             ),
                         ],
                       ),
@@ -484,7 +512,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
                           ),
                           Text(
                             _formatDate(createdAt),
-                            style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey[500]),
                           ),
                         ],
                       ),
@@ -494,7 +523,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
               ],
             ),
           ),
-          
+
           // Action Buttons (including Chat)
           if (_canTakeAction(status))
             Container(
@@ -504,7 +533,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
               ),
               child: Row(
                 children: _buildActionButtons(
-                  order, 
+                  order,
                   status,
                   hasDispute: order['has_dispute'] == true,
                 ),
@@ -519,10 +548,11 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
     return status != 'cancelled';
   }
 
-  List<Widget> _buildActionButtons(Map<String, dynamic> order, String status, {bool hasDispute = false}) {
+  List<Widget> _buildActionButtons(Map<String, dynamic> order, String status,
+      {bool hasDispute = false}) {
     final orderId = order['id'].toString();
     final buttons = <Widget>[];
-    
+
     // Chat button - always show first (except cancelled)
     final unreadCount = order['unread_messages'] ?? 0;
     buttons.add(
@@ -582,7 +612,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
         ],
       ),
     );
-    
+
     if (status == 'pending') {
       buttons.add(const SizedBox(width: 6));
       buttons.add(
@@ -594,7 +624,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
           child: const Text('Accept', style: TextStyle(fontSize: 12)),
         ),
@@ -609,7 +640,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
           child: const Text('Decline', style: TextStyle(fontSize: 12)),
         ),
@@ -625,9 +657,11 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
-          child: Text(status == 'revision' ? 'Re-deliver' : 'Deliver', style: const TextStyle(fontSize: 12)),
+          child: Text(status == 'revision' ? 'Re-deliver' : 'Deliver',
+              style: const TextStyle(fontSize: 12)),
         ),
       );
     } else if (status == 'delivered' && !hasDispute) {
@@ -641,7 +675,8 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
           child: const Text('Dispute', style: TextStyle(fontSize: 12)),
         ),
@@ -673,7 +708,7 @@ class _OrdersReceivedTabState extends State<OrdersReceivedTab> {
         ),
       );
     }
-    
+
     return buttons;
   }
 

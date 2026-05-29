@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:async';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class AdsScrollWidget extends StatefulWidget {
   final Map<String, dynamic> ads;
@@ -23,12 +24,12 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
   Timer? _autoScrollTimer;
   bool _isUserInteracting = false;
   bool _isPaused = false;
-  
+
   // Responsive card dimensions
   double _cardWidth = 180;
   double _cardGap = 12;
   double _animationSpeed = 0.8;
-  
+
   // Touch interaction
   double _startX = 0;
   double _startScrollPos = 0;
@@ -51,12 +52,12 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
   // Process ads data with performance optimization (matching Vue logic)
   List<Map<String, dynamic>> get _adsArray {
     if (widget.ads['results'] == null) return [];
-    
+
     final results = List<Map<String, dynamic>>.from(widget.ads['results']);
     const maxAds = 10; // Limit to maximum 10 random recent posts
-    
+
     if (results.length <= maxAds) return results;
-    
+
     // Randomly select 10 posts from available results
     final shuffled = List<Map<String, dynamic>>.from(results);
     shuffled.shuffle();
@@ -66,16 +67,19 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
   // Create duplicates for smooth continuous scrolling
   List<Map<String, dynamic>> get _displayedAds {
     if (_adsArray.isEmpty) return [];
-    
+
     // Create duplicates based on array size for smooth scrolling
-    final duplicateCount = _adsArray.length <= 5 ? 6 : 
-                          _adsArray.length <= 8 ? 4 : 3;
-    
+    final duplicateCount = _adsArray.length <= 5
+        ? 6
+        : _adsArray.length <= 8
+            ? 4
+            : 3;
+
     final duplicatedAds = <Map<String, dynamic>>[];
     for (int i = 0; i < duplicateCount; i++) {
       duplicatedAds.addAll(_adsArray);
     }
-    
+
     return duplicatedAds;
   }
 
@@ -84,7 +88,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
 
     // Get screen width for responsive design
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Adaptive card sizing (matching Vue breakpoints)
     if (screenWidth < 640) {
       // Mobile: show 2 cards
@@ -105,29 +109,35 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
-    
-    if (!_scrollController.hasClients || _displayedAds.isEmpty || !mounted) return;
-    
-    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
-      if (_isPaused || _isUserInteracting || !mounted || !_scrollController.hasClients) return;
+
+    if (!_scrollController.hasClients || _displayedAds.isEmpty || !mounted)
+      return;
+
+    _autoScrollTimer =
+        Timer.periodic(const Duration(milliseconds: 40), (timer) {
+      if (_isPaused ||
+          _isUserInteracting ||
+          !mounted ||
+          !_scrollController.hasClients) return;
 
       final currentPosition = _scrollController.offset;
       final maxScroll = _scrollController.position.maxScrollExtent;
-      
+
       // Additional safety checks
       if (maxScroll <= 0 || _adsArray.isEmpty) {
         timer.cancel();
         return;
       }
-      
+
       // Calculate one set width for continuous scrolling
       final originalLength = _adsArray.length;
       final oneSetWidth = originalLength * (_cardWidth + _cardGap);
-      
+
       final newPosition = currentPosition + _animationSpeed;
-      
+
       // Reset position for continuous scrolling effect
-      if (newPosition > oneSetWidth && _displayedAds.length > originalLength * 2) {
+      if (newPosition > oneSetWidth &&
+          _displayedAds.length > originalLength * 2) {
         _scrollController.jumpTo(1.0); // Small offset to avoid visual jumps
       } else if (newPosition <= maxScroll) {
         _scrollController.animateTo(
@@ -151,20 +161,20 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
 
   String _getImageSrc(Map<String, dynamic> ad) {
     // Check for medias array first
-    if (ad['medias'] != null && 
-        ad['medias'] is List && 
+    if (ad['medias'] != null &&
+        ad['medias'] is List &&
         (ad['medias'] as List).isNotEmpty) {
       final media = (ad['medias'] as List).first;
       if (media['image'] != null) {
         return media['image'].toString();
       }
     }
-    
+
     // Check for direct image field
     if (ad['image'] != null) {
       return ad['image'].toString();
     }
-    
+
     return 'https://placehold.co/300x200?text=No+Image';
   }
 
@@ -172,19 +182,19 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
     if (price == null) return '0';
     final priceStr = price.toString().trim();
     if (priceStr.isEmpty || priceStr == 'null') return '0';
-    
+
     // Remove any non-digit characters except decimal points
     final cleanPrice = priceStr.replaceAll(RegExp(r'[^\d.]'), '');
     if (cleanPrice.isEmpty) return '0';
-    
+
     // Format with commas
     try {
       final numericPrice = double.parse(cleanPrice);
       final intPrice = numericPrice.toInt();
       return intPrice.toString().replaceAllMapped(
-        RegExp(r'\B(?=(\d{3})+(?!\d))'),
-        (match) => ',',
-      );
+            RegExp(r'\B(?=(\d{3})+(?!\d))'),
+            (match) => ',',
+          );
     } catch (e) {
       return '0';
     }
@@ -196,7 +206,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
       final date = DateTime.parse(dateStr);
       final now = DateTime.now();
       final difference = now.difference(date);
-      
+
       if (difference.inDays > 0) {
         return '${difference.inDays}d ago';
       } else if (difference.inHours > 0) {
@@ -212,7 +222,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
   String _formatLocation(Map<String, dynamic> ad) {
     final upazila = ad['upazila']?.toString().trim() ?? '';
     final city = ad['city']?.toString().trim() ?? '';
-    
+
     if (upazila.isNotEmpty && city.isNotEmpty) {
       return '$upazila, $city';
     } else if (city.isNotEmpty) {
@@ -262,7 +272,8 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
             children: [
               // Header with accent line
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(color: Colors.grey.shade100),
@@ -288,7 +299,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         ),
                       ),
                     ),
-                    
+
                     // Header content
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -299,7 +310,6 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                             decoration: BoxDecoration(
                               color: Colors.green.shade50,
                               borderRadius: BorderRadius.circular(20),
-                              
                             ),
                             child: Icon(
                               Icons.access_time,
@@ -324,7 +334,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                   ],
                 ),
               ),
-              
+
               // Carousel content
               GestureDetector(
                 onPanStart: (details) {
@@ -335,11 +345,11 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                 },
                 onPanUpdate: (details) {
                   if (!_scrollController.hasClients || !mounted) return;
-                  
+
                   final currentX = details.globalPosition.dx;
                   final diff = _startX - currentX;
                   final newPosition = _startScrollPos + diff;
-                  
+
                   // Apply position with bounds
                   final maxScroll = _scrollController.position.maxScrollExtent;
                   if (newPosition >= 0 && newPosition <= maxScroll) {
@@ -366,7 +376,8 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                     child: ListView.builder(
                       controller: _scrollController,
                       scrollDirection: Axis.horizontal,
-                      physics: const ClampingScrollPhysics(), // Prevent overscroll
+                      physics:
+                          const ClampingScrollPhysics(), // Prevent overscroll
                       itemCount: _displayedAds.length,
                       itemBuilder: (context, index) {
                         final ad = _displayedAds[index];
@@ -377,7 +388,9 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                           child: Container(
                             width: _cardWidth,
                             margin: EdgeInsets.only(
-                              right: index < _displayedAds.length - 1 ? _cardGap : 0,
+                              right: index < _displayedAds.length - 1
+                                  ? _cardGap
+                                  : 0,
                             ),
                             child: _buildAdCard(ad),
                           ),
@@ -447,7 +460,8 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(8)),
                     child: Container(
                       height: 120,
                       width: double.infinity,
@@ -456,21 +470,24 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         imageUrl: _getImageSrc(ad),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
+                          child: AdsyLoadingIndicator(
+                              strokeWidth: 2, color: Color(0xFF10B981)),
                         ),
                         errorWidget: (context, url, error) => Center(
-                          child: Icon(Icons.image_not_supported, color: Colors.grey.shade400, size: 32),
+                          child: Icon(Icons.image_not_supported,
+                              color: Colors.grey.shade400, size: 32),
                         ),
                       ),
                     ),
                   ),
-                  
+
                   // Price badge
                   Positioned(
                     top: 6,
                     right: 6,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981),
                         borderRadius: BorderRadius.circular(4),
@@ -494,7 +511,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                   ),
                 ],
               ),
-              
+
               // Content area
               Padding(
                 padding: const EdgeInsets.all(4),
@@ -514,9 +531,9 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // Location
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -541,9 +558,9 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget>
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 1),
-                    
+
                     // Date
                     Row(
                       mainAxisSize: MainAxisSize.min,

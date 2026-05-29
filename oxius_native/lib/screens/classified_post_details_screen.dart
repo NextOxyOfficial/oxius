@@ -17,6 +17,7 @@ import '../utils/url_launcher_utils.dart';
 import '../widgets/skeleton_loader.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'user_posts_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ClassifiedPostDetailsScreen extends StatefulWidget {
   final String postId;
@@ -664,7 +665,7 @@ class _ClassifiedPostDetailsScreenState
                 child: SizedBox(
                   width: 26,
                   height: 26,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 3,
                     color: Color(0xFF10B981),
                   ),
@@ -910,7 +911,7 @@ class _ClassifiedPostDetailsScreenState
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+        child: AdsyLoadingIndicator(color: Color(0xFF3B82F6)),
       ),
     );
 
@@ -1563,7 +1564,7 @@ class _ClassifiedPostDetailsScreenState
                         imageUrl: imageUrl,
                         fit: BoxFit.contain,
                         placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
                                 Colors.grey[400]!),
                           ),
@@ -1883,7 +1884,8 @@ class _ClassifiedPostDetailsScreenState
           _buildSafetyTip('পণ্য ভালোভাবে দেখে ও যাচাই করে কিনুন'),
           _buildSafetyTip('পণ্য হাতে পাওয়ার আগে টাকা পরিশোধ করবেন না'),
           _buildSafetyTip('অগ্রিম বিকাশ/নগদ পাঠানোর অনুরোধ থেকে সতর্ক থাকুন'),
-          _buildSafetyTip('অপরিচিত লিংকে ক্লিক করা বা ব্যক্তিগত তথ্য শেয়ার করা থেকে বিরত থাকুন'),
+          _buildSafetyTip(
+              'অপরিচিত লিংকে ক্লিক করা বা ব্যক্তিগত তথ্য শেয়ার করা থেকে বিরত থাকুন'),
           _buildSafetyTip('প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান'),
           const SizedBox(height: 6),
           Container(
@@ -1895,7 +1897,8 @@ class _ClassifiedPostDetailsScreenState
             ),
             child: Row(
               children: const [
-                Icon(Icons.phone_in_talk_rounded, size: 15, color: Color(0xFFDC2626)),
+                Icon(Icons.phone_in_talk_rounded,
+                    size: 15, color: Color(0xFFDC2626)),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(

@@ -3,6 +3,7 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../config/app_config.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Header Logo Widget - Loads from backend database
 class HeaderLogo extends StatefulWidget {
@@ -39,7 +40,7 @@ class _HeaderLogoState extends State<HeaderLogo> {
             data['logo'] = AppConfig.getAbsoluteUrl(data['logo']);
           }
         }
-        
+
         setState(() {
           logoData = data;
           isLoading = false;
@@ -76,7 +77,7 @@ class _HeaderLogoState extends State<HeaderLogo> {
           child: SizedBox(
             width: 12,
             height: 12,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: AdsyLoadingIndicator(strokeWidth: 2),
           ),
         ),
       );

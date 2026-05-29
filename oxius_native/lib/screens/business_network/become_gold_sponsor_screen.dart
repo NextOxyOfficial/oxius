@@ -5,12 +5,14 @@ import 'dart:io';
 import '../../services/auth_service.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../models/gold_sponsor_models.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class BecomeGoldSponsorScreen extends StatefulWidget {
   const BecomeGoldSponsorScreen({super.key});
 
   @override
-  State<BecomeGoldSponsorScreen> createState() => _BecomeGoldSponsorScreenState();
+  State<BecomeGoldSponsorScreen> createState() =>
+      _BecomeGoldSponsorScreenState();
 }
 
 class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
@@ -21,13 +23,13 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   final _phoneController = TextEditingController();
   final _websiteController = TextEditingController();
   final _profileUrlController = TextEditingController();
-  
+
   XFile? _logoFile;
   String? _logoFileName;
-  
+
   final List<_Banner> _banners = [];
   final int _maxBanners = 5;
-  
+
   int _selectedPackageId = 1;
   bool _isLoading = false;
   bool _isLoadingPackages = true;
@@ -35,7 +37,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   double _userBalance = 0;
   String? _error;
   bool _success = false;
-  
+
   List<SponsorshipPackage> _packages = [];
 
   @override
@@ -61,7 +63,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     try {
       // Validate token and refresh user data from backend
       final isValid = await AuthService.validateToken();
-      
+
       if (isValid) {
         // Get updated user data
         final user = AuthService.currentUser;
@@ -109,7 +111,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   Future<void> _pickLogo() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    
+
     if (pickedFile != null) {
       setState(() {
         _logoFile = pickedFile;
@@ -134,7 +136,7 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     // Check balance
     final selectedPackage = _packages.firstWhere(
       (p) => p.id == _selectedPackageId,
@@ -142,7 +144,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
     );
     if (_userBalance < selectedPackage.price) {
       setState(() {
-        _error = 'Insufficient balance! You need ৳${selectedPackage.price} but only have ৳${_userBalance.toStringAsFixed(0)}';
+        _error =
+            'Insufficient balance! You need ৳${selectedPackage.price} but only have ৳${_userBalance.toStringAsFixed(0)}';
       });
       return;
     }
@@ -171,31 +174,36 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
         businessDescription: _businessDescController.text.trim(),
         contactEmail: _emailController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
-        website: _websiteController.text.trim().isEmpty ? null : _websiteController.text.trim(),
-        profileUrl: _profileUrlController.text.trim().isEmpty ? null : _profileUrlController.text.trim(),
+        website: _websiteController.text.trim().isEmpty
+            ? null
+            : _websiteController.text.trim(),
+        profileUrl: _profileUrlController.text.trim().isEmpty
+            ? null
+            : _profileUrlController.text.trim(),
         packageId: _selectedPackageId,
         logoFile: _logoFile, // Pass XFile directly
         banners: bannerData,
       );
-      
+
       if (mounted) {
         if (result['success'] == true) {
           // Reload user balance to show updated amount
           await _loadUserBalance();
-          
+
           setState(() {
             _success = true;
             _error = null;
           });
-          
+
           // Show success and go back
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Success! Your new balance is ৳${_userBalance.toStringAsFixed(0)}'),
+              content: Text(
+                  'Success! Your new balance is ৳${_userBalance.toStringAsFixed(0)}'),
               backgroundColor: Colors.green,
             ),
           );
-          
+
           Future.delayed(const Duration(seconds: 2), () {
             if (mounted) Navigator.pop(context);
           });
@@ -246,7 +254,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.star, color: Colors.amber.shade600, size: 24),
+                        Icon(Icons.star,
+                            color: Colors.amber.shade600, size: 24),
                         const SizedBox(width: 8),
                         Text(
                           'Gold Sponsor Benefits',
@@ -261,26 +270,29 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'Join our exclusive Gold Sponsors and showcase your business to thousands of potential customers. Gold Sponsors receive premium visibility and additional benefits.',
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                      style:
+                          TextStyle(fontSize: 14, color: Colors.grey.shade700),
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Business Name
               TextFormField(
                 controller: _businessNameController,
                 decoration: InputDecoration(
                   labelText: 'Business Name *',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-                validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Required' : null,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Business Description
               TextFormField(
                 controller: _businessDescController,
@@ -288,21 +300,24 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 maxLength: 200,
                 decoration: InputDecoration(
                   labelText: 'Business Description *',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   helperText: 'Max 200 characters',
                 ),
-                validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Required' : null,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Contact Email
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'Contact Email *',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 validator: (value) {
                   if (value?.isEmpty ?? true) return 'Required';
@@ -310,47 +325,53 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   return null;
                 },
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Phone Number
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   labelText: 'Phone Number *',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
-                validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                validator: (value) =>
+                    value?.isEmpty ?? true ? 'Required' : null,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Website
               TextFormField(
                 controller: _websiteController,
                 decoration: InputDecoration(
                   labelText: 'Website URL',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Profile URL
               TextFormField(
                 controller: _profileUrlController,
                 decoration: InputDecoration(
                   labelText: 'Profile URL',
-                  helperText: 'Users will be redirected here when clicking "Visit Sponsor\'s Profile"',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  helperText:
+                      'Users will be redirected here when clicking "Visit Sponsor\'s Profile"',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Logo Upload
-              Text('Business Logo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text('Business Logo',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -366,10 +387,13 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: kIsWeb
-                                ? Image.network(_logoFile!.path, fit: BoxFit.cover)
-                                : Image.file(File(_logoFile!.path), fit: BoxFit.cover),
+                                ? Image.network(_logoFile!.path,
+                                    fit: BoxFit.cover)
+                                : Image.file(File(_logoFile!.path),
+                                    fit: BoxFit.cover),
                           )
-                        : Icon(Icons.business, size: 32, color: Colors.grey.shade400),
+                        : Icon(Icons.business,
+                            size: 32, color: Colors.grey.shade400),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -391,7 +415,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                             padding: const EdgeInsets.only(top: 4),
                             child: Text(
                               _logoFileName!,
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey.shade600),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -405,22 +430,26 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 'Recommended: 250x250px, PNG or JPG',
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Banners Section
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Promotional Banners (Optional)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  Text('${_banners.length}/$_maxBanners', style: TextStyle(color: Colors.grey.shade600)),
+                  Text('Promotional Banners (Optional)',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text('${_banners.length}/$_maxBanners',
+                      style: TextStyle(color: Colors.grey.shade600)),
                 ],
               ),
               const SizedBox(height: 8),
-              
+
               if (_banners.isNotEmpty)
-                ...List.generate(_banners.length, (index) => _buildBannerItem(index)),
-              
+                ...List.generate(
+                    _banners.length, (index) => _buildBannerItem(index)),
+
               if (_banners.length < _maxBanners)
                 OutlinedButton.icon(
                   onPressed: _addBanner,
@@ -428,13 +457,17 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   label: const Text('Add Banner'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 44),
-                    side: BorderSide(color: Colors.amber.shade300, width: 2, style: BorderStyle.solid),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    side: BorderSide(
+                        color: Colors.amber.shade300,
+                        width: 2,
+                        style: BorderStyle.solid),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                 ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Balance Card
               Container(
                 padding: const EdgeInsets.all(16),
@@ -446,29 +479,34 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Your Current Balance:', style: TextStyle(color: Colors.blue.shade800)),
+                    Text('Your Current Balance:',
+                        style: TextStyle(color: Colors.blue.shade800)),
                     _isLoadingBalance
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: AdsyLoadingIndicator(strokeWidth: 2),
                           )
                         : Text(
                             '৳${_userBalance.toStringAsFixed(0)}',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.blue.shade900),
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue.shade900),
                           ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Package Selection
-              Text('Select Sponsorship Package *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text('Select Sponsorship Package *',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
-              
+
               if (_isLoadingPackages)
-                const Center(child: CircularProgressIndicator())
+                const Center(child: AdsyLoadingIndicator())
               else if (_packages.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -483,10 +521,11 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   ),
                 )
               else
-                ...List.generate(_packages.length, (index) => _buildPackageCard(_packages[index])),
-              
+                ...List.generate(_packages.length,
+                    (index) => _buildPackageCard(_packages[index])),
+
               const SizedBox(height: 24),
-              
+
               // Error Message
               if (_error != null)
                 Container(
@@ -502,12 +541,14 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                       Icon(Icons.error, color: Colors.red.shade700, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(_error!, style: TextStyle(color: Colors.red.shade700, fontSize: 14)),
+                        child: Text(_error!,
+                            style: TextStyle(
+                                color: Colors.red.shade700, fontSize: 14)),
                       ),
                     ],
                   ),
                 ),
-              
+
               // Success Message
               if (_success)
                 Container(
@@ -520,18 +561,20 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.check_circle, color: Colors.green.shade700, size: 20),
+                      Icon(Icons.check_circle,
+                          color: Colors.green.shade700, size: 20),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Application submitted successfully!',
-                          style: TextStyle(color: Colors.green.shade700, fontSize: 14),
+                          style: TextStyle(
+                              color: Colors.green.shade700, fontSize: 14),
                         ),
                       ),
                     ],
                   ),
                 ),
-              
+
               // Submit Button
               SizedBox(
                 width: double.infinity,
@@ -542,18 +585,22 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                     backgroundColor: Colors.amber.shade500,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: Colors.grey.shade300,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
                   child: _isLoading
                       ? const SizedBox(
                           width: 24,
                           height: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: AdsyLoadingIndicator(
+                              color: Colors.white, strokeWidth: 2),
                         )
-                      : const Text('Submit Application', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      : const Text('Submit Application',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
             ],
           ),
@@ -576,7 +623,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Banner ${index + 1}', style: const TextStyle(fontWeight: FontWeight.w500)),
+              Text('Banner ${index + 1}',
+                  style: const TextStyle(fontWeight: FontWeight.w500)),
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                 onPressed: () => _removeBanner(index),
@@ -590,7 +638,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
             decoration: InputDecoration(
               labelText: 'Banner Title (Optional)',
               isDense: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
             ),
             onChanged: (value) => _banners[index].title = value,
           ),
@@ -599,7 +648,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
             decoration: InputDecoration(
               labelText: 'Link URL (Optional)',
               isDense: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
             ),
             onChanged: (value) => _banners[index].linkUrl = value,
           ),
@@ -607,7 +657,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
           ElevatedButton.icon(
             onPressed: () async {
               final picker = ImagePicker();
-              final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+              final pickedFile =
+                  await picker.pickImage(source: ImageSource.gallery);
               if (pickedFile != null) {
                 setState(() {
                   _banners[index].file = pickedFile;
@@ -631,9 +682,11 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
   Widget _buildPackageCard(SponsorshipPackage package) {
     final isSelected = _selectedPackageId == package.id;
     final hasEnoughBalance = _userBalance >= package.price;
-    
+
     return GestureDetector(
-      onTap: hasEnoughBalance ? () => setState(() => _selectedPackageId = package.id) : null,
+      onTap: hasEnoughBalance
+          ? () => setState(() => _selectedPackageId = package.id)
+          : null,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -650,7 +703,9 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
             Radio<int>(
               value: package.id,
               groupValue: _selectedPackageId,
-              onChanged: hasEnoughBalance ? (value) => setState(() => _selectedPackageId = value!) : null,
+              onChanged: hasEnoughBalance
+                  ? (value) => setState(() => _selectedPackageId = value!)
+                  : null,
               activeColor: Colors.amber.shade600,
             ),
             Expanded(
@@ -659,7 +714,8 @@ class _BecomeGoldSponsorScreenState extends State<BecomeGoldSponsorScreen> {
                 children: [
                   Text(
                     package.name,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   Text(
                     package.description,

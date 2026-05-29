@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../../screens/news_detail_screen.dart';
 import '../../screens/news_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class DrawerNews extends StatefulWidget {
   const DrawerNews({super.key});
@@ -36,7 +37,7 @@ class _DrawerNewsState extends State<DrawerNews> {
 
   Future<void> _loadNews() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final response = await http.get(
         Uri.parse('${ApiService.baseUrl}/news/posts/?limit=5'),
@@ -65,13 +66,13 @@ class _DrawerNewsState extends State<DrawerNews> {
   void _startAutoPlay() {
     _autoPlayTimer?.cancel();
     if (_newsItems.isEmpty) return;
-    
+
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 7), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      
+
       final nextIndex = (_currentIndex + 1) % _newsItems.length;
       _pageController.animateToPage(
         nextIndex,
@@ -151,7 +152,7 @@ class _DrawerNewsState extends State<DrawerNews> {
             ],
           ),
         ),
-        
+
         // News carousel
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -173,7 +174,7 @@ class _DrawerNewsState extends State<DrawerNews> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
+        child: AdsyLoadingIndicator(strokeWidth: 2),
       ),
     );
   }
@@ -236,9 +237,9 @@ class _DrawerNewsState extends State<DrawerNews> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         // Controls
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -259,14 +260,15 @@ class _DrawerNewsState extends State<DrawerNews> {
                 );
               }),
             ),
-            
+
             // Navigation buttons
             Row(
               children: [
                 IconButton(
                   icon: Icon(Icons.chevron_left, size: 16),
                   onPressed: () {
-                    final prevIndex = (_currentIndex - 1 + _newsItems.length) % _newsItems.length;
+                    final prevIndex = (_currentIndex - 1 + _newsItems.length) %
+                        _newsItems.length;
                     _navigateToPage(prevIndex);
                   },
                   padding: EdgeInsets.zero,
@@ -302,7 +304,7 @@ class _DrawerNewsState extends State<DrawerNews> {
 
   Widget _buildNewsSlide(Map<String, dynamic> news) {
     final imageUrl = news['image'] ?? '';
-    
+
     return GestureDetector(
       onTap: () {
         final slug = news['slug'] as String?;
@@ -332,7 +334,8 @@ class _DrawerNewsState extends State<DrawerNews> {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: Colors.grey.shade100,
-                      child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                      child:
+                          const Icon(Icons.image, size: 40, color: Colors.grey),
                     );
                   },
                 )
@@ -340,7 +343,7 @@ class _DrawerNewsState extends State<DrawerNews> {
                   color: Colors.grey.shade100,
                   child: const Icon(Icons.image, size: 40, color: Colors.grey),
                 ),
-          
+
           // Gradient overlay
           Positioned(
             bottom: 0,
@@ -367,7 +370,8 @@ class _DrawerNewsState extends State<DrawerNews> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.blue.shade600,
                           borderRadius: BorderRadius.circular(4),
@@ -384,7 +388,8 @@ class _DrawerNewsState extends State<DrawerNews> {
                       const SizedBox(width: 8),
                       Row(
                         children: [
-                          Icon(Icons.access_time, size: 12, color: Colors.white.withOpacity(0.8)),
+                          Icon(Icons.access_time,
+                              size: 12, color: Colors.white.withOpacity(0.8)),
                           const SizedBox(width: 4),
                           Text(
                             _formatDate(news['created_at']),

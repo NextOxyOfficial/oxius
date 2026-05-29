@@ -19,6 +19,7 @@ import '../../utils/network_error_handler.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../business_network/profile_screen.dart';
 import 'rideshare_map_widget.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 // Design tokens
 const _indigo = Color(0xFF6366F1);
@@ -1912,7 +1913,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) => const Center(
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
       loadingDialogShown = true;
@@ -1971,9 +1972,9 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   @override
   Widget build(BuildContext context) {
     if (_isLoading)
-      return const Center(child: CircularProgressIndicator(color: _indigo));
+      return const Center(child: AdsyLoadingIndicator(color: _indigo));
     if (_isAuthError) return _buildLoginRequired();
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       color: _indigo,
       onRefresh: () async {
         await _refreshLocationPermissionStatus();
@@ -2184,7 +2185,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                   ? const SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(
+                      child: AdsyLoadingIndicator(
                         strokeWidth: 2,
                         color: Colors.white,
                       ),
@@ -2370,7 +2371,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                 child: _isTogglingOnline
                     ? Padding(
                         padding: const EdgeInsets.all(4),
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                             strokeWidth: 2,
                             color: isOnline ? _emerald : _slate500),
                       )
@@ -2475,7 +2476,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                   strokeWidth: 2, color: Colors.white),
                             )
                           : const Icon(Icons.account_balance_wallet_rounded,
@@ -3128,7 +3129,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                         ? const SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                               strokeWidth: 2.5,
                               color: Colors.white,
                             ),
@@ -3705,7 +3706,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                   strokeWidth: 2, color: _slate400))
                           : Row(mainAxisSize: MainAxisSize.min, children: [
                               const Icon(Icons.skip_next_rounded,
@@ -3761,7 +3762,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
                                 const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(
+                                    child: AdsyLoadingIndicator(
                                         strokeWidth: 2, color: Colors.white)),
                                 const SizedBox(width: 8),
                                 Text('Accepting...',
@@ -4139,7 +4140,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   Widget _buildRideActions(Ride ride) {
     if (_isUpdatingStatus) {
       return const Center(
-          child: CircularProgressIndicator(color: _indigo, strokeWidth: 2));
+          child: AdsyLoadingIndicator(color: _indigo, strokeWidth: 2));
     }
     switch (ride.status) {
       case 'accepted':

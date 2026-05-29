@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../services/sale_post_service.dart';
 import '../services/api_service.dart';
 import '../utils/image_compressor.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class CreateSalePostScreen extends StatefulWidget {
   const CreateSalePostScreen({Key? key}) : super(key: key);
@@ -14,9 +15,10 @@ class CreateSalePostScreen extends StatefulWidget {
 
 class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
   final _formKey = GlobalKey<FormState>();
-  final SalePostService _salePostService = SalePostService(baseUrl: ApiService.baseUrl);
+  final SalePostService _salePostService =
+      SalePostService(baseUrl: ApiService.baseUrl);
   final ImagePicker _picker = ImagePicker();
-  
+
   // Form controllers
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -24,7 +26,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
-  
+
   // Form data
   int? _selectedCategory;
   int? _selectedChildCategory;
@@ -35,16 +37,16 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
   String? _selectedDistrict;
   String? _selectedArea;
   bool _termsAccepted = false;
-  
+
   // Images
   List<String?> _imageBase64List = List.filled(8, null);
   List<Uint8List?> _imageBytesList = List.filled(8, null);
-  
+
   // Loading states
   bool _isLoading = false;
   bool _isUploadingImage = false;
   bool _checkSubmit = false;
-  
+
   // Data lists
   List<dynamic> _categories = [];
   List<dynamic> _childCategories = [];
@@ -52,13 +54,13 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
   List<dynamic> _divisions = [];
   List<dynamic> _districts = [];
   List<dynamic> _areas = [];
-  
+
   @override
   void initState() {
     super.initState();
     _loadInitialData();
   }
-  
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -69,10 +71,10 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
     _addressController.dispose();
     super.dispose();
   }
-  
+
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load all initial data in parallel
       await Future.wait([
@@ -87,7 +89,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       setState(() => _isLoading = false);
     }
   }
-  
+
   Future<void> _loadCategories() async {
     try {
       final categories = await _salePostService.fetchCategoriesForForm();
@@ -96,7 +98,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       print('Error loading categories: $e');
     }
   }
-  
+
   Future<void> _loadConditions() async {
     // Default conditions matching Vue
     setState(() {
@@ -109,7 +111,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ];
     });
   }
-  
+
   Future<void> _loadDivisions() async {
     try {
       final divisions = await _salePostService.fetchDivisions();
@@ -118,10 +120,11 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       print('Error loading divisions: $e');
     }
   }
-  
+
   Future<void> _loadChildCategories(int parentId) async {
     try {
-      final childCategories = await _salePostService.fetchChildCategories(parentId);
+      final childCategories =
+          await _salePostService.fetchChildCategories(parentId);
       setState(() {
         _childCategories = childCategories;
         _selectedChildCategory = null;
@@ -130,7 +133,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       print('Error loading child categories: $e');
     }
   }
-  
+
   Future<void> _loadDistricts(String division) async {
     try {
       final districts = await _salePostService.fetchDistricts(division);
@@ -143,7 +146,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       print('Error loading districts: $e');
     }
   }
-  
+
   Future<void> _loadAreas(String district) async {
     try {
       final areas = await _salePostService.fetchAreas(district);
@@ -155,25 +158,25 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       print('Error loading areas: $e');
     }
   }
-  
+
   Future<void> _pickImage() async {
     if (_imageBase64List.where((img) => img != null).length >= 8) {
       _showErrorSnackBar('Maximum 8 images allowed');
       return;
     }
-    
+
     try {
       print('Attempting to pick image...');
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 100,
       );
-      
+
       print('Image picked: ${image?.path}');
-      
+
       if (image != null) {
         setState(() => _isUploadingImage = true);
-        
+
         print('Starting image compression...');
         // Compress image using the utility class (target 80KB to match backend requirements)
         final String? compressedBase64 = await ImageCompressor.compressToBase64(
@@ -181,18 +184,20 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           targetSize: 80 * 1024, // 80KB target
           verbose: true, // Enable logging
         );
-        
-        print('Compression result: ${compressedBase64 != null ? "Success (${compressedBase64.length} chars)" : "Failed"}');
-        
+
+        print(
+            'Compression result: ${compressedBase64 != null ? "Success (${compressedBase64.length} chars)" : "Failed"}');
+
         if (compressedBase64 != null) {
-          final int emptyIndex = _imageBase64List.indexWhere((img) => img == null);
+          final int emptyIndex =
+              _imageBase64List.indexWhere((img) => img == null);
           print('Empty index found: $emptyIndex');
-          
+
           if (emptyIndex != -1) {
             try {
               // Convert base64 to bytes for display
               final bytes = ImageCompressor.base64ToBytes(compressedBase64);
-              
+
               if (bytes != null) {
                 setState(() {
                   _imageBase64List[emptyIndex] = compressedBase64;
@@ -215,7 +220,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           print('Image compression returned null');
           _showErrorSnackBar('Failed to compress image');
         }
-        
+
         setState(() => _isUploadingImage = false);
       } else {
         print('No image selected');
@@ -227,62 +232,68 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       _showErrorSnackBar('Failed to upload image: ${e.toString()}');
     }
   }
-  
+
   void _removeImage(int index) {
     setState(() {
       _imageBase64List[index] = null;
       _imageBytesList[index] = null;
     });
   }
-  
+
   Future<void> _submitForm() async {
     setState(() => _checkSubmit = true);
-    
+
     // Validate form
     if (!_formKey.currentState!.validate()) {
       _showErrorSnackBar('Please fill in all required fields');
       return;
     }
-    
+
     // Validate category
     if (_selectedCategory == null) {
       _showErrorSnackBar('Please select a category');
       return;
     }
-    
+
     // Validate condition
     if (_selectedCondition == null) {
       _showErrorSnackBar('Please select a condition');
       return;
     }
-    
+
     // Validate price
-    if (!_isNegotiable && (_priceController.text.isEmpty || double.tryParse(_priceController.text) == null || double.parse(_priceController.text) <= 0)) {
+    if (!_isNegotiable &&
+        (_priceController.text.isEmpty ||
+            double.tryParse(_priceController.text) == null ||
+            double.parse(_priceController.text) <= 0)) {
       _showErrorSnackBar('Please enter a valid price or mark as negotiable');
       return;
     }
-    
+
     // Validate location
-    if (!_allOverBangladesh && (_selectedDivision == null || _selectedDistrict == null || _selectedArea == null)) {
+    if (!_allOverBangladesh &&
+        (_selectedDivision == null ||
+            _selectedDistrict == null ||
+            _selectedArea == null)) {
       _showErrorSnackBar('Please select location details');
       return;
     }
-    
+
     // Validate images
     final validImages = _imageBase64List.where((img) => img != null).toList();
     if (validImages.isEmpty) {
       _showErrorSnackBar('Please upload at least one image');
       return;
     }
-    
+
     // Validate terms
     if (!_termsAccepted) {
       _showErrorSnackBar('Please accept the terms and conditions');
       return;
     }
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       // Prepare data matching Vue format
       final Map<String, dynamic> postData = {
@@ -298,26 +309,28 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         'area': _allOverBangladesh ? '' : _selectedArea,
         'images': validImages,
       };
-      
+
       // Add optional fields
       if (_selectedChildCategory != null) {
         postData['child_category'] = _selectedChildCategory;
       }
-      
+
       if (_emailController.text.trim().isNotEmpty) {
         postData['email'] = _emailController.text.trim();
       }
-      
+
       // Handle price
       if (_isNegotiable) {
-        postData['price'] = _priceController.text.isNotEmpty ? double.tryParse(_priceController.text) : null;
+        postData['price'] = _priceController.text.isNotEmpty
+            ? double.tryParse(_priceController.text)
+            : null;
       } else {
         postData['price'] = double.parse(_priceController.text);
       }
-      
+
       // Create post
       final result = await _salePostService.createSalePost(postData);
-      
+
       if (result != null && mounted) {
         _showSuccessSnackBar('Post created successfully!');
         Navigator.pop(context, true); // Return true to indicate success
@@ -333,7 +346,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       }
     }
   }
-  
+
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -349,7 +362,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
     );
   }
-  
+
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -365,7 +378,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading && _categories.isEmpty) {
@@ -378,11 +391,11 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           elevation: 0,
         ),
         body: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+          child: AdsyLoadingIndicator(color: Color(0xFF10B981)),
         ),
       );
     }
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
@@ -398,7 +411,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, size: 22, color: Color(0xFF1F2937)),
+          icon: const Icon(Icons.arrow_back_rounded,
+              size: 22, color: Color(0xFF1F2937)),
           onPressed: () => Navigator.pop(context),
         ),
         bottom: PreferredSize(
@@ -428,9 +442,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 _buildDescriptionField(),
               ],
             ),
-            
+
             const SizedBox(height: 4),
-            
+
             // Pricing & Condition Section
             _buildSection(
               title: 'Pricing & Condition',
@@ -441,9 +455,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 _buildPriceField(),
               ],
             ),
-            
+
             const SizedBox(height: 4),
-            
+
             // Upload Photos Section
             _buildSection(
               title: 'Upload Photos',
@@ -452,9 +466,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 _buildImageUpload(),
               ],
             ),
-            
+
             const SizedBox(height: 4),
-            
+
             // Location Section
             _buildSection(
               title: 'Delivery to',
@@ -465,9 +479,9 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 _buildAddressField(),
               ],
             ),
-            
+
             const SizedBox(height: 4),
-            
+
             // Contact Information Section
             _buildSection(
               title: 'Contact Information',
@@ -478,17 +492,17 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 _buildEmailField(),
               ],
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // Terms Section
             _buildTermsSection(),
-            
+
             const SizedBox(height: 16),
-            
+
             // Submit Button
             _buildSubmitButton(),
-            
+
             // Safe area bottom padding for devices with gesture navigation
             SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
           ],
@@ -496,7 +510,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
     );
   }
-  
+
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -540,7 +554,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
     );
   }
-  
+
   Widget _buildCategoryDropdown() {
     return DropdownButtonFormField<int>(
       value: _selectedCategory,
@@ -568,7 +582,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       validator: (value) => value == null && _checkSubmit ? 'Required' : null,
     );
   }
-  
+
   Widget _buildChildCategoryDropdown() {
     return DropdownButtonFormField<int>(
       value: _selectedChildCategory,
@@ -586,7 +600,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       onChanged: (value) => setState(() => _selectedChildCategory = value),
     );
   }
-  
+
   Widget _buildTitleField() {
     return TextFormField(
       controller: _titleController,
@@ -598,11 +612,14 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         counterText: '${_titleController.text.length}/100',
       ),
       maxLength: 100,
-      validator: (value) => value == null || value.trim().isEmpty && _checkSubmit ? 'Required' : null,
+      validator: (value) =>
+          value == null || value.trim().isEmpty && _checkSubmit
+              ? 'Required'
+              : null,
       onChanged: (value) => setState(() {}),
     );
   }
-  
+
   Widget _buildDescriptionField() {
     return TextFormField(
       controller: _descriptionController,
@@ -614,11 +631,14 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
       maxLines: 5,
       maxLength: 1000,
-      validator: (value) => value == null || value.trim().isEmpty && _checkSubmit ? 'Required' : null,
+      validator: (value) =>
+          value == null || value.trim().isEmpty && _checkSubmit
+              ? 'Required'
+              : null,
       onChanged: (value) => setState(() {}),
     );
   }
-  
+
   Widget _buildConditionSelection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -637,17 +657,20 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               label: Text(condition['label']!),
               selected: isSelected,
               onSelected: (selected) {
-                setState(() => _selectedCondition = selected ? condition['value'] : null);
+                setState(() =>
+                    _selectedCondition = selected ? condition['value'] : null);
               },
               backgroundColor: Colors.grey.shade50,
               selectedColor: const Color(0xFF10B981).withOpacity(0.1),
               checkmarkColor: const Color(0xFF10B981),
               labelStyle: TextStyle(
-                color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade700,
+                color:
+                    isSelected ? const Color(0xFF10B981) : Colors.grey.shade700,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
               side: BorderSide(
-                color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade300,
+                color:
+                    isSelected ? const Color(0xFF10B981) : Colors.grey.shade300,
                 width: isSelected ? 2 : 1,
               ),
             );
@@ -656,7 +679,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ],
     );
   }
-  
+
   Widget _buildPriceField() {
     return Row(
       children: [
@@ -666,7 +689,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             decoration: InputDecoration(
               labelText: 'Price *',
               hintText: 'e.g. 1000',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               prefixText: '৳ ',
               prefixIcon: const Icon(Icons.monetization_on_outlined, size: 20),
             ),
@@ -674,7 +698,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             enabled: !_isNegotiable,
             validator: (value) {
               if (_isNegotiable) return null;
-              if (_checkSubmit && (value == null || value.isEmpty)) return 'Required';
+              if (_checkSubmit && (value == null || value.isEmpty))
+                return 'Required';
               final parsedValue = double.tryParse(value ?? '');
               if (_checkSubmit && parsedValue == null) return 'Invalid';
               if (_checkSubmit && parsedValue! <= 0) return 'Must be > 0';
@@ -687,7 +712,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
           children: [
             Checkbox(
               value: _isNegotiable,
-              onChanged: (value) => setState(() => _isNegotiable = value ?? false),
+              onChanged: (value) =>
+                  setState(() => _isNegotiable = value ?? false),
               activeColor: const Color(0xFF10B981),
             ),
             const Text('Negotiable', style: TextStyle(fontSize: 12)),
@@ -696,7 +722,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ],
     );
   }
-  
+
   Widget _buildImageUpload() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -714,7 +740,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             for (int i = 0; i < 8; i++)
               if (_imageBytesList[i] != null)
                 _buildImageThumbnail(i)
-              else if (_imageBytesList.where((img) => img != null).length < 8 && i == _imageBytesList.where((img) => img != null).length)
+              else if (_imageBytesList.where((img) => img != null).length < 8 &&
+                  i == _imageBytesList.where((img) => img != null).length)
                 _buildUploadButton(),
           ],
         ),
@@ -726,7 +753,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
+                  child: AdsyLoadingIndicator(
+                      strokeWidth: 2, color: Color(0xFF10B981)),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -739,7 +767,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ],
     );
   }
-  
+
   Widget _buildImageThumbnail(int index) {
     return Container(
       width: 100,
@@ -788,7 +816,10 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 ),
                 child: const Text(
                   'Main',
-                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700),
                 ),
               ),
             ),
@@ -796,7 +827,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
     );
   }
-  
+
   Widget _buildUploadButton() {
     return GestureDetector(
       onTap: _isUploadingImage ? null : _pickImage,
@@ -805,12 +836,15 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         height: 100,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFF10B981), width: 2, style: BorderStyle.solid),
+          border: Border.all(
+              color: const Color(0xFF10B981),
+              width: 2,
+              style: BorderStyle.solid),
           color: const Color(0xFF10B981).withOpacity(0.05),
         ),
         child: _isUploadingImage
             ? const Center(
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   color: Color(0xFF10B981),
                   strokeWidth: 2,
                 ),
@@ -837,7 +871,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
     );
   }
-  
+
   Widget _buildLocationFields() {
     return Column(
       children: [
@@ -864,7 +898,8 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             value: _selectedDivision,
             decoration: InputDecoration(
               labelText: 'Division *',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               prefixIcon: const Icon(Icons.map_outlined, size: 18),
             ),
             items: _divisions.map<DropdownMenuItem<String>>((division) {
@@ -883,14 +918,18 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 _loadDistricts(value);
               }
             },
-            validator: (value) => !_allOverBangladesh && value == null && _checkSubmit ? 'Required' : null,
+            validator: (value) =>
+                !_allOverBangladesh && value == null && _checkSubmit
+                    ? 'Required'
+                    : null,
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedDistrict,
             decoration: InputDecoration(
               labelText: 'District *',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               prefixIcon: const Icon(Icons.location_city_outlined, size: 18),
             ),
             items: _districts.map<DropdownMenuItem<String>>((district) {
@@ -908,14 +947,18 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
                 _loadAreas(value);
               }
             },
-            validator: (value) => !_allOverBangladesh && value == null && _checkSubmit ? 'Required' : null,
+            validator: (value) =>
+                !_allOverBangladesh && value == null && _checkSubmit
+                    ? 'Required'
+                    : null,
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedArea,
             decoration: InputDecoration(
               labelText: 'Area *',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               prefixIcon: const Icon(Icons.place_outlined, size: 18),
             ),
             items: _areas.map<DropdownMenuItem<String>>((area) {
@@ -925,13 +968,16 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               );
             }).toList(),
             onChanged: (value) => setState(() => _selectedArea = value),
-            validator: (value) => !_allOverBangladesh && value == null && _checkSubmit ? 'Required' : null,
+            validator: (value) =>
+                !_allOverBangladesh && value == null && _checkSubmit
+                    ? 'Required'
+                    : null,
           ),
         ],
       ],
     );
   }
-  
+
   Widget _buildAddressField() {
     return TextFormField(
       controller: _addressController,
@@ -942,10 +988,13 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
         prefixIcon: const Icon(Icons.home_outlined, size: 20),
       ),
       maxLines: 3,
-      validator: (value) => value == null || value.trim().isEmpty && _checkSubmit ? 'Required' : null,
+      validator: (value) =>
+          value == null || value.trim().isEmpty && _checkSubmit
+              ? 'Required'
+              : null,
     );
   }
-  
+
   Widget _buildPhoneField() {
     return TextFormField(
       controller: _phoneController,
@@ -958,13 +1007,14 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       keyboardType: TextInputType.phone,
       maxLength: 11,
       validator: (value) {
-        if (_checkSubmit && (value == null || value.trim().isEmpty)) return 'Required';
+        if (_checkSubmit && (value == null || value.trim().isEmpty))
+          return 'Required';
         if (_checkSubmit && value!.length != 11) return 'Must be 11 digits';
         return null;
       },
     );
   }
-  
+
   Widget _buildEmailField() {
     return TextFormField(
       controller: _emailController,
@@ -977,7 +1027,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       keyboardType: TextInputType.emailAddress,
     );
   }
-  
+
   Widget _buildTermsSection() {
     return Container(
       decoration: BoxDecoration(
@@ -994,12 +1044,14 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
               TextSpan(text: 'I agree to the '),
               TextSpan(
                 text: 'Terms and Conditions',
-                style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Color(0xFF10B981), fontWeight: FontWeight.w600),
               ),
               TextSpan(text: ' and '),
               TextSpan(
                 text: 'Privacy Policy',
-                style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Color(0xFF10B981), fontWeight: FontWeight.w600),
               ),
               TextSpan(
                 text: ' *',
@@ -1016,7 +1068,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
       ),
     );
   }
-  
+
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
@@ -1035,7 +1087,7 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
             ? const SizedBox(
                 width: 18,
                 height: 18,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
@@ -1055,4 +1107,3 @@ class _CreateSalePostScreenState extends State<CreateSalePostScreen> {
     );
   }
 }
-

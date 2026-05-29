@@ -6,6 +6,7 @@ import '../models/cart_item.dart';
 import '../services/eshop_service.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/product_card.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -110,11 +111,12 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
     }
 
     setState(() {
-      _storeData = store ?? {
-        'store_name': widget.storeName ?? widget.storeUsername,
-        'store_username': widget.storeUsername,
-        'image': widget.storeImage,
-      };
+      _storeData = store ??
+          {
+            'store_name': widget.storeName ?? widget.storeUsername,
+            'store_username': widget.storeUsername,
+            'image': widget.storeImage,
+          };
       _isLoadingStore = false;
     });
   }
@@ -140,8 +142,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         storeIdentity: widget.storeUsername,
         page: nextPage,
       );
-      final newProducts = (response['products'] as List<dynamic>)
-          .cast<Map<String, dynamic>>();
+      final newProducts =
+          (response['products'] as List<dynamic>).cast<Map<String, dynamic>>();
 
       if (!mounted) {
         return;
@@ -157,7 +159,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         }
 
         if ((_storeData?['store_description'] == null ||
-                _storeData?['store_description'].toString().trim().isEmpty == true) &&
+                _storeData?['store_description'].toString().trim().isEmpty ==
+                    true) &&
             _allProducts.isNotEmpty) {
           final ownerDetails = _allProducts.first['owner_details'];
           if (ownerDetails is Map<String, dynamic>) {
@@ -170,7 +173,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 ...?_storeData,
                 if (storeDescription.isNotEmpty)
                   'store_description': storeDescription,
-                if (storeLogo != null && storeLogo.isNotEmpty) 'store_logo': storeLogo,
+                if (storeLogo != null && storeLogo.isNotEmpty)
+                  'store_logo': storeLogo,
               };
             }
           }
@@ -208,7 +212,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
       final categoryDetails = product['category_details'];
       if (categoryDetails is List) {
         for (final category in categoryDetails) {
-          if (category is Map && category['id'] != null && category['name'] != null) {
+          if (category is Map &&
+              category['id'] != null &&
+              category['name'] != null) {
             categoryMap[category['id'].toString()] = {
               'id': category['id'],
               'name': category['name'],
@@ -243,8 +249,10 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
       final normalizedQuery = _searchQuery.trim().toLowerCase();
       filtered = filtered.where((product) {
         final name = product['name']?.toString().toLowerCase() ?? '';
-        final description = product['description']?.toString().toLowerCase() ?? '';
-        return name.contains(normalizedQuery) || description.contains(normalizedQuery);
+        final description =
+            product['description']?.toString().toLowerCase() ?? '';
+        return name.contains(normalizedQuery) ||
+            description.contains(normalizedQuery);
       }).toList();
     }
 
@@ -378,7 +386,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
 
     return Scaffold(
       backgroundColor: _slate50,
-      body: RefreshIndicator(
+      body: AdsyRefreshIndicator(
         color: _indigo,
         onRefresh: () => _loadData(refresh: true),
         child: CustomScrollView(
@@ -390,7 +398,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
               const SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
-                  child: CircularProgressIndicator(color: _indigo),
+                  child: AdsyLoadingIndicator(color: _indigo),
                 ),
               )
             else ...[
@@ -405,7 +413,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 18),
                     child: Center(
-                      child: CircularProgressIndicator(color: _indigo),
+                      child: AdsyLoadingIndicator(color: _indigo),
                     ),
                   ),
                 ),
@@ -494,7 +502,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                     height: 56,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(colors: [_indigo, _violet]),
+                      gradient:
+                          const LinearGradient(colors: [_indigo, _violet]),
                       border: Border.all(color: Colors.white, width: 3),
                       boxShadow: [
                         BoxShadow(
@@ -557,7 +566,9 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                _isVerifiedStore() ? 'Verified Store' : 'Trusted Store',
+                                _isVerifiedStore()
+                                    ? 'Verified Store'
+                                    : 'Trusted Store',
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -797,7 +808,7 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
             const SizedBox(
               width: 18,
               height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2.2, color: _indigo),
+              child: AdsyLoadingIndicator(strokeWidth: 2.2, color: _indigo),
             ),
         ],
       ),

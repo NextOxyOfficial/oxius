@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import 'gig_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class AllGigsTab extends StatefulWidget {
   const AllGigsTab({super.key});
@@ -42,7 +43,8 @@ class _AllGigsTabState extends State<AllGigsTab> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _loadMoreGigs();
     }
   }
@@ -125,7 +127,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: () => _loadGigs(refresh: true),
       child: Column(
         children: [
@@ -143,8 +145,10 @@ class _AllGigsTabState extends State<AllGigsTab> {
                     style: const TextStyle(fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Search gigs...',
-                      hintStyle: TextStyle(fontSize: 15, color: Colors.grey[400]),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 18),
+                      hintStyle:
+                          TextStyle(fontSize: 15, color: Colors.grey[400]),
+                      prefixIcon:
+                          Icon(Icons.search, color: Colors.grey[400], size: 18),
                       prefixIconConstraints: const BoxConstraints(minWidth: 36),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? GestureDetector(
@@ -153,7 +157,8 @@ class _AllGigsTabState extends State<AllGigsTab> {
                                 setState(() => _searchQuery = '');
                                 _loadGigs(refresh: true);
                               },
-                              child: Icon(Icons.clear, size: 16, color: Colors.grey[400]),
+                              child: Icon(Icons.clear,
+                                  size: 16, color: Colors.grey[400]),
                             )
                           : null,
                       suffixIconConstraints: const BoxConstraints(minWidth: 32),
@@ -163,7 +168,8 @@ class _AllGigsTabState extends State<AllGigsTab> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 0),
                     ),
                     onSubmitted: (value) {
                       setState(() => _searchQuery = value);
@@ -180,9 +186,9 @@ class _AllGigsTabState extends State<AllGigsTab> {
                     children: [
                       _buildFilterChip('All', null),
                       ..._categories.map((cat) => _buildFilterChip(
-                        cat['label'] ?? cat['name'] ?? '',
-                        cat['value']?.toString() ?? cat['id']?.toString(),
-                      )),
+                            cat['label'] ?? cat['name'] ?? '',
+                            cat['value']?.toString() ?? cat['id']?.toString(),
+                          )),
                     ],
                   ),
                 ),
@@ -193,13 +199,15 @@ class _AllGigsTabState extends State<AllGigsTab> {
           // Gigs Grid
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: AdsyLoadingIndicator())
                 : _gigs.isEmpty
                     ? _buildEmptyState()
                     : GridView.builder(
                         controller: _scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 6),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           childAspectRatio: 0.82,
                           crossAxisSpacing: 8,
@@ -211,7 +219,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                             return const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(16),
-                                child: CircularProgressIndicator(),
+                                child: AdsyLoadingIndicator(),
                               ),
                             );
                           }
@@ -283,21 +291,24 @@ class _AllGigsTabState extends State<AllGigsTab> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(8)),
               child: AspectRatio(
                 aspectRatio: 16 / 10,
                 child: CachedNetworkImage(
                   imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(color: Colors.grey[200]),
+                  placeholder: (context, url) =>
+                      Container(color: Colors.grey[200]),
                   errorWidget: (context, url, error) => Container(
                     color: Colors.grey[200],
-                    child: const Icon(Icons.image, color: Colors.grey, size: 20),
+                    child:
+                        const Icon(Icons.image, color: Colors.grey, size: 20),
                   ),
                 ),
               ),
             ),
-            
+
             // Content
             Expanded(
               child: Padding(
@@ -311,7 +322,8 @@ class _AllGigsTabState extends State<AllGigsTab> {
                         CircleAvatar(
                           radius: 10,
                           backgroundImage: user?['avatar'] != null
-                              ? CachedNetworkImageProvider(_getImageUrl(user!['avatar']))
+                              ? CachedNetworkImageProvider(
+                                  _getImageUrl(user!['avatar']))
                               : null,
                           child: user?['avatar'] == null
                               ? Text(
@@ -339,7 +351,8 @@ class _AllGigsTabState extends State<AllGigsTab> {
                               if (user?['kyc'] == true)
                                 const Padding(
                                   padding: EdgeInsets.only(left: 3),
-                                  child: Icon(Icons.verified, size: 12, color: Colors.blue),
+                                  child: Icon(Icons.verified,
+                                      size: 12, color: Colors.blue),
                                 ),
                             ],
                           ),
@@ -347,7 +360,7 @@ class _AllGigsTabState extends State<AllGigsTab> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    
+
                     // Title
                     Expanded(
                       child: Text(
@@ -361,14 +374,15 @@ class _AllGigsTabState extends State<AllGigsTab> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    
+
                     // Rating and Price
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.star, size: 12, color: Colors.amber),
+                            const Icon(Icons.star,
+                                size: 12, color: Colors.amber),
                             const SizedBox(width: 2),
                             Text(
                               rating.toStringAsFixed(1),

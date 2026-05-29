@@ -8,6 +8,7 @@ import '../../services/auth_service.dart';
 import '../../services/adsyconnect_service.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../wallet/wallet_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class GigDetailScreen extends StatefulWidget {
   final String gigId;
@@ -22,7 +23,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   final WorkspaceService _workspaceService = WorkspaceService();
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _requirementsController = TextEditingController();
-  
+
   Map<String, dynamic>? _gig;
   List<Map<String, dynamic>> _reviews = [];
   List<Map<String, dynamic>> _relatedGigs = [];
@@ -30,7 +31,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   bool _isLoadingMoreReviews = false;
   int _currentImageIndex = 0;
   final PageController _imageController = PageController();
-  
+
   // Order flow state
   bool _showOrderFlow = false;
   int _orderStep = 1; // 1: Review, 2: Payment, 3: Complete
@@ -38,13 +39,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   bool _isRefreshingBalance = false;
   Map<String, dynamic>? _orderResult;
   double _userBalance = 0;
-  
+
   // Reviews pagination
   int _reviewsPage = 1;
   int _totalReviewsCount = 0;
   bool _hasMoreReviews = false;
   final GlobalKey _reviewsSectionKey = GlobalKey();
-  
+
   // Fee settings from backend
   double _buyerFeePercent = 2.5; // Default 2.5%
   double _sellerFeePercent = 2.5; // Default 2.5%
@@ -82,7 +83,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   Future<void> _refreshBalance() async {
     if (_isRefreshingBalance) return;
     setState(() => _isRefreshingBalance = true);
-    
+
     try {
       await AuthService.initialize(); // Refresh user data
       final user = AuthService.currentUser;
@@ -90,7 +91,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         setState(() {
           _userBalance = user.balance;
         });
-        _showSnackBar('Balance updated: ৳${_userBalance.toStringAsFixed(2)}', Colors.green);
+        _showSnackBar('Balance updated: ৳${_userBalance.toStringAsFixed(2)}',
+            Colors.green);
       }
     } catch (e) {
       _showSnackBar('Failed to refresh balance', Colors.red);
@@ -104,8 +106,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       final fees = await _workspaceService.getFeeSettings();
       if (mounted && fees.isNotEmpty) {
         setState(() {
-          _buyerFeePercent = double.tryParse(fees['buyer_fee_percent']?.toString() ?? '') ?? 2.5;
-          _sellerFeePercent = double.tryParse(fees['seller_fee_percent']?.toString() ?? '') ?? 2.5;
+          _buyerFeePercent =
+              double.tryParse(fees['buyer_fee_percent']?.toString() ?? '') ??
+                  2.5;
+          _sellerFeePercent =
+              double.tryParse(fees['seller_fee_percent']?.toString() ?? '') ??
+                  2.5;
           _feesEnabled = fees['fees_enabled'] ?? true;
         });
       }
@@ -135,20 +141,22 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   Future<void> _loadGigDetails() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final gig = await _workspaceService.fetchGigDetails(widget.gigId);
-      final reviewsResult = await _workspaceService.fetchGigReviews(widget.gigId);
-      
+      final reviewsResult =
+          await _workspaceService.fetchGigReviews(widget.gigId);
+
       if (mounted) {
         setState(() {
           _gig = gig;
-          _reviews = List<Map<String, dynamic>>.from(reviewsResult['results'] ?? []);
+          _reviews =
+              List<Map<String, dynamic>>.from(reviewsResult['results'] ?? []);
           _totalReviewsCount = reviewsResult['count'] ?? _reviews.length;
           _hasMoreReviews = _reviews.length < _totalReviewsCount;
           _isLoading = false;
         });
-        
+
         // Load related gigs
         _loadRelatedGigs();
       }
@@ -162,17 +170,20 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   Future<void> _loadRelatedGigs() async {
     if (_gig == null) return;
-    
+
     try {
       final result = await _workspaceService.fetchGigs(
         category: _gig!['category'],
         pageSize: 6,
       );
-      
+
       if (mounted) {
         final gigs = List<Map<String, dynamic>>.from(result['results'] ?? []);
         setState(() {
-          _relatedGigs = gigs.where((g) => g['id'].toString() != widget.gigId).take(4).toList();
+          _relatedGigs = gigs
+              .where((g) => g['id'].toString() != widget.gigId)
+              .take(4)
+              .toList();
         });
       }
     } catch (e) {
@@ -182,14 +193,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   Future<void> _loadMoreReviews() async {
     if (_isLoadingMoreReviews || !_hasMoreReviews) return;
-    
+
     setState(() => _isLoadingMoreReviews = true);
-    
+
     try {
-      final result = await _workspaceService.fetchGigReviews(widget.gigId, page: _reviewsPage + 1);
-      
+      final result = await _workspaceService.fetchGigReviews(widget.gigId,
+          page: _reviewsPage + 1);
+
       if (mounted) {
-        final newReviews = List<Map<String, dynamic>>.from(result['results'] ?? []);
+        final newReviews =
+            List<Map<String, dynamic>>.from(result['results'] ?? []);
         setState(() {
           _reviews.addAll(newReviews);
           _reviewsPage++;
@@ -211,25 +224,29 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   List<String> get _gigImages {
     if (_gig == null) return [];
     final images = <String>[];
-    
-    if (_gig!['image_url'] != null) images.add(_getImageUrl(_gig!['image_url']));
+
+    if (_gig!['image_url'] != null)
+      images.add(_getImageUrl(_gig!['image_url']));
     else if (_gig!['image'] != null) images.add(_getImageUrl(_gig!['image']));
-    
+
     if (_gig!['gallery'] != null && _gig!['gallery'] is List) {
       for (var img in _gig!['gallery']) {
         images.add(_getImageUrl(img.toString()));
       }
     }
-    
+
     return images.isEmpty ? [''] : images;
   }
 
-  double get _gigPrice => double.tryParse(_gig?['price']?.toString() ?? '0') ?? 0;
-  
+  double get _gigPrice =>
+      double.tryParse(_gig?['price']?.toString() ?? '0') ?? 0;
+
   // Fee calculations (dynamic from backend)
-  double get _serviceFee => _feesEnabled ? _gigPrice * (_buyerFeePercent / 100) : 0;
+  double get _serviceFee =>
+      _feesEnabled ? _gigPrice * (_buyerFeePercent / 100) : 0;
   double get _totalToPay => _gigPrice + _serviceFee;
-  double get _sellerEarnings => _feesEnabled ? _gigPrice * (1 - (_sellerFeePercent / 100)) : _gigPrice;
+  double get _sellerEarnings =>
+      _feesEnabled ? _gigPrice * (1 - (_sellerFeePercent / 100)) : _gigPrice;
   bool get _hasSufficientBalance => _userBalance >= _totalToPay;
   double get _balanceShortfall => _totalToPay - _userBalance;
   double get _balanceAfterPayment => _userBalance - _totalToPay;
@@ -265,14 +282,14 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   Future<void> _submitOrder() async {
     if (!_hasSufficientBalance || _isPlacingOrder) return;
-    
+
     setState(() => _isPlacingOrder = true);
-    
+
     try {
       final result = await _workspaceService.createOrder(widget.gigId, {
         'requirements': _requirementsController.text,
       });
-      
+
       if (mounted) {
         setState(() {
           _orderResult = result;
@@ -291,7 +308,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   Future<void> _contactSeller() async {
     if (_gig == null) return;
-    
+
     // Check authentication first
     if (!AuthService.isAuthenticated) {
       _showSnackBar('Please login to contact the seller', Colors.orange);
@@ -309,7 +326,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
+        child: AdsyLoadingIndicator(color: Color(0xFF8B5CF6)),
       ),
     );
 
@@ -345,7 +362,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   Future<void> _handleShare() async {
     if (_gig == null) return;
-    
+
     try {
       await Share.share(
         'Check out this gig: ${_gig!['title']}\n\nhttps://adsyclub.com/business-network/workspace-details?id=${widget.gigId}',
@@ -354,7 +371,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     } catch (e) {
       // Fallback to clipboard
       await Clipboard.setData(ClipboardData(
-        text: 'https://adsyclub.com/business-network/workspace-details?id=${widget.gigId}',
+        text:
+            'https://adsyclub.com/business-network/workspace-details?id=${widget.gigId}',
       ));
       _showSnackBar('Link copied to clipboard', Colors.green);
     }
@@ -372,27 +390,90 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   }
 
   List<String> _getGigFeatures() {
-    if (_gig?['features'] != null && _gig!['features'] is List && (_gig!['features'] as List).isNotEmpty) {
+    if (_gig?['features'] != null &&
+        _gig!['features'] is List &&
+        (_gig!['features'] as List).isNotEmpty) {
       return List<String>.from(_gig!['features']);
     }
-    
+
     const features = {
-      'design': ['Custom design concepts', 'Unlimited revisions', 'High-resolution files', 'Commercial license', '24/7 support'],
-      'development': ['Responsive design', 'Clean code', 'Browser compatibility', 'Performance optimization', 'Post-launch support'],
-      'writing': ['Original content', 'SEO optimization', 'Multiple revisions', 'Plagiarism-free', 'Fast turnaround'],
-      'marketing': ['Strategy development', 'Content calendar', 'Performance analytics', 'Competitor analysis', 'Monthly reports'],
-      'business': ['Market analysis', 'Strategic planning', 'ROI projections', 'Implementation roadmap', 'Follow-up consultation'],
+      'design': [
+        'Custom design concepts',
+        'Unlimited revisions',
+        'High-resolution files',
+        'Commercial license',
+        '24/7 support'
+      ],
+      'development': [
+        'Responsive design',
+        'Clean code',
+        'Browser compatibility',
+        'Performance optimization',
+        'Post-launch support'
+      ],
+      'writing': [
+        'Original content',
+        'SEO optimization',
+        'Multiple revisions',
+        'Plagiarism-free',
+        'Fast turnaround'
+      ],
+      'marketing': [
+        'Strategy development',
+        'Content calendar',
+        'Performance analytics',
+        'Competitor analysis',
+        'Monthly reports'
+      ],
+      'business': [
+        'Market analysis',
+        'Strategic planning',
+        'ROI projections',
+        'Implementation roadmap',
+        'Follow-up consultation'
+      ],
     };
-    return features[_gig?['category']] ?? ['Professional delivery', 'Quality guarantee', 'Timely completion'];
+    return features[_gig?['category']] ??
+        ['Professional delivery', 'Quality guarantee', 'Timely completion'];
   }
 
   List<String> _getGigSkills() {
     const skills = {
-      'design': ['Adobe Creative Suite', 'Figma', 'Brand Identity', 'Logo Design', 'UI/UX'],
-      'development': ['React', 'Node.js', 'JavaScript', 'HTML/CSS', 'API Integration'],
-      'writing': ['Content Strategy', 'SEO Writing', 'Copywriting', 'Technical Writing', 'Proofreading'],
-      'marketing': ['Social Media', 'Google Ads', 'Content Marketing', 'Analytics', 'Email Marketing'],
-      'business': ['Strategic Planning', 'Market Research', 'Financial Analysis', 'Project Management', 'Leadership'],
+      'design': [
+        'Adobe Creative Suite',
+        'Figma',
+        'Brand Identity',
+        'Logo Design',
+        'UI/UX'
+      ],
+      'development': [
+        'React',
+        'Node.js',
+        'JavaScript',
+        'HTML/CSS',
+        'API Integration'
+      ],
+      'writing': [
+        'Content Strategy',
+        'SEO Writing',
+        'Copywriting',
+        'Technical Writing',
+        'Proofreading'
+      ],
+      'marketing': [
+        'Social Media',
+        'Google Ads',
+        'Content Marketing',
+        'Analytics',
+        'Email Marketing'
+      ],
+      'business': [
+        'Strategic Planning',
+        'Market Research',
+        'Financial Analysis',
+        'Project Management',
+        'Leadership'
+      ],
     };
     return skills[_gig?['category']] ?? ['Professional Service'];
   }
@@ -405,11 +486,11 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   String _getActiveStatus(String? updatedAt) {
     if (updatedAt == null) return 'Active';
-    
+
     try {
       final updated = DateTime.parse(updatedAt);
       final diff = DateTime.now().difference(updated);
-      
+
       if (diff.inMinutes < 5) return 'Active now';
       if (diff.inMinutes < 60) return 'Active ${diff.inMinutes}m ago';
       if (diff.inHours < 24) return 'Active ${diff.inHours}h ago';
@@ -422,16 +503,18 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
   String _formatReviewDate(String? dateString) {
     if (dateString == null) return '';
-    
+
     try {
       final date = DateTime.parse(dateString);
       final diff = DateTime.now().difference(date);
-      
+
       if (diff.inDays == 0) return 'Today';
       if (diff.inDays == 1) return 'Yesterday';
       if (diff.inDays < 7) return '${diff.inDays} days ago';
-      if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} week${diff.inDays >= 14 ? 's' : ''} ago';
-      if (diff.inDays < 365) return '${(diff.inDays / 30).floor()} month${diff.inDays >= 60 ? 's' : ''} ago';
+      if (diff.inDays < 30)
+        return '${(diff.inDays / 7).floor()} week${diff.inDays >= 14 ? 's' : ''} ago';
+      if (diff.inDays < 365)
+        return '${(diff.inDays / 30).floor()} month${diff.inDays >= 60 ? 's' : ''} ago';
       return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
       return '';
@@ -457,12 +540,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         ),
         title: const Text(
           'Gig Details',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 16),
+          style: TextStyle(
+              color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 16),
         ),
         actions: [
           IconButton(
             icon: Icon(
-              _gig?['is_favorited'] == true ? Icons.favorite : Icons.favorite_border,
+              _gig?['is_favorited'] == true
+                  ? Icons.favorite
+                  : Icons.favorite_border,
               color: _gig?['is_favorited'] == true ? Colors.red : Colors.grey,
               size: 20,
             ),
@@ -478,11 +564,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AdsyLoadingIndicator())
           : _gig == null
               ? _buildErrorState()
               : _buildContent(),
-      bottomNavigationBar: _gig != null && !_showOrderFlow ? _buildBottomBar() : null,
+      bottomNavigationBar:
+          _gig != null && !_showOrderFlow ? _buildBottomBar() : null,
     );
   }
 
@@ -510,7 +597,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 // Title
                 Text(
                   _gig!['title'] ?? '',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
                 ),
                 const SizedBox(height: 10),
 
@@ -519,44 +609,62 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 const SizedBox(height: 14),
 
                 // Description
-                const Text('About This Gig', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                const Text('About This Gig',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 Text(
                   _gig!['description'] ?? '',
-                  style: TextStyle(color: Colors.grey[700], fontSize: 13, height: 1.5),
+                  style: TextStyle(
+                      color: Colors.grey[700], fontSize: 13, height: 1.5),
                 ),
                 const SizedBox(height: 14),
 
                 // What You'll Get
-                const Text("What You'll Get:", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                const Text("What You'll Get:",
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 ..._getGigFeatures().map((feature) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.check_circle, size: 16, color: Colors.green),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(feature, style: TextStyle(color: Colors.grey[700], fontSize: 12))),
-                    ],
-                  ),
-                )),
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.check_circle,
+                              size: 16, color: Colors.green),
+                          const SizedBox(width: 8),
+                          Expanded(
+                              child: Text(feature,
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 12))),
+                        ],
+                      ),
+                    )),
                 const SizedBox(height: 14),
 
                 // Skills & Expertise
-                const Text('Skills & Expertise:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                const Text('Skills & Expertise:',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
-                  children: _getGigSkills().map((skill) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8B5CF6).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(skill, style: const TextStyle(color: Color(0xFF8B5CF6), fontSize: 11, fontWeight: FontWeight.w500)),
-                  )).toList(),
+                  children: _getGigSkills()
+                      .map((skill) => Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(skill,
+                                style: const TextStyle(
+                                    color: Color(0xFF8B5CF6),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500)),
+                          ))
+                      .toList(),
                 ),
               ],
             ),
@@ -576,7 +684,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
 
           // Reviews Section
           _buildReviewsSection(reviewsCount),
-          
+
           const SizedBox(height: 80),
         ],
       ),
@@ -590,13 +698,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         children: [
           PageView.builder(
             controller: _imageController,
-            onPageChanged: (index) => setState(() => _currentImageIndex = index),
+            onPageChanged: (index) =>
+                setState(() => _currentImageIndex = index),
             itemCount: images.length,
             itemBuilder: (context, index) {
               return CachedNetworkImage(
                 imageUrl: images[index],
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Container(color: Colors.grey[200]),
+                placeholder: (context, url) =>
+                    Container(color: Colors.grey[200]),
                 errorWidget: (context, url, error) => Container(
                   color: Colors.grey[200],
                   child: const Icon(Icons.image, size: 40, color: Colors.grey),
@@ -614,15 +724,21 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 child: GestureDetector(
                   onTap: () {
                     if (_currentImageIndex > 0) {
-                      _imageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                      _imageController.previousPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut);
                     } else {
-                      _imageController.animateToPage(images.length - 1, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                      _imageController.animateToPage(images.length - 1,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut);
                     }
                   },
                   child: Container(
                     width: 32,
                     height: 32,
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        shape: BoxShape.circle),
                     child: const Icon(Icons.chevron_left, size: 20),
                   ),
                 ),
@@ -636,15 +752,21 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 child: GestureDetector(
                   onTap: () {
                     if (_currentImageIndex < images.length - 1) {
-                      _imageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                      _imageController.nextPage(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut);
                     } else {
-                      _imageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                      _imageController.animateToPage(0,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut);
                     }
                   },
                   child: Container(
                     width: 32,
                     height: 32,
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        shape: BoxShape.circle),
                     child: const Icon(Icons.chevron_right, size: 20),
                   ),
                 ),
@@ -661,7 +783,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(images.length, (index) {
                   return GestureDetector(
-                    onTap: () => _imageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeOut),
+                    onTap: () => _imageController.animateToPage(index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       width: _currentImageIndex == index ? 16 : 6,
@@ -669,7 +793,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(3),
-                        color: _currentImageIndex == index ? const Color(0xFF8B5CF6) : Colors.white.withOpacity(0.5),
+                        color: _currentImageIndex == index
+                            ? const Color(0xFF8B5CF6)
+                            : Colors.white.withOpacity(0.5),
                       ),
                     ),
                   );
@@ -681,14 +807,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
     );
   }
 
-  Widget _buildSellerInfo(Map<String, dynamic>? user, double rating, int reviewsCount) {
+  Widget _buildSellerInfo(
+      Map<String, dynamic>? user, double rating, int reviewsCount) {
     return GestureDetector(
       onTap: () {
         // Navigate to seller profile
       },
       child: Container(
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+            color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
         child: Row(
           children: [
             // Avatar with Pro ring
@@ -700,15 +828,24 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                      gradient: const LinearGradient(
+                          colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
                     ),
                     padding: const EdgeInsets.all(2),
-                    child: Container(decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey[50])),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle, color: Colors.grey[50])),
                   ),
                 CircleAvatar(
                   radius: 18,
-                  backgroundImage: user?['avatar'] != null ? CachedNetworkImageProvider(_getImageUrl(user!['avatar'])) : null,
-                  child: user?['avatar'] == null ? Text((user?['name'] ?? 'U')[0].toUpperCase(), style: const TextStyle(fontSize: 14)) : null,
+                  backgroundImage: user?['avatar'] != null
+                      ? CachedNetworkImageProvider(
+                          _getImageUrl(user!['avatar']))
+                      : null,
+                  child: user?['avatar'] == null
+                      ? Text((user?['name'] ?? 'U')[0].toUpperCase(),
+                          style: const TextStyle(fontSize: 14))
+                      : null,
                 ),
               ],
             ),
@@ -719,29 +856,53 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(user?['name'] ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                      if (user?['kyc'] == true) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.verified, size: 14, color: Colors.blue)),
+                      Text(user?['name'] ?? 'Unknown',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 13)),
+                      if (user?['kyc'] == true)
+                        const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(Icons.verified,
+                                size: 14, color: Colors.blue)),
                       if (user?['is_pro'] == true)
                         Container(
                           margin: const EdgeInsets.only(left: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                            gradient: const LinearGradient(
+                                colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
                             borderRadius: BorderRadius.circular(3),
                           ),
-                          child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                          child: const Text('PRO',
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold)),
                         ),
                     ],
                   ),
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      ...List.generate(5, (i) => Icon(Icons.star, size: 12, color: i < rating.round() ? Colors.amber : Colors.grey[300])),
+                      ...List.generate(
+                          5,
+                          (i) => Icon(Icons.star,
+                              size: 12,
+                              color: i < rating.round()
+                                  ? Colors.amber
+                                  : Colors.grey[300])),
                       const SizedBox(width: 4),
-                      Text('${rating.toStringAsFixed(1)} ', style: TextStyle(color: Colors.grey[600], fontSize: 11)),
+                      Text('${rating.toStringAsFixed(1)} ',
+                          style:
+                              TextStyle(color: Colors.grey[600], fontSize: 11)),
                       GestureDetector(
                         onTap: _scrollToReviews,
-                        child: Text('($reviewsCount reviews)', style: const TextStyle(color: Color(0xFF8B5CF6), fontSize: 11, decoration: TextDecoration.underline)),
+                        child: Text('($reviewsCount reviews)',
+                            style: const TextStyle(
+                                color: Color(0xFF8B5CF6),
+                                fontSize: 11,
+                                decoration: TextDecoration.underline)),
                       ),
                     ],
                   ),
@@ -773,10 +934,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Text('৳${_gigPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text('৳${_gigPrice.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87)),
                       ],
                     ),
-                    Text('Starting price', style: TextStyle(color: Colors.grey[600], fontSize: 11)),
+                    Text('Starting price',
+                        style:
+                            TextStyle(color: Colors.grey[600], fontSize: 11)),
                   ],
                 ),
               ),
@@ -784,9 +951,11 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               Expanded(
                 child: Column(
                   children: [
-                    _buildPackageRow('Delivery', '${_gig!['delivery_time'] ?? 3} days'),
+                    _buildPackageRow(
+                        'Delivery', '${_gig!['delivery_time'] ?? 3} days'),
                     _buildPackageRow('Revisions', '${_gig!['revisions'] ?? 2}'),
-                    _buildPackageRow('Category', _getCategoryLabel(_gig!['category'])),
+                    _buildPackageRow(
+                        'Category', _getCategoryLabel(_gig!['category'])),
                   ],
                 ),
               ),
@@ -807,9 +976,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                       backgroundColor: const Color(0xFF8B5CF6),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: Text('Order (৳${_gigPrice.toStringAsFixed(0)})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    child: Text('Order (৳${_gigPrice.toStringAsFixed(0)})',
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -818,12 +990,17 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     onPressed: _contactSeller,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset('assets/icons/chat_icon.png', width: 18, height: 18, errorBuilder: (c, e, s) => const Icon(Icons.chat, size: 18)),
+                        Image.asset('assets/icons/chat_icon.png',
+                            width: 18,
+                            height: 18,
+                            errorBuilder: (c, e, s) =>
+                                const Icon(Icons.chat, size: 18)),
                         const SizedBox(width: 6),
                         const Text('Contact', style: TextStyle(fontSize: 13)),
                       ],
@@ -835,12 +1012,18 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           else
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8)),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, size: 16, color: Color(0xFF8B5CF6)),
+                  const Icon(Icons.info_outline,
+                      size: 16, color: Color(0xFF8B5CF6)),
                   const SizedBox(width: 8),
-                  const Expanded(child: Text('This is your gig. Manage it from My Gigs.', style: TextStyle(fontSize: 12, color: Color(0xFF8B5CF6)))),
+                  const Expanded(
+                      child: Text('This is your gig. Manage it from My Gigs.',
+                          style: TextStyle(
+                              fontSize: 12, color: Color(0xFF8B5CF6)))),
                 ],
               ),
             ),
@@ -856,9 +1039,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         Row(
           children: [
             _buildOrderStep(1, 'Review'),
-            Expanded(child: Container(height: 2, color: _orderStep > 1 ? Colors.green : Colors.grey[300])),
+            Expanded(
+                child: Container(
+                    height: 2,
+                    color: _orderStep > 1 ? Colors.green : Colors.grey[300])),
             _buildOrderStep(2, 'Payment'),
-            Expanded(child: Container(height: 2, color: _orderStep > 2 ? Colors.green : Colors.grey[300])),
+            Expanded(
+                child: Container(
+                    height: 2,
+                    color: _orderStep > 2 ? Colors.green : Colors.grey[300])),
             _buildOrderStep(3, 'Complete'),
           ],
         ),
@@ -875,7 +1064,7 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   Widget _buildOrderStep(int step, String label) {
     final isCompleted = _orderStep > step;
     final isCurrent = _orderStep == step;
-    
+
     return Column(
       children: [
         Container(
@@ -883,16 +1072,27 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           height: 28,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isCompleted ? Colors.green : isCurrent ? const Color(0xFF8B5CF6) : Colors.grey[300],
+            color: isCompleted
+                ? Colors.green
+                : isCurrent
+                    ? const Color(0xFF8B5CF6)
+                    : Colors.grey[300],
           ),
           child: Center(
             child: isCompleted
                 ? const Icon(Icons.check, size: 16, color: Colors.white)
-                : Text('$step', style: TextStyle(color: isCurrent ? Colors.white : Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600)),
+                : Text('$step',
+                    style: TextStyle(
+                        color: isCurrent ? Colors.white : Colors.grey[600],
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 10, color: isCurrent ? Colors.black87 : Colors.grey[500])),
+        Text(label,
+            style: TextStyle(
+                fontSize: 10,
+                color: isCurrent ? Colors.black87 : Colors.grey[500])),
       ],
     );
   }
@@ -903,19 +1103,24 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+              color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
           child: Column(
             children: [
-              _buildSummaryRow('Gig', _truncateTitle(_gig!['title']?.toString() ?? '', 25)),
-              _buildSummaryRow('Delivery', '${_gig!['delivery_time'] ?? 3} days'),
+              _buildSummaryRow(
+                  'Gig', _truncateTitle(_gig!['title']?.toString() ?? '', 25)),
+              _buildSummaryRow(
+                  'Delivery', '${_gig!['delivery_time'] ?? 3} days'),
               _buildSummaryRow('Revisions', '${_gig!['revisions'] ?? 2}'),
               const Divider(height: 16),
-              _buildSummaryRow('Total', '৳${_gigPrice.toStringAsFixed(2)}', isBold: true),
+              _buildSummaryRow('Total', '৳${_gigPrice.toStringAsFixed(2)}',
+                  isBold: true),
             ],
           ),
         ),
         const SizedBox(height: 12),
-        const Text('Requirements (Optional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        const Text('Requirements (Optional)',
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         TextField(
           controller: _requirementsController,
@@ -934,7 +1139,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _cancelOrder,
-                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10)),
+                style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10)),
                 child: const Text('Cancel', style: TextStyle(fontSize: 13)),
               ),
             ),
@@ -946,7 +1152,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   backgroundColor: const Color(0xFF8B5CF6),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                child: const Text('Continue', style: TextStyle(fontSize: 13, color: Colors.white)),
+                child: const Text('Continue',
+                    style: TextStyle(fontSize: 13, color: Colors.white)),
               ),
             ),
           ],
@@ -963,7 +1170,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF14B8A6)]),
+            gradient: const LinearGradient(
+                colors: [Color(0xFF10B981), Color(0xFF14B8A6)]),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -972,9 +1180,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Your Balance', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 11)),
+                  Text('Your Balance',
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.9), fontSize: 11)),
                   const SizedBox(height: 2),
-                  Text('৳${_userBalance.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  Text('৳${_userBalance.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
               GestureDetector(
@@ -982,10 +1196,16 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 child: Container(
                   width: 36,
                   height: 36,
-                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle),
                   child: _isRefreshingBalance
-                      ? const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.refresh, color: Colors.white, size: 18),
+                      ? const Padding(
+                          padding: EdgeInsets.all(8),
+                          child: AdsyLoadingIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.refresh,
+                          color: Colors.white, size: 18),
                 ),
               ),
             ],
@@ -996,13 +1216,19 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         // Payment Summary
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+              color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
           child: Column(
             children: [
-              _buildSummaryRow('Order Amount', '৳${_gigPrice.toStringAsFixed(2)}'),
-              _buildSummaryRow('Service Fee (${_formatFeePercent(_buyerFeePercent)}%)', '৳${_serviceFee.toStringAsFixed(2)}'),
+              _buildSummaryRow(
+                  'Order Amount', '৳${_gigPrice.toStringAsFixed(2)}'),
+              _buildSummaryRow(
+                  'Service Fee (${_formatFeePercent(_buyerFeePercent)}%)',
+                  '৳${_serviceFee.toStringAsFixed(2)}'),
               const Divider(height: 16),
-              _buildSummaryRow('Total to Pay', '৳${_totalToPay.toStringAsFixed(2)}', isBold: true),
+              _buildSummaryRow(
+                  'Total to Pay', '৳${_totalToPay.toStringAsFixed(2)}',
+                  isBold: true),
             ],
           ),
         ),
@@ -1012,7 +1238,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         if (!_hasSufficientBalance)
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.red[50], border: Border.all(color: Colors.red[200]!), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+                color: Colors.red[50],
+                border: Border.all(color: Colors.red[200]!),
+                borderRadius: BorderRadius.circular(8)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1021,35 +1250,51 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                     Icon(Icons.warning, size: 16, color: Colors.red[700]),
                     const SizedBox(width: 6),
                     Expanded(
-                      child: Text('Insufficient Balance', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red[800], fontSize: 12)),
+                      child: Text('Insufficient Balance',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red[800],
+                              fontSize: 12)),
                     ),
                     GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const WalletScreen())),
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const WalletScreen())),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: const Color(0xFF8B5CF6),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text('Add Funds', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
+                        child: const Text('Add Funds',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('You need ৳${_balanceShortfall.toStringAsFixed(2)} more', style: TextStyle(color: Colors.red[600], fontSize: 11)),
+                Text('You need ৳${_balanceShortfall.toStringAsFixed(2)} more',
+                    style: TextStyle(color: Colors.red[600], fontSize: 11)),
               ],
             ),
           )
         else
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(6)),
+            decoration: BoxDecoration(
+                color: Colors.blue[50], borderRadius: BorderRadius.circular(6)),
             child: Row(
               children: [
                 Icon(Icons.info_outline, size: 14, color: Colors.blue[700]),
                 const SizedBox(width: 6),
-                Text('Balance after payment: ৳${_balanceAfterPayment.toStringAsFixed(2)}', style: TextStyle(fontSize: 11, color: Colors.blue[800])),
+                Text(
+                    'Balance after payment: ৳${_balanceAfterPayment.toStringAsFixed(2)}',
+                    style: TextStyle(fontSize: 11, color: Colors.blue[800])),
               ],
             ),
           ),
@@ -1060,7 +1305,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           children: [
             Icon(Icons.shield, size: 14, color: Colors.green[600]),
             const SizedBox(width: 6),
-            Expanded(child: Text('Payment held in escrow until completion', style: TextStyle(fontSize: 10, color: Colors.grey[600]))),
+            Expanded(
+                child: Text('Payment held in escrow until completion',
+                    style: TextStyle(fontSize: 10, color: Colors.grey[600]))),
           ],
         ),
         const SizedBox(height: 12),
@@ -1071,21 +1318,32 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             Expanded(
               child: OutlinedButton(
                 onPressed: () => setState(() => _orderStep = 1),
-                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10)),
+                style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10)),
                 child: const Text('Back', style: TextStyle(fontSize: 13)),
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
-                onPressed: _hasSufficientBalance && !_isPlacingOrder ? _submitOrder : null,
+                onPressed: _hasSufficientBalance && !_isPlacingOrder
+                    ? _submitOrder
+                    : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _hasSufficientBalance ? const Color(0xFF8B5CF6) : Colors.grey[300],
+                  backgroundColor: _hasSufficientBalance
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.grey[300],
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
                 child: _isPlacingOrder
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text('Pay ৳${_totalToPay.toStringAsFixed(2)}', style: const TextStyle(fontSize: 13, color: Colors.white)),
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: AdsyLoadingIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : Text('Pay ৳${_totalToPay.toStringAsFixed(2)}',
+                        style:
+                            const TextStyle(fontSize: 13, color: Colors.white)),
               ),
             ),
           ],
@@ -1100,21 +1358,32 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         Container(
           width: 56,
           height: 56,
-          decoration: BoxDecoration(color: Colors.green[100], shape: BoxShape.circle),
+          decoration:
+              BoxDecoration(color: Colors.green[100], shape: BoxShape.circle),
           child: const Icon(Icons.check, size: 32, color: Colors.green),
         ),
         const SizedBox(height: 12),
-        const Text('Order Placed!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text('Order Placed!',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text('Payment successful. Seller notified.', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+        Text('Payment successful. Seller notified.',
+            style: TextStyle(color: Colors.grey[600], fontSize: 12)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+              color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
           child: Column(
             children: [
-              _buildSummaryRow('Order ID', _orderResult?['order']?['id']?.toString().substring(0, 8).toUpperCase() ?? 'N/A'),
-              _buildSummaryRow('New Balance', '৳${_orderResult?['payment']?['new_balance']?.toString() ?? '0'}'),
+              _buildSummaryRow(
+                  'Order ID',
+                  _orderResult?['order']?['id']
+                          ?.toString()
+                          .substring(0, 8)
+                          .toUpperCase() ??
+                      'N/A'),
+              _buildSummaryRow('New Balance',
+                  '৳${_orderResult?['payment']?['new_balance']?.toString() ?? '0'}'),
             ],
           ),
         ),
@@ -1124,7 +1393,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _cancelOrder,
-                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 10)),
+                style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 10)),
                 child: const Text('Close', style: TextStyle(fontSize: 13)),
               ),
             ),
@@ -1139,7 +1409,8 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   backgroundColor: const Color(0xFF8B5CF6),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
-                child: const Text('View Order', style: TextStyle(fontSize: 13, color: Colors.white)),
+                child: const Text('View Order',
+                    style: TextStyle(fontSize: 13, color: Colors.white)),
               ),
             ),
           ],
@@ -1155,7 +1426,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.w500, fontSize: isBold ? 14 : 12)),
+          Text(value,
+              style: TextStyle(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+                  fontSize: isBold ? 14 : 12)),
         ],
       ),
     );
@@ -1168,8 +1442,10 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildTrustItem(Icons.visibility, '${_formatViewCount(_gig!['views_count'] ?? 0)} views'),
-          _buildTrustItem(Icons.access_time, _getActiveStatus(_gig!['updated_at'])),
+          _buildTrustItem(Icons.visibility,
+              '${_formatViewCount(_gig!['views_count'] ?? 0)} views'),
+          _buildTrustItem(
+              Icons.access_time, _getActiveStatus(_gig!['updated_at'])),
           GestureDetector(
             onTap: _handleShare,
             child: _buildTrustItem(Icons.share, 'Share'),
@@ -1199,10 +1475,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Similar Gigs', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const Text('Similar Gigs',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
-                child: const Text('View All', style: TextStyle(fontSize: 12, color: Color(0xFF8B5CF6))),
+                child: const Text('View All',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF8B5CF6))),
               ),
             ],
           ),
@@ -1217,17 +1495,20 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                 final user = gig['user'] as Map<String, dynamic>?;
                 final rating = (gig['rating'] ?? 0).toDouble();
                 final reviewsCount = gig['reviews_count'] ?? 0;
-                
+
                 return GestureDetector(
                   onTap: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => GigDetailScreen(gigId: gig['id'].toString())),
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              GigDetailScreen(gigId: gig['id'].toString())),
                     );
                   },
                   child: Container(
                     width: 160,
-                    margin: EdgeInsets.only(right: index < _relatedGigs.length - 1 ? 10 : 0),
+                    margin: EdgeInsets.only(
+                        right: index < _relatedGigs.length - 1 ? 10 : 0),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -1238,14 +1519,19 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                       children: [
                         // Image
                         ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(8)),
                           child: CachedNetworkImage(
-                            imageUrl: _getImageUrl(gig['image_url'] ?? gig['image']),
+                            imageUrl:
+                                _getImageUrl(gig['image_url'] ?? gig['image']),
                             height: 80,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            placeholder: (c, u) => Container(color: Colors.grey[200]),
-                            errorWidget: (c, u, e) => Container(color: Colors.grey[200], child: const Icon(Icons.image, size: 20)),
+                            placeholder: (c, u) =>
+                                Container(color: Colors.grey[200]),
+                            errorWidget: (c, u, e) => Container(
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.image, size: 20)),
                           ),
                         ),
                         Expanded(
@@ -1260,17 +1546,24 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                     CircleAvatar(
                                       radius: 10,
                                       backgroundImage: user?['avatar'] != null
-                                          ? CachedNetworkImageProvider(_getImageUrl(user!['avatar']))
+                                          ? CachedNetworkImageProvider(
+                                              _getImageUrl(user!['avatar']))
                                           : null,
                                       child: user?['avatar'] == null
-                                          ? Text((user?['name'] ?? 'U')[0].toUpperCase(), style: const TextStyle(fontSize: 8))
+                                          ? Text(
+                                              (user?['name'] ?? 'U')[0]
+                                                  .toUpperCase(),
+                                              style:
+                                                  const TextStyle(fontSize: 8))
                                           : null,
                                     ),
                                     const SizedBox(width: 4),
                                     Flexible(
                                       child: Text(
                                         user?['name'] ?? 'Unknown',
-                                        style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                        style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey[600]),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -1278,17 +1571,28 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                     if (user?['kyc'] == true)
                                       const Padding(
                                         padding: EdgeInsets.only(left: 3),
-                                        child: Icon(Icons.verified, size: 12, color: Colors.blue),
+                                        child: Icon(Icons.verified,
+                                            size: 12, color: Colors.blue),
                                       ),
                                     if (user?['is_pro'] == true)
                                       Container(
                                         margin: const EdgeInsets.only(left: 3),
-                                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 4, vertical: 1),
                                         decoration: BoxDecoration(
-                                          gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
-                                          borderRadius: BorderRadius.circular(3),
+                                          gradient: const LinearGradient(
+                                              colors: [
+                                                Color(0xFFF59E0B),
+                                                Color(0xFFF97316)
+                                              ]),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
                                         ),
-                                        child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+                                        child: const Text('PRO',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 7,
+                                                fontWeight: FontWeight.bold)),
                                       ),
                                   ],
                                 ),
@@ -1296,7 +1600,9 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                 // Title
                                 Text(
                                   gig['title'] ?? '',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1304,16 +1610,21 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                                 // Rating with review count and price
                                 Row(
                                   children: [
-                                    const Icon(Icons.star, size: 12, color: Colors.amber),
+                                    const Icon(Icons.star,
+                                        size: 12, color: Colors.amber),
                                     const SizedBox(width: 2),
                                     Text(
                                       '${rating.toStringAsFixed(1)} ($reviewsCount)',
-                                      style: TextStyle(fontSize: 9, color: Colors.grey[600]),
+                                      style: TextStyle(
+                                          fontSize: 9, color: Colors.grey[600]),
                                     ),
                                     const Spacer(),
                                     Text(
                                       '৳${gig['price']}',
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6)),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF8B5CF6)),
                                     ),
                                   ],
                                 ),
@@ -1345,42 +1656,52 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Reviews ($_totalReviewsCount)', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              Text('Reviews ($_totalReviewsCount)',
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600)),
               Row(
                 children: [
                   const Icon(Icons.star, size: 16, color: Colors.amber),
                   const SizedBox(width: 4),
-                  Text('${(_gig!['rating'] ?? 0).toStringAsFixed(1)} out of 5', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                  Text('${(_gig!['rating'] ?? 0).toStringAsFixed(1)} out of 5',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 10),
-          
           if (_reviews.isEmpty)
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8)),
               child: Column(
                 children: [
                   Icon(Icons.star_border, size: 40, color: Colors.grey[400]),
                   const SizedBox(height: 8),
-                  Text('No reviews yet', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                  Text('No reviews yet',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12)),
                 ],
               ),
             )
           else ...[
-            Text('Showing ${_reviews.length} of $_totalReviewsCount reviews', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+            Text('Showing ${_reviews.length} of $_totalReviewsCount reviews',
+                style: TextStyle(fontSize: 11, color: Colors.grey[500])),
             const SizedBox(height: 8),
             ..._reviews.map((review) => _buildReviewCard(review)),
-            
             if (_hasMoreReviews)
               Center(
                 child: TextButton(
                   onPressed: _isLoadingMoreReviews ? null : _loadMoreReviews,
                   child: _isLoadingMoreReviews
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : Text('See More (${_totalReviewsCount - _reviews.length} remaining)', style: const TextStyle(fontSize: 12)),
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: AdsyLoadingIndicator(strokeWidth: 2))
+                      : Text(
+                          'See More (${_totalReviewsCount - _reviews.length} remaining)',
+                          style: const TextStyle(fontSize: 12)),
                 ),
               ),
           ],
@@ -1396,7 +1717,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 11)),
-          Text(value, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 11, color: label == 'Category' ? const Color(0xFF8B5CF6) : Colors.black87)),
+          Text(value,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                  color: label == 'Category'
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.black87)),
         ],
       ),
     );
@@ -1405,11 +1732,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   Widget _buildReviewCard(Map<String, dynamic> review) {
     final user = review['user'] as Map<String, dynamic>?;
     final rating = (review['rating'] ?? 0).toInt();
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+          color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1417,8 +1745,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundImage: user?['avatar'] != null ? CachedNetworkImageProvider(_getImageUrl(user!['avatar'])) : null,
-                child: user?['avatar'] == null ? Text((user?['name'] ?? 'U')[0].toUpperCase(), style: const TextStyle(fontSize: 10)) : null,
+                backgroundImage: user?['avatar'] != null
+                    ? CachedNetworkImageProvider(_getImageUrl(user!['avatar']))
+                    : null,
+                child: user?['avatar'] == null
+                    ? Text((user?['name'] ?? 'U')[0].toUpperCase(),
+                        style: const TextStyle(fontSize: 10))
+                    : null,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -1427,36 +1760,62 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Text(user?['name'] ?? 'Anonymous', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
-                        if (user?['kyc'] == true) const Padding(padding: EdgeInsets.only(left: 4), child: Icon(Icons.verified, size: 12, color: Colors.blue)),
+                        Text(user?['name'] ?? 'Anonymous',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w500, fontSize: 12)),
+                        if (user?['kyc'] == true)
+                          const Padding(
+                              padding: EdgeInsets.only(left: 4),
+                              child: Icon(Icons.verified,
+                                  size: 12, color: Colors.blue)),
                         if (user?['is_pro'] == true)
                           Container(
                             margin: const EdgeInsets.only(left: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 3, vertical: 1),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
+                              gradient: const LinearGradient(colors: [
+                                Color(0xFFF59E0B),
+                                Color(0xFFF97316)
+                              ]),
                               borderRadius: BorderRadius.circular(2),
                             ),
-                            child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.bold)),
+                            child: const Text('PRO',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 7,
+                                    fontWeight: FontWeight.bold)),
                           ),
                       ],
                     ),
                     Row(
                       children: [
-                        ...List.generate(5, (i) => Icon(Icons.star, size: 10, color: i < rating ? Colors.amber : Colors.grey[300])),
+                        ...List.generate(
+                            5,
+                            (i) => Icon(Icons.star,
+                                size: 10,
+                                color: i < rating
+                                    ? Colors.amber
+                                    : Colors.grey[300])),
                         const SizedBox(width: 4),
-                        Text('$rating/5', style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+                        Text('$rating/5',
+                            style: TextStyle(
+                                fontSize: 10, color: Colors.grey[600])),
                       ],
                     ),
                   ],
                 ),
               ),
-              Text(_formatReviewDate(review['created_at']), style: TextStyle(fontSize: 10, color: Colors.grey[500])),
+              Text(_formatReviewDate(review['created_at']),
+                  style: TextStyle(fontSize: 10, color: Colors.grey[500])),
             ],
           ),
-          if (review['comment'] != null && review['comment'].toString().isNotEmpty) ...[
+          if (review['comment'] != null &&
+              review['comment'].toString().isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(review['comment'], style: TextStyle(color: Colors.grey[700], fontSize: 12, height: 1.4)),
+            Text(review['comment'],
+                style: TextStyle(
+                    color: Colors.grey[700], fontSize: 12, height: 1.4)),
           ],
         ],
       ),
@@ -1468,7 +1827,12 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 6, offset: const Offset(0, -1))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 6,
+              offset: const Offset(0, -1))
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -1477,8 +1841,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Starting at', style: TextStyle(color: Colors.grey[500], fontSize: 10)),
-                Text('৳${_gigPrice.toStringAsFixed(0)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF8B5CF6))),
+                Text('Starting at',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 10)),
+                Text('৳${_gigPrice.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF8B5CF6))),
               ],
             ),
             const SizedBox(width: 16),
@@ -1489,10 +1858,13 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
                   backgroundColor: const Color(0xFF8B5CF6),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
-                child: const Text('Order Now', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                child: const Text('Order Now',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -1508,11 +1880,15 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
         children: [
           Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
-          const Text('Gig not found', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          const Text('Gig not found',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text('This gig may have been removed', style: TextStyle(color: Colors.grey[500])),
+          Text('This gig may have been removed',
+              style: TextStyle(color: Colors.grey[500])),
           const SizedBox(height: 24),
-          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Go Back')),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Go Back')),
         ],
       ),
     );

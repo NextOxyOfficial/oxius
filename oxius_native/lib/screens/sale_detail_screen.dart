@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../widgets/linkify_text.dart';
 import 'adsy_connect_chat_interface.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Sale Post Detail Screen - View full post details with image gallery and all features
 class SaleDetailScreen extends StatefulWidget {
@@ -169,7 +170,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         children: [
           _isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF10B981)))
+                  child: AdsyLoadingIndicator(color: Color(0xFF10B981)))
               : _post == null
                   ? _buildErrorState()
                   : _buildContent(),
@@ -272,8 +273,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       placeholder: (context, url) => Container(
                         color: const Color(0xFFF3F4F6),
                         child: const Center(
-                          child: CircularProgressIndicator(
-                              color: Color(0xFF10B981)),
+                          child: AdsyLoadingIndicator(color: Color(0xFF10B981)),
                         ),
                       ),
                       errorWidget: (context, url, error) => Container(
@@ -553,8 +553,11 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
             spacing: 0,
             runSpacing: 0,
             children: [
-              _buildSpecTile(Icons.shield_rounded, 'Condition',
-                  _capitalizeCondition(post.condition), const Color(0xFFF59E0B)),
+              _buildSpecTile(
+                  Icons.shield_rounded,
+                  'Condition',
+                  _capitalizeCondition(post.condition),
+                  const Color(0xFFF59E0B)),
               _buildSpecTile(Icons.category_rounded, 'Category',
                   post.categoryName ?? 'N/A', const Color(0xFF10B981)),
               if (post.subcategoryName != null)
@@ -872,9 +875,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   child: Text(
                     post.detailedAddress!,
                     style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF4B5563),
-                        height: 1.45),
+                        fontSize: 13, color: Color(0xFF4B5563), height: 1.45),
                   ),
                 ),
               ],
@@ -912,12 +913,12 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
           _buildSafetyTip('পণ্য ভালোভাবে দেখে ও যাচাই করে কিনুন'),
           _buildSafetyTip('পণ্য হাতে পাওয়ার আগে টাকা পরিশোধ করবেন না'),
           _buildSafetyTip('অগ্রিম বিকাশ/নগদ পাঠানোর অনুরোধ থেকে সতর্ক থাকুন'),
-          _buildSafetyTip('অপরিচিত লিংকে ক্লিক করা ও ব্যক্তিগত তথ্য শেয়ার থেকে বিরত থাকুন'),
+          _buildSafetyTip(
+              'অপরিচিত লিংকে ক্লিক করা ও ব্যক্তিগত তথ্য শেয়ার থেকে বিরত থাকুন'),
           _buildSafetyTip('প্রতারণার শিকার হলে সাথে সাথে পুলিশকে জানান'),
           const SizedBox(height: 6),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFFEF2F2),
               borderRadius: BorderRadius.circular(8),
@@ -1026,8 +1027,10 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pushNamed(
-                          context, '/seller-profile',
-                          arguments: {'userId': user.id, 'userName': user.displayName}),
+                          context, '/seller-profile', arguments: {
+                        'userId': user.id,
+                        'userName': user.displayName
+                      }),
                       child: Row(
                         children: [
                           Flexible(
@@ -1086,8 +1089,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               ),
               if (user.salePostCount != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(10),
@@ -1161,7 +1164,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   }
 
   Widget _buildSimilarListings() {
-    if (_similarPosts.isEmpty && !_isLoadingSimilar) return const SizedBox.shrink();
+    if (_similarPosts.isEmpty && !_isLoadingSimilar)
+      return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.fromLTRB(2, 12, 2, 12),
       child: Column(
@@ -1197,7 +1201,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(
+                    child: AdsyLoadingIndicator(
                         strokeWidth: 2, color: Color(0xFF10B981)),
                   ),
                 )
@@ -1205,8 +1209,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 0.68,
                     crossAxisSpacing: 10,
@@ -1256,7 +1259,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                       placeholder: (context, url) => Container(
                         color: const Color(0xFFF3F4F6),
                         child: const Center(
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                                 strokeWidth: 2, color: Color(0xFF10B981))),
                       ),
                       errorWidget: (context, url, error) => Container(
@@ -1402,8 +1405,8 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                   },
                   icon: const Icon(Icons.phone_rounded, size: 18),
                   label: const Text('Call Seller',
-                      style: TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w700)),
+                      style:
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
@@ -1428,8 +1431,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF0284C7),
-                  side:
-                      const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                  side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
                   backgroundColor: const Color(0xFFF0F9FF),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
@@ -1756,7 +1758,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                                           SizedBox(
                                             width: 16,
                                             height: 16,
-                                            child: CircularProgressIndicator(
+                                            child: AdsyLoadingIndicator(
                                               strokeWidth: 2,
                                               valueColor:
                                                   AlwaysStoppedAnimation<Color>(
@@ -1851,7 +1853,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF10B981)),
+          child: AdsyLoadingIndicator(color: Color(0xFF10B981)),
         ),
       );
 

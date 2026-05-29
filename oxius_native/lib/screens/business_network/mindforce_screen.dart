@@ -13,6 +13,7 @@ import '../business_network/create_post_screen.dart';
 import 'create_problem_screen.dart';
 import '../../widgets/mindforce/problem_detail_bottom_sheet.dart';
 import 'profile_options.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MindForceScreen extends StatefulWidget {
   const MindForceScreen({super.key});
@@ -29,7 +30,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
   bool _isLoadingMore = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final ScrollController _scrollController = ScrollController();
-  
+
   String _selectedFilter = 'all'; // all, active, solved, my
   int? _selectedCategoryId; // null means 'All'
   bool _hasMore = true;
@@ -55,7 +56,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
 
   Future<void> _loadUnreadNotificationCount() async {
     if (!AuthService.isAuthenticated) return;
-    
+
     try {
       final result = await NotificationService.getNotifications(page: 1);
       if (mounted) {
@@ -76,7 +77,8 @@ class _MindForceScreenState extends State<MindForceScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       if (!_isLoadingMore && _hasMore) {
         _loadMoreData();
       }
@@ -88,10 +90,10 @@ class _MindForceScreenState extends State<MindForceScreen> {
       _isLoading = true;
       _hasMore = true;
     });
-    
+
     final problems = await MindForceService.getProblems();
     final categories = await MindForceService.getCategories();
-    
+
     if (mounted) {
       setState(() {
         _problems = problems;
@@ -103,15 +105,15 @@ class _MindForceScreenState extends State<MindForceScreen> {
 
   Future<void> _loadMoreData() async {
     if (_isLoadingMore) return;
-    
+
     setState(() {
       _isLoadingMore = true;
     });
-    
+
     // TODO: Implement paginated API call when backend supports it
     // For now, we'll just set hasMore to false
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     if (mounted) {
       setState(() {
         _isLoadingMore = false;
@@ -122,7 +124,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
 
   List<MindForceProblem> get _filteredProblems {
     var filtered = _problems;
-    
+
     // Filter by status
     switch (_selectedFilter) {
       case 'active':
@@ -141,12 +143,13 @@ class _MindForceScreenState extends State<MindForceScreen> {
         filtered = filtered.where((p) => p.status == 'active').toList();
         break;
     }
-    
+
     // Filter by category
     if (_selectedCategoryId != null) {
-      filtered = filtered.where((p) => p.category?.id == _selectedCategoryId).toList();
+      filtered =
+          filtered.where((p) => p.category?.id == _selectedCategoryId).toList();
     }
-    
+
     return filtered;
   }
 
@@ -205,9 +208,11 @@ class _MindForceScreenState extends State<MindForceScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    final activeCount = _problems.where((problem) => problem.status == 'active').length;
-    final solvedCount = _problems.where((problem) => problem.status == 'solved').length;
-    
+    final activeCount =
+        _problems.where((problem) => problem.status == 'active').length;
+    final solvedCount =
+        _problems.where((problem) => problem.status == 'solved').length;
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: _page,
@@ -232,10 +237,14 @@ class _MindForceScreenState extends State<MindForceScreen> {
           }
         },
       ),
-      drawer: isMobile ? const BusinessNetworkDrawer(currentRoute: '/business-network/mindforce') : null,
+      drawer: isMobile
+          ? const BusinessNetworkDrawer(
+              currentRoute: '/business-network/mindforce')
+          : null,
       body: _isLoading
           ? SkeletonLoader.listView(itemCount: 6, showAvatar: true)
-          : _buildProblemsList(activeCount: activeCount, solvedCount: solvedCount),
+          : _buildProblemsList(
+              activeCount: activeCount, solvedCount: solvedCount),
       bottomNavigationBar: isMobile
           ? BusinessNetworkBottomNavBar(
               currentIndex: 4, // More tab since MindForce is in drawer
@@ -334,11 +343,15 @@ class _MindForceScreenState extends State<MindForceScreen> {
           const SizedBox(height: 10),
           Row(
             children: [
-              Expanded(child: _buildTopMetric('Active', '$activeCount', _brandSoft)),
+              Expanded(
+                  child: _buildTopMetric('Active', '$activeCount', _brandSoft)),
               const SizedBox(width: 8),
-              Expanded(child: _buildTopMetric('Solved', '$solvedCount', _mintSoft)),
+              Expanded(
+                  child: _buildTopMetric('Solved', '$solvedCount', _mintSoft)),
               const SizedBox(width: 8),
-              Expanded(child: _buildTopMetric('Topics', '${_categories.length}', const Color(0xFFE5E7FF))),
+              Expanded(
+                  child: _buildTopMetric('Topics', '${_categories.length}',
+                      const Color(0xFFE5E7FF))),
             ],
           ),
         ],
@@ -395,7 +408,8 @@ class _MindForceScreenState extends State<MindForceScreen> {
               child: DropdownButton<String>(
                 value: _selectedFilter,
                 isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: _muted),
+                icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                    size: 20, color: _muted),
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -437,10 +451,11 @@ class _MindForceScreenState extends State<MindForceScreen> {
     );
   }
 
-  Widget _buildProblemsList({required int activeCount, required int solvedCount}) {
+  Widget _buildProblemsList(
+      {required int activeCount, required int solvedCount}) {
     final problems = _filteredProblems;
 
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadData,
       child: Container(
         color: Colors.white,
@@ -448,7 +463,9 @@ class _MindForceScreenState extends State<MindForceScreen> {
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(4, 6, 4, 14),
-          itemCount: 1 + (problems.isEmpty ? 1 : problems.length) + (_isLoadingMore && problems.isNotEmpty ? 1 : 0),
+          itemCount: 1 +
+              (problems.isEmpty ? 1 : problems.length) +
+              (_isLoadingMore && problems.isNotEmpty ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == 0) {
               return Column(
@@ -490,18 +507,19 @@ class _MindForceScreenState extends State<MindForceScreen> {
             }
 
             if (problems.isEmpty && index == 1) {
-              return _buildEmptyStateCard(activeCount: activeCount, solvedCount: solvedCount);
+              return _buildEmptyStateCard(
+                  activeCount: activeCount, solvedCount: solvedCount);
             }
 
             if (_isLoadingMore && index == problems.length + 1) {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                  child: AdsyLoadingIndicator(),
                 ),
               );
             }
-            
+
             final problemIndex = index - 1;
             return _buildCompactProblemItem(problems[problemIndex]);
           },
@@ -524,7 +542,9 @@ class _MindForceScreenState extends State<MindForceScreen> {
   }
 
   String _getEmptyDescription() {
-    if (_selectedCategoryId != null || _selectedFilter == 'my' || _selectedFilter == 'solved') {
+    if (_selectedCategoryId != null ||
+        _selectedFilter == 'my' ||
+        _selectedFilter == 'solved') {
       return 'This view is empty right now. Try another filter or clear the topic selection to explore more discussions.';
     }
 
@@ -535,8 +555,12 @@ class _MindForceScreenState extends State<MindForceScreen> {
     return _selectedFilter != 'all' || _selectedCategoryId != null;
   }
 
-  Widget _buildEmptyStateCard({required int activeCount, required int solvedCount}) {
-    final selectedCategory = _categories.where((category) => category.id == _selectedCategoryId).cast<MindForceCategory?>().firstWhere(
+  Widget _buildEmptyStateCard(
+      {required int activeCount, required int solvedCount}) {
+    final selectedCategory = _categories
+        .where((category) => category.id == _selectedCategoryId)
+        .cast<MindForceCategory?>()
+        .firstWhere(
           (category) => category != null,
           orElse: () => null,
         );
@@ -584,14 +608,17 @@ class _MindForceScreenState extends State<MindForceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: _surface,
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(color: _line),
                         ),
                         child: Text(
-                          _hasActiveFilters ? 'Filtered view' : 'Quiet right now',
+                          _hasActiveFilters
+                              ? 'Filtered view'
+                              : 'Quiet right now',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -634,7 +661,8 @@ class _MindForceScreenState extends State<MindForceScreen> {
                         ? 'Active feed'
                         : _selectedFilter == 'my'
                             ? 'My problems'
-                            : _selectedFilter[0].toUpperCase() + _selectedFilter.substring(1),
+                            : _selectedFilter[0].toUpperCase() +
+                                _selectedFilter.substring(1),
                     _surface,
                   ),
                 ),
@@ -673,7 +701,8 @@ class _MindForceScreenState extends State<MindForceScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.tips_and_updates_outlined, size: 18, color: _amber),
+                    child: const Icon(Icons.tips_and_updates_outlined,
+                        size: 18, color: _amber),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -830,13 +859,15 @@ class _MindForceScreenState extends State<MindForceScreen> {
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
                                   color: Colors.white,
-                                  child: const Icon(Icons.person_outline, size: 16, color: _muted),
+                                  child: const Icon(Icons.person_outline,
+                                      size: 16, color: _muted),
                                 );
                               },
                             )
                           : Container(
                               color: Colors.white,
-                              child: const Icon(Icons.person_outline, size: 16, color: _muted),
+                              child: const Icon(Icons.person_outline,
+                                  size: 16, color: _muted),
                             ),
                     ),
                   ),
@@ -864,15 +895,18 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                   ),
                                   if (_isUserVerified(problem)) ...[
                                     const SizedBox(width: 3),
-                                    const Icon(Icons.verified_rounded, size: 13, color: Color(0xFF2563EB)),
+                                    const Icon(Icons.verified_rounded,
+                                        size: 13, color: Color(0xFF2563EB)),
                                   ],
                                   if (_isUserPro(problem)) ...[
                                     const SizedBox(width: 4),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4, vertical: 1.5),
                                       decoration: BoxDecoration(
                                         color: _ink,
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
                                       ),
                                       child: const Text(
                                         'PRO',
@@ -891,14 +925,17 @@ class _MindForceScreenState extends State<MindForceScreen> {
                             if (problem.category != null) ...[
                               const SizedBox(width: 6),
                               Flexible(
-                                child: _buildCategoryTag(problem.category!.name),
+                                child:
+                                    _buildCategoryTag(problem.category!.name),
                               ),
                             ],
-                            if (problem.category != null && problem.status == 'solved')
+                            if (problem.category != null &&
+                                problem.status == 'solved')
                               const SizedBox(width: 6),
                             if (problem.status == 'solved')
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: _mintSoft,
                                   borderRadius: BorderRadius.circular(999),
@@ -927,8 +964,10 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                 color: _muted,
                               ),
                             ),
-                            _buildFeedMeta(Icons.visibility_outlined, '${problem.views}'),
-                            _buildFeedMeta(Icons.chat_bubble_outline_rounded, '${problem.comments.length}'),
+                            _buildFeedMeta(
+                                Icons.visibility_outlined, '${problem.views}'),
+                            _buildFeedMeta(Icons.chat_bubble_outline_rounded,
+                                '${problem.comments.length}'),
                           ],
                         ),
                       ],
@@ -961,7 +1000,9 @@ class _MindForceScreenState extends State<MindForceScreen> {
                         ),
                       ],
                     ),
-                    if (problem.description.trim().isNotEmpty || (problem.paymentOption == 'paid' && problem.paymentAmount != null)) ...[
+                    if (problem.description.trim().isNotEmpty ||
+                        (problem.paymentOption == 'paid' &&
+                            problem.paymentAmount != null)) ...[
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -978,9 +1019,14 @@ class _MindForceScreenState extends State<MindForceScreen> {
                                 ),
                               ),
                             ),
-                          if (problem.paymentOption == 'paid' && problem.paymentAmount != null) ...[
-                            if (problem.description.trim().isNotEmpty) const SizedBox(width: 8),
-                            _buildMetaTag('৳${problem.paymentAmount!.toStringAsFixed(0)}', _amberSoft, _amber),
+                          if (problem.paymentOption == 'paid' &&
+                              problem.paymentAmount != null) ...[
+                            if (problem.description.trim().isNotEmpty)
+                              const SizedBox(width: 8),
+                            _buildMetaTag(
+                                '৳${problem.paymentAmount!.toStringAsFixed(0)}',
+                                _amberSoft,
+                                _amber),
                           ],
                         ],
                       ),

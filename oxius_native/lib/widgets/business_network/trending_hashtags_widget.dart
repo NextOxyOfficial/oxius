@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../services/business_network_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class TrendingHashtagsWidget extends StatefulWidget {
   final Function(String)? onHashtagTap;
-  
+
   const TrendingHashtagsWidget({
     super.key,
     this.onHashtagTap,
@@ -53,10 +54,12 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
 
   double _getPercentage(Map<String, dynamic> tag) {
     if (_hashtags.isEmpty) return 0;
-    
-    final maxCount = _hashtags.map((t) => t['count'] as int? ?? 0).reduce((a, b) => a > b ? a : b);
+
+    final maxCount = _hashtags
+        .map((t) => t['count'] as int? ?? 0)
+        .reduce((a, b) => a > b ? a : b);
     if (maxCount <= 0) return 0;
-    
+
     return ((tag['count'] as int? ?? 0) / maxCount * 100).clamp(10.0, 100.0);
   }
 
@@ -107,7 +110,8 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                   onTap: _showAllHashtags,
                   borderRadius: BorderRadius.circular(4),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     child: Row(
                       children: [
                         Text(
@@ -130,7 +134,7 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
               ],
             ),
           ),
-          
+
           // Content
           if (_isLoading)
             Padding(
@@ -139,9 +143,10 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
                   ),
                 ),
               ),
@@ -177,7 +182,8 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                     }
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -231,7 +237,10 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [Colors.blue.shade400, Colors.blue.shade600],
+                                  colors: [
+                                    Colors.blue.shade400,
+                                    Colors.blue.shade600
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(2),
                               ),
@@ -252,11 +261,12 @@ class _TrendingHashtagsWidgetState extends State<TrendingHashtagsWidget> {
 
 class _AllHashtagsBottomSheet extends StatefulWidget {
   final Function(String)? onHashtagTap;
-  
+
   const _AllHashtagsBottomSheet({this.onHashtagTap});
 
   @override
-  State<_AllHashtagsBottomSheet> createState() => _AllHashtagsBottomSheetState();
+  State<_AllHashtagsBottomSheet> createState() =>
+      _AllHashtagsBottomSheetState();
 }
 
 class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
@@ -329,7 +339,9 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final maxCount = _allHashtags.isNotEmpty
-        ? _allHashtags.map((t) => t['count'] as int? ?? 0).reduce((a, b) => a > b ? a : b)
+        ? _allHashtags
+            .map((t) => t['count'] as int? ?? 0)
+            .reduce((a, b) => a > b ? a : b)
         : 1;
 
     return Container(
@@ -347,7 +359,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
               gradient: LinearGradient(
                 colors: [Colors.blue.shade600, Colors.indigo.shade600],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(
               children: [
@@ -382,7 +395,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
               decoration: InputDecoration(
                 hintText: 'Search hashtags...',
                 hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-                prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade600, size: 20),
+                prefixIcon: Icon(Icons.search_rounded,
+                    color: Colors.grey.shade600, size: 20),
                 filled: true,
                 fillColor: Colors.grey.shade50,
                 border: OutlineInputBorder(
@@ -397,7 +411,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.blue.shade500, width: 2),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -406,8 +421,9 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
+                    child: AdsyLoadingIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.blue.shade600),
                     ),
                   )
                 : _filteredHashtags.isEmpty
@@ -415,19 +431,22 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
+                            Icon(Icons.search_off_rounded,
+                                size: 48, color: Colors.grey.shade400),
                             const SizedBox(height: 12),
                             Text(
                               _searchQuery.isEmpty
                                   ? 'No hashtags available'
                                   : 'No hashtags found matching "$_searchQuery"',
-                              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.grey.shade600),
                             ),
                           ],
                         ),
                       )
                     : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         itemCount: _filteredHashtags.length,
                         separatorBuilder: (context, index) => Divider(
                           height: 1,
@@ -437,7 +456,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                         itemBuilder: (context, index) {
                           final tag = _filteredHashtags[index];
                           final count = tag['count'] as int? ?? 0;
-                          final percentage = (count / maxCount * 100).clamp(0.0, 100.0);
+                          final percentage =
+                              (count / maxCount * 100).clamp(0.0, 100.0);
 
                           return InkWell(
                             onTap: () {
@@ -447,7 +467,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                               }
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
                               child: Row(
                                 children: [
                                   // Rank badge
@@ -455,7 +476,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                     width: 32,
                                     height: 32,
                                     decoration: BoxDecoration(
-                                      color: _getRankBadgeColor(index).withOpacity(0.15),
+                                      color: _getRankBadgeColor(index)
+                                          .withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(
@@ -470,14 +492,16 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  
+
                                   // Hashtag info
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
                                               child: Text(
@@ -506,7 +530,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                           height: 4,
                                           decoration: BoxDecoration(
                                             color: Colors.grey.shade200,
-                                            borderRadius: BorderRadius.circular(2),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
                                           ),
                                           child: FractionallySizedBox(
                                             alignment: Alignment.centerLeft,
@@ -514,7 +539,8 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                             child: Container(
                                               decoration: BoxDecoration(
                                                 color: _getBarColor(index),
-                                                borderRadius: BorderRadius.circular(2),
+                                                borderRadius:
+                                                    BorderRadius.circular(2),
                                               ),
                                             ),
                                           ),
@@ -522,7 +548,7 @@ class _AllHashtagsBottomSheetState extends State<_AllHashtagsBottomSheet> {
                                       ],
                                     ),
                                   ),
-                                  
+
                                   const SizedBox(width: 8),
                                   Icon(
                                     Icons.chevron_right_rounded,

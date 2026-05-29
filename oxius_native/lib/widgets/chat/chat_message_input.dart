@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// The bottom input bar for the AdsyConnect chat screen.
 ///
@@ -279,7 +280,7 @@ class ChatMessageInput extends StatelessWidget {
                 const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 2,
                     valueColor:
                         AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
@@ -308,7 +309,7 @@ class ChatMessageInput extends StatelessWidget {
                 const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 2,
                     valueColor:
                         AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
@@ -484,8 +485,7 @@ class ChatMessageInput extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: Image.memory(
-                          base64Decode(
-                              compressedImages[index].split(',').last),
+                          base64Decode(compressedImages[index].split(',').last),
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
@@ -503,7 +503,8 @@ class ChatMessageInput extends StatelessWidget {
                             color: Colors.red,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close, size: 12, color: Colors.white),
+                          child: const Icon(Icons.close,
+                              size: 12, color: Colors.white),
                         ),
                       ),
                     ),
@@ -576,7 +577,8 @@ class ChatMessageInput extends StatelessWidget {
             onTap: onCancelReply,
             child: Container(
               padding: const EdgeInsets.all(4),
-              child: Icon(Icons.close_rounded, size: 18, color: Colors.grey.shade500),
+              child: Icon(Icons.close_rounded,
+                  size: 18, color: Colors.grey.shade500),
             ),
           ),
         ],

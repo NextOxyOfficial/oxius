@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Global image utility to handle CORS and network issues
 /// Use this instead of Image.network throughout the app
@@ -11,10 +12,10 @@ class AppImage {
     if (kIsWeb && (url.contains('adsyclub.com') || url.contains('http'))) {
       // Option 1: Use corsproxy.io (free service)
       // return 'https://corsproxy.io/?${Uri.encodeComponent(url)}';
-      
+
       // Option 2: Use allorigins.win (free service)
       // return 'https://api.allorigins.win/raw?url=${Uri.encodeComponent(url)}';
-      
+
       // Option 3: For now, return original URL and let backend handle CORS
       // Backend should add proper CORS headers
       return url;
@@ -50,10 +51,11 @@ class AppImage {
       color: color,
       colorBlendMode: colorBlendMode,
       alignment: alignment,
-      placeholder: (context, url) => placeholder ?? _buildPlaceholder(width, height),
+      placeholder: (context, url) =>
+          placeholder ?? _buildPlaceholder(width, height),
       errorWidget: (context, url, error) {
         // Silently handle CORS errors without console spam
-        if (error.toString().contains('CORS') || 
+        if (error.toString().contains('CORS') ||
             error.toString().contains('XMLHttpRequest') ||
             error.toString().contains('ERR_FAILED')) {
           // Don't print CORS errors to reduce console noise
@@ -97,16 +99,16 @@ class AppImage {
   /// Load image as background
   static DecorationImage? backgroundImage(String? url) {
     if (url == null || url.isEmpty) return null;
-    
+
     // Use CORS-safe URL for web
     final safeUrl = _getCorsProxyUrl(url);
-    
+
     return DecorationImage(
       image: CachedNetworkImageProvider(safeUrl),
       fit: BoxFit.cover,
       onError: (error, stackTrace) {
         // Silently handle CORS errors
-        if (!error.toString().contains('CORS') && 
+        if (!error.toString().contains('CORS') &&
             !error.toString().contains('XMLHttpRequest') &&
             !error.toString().contains('ERR_FAILED')) {
           print('Background image error: $error');
@@ -124,7 +126,7 @@ class AppImage {
         child: SizedBox(
           width: 20,
           height: 20,
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             strokeWidth: 2,
             color: Colors.grey.shade400,
           ),
@@ -133,16 +135,17 @@ class AppImage {
     );
   }
 
-  static Widget _buildErrorWidget(double? width, double? height, Widget? custom) {
+  static Widget _buildErrorWidget(
+      double? width, double? height, Widget? custom) {
     if (custom != null) return custom;
-    
+
     return Container(
       width: width,
       height: height,
       color: Colors.grey.shade100,
       child: Icon(
         Icons.image_not_supported_outlined,
-        size: (width != null && height != null) 
+        size: (width != null && height != null)
             ? (width < height ? width * 0.4 : height * 0.4)
             : 40,
         color: Colors.grey.shade400,

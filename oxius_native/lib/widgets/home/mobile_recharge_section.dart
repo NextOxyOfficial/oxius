@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../services/translation_service.dart';
 import '../../services/mobile_recharge_service.dart';
 import '../../screens/mobile_recharge/mobile_recharge_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 // Design tokens — mirrors the rideshare panel palette
 const _emerald = Color(0xFF10B981);
@@ -155,7 +156,7 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
           SizedBox(
             width: 11,
             height: 11,
-            child: CircularProgressIndicator(
+            child: AdsyLoadingIndicator(
               strokeWidth: 1.5,
               valueColor: AlwaysStoppedAnimation<Color>(_slate400),
             ),
@@ -183,7 +184,8 @@ class _MobileRechargeSectionState extends State<MobileRechargeSection> {
         for (int i = 0; i < visibleOperators.length; i++) ...[
           Expanded(
             child: _OperatorChip(
-              shortName: _getOperatorShortName(visibleOperators[i]['name'] as String),
+              shortName:
+                  _getOperatorShortName(visibleOperators[i]['name'] as String),
               iconUrl: visibleOperators[i]['icon']?.toString(),
             ),
           ),

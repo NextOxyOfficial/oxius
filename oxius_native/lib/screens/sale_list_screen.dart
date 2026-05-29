@@ -11,6 +11,7 @@ import '../services/translation_service.dart';
 import '../widgets/sale_skeleton_loader.dart';
 import '../widgets/sale_list_skeleton_loader.dart';
 import 'package:intl/intl.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Sale Listing Screen - Browse sale posts with filters and search
 class SaleListScreen extends StatefulWidget {
@@ -31,15 +32,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
   late SalePostService _postService;
   late GeoLocationService _geoService;
   final TranslationService _translationService = TranslationService();
-  
+
   List<SalePost> _posts = [];
   List<SaleCategory> _categories = [];
   bool _isLoading = false; // Start as false, will be set to true when fetching
   bool _isLoadingMore = false;
-  bool _isListView = true; // Toggle between grid and list view - default to list
+  bool _isListView =
+      true; // Toggle between grid and list view - default to list
   int _totalCount = 0;
   bool _initialLoadComplete = false;
-  
+
   // Filters
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
@@ -49,21 +51,21 @@ class _SaleListScreenState extends State<SaleListScreen> {
   String? _selectedDivision;
   String? _selectedDistrict;
   String? _selectedArea;
-  
+
   // Search state
   bool _isSearchActive = false;
-  
+
   // Location data (using proper geo models)
   List<Region> _regions = [];
   List<City> _cities = [];
   List<Upazila> _upazilas = [];
-  
+
   // Price range
   double? _minPrice;
   double? _maxPrice;
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
-  
+
   // Recent listings
   List<SalePost> _recentListings = [];
   bool _isLoadingRecentListings = false;
@@ -71,10 +73,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
   int _recentListingsTotalCount = 0;
   bool _isLoadingMoreRecent = false;
   final ScrollController _recentScrollController = ScrollController();
-  
+
   // Expanded categories in filter
   final Set<String> _expandedCategories = <String>{};
-  
+
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounceTimer;
@@ -109,7 +111,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
   void _onSearchChanged(String value) {
     // Cancel previous timer
     _debounceTimer?.cancel();
-    
+
     // Start new timer for 300ms debounce
     _debounceTimer = Timer(const Duration(milliseconds: 300), () {
       setState(() {
@@ -148,7 +150,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
     }
   }
 
-  Future<void> _fetchCities(String regionName, [StateSetter? setModalState]) async {
+  Future<void> _fetchCities(String regionName,
+      [StateSetter? setModalState]) async {
     try {
       final cities = await _geoService.fetchCities(regionName: regionName);
       if (mounted) {
@@ -169,7 +172,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
     }
   }
 
-  Future<void> _fetchUpazilas(String cityName, [StateSetter? setModalState]) async {
+  Future<void> _fetchUpazilas(String cityName,
+      [StateSetter? setModalState]) async {
     try {
       final upazilas = await _geoService.fetchUpazilas(cityName: cityName);
       if (mounted) {
@@ -189,8 +193,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
   }
 
   void _onRecentScroll() {
-    if (_recentScrollController.position.pixels >= _recentScrollController.position.maxScrollExtent - 50) {
-      if (!_isLoadingMoreRecent && _recentListings.length < _recentListingsTotalCount) {
+    if (_recentScrollController.position.pixels >=
+        _recentScrollController.position.maxScrollExtent - 50) {
+      if (!_isLoadingMoreRecent &&
+          _recentListings.length < _recentListingsTotalCount) {
         _loadMoreRecentListings();
       }
     }
@@ -211,7 +217,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
         _recentListings = [];
       });
     }
-    
+
     setState(() => _isLoadingRecentListings = true);
     try {
       final response = await _postService.fetchPosts(
@@ -236,7 +242,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Future<void> _loadMoreRecentListings() async {
     if (_isLoadingMoreRecent) return;
-    
+
     setState(() => _isLoadingMoreRecent = true);
     try {
       final nextPage = _recentListingsPage + 1;
@@ -416,7 +422,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
             children: [
               Text(
                 'Applied Filters',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               TextButton(
@@ -444,7 +453,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   minimumSize: const Size(50, 30),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text('Clear All', style: TextStyle(fontSize: 11, color: Color(0xFFEF4444))),
+                child: const Text('Clear All',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFEF4444))),
               ),
             ],
           ),
@@ -545,7 +555,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, IconData icon, VoidCallback onRemove, {Color? color}) {
+  Widget _buildFilterChip(String label, IconData icon, VoidCallback onRemove,
+      {Color? color}) {
     final chipColor = color ?? const Color(0xFF6B7280);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -561,7 +572,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: chipColor, fontWeight: FontWeight.w600),
+            style: TextStyle(
+                fontSize: 11, color: chipColor, fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 4),
           GestureDetector(
@@ -585,7 +597,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 style: const TextStyle(color: Colors.white, fontSize: 16),
                 decoration: InputDecoration(
                   hintText: 'Search products...',
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+                  hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.7), fontSize: 16),
                   border: InputBorder.none,
                 ),
                 onChanged: (value) {
@@ -648,39 +661,41 @@ class _SaleListScreenState extends State<SaleListScreen> {
         ],
       ),
       body: _isLoading && !_initialLoadComplete
-          ? _isListView 
-            ? const SaleListSkeletonLoader(itemCount: 6)
-            : const SaleSkeletonLoader(itemCount: 6)
-          : RefreshIndicator(
+          ? _isListView
+              ? const SaleListSkeletonLoader(itemCount: 6)
+              : const SaleSkeletonLoader(itemCount: 6)
+          : AdsyRefreshIndicator(
               color: const Color(0xFF10B981),
               onRefresh: _handleRefresh,
               child: ListView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                // Location Header
-                if (_selectedDivision != null || _selectedDistrict != null || _selectedArea != null)
-                  _buildLocationHeader(),
-                
-                // Results Count & Sort
-                _buildResultsBar(),
-                
-                // Applied Filters
-                if (_hasActiveFilters()) _buildAppliedFilters(),
-                
-                // Posts Grid
-                if (_posts.isEmpty)
-                  _buildEmptyState()
-                else
-                  _buildPostsGridSection(),
-                
-                // Recent Listings
-                _buildRecentListings(),
-                
-                const SizedBox(height: 80),
-              ],
+                  // Location Header
+                  if (_selectedDivision != null ||
+                      _selectedDistrict != null ||
+                      _selectedArea != null)
+                    _buildLocationHeader(),
+
+                  // Results Count & Sort
+                  _buildResultsBar(),
+
+                  // Applied Filters
+                  if (_hasActiveFilters()) _buildAppliedFilters(),
+
+                  // Posts Grid
+                  if (_posts.isEmpty)
+                    _buildEmptyState()
+                  else
+                    _buildPostsGridSection(),
+
+                  // Recent Listings
+                  _buildRecentListings(),
+
+                  const SizedBox(height: 80),
+                ],
+              ),
             ),
-          ),
       floatingActionButton: AuthService.isAuthenticated
           ? FloatingActionButton.extended(
               onPressed: () {
@@ -690,7 +705,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
               foregroundColor: Colors.white,
               elevation: 4,
               icon: const Icon(Icons.add_rounded, size: 20),
-              label: const Text('Post Ad', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: -0.1)),
+              label: const Text('Post Ad',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1)),
             )
           : null,
     );
@@ -717,7 +736,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(Icons.location_on_rounded, color: Colors.white, size: 15),
+            child: const Icon(Icons.location_on_rounded,
+                color: Colors.white, size: 15),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -726,12 +746,19 @@ class _SaleListScreenState extends State<SaleListScreen> {
               children: [
                 const Text(
                   'Showing results for',
-                  style: TextStyle(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   locationText,
-                  style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: -0.1),
+                  style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.1),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -755,7 +782,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(Icons.close_rounded, color: Colors.white, size: 15),
+              child: const Icon(Icons.close_rounded,
+                  color: Colors.white, size: 15),
             ),
           ),
         ],
@@ -773,10 +801,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
         decoration: InputDecoration(
           hintText: 'Search products...',
           hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
-          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade600, size: 20),
+          prefixIcon:
+              Icon(Icons.search_rounded, color: Colors.grey.shade600, size: 20),
           suffixIcon: _searchQuery != null
               ? IconButton(
-                  icon: Icon(Icons.clear_rounded, size: 18, color: Colors.grey.shade600),
+                  icon: Icon(Icons.clear_rounded,
+                      size: 18, color: Colors.grey.shade600),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _searchQuery = null);
@@ -786,7 +816,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
               : null,
           filled: true,
           fillColor: Colors.grey.shade50,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,
@@ -810,8 +841,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
   }
 
   Widget _buildResultsBar() {
-    final hasLocationFilter = _selectedDivision != null || _selectedDistrict != null || _selectedArea != null;
-    
+    final hasLocationFilter = _selectedDivision != null ||
+        _selectedDistrict != null ||
+        _selectedArea != null;
+
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -836,19 +869,25 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     if (hasLocationFilter) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: const Color(0xFF10B981).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                          border: Border.all(
+                              color: const Color(0xFF10B981).withOpacity(0.3)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.location_on_rounded, size: 11, color: const Color(0xFF10B981)),
+                            Icon(Icons.location_on_rounded,
+                                size: 11, color: const Color(0xFF10B981)),
                             const SizedBox(width: 4),
                             Text(
-                              _selectedArea ?? _selectedDistrict ?? _selectedDivision ?? '',
+                              _selectedArea ??
+                                  _selectedDistrict ??
+                                  _selectedDivision ??
+                                  '',
                               style: const TextStyle(
                                 fontSize: 11,
                                 color: Color(0xFF10B981),
@@ -867,7 +906,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 });
                                 _applyFilters();
                               },
-                              child: const Icon(Icons.close_rounded, size: 13, color: Color(0xFF10B981)),
+                              child: const Icon(Icons.close_rounded,
+                                  size: 13, color: Color(0xFF10B981)),
                             ),
                           ],
                         ),
@@ -888,9 +928,12 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     InkWell(
                       onTap: () => setState(() => _isListView = false),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: !_isListView ? const Color(0xFF10B981) : Colors.transparent,
+                          color: !_isListView
+                              ? const Color(0xFF10B981)
+                              : Colors.transparent,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(6),
                             bottomLeft: Radius.circular(6),
@@ -899,17 +942,23 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         child: Icon(
                           Icons.grid_view_rounded,
                           size: 16,
-                          color: !_isListView ? Colors.white : Colors.grey.shade700,
+                          color: !_isListView
+                              ? Colors.white
+                              : Colors.grey.shade700,
                         ),
                       ),
                     ),
-                    Container(width: 1, height: 20, color: Colors.grey.shade300),
+                    Container(
+                        width: 1, height: 20, color: Colors.grey.shade300),
                     InkWell(
                       onTap: () => setState(() => _isListView = true),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: _isListView ? const Color(0xFF10B981) : Colors.transparent,
+                          color: _isListView
+                              ? const Color(0xFF10B981)
+                              : Colors.transparent,
                           borderRadius: const BorderRadius.only(
                             topRight: Radius.circular(6),
                             bottomRight: Radius.circular(6),
@@ -918,7 +967,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         child: Icon(
                           Icons.view_list_rounded,
                           size: 16,
-                          color: _isListView ? Colors.white : Colors.grey.shade700,
+                          color:
+                              _isListView ? Colors.white : Colors.grey.shade700,
                         ),
                       ),
                     ),
@@ -933,9 +983,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   _applyFilters();
                 },
                 offset: const Offset(0, 40),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(6),
@@ -944,22 +996,45 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.sort_rounded, size: 15, color: Colors.grey.shade700),
+                      Icon(Icons.sort_rounded,
+                          size: 15, color: Colors.grey.shade700),
                       const SizedBox(width: 4),
                       Text(
-                        _sortBy == 'newest' ? 'Newest' : _sortBy == 'oldest' ? 'Oldest' : _sortBy == 'price_low' ? 'Price: Low' : 'Price: High',
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                        _sortBy == 'newest'
+                            ? 'Newest'
+                            : _sortBy == 'oldest'
+                                ? 'Oldest'
+                                : _sortBy == 'price_low'
+                                    ? 'Price: Low'
+                                    : 'Price: High',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                            fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(width: 2),
-                      Icon(Icons.arrow_drop_down_rounded, size: 16, color: Colors.grey.shade700),
+                      Icon(Icons.arrow_drop_down_rounded,
+                          size: 16, color: Colors.grey.shade700),
                     ],
                   ),
                 ),
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'newest', child: Text('Newest First', style: TextStyle(fontSize: 13))),
-                  const PopupMenuItem(value: 'oldest', child: Text('Oldest First', style: TextStyle(fontSize: 13))),
-                  const PopupMenuItem(value: 'price_low', child: Text('Price: Low to High', style: TextStyle(fontSize: 13))),
-                  const PopupMenuItem(value: 'price_high', child: Text('Price: High to Low', style: TextStyle(fontSize: 13))),
+                  const PopupMenuItem(
+                      value: 'newest',
+                      child:
+                          Text('Newest First', style: TextStyle(fontSize: 13))),
+                  const PopupMenuItem(
+                      value: 'oldest',
+                      child:
+                          Text('Oldest First', style: TextStyle(fontSize: 13))),
+                  const PopupMenuItem(
+                      value: 'price_low',
+                      child: Text('Price: Low to High',
+                          style: TextStyle(fontSize: 13))),
+                  const PopupMenuItem(
+                      value: 'price_high',
+                      child: Text('Price: High to Low',
+                          style: TextStyle(fontSize: 13))),
                 ],
               ),
             ],
@@ -978,10 +1053,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
             child: Text(
-              _selectedCategoryId != null 
+              _selectedCategoryId != null
                   ? '${_getCategoryName(_selectedCategoryId)} Listings'
                   : 'Browse All Listings',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF1F2937), letterSpacing: -0.2),
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1F2937),
+                  letterSpacing: -0.2),
             ),
           ),
           _isListView
@@ -992,25 +1071,28 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   itemCount: _posts.length,
                   separatorBuilder: (context, index) =>
                       const Divider(height: 1, thickness: 1),
-                  itemBuilder: (context, index) => _buildListItem(_posts[index]),
+                  itemBuilder: (context, index) =>
+                      _buildListItem(_posts[index]),
                 )
               : GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   padding: EdgeInsets.zero,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                    crossAxisCount:
+                        MediaQuery.of(context).size.width > 600 ? 3 : 2,
                     childAspectRatio: 0.68,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
                   itemCount: _posts.length,
-                  itemBuilder: (context, index) => _buildPostCard(_posts[index]),
+                  itemBuilder: (context, index) =>
+                      _buildPostCard(_posts[index]),
                 ),
           if (_isLoadingMore)
-            _isListView 
-              ? const SaleListSkeletonLoader(itemCount: 4)
-              : const SaleSkeletonLoader(itemCount: 4),
+            _isListView
+                ? const SaleListSkeletonLoader(itemCount: 4)
+                : const SaleSkeletonLoader(itemCount: 4),
           // See More Button
           if (!_isLoadingMore && _posts.length < _totalCount)
             Padding(
@@ -1025,8 +1107,11 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF10B981),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    side: BorderSide(color: const Color(0xFF10B981).withOpacity(0.4), width: 1.5),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    side: BorderSide(
+                        color: const Color(0xFF10B981).withOpacity(0.4),
+                        width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -1035,7 +1120,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
               ),
             ),
           // All Posts Loaded Message
-          if (!_isLoadingMore && _posts.length >= _totalCount && _posts.isNotEmpty)
+          if (!_isLoadingMore &&
+              _posts.length >= _totalCount &&
+              _posts.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
@@ -1047,17 +1134,22 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         color: const Color(0xFF10B981).withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 32),
+                      child: const Icon(Icons.check_circle,
+                          color: Color(0xFF10B981), size: 32),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       'All posts loaded!',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF1F2937)),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1F2937)),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       "You've seen all $_totalCount available listings",
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade600),
                     ),
                   ],
                 ),
@@ -1105,7 +1197,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             child: SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
                                     Color(0xFF10B981)),
@@ -1187,7 +1279,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 5, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withOpacity(0.1),
+                                  color:
+                                      const Color(0xFF10B981).withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
                                       color: const Color(0xFF10B981)
@@ -1257,7 +1350,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
 
   Widget _buildPostCard(SalePost post) {
     final bool hasImage = post.images != null && post.images!.isNotEmpty;
-    
+
     // Get the image URL - use directly like sale_detail_screen.dart does
     String getImageUrl() {
       if (!hasImage) return '';
@@ -1295,7 +1388,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(8)),
                   child: AspectRatio(
                     aspectRatio: 1.1,
                     child: hasImage
@@ -1307,7 +1401,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             placeholder: (context, url) => Container(
                               color: Colors.grey.shade100,
                               child: const Center(
-                                child: CircularProgressIndicator(
+                                child: AdsyLoadingIndicator(
                                   strokeWidth: 2,
                                   color: Color(0xFF10B981),
                                 ),
@@ -1318,11 +1412,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.image_not_supported_rounded, color: Colors.grey.shade400, size: 40),
+                                  Icon(Icons.image_not_supported_rounded,
+                                      color: Colors.grey.shade400, size: 40),
                                   const SizedBox(height: 4),
                                   Text(
                                     'No Image',
-                                    style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+                                    style: TextStyle(
+                                        color: Colors.grey.shade500,
+                                        fontSize: 10),
                                   ),
                                 ],
                               ),
@@ -1333,11 +1430,14 @@ class _SaleListScreenState extends State<SaleListScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 40),
+                                Icon(Icons.image_outlined,
+                                    color: Colors.grey.shade400, size: 40),
                                 const SizedBox(height: 4),
                                 Text(
                                   'No Image',
-                                  style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+                                  style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 10),
                                 ),
                               ],
                             ),
@@ -1349,7 +1449,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   top: 8,
                   right: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(4),
@@ -1367,7 +1468,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                 ),
               ],
             ),
-            
+
             // Content
             Padding(
               padding: const EdgeInsets.all(4),
@@ -1388,9 +1489,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  
+
                   const SizedBox(height: 3),
-                  
+
                   // Location
                   if (_formatLocation(post).isNotEmpty)
                     Padding(
@@ -1400,7 +1501,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
-                            child: Icon(Icons.location_on_rounded, size: 11, color: Colors.grey.shade500),
+                            child: Icon(Icons.location_on_rounded,
+                                size: 11, color: Colors.grey.shade500),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -1418,7 +1520,7 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         ],
                       ),
                     ),
-                  
+
                   // Price and Time Row (compact)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1456,8 +1558,9 @@ class _SaleListScreenState extends State<SaleListScreen> {
   }
 
   Widget _buildEmptyState() {
-    final bool isSearchResult = _searchQuery != null && _searchQuery!.isNotEmpty;
-    
+    final bool isSearchResult =
+        _searchQuery != null && _searchQuery!.isNotEmpty;
+
     return Container(
       padding: const EdgeInsets.all(32),
       child: Center(
@@ -1495,7 +1598,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         ? 'No listings found in this category. Try selecting a different category or adjusting your filters.'
                         : 'No listings available at the moment. Check back later for new posts.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.5),
+                style: TextStyle(
+                    fontSize: 14, color: Colors.grey.shade600, height: 1.5),
               ),
             ),
             const SizedBox(height: 24),
@@ -1509,12 +1613,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   _applyFilters();
                 },
                 icon: const Icon(Icons.clear_all, size: 18),
-                label: const Text('Clear search and browse all listings', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                label: const Text('Clear search and browse all listings',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   elevation: 2,
                 ),
               )
@@ -1536,12 +1644,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   _applyFilters();
                 },
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Clear Filters', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                label: const Text('Clear Filters',
+                    style:
+                        TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF10B981),
                   side: const BorderSide(color: Color(0xFF10B981), width: 1.5),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
           ],
@@ -1550,8 +1662,6 @@ class _SaleListScreenState extends State<SaleListScreen> {
     );
   }
 
-
-
   Widget _buildRecentListings() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -1559,18 +1669,24 @@ class _SaleListScreenState extends State<SaleListScreen> {
       decoration: BoxDecoration(
         color: Colors.amber.shade50.withOpacity(0.4),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.amber.shade200, style: BorderStyle.solid, width: 1),
+        border: Border.all(
+            color: Colors.amber.shade200, style: BorderStyle.solid, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.access_time_rounded, color: Colors.amber.shade700, size: 18),
+              Icon(Icons.access_time_rounded,
+                  color: Colors.amber.shade700, size: 18),
               const SizedBox(width: 6),
               Text(
                 'Recent Listings',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.amber.shade700, letterSpacing: -0.2),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.amber.shade700,
+                    letterSpacing: -0.2),
               ),
             ],
           ),
@@ -1580,19 +1696,21 @@ class _SaleListScreenState extends State<SaleListScreen> {
             child: ListView.builder(
               controller: _recentScrollController,
               scrollDirection: Axis.horizontal,
-              itemCount: _recentListings.length + (_isLoadingMoreRecent ? 1 : 0),
+              itemCount:
+                  _recentListings.length + (_isLoadingMoreRecent ? 1 : 0),
               itemBuilder: (context, index) {
                 // Show loading indicator at the end
                 if (index == _recentListings.length) {
                   return Container(
                     width: 80,
                     alignment: Alignment.center,
-                    child: const CircularProgressIndicator(),
+                    child: const AdsyLoadingIndicator(),
                   );
                 }
-                
+
                 final listing = _recentListings[index];
-                final bool hasImage = listing.images != null && listing.images!.isNotEmpty;
+                final bool hasImage =
+                    listing.images != null && listing.images!.isNotEmpty;
 
                 // Get image URL - use directly like sale_detail_screen.dart does
                 String getImageUrl() {
@@ -1630,7 +1748,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(10)),
                           child: Stack(
                             children: [
                               hasImage
@@ -1640,41 +1759,50 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                       width: double.infinity,
                                       fit: BoxFit.cover,
                                       memCacheHeight: 156,
-                                      fadeInDuration: const Duration(milliseconds: 120),
+                                      fadeInDuration:
+                                          const Duration(milliseconds: 120),
                                       placeholder: (context, url) => Container(
                                         height: 85,
                                         color: Colors.grey.shade100,
                                         child: const Center(
-                                          child: CircularProgressIndicator(
+                                          child: AdsyLoadingIndicator(
                                             strokeWidth: 2,
                                             color: Color(0xFF10B981),
                                           ),
                                         ),
                                       ),
-                                      errorWidget: (context, url, error) => Container(
+                                      errorWidget: (context, url, error) =>
+                                          Container(
                                         height: 85,
                                         color: Colors.grey.shade100,
-                                        child: Icon(Icons.image_not_supported_rounded, color: Colors.grey.shade400, size: 28),
+                                        child: Icon(
+                                            Icons.image_not_supported_rounded,
+                                            color: Colors.grey.shade400,
+                                            size: 28),
                                       ),
                                     )
                                   : Container(
                                       height: 78,
                                       width: double.infinity,
                                       color: Colors.grey.shade100,
-                                      child: Icon(Icons.image_outlined, color: Colors.grey.shade400, size: 28),
+                                      child: Icon(Icons.image_outlined,
+                                          color: Colors.grey.shade400,
+                                          size: 28),
                                     ),
                               if (_getCategoryName(listing.categoryId) != null)
                                 Positioned(
                                   top: 6,
                                   right: 6,
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
                                       color: Colors.white.withOpacity(0.95),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      _getCategoryName(listing.categoryId) ?? '',
+                                      _getCategoryName(listing.categoryId) ??
+                                          '',
                                       style: const TextStyle(
                                         fontSize: 9,
                                         color: Color(0xFF10B981),
@@ -1696,36 +1824,44 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                 listing.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF1F2937), height: 1.2, letterSpacing: -0.1),
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1F2937),
+                                    height: 1.2,
+                                    letterSpacing: -0.1),
                               ),
                               const SizedBox(height: 2),
                               Row(
                                 children: [
-                                  Icon(Icons.location_on_rounded, size: 9, color: Colors.grey.shade500),
+                                  Icon(Icons.location_on_rounded,
+                                      size: 9, color: Colors.grey.shade500),
                                   const SizedBox(width: 2),
                                   Expanded(
                                     child: Text(
                                       _formatLocation(listing),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(fontSize: 8, color: Colors.grey.shade600),
+                                      style: TextStyle(
+                                          fontSize: 8,
+                                          color: Colors.grey.shade600),
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 3),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Flexible(
                                     child: Text(
                                       _formatPrice(listing),
                                       style: TextStyle(
-                                        fontSize: listing.negotiable ? 9 : 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF10B981),
-                                        letterSpacing: -0.1
-                                      ),
+                                          fontSize: listing.negotiable ? 9 : 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF10B981),
+                                          letterSpacing: -0.1),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -1733,7 +1869,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
                                   if (listing.createdAt != null)
                                     Text(
                                       _formatDate(listing.createdAt),
-                                      style: TextStyle(fontSize: 7, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+                                      style: TextStyle(
+                                          fontSize: 7,
+                                          color: Colors.grey.shade500,
+                                          fontWeight: FontWeight.w500),
                                     ),
                                 ],
                               ),
@@ -1778,11 +1917,15 @@ class _SaleListScreenState extends State<SaleListScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.green.shade500, Colors.green.shade600],
+                          colors: [
+                            Colors.green.shade500,
+                            Colors.green.shade600
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.shield_rounded, color: Colors.white, size: 20),
+                      child: const Icon(Icons.shield_rounded,
+                          color: Colors.white, size: 20),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
@@ -1791,11 +1934,16 @@ class _SaleListScreenState extends State<SaleListScreen> {
                         children: [
                           Text(
                             'Security & Safety',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF065F46), letterSpacing: -0.1),
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF065F46),
+                                letterSpacing: -0.1),
                           ),
                           Text(
                             'Stay protected while shopping',
-                            style: TextStyle(fontSize: 11, color: Color(0xFF10B981)),
+                            style: TextStyle(
+                                fontSize: 11, color: Color(0xFF10B981)),
                           ),
                         ],
                       ),
@@ -1803,10 +1951,20 @@ class _SaleListScreenState extends State<SaleListScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildTipItem(Icons.lock, 'Protect Personal Info', 'Never share banking details', Colors.green.shade500),
-                _buildTipItem(Icons.warning_amber, 'Spot Red Flags', 'Be cautious of unrealistic deals', Colors.green.shade500),
-                _buildTipItem(Icons.chat_bubble_outline, 'Use Platform Messaging', 'Keep communications secure', Colors.green.shade500),
-                _buildTipItem(Icons.group, 'Trust Your Instincts', 'Walk away if something feels wrong', Colors.green.shade500),
+                _buildTipItem(Icons.lock, 'Protect Personal Info',
+                    'Never share banking details', Colors.green.shade500),
+                _buildTipItem(Icons.warning_amber, 'Spot Red Flags',
+                    'Be cautious of unrealistic deals', Colors.green.shade500),
+                _buildTipItem(
+                    Icons.chat_bubble_outline,
+                    'Use Platform Messaging',
+                    'Keep communications secure',
+                    Colors.green.shade500),
+                _buildTipItem(
+                    Icons.group,
+                    'Trust Your Instincts',
+                    'Walk away if something feels wrong',
+                    Colors.green.shade500),
               ],
             ),
           ),
@@ -1815,7 +1973,8 @@ class _SaleListScreenState extends State<SaleListScreen> {
     );
   }
 
-  Widget _buildTipItem(IconData icon, String title, String description, Color color) {
+  Widget _buildTipItem(
+      IconData icon, String title, String description, Color color) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -1836,7 +1995,10 @@ class _SaleListScreenState extends State<SaleListScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1F2937)),
+                  style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1F2937)),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -1871,405 +2033,505 @@ class _SaleListScreenState extends State<SaleListScreen> {
               ),
               padding: const EdgeInsets.all(20),
               child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Filters',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setModalState(() {
-                        setState(() {
-                          _selectedCategoryId = widget.categoryId;
-                          _selectedSubcategoryId = null;
-                          _selectedCondition = null;
-                          _selectedDivision = null;
-                          _selectedDistrict = null;
-                          _selectedArea = null;
-                          _minPrice = null;
-                          _maxPrice = null;
-                          _minPriceController.clear();
-                          _maxPriceController.clear();
-                          _cities = [];
-                          _upazilas = [];
-                        });
-                      });
-                      _applyFilters();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Clear All'),
-                  ),
-                ],
-              ),
-              const Divider(),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  children: [
-                    // Location Filters (Moved to Top)
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on, size: 18, color: Color(0xFF10B981)),
-                        const SizedBox(width: 8),
-                        const Text('Location', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // Division Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _regions.any((r) => r.nameEng == _selectedDivision) ? _selectedDivision : null,
-                      decoration: InputDecoration(
-                        labelText: 'Division',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Filters',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      items: [
-                        const DropdownMenuItem<String>(value: null, child: Text('All Divisions')),
-                        ..._regions.map((region) => DropdownMenuItem(
-                          value: region.nameEng,
-                          child: Text(region.nameEng),
-                        )),
-                      ],
-                      onChanged: (value) {
-                        setModalState(() {
-                          setState(() {
-                            _selectedDivision = value;
-                            if (value != null) {
-                              _fetchCities(value, setModalState);
-                            } else {
-                              _cities = [];
-                              _upazilas = [];
+                      TextButton(
+                        onPressed: () {
+                          setModalState(() {
+                            setState(() {
+                              _selectedCategoryId = widget.categoryId;
+                              _selectedSubcategoryId = null;
+                              _selectedCondition = null;
+                              _selectedDivision = null;
                               _selectedDistrict = null;
                               _selectedArea = null;
-                            }
-                          });
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // District Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _cities.any((c) => c.nameEng == _selectedDistrict) ? _selectedDistrict : null,
-                      decoration: InputDecoration(
-                        labelText: 'District',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      items: [
-                        const DropdownMenuItem<String>(value: null, child: Text('All Districts')),
-                        ..._cities.map((city) => DropdownMenuItem(
-                          value: city.nameEng,
-                          child: Text(city.nameEng),
-                        )),
-                      ],
-                      onChanged: _selectedDivision == null ? null : (value) {
-                        setModalState(() {
-                          setState(() {
-                            _selectedDistrict = value;
-                            if (value != null) {
-                              _fetchUpazilas(value, setModalState);
-                            } else {
+                              _minPrice = null;
+                              _maxPrice = null;
+                              _minPriceController.clear();
+                              _maxPriceController.clear();
+                              _cities = [];
                               _upazilas = [];
-                              _selectedArea = null;
-                            }
+                            });
                           });
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // Area Dropdown
-                    DropdownButtonFormField<String>(
-                      value: _upazilas.any((u) => u.nameEng == _selectedArea) ? _selectedArea : null,
-                      decoration: InputDecoration(
-                        labelText: 'Area',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          _applyFilters();
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Clear All'),
                       ),
-                      items: [
-                        const DropdownMenuItem<String>(value: null, child: Text('All Areas')),
-                        ..._upazilas.map((upazila) => DropdownMenuItem(
-                          value: upazila.nameEng,
-                          child: Text(upazila.nameEng),
-                        )),
-                      ],
-                      onChanged: _selectedDistrict == null ? null : (value) {
-                        setModalState(() {
-                          setState(() {
-                            _selectedArea = value;
-                          });
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    // Category Filter with Subcategories
-                    if (_categories.isNotEmpty) ...[
-                      Row(
-                        children: [
-                          const Icon(Icons.category, size: 18, color: Color(0xFF10B981)),
-                          const SizedBox(width: 8),
-                          const Text('Categories', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
+                    ],
+                  ),
+                  const Divider(),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      children: [
+                        // Location Filters (Moved to Top)
+                        Row(
                           children: [
-                            // All Categories Option
-                            ListTile(
-                              dense: true,
-                              leading: const Icon(Icons.apps, color: Color(0xFF10B981), size: 20),
-                              title: const Text('All Categories', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                              trailing: _selectedCategoryId == null 
-                                ? const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 20)
-                                : null,
-                              selected: _selectedCategoryId == null,
-                              selectedTileColor: const Color(0xFF10B981).withOpacity(0.1),
-                              onTap: () {
-                                setModalState(() {
-                                  setState(() {
-                                    _selectedCategoryId = null;
-                                    _selectedSubcategoryId = null;
-                                  });
-                                });
-                              },
-                            ),
-                            const Divider(height: 1),
-                            // Categories with Subcategories
-                            ..._categories.map((category) {
-                              final isExpanded = _expandedCategories.contains(category.id);
-                              final isSelected = _selectedCategoryId == category.id;
-                              final hasSubcategories = category.subcategories?.isNotEmpty ?? false;
-                              
-                              return Column(
-                                children: [
-                                  ListTile(
-                                    dense: true,
-                                    leading: category.icon != null && category.icon!.isNotEmpty
-                                      ? Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: isSelected ? const Color(0xFF10B981).withOpacity(0.1) : Colors.grey.shade100,
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(6),
-                                            child: CachedNetworkImage(
-                                              imageUrl: category.icon!,
-                                              width: 32,
-                                              height: 32,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) => Icon(
-                                                Icons.folder_outlined,
-                                                color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade600,
-                                                size: 20,
-                                              ),
-                                              errorWidget: (context, url, error) => Icon(
-                                                Icons.folder_outlined,
-                                                color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade600,
-                                                size: 20,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : Icon(
-                                          Icons.folder_outlined,
-                                          color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade600,
-                                          size: 20,
-                                        ),
-                                    title: Text(
-                                      category.name,
-                                      style: TextStyle(
-                                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                        color: isSelected ? const Color(0xFF10B981) : Colors.grey.shade800,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (isSelected && !hasSubcategories)
-                                          const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 20),
-                                        if (hasSubcategories)
-                                          Icon(
-                                            isExpanded ? Icons.expand_less : Icons.expand_more,
-                                            color: Colors.grey.shade600,
-                                          ),
-                                      ],
-                                    ),
-                                    selected: isSelected,
-                                    selectedTileColor: const Color(0xFF10B981).withOpacity(0.1),
-                                    onTap: () {
-                                      if (hasSubcategories) {
-                                        setModalState(() {
-                                          setState(() {
-                                            if (isExpanded) {
-                                              _expandedCategories.remove(category.id);
-                                            } else {
-                                              _expandedCategories.add(category.id);
-                                            }
-                                          });
-                                        });
-                                      } else {
-                                        setModalState(() {
-                                          setState(() {
-                                            _selectedCategoryId = category.id;
-                                            _selectedSubcategoryId = null;
-                                          });
-                                        });
-                                      }
-                                    },
-                                  ),
-                                  // Subcategories
-                                  if (isExpanded && hasSubcategories)
-                                    Container(
-                                      color: Colors.grey.shade50,
-                                      child: Column(
-                                        children: (category.subcategories ?? []).map((sub) {
-                                          final isSubSelected = _selectedSubcategoryId == sub.id;
-                                          return ListTile(
-                                            dense: true,
-                                            contentPadding: const EdgeInsets.only(left: 56, right: 16),
-                                            title: Text(
-                                              sub.name,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                color: isSubSelected ? const Color(0xFF10B981) : Colors.grey.shade700,
-                                                fontWeight: isSubSelected ? FontWeight.w600 : FontWeight.normal,
-                                              ),
-                                            ),
-                                            trailing: isSubSelected 
-                                              ? const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 18)
-                                              : null,
-                                            selected: isSubSelected,
-                                            selectedTileColor: const Color(0xFF10B981).withOpacity(0.15),
-                                            onTap: () {
-                                              setModalState(() {
-                                                setState(() {
-                                                  _selectedCategoryId = category.id;
-                                                  _selectedSubcategoryId = sub.id;
-                                                });
-                                              });
-                                            },
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
-                                  const Divider(height: 1),
-                                ],
-                              );
-                            }).toList(),
+                            const Icon(Icons.location_on,
+                                size: 18, color: Color(0xFF10B981)),
+                            const SizedBox(width: 8),
+                            const Text('Location',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 16)),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
-                    
-                    // Condition Filter
-                    const Text('Condition', style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: ['new', 'like_new', 'good', 'fair', 'poor'].map((condition) {
-                        final isSelected = _selectedCondition == condition;
-                        return FilterChip(
-                          label: Text(condition.replaceAll('_', ' ').toUpperCase()),
-                          selected: isSelected,
-                          onSelected: (selected) {
+                        const SizedBox(height: 8),
+
+                        // Division Dropdown
+                        DropdownButtonFormField<String>(
+                          value: _regions
+                                  .any((r) => r.nameEng == _selectedDivision)
+                              ? _selectedDivision
+                              : null,
+                          decoration: InputDecoration(
+                            labelText: 'Division',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                          ),
+                          items: [
+                            const DropdownMenuItem<String>(
+                                value: null, child: Text('All Divisions')),
+                            ..._regions.map((region) => DropdownMenuItem(
+                                  value: region.nameEng,
+                                  child: Text(region.nameEng),
+                                )),
+                          ],
+                          onChanged: (value) {
                             setModalState(() {
                               setState(() {
-                                _selectedCondition = selected ? condition : null;
+                                _selectedDivision = value;
+                                if (value != null) {
+                                  _fetchCities(value, setModalState);
+                                } else {
+                                  _cities = [];
+                                  _upazilas = [];
+                                  _selectedDistrict = null;
+                                  _selectedArea = null;
+                                }
                               });
                             });
                           },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    // Price Range Filter
-                    const Text('Price Range', style: TextStyle(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _minPriceController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'Min Price',
-                              prefixText: '৳',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            ),
-                            onChanged: (value) {
-                              setModalState(() {
-                                setState(() {
-                                  _minPrice = double.tryParse(value);
-                                });
-                              });
-                            },
-                          ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _maxPriceController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'Max Price',
-                              prefixText: '৳',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            ),
-                            onChanged: (value) {
-                              setModalState(() {
-                                setState(() {
-                                  _maxPrice = double.tryParse(value);
-                                });
-                              });
-                            },
+                        const SizedBox(height: 12),
+
+                        // District Dropdown
+                        DropdownButtonFormField<String>(
+                          value:
+                              _cities.any((c) => c.nameEng == _selectedDistrict)
+                                  ? _selectedDistrict
+                                  : null,
+                          decoration: InputDecoration(
+                            labelText: 'District',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
+                          items: [
+                            const DropdownMenuItem<String>(
+                                value: null, child: Text('All Districts')),
+                            ..._cities.map((city) => DropdownMenuItem(
+                                  value: city.nameEng,
+                                  child: Text(city.nameEng),
+                                )),
+                          ],
+                          onChanged: _selectedDivision == null
+                              ? null
+                              : (value) {
+                                  setModalState(() {
+                                    setState(() {
+                                      _selectedDistrict = value;
+                                      if (value != null) {
+                                        _fetchUpazilas(value, setModalState);
+                                      } else {
+                                        _upazilas = [];
+                                        _selectedArea = null;
+                                      }
+                                    });
+                                  });
+                                },
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Area Dropdown
+                        DropdownButtonFormField<String>(
+                          value:
+                              _upazilas.any((u) => u.nameEng == _selectedArea)
+                                  ? _selectedArea
+                                  : null,
+                          decoration: InputDecoration(
+                            labelText: 'Area',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                          ),
+                          items: [
+                            const DropdownMenuItem<String>(
+                                value: null, child: Text('All Areas')),
+                            ..._upazilas.map((upazila) => DropdownMenuItem(
+                                  value: upazila.nameEng,
+                                  child: Text(upazila.nameEng),
+                                )),
+                          ],
+                          onChanged: _selectedDistrict == null
+                              ? null
+                              : (value) {
+                                  setModalState(() {
+                                    setState(() {
+                                      _selectedArea = value;
+                                    });
+                                  });
+                                },
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Category Filter with Subcategories
+                        if (_categories.isNotEmpty) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.category,
+                                  size: 18, color: Color(0xFF10B981)),
+                              const SizedBox(width: 8),
+                              const Text('Categories',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16)),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              children: [
+                                // All Categories Option
+                                ListTile(
+                                  dense: true,
+                                  leading: const Icon(Icons.apps,
+                                      color: Color(0xFF10B981), size: 20),
+                                  title: const Text('All Categories',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14)),
+                                  trailing: _selectedCategoryId == null
+                                      ? const Icon(Icons.check_circle,
+                                          color: Color(0xFF10B981), size: 20)
+                                      : null,
+                                  selected: _selectedCategoryId == null,
+                                  selectedTileColor:
+                                      const Color(0xFF10B981).withOpacity(0.1),
+                                  onTap: () {
+                                    setModalState(() {
+                                      setState(() {
+                                        _selectedCategoryId = null;
+                                        _selectedSubcategoryId = null;
+                                      });
+                                    });
+                                  },
+                                ),
+                                const Divider(height: 1),
+                                // Categories with Subcategories
+                                ..._categories.map((category) {
+                                  final isExpanded =
+                                      _expandedCategories.contains(category.id);
+                                  final isSelected =
+                                      _selectedCategoryId == category.id;
+                                  final hasSubcategories =
+                                      category.subcategories?.isNotEmpty ??
+                                          false;
+
+                                  return Column(
+                                    children: [
+                                      ListTile(
+                                        dense: true,
+                                        leading: category.icon != null &&
+                                                category.icon!.isNotEmpty
+                                            ? Container(
+                                                width: 32,
+                                                height: 32,
+                                                decoration: BoxDecoration(
+                                                  color: isSelected
+                                                      ? const Color(0xFF10B981)
+                                                          .withOpacity(0.1)
+                                                      : Colors.grey.shade100,
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: category.icon!,
+                                                    width: 32,
+                                                    height: 32,
+                                                    fit: BoxFit.cover,
+                                                    placeholder:
+                                                        (context, url) => Icon(
+                                                      Icons.folder_outlined,
+                                                      color: isSelected
+                                                          ? const Color(
+                                                              0xFF10B981)
+                                                          : Colors
+                                                              .grey.shade600,
+                                                      size: 20,
+                                                    ),
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            Icon(
+                                                      Icons.folder_outlined,
+                                                      color: isSelected
+                                                          ? const Color(
+                                                              0xFF10B981)
+                                                          : Colors
+                                                              .grey.shade600,
+                                                      size: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Icon(
+                                                Icons.folder_outlined,
+                                                color: isSelected
+                                                    ? const Color(0xFF10B981)
+                                                    : Colors.grey.shade600,
+                                                size: 20,
+                                              ),
+                                        title: Text(
+                                          category.name,
+                                          style: TextStyle(
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.w500,
+                                            color: isSelected
+                                                ? const Color(0xFF10B981)
+                                                : Colors.grey.shade800,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            if (isSelected && !hasSubcategories)
+                                              const Icon(Icons.check_circle,
+                                                  color: Color(0xFF10B981),
+                                                  size: 20),
+                                            if (hasSubcategories)
+                                              Icon(
+                                                isExpanded
+                                                    ? Icons.expand_less
+                                                    : Icons.expand_more,
+                                                color: Colors.grey.shade600,
+                                              ),
+                                          ],
+                                        ),
+                                        selected: isSelected,
+                                        selectedTileColor:
+                                            const Color(0xFF10B981)
+                                                .withOpacity(0.1),
+                                        onTap: () {
+                                          if (hasSubcategories) {
+                                            setModalState(() {
+                                              setState(() {
+                                                if (isExpanded) {
+                                                  _expandedCategories
+                                                      .remove(category.id);
+                                                } else {
+                                                  _expandedCategories
+                                                      .add(category.id);
+                                                }
+                                              });
+                                            });
+                                          } else {
+                                            setModalState(() {
+                                              setState(() {
+                                                _selectedCategoryId =
+                                                    category.id;
+                                                _selectedSubcategoryId = null;
+                                              });
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      // Subcategories
+                                      if (isExpanded && hasSubcategories)
+                                        Container(
+                                          color: Colors.grey.shade50,
+                                          child: Column(
+                                            children:
+                                                (category.subcategories ?? [])
+                                                    .map((sub) {
+                                              final isSubSelected =
+                                                  _selectedSubcategoryId ==
+                                                      sub.id;
+                                              return ListTile(
+                                                dense: true,
+                                                contentPadding:
+                                                    const EdgeInsets.only(
+                                                        left: 56, right: 16),
+                                                title: Text(
+                                                  sub.name,
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: isSubSelected
+                                                        ? const Color(
+                                                            0xFF10B981)
+                                                        : Colors.grey.shade700,
+                                                    fontWeight: isSubSelected
+                                                        ? FontWeight.w600
+                                                        : FontWeight.normal,
+                                                  ),
+                                                ),
+                                                trailing: isSubSelected
+                                                    ? const Icon(
+                                                        Icons.check_circle,
+                                                        color:
+                                                            Color(0xFF10B981),
+                                                        size: 18)
+                                                    : null,
+                                                selected: isSubSelected,
+                                                selectedTileColor:
+                                                    const Color(0xFF10B981)
+                                                        .withOpacity(0.15),
+                                                onTap: () {
+                                                  setModalState(() {
+                                                    setState(() {
+                                                      _selectedCategoryId =
+                                                          category.id;
+                                                      _selectedSubcategoryId =
+                                                          sub.id;
+                                                    });
+                                                  });
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      const Divider(height: 1),
+                                    ],
+                                  );
+                                }).toList(),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // Condition Filter
+                        const Text('Condition',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: ['new', 'like_new', 'good', 'fair', 'poor']
+                              .map((condition) {
+                            final isSelected = _selectedCondition == condition;
+                            return FilterChip(
+                              label: Text(
+                                  condition.replaceAll('_', ' ').toUpperCase()),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                setModalState(() {
+                                  setState(() {
+                                    _selectedCondition =
+                                        selected ? condition : null;
+                                  });
+                                });
+                              },
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Price Range Filter
+                        const Text('Price Range',
+                            style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _minPriceController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: 'Min Price',
+                                  prefixText: '৳',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                ),
+                                onChanged: (value) {
+                                  setModalState(() {
+                                    setState(() {
+                                      _minPrice = double.tryParse(value);
+                                    });
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _maxPriceController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: 'Max Price',
+                                  prefixText: '৳',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                ),
+                                onChanged: (value) {
+                                  setModalState(() {
+                                    setState(() {
+                                      _maxPrice = double.tryParse(value);
+                                    });
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _applyFilters();
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _applyFilters();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Apply Filters'),
                     ),
                   ),
-                  child: const Text('Apply Filters'),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
-      );
+            ),
+          );
         },
       ),
     );

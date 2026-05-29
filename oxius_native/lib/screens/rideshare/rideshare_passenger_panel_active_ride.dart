@@ -113,12 +113,16 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.inter(
+                        fontSize: 13, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: GoogleFonts.inter(fontSize: 11.5, color: const Color(0xFF64748B), height: 1.35),
+                    style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: const Color(0xFF64748B),
+                        height: 1.35),
                   ),
                 ],
               ),
@@ -134,13 +138,12 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
 
   Widget _buildActiveRideView() {
     final ride = _activeRide!;
-    final canCancelRide =
-      ride.passengerCanCancel &&
-      !ride.isInProgress &&
-      !ride.isAwaitingPassengerConfirmation &&
-      !ride.isCompleted &&
-      !ride.isCancelled;
-    
+    final canCancelRide = ride.passengerCanCancel &&
+        !ride.isInProgress &&
+        !ride.isAwaitingPassengerConfirmation &&
+        !ride.isCompleted &&
+        !ride.isCancelled;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(4),
       child: Column(
@@ -163,18 +166,26 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
               children: [
                 // Gradient header with status
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: ride.isSearching
                           ? [const Color(0xFFF59E0B), const Color(0xFFD97706)]
                           : ride.isInProgress
-                              ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                              : [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                              ? [
+                                  const Color(0xFF10B981),
+                                  const Color(0xFF059669)
+                                ]
+                              : [
+                                  const Color(0xFF6366F1),
+                                  const Color(0xFF8B5CF6)
+                                ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(15)),
                   ),
                   child: Row(
                     children: [
@@ -182,7 +193,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2.5,
                             color: Colors.white,
                           ),
@@ -211,7 +222,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                     ],
                   ),
                 ),
-                
+
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -219,7 +230,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                       // Route info
                       _buildRouteInfo(ride),
 
-                      if (ride.isCancelled && _shouldShowCancellationReason(ride)) ...[
+                      if (ride.isCancelled &&
+                          _shouldShowCancellationReason(ride)) ...[
                         const SizedBox(height: 12),
                         _buildCancellationReasonCard(ride),
                       ],
@@ -234,9 +246,9 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                           dispatchAttempt: _dispatchAttempt,
                         ),
                       ],
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Stats row
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -247,11 +259,16 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         ),
                         child: Row(
                           children: [
-                            _buildStatItem(t('rideshare_fare', fallback: 'Fare'), '৳${ride.payableFare.toStringAsFixed(0)}'),
+                            _buildStatItem(
+                                t('rideshare_fare', fallback: 'Fare'),
+                                '৳${ride.payableFare.toStringAsFixed(0)}'),
                             _buildStatDivider(),
-                            _buildStatItem(t('rideshare_distance', fallback: 'Distance'), '${_currentPassengerDistanceKm(ride).toStringAsFixed(1)} km'),
+                            _buildStatItem(
+                                t('rideshare_distance', fallback: 'Distance'),
+                                '${_currentPassengerDistanceKm(ride).toStringAsFixed(1)} km'),
                             _buildStatDivider(),
-                            _buildStatItem(t('rideshare_eta', fallback: 'ETA'), _currentPassengerEta(ride)),
+                            _buildStatItem(t('rideshare_eta', fallback: 'ETA'),
+                                _currentPassengerEta(ride)),
                           ],
                         ),
                       ),
@@ -259,7 +276,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                       const SizedBox(height: 8),
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(10),
@@ -278,7 +296,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              t('rideshare_payment_method', fallback: 'Payment Method'),
+                              t('rideshare_payment_method',
+                                  fallback: 'Payment Method'),
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -301,7 +320,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                           ],
                         ),
                       ),
-                      
+
                       // Driver info (if assigned)
                       if (ride.assignedDriver != null) ...[
                         const SizedBox(height: 16),
@@ -309,7 +328,7 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         const SizedBox(height: 16),
                         _buildDriverInfo(ride.assignedDriver!),
                       ],
-                      
+
                       const SizedBox(height: 16),
 
                       if (ride.isAwaitingPassengerConfirmation)
@@ -320,15 +339,19 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 onPressed: () => _confirmEarlyCompletion(false),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: const Color(0xFF6366F1),
-                                  side: const BorderSide(color: Color(0xFF6366F1)),
-                                  padding: const EdgeInsets.symmetric(vertical: 13),
+                                  side: const BorderSide(
+                                      color: Color(0xFF6366F1)),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 13),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
                                 child: Text(
-                                  t('rideshare_continue_ride', fallback: 'Continue Ride'),
-                                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                  t('rideshare_continue_ride',
+                                      fallback: 'Continue Ride'),
+                                  style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600),
                                 ),
                               ),
                             ),
@@ -338,14 +361,17 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                                 onPressed: () => _confirmEarlyCompletion(true),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: const Color(0xFF10B981),
-                                  padding: const EdgeInsets.symmetric(vertical: 13),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 13),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
                                 child: Text(
-                                  t('rideshare_confirm_payment', fallback: 'Confirm Payment'),
-                                  style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                                  t('rideshare_confirm_payment',
+                                      fallback: 'Confirm Payment'),
+                                  style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w700),
                                 ),
                               ),
                             ),
@@ -355,12 +381,13 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: _isCancellingRide ? null : _confirmCancelRide,
+                            onPressed:
+                                _isCancellingRide ? null : _confirmCancelRide,
                             icon: _isCancellingRide
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(
+                                    child: AdsyLoadingIndicator(
                                       strokeWidth: 2,
                                       color: Colors.red,
                                     ),
@@ -369,7 +396,11 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                             label: Text(
                               _isCancellingRide
                                   ? 'Cancelling...'
-                                  : (ride.isSearching ? t('rideshare_cancel_request', fallback: 'Cancel Request') : t('rideshare_cancel_ride', fallback: 'Cancel Ride')),
+                                  : (ride.isSearching
+                                      ? t('rideshare_cancel_request',
+                                          fallback: 'Cancel Request')
+                                      : t('rideshare_cancel_ride',
+                                          fallback: 'Cancel Ride')),
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -389,20 +420,28 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed: _isReportingCancellation ? null : _reportDriverCancellation,
+                            onPressed: _isReportingCancellation
+                                ? null
+                                : _reportDriverCancellation,
                             icon: _isReportingCancellation
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(
+                                    child: AdsyLoadingIndicator(
                                       strokeWidth: 2,
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Icon(Icons.report_problem_rounded, size: 18),
+                                : const Icon(Icons.report_problem_rounded,
+                                    size: 18),
                             label: Text(
-                              _isReportingCancellation ? t('rideshare_submitting', fallback: 'Submitting...') : t('rideshare_report_driver_cancellation', fallback: 'Report Driver Cancellation'),
-                              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                              _isReportingCancellation
+                                  ? t('rideshare_submitting',
+                                      fallback: 'Submitting...')
+                                  : t('rideshare_report_driver_cancellation',
+                                      fallback: 'Report Driver Cancellation'),
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w700),
                             ),
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFFEA580C),
@@ -419,20 +458,28 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           _buildMapSectionFrame(
             context: context,
-            icon: ride.isInProgress ? Icons.navigation_rounded : Icons.radar_rounded,
+            icon: ride.isInProgress
+                ? Icons.navigation_rounded
+                : Icons.radar_rounded,
             title: t('rideshare_live_trip_map', fallback: 'Live Trip Map'),
             subtitle: ride.isInProgress
-                ? t('rideshare_live_trip_map_subtitle', fallback: 'Track the ride path, your driver and destination in one place.')
-                : t('rideshare_driver_arrival_map_subtitle', fallback: 'Watch your driver approach in real time with the active route preview.'),
+                ? t('rideshare_live_trip_map_subtitle',
+                    fallback:
+                        'Track the ride path, your driver and destination in one place.')
+                : t('rideshare_driver_arrival_map_subtitle',
+                    fallback:
+                        'Watch your driver approach in real time with the active route preview.'),
             badge: ride.isInProgress
                 ? t('rideshare_live_badge', fallback: 'Live')
                 : t('rideshare_tracking_badge', fallback: 'Tracking'),
-            accentColor: ride.isInProgress ? const Color(0xFF0F766E) : const Color(0xFF6366F1),
+            accentColor: ride.isInProgress
+                ? const Color(0xFF0F766E)
+                : const Color(0xFF6366F1),
             child: RideshareMapWidget(
               pickupPoint: ride.pickupPoint,
               dropPoint: ride.dropPoint,
@@ -454,7 +501,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
 
   String _passengerStatusLabel(Ride ride) {
     if (ride.isSearching) {
-      return t('rideshare_finding_driver_status', fallback: 'Looking for a driver');
+      return t('rideshare_finding_driver_status',
+          fallback: 'Looking for a driver');
     }
     if (ride.isAccepted) {
       return t('rideshare_driver_assigned', fallback: 'Driver confirmed');
@@ -702,7 +750,8 @@ extension _RsActiveRideExtension on _RidesharePassengerPanelState {
               decoration: BoxDecoration(
                 color: const Color(0xFF10B981).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
+                border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25)),
               ),
               child: Image.asset(
                 'assets/images/chat_icon.png',
@@ -889,7 +938,8 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
             decoration: BoxDecoration(
               color: accentLight,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(15)),
             ),
             child: Row(
               children: [
@@ -906,7 +956,7 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                           child: SizedBox(
                             width: 22,
                             height: 22,
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                               strokeWidth: 2.5,
                               color: accent,
                               value: 0.75,
@@ -914,7 +964,8 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                           ),
                         )
                       else
-                        Icon(Icons.location_off_rounded, size: 18, color: _kRed),
+                        Icon(Icons.location_off_rounded,
+                            size: 18, color: _kRed),
                       if (!isNoDriver)
                         Container(
                           width: 7,
@@ -944,7 +995,8 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                 ),
                 if (hasTargeted)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(999),
@@ -984,73 +1036,73 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                     // whole "Searching for driver" card including text + map.
                     child: RepaintBoundary(
                       child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Pulse ring 1
-                        AnimatedBuilder(
-                          animation: _pulse1,
-                          builder: (context, _) => Opacity(
-                            opacity: _pulse1Opacity.value,
-                            child: Container(
-                              width: 56 * _pulse1.value,
-                              height: 56 * _pulse1.value,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: _kAmber,
-                                  width: 1.5,
+                        alignment: Alignment.center,
+                        children: [
+                          // Pulse ring 1
+                          AnimatedBuilder(
+                            animation: _pulse1,
+                            builder: (context, _) => Opacity(
+                              opacity: _pulse1Opacity.value,
+                              child: Container(
+                                width: 56 * _pulse1.value,
+                                height: 56 * _pulse1.value,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: _kAmber,
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        // Pulse ring 2
-                        AnimatedBuilder(
-                          animation: _pulse2,
-                          builder: (context, _) => Opacity(
-                            opacity: _pulse2Opacity.value,
-                            child: Container(
-                              width: 56 * _pulse2.value,
-                              height: 56 * _pulse2.value,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: _kAmber,
-                                  width: 1.5,
+                          // Pulse ring 2
+                          AnimatedBuilder(
+                            animation: _pulse2,
+                            builder: (context, _) => Opacity(
+                              opacity: _pulse2Opacity.value,
+                              child: Container(
+                                width: 56 * _pulse2.value,
+                                height: 56 * _pulse2.value,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: _kAmber,
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        // Pulse ring 3
-                        AnimatedBuilder(
-                          animation: _pulse3,
-                          builder: (context, _) => Opacity(
-                            opacity: _pulse3Opacity.value,
-                            child: Container(
-                              width: 56 * _pulse3.value,
-                              height: 56 * _pulse3.value,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: _kAmber,
-                                  width: 1.5,
+                          // Pulse ring 3
+                          AnimatedBuilder(
+                            animation: _pulse3,
+                            builder: (context, _) => Opacity(
+                              opacity: _pulse3Opacity.value,
+                              child: Container(
+                                width: 56 * _pulse3.value,
+                                height: 56 * _pulse3.value,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: _kAmber,
+                                    width: 1.5,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        // Center dot
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: _kAmber,
-                            shape: BoxShape.circle,
+                          // Center dot
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: _kAmber,
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                     ),
                   )
                 else
@@ -1061,7 +1113,8 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                       color: _kRedLight,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.location_off_rounded, size: 24, color: _kRed),
+                    child: const Icon(Icons.location_off_rounded,
+                        size: 24, color: _kRed),
                   ),
 
                 const SizedBox(width: 14),
@@ -1101,7 +1154,8 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                         const SizedBox(height: 3),
                         Row(
                           children: [
-                            const Icon(Icons.person_rounded, size: 14, color: _kAmberDark),
+                            const Icon(Icons.person_rounded,
+                                size: 14, color: _kAmberDark),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -1148,7 +1202,8 @@ class _SearchingDriverCardState extends State<_SearchingDriverCard>
                             'ড্রাইভার অনুরোধ #${widget.dispatchAttempt}',
                             style: GoogleFonts.inter(
                               fontSize: 10.5,
-                              color: const Color(0xFF92400E).withValues(alpha: 0.7),
+                              color: const Color(0xFF92400E)
+                                  .withValues(alpha: 0.7),
                             ),
                           ),
                         ],

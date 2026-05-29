@@ -3,6 +3,7 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../screens/settings_screen.dart';
 import 'ios_web_redirect_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MobileDrawer extends StatefulWidget {
   const MobileDrawer({super.key});
@@ -32,14 +33,15 @@ class _MobileDrawerState extends State<MobileDrawer> {
 
   Future<void> _changeLanguage(String languageCode) async {
     final success = await _translationService.changeLanguage(languageCode);
-    
+
     if (success && mounted) {
       setState(() {});
-      
+
       final languageInfo = _translationService.getLanguageInfo(languageCode);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Language changed to ${languageInfo?['native_name'] ?? languageCode}'),
+          content: Text(
+              'Language changed to ${languageInfo?['native_name'] ?? languageCode}'),
           backgroundColor: const Color(0xFF10B981),
           duration: const Duration(seconds: 2),
         ),
@@ -84,29 +86,35 @@ class _MobileDrawerState extends State<MobileDrawer> {
                   ],
                 ),
               ),
-              ..._translationService.availableLanguages.map((language) => ListTile(
-                leading: Text(
-                  language['flag'] ?? '🌐',
-                  style: const TextStyle(fontSize: 24),
-                ),
-                title: Text(
-                  language['native_name'] ?? language['name'] ?? language['code'],
-                  style: AppFonts.roboto(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: _translationService.currentLanguage == language['code'] 
-                        ? const Color(0xFF10B981) 
-                        : Colors.grey.shade700,
-                  ),
-                ),
-                trailing: _translationService.currentLanguage == language['code']
-                    ? const Icon(Icons.check, color: Color(0xFF10B981))
-                    : null,
-                onTap: () {
-                  _changeLanguage(language['code']);
-                  Navigator.pop(context);
-                },
-              )).toList(),
+              ..._translationService.availableLanguages
+                  .map((language) => ListTile(
+                        leading: Text(
+                          language['flag'] ?? '🌐',
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                        title: Text(
+                          language['native_name'] ??
+                              language['name'] ??
+                              language['code'],
+                          style: AppFonts.roboto(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: _translationService.currentLanguage ==
+                                    language['code']
+                                ? const Color(0xFF10B981)
+                                : Colors.grey.shade700,
+                          ),
+                        ),
+                        trailing: _translationService.currentLanguage ==
+                                language['code']
+                            ? const Icon(Icons.check, color: Color(0xFF10B981))
+                            : null,
+                        onTap: () {
+                          _changeLanguage(language['code']);
+                          Navigator.pop(context);
+                        },
+                      ))
+                  .toList(),
               const SizedBox(height: 20),
             ],
           ),
@@ -121,7 +129,7 @@ class _MobileDrawerState extends State<MobileDrawer> {
       return const Drawer(
         backgroundColor: Colors.white,
         child: Center(
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             color: Color(0xFF10B981),
           ),
         ),
@@ -159,7 +167,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     // Show current language flag and code
                     Builder(
                       builder: (context) {
-                        final currentLang = _translationService.getLanguageInfo(_translationService.currentLanguage);
+                        final currentLang = _translationService.getLanguageInfo(
+                            _translationService.currentLanguage);
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -169,12 +178,14 @@ class _MobileDrawerState extends State<MobileDrawer> {
                             ),
                             const SizedBox(width: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 3),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF10B981).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                  color: const Color(0xFF10B981).withOpacity(0.3),
+                                  color:
+                                      const Color(0xFF10B981).withOpacity(0.3),
                                   width: 1,
                                 ),
                               ),
@@ -182,7 +193,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    _translationService.currentLanguage.toUpperCase(),
+                                    _translationService.currentLanguage
+                                        .toUpperCase(),
                                     style: AppFonts.roboto(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -247,7 +259,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('classified_service', fallback: 'My Services'),
+                      title: _translationService.t('classified_service',
+                          fallback: 'My Services'),
                       icon: Icons.list_alt,
                       iconColor: const Color(0xFF10B981),
                       onTap: () {
@@ -261,7 +274,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('elearning', fallback: 'E-Learning'),
+                      title: _translationService.t('elearning',
+                          fallback: 'E-Learning'),
                       icon: Icons.school,
                       iconColor: const Color(0xFF8B5CF6),
                       onTap: () {
@@ -271,7 +285,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('earn_money', fallback: 'Earn Money'),
+                      title: _translationService.t('earn_money',
+                          fallback: 'Earn Money'),
                       icon: Icons.monetization_on,
                       iconColor: const Color(0xFFF59E0B),
                       onTap: () {
@@ -291,7 +306,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('business_network', fallback: 'Business Network'),
+                      title: _translationService.t('business_network',
+                          fallback: 'Business Network'),
                       icon: Icons.network_check,
                       iconColor: const Color(0xFF06B6D4),
                       onTap: () {
@@ -301,7 +317,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('adsy_news', fallback: 'News'),
+                      title:
+                          _translationService.t('adsy_news', fallback: 'News'),
                       icon: Icons.newspaper,
                       iconColor: const Color(0xFFF97316),
                       onTap: () {
@@ -311,7 +328,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('refer_program', fallback: 'Referral Program'),
+                      title: _translationService.t('refer_program',
+                          fallback: 'Referral Program'),
                       icon: Icons.share,
                       iconColor: const Color(0xFF8B5CF6),
                       onTap: () {
@@ -322,38 +340,43 @@ class _MobileDrawerState extends State<MobileDrawer> {
 
                     // Divider
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 12),
                       child: Divider(height: 1, color: Colors.grey.shade300),
                     ),
 
                     if (!isIOSPlatform)
+                      _buildDrawerItem(
+                        context: context,
+                        title: _translationService.t('upgrade_pro',
+                            fallback: 'Upgrade to Pro'),
+                        icon: Icons.star,
+                        iconColor: const Color(0xFFFBBF24),
+                        badge: 'PRO',
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.pushNamed(context, '/upgrade-to-pro');
+                        },
+                      ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('upgrade_pro', fallback: 'Upgrade to Pro'),
-                      icon: Icons.star,
-                      iconColor: const Color(0xFFFBBF24),
-                      badge: 'PRO',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/upgrade-to-pro');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      context: context,
-                      title: _translationService.t('settings', fallback: 'Settings'),
+                      title: _translationService.t('settings',
+                          fallback: 'Settings'),
                       icon: Icons.settings,
                       iconColor: Colors.grey.shade600,
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const SettingsScreen()),
                         );
                       },
                     ),
                     _buildDrawerItem(
                       context: context,
-                      title: _translationService.t('support', fallback: 'Help & Support'),
+                      title: _translationService.t('support',
+                          fallback: 'Help & Support'),
                       icon: Icons.support_agent,
                       iconColor: Colors.grey.shade600,
                       onTap: () {
@@ -455,7 +478,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
               if (badge != null) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [iconColor, iconColor.withOpacity(0.7)],
@@ -480,7 +504,8 @@ class _MobileDrawerState extends State<MobileDrawer> {
             size: 16,
           ),
           onTap: onTap,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
           minLeadingWidth: 32,
           dense: true,
           shape: RoundedRectangleBorder(

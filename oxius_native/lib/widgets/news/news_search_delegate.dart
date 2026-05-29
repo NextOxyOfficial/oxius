@@ -3,6 +3,7 @@ import '../../models/news_models.dart';
 import '../../services/news_service.dart';
 import '../../screens/news_detail_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
   @override
@@ -57,7 +58,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
       future: _searchNews(query),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: AdsyLoadingIndicator());
         }
 
         if (snapshot.hasError) {
@@ -141,9 +142,12 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
 
       // Filter posts by title or content
       final filtered = allPosts.where((post) {
-        final titleMatch = post.title.toLowerCase().contains(searchQuery.toLowerCase());
-        final contentMatch = post.content.toLowerCase().contains(searchQuery.toLowerCase());
-        final tagsMatch = post.tags.any((tag) => tag.toLowerCase().contains(searchQuery.toLowerCase()));
+        final titleMatch =
+            post.title.toLowerCase().contains(searchQuery.toLowerCase());
+        final contentMatch =
+            post.content.toLowerCase().contains(searchQuery.toLowerCase());
+        final tagsMatch = post.tags.any(
+            (tag) => tag.toLowerCase().contains(searchQuery.toLowerCase()));
         return titleMatch || contentMatch || tagsMatch;
       }).toList();
 

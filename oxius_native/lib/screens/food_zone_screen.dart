@@ -9,6 +9,7 @@ import '../services/api_service.dart';
 import '../widgets/geo_selector_dialog.dart';
 import '../widgets/geo_location_breadcrumb.dart';
 import 'classified_post_details_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class FoodZoneScreen extends StatefulWidget {
   const FoodZoneScreen({super.key});
@@ -96,7 +97,8 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       _loadMore();
     }
   }
@@ -107,7 +109,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
       _currentPage = 1;
       _hasMore = true;
     });
-    
+
     try {
       final results = await Future.wait([
         _foodZoneService.fetchFoodZonePosts(
@@ -119,7 +121,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
         ),
         _foodZoneService.fetchFoodZoneCategories(),
       ]);
-      
+
       setState(() {
         _posts = results[0] as List<ClassifiedPost>;
         _categories = results[1] as List<FoodZoneCategory>;
@@ -134,9 +136,9 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
 
   Future<void> _loadMore() async {
     if (_isLoadingMore || !_hasMore) return;
-    
+
     setState(() => _isLoadingMore = true);
-    
+
     try {
       final posts = await _foodZoneService.fetchFoodZonePosts(
         page: _currentPage + 1,
@@ -145,7 +147,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
         location: _location,
       );
-      
+
       setState(() {
         _posts.addAll(posts);
         _currentPage++;
@@ -165,7 +167,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
       _currentPage = 1;
       _hasMore = true;
     });
-    
+
     try {
       final posts = await _foodZoneService.fetchFoodZonePosts(
         page: 1,
@@ -174,7 +176,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
         search: _searchQuery.isNotEmpty ? _searchQuery : null,
         location: _location,
       );
-      
+
       setState(() {
         _posts = posts;
         _isLoading = false;
@@ -231,10 +233,12 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
+                          icon: const Icon(Icons.arrow_back_rounded,
+                              color: Colors.white, size: 24),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const Icon(Icons.restaurant_menu, color: Colors.white, size: 22),
+                        const Icon(Icons.restaurant_menu,
+                            color: Colors.white, size: 22),
                         const SizedBox(width: 8),
                         const Text(
                           'Food Zone',
@@ -268,7 +272,8 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                         children: [
                           const Padding(
                             padding: EdgeInsets.only(left: 14),
-                            child: Icon(Icons.search_rounded, size: 22, color: Color(0xFFE91E63)),
+                            child: Icon(Icons.search_rounded,
+                                size: 22, color: Color(0xFFE91E63)),
                           ),
                           Expanded(
                             child: TextField(
@@ -276,15 +281,18 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                               style: const TextStyle(fontSize: 14),
                               decoration: InputDecoration(
                                 hintText: 'Search food items...',
-                                hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                                hintStyle: TextStyle(
+                                    fontSize: 14, color: Colors.grey[400]),
                                 border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 12),
                               ),
                             ),
                           ),
                           if (_searchQuery.isNotEmpty)
                             IconButton(
-                              icon: const Icon(Icons.close_rounded, size: 20, color: Colors.grey),
+                              icon: const Icon(Icons.close_rounded,
+                                  size: 20, color: Colors.grey),
                               onPressed: _clearSearch,
                             ),
                         ],
@@ -295,19 +303,19 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
               ),
             ),
           ),
-          
+
           // Location breadcrumb
           if (_location != null) _buildLocationBreadcrumb(),
-          
+
           // Posts List
           Expanded(
             child: _isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Color(0xFFE91E63)),
+                    child: AdsyLoadingIndicator(color: Color(0xFFE91E63)),
                   )
                 : _posts.isEmpty
                     ? _buildEmptyState()
-                    : RefreshIndicator(
+                    : AdsyRefreshIndicator(
                         onRefresh: _loadData,
                         color: const Color(0xFFE91E63),
                         child: ListView.builder(
@@ -320,7 +328,7 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                                   ? const Padding(
                                       padding: EdgeInsets.all(16),
                                       child: Center(
-                                        child: CircularProgressIndicator(
+                                        child: AdsyLoadingIndicator(
                                           color: Color(0xFFE91E63),
                                           strokeWidth: 2,
                                         ),
@@ -394,7 +402,8 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
               onPressed: _clearSearch,
               child: const Text(
                 'Clear Search',
-                style: TextStyle(color: Color(0xFFE91E63), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: Color(0xFFE91E63), fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -404,11 +413,12 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
   }
 
   Widget _buildFoodItem(ClassifiedPost post) {
-    final imageUrl = post.medias?.isNotEmpty == true ? post.medias!.first.image : null;
-    final posterName = post.user != null 
+    final imageUrl =
+        post.medias?.isNotEmpty == true ? post.medias!.first.image : null;
+    final posterName = post.user != null
         ? '${post.user!.firstName ?? ''} ${post.user!.lastName ?? ''}'.trim()
         : null;
-    
+
     return InkWell(
       onTap: () => _navigateToPost(post),
       child: Container(
@@ -435,20 +445,23 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                         placeholder: (context, url) => Container(
                           color: const Color(0xFFFCE4EC),
                           child: const Center(
-                            child: Icon(Icons.restaurant_menu, color: Color(0xFFE91E63), size: 24),
+                            child: Icon(Icons.restaurant_menu,
+                                color: Color(0xFFE91E63), size: 24),
                           ),
                         ),
                         errorWidget: (context, url, error) => Container(
                           color: const Color(0xFFFCE4EC),
                           child: const Center(
-                            child: Icon(Icons.restaurant_menu, color: Color(0xFFE91E63), size: 24),
+                            child: Icon(Icons.restaurant_menu,
+                                color: Color(0xFFE91E63), size: 24),
                           ),
                         ),
                       )
                     : Container(
                         color: const Color(0xFFFCE4EC),
                         child: const Center(
-                          child: Icon(Icons.restaurant_menu, color: Color(0xFFE91E63), size: 24),
+                          child: Icon(Icons.restaurant_menu,
+                              color: Color(0xFFE91E63), size: 24),
                         ),
                       ),
               ),
@@ -487,12 +500,16 @@ class _FoodZoneScreenState extends State<FoodZoneScreen> {
                   if (post.city != null || post.upazila != null)
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF9CA3AF)),
+                        const Icon(Icons.location_on_outlined,
+                            size: 12, color: Color(0xFF9CA3AF)),
                         const SizedBox(width: 2),
                         Expanded(
                           child: Text(
-                            [post.upazila, post.city].where((e) => e != null && e.isNotEmpty).join(', '),
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
+                            [post.upazila, post.city]
+                                .where((e) => e != null && e.isNotEmpty)
+                                .join(', '),
+                            style: const TextStyle(
+                                fontSize: 11, color: Color(0xFF9CA3AF)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

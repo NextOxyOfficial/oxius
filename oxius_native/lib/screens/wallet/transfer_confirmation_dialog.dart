@@ -4,6 +4,7 @@ import '../../services/wallet_service.dart';
 import '../../services/api_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class TransferConfirmationDialog extends StatefulWidget {
   final String contact;
@@ -45,7 +46,7 @@ class _TransferConfirmationDialogState
   Future<void> _fetchRecipientName() async {
     try {
       print('🔍 Fetching recipient for contact: ${widget.contact}');
-      
+
       // Use the proper /user/{contact}/ endpoint
       final headers = await ApiService.getHeaders();
       final response = await http.get(
@@ -64,19 +65,19 @@ class _TransferConfirmationDialogState
             final firstName = (data['first_name'] ?? '').toString().trim();
             final lastName = (data['last_name'] ?? '').toString().trim();
             final name = (data['name'] ?? '').toString().trim();
-            
+
             String displayName = '';
-            
+
             // Priority: first_name + last_name > name > contact
             if (firstName.isNotEmpty || lastName.isNotEmpty) {
               displayName = '$firstName $lastName'.trim();
             } else if (name.isNotEmpty) {
               displayName = name;
             }
-            
+
             _recipientName = displayName.isNotEmpty ? displayName : null;
             _isLoadingRecipient = false;
-            
+
             print('✅ Recipient name set to: $_recipientName');
           });
         }
@@ -142,10 +143,10 @@ class _TransferConfirmationDialogState
 
       if (response != null && mounted) {
         Navigator.pop(context); // Close confirmation dialog
-        
+
         // Show success dialog
         _showSuccessDialog();
-        
+
         // Call success callback
         widget.onSuccess();
       }
@@ -221,7 +222,7 @@ class _TransferConfirmationDialogState
                   ],
                 ),
               ),
-              
+
               // Content
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -260,7 +261,7 @@ class _TransferConfirmationDialogState
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Recipient Details
                     Container(
                       width: double.infinity,
@@ -293,7 +294,8 @@ class _TransferConfirmationDialogState
                             ],
                           ),
                           const SizedBox(height: 8),
-                          if (_recipientName != null && _recipientName != widget.contact) ...[
+                          if (_recipientName != null &&
+                              _recipientName != widget.contact) ...[
                             Text(
                               _recipientName!,
                               style: const TextStyle(
@@ -308,16 +310,25 @@ class _TransferConfirmationDialogState
                           Text(
                             widget.contact,
                             style: TextStyle(
-                              fontSize: _recipientName != null && _recipientName != widget.contact ? 13 : 15,
-                              fontWeight: _recipientName != null && _recipientName != widget.contact ? FontWeight.w400 : FontWeight.w600,
-                              color: _recipientName != null && _recipientName != widget.contact ? Colors.grey[600] : const Color(0xFF1F2937),
+                              fontSize: _recipientName != null &&
+                                      _recipientName != widget.contact
+                                  ? 13
+                                  : 15,
+                              fontWeight: _recipientName != null &&
+                                      _recipientName != widget.contact
+                                  ? FontWeight.w400
+                                  : FontWeight.w600,
+                              color: _recipientName != null &&
+                                      _recipientName != widget.contact
+                                  ? Colors.grey[600]
+                                  : const Color(0xFF1F2937),
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Done Button
                     SizedBox(
                       width: double.infinity,
@@ -406,7 +417,7 @@ class _TransferConfirmationDialogState
                 ],
               ),
             ),
-            
+
             // Content
             Padding(
               padding: const EdgeInsets.all(16),
@@ -445,7 +456,7 @@ class _TransferConfirmationDialogState
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Recipient Info
                   Text(
                     'Recipient',
@@ -471,7 +482,8 @@ class _TransferConfirmationDialogState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Show recipient name if available
-                        if (_recipientName != null && _recipientName!.isNotEmpty)
+                        if (_recipientName != null &&
+                            _recipientName!.isNotEmpty)
                           Text(
                             _recipientName!,
                             style: const TextStyle(
@@ -481,22 +493,35 @@ class _TransferConfirmationDialogState
                               letterSpacing: -0.2,
                             ),
                           ),
-                        if (_recipientName != null && _recipientName!.isNotEmpty)
+                        if (_recipientName != null &&
+                            _recipientName!.isNotEmpty)
                           const SizedBox(height: 4),
                         // Always show contact (email/phone)
                         Text(
                           widget.contact,
                           style: TextStyle(
-                            fontSize: _recipientName != null && _recipientName!.isNotEmpty ? 12 : 15,
-                            fontWeight: _recipientName != null && _recipientName!.isNotEmpty ? FontWeight.w400 : FontWeight.w600,
-                            color: _recipientName != null && _recipientName!.isNotEmpty ? Colors.grey[600] : const Color(0xFF1F2937),
-                            letterSpacing: _recipientName != null && _recipientName!.isNotEmpty ? 0 : -0.2,
+                            fontSize: _recipientName != null &&
+                                    _recipientName!.isNotEmpty
+                                ? 12
+                                : 15,
+                            fontWeight: _recipientName != null &&
+                                    _recipientName!.isNotEmpty
+                                ? FontWeight.w400
+                                : FontWeight.w600,
+                            color: _recipientName != null &&
+                                    _recipientName!.isNotEmpty
+                                ? Colors.grey[600]
+                                : const Color(0xFF1F2937),
+                            letterSpacing: _recipientName != null &&
+                                    _recipientName!.isNotEmpty
+                                ? 0
+                                : -0.2,
                           ),
                         ),
                       ],
                     ),
                   const SizedBox(height: 12),
-                  
+
                   // Time Badge
                   Row(
                     children: [
@@ -528,7 +553,7 @@ class _TransferConfirmationDialogState
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Password Input
                   Text(
                     'Enter password to confirm',
@@ -546,7 +571,8 @@ class _TransferConfirmationDialogState
                     style: const TextStyle(fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Enter your password',
-                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                      hintStyle:
+                          TextStyle(fontSize: 13, color: Colors.grey[400]),
                       prefixIcon: Icon(
                         Icons.lock_rounded,
                         size: 18,
@@ -586,13 +612,15 @@ class _TransferConfirmationDialogState
                     },
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Action Buttons
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: _isProcessing ? null : () => Navigator.pop(context),
+                          onPressed: _isProcessing
+                              ? null
+                              : () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             side: BorderSide(color: Colors.grey[300]!),
@@ -631,7 +659,7 @@ class _TransferConfirmationDialogState
                               ? const SizedBox(
                                   width: 16,
                                   height: 16,
-                                  child: CircularProgressIndicator(
+                                  child: AdsyLoadingIndicator(
                                     strokeWidth: 2,
                                     color: Colors.white,
                                   ),

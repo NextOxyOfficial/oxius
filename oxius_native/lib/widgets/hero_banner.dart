@@ -14,6 +14,7 @@ import '../screens/news_screen.dart';
 import '../screens/news_detail_screen.dart';
 import '../screens/rideshare/rideshare_screen.dart';
 import 'ios_web_redirect_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class HeroBanner extends StatefulWidget {
   const HeroBanner({super.key});
@@ -608,7 +609,7 @@ class _HeroBannerState extends State<HeroBanner> {
           ),
         ),
         child: const Center(
-          child: CircularProgressIndicator(color: Colors.white),
+          child: AdsyLoadingIndicator(color: Colors.white),
         ),
       );
     }
@@ -668,7 +669,7 @@ class _HeroBannerState extends State<HeroBanner> {
                         return Container(
                           color: Colors.grey.shade300,
                           child: Center(
-                            child: CircularProgressIndicator(
+                            child: AdsyLoadingIndicator(
                               value: loadingProgress.expectedTotalBytes != null
                                   ? loadingProgress.cumulativeBytesLoaded /
                                       loadingProgress.expectedTotalBytes!

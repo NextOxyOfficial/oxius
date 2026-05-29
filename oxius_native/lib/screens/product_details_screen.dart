@@ -9,6 +9,7 @@ import '../utils/url_launcher_utils.dart';
 import '../models/cart_item.dart';
 import '../widgets/product_card.dart';
 import 'vendor_store_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -514,7 +515,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     final productTitle = product['name'] ?? product['title'] ?? 'Product';
     final productSlug = (product['slug'] ?? product['id'])?.toString().trim();
     final shareText =
-      'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/product-details/$productSlug';
+        'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/product-details/$productSlug';
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     try {
@@ -618,7 +619,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
           ),
         ),
         body: const Center(
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             color: Color(0xFF10B981),
           ),
         ),
@@ -1045,105 +1046,107 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
         Padding(
           padding: EdgeInsets.fromLTRB(4, topInset, 4, 0),
           child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth.clamp(0.0, double.infinity);
-          final height = constraints.maxHeight.clamp(0.0, double.infinity);
-          final galleryHeight = height > 0 ? height : width + 40;
+            builder: (context, constraints) {
+              final width = constraints.maxWidth.clamp(0.0, double.infinity);
+              final height = constraints.maxHeight.clamp(0.0, double.infinity);
+              final galleryHeight = height > 0 ? height : width + 40;
 
-          return SizedBox(
-            width: width,
-            height: galleryHeight,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: _surface,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 14, 12, 10),
-                      child: PageView.builder(
-                        itemCount: _imageCount,
-                        onPageChanged: (index) {
-                          setState(() => _selectedImageIndex = index);
-                        },
-                        itemBuilder: (context, index) {
-                          final imageUrl = _getImageUrl(index);
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF7FAFC),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: imageUrl.isNotEmpty
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Image.network(
-                                      imageUrl,
-                                      fit: BoxFit.contain,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Center(
-                                          child: Icon(
-                                            Icons.image_outlined,
-                                            size: 48,
-                                            color: Colors.grey.shade300,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  )
-                                : Center(
-                                    child: Icon(
-                                      Icons.image_outlined,
-                                      size: 48,
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                          );
-                        },
+              return SizedBox(
+                width: width,
+                height: galleryHeight,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _surface,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 14, 12, 10),
+                          child: PageView.builder(
+                            itemCount: _imageCount,
+                            onPageChanged: (index) {
+                              setState(() => _selectedImageIndex = index);
+                            },
+                            itemBuilder: (context, index) {
+                              final imageUrl = _getImageUrl(index);
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF7FAFC),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: imageUrl.isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.network(
+                                          imageUrl,
+                                          fit: BoxFit.contain,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Center(
+                                              child: Icon(
+                                                Icons.image_outlined,
+                                                size: 48,
+                                                color: Colors.grey.shade300,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      )
+                                    : Center(
+                                        child: Icon(
+                                          Icons.image_outlined,
+                                          size: 48,
+                                          color: Colors.grey.shade300,
+                                        ),
+                                      ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    if (isFreeDelivery)
+                      Positioned(
+                        top: 14,
+                        right: 14,
+                        child: _buildHeroBadge(
+                          icon: Icons.local_shipping_outlined,
+                          label: 'Free delivery',
+                          color: _emerald,
+                          background: const Color(0xFFECFDF5),
+                        ),
+                      ),
+                    if (_imageCount > 1)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 4,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(_imageCount, (index) {
+                            final isActive = index == _selectedImageIndex;
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 180),
+                              width: isActive ? 18 : 6,
+                              height: 6,
+                              margin: const EdgeInsets.symmetric(horizontal: 3),
+                              decoration: BoxDecoration(
+                                color: isActive
+                                    ? _indigo
+                                    : const Color(0xFFCBD5E1),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                  ],
                 ),
-                if (isFreeDelivery)
-                  Positioned(
-                    top: 14,
-                    right: 14,
-                    child: _buildHeroBadge(
-                      icon: Icons.local_shipping_outlined,
-                      label: 'Free delivery',
-                      color: _emerald,
-                      background: const Color(0xFFECFDF5),
-                    ),
-                  ),
-                if (_imageCount > 1)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 4,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_imageCount, (index) {
-                        final isActive = index == _selectedImageIndex;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 180),
-                          width: isActive ? 18 : 6,
-                          height: 6,
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          decoration: BoxDecoration(
-                            color: isActive ? _indigo : const Color(0xFFCBD5E1),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -1755,7 +1758,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
+                  child: AdsyLoadingIndicator(
                     strokeWidth: 2,
                     valueColor:
                         AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
@@ -1785,7 +1788,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF059669)),
                 ),

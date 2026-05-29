@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../services/business_network_service.dart';
 import '../services/fcm_service.dart';
 import '../screens/business_network/post_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class DeepLinkService {
   DeepLinkService._();
@@ -45,7 +46,8 @@ class DeepLinkService {
 
   Future<void> _handleUri(Uri uri) async {
     final host = uri.host.toLowerCase();
-    final isWebLink = uri.scheme == 'https' && (host == 'adsyclub.com' || host == 'www.adsyclub.com');
+    final isWebLink = uri.scheme == 'https' &&
+        (host == 'adsyclub.com' || host == 'www.adsyclub.com');
     final isCustomScheme = uri.scheme == 'adsyclub';
 
     if (!isWebLink && !isCustomScheme) return;
@@ -53,7 +55,8 @@ class DeepLinkService {
     final List<String> segments;
     if (isCustomScheme) {
       final fromHost = uri.host.trim();
-      final fromPath = uri.pathSegments.where((s) => s.trim().isNotEmpty).toList();
+      final fromPath =
+          uri.pathSegments.where((s) => s.trim().isNotEmpty).toList();
       if (fromHost.isNotEmpty) {
         segments = [fromHost, ...fromPath];
       } else {
@@ -135,10 +138,11 @@ class DeepLinkService {
   }
 
   String _buildWalletRouteFromUri(Uri uri, List<String> segments) {
-    final hasPaymentCallbackData = uri.queryParameters.containsKey('sp_order_id') ||
-        uri.queryParameters.containsKey('order_id') ||
-        uri.queryParameters.containsKey('merchant_invoice_no') ||
-        uri.queryParameters.containsKey('payment_state');
+    final hasPaymentCallbackData =
+        uri.queryParameters.containsKey('sp_order_id') ||
+            uri.queryParameters.containsKey('order_id') ||
+            uri.queryParameters.containsKey('merchant_invoice_no') ||
+            uri.queryParameters.containsKey('payment_state');
 
     if (!hasPaymentCallbackData && segments[0] == 'deposit-withdraw') {
       return '/deposit-withdraw';
@@ -190,12 +194,13 @@ class DeepLinkService {
     });
   }
 
-  Future<void> _openBusinessNetworkPost(BuildContext context, int postId) async {
+  Future<void> _openBusinessNetworkPost(
+      BuildContext context, int postId) async {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(
-        child: CircularProgressIndicator(),
+        child: AdsyLoadingIndicator(),
       ),
     );
 

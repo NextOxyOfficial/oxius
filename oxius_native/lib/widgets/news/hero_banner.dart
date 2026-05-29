@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/news_models.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class HeroBanner extends StatelessWidget {
   final NewsPost article;
@@ -43,7 +44,7 @@ class HeroBanner extends StatelessWidget {
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
                   color: Colors.grey.shade200,
-                  child: const Center(child: CircularProgressIndicator()),
+                  child: const Center(child: AdsyLoadingIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
                   color: Colors.grey.shade200,

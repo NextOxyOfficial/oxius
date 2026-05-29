@@ -10,6 +10,7 @@ import 'product_card.dart';
 import 'hot_deals_section.dart';
 import 'hot_arrivals_section.dart';
 import 'mobile_banner.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class EshopSection extends StatefulWidget {
   const EshopSection({super.key});
@@ -34,7 +35,8 @@ class _EshopSectionState extends State<EshopSection> {
         id: product['id'],
         name: product['name'] ?? product['title'] ?? 'Product',
         description: product['description'],
-        regularPrice: _parseDouble(product['regular_price'] ?? product['price']),
+        regularPrice:
+            _parseDouble(product['regular_price'] ?? product['price']),
         salePrice: product['sale_price'] != null
             ? _parseDouble(product['sale_price'])
             : null,
@@ -48,7 +50,8 @@ class _EshopSectionState extends State<EshopSection> {
             : null,
         imageDetails: product['image_details'] != null
             ? (product['image_details'] as List)
-                .map((img) => ProductImage.fromJson(img as Map<String, dynamic>))
+                .map(
+                    (img) => ProductImage.fromJson(img as Map<String, dynamic>))
                 .toList()
             : null,
       );
@@ -85,7 +88,8 @@ class _EshopSectionState extends State<EshopSection> {
   }
 
   // Pick up to [maxItems] random unique items from the list
-  List<Map<String, dynamic>> _pickRandom(List<Map<String, dynamic>> list, int maxItems) {
+  List<Map<String, dynamic>> _pickRandom(
+      List<Map<String, dynamic>> list, int maxItems) {
     if (list.isEmpty) return [];
     final rng = Random();
     final indices = List<int>.generate(list.length, (i) => i);
@@ -121,13 +125,13 @@ class _EshopSectionState extends State<EshopSection> {
     setState(() {
       _loadingButtons.add(buttonId);
     });
-    
+
     // Navigate to eShop page
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const EshopScreen()),
     );
-    
+
     // Remove loading state after navigation
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
@@ -145,15 +149,17 @@ class _EshopSectionState extends State<EshopSection> {
   }
 
   Future<void> _loadProducts() async {
-    setState(() { _loadingProducts = true; });
-    
+    setState(() {
+      _loadingProducts = true;
+    });
+
     try {
       // Fetch from backend
       final products = await EshopService.fetchEshopProducts(
         page: 1,
         pageSize: 10,
       );
-      
+
       if (!mounted) return;
       setState(() {
         _products = products;
@@ -172,7 +178,7 @@ class _EshopSectionState extends State<EshopSection> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
-    
+
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: isMobile ? 4 : 16,
@@ -183,7 +189,7 @@ class _EshopSectionState extends State<EshopSection> {
           // eShop Header
           _buildHeader(isMobile),
           const SizedBox(height: 16),
-          
+
           // 1. eShop Banner (using MobileBannerWidget with eshop-banner endpoint)
           const MobileBannerWidget(
             autoplayInterval: 5000,
@@ -191,15 +197,15 @@ class _EshopSectionState extends State<EshopSection> {
             endpoint: '/eshop-banner/',
           ),
           const SizedBox(height: 16),
-          
+
           // 2. Hot Deals Section (Special Offers)
           const HotDealsSection(),
           const SizedBox(height: 16),
-          
+
           // 3. Hot Arrivals Section (New & Hot)
           const HotArrivalsSection(),
           const SizedBox(height: 16),
-          
+
           // 4. Product Grid
           _buildProductsGrid(isMobile),
         ],
@@ -225,7 +231,10 @@ class _EshopSectionState extends State<EshopSection> {
                   children: [
                     ShaderMask(
                       shaderCallback: (bounds) => const LinearGradient(
-                        colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)], // Purple to Blue gradient
+                        colors: [
+                          Color(0xFF8B5CF6),
+                          Color(0xFF3B82F6)
+                        ], // Purple to Blue gradient
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                       ).createShader(bounds),
@@ -246,7 +255,10 @@ class _EshopSectionState extends State<EshopSection> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(999),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)], // Purple to Blue gradient
+                          colors: [
+                            Color(0xFF8B5CF6),
+                            Color(0xFF3B82F6)
+                          ], // Purple to Blue gradient
                         ),
                       ),
                     ),
@@ -264,12 +276,15 @@ class _EshopSectionState extends State<EshopSection> {
 
   Widget _buildActionButton(bool isMobile) {
     final isLoading = _loadingButtons.contains('browse-eshop');
-    
+
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
         gradient: const LinearGradient(
-          colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)], // Purple to Blue gradient
+          colors: [
+            Color(0xFF8B5CF6),
+            Color(0xFF3B82F6)
+          ], // Purple to Blue gradient
         ),
         boxShadow: [
           BoxShadow(
@@ -298,16 +313,19 @@ class _EshopSectionState extends State<EshopSection> {
                   width: 20,
                   height: 20,
                   child: isLoading
-                      ? const CircularProgressIndicator(
+                      ? const AdsyLoadingIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         )
-                      : const Icon(Icons.shopping_bag, color: Colors.white, size: 18),
+                      : const Icon(Icons.shopping_bag,
+                          color: Colors.white, size: 18),
                 ),
                 if (!isLoading) ...[
                   const SizedBox(width: 8),
                   Text(
-                    _translationService.t('browse_eshop', fallback: 'Browse eShop'),
+                    _translationService.t('browse_eshop',
+                        fallback: 'Browse eShop'),
                     style: AppFonts.poppins(
                       fontSize: isMobile ? 12 : 14,
                       fontWeight: FontWeight.w600,
@@ -328,7 +346,7 @@ class _EshopSectionState extends State<EshopSection> {
       return SizedBox(
         height: 120,
         child: Center(
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             strokeWidth: 3,
             valueColor: AlwaysStoppedAnimation<Color>(Colors.purple.shade600),
           ),
@@ -348,7 +366,8 @@ class _EshopSectionState extends State<EshopSection> {
             ),
             const SizedBox(height: 16),
             Text(
-              _translationService.t('no_products_found', fallback: 'No products found'),
+              _translationService.t('no_products_found',
+                  fallback: 'No products found'),
               style: AppFonts.roboto(
                 fontSize: 16,
                 color: Colors.grey.shade600,
@@ -360,32 +379,41 @@ class _EshopSectionState extends State<EshopSection> {
     }
 
     // Show exactly 2 rows of 5 random items (up to 10 products), each row scrolls horizontally
-    final items = _displayProducts.isNotEmpty ? _displayProducts : _products.take(10).toList();
+    final items = _displayProducts.isNotEmpty
+        ? _displayProducts
+        : _products.take(10).toList();
     final row1 = items.take(5).toList();
-    final row2 = items.length > 5 ? items.sublist(5, items.length.clamp(5, 10)) : <Map<String, dynamic>>[];
+    final row2 = items.length > 5
+        ? items.sublist(5, items.length.clamp(5, 10))
+        : <Map<String, dynamic>>[];
 
     const spacing = 8.0; // Increased spacing for better touch targets
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
         final screenWidth = MediaQuery.of(context).size.width;
-        
+
         // Responsive card sizing
         final isSmallScreen = screenWidth < 360;
         final isLargeScreen = screenWidth > 600;
-        
+
         // Calculate ideal card width based on screen size
-        final crossAxisCount = isSmallScreen ? 1 : isMobile ? 2 : 3;
+        final crossAxisCount = isSmallScreen
+            ? 1
+            : isMobile
+                ? 2
+                : 3;
         final spacingTotal = spacing * (crossAxisCount - 1);
         final cardWidth = (availableWidth - spacingTotal) / crossAxisCount;
-        
+
         // Ensure minimum and maximum card widths
-        final constrainedCardWidth = cardWidth.clamp(143.0, isLargeScreen ? 200.0 : 180.0);
+        final constrainedCardWidth =
+            cardWidth.clamp(143.0, isLargeScreen ? 200.0 : 180.0);
         final cardHeight = ProductCardLayout.horizontalCardHeight(
           screenWidth,
           cardWidth: constrainedCardWidth,
         );
-        
+
         Widget buildRow(List<Map<String, dynamic>> data) {
           return SizedBox(
             height: cardHeight,
@@ -423,7 +451,6 @@ class _EshopSectionState extends State<EshopSection> {
       },
     );
   }
-
 }
 
 // --- Product Card (Flutter implementation aligned with Vue product-card.vue) ---
@@ -457,7 +484,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
       if (p['image'] is String && p['image'].toString().isNotEmpty) {
         return p['image'].toString();
       }
-      
+
       // Check image_details array
       final imgDetails = p['image_details'];
       if (imgDetails is List && imgDetails.isNotEmpty) {
@@ -467,7 +494,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
           if (url.isNotEmpty) return url;
         }
       }
-      
+
       // Check medias array (fallback)
       if (p['medias'] is List && (p['medias'] as List).isNotEmpty) {
         final first = (p['medias'] as List).first;
@@ -476,7 +503,7 @@ class _EshopProductCardState extends State<_EshopProductCard> {
           if (url.isNotEmpty) return url;
         }
       }
-      
+
       return '';
     } catch (e) {
       print('Error getting image: $e');
@@ -505,30 +532,31 @@ class _EshopProductCardState extends State<_EshopProductCard> {
   String _formatPrice(dynamic v) {
     final n = _toNum(v);
     if (n == null) return '';
-    final s = n
-        .toStringAsFixed(0)
-        .replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    final s = n.toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
     return s; // currency symbol added in Text
   }
 
   String _getStoreName(Map<String, dynamic> p) {
     try {
       print('DEBUG _getStoreName: Product keys: ${p.keys.toList()}');
-      
+
       // Since the data is already transformed in the service, use the simplified structure
       final ownerDetails = p['owner_details'];
-      print('DEBUG _getStoreName: owner_details type: ${ownerDetails.runtimeType}');
+      print(
+          'DEBUG _getStoreName: owner_details type: ${ownerDetails.runtimeType}');
       print('DEBUG _getStoreName: owner_details value: $ownerDetails');
-      
+
       if (ownerDetails is Map<String, dynamic>) {
-        print('DEBUG _getStoreName: owner_details keys: ${ownerDetails.keys.toList()}');
-        final storeName = ownerDetails['store_name']?.toString() ?? 
-                         ownerDetails['name']?.toString() ?? 
-                         'Store';
+        print(
+            'DEBUG _getStoreName: owner_details keys: ${ownerDetails.keys.toList()}');
+        final storeName = ownerDetails['store_name']?.toString() ??
+            ownerDetails['name']?.toString() ??
+            'Store';
         print('DEBUG _getStoreName: Final storeName: "$storeName"');
         return storeName.trim().isNotEmpty ? storeName.trim() : 'Store';
       }
-      
+
       print('DEBUG _getStoreName: owner_details is not a Map, returning Store');
       return 'Store';
     } catch (e) {
@@ -553,13 +581,41 @@ class _EshopProductCardState extends State<_EshopProductCard> {
     final isLargeScreen = screenWidth > 600;
 
     // Responsive sizing
-    final buttonHeight = isSmallScreen ? 36.0 : isLargeScreen ? 48.0 : 40.0;
-    final buttonPadding = isSmallScreen ? 8.0 : isLargeScreen ? 12.0 : 10.0;
-    final iconSize = isSmallScreen ? 14.0 : isLargeScreen ? 18.0 : 16.0;
-    final textSize = isSmallScreen ? 11.0 : isLargeScreen ? 15.0 : 13.0;
-    final priceTextSize = isSmallScreen ? 14.0 : isLargeScreen ? 18.0 : 16.0;
-    final titleTextSize = isSmallScreen ? 12.0 : isLargeScreen ? 14.0 : 13.0;
-    final storeTextSize = isSmallScreen ? 10.0 : isLargeScreen ? 13.0 : 12.0;
+    final buttonHeight = isSmallScreen
+        ? 36.0
+        : isLargeScreen
+            ? 48.0
+            : 40.0;
+    final buttonPadding = isSmallScreen
+        ? 8.0
+        : isLargeScreen
+            ? 12.0
+            : 10.0;
+    final iconSize = isSmallScreen
+        ? 14.0
+        : isLargeScreen
+            ? 18.0
+            : 16.0;
+    final textSize = isSmallScreen
+        ? 11.0
+        : isLargeScreen
+            ? 15.0
+            : 13.0;
+    final priceTextSize = isSmallScreen
+        ? 14.0
+        : isLargeScreen
+            ? 18.0
+            : 16.0;
+    final titleTextSize = isSmallScreen
+        ? 12.0
+        : isLargeScreen
+            ? 14.0
+            : 13.0;
+    final storeTextSize = isSmallScreen
+        ? 10.0
+        : isLargeScreen
+            ? 13.0
+            : 12.0;
 
     final imageHeight = widget.width; // square image
 
@@ -571,143 +627,155 @@ class _EshopProductCardState extends State<_EshopProductCard> {
         elevation: 2,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap ?? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetailsScreen(product: widget.product),
+          borderRadius: BorderRadius.circular(12),
+          onTap: widget.onTap ??
+              () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ProductDetailsScreen(product: widget.product),
+                  ),
+                );
+              },
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade200),
             ),
-          );
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image section (square like pt-[100%])
-              MouseRegion(
-                onEnter: (_) => setState(() => _hovered = true),
-                onExit: (_) => setState(() => _hovered = false),
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      height: imageHeight,
-                      width: double.infinity,
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                        child: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey.shade100,
-                            child: Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 32,
-                              color: Colors.purple.shade300,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image section (square like pt-[100%])
+                MouseRegion(
+                  onEnter: (_) => setState(() => _hovered = true),
+                  onExit: (_) => setState(() => _hovered = false),
+                  child: Stack(
+                    children: [
+                      SizedBox(
+                        height: imageHeight,
+                        width: double.infinity,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(12)),
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                              color: Colors.grey.shade100,
+                              child: Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 32,
+                                color: Colors.purple.shade300,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
 
-                    // Discount badge (top-left)
-                    if (regular != null && discount > 0)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade500,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.flash_on, size: 12, color: Colors.white),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$discount% OFF',
-                                style: AppFonts.roboto(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                      // Discount badge (top-left)
+                      if (regular != null && discount > 0)
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade500,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.flash_on,
+                                    size: 12, color: Colors.white),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$discount% OFF',
+                                  style: AppFonts.roboto(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                    // Free delivery badge (bottom-left)
-                    if (isFreeDelivery)
-                      Positioned(
-                        bottom: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade600.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.local_shipping, size: 12, color: Colors.white),
-                              const SizedBox(width: 4),
-                              Text(
-                                'FREE DELIVERY',
-                                style: AppFonts.roboto(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                      // Free delivery badge (bottom-left)
+                      if (isFreeDelivery)
+                        Positioned(
+                          bottom: 8,
+                          left: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade600.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.local_shipping,
+                                    size: 12, color: Colors.white),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'FREE DELIVERY',
+                                  style: AppFonts.roboto(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
 
-                    // Quick View overlay (hover)
-                    Positioned.fill(
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 150),
-                        opacity: _hovered ? 1 : 0,
-                        child: Container(
-                          color: Colors.black.withOpacity(0.0),
-                          child: Center(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.black87,
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                      // Quick View overlay (hover)
+                      Positioned.fill(
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 150),
+                          opacity: _hovered ? 1 : 0,
+                          child: Container(
+                            color: Colors.black.withOpacity(0.0),
+                            child: Center(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black87,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 8),
+                                  textStyle: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                onPressed: () {
+                                  // TODO: Implement quick view modal
+                                  debugPrint('Quick View: ${p['id']}');
+                                },
+                                icon: const Icon(Icons.remove_red_eye_outlined,
+                                    size: 16),
+                                label: const Text('Quick View'),
                               ),
-                              onPressed: () {
-                                // TODO: Implement quick view modal
-                                debugPrint('Quick View: ${p['id']}');
-                              },
-                              icon: const Icon(Icons.remove_red_eye_outlined, size: 16),
-                              label: const Text('Quick View'),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              // Details
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                // Details
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       // Price Section - Moved to top (Vue: mb-2)
                       Container(
                         margin: const EdgeInsets.only(bottom: 6),
@@ -736,7 +804,11 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            if (sale != null && _toNum(sale) != null && regular != null && _toNum(regular) != null && _toNum(sale)! < _toNum(regular)!)
+                            if (sale != null &&
+                                _toNum(sale) != null &&
+                                regular != null &&
+                                _toNum(regular) != null &&
+                                _toNum(sale)! < _toNum(regular)!)
                               Text.rich(
                                 TextSpan(
                                   children: [
@@ -780,7 +852,8 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                       // Store Link - Moved below product name (Vue: mb-3)
                       Container(
                         margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: Colors.grey.shade50,
                           borderRadius: BorderRadius.circular(12),
@@ -793,7 +866,10 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: LinearGradient(
-                                  colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                                  colors: [
+                                    Color(0xFF3B82F6),
+                                    Color(0xFF8B5CF6)
+                                  ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
@@ -806,7 +882,8 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                 ],
                               ),
                               child: const Center(
-                                child: Icon(Icons.storefront_outlined, size: 12, color: Colors.white),
+                                child: Icon(Icons.storefront_outlined,
+                                    size: 12, color: Colors.white),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -832,12 +909,15 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                         child: ElevatedButton(
                           onPressed: widget.isLoading ? null : widget.onBuyNow,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF374151), // Vue: bg-gray-700
+                            backgroundColor:
+                                const Color(0xFF374151), // Vue: bg-gray-700
                             foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(vertical: buttonPadding),
+                            padding:
+                                EdgeInsets.symmetric(vertical: buttonPadding),
                             minimumSize: Size.fromHeight(buttonHeight),
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6)),
                             elevation: 0,
                           ),
                           child: widget.isLoading
@@ -847,9 +927,11 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                                     SizedBox(
                                       width: iconSize,
                                       height: iconSize,
-                                      child: const CircularProgressIndicator(
+                                      child: const AdsyLoadingIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.white),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -865,7 +947,8 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                               : Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.shopping_cart_outlined, size: iconSize),
+                                    Icon(Icons.shopping_cart_outlined,
+                                        size: iconSize),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Buy Now',
@@ -881,9 +964,9 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                     ],
                   ),
                 ),
-            ],
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import '../services/adsyconnect_service.dart';
 import '../widgets/chat_list_skeleton.dart';
 import '../config/app_config.dart';
 import '../utils/network_error_handler.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class AdsyConnectScreen extends StatefulWidget {
   const AdsyConnectScreen({super.key, this.initialChatId});
@@ -622,7 +623,7 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                         ),
                       ),
                     )
-                  : RefreshIndicator(
+                  : AdsyRefreshIndicator(
                       onRefresh: _refreshChats,
                       color: const Color(0xFF3B82F6),
                       child: NotificationListener<ScrollNotification>(

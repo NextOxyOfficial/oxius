@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../models/classified_post.dart';
 import '../screens/classified_post_details_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// AdsScroll Widget - Horizontal scrolling carousel for recent classified ads
 /// Optimized for mobile performance with auto-scrolling and touch controls
@@ -26,7 +27,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
   Timer? _autoScrollTimer;
   bool _isPaused = false;
   double _scrollSpeed = 1.0;
-  
+
   // Card dimensions
   double _cardWidth = 180.0;
   final double _cardGap = 12.0;
@@ -50,7 +51,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
     // Adjust card width based on screen size
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      
+
       final screenWidth = MediaQuery.of(context).size.width;
       setState(() {
         if (screenWidth < 600) {
@@ -74,10 +75,11 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
 
   void _startAutoScroll() {
     _autoScrollTimer?.cancel();
-    
+
     if (widget.ads == null || widget.ads!.isEmpty) return;
 
-    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
+    _autoScrollTimer =
+        Timer.periodic(const Duration(milliseconds: 40), (timer) {
       if (_isPaused || !_scrollController.hasClients) return;
 
       final maxScroll = _scrollController.position.maxScrollExtent;
@@ -149,98 +151,105 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
 
       // Limit to max 10 random ads for performance
       final displayAds = widget.ads!.length > 10
-          ? (List<ClassifiedPost>.from(widget.ads!)..shuffle()).take(10).toList()
+          ? (List<ClassifiedPost>.from(widget.ads!)..shuffle())
+              .take(10)
+              .toList()
           : widget.ads!;
 
       // Create duplicates for infinite scroll effect
       final duplicatedAds = <ClassifiedPost>[];
-      final duplicateCount = displayAds.length <= 5 ? 6 : 
-                            displayAds.length <= 8 ? 4 : 3;
+      final duplicateCount = displayAds.length <= 5
+          ? 6
+          : displayAds.length <= 8
+              ? 4
+              : 3;
       for (int i = 0; i < duplicateCount; i++) {
         duplicatedAds.addAll(displayAds);
       }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate card width based on available space
-        final availableWidth = constraints.maxWidth;
-        double cardWidth;
-        
-        if (availableWidth < 600) {
-          // Mobile: 2 cards visible with gaps
-          cardWidth = (availableWidth - 36) * 0.45; // 12px padding on sides + gaps
-        } else if (availableWidth < 1024) {
-          // Tablet: 3 cards visible
-          cardWidth = (availableWidth - 48) * 0.30;
-        } else {
-          // Desktop: 4-5 cards visible
-          cardWidth = (availableWidth - 60) * 0.21;
-        }
-        
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          child: Column(
-            children: [
-          // Compact Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: Row(
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          // Calculate card width based on available space
+          final availableWidth = constraints.maxWidth;
+          double cardWidth;
+
+          if (availableWidth < 600) {
+            // Mobile: 2 cards visible with gaps
+            cardWidth =
+                (availableWidth - 36) * 0.45; // 12px padding on sides + gaps
+          } else if (availableWidth < 1024) {
+            // Tablet: 3 cards visible
+            cardWidth = (availableWidth - 48) * 0.30;
+          } else {
+            // Desktop: 4-5 cards visible
+            cardWidth = (availableWidth - 60) * 0.21;
+          }
+
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: Column(
               children: [
-                // Icon
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: Color(0xFF10B981),
+                // Compact Header
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  child: Row(
+                    children: [
+                      // Icon
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.access_time,
+                          size: 16,
+                          color: Color(0xFF10B981),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Title
+                      Text(
+                        widget.sectionTitle,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                // Title
-                Text(
-                  widget.sectionTitle,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
+
+                const SizedBox(height: 4),
+
+                // Scrolling ads carousel
+                GestureDetector(
+                  onPanStart: (_) => _pauseAutoScroll(),
+                  onPanEnd: (_) => _resumeAutoScroll(),
+                  child: SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      itemCount: duplicatedAds.length,
+                      itemBuilder: (context, index) {
+                        final ad = duplicatedAds[index];
+                        return _buildAdCard(ad, cardWidth);
+                      },
+                    ),
                   ),
                 ),
+
+                const SizedBox(height: 8),
               ],
             ),
-          ),
-
-          const SizedBox(height: 4),
-
-          // Scrolling ads carousel
-          GestureDetector(
-            onPanStart: (_) => _pauseAutoScroll(),
-            onPanEnd: (_) => _resumeAutoScroll(),
-            child: SizedBox(
-              height: 200,
-              child: ListView.builder(
-                controller: _scrollController,
-                scrollDirection: Axis.horizontal,
-                physics: const ClampingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                itemCount: duplicatedAds.length,
-                itemBuilder: (context, index) {
-                  final ad = duplicatedAds[index];
-                  return _buildAdCard(ad, cardWidth);
-                },
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
     } catch (e, stackTrace) {
       print('Error building AdsScrollWidget: $e');
       print('Stack trace: $stackTrace');
@@ -300,7 +309,7 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                       placeholder: (context, url) => Container(
                         color: Colors.grey.shade200,
                         child: const Center(
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Color(0xFF10B981),
@@ -351,7 +360,9 @@ class _AdsScrollWidgetState extends State<AdsScrollWidget> {
                           ),
                           Flexible(
                             child: Text(
-                              (ad.negotiable ?? false) ? 'Negotiable' : _formatPrice(ad.price ?? 0),
+                              (ad.negotiable ?? false)
+                                  ? 'Negotiable'
+                                  : _formatPrice(ad.price ?? 0),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(

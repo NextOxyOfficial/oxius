@@ -7,6 +7,7 @@ import '../widgets/news/trending_carousel.dart';
 import '../widgets/news/news_card.dart';
 import '../widgets/news/news_search_delegate.dart';
 import 'news_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class NewsScreen extends StatefulWidget {
   const NewsScreen({super.key});
@@ -126,7 +127,8 @@ class _NewsScreenState extends State<NewsScreen> {
                 height: 28,
                 fit: BoxFit.contain,
                 gaplessPlayback: true,
-                errorBuilder: (context, error, stackTrace) => _buildAdsyNewsTextLogo(),
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildAdsyNewsTextLogo(),
                 loadingBuilder: (context, child, progress) {
                   if (progress == null) return child;
                   return _buildAdsyNewsTextLogo();
@@ -135,7 +137,8 @@ class _NewsScreenState extends State<NewsScreen> {
             : _buildAdsyNewsTextLogo(),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search_rounded, color: Color(0xFF1F2937), size: 22),
+            icon: const Icon(Icons.search_rounded,
+                color: Color(0xFF1F2937), size: 22),
             onPressed: () {
               showSearch(
                 context: context,
@@ -151,7 +154,7 @@ class _NewsScreenState extends State<NewsScreen> {
         ),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AdsyLoadingIndicator())
           : _error != null
               ? Center(
                   child: Column(
@@ -262,7 +265,8 @@ class _NewsScreenState extends State<NewsScreen> {
                               ? GridView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: isMobile ? 2 : 4,
                                     crossAxisSpacing: 6,
                                     mainAxisSpacing: 6,
@@ -273,7 +277,8 @@ class _NewsScreenState extends State<NewsScreen> {
                                     return NewsCard(
                                       post: _allPosts[index],
                                       isListLayout: false,
-                                      onTap: () => _navigateToDetail(_allPosts[index]),
+                                      onTap: () =>
+                                          _navigateToDetail(_allPosts[index]),
                                     );
                                   },
                                 )
@@ -283,11 +288,13 @@ class _NewsScreenState extends State<NewsScreen> {
                                   itemCount: _allPosts.length,
                                   itemBuilder: (context, index) {
                                     return Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
+                                      padding:
+                                          const EdgeInsets.only(bottom: 12),
                                       child: NewsCard(
                                         post: _allPosts[index],
                                         isListLayout: true,
-                                        onTap: () => _navigateToDetail(_allPosts[index]),
+                                        onTap: () =>
+                                            _navigateToDetail(_allPosts[index]),
                                       ),
                                     );
                                   },
@@ -297,7 +304,8 @@ class _NewsScreenState extends State<NewsScreen> {
                         // Load More Button
                         if (_hasMore)
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16, horizontal: 4),
                             child: Center(
                               child: ElevatedButton(
                                 onPressed: _loadingMore ? null : _loadMorePosts,
@@ -314,8 +322,12 @@ class _NewsScreenState extends State<NewsScreen> {
                                   ),
                                 ),
                                 child: Text(
-                                  _loadingMore ? 'Loading...' : 'Load More Articles',
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                  _loadingMore
+                                      ? 'Loading...'
+                                      : 'Load More Articles',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13),
                                 ),
                               ),
                             ),
@@ -324,7 +336,8 @@ class _NewsScreenState extends State<NewsScreen> {
                         // Trending Topics
                         if (_categories.isNotEmpty)
                           Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 4),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
@@ -358,10 +371,12 @@ class _NewsScreenState extends State<NewsScreen> {
                                         ),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.05),
+                                              color: Colors.black
+                                                  .withOpacity(0.05),
                                               blurRadius: 4,
                                             ),
                                           ],
@@ -395,7 +410,8 @@ class _NewsScreenState extends State<NewsScreen> {
                         // Tips and Suggestions
                         if (_tips.isNotEmpty)
                           Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 4),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
@@ -417,7 +433,8 @@ class _NewsScreenState extends State<NewsScreen> {
                                 GridView.builder(
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: isMobile ? 1 : 3,
                                     crossAxisSpacing: 8,
                                     mainAxisSpacing: 8,
@@ -433,13 +450,15 @@ class _NewsScreenState extends State<NewsScreen> {
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(0.05),
+                                            color:
+                                                Colors.black.withOpacity(0.05),
                                             blurRadius: 4,
                                           ),
                                         ],
                                       ),
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             tip.title,
@@ -476,15 +495,21 @@ class _NewsScreenState extends State<NewsScreen> {
                                       child: ElevatedButton(
                                         onPressed: _loadMoreTips,
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFE53E3E),
+                                          backgroundColor:
+                                              const Color(0xFFE53E3E),
                                           foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20, vertical: 10),
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                         ),
-                                        child: const Text('Load More', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                                        child: const Text('Load More',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600)),
                                       ),
                                     ),
                                   ),

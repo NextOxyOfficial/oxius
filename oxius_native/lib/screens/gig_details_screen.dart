@@ -11,6 +11,7 @@ import '../services/api_service.dart';
 import '../utils/url_launcher_utils.dart';
 import 'terms_and_conditions_screen.dart';
 import 'privacy_policy_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class GigDetailsScreen extends StatefulWidget {
   final String gigSlug;
@@ -27,15 +28,16 @@ class GigDetailsScreen extends StatefulWidget {
 class _GigDetailsScreenState extends State<GigDetailsScreen> {
   final GigsService _gigsService = GigsService();
   final ImagePicker _picker = ImagePicker();
-  
+
   Map<String, dynamic>? _gig;
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _error;
   bool _hasSubmitted = false;
-  
+
   // Form fields
-  final TextEditingController _submitDetailsController = TextEditingController();
+  final TextEditingController _submitDetailsController =
+      TextEditingController();
   final List<File> _selectedImages = [];
   final List<String> _base64Images = [];
   bool _acceptedTerms = false;
@@ -62,7 +64,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
     try {
       final gigData = await _gigsService.fetchGigDetails(widget.gigSlug);
-      
+
       if (mounted) {
         setState(() {
           _gig = gigData;
@@ -93,7 +95,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
         final File imageFile = File(image.path);
         final bytes = await imageFile.readAsBytes();
         final base64String = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-        
+
         setState(() {
           _selectedImages.add(imageFile);
           _base64Images.add(base64String);
@@ -130,15 +132,15 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
     try {
       final headers = await ApiService.getHeaders();
-      
+
       // Use the gig's UUID (id field), not the slug
       final gigId = _gig!['id'];
-      
+
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/user-micro-gig-task-post/'),
         headers: headers,
         body: json.encode({
-          'gig': gigId,  // Send UUID, not slug
+          'gig': gigId, // Send UUID, not slug
           'medias': _base64Images,
           'submit_details': _submitDetailsController.text.trim(),
         }),
@@ -161,7 +163,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
         String errorMessage = 'Submission failed';
         try {
           final errorData = json.decode(response.body);
-          
+
           // Check for various error formats from backend
           if (errorData['error'] != null) {
             errorMessage = errorData['error'].toString();
@@ -173,7 +175,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
         } catch (e) {
           errorMessage = 'Submission failed: ${response.statusCode}';
         }
-        
+
         _showError(errorMessage);
       }
     } catch (e) {
@@ -249,9 +251,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 ],
               ),
               child: Center(
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.green.shade600),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(Colors.green.shade600),
                 ),
               ),
             ),
@@ -294,7 +297,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   color: Colors.red.shade50,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.error_outline, size: 48, color: Colors.red.shade400),
+                child: Icon(Icons.error_outline,
+                    size: 48, color: Colors.red.shade400),
               ),
               const SizedBox(height: 16),
               Text(
@@ -322,7 +326,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red.shade600,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -351,7 +356,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
             _buildInstructions(),
             if (_gig!['medias'] != null && (_gig!['medias'] as List).isNotEmpty)
               _buildReferenceMedia(),
-            if (_gig!['action_link'] != null && _gig!['action_link'].toString().isNotEmpty)
+            if (_gig!['action_link'] != null &&
+                _gig!['action_link'].toString().isNotEmpty)
               _buildActionLink(),
             const SizedBox(height: 4),
             _buildUploadSection(),
@@ -416,7 +422,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFF10B981).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -457,7 +464,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               const SizedBox(width: 6),
               if (_hasSubmitted)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                   decoration: BoxDecoration(
                     color: Colors.orange.shade50,
                     borderRadius: BorderRadius.circular(6),
@@ -853,19 +861,21 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF10B981), width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF10B981), width: 1.5),
                   ),
                   filled: true,
                   fillColor: const Color(0xFFF9FAFB),
                   contentPadding: const EdgeInsets.all(10),
-                  errorText: _showValidationErrors && _submitDetailsController.text.trim().isEmpty
+                  errorText: _showValidationErrors &&
+                          _submitDetailsController.text.trim().isEmpty
                       ? 'Please enter your work details'
                       : null,
                   errorStyle: AppFonts.roboto(fontSize: 11),
                 ),
               ),
               const SizedBox(height: 12),
-          
+
               // Upload Images
               Text(
                 'Upload Proof Images',
@@ -883,7 +893,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   ..._selectedImages.asMap().entries.map((entry) {
                     final index = entry.key;
                     final image = entry.value;
-                    
+
                     return Stack(
                       children: [
                         Container(
@@ -927,7 +937,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       ],
                     );
                   }),
-                  
+
                   // Add Image Button
                   GestureDetector(
                     onTap: _pickImage,
@@ -966,7 +976,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-                
+
               // Terms and Conditions
               Container(
                 padding: const EdgeInsets.all(10),
@@ -988,7 +998,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                           scale: 0.9,
                           child: Checkbox(
                             value: _acceptedTerms,
-                            onChanged: (value) => setState(() => _acceptedTerms = value ?? false),
+                            onChanged: (value) =>
+                                setState(() => _acceptedTerms = value ?? false),
                             activeColor: const Color(0xFF10B981),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(3),
@@ -1012,7 +1023,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const TermsAndConditionsScreen(),
+                                        builder: (context) =>
+                                            const TermsAndConditionsScreen(),
                                       ),
                                     );
                                   },
@@ -1038,7 +1050,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const PrivacyPolicyScreen(),
+                                        builder: (context) =>
+                                            const PrivacyPolicyScreen(),
                                       ),
                                     );
                                   },
@@ -1070,7 +1083,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                         padding: const EdgeInsets.only(left: 32, top: 2),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline_rounded, size: 12, color: Colors.red.shade700),
+                            Icon(Icons.error_outline_rounded,
+                                size: 12, color: Colors.red.shade700),
                             const SizedBox(width: 3),
                             Text(
                               'Please accept Terms & Conditions',
@@ -1083,9 +1097,9 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                           ],
                         ),
                       ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // Fraud Warning Checkbox
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1094,7 +1108,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                           scale: 0.9,
                           child: Checkbox(
                             value: _acceptedCondition,
-                            onChanged: (value) => setState(() => _acceptedCondition = value ?? false),
+                            onChanged: (value) => setState(
+                                () => _acceptedCondition = value ?? false),
                             activeColor: const Color(0xFF10B981),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(3),
@@ -1121,7 +1136,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                         padding: const EdgeInsets.only(left: 32, top: 2),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline_rounded, size: 12, color: Colors.red.shade700),
+                            Icon(Icons.error_outline_rounded,
+                                size: 12, color: Colors.red.shade700),
                             const SizedBox(width: 3),
                             Text(
                               'Please acknowledge the warning',
@@ -1138,15 +1154,16 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-                
+
               // Submit Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: (_isSubmitting || _hasSubmitted) ? null : _submitGig,
+                  onPressed:
+                      (_isSubmitting || _hasSubmitted) ? null : _submitGig,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _hasSubmitted 
-                        ? Colors.grey.shade400 
+                    backgroundColor: _hasSubmitted
+                        ? Colors.grey.shade400
                         : const Color(0xFF10B981),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1161,9 +1178,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : Row(
@@ -1171,12 +1189,16 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              _hasSubmitted ? Icons.check_circle_rounded : Icons.check_circle_rounded,
+                              _hasSubmitted
+                                  ? Icons.check_circle_rounded
+                                  : Icons.check_circle_rounded,
                               size: 16,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              _hasSubmitted ? 'Already Submitted' : 'Submit Work',
+                              _hasSubmitted
+                                  ? 'Already Submitted'
+                                  : 'Submit Work',
                               style: AppFonts.roboto(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,

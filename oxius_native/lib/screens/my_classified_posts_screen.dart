@@ -5,20 +5,22 @@ import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
 import 'classified_post_form_screen.dart';
 import 'classified_post_details_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class MyClassifiedPostsScreen extends StatefulWidget {
   const MyClassifiedPostsScreen({Key? key}) : super(key: key);
 
   @override
-  State<MyClassifiedPostsScreen> createState() => _MyClassifiedPostsScreenState();
+  State<MyClassifiedPostsScreen> createState() =>
+      _MyClassifiedPostsScreenState();
 }
 
 class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
   late final ClassifiedPostService _postService;
-  
+
   List<ClassifiedPost> _posts = [];
   bool _isLoading = false;
-  
+
   // Pagination
   int _currentPage = 1;
   final int _itemsPerPage = 10;
@@ -32,7 +34,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
 
   Future<void> _loadPosts() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final posts = await _postService.fetchUserPosts();
       if (mounted) {
@@ -51,7 +53,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
 
   Future<void> _handleAction(ClassifiedPost post, String action) async {
     bool? confirm = true;
-    
+
     if (action == 'complete' || action == 'pause') {
       confirm = await showDialog<bool>(
         context: context,
@@ -78,12 +80,12 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
         ),
       );
     }
-    
+
     if (confirm != true) return;
 
     try {
       Map<String, dynamic>? response;
-      
+
       switch (action) {
         case 'pause':
           response = await _postService.updatePostStatus(
@@ -107,8 +109,9 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
           // For editing, we need to pass both: use slug for fetching (GET), but keep ID for updating (PUT)
           // The form screen needs the slug to fetch data, but will use the ID from the fetched data for updates
           final postIdentifier = post.slug ?? post.id;
-          print('Editing post: ID=${post.id}, Slug=${post.slug}, Using slug for fetch=$postIdentifier');
-          
+          print(
+              'Editing post: ID=${post.id}, Slug=${post.slug}, Using slug for fetch=$postIdentifier');
+
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -192,7 +195,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1F2937), size: 22),
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: Color(0xFF1F2937), size: 22),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -208,7 +212,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                 _loadPosts();
               }
             },
-            icon: const Icon(Icons.add_rounded, color: Color(0xFF10B981), size: 18),
+            icon: const Icon(Icons.add_rounded,
+                color: Color(0xFF10B981), size: 18),
             label: const Text(
               'Create',
               style: TextStyle(
@@ -233,7 +238,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(
+              child: AdsyLoadingIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
               ),
             )
@@ -243,7 +248,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                   children: [
                     // Stats Bar
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
                       color: Colors.white,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -266,10 +272,10 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         ],
                       ),
                     ),
-                    
+
                     // Posts List
                     Expanded(
-                      child: RefreshIndicator(
+                      child: AdsyRefreshIndicator(
                         onRefresh: _loadPosts,
                         color: const Color(0xFF10B981),
                         child: ListView.builder(
@@ -281,7 +287,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         ),
                       ),
                     ),
-                    
+
                     // Pagination
                     if (_totalPages > 1) _buildPagination(),
                   ],
@@ -384,7 +390,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                               ? CachedNetworkImage(
                                   imageUrl: post.medias!.first.image ?? '',
                                   fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) => const Icon(
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(
                                     Icons.image_not_supported_outlined,
                                     color: Color(0xFF9CA3AF),
                                     size: 32,
@@ -397,9 +404,9 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                                 ),
                         ),
                       ),
-                      
+
                       const SizedBox(width: 10),
-                      
+
                       // Details
                       Expanded(
                         child: Column(
@@ -418,9 +425,9 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            
+
                             const SizedBox(height: 4),
-                            
+
                             // Price and Status Badge Row
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -436,14 +443,14 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                                     letterSpacing: -0.2,
                                   ),
                                 ),
-                                
+
                                 // Status Badge
                                 _buildStatusBadge(post),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 4),
-                            
+
                             // Date
                             Row(
                               children: [
@@ -467,9 +474,9 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   // Action Buttons Row (Below image)
                   Wrap(
                     alignment: WrapAlignment.center,
@@ -481,22 +488,24 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
                         label: 'View',
                         onTap: () => _handleAction(post, 'view'),
                       ),
-                      
                       if (post.serviceStatus.toLowerCase() != 'completed')
                         _buildActionButton(
                           icon: Icons.edit_outlined,
                           label: 'Edit',
                           onTap: () => _handleAction(post, 'edit'),
                         ),
-                      
                       if (post.serviceStatus.toLowerCase() != 'completed')
                         _buildActionButton(
-                          icon: post.activeService ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                          icon: post.activeService
+                              ? Icons.pause_circle_outline
+                              : Icons.play_circle_outline,
                           label: post.activeService ? 'Pause' : 'Activate',
-                          onTap: () => _handleAction(post, post.activeService ? 'pause' : 'activate'),
-                          color: post.activeService ? Colors.orange : const Color(0xFF10B981),
+                          onTap: () => _handleAction(
+                              post, post.activeService ? 'pause' : 'activate'),
+                          color: post.activeService
+                              ? Colors.orange
+                              : const Color(0xFF10B981),
                         ),
-                      
                       if (post.serviceStatus.toLowerCase() != 'completed')
                         _buildActionButton(
                           icon: Icons.check_circle_outline,
@@ -518,7 +527,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
   Widget _buildStatusBadge(ClassifiedPost post) {
     Color badgeColor;
     String badgeText;
-    
+
     if (post.serviceStatus.toLowerCase() == 'completed') {
       badgeColor = Colors.blue;
       badgeText = 'Completed';
@@ -535,7 +544,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
       badgeColor = Colors.red;
       badgeText = post.serviceStatus;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
@@ -593,9 +602,8 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
         children: [
           // Previous Button
           OutlinedButton(
-            onPressed: _currentPage > 1
-                ? () => setState(() => _currentPage--)
-                : null,
+            onPressed:
+                _currentPage > 1 ? () => setState(() => _currentPage--) : null,
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF10B981),
               side: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -606,7 +614,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
             ),
             child: const Text('Previous', style: TextStyle(fontSize: 12)),
           ),
-          
+
           // Page Numbers
           Text(
             'Page $_currentPage of $_totalPages',
@@ -616,7 +624,7 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
               color: Color(0xFF374151),
             ),
           ),
-          
+
           // Next Button
           OutlinedButton(
             onPressed: _currentPage < _totalPages

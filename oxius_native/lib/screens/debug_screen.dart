@@ -5,6 +5,7 @@ import 'package:oxius_native/utils/app_fonts.dart';
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Debug screen showing app configuration and system info
 /// Only visible in debug mode
@@ -42,8 +43,8 @@ class _DebugScreenState extends State<DebugScreen> {
     try {
       final url = '${AppConfig.apiBaseUrl}/';
       final response = await http.get(Uri.parse(url)).timeout(
-        const Duration(seconds: 5),
-      );
+            const Duration(seconds: 5),
+          );
 
       setState(() {
         _apiStatus = 'Status: ${response.statusCode}\n'
@@ -129,10 +130,11 @@ class _DebugScreenState extends State<DebugScreen> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: AdsyLoadingIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.refresh),
-                label: Text(_isTestingApi ? 'Testing...' : 'Test API Connection'),
+                label:
+                    Text(_isTestingApi ? 'Testing...' : 'Test API Connection'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue.shade600,
                   foregroundColor: Colors.white,
@@ -167,7 +169,9 @@ class _DebugScreenState extends State<DebugScreen> {
               if (_userToken != null) ...[
                 _buildInfoRow(
                   'Token (first 20 chars)',
-                  _userToken!.substring(0, _userToken!.length > 20 ? 20 : _userToken!.length) + '...',
+                  _userToken!.substring(0,
+                          _userToken!.length > 20 ? 20 : _userToken!.length) +
+                      '...',
                   onTap: () => _copyToClipboard(_userToken!),
                 ),
               ],
@@ -205,7 +209,8 @@ class _DebugScreenState extends State<DebugScreen> {
               _buildInfoRow('Platform', defaultTargetPlatform.toString()),
               _buildInfoRow('Is Web', '$kIsWeb'),
               _buildInfoRow('Screen Size', '${MediaQuery.of(context).size}'),
-              _buildInfoRow('Pixel Ratio', '${MediaQuery.of(context).devicePixelRatio}'),
+              _buildInfoRow(
+                  'Pixel Ratio', '${MediaQuery.of(context).devicePixelRatio}'),
             ],
           ),
 
@@ -225,7 +230,8 @@ class _DebugScreenState extends State<DebugScreen> {
                   // In debug mode, this will trigger hot reload
                   if (kDebugMode) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Press R in console for hot reload')),
+                      const SnackBar(
+                          content: Text('Press R in console for hot reload')),
                     );
                   }
                 },
@@ -270,7 +276,8 @@ class _DebugScreenState extends State<DebugScreen> {
                       '📱 Physical Device:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    Text('• Run with: --dart-define=LOCAL_API_HOST=192.168.x.x:8000'),
+                    Text(
+                        '• Run with: --dart-define=LOCAL_API_HOST=192.168.x.x:8000'),
                     SizedBox(height: 12),
                     Text(
                       '🚀 Production Mode:',

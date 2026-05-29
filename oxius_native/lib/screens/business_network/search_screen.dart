@@ -9,10 +9,11 @@ import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import '../../widgets/ios_web_redirect_screen.dart';
 import 'profile_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? initialQuery;
-  
+
   const SearchScreen({
     super.key,
     this.initialQuery,
@@ -26,7 +27,7 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   List<BusinessNetworkPost> _posts = [];
   List<Map<String, dynamic>> _people = [];
   List<String> _hashtags = [];
@@ -64,7 +65,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    
+
     if (query.trim().isEmpty) {
       setState(() {
         _posts.clear();
@@ -141,18 +142,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
       if (response.statusCode == 200 && mounted) {
         final data = json.decode(response.body);
-        print('Search API returned ${data['results']?.length ?? 0} results for query: $query');
-        
+        print(
+            'Search API returned ${data['results']?.length ?? 0} results for query: $query');
+
         final List<BusinessNetworkPost> newPosts = [];
         final Set<String> hashtags = {};
 
         if (data['results'] != null && data['results'] is List) {
           for (var item in data['results']) {
             final post = BusinessNetworkPost.fromJson(item);
-            print('Post: ${post.title} - ${post.content.substring(0, post.content.length > 50 ? 50 : post.content.length)}');
+            print(
+                'Post: ${post.title} - ${post.content.substring(0, post.content.length > 50 ? 50 : post.content.length)}');
             print('Author: ${post.user.name} (@${post.user.username})');
             newPosts.add(post);
-            
+
             // Extract hashtags from posts
             if (post.tags.isNotEmpty) {
               for (var tag in post.tags) {
@@ -187,17 +190,18 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _loadPeopleResults(String query) async {
     try {
       final token = await AuthService.getValidToken();
-      
+
       final headers = <String, String>{
         'Content-Type': 'application/json',
       };
-      
+
       // Add authorization header only if user is logged in
       if (token != null) {
         headers['Authorization'] = 'Bearer $token';
       }
 
-      final normalizedQuery = query.startsWith('#') ? query.substring(1) : query;
+      final normalizedQuery =
+          query.startsWith('#') ? query.substring(1) : query;
 
       final params = {
         'q': normalizedQuery,
@@ -311,7 +315,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(right: 10),
-                    child: Icon(Icons.cancel, size: 16, color: Colors.grey.shade400),
+                    child: Icon(Icons.cancel,
+                        size: 16, color: Colors.grey.shade400),
                   ),
                 ),
             ],
@@ -328,7 +333,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     if (_isLoading && _posts.isEmpty && _people.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: AdsyLoadingIndicator());
     }
 
     if (_posts.isEmpty && _people.isEmpty && _hashtags.isEmpty) {
@@ -338,7 +343,8 @@ class _SearchScreenState extends State<SearchScreen> {
     return Column(
       children: [
         // Compact Results summary
-        if (_hasSearched && (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
+        if (_hasSearched &&
+            (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             color: Colors.white,
@@ -351,21 +357,24 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-        
+
         // Compact Tab Bar
-        if (_hasSearched && (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
+        if (_hasSearched &&
+            (_posts.isNotEmpty || _people.isNotEmpty || _hashtags.isNotEmpty))
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+              border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
             ),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  _buildTab('All', 'all', _people.length + _posts.length + _hashtags.length),
+                  _buildTab('All', 'all',
+                      _people.length + _posts.length + _hashtags.length),
                   const SizedBox(width: 6),
                   _buildTab('People', 'people', _people.length),
                   const SizedBox(width: 6),
@@ -376,7 +385,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-        
+
         // Results based on selected tab
         Expanded(
           child: _buildTabContent(),
@@ -483,7 +492,6 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
             child: GoldSponsorsSlider(),
           ),
-          
           if (_people.isNotEmpty) ...[
             _buildSectionHeader('People', _people.length),
             ..._people.map((person) => _buildPersonItem(person)),
@@ -547,15 +555,15 @@ class _SearchScreenState extends State<SearchScreen> {
   String _getPersonFullName(Map<String, dynamic> person) {
     final firstName = person['first_name'] ?? '';
     final lastName = person['last_name'] ?? '';
-    
+
     // Combine first and last name
     final fullName = '$firstName $lastName'.trim();
-    
+
     // If no name, use username or 'Unknown'
     if (fullName.isEmpty) {
       return person['username'] ?? 'Unknown';
     }
-    
+
     return fullName;
   }
 
@@ -595,7 +603,8 @@ class _SearchScreenState extends State<SearchScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProfileScreen(userId: person['id'].toString()),
+              builder: (context) =>
+                  ProfileScreen(userId: person['id'].toString()),
             ),
           );
         },
@@ -617,10 +626,12 @@ class _SearchScreenState extends State<SearchScreen> {
                           person['image'],
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.person, color: Colors.grey.shade400, size: 20);
+                            return Icon(Icons.person,
+                                color: Colors.grey.shade400, size: 20);
                           },
                         )
-                      : Icon(Icons.person, color: Colors.grey.shade400, size: 20),
+                      : Icon(Icons.person,
+                          color: Colors.grey.shade400, size: 20),
                 ),
               ),
               const SizedBox(width: 10),
@@ -646,11 +657,13 @@ class _SearchScreenState extends State<SearchScreen> {
                         ),
                         if (person['kyc'] == true) ...[
                           const SizedBox(width: 3),
-                          Icon(Icons.verified, size: 14, color: Colors.blue.shade600),
+                          Icon(Icons.verified,
+                              size: 14, color: Colors.blue.shade600),
                         ],
                       ],
                     ),
-                    if (person['profession'] != null && person['profession'].toString().isNotEmpty)
+                    if (person['profession'] != null &&
+                        person['profession'].toString().isNotEmpty)
                       Text(
                         person['profession'],
                         style: TextStyle(
@@ -760,7 +773,8 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.lightbulb_outline, size: 16, color: Colors.blue.shade700),
+                  Icon(Icons.lightbulb_outline,
+                      size: 16, color: Colors.blue.shade700),
                   const SizedBox(width: 8),
                   Text(
                     'Tip: Use # to search hashtags',
@@ -781,7 +795,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Widget _buildEmptyState() {
     final isHashtagSearch = _currentQuery.startsWith('#');
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -803,7 +817,9 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              isHashtagSearch ? 'No Results for this Hashtag' : 'No Results Found',
+              isHashtagSearch
+                  ? 'No Results for this Hashtag'
+                  : 'No Results Found',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -840,7 +856,7 @@ class _SearchScreenState extends State<SearchScreen> {
       padding: const EdgeInsets.all(16),
       child: Center(
         child: _isLoading
-            ? const CircularProgressIndicator()
+            ? const AdsyLoadingIndicator()
             : ElevatedButton(
                 onPressed: _loadMore,
                 style: ElevatedButton.styleFrom(

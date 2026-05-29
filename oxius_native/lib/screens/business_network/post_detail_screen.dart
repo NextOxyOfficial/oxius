@@ -14,6 +14,7 @@ import '../../utils/html_content_utils.dart';
 import '../../utils/url_launcher_utils.dart';
 import 'post_media_viewer_screen.dart';
 import 'profile_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final BusinessNetworkPost post;
@@ -48,9 +49,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _loadFullPost() async {
     setState(() => _isLoading = true);
-    
+
     final fullPost = await BusinessNetworkService.getPost(_post.id);
-    
+
     if (mounted && fullPost != null) {
       setState(() {
         _post = fullPost;
@@ -64,28 +65,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Future<void> _handleLikeToggle() async {
     // Prevent double-clicking
     if (_isLiking) return;
-    
+
     _isLiking = true;
-    
+
     // Store original state for rollback
     final originalIsLiked = _post.isLiked;
     final originalLikesCount = _post.likesCount;
-    
+
     // Optimistic update - update UI immediately
     if (mounted) {
       setState(() {
         _post = _post.copyWith(
           isLiked: !_post.isLiked,
-          likesCount: _post.isLiked ? _post.likesCount - 1 : _post.likesCount + 1,
+          likesCount:
+              _post.isLiked ? _post.likesCount - 1 : _post.likesCount + 1,
         );
       });
     }
-    
+
     // Make API call
-    final success = await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
-    
+    final success =
+        await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
+
     _isLiking = false;
-    
+
     if (!success && mounted) {
       // Failed - rollback to original state
       setState(() {
@@ -94,10 +97,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           likesCount: originalLikesCount,
         );
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to ${originalIsLiked ? 'unlike' : 'like'} post'),
+          content:
+              Text('Failed to ${originalIsLiked ? 'unlike' : 'like'} post'),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 2),
         ),
@@ -130,16 +134,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       // Create share text with post title and content
       String shareText = '';
       final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
-      
+
       if (_post.title.isNotEmpty) {
         shareText += '${_post.title}\n\n';
       }
-      
+
       shareText += plainPostContent;
-      
+
       // Add post link
-      shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
-      
+      shareText +=
+          '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
+
       // Share the content
       await Share.share(
         shareText,
@@ -158,15 +163,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Future<void> _handleSave() async {
-    final success = await BusinessNetworkService.toggleSave(_post.id, _post.isSaved);
-    
+    final success =
+        await BusinessNetworkService.toggleSave(_post.id, _post.isSaved);
+
     if (success && mounted) {
       setState(() {
         _post = _post.copyWith(
           isSaved: !_post.isSaved,
         );
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_post.isSaved ? 'Post saved' : 'Post unsaved'),
@@ -203,12 +209,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isSelfPost() {
     final currentUser = AuthService.currentUser;
     if (currentUser == null) return false;
-    
+
     return _post.user.username == currentUser.username ||
-           _post.user.uuid == currentUser.id ||
-           _post.user.id.toString() == currentUser.id;
+        _post.user.uuid == currentUser.id ||
+        _post.user.id.toString() == currentUser.id;
   }
-  
+
   void _navigateToProfile() {
     final userId = _post.user.uuid ?? _post.user.id.toString();
     Navigator.push(
@@ -221,10 +227,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> _handleFollowToggle() async {
     // Use user UUID or username for follow action
-    final userId = _post.user.uuid ?? _post.user.username ?? _post.user.id.toString();
-    
+    final userId =
+        _post.user.uuid ?? _post.user.username ?? _post.user.id.toString();
+
     final wasFollowing = _post.user.isFollowing;
-    
+
     // Optimistic update - update UI immediately
     if (mounted) {
       setState(() {
@@ -245,14 +252,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         );
       });
     }
-    
+
     // Make API call
-    final success = await BusinessNetworkService.toggleFollow(userId, wasFollowing);
-    
+    final success =
+        await BusinessNetworkService.toggleFollow(userId, wasFollowing);
+
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_post.user.isFollowing ? 'Following ${_post.user.name}' : 'Unfollowed ${_post.user.name}'),
+          content: Text(_post.user.isFollowing
+              ? 'Following ${_post.user.name}'
+              : 'Unfollowed ${_post.user.name}'),
           duration: const Duration(seconds: 2),
         ),
       );
@@ -275,10 +285,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ),
         );
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to ${wasFollowing ? 'unfollow' : 'follow'} ${_post.user.name}'),
+          content: Text(
+              'Failed to ${wasFollowing ? 'unfollow' : 'follow'} ${_post.user.name}'),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 2),
         ),
@@ -347,14 +358,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               ),
                               child: ClipOval(
                                 child: () {
-                                  final rawAvatarUrl = _post.user.image ?? _post.user.avatar;
-                                  final avatarUrl = AppConfig.getAbsoluteUrl(rawAvatarUrl);
-                                  
+                                  final rawAvatarUrl =
+                                      _post.user.image ?? _post.user.avatar;
+                                  final avatarUrl =
+                                      AppConfig.getAbsoluteUrl(rawAvatarUrl);
+
                                   if (avatarUrl.isNotEmpty) {
                                     return Image.network(
                                       avatarUrl,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
                                         return Container(
                                           color: Colors.grey.shade100,
                                           child: Icon(
@@ -464,12 +478,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             children: [
               // Scrollable Content
               Expanded(
-                child: RefreshIndicator(
+                child: AdsyRefreshIndicator(
                   onRefresh: _loadFullPost,
                   color: const Color(0xFF3B82F6),
                   child: _isLoading
                       ? const Center(
-                          child: CircularProgressIndicator(),
+                          child: AdsyLoadingIndicator(),
                         )
                       : SingleChildScrollView(
                           controller: _scrollController,
@@ -482,7 +496,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 // Post Title
                                 if (_post.title.isNotEmpty)
                                   Padding(
-                                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                                    padding: const EdgeInsets.fromLTRB(
+                                        16, 16, 16, 12),
                                     child: Text(
                                       _post.title,
                                       style: const TextStyle(
@@ -492,27 +507,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       ),
                                     ),
                                   ),
-                                
+
                                 // Post Content
                                 Padding(
-                                  padding: EdgeInsets.fromLTRB(16, _post.title.isNotEmpty ? 0 : 16, 16, 0),
+                                  padding: EdgeInsets.fromLTRB(16,
+                                      _post.title.isNotEmpty ? 0 : 16, 16, 0),
                                   child: Html(
-                                    data: HtmlContentUtils.toDisplayHtml(_post.content),
+                                    data: HtmlContentUtils.toDisplayHtml(
+                                        _post.content),
                                     onLinkTap: (url, attributes, element) {
                                       UrlLauncherUtils.launchExternalUrl(url);
                                     },
                                   ),
                                 ),
-                                
+
                                 const SizedBox(height: 16),
-                                
+
                                 // Post Media
                                 if (_post.media.isNotEmpty)
                                   PostMediaGallery(
                                     media: _post.media,
                                     onMediaTap: _handleMediaTap,
                                   ),
-                                
+
                                 // Post Actions
                                 PostActions(
                                   post: _post,
@@ -523,48 +540,49 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   onShare: _handleShare,
                                   onSave: _handleSave,
                                 ),
-                          
+
                                 const Divider(height: 1),
-                                
+
                                 // All Comments Section with inline reply inputs
                                 _buildUnifiedCommentsSection(),
-                                
-                                const SizedBox(height: 80), // Space for bottom input
+
+                                const SizedBox(
+                                    height: 80), // Space for bottom input
                               ],
                             ),
                           ),
                         ),
                 ),
               ),
-            // Sticky Bottom Input
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  top: BorderSide(color: Colors.grey.shade200, width: 1),
+              // Sticky Bottom Input
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(
+                    top: BorderSide(color: Colors.grey.shade200, width: 1),
+                  ),
+                ),
+                child: PostCommentInput(
+                  onSubmit: (content) async {
+                    final comment = await BusinessNetworkService.addComment(
+                      postId: _post.id,
+                      content: content,
+                    );
+                    if (comment != null) {
+                      _handleCommentAdded(comment);
+                    }
+                  },
+                  userAvatar: AuthService.currentUser?.profilePicture,
+                  postId: _post.id.toString(),
+                  postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
+                  postAuthorName: _post.user.name,
+                  onGiftSent: () {
+                    // Reload post to show new gift comment
+                    _loadFullPost();
+                  },
                 ),
               ),
-              child: PostCommentInput(
-                onSubmit: (content) async {
-                  final comment = await BusinessNetworkService.addComment(
-                    postId: _post.id,
-                    content: content,
-                  );
-                  if (comment != null) {
-                    _handleCommentAdded(comment);
-                  }
-                },
-                userAvatar: AuthService.currentUser?.profilePicture,
-                postId: _post.id.toString(),
-                postAuthorId: _post.user.uuid ?? _post.user.id.toString(),
-                postAuthorName: _post.user.name,
-                onGiftSent: () {
-                  // Reload post to show new gift comment
-                  _loadFullPost();
-                },
-              ),
-            ),
-          ],
+            ],
           ),
         ),
       ),
@@ -576,7 +594,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       return const Padding(
         padding: EdgeInsets.all(24),
         child: Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
+          child: AdsyLoadingIndicator(strokeWidth: 2),
         ),
       );
     }
@@ -635,7 +653,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           if (!mounted) return;
           setState(() {
             _post = _post.copyWith(
-              commentsCount: _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
+              commentsCount:
+                  _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
             );
           });
         },

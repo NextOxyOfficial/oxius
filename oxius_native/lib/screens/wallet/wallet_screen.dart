@@ -11,6 +11,7 @@ import 'deposit_tab.dart';
 import 'payment_verification_screen.dart';
 import 'withdraw_tab.dart';
 import 'transfer_tab.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -39,7 +40,7 @@ class _WalletScreenState extends State<WalletScreen> {
   List<Transaction> _sentTransactions = [];
   List<Transaction> _receivedTransactions = [];
   bool _isLoadingTransactions = true;
-  
+
   // Pagination
   static const int _pageSize = 20;
   int _sentPage = 1;
@@ -49,7 +50,7 @@ class _WalletScreenState extends State<WalletScreen> {
   bool _isLoadingMoreSent = false;
   bool _isLoadingMoreReceived = false;
   final ScrollController _transactionScrollController = ScrollController();
-  
+
   final UserStateService _userState = UserStateService();
   final TranslationService _translationService = TranslationService();
   final GlobalKey<AccountBalanceSectionState> _balanceKey = GlobalKey();
@@ -64,14 +65,16 @@ class _WalletScreenState extends State<WalletScreen> {
     _loadBalance();
     _loadTransactions();
     _resumePendingPaymentIfNeeded();
-    
+
     // Add scroll listener for pagination
     _transactionScrollController.addListener(_onTransactionScroll);
   }
 
   void _resumePendingPaymentIfNeeded() {
     final callbackUrl = widget.paymentCallbackUrl;
-    if (callbackUrl == null || callbackUrl.isEmpty || _isResumingPendingPayment) {
+    if (callbackUrl == null ||
+        callbackUrl.isEmpty ||
+        _isResumingPendingPayment) {
       return;
     }
 
@@ -91,10 +94,12 @@ class _WalletScreenState extends State<WalletScreen> {
           : double.tryParse(amountValue?.toString() ?? '0') ?? 0;
       final verificationOrderId =
           WalletService.extractVerificationOrderIdFromUrl(callbackUrl) ??
-          pendingPayment['verification_order_id']?.toString() ??
-          orderId;
+              pendingPayment['verification_order_id']?.toString() ??
+              orderId;
 
-      if (orderId == null || checkoutUrl == null || verificationOrderId == null) {
+      if (orderId == null ||
+          checkoutUrl == null ||
+          verificationOrderId == null) {
         _isResumingPendingPayment = false;
         return;
       }
@@ -119,18 +124,20 @@ class _WalletScreenState extends State<WalletScreen> {
       _isResumingPendingPayment = false;
     });
   }
-  
+
   void _onTransactionScroll() {
-    if (_transactionScrollController.position.pixels >= 
+    if (_transactionScrollController.position.pixels >=
         _transactionScrollController.position.maxScrollExtent - 200) {
       if (_transactionTab == 'sent' && !_isLoadingMoreSent && _hasMoreSent) {
         _loadMoreSentTransactions();
-      } else if (_transactionTab == 'received' && !_isLoadingMoreReceived && _hasMoreReceived) {
+      } else if (_transactionTab == 'received' &&
+          !_isLoadingMoreReceived &&
+          _hasMoreReceived) {
         _loadMoreReceivedTransactions();
       }
     }
   }
-  
+
   @override
   void dispose() {
     _transactionScrollController.dispose();
@@ -158,10 +165,10 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _loadBalance() async {
     setState(() => _isLoadingBalance = true);
-    
+
     // Always refresh user data first to get latest balance
     await AuthService.refreshUserData();
-    
+
     final balance = await WalletService.getBalance();
     if (mounted) {
       setState(() {
@@ -175,17 +182,19 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _loadTransactions() async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoadingTransactions = true;
       _sentPage = 1;
       _receivedPage = 1;
     });
-    
+
     try {
-      final sent = await WalletService.getTransactions(page: _sentPage, pageSize: _pageSize);
-      final received = await WalletService.getReceivedTransfers(page: _receivedPage, pageSize: _pageSize);
-      
+      final sent = await WalletService.getTransactions(
+          page: _sentPage, pageSize: _pageSize);
+      final received = await WalletService.getReceivedTransfers(
+          page: _receivedPage, pageSize: _pageSize);
+
       if (mounted) {
         setState(() {
           _sentTransactions = sent;
@@ -206,17 +215,18 @@ class _WalletScreenState extends State<WalletScreen> {
       }
     }
   }
-  
+
   Future<void> _loadMoreSentTransactions() async {
     if (_isLoadingMoreSent || !_hasMoreSent) return;
-    
+
     setState(() {
       _isLoadingMoreSent = true;
       _sentPage++;
     });
-    
-    final moreSent = await WalletService.getTransactions(page: _sentPage, pageSize: _pageSize);
-    
+
+    final moreSent = await WalletService.getTransactions(
+        page: _sentPage, pageSize: _pageSize);
+
     if (mounted) {
       setState(() {
         _sentTransactions.addAll(moreSent);
@@ -225,17 +235,18 @@ class _WalletScreenState extends State<WalletScreen> {
       });
     }
   }
-  
+
   Future<void> _loadMoreReceivedTransactions() async {
     if (_isLoadingMoreReceived || !_hasMoreReceived) return;
-    
+
     setState(() {
       _isLoadingMoreReceived = true;
       _receivedPage++;
     });
-    
-    final moreReceived = await WalletService.getReceivedTransfers(page: _receivedPage, pageSize: _pageSize);
-    
+
+    final moreReceived = await WalletService.getReceivedTransfers(
+        page: _receivedPage, pageSize: _pageSize);
+
     if (mounted) {
       setState(() {
         _receivedTransactions.addAll(moreReceived);
@@ -288,7 +299,7 @@ class _WalletScreenState extends State<WalletScreen> {
         surfaceTintColor: Colors.white,
         elevation: 0,
       ),
-      body: RefreshIndicator(
+      body: AdsyRefreshIndicator(
         onRefresh: _refreshAll,
         color: _indigo,
         child: SingleChildScrollView(
@@ -296,126 +307,127 @@ class _WalletScreenState extends State<WalletScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
-            // Balance Cards Section - Using Homepage Component
-            AccountBalanceSection(key: _balanceKey),
+              // Balance Cards Section - Using Homepage Component
+              AccountBalanceSection(key: _balanceKey),
 
-            // Mobile Recharge Section
-            const MobileRechargeSection(),
+              // Mobile Recharge Section
+              const MobileRechargeSection(),
 
-            // Compact Tab Buttons
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _slate200),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.035),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildTabButton(
-                      0,
-                      Icons.arrow_downward,
-                      'Deposit',
-                    ),
-                  ),
-                  Expanded(
-                    child: _buildTabButton(
-                      1,
-                      Icons.arrow_upward,
-                      'Withdraw',
-                    ),
-                  ),
-                  Expanded(
-                    child: _buildTabButton(
-                      2,
-                      Icons.swap_horiz,
-                      'Transfer',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Tab Content
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              child: Container(
+              // Compact Tab Buttons
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: _slate200),
-                ),
-                child: _currentTab == 0
-                    ? DepositTab(
-                        balance: _balance?.balance ?? 0.0,
-                        onDepositSuccess: () async {
-                          await _loadBalance();
-                          await _loadTransactions();
-                        },
-                      )
-                    : _currentTab == 1
-                        ? WithdrawTab(
-                            balance: _balance?.balance ?? 0.0,
-                            onWithdrawSuccess: () async {
-                              await _loadBalance();
-                              await _loadTransactions();
-                            },
-                          )
-                        : TransferTab(
-                            balance: _balance?.balance ?? 0.0,
-                            userPhone: _userState.userEmail,
-                            onTransferSuccess: () async {
-                              await _loadBalance();
-                              await _loadTransactions();
-                            },
-                          ),
-              ),
-            ),
-
-            // Transaction History Section (Always show)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            color: _indigo.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(
-                            Icons.history_rounded,
-                            size: 14,
-                            color: _indigo,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          t('transaction_history'),
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: _slate800,
-                          ),
-                        ),
-                      ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.035),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildTabButton(
+                        0,
+                        Icons.arrow_downward,
+                        'Deposit',
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildTabButton(
+                        1,
+                        Icons.arrow_upward,
+                        'Withdraw',
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildTabButton(
+                        2,
+                        Icons.swap_horiz,
+                        'Transfer',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Tab Content
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _slate200),
                   ),
-                  const SizedBox(height: 8),
+                  child: _currentTab == 0
+                      ? DepositTab(
+                          balance: _balance?.balance ?? 0.0,
+                          onDepositSuccess: () async {
+                            await _loadBalance();
+                            await _loadTransactions();
+                          },
+                        )
+                      : _currentTab == 1
+                          ? WithdrawTab(
+                              balance: _balance?.balance ?? 0.0,
+                              onWithdrawSuccess: () async {
+                                await _loadBalance();
+                                await _loadTransactions();
+                              },
+                            )
+                          : TransferTab(
+                              balance: _balance?.balance ?? 0.0,
+                              userPhone: _userState.userEmail,
+                              onTransferSuccess: () async {
+                                await _loadBalance();
+                                await _loadTransactions();
+                              },
+                            ),
+                ),
+              ),
+
+              // Transaction History Section (Always show)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 6),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: _indigo.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Icon(
+                              Icons.history_rounded,
+                              size: 14,
+                              color: _indigo,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            t('transaction_history'),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: _slate800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
 
                     // Transaction Type Toggle
                     Container(
@@ -431,7 +443,8 @@ class _WalletScreenState extends State<WalletScreen> {
                             child: _buildTransactionTabButton('sent', 'Sent'),
                           ),
                           Expanded(
-                            child: _buildTransactionTabButton('received', 'Received'),
+                            child: _buildTransactionTabButton(
+                                'received', 'Received'),
                           ),
                         ],
                       ),
@@ -443,7 +456,7 @@ class _WalletScreenState extends State<WalletScreen> {
                         ? const Center(
                             child: Padding(
                               padding: EdgeInsets.all(32),
-                              child: CircularProgressIndicator(),
+                              child: AdsyLoadingIndicator(),
                             ),
                           )
                         : _buildTransactionList(),
@@ -512,7 +525,8 @@ class _WalletScreenState extends State<WalletScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.orange[50],
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -554,7 +568,8 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                         subtitle: Text(
                           '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year}',
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                          style:
+                              TextStyle(color: Colors.grey[600], fontSize: 12),
                         ),
                         trailing: Text(
                           '৳${txn.amount.toStringAsFixed(2)}',
@@ -647,7 +662,8 @@ class _WalletScreenState extends State<WalletScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? _indigo.withValues(alpha: 0.12) : Colors.transparent,
+          color:
+              isSelected ? _indigo.withValues(alpha: 0.12) : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
         child: Text(
@@ -664,8 +680,9 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Widget _buildTransactionList() {
-    final transactions = _transactionTab == 'sent' ? _sentTransactions : _receivedTransactions;
-    
+    final transactions =
+        _transactionTab == 'sent' ? _sentTransactions : _receivedTransactions;
+
     if (transactions.isEmpty) {
       return Center(
         child: Padding(
@@ -688,8 +705,9 @@ class _WalletScreenState extends State<WalletScreen> {
       );
     }
 
-    final isLoadingMore = _transactionTab == 'sent' ? _isLoadingMoreSent : _isLoadingMoreReceived;
-    
+    final isLoadingMore =
+        _transactionTab == 'sent' ? _isLoadingMoreSent : _isLoadingMoreReceived;
+
     return ListView.builder(
       key: ValueKey('${_transactionTab}_${transactions.length}'),
       shrinkWrap: true,
@@ -745,7 +763,7 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
           );
         }
-        
+
         final txn = transactions[index];
         final color = _getTransactionColor(txn.transactionType);
         final icon = _getTransactionIcon(txn.transactionType);
@@ -800,33 +818,45 @@ class _WalletScreenState extends State<WalletScreen> {
                         ],
                       ),
                       const SizedBox(height: 3),
-                      if (txn.senderName != null && _transactionTab == 'received')
+                      if (txn.senderName != null &&
+                          _transactionTab == 'received')
                         Padding(
                           padding: const EdgeInsets.only(bottom: 2),
                           child: Text(
                             'From: ${txn.senderName}',
-                            style: TextStyle(fontSize: 10, color: Colors.grey[600], letterSpacing: -0.1),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[600],
+                                letterSpacing: -0.1),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      if (txn.recipientName != null && _transactionTab == 'sent')
+                      if (txn.recipientName != null &&
+                          _transactionTab == 'sent')
                         Padding(
                           padding: const EdgeInsets.only(bottom: 2),
                           child: Text(
                             'To: ${txn.recipientName}',
-                            style: TextStyle(fontSize: 10, color: Colors.grey[600], letterSpacing: -0.1),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[600],
+                                letterSpacing: -0.1),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       Row(
                         children: [
-                          Icon(Icons.access_time, size: 9, color: Colors.grey[400]),
+                          Icon(Icons.access_time,
+                              size: 9, color: Colors.grey[400]),
                           const SizedBox(width: 3),
                           Text(
                             '${txn.createdAt.day}/${txn.createdAt.month}/${txn.createdAt.year} ${txn.createdAt.hour}:${txn.createdAt.minute.toString().padLeft(2, '0')}',
-                            style: TextStyle(fontSize: 9, color: Colors.grey[500], letterSpacing: -0.1),
+                            style: TextStyle(
+                                fontSize: 9,
+                                color: Colors.grey[500],
+                                letterSpacing: -0.1),
                           ),
                         ],
                       ),
@@ -877,10 +907,10 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Widget _buildStatusBadge(String status) {
     if (status.isEmpty) return const SizedBox.shrink();
-    
+
     Color statusColor;
     String displayStatus;
-    
+
     switch (status.toLowerCase()) {
       case 'completed':
         statusColor = const Color(0xFF10B981);
@@ -950,7 +980,12 @@ class _WalletScreenState extends State<WalletScreen> {
       case 'referral_reward':
         return 'Referral Reward';
       default:
-        return type.replaceAll('_', ' ').split(' ').map((word) => word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)).join(' ');
+        return type
+            .replaceAll('_', ' ')
+            .split(' ')
+            .map((word) =>
+                word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
+            .join(' ');
     }
   }
 
@@ -1011,23 +1046,28 @@ class _WalletScreenState extends State<WalletScreen> {
             const Divider(),
             const SizedBox(height: 16),
             // Amount
-            _buildDetailRow('Amount', '৳${txn.amount.toStringAsFixed(2)}', color),
+            _buildDetailRow(
+                'Amount', '৳${txn.amount.toStringAsFixed(2)}', color),
             if (_isRideTransaction(txn)) ...[
-              _buildDetailRow('Ride Fare', '৳${txn.payableAmount.toStringAsFixed(2)}'),
+              _buildDetailRow(
+                  'Ride Fare', '৳${txn.payableAmount.toStringAsFixed(2)}'),
               _buildDetailRow(
                 txn.transactionType.toLowerCase() == 'ride_cash'
                     ? 'Adsy Fee Due'
                     : 'Platform Fee',
                 '৳${txn.feeAmount.toStringAsFixed(2)}',
               ),
-              _buildDetailRow('Driver Receives', '৳${txn.receivedAmount.toStringAsFixed(2)}'),
+              _buildDetailRow('Driver Receives',
+                  '৳${txn.receivedAmount.toStringAsFixed(2)}'),
             ],
             // Transaction ID - Always show (either transaction number or UUID)
             _buildDetailRow(
-              'Transaction ID', 
-              txn.transactionNumber != null && txn.transactionNumber!.isNotEmpty 
-                ? txn.transactionNumber! 
-                : txn.id.substring(0, 13).toUpperCase(), // Show first 13 chars of UUID if no transaction number
+              'Transaction ID',
+              txn.transactionNumber != null && txn.transactionNumber!.isNotEmpty
+                  ? txn.transactionNumber!
+                  : txn.id
+                      .substring(0, 13)
+                      .toUpperCase(), // Show first 13 chars of UUID if no transaction number
             ),
             // Date
             _buildDetailRow(
@@ -1037,8 +1077,10 @@ class _WalletScreenState extends State<WalletScreen> {
             // Payment Method - Always show
             _buildDetailRow('Payment Method', _getPaymentMethodDisplay(txn)),
             // Payment Number (only for deposit/withdraw with card_number)
-            if ((txn.transactionType.toLowerCase() == 'deposit' || txn.transactionType.toLowerCase() == 'withdraw') && 
-                txn.paymentNumber != null && txn.paymentNumber!.isNotEmpty)
+            if ((txn.transactionType.toLowerCase() == 'deposit' ||
+                    txn.transactionType.toLowerCase() == 'withdraw') &&
+                txn.paymentNumber != null &&
+                txn.paymentNumber!.isNotEmpty)
               _buildDetailRow('Card/Account Number', txn.paymentNumber!),
             // Sender (from user_details)
             if (txn.senderName != null && txn.senderName!.isNotEmpty)
@@ -1047,8 +1089,9 @@ class _WalletScreenState extends State<WalletScreen> {
             if (txn.recipientName != null && txn.recipientName!.isNotEmpty)
               _buildDetailRow('To', txn.recipientName!),
             // Product Name (for order_payment)
-            if (txn.transactionType.toLowerCase() == 'order_payment' && 
-                txn.description != null && txn.description!.isNotEmpty)
+            if (txn.transactionType.toLowerCase() == 'order_payment' &&
+                txn.description != null &&
+                txn.description!.isNotEmpty)
               _buildDetailRow('Product', txn.description!),
             // Note/Description - Always show
             _buildDetailRow('Description', _getNoteDisplay(txn)),
@@ -1064,7 +1107,7 @@ class _WalletScreenState extends State<WalletScreen> {
     if (txn.note != null && txn.note!.isNotEmpty) {
       return txn.note!;
     }
-    
+
     // Otherwise, provide default description based on transaction type
     switch (txn.transactionType.toLowerCase()) {
       case 'deposit':
@@ -1115,7 +1158,7 @@ class _WalletScreenState extends State<WalletScreen> {
     if (txn.paymentMethod != null && txn.paymentMethod!.isNotEmpty) {
       return _formatPaymentMethod(txn.paymentMethod!);
     }
-    
+
     // Otherwise, provide default based on transaction type
     switch (txn.transactionType.toLowerCase()) {
       case 'withdraw':
@@ -1166,9 +1209,11 @@ class _WalletScreenState extends State<WalletScreen> {
         return 'Cash';
       default:
         // Capitalize first letter of each word
-        return method.split('_').map((word) => 
-          word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)
-        ).join(' ');
+        return method
+            .split('_')
+            .map((word) =>
+                word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1))
+            .join(' ');
     }
   }
 

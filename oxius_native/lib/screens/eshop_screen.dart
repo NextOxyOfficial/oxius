@@ -9,6 +9,7 @@ import '../widgets/product_card.dart';
 import '../widgets/mobile_sticky_nav.dart';
 import '../widgets/product_skeleton_loader.dart';
 import '../models/cart_item.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class EshopScreen extends StatefulWidget {
   const EshopScreen({super.key});
@@ -17,7 +18,8 @@ class EshopScreen extends StatefulWidget {
   State<EshopScreen> createState() => _EshopScreenState();
 }
 
-class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin {
+class _EshopScreenState extends State<EshopScreen>
+    with TickerProviderStateMixin {
   final TranslationService _translationService = TranslationService();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -29,17 +31,22 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   bool _hasMoreResults = true;
   bool _showSuggestions = false;
   bool _showCategoryFilter = false;
-  
+
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _searchResults = [];
   List<String> _recentSearches = [];
   List<String> _searchSuggestions = [];
-  List<String> _trendingSearches = ['Electronics', 'Fashion', 'Home & Garden', 'Sports'];
+  List<String> _trendingSearches = [
+    'Electronics',
+    'Fashion',
+    'Home & Garden',
+    'Sports'
+  ];
   List<Map<String, dynamic>> _allCategories = [];
   String? _selectedCategoryId;
   String? _selectedCategoryName;
   String? _selectedCategorySlug;
-  
+
   String? _eshopLogoUrl;
   String _lastSearchQuery = '';
   int _currentPage = 1;
@@ -71,7 +78,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Handle category filter from navigation arguments
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null && args['categoryId'] != null) {
       final categoryId = args['categoryId'].toString();
       // Always update if category changed, regardless of previous handling
@@ -113,7 +121,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         _selectedCategoryName = category['name']?.toString();
         _selectedCategorySlug = category['slug']?.toString();
       });
-      print('🏷️ Category resolved: $_selectedCategoryName (slug: $_selectedCategorySlug)');
+      print(
+          '🏷️ Category resolved: $_selectedCategoryName (slug: $_selectedCategorySlug)');
     } else {
       print('⚠️ Category $categoryId not found in loaded category list');
     }
@@ -184,7 +193,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         id: product['id'],
         name: product['name'] ?? product['title'] ?? 'Product',
         description: product['description'] ?? '',
-        regularPrice: _parseDouble(product['regular_price'] ?? product['price'] ?? 0),
+        regularPrice:
+            _parseDouble(product['regular_price'] ?? product['price'] ?? 0),
         salePrice: product['sale_price'] != null
             ? _parseDouble(product['sale_price'])
             : null,
@@ -275,10 +285,10 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   void _onScroll() {
     if (_isLoadingMore || !_hasMoreResults || _isSearchActive) return;
-    
+
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    
+
     // Load more when 200 pixels from bottom
     if (currentScroll >= maxScroll - 200) {
       _loadMoreProducts();
@@ -289,17 +299,20 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     try {
       print('EshopScreen: Loading search history...');
       final history = await EshopService.getSearchHistory();
-      print('EshopScreen: Received ${history.length} search history items: $history');
-      
+      print(
+          'EshopScreen: Received ${history.length} search history items: $history');
+
       if (mounted) {
         setState(() {
           _recentSearches = history;
           // For testing: If no history from backend, add some mock data
           if (_recentSearches.isEmpty) {
-            print('EshopScreen: No search history from backend, using empty list');
+            print(
+                'EshopScreen: No search history from backend, using empty list');
           }
         });
-        print('EshopScreen: Updated state with ${_recentSearches.length} recent searches');
+        print(
+            'EshopScreen: Updated state with ${_recentSearches.length} recent searches');
       }
     } catch (e) {
       print('EshopScreen: Error loading search history: $e');
@@ -346,7 +359,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       // Derive slug from already-loaded categories when state hasn't been set yet
       // (e.g. when called before _findCategoryDetails completes).
       String? resolvedSlug = _selectedCategorySlug;
-      if (resolvedSlug == null && _selectedCategoryId != null && _allCategories.isNotEmpty) {
+      if (resolvedSlug == null &&
+          _selectedCategoryId != null &&
+          _allCategories.isNotEmpty) {
         final cat = _allCategories.firstWhere(
           (c) => _categoryIdMatches(c['id'], _selectedCategoryId),
           orElse: () => {},
@@ -354,14 +369,15 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         resolvedSlug = cat['slug']?.toString();
       }
 
-      print('🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"}, slug: $resolvedSlug)');
+      print(
+          '🔄 Loading products for category: $_selectedCategoryId (${_selectedCategoryName ?? "All"}, slug: $resolvedSlug)');
       final products = await EshopService.fetchEshopProducts(
-        page: 1, 
+        page: 1,
         pageSize: 12,
         categoryId: _selectedCategoryId,
         categorySlug: resolvedSlug,
       );
-      
+
       print('✅ Loaded ${products.length} products');
       setState(() {
         _products = products;
@@ -379,19 +395,20 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
 
   Future<void> _loadMoreProducts() async {
     if (_isLoadingMore || !_hasMoreResults) return;
-    
-    print('📄 Loading more products - Page: ${_currentPage + 1}, Category: $_selectedCategoryId (slug: $_selectedCategorySlug)');
+
+    print(
+        '📄 Loading more products - Page: ${_currentPage + 1}, Category: $_selectedCategoryId (slug: $_selectedCategorySlug)');
     setState(() => _isLoadingMore = true);
-    
+
     try {
       final nextPage = _currentPage + 1;
       final products = await EshopService.fetchEshopProducts(
-        page: nextPage, 
+        page: nextPage,
         pageSize: 12,
         categoryId: _selectedCategoryId,
         categorySlug: _selectedCategorySlug, // Pass category slug for filtering
       );
-      
+
       print('✅ Loaded ${products.length} more products');
       setState(() {
         _products.addAll(products);
@@ -406,38 +423,43 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   void _activateSearch() async {
-    print('EshopScreen: Activating search. Recent searches count: ${_recentSearches.length}');
+    print(
+        'EshopScreen: Activating search. Recent searches count: ${_recentSearches.length}');
     setState(() {
       _isSearchActive = true;
       _isSearching = true;
     });
     _searchAnimationController.forward();
-    
+
     // Load products to display
     try {
       List<Map<String, dynamic>> productsToShow;
-      
+
       if (_recentSearches.isNotEmpty) {
         // If there's recent search history, load products based on most recent search
         final recentKeyword = _recentSearches.first;
-        print('EshopScreen: Loading products based on recent search: "$recentKeyword"');
+        print(
+            'EshopScreen: Loading products based on recent search: "$recentKeyword"');
         productsToShow = await EshopService.searchProducts(recentKeyword);
         print('EshopScreen: Search returned ${productsToShow.length} products');
       } else {
         // No search history, load random products
         print('EshopScreen: No search history, loading random products');
-        productsToShow = await EshopService.fetchEshopProducts(page: 1, pageSize: 10);
+        productsToShow =
+            await EshopService.fetchEshopProducts(page: 1, pageSize: 10);
         print('EshopScreen: Fetch returned ${productsToShow.length} products');
       }
-      
+
       if (mounted) {
         final finalProducts = productsToShow.take(10).toList();
-        print('EshopScreen: Setting ${finalProducts.length} products to display');
+        print(
+            'EshopScreen: Setting ${finalProducts.length} products to display');
         setState(() {
           _searchResults = finalProducts;
           _isSearching = false;
         });
-        print('EshopScreen: State updated. _searchResults.length = ${_searchResults.length}');
+        print(
+            'EshopScreen: State updated. _searchResults.length = ${_searchResults.length}');
       }
     } catch (e, stackTrace) {
       print('EshopScreen: Error loading products: $e');
@@ -448,10 +470,11 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           // Try to load any available products as fallback
           _searchResults = _products.take(10).toList();
         });
-        print('EshopScreen: Fallback - using ${_searchResults.length} products from main list');
+        print(
+            'EshopScreen: Fallback - using ${_searchResults.length} products from main list');
       }
     }
-    
+
     // Focus on search input after animation
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(FocusNode());
@@ -502,27 +525,27 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       if (mounted) _performSearch(query);
     });
   }
-  
+
   void _updateSearchSuggestions(String query) {
     final suggestions = <String>[];
     final lowerQuery = query.toLowerCase();
-    
+
     // Add matching recent searches
     for (var search in _recentSearches) {
       if (search.toLowerCase().contains(lowerQuery) && suggestions.length < 5) {
         suggestions.add(search);
       }
     }
-    
+
     // Add matching trending searches
     for (var trend in _trendingSearches) {
-      if (trend.toLowerCase().contains(lowerQuery) && 
-          !suggestions.contains(trend) && 
+      if (trend.toLowerCase().contains(lowerQuery) &&
+          !suggestions.contains(trend) &&
           suggestions.length < 5) {
         suggestions.add(trend);
       }
     }
-    
+
     setState(() {
       _searchSuggestions = suggestions;
       _showSuggestions = suggestions.isNotEmpty;
@@ -543,10 +566,10 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       _isSearching = true;
       _showSuggestions = false;
     });
-    
+
     try {
       final results = await EshopService.searchProducts(query);
-      
+
       if (mounted) {
         setState(() {
           _searchResults = results;
@@ -568,7 +591,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       }
     }
   }
-  
+
   /// Persist a user-intent search (submit / suggestion / recent tap with new
   /// keyword) to the backend history. Deduplicated against in-memory list to
   /// avoid POSTing values that are already known to be present.
@@ -584,9 +607,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       // Optimistically prepend so it appears immediately; refresh from
       // backend in the background to keep ordering consistent.
       setState(() {
-        _recentSearches = [query, ..._recentSearches]
-            .take(10)
-            .toList();
+        _recentSearches = [query, ..._recentSearches].take(10).toList();
       });
       _loadSearchHistory();
     } catch (e) {
@@ -619,65 +640,68 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           child: SafeArea(
             child: Stack(
               children: [
-              Column(
-                children: [
-                  // Custom Header with gradient background
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.pink.shade400, Colors.orange.shade500],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                    ),
-                    child: _buildHeader(),
-                  ),
-                  
-                  // Content with rounded top
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
+                Column(
+                  children: [
+                    // Custom Header with gradient background
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.pink.shade400,
+                            Colors.orange.shade500
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
                         ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
+                      child: _buildHeader(),
+                    ),
+
+                    // Content with rounded top
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 8),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24),
+                          ),
                         ),
-                        child: _isSearchActive 
-                            ? _buildSearchOverlay()
-                            : _buildMainContent(),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24),
+                          ),
+                          child: _isSearchActive
+                              ? _buildSearchOverlay()
+                              : _buildMainContent(),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              
-              // Mobile Sticky Navigation at bottom — SafeArea handles iOS
-              // home indicator and Android gesture / 3-button nav bar insets.
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: SafeArea(
-                  top: false,
-                  left: false,
-                  right: false,
-                  child: MobileStickyNav(
-                    currentRoute: 'eShop',
-                    scrollController: _scrollController,
+                  ],
+                ),
+
+                // Mobile Sticky Navigation at bottom — SafeArea handles iOS
+                // home indicator and Android gesture / 3-button nav bar insets.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: SafeArea(
+                    top: false,
+                    left: false,
+                    right: false,
+                    child: MobileStickyNav(
+                      currentRoute: 'eShop',
+                      scrollController: _scrollController,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-          ),
       ),
     );
   }
@@ -689,7 +713,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
         children: [
           // Back Button - clears category filter first, then pops route
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
+            icon: const Icon(Icons.arrow_back_rounded,
+                color: Colors.white, size: 22),
             tooltip: 'Back',
             onPressed: () {
               if (_selectedCategoryId != null) {
@@ -699,7 +724,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               }
             },
           ),
-          
+
           // Title or Search Field
           Expanded(
             child: _isSearchActive
@@ -718,7 +743,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     style: const TextStyle(fontSize: 15, color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Search products...',
-                      hintStyle: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+                      hintStyle: TextStyle(
+                          color: Colors.white.withOpacity(0.7), fontSize: 14),
                       border: InputBorder.none,
                       isDense: true,
                     ),
@@ -735,7 +761,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                             _eshopLogoUrl!,
                             height: 44,
                             fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => const Text(
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Text(
                               'eShop',
                               style: TextStyle(
                                 fontSize: 22,
@@ -756,7 +783,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                           ),
                   ),
           ),
-          
+
           // Search Icon
           IconButton(
             icon: Icon(
@@ -783,7 +810,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
             },
             tooltip: _isSearchActive ? 'Close Search' : 'Search',
           ),
-          
+
           // Filter Icon
           if (!_isSearchActive)
             PopupMenuButton<String>(
@@ -792,7 +819,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                 borderRadius: BorderRadius.circular(8),
               ),
               icon: Icon(
-                _selectedCategoryId != null ? Icons.filter_alt : Icons.filter_list_rounded,
+                _selectedCategoryId != null
+                    ? Icons.filter_alt
+                    : Icons.filter_list_rounded,
                 color: Colors.white,
                 size: 22,
               ),
@@ -807,8 +836,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                         Icon(
                           Icons.apps_rounded,
                           size: 18,
-                          color: _selectedCategoryId == null 
-                              ? Colors.pink.shade400 
+                          color: _selectedCategoryId == null
+                              ? Colors.pink.shade400
                               : const Color(0xFF6B7280),
                         ),
                         const SizedBox(width: 12),
@@ -830,9 +859,10 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   // Category options
                   ..._allCategories.map((category) {
                     final categoryId = category['id'].toString();
-                    final categoryName = category['name']?.toString() ?? 'Unknown';
+                    final categoryName =
+                        category['name']?.toString() ?? 'Unknown';
                     final isSelected = _selectedCategoryId == categoryId;
-                    
+
                     return PopupMenuItem<String>(
                       value: categoryId,
                       child: Row(
@@ -840,8 +870,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                           Icon(
                             Icons.category_rounded,
                             size: 18,
-                            color: isSelected 
-                                ? Colors.pink.shade400 
+                            color: isSelected
+                                ? Colors.pink.shade400
                                 : const Color(0xFF6B7280),
                           ),
                           const SizedBox(width: 12),
@@ -850,7 +880,9 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                               categoryName,
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -881,7 +913,6 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
     );
   }
 
-
   Widget _buildSearchOverlay() {
     return Container(
       color: Colors.white,
@@ -896,7 +927,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   Icon(Icons.search, color: Colors.grey.shade600, size: 16),
                   const SizedBox(width: 8),
                   Text(
-                    _isSearching 
+                    _isSearching
                         ? 'Searching...'
                         : '${_searchResults.length} results for "${_searchController.text}"',
                     style: TextStyle(
@@ -908,12 +939,12 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               ),
             ),
           ],
-          
+
           // Search Content
           Expanded(
             child: _isSearching
                 ? const Center(
-                    child: CircularProgressIndicator(
+                    child: AdsyLoadingIndicator(
                       color: Color(0xFF10B981),
                     ),
                   )
@@ -953,16 +984,17 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
   }
 
   Widget _buildSearchDefault() {
-    print('EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}, isSearching: $_isSearching');
-    
+    print(
+        'EshopScreen: Building search default. Recent searches: ${_recentSearches.length}, Display products: ${_searchResults.length}, isSearching: $_isSearching');
+
     if (_isSearching) {
       return const Center(
-        child: CircularProgressIndicator(
+        child: AdsyLoadingIndicator(
           color: Color(0xFF10B981),
         ),
       );
     }
-    
+
     // Single scrollable view with searches and products together
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(4, 16, 4, 80),
@@ -1032,7 +1064,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                   },
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6, right: 6),
+                    padding: const EdgeInsets.only(
+                        left: 12, top: 6, bottom: 6, right: 6),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade100,
                       borderRadius: BorderRadius.circular(20),
@@ -1040,7 +1073,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.history, size: 14, color: Colors.grey.shade400),
+                        Icon(Icons.history,
+                            size: 14, color: Colors.grey.shade400),
                         const SizedBox(width: 4),
                         Text(
                           search,
@@ -1074,12 +1108,13 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
             const SizedBox(height: 16),
           ] else
             const SizedBox(height: 8),
-          
+
           // Products section (if available)
           if (_searchResults.isNotEmpty) ...[
             Row(
               children: [
-                Icon(Icons.inventory_2_rounded, size: 20, color: Colors.grey.shade600),
+                Icon(Icons.inventory_2_rounded,
+                    size: 20, color: Colors.grey.shade600),
                 const SizedBox(width: 8),
                 Text(
                   'Suggested Products',
@@ -1211,13 +1246,13 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
               endpoint: '/eshop-banner/',
             ),
           ),
-          
+
           // 2. Hot Deals Section - compact spacing
           // Pass in-place filter callback so tapping a deal updates the
           // existing screen instead of pushing a new route on top.
           HotDealsSection(onCategorySelected: _applyCategoryFilterInPlace),
           const SizedBox(height: 12),
-          
+
           // 3. Product Cards Section
           _buildProductsGrid(),
         ],
@@ -1248,7 +1283,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
           child: Row(
             children: [
-              Icon(Icons.inventory_2_rounded, size: 20, color: Colors.grey.shade600),
+              Icon(Icons.inventory_2_rounded,
+                  size: 20, color: Colors.grey.shade600),
               const SizedBox(width: 8),
               Expanded(
                 child: Row(
@@ -1269,7 +1305,8 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
                         onTap: _clearCategoryFilter,
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.pink.shade50,
                             borderRadius: BorderRadius.circular(12),
@@ -1311,7 +1348,7 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
           child: LayoutBuilder(
             builder: (context, constraints) {
               final displayProducts = _products;
-              
+
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -1333,14 +1370,14 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
             },
           ),
         ),
-        
+
         // Skeleton loader for pagination
         if (_isLoadingMore)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8),
             child: ProductSkeletonLoader(itemCount: 4),
           ),
-        
+
         // End of results indicator
         if (!_hasMoreResults && _products.isNotEmpty)
           Center(
@@ -1378,5 +1415,4 @@ class _EshopScreenState extends State<EshopScreen> with TickerProviderStateMixin
       ],
     );
   }
-
 }

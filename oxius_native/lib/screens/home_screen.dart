@@ -33,6 +33,7 @@ import '../widgets/business_network/adsypay_qr_modal.dart';
 import '../services/adsyconnect_service.dart';
 import 'dart:async';
 import 'package:app_badge_plus/app_badge_plus.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -131,7 +132,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final headerHeight = topPadding + 56;
 
     final targetY = box.localToGlobal(Offset.zero).dy;
-    final targetOffset = (_scrollController.offset + targetY - headerHeight).clamp(
+    final targetOffset =
+        (_scrollController.offset + targetY - headerHeight).clamp(
       0.0,
       _scrollController.position.maxScrollExtent,
     );
@@ -148,10 +150,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!AuthService.isAuthenticated) {
       return;
     }
-    
+
     // Initial load
     _fetchUnreadMessageCount();
-    
+
     // Poll every 10 seconds
     _messageCountTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted && !_disposed && AuthService.isAuthenticated) {
@@ -175,15 +177,15 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       return;
     }
-    
+
     try {
       final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
-      
+
       int totalUnread = 0;
       for (var room in chatRooms) {
         totalUnread += (room['unread_count'] as int?) ?? 0;
       }
-      
+
       if (mounted && !_disposed) {
         setState(() {
           _unreadMessageCount = totalUnread;
@@ -204,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       // Check if app badge is supported on this device
       final isSupported = await AppBadgePlus.isSupported();
-      
+
       if (isSupported) {
         if (count > 0) {
           // Update badge with count
@@ -225,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_isLoadingPosts && !forceRefresh) return;
 
     print('🔍 HomeScreen: Fetching recent posts...');
-    
+
     if (mounted && !_disposed) {
       setState(() => _isLoadingPosts = true);
     }
@@ -243,38 +245,43 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _recentPosts = posts;
           _isLoadingPosts = false;
-          print('📊 HomeScreen: _recentPosts now has ${_recentPosts?.length ?? 0} items');
+          print(
+              '📊 HomeScreen: _recentPosts now has ${_recentPosts?.length ?? 0} items');
         });
       }
     } catch (e) {
       print('❌ Error fetching recent posts: $e');
-      
+
       // Try to load from cache when network fails
       final cachedPosts = await OfflineCacheService.getCachedSalePosts();
-      
+
       if (mounted && !_disposed) {
         if (cachedPosts != null && cachedPosts.isNotEmpty) {
           // Convert cached data back to ClassifiedPost objects
-          final posts = cachedPosts.map((json) => ClassifiedPost.fromJson(json)).toList();
+          final posts =
+              cachedPosts.map((json) => ClassifiedPost.fromJson(json)).toList();
           setState(() {
             _recentPosts = posts;
             _isLoadingPosts = false;
           });
-          
+
           // Show offline indicator
           if (NetworkErrorHandler.isNetworkError(e)) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
                   children: [
-                    const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 16),
+                    const Icon(Icons.wifi_off_rounded,
+                        color: Colors.white, size: 16),
                     const SizedBox(width: 8),
-                    const Text('Showing cached content', style: TextStyle(fontSize: 12)),
+                    const Text('Showing cached content',
+                        style: TextStyle(fontSize: 12)),
                   ],
                 ),
                 backgroundColor: const Color(0xFF6B7280),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6)),
                 duration: const Duration(seconds: 3),
               ),
             );
@@ -284,10 +291,10 @@ class _HomeScreenState extends State<HomeScreen> {
             _recentPosts = [];
             _isLoadingPosts = false;
           });
-          
+
           // Show network error with professional message
           NetworkErrorHandler.showErrorSnackbar(
-            context, 
+            context,
             e,
             onRetry: () => _fetchRecentPosts(forceRefresh: true),
           );
@@ -298,15 +305,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _handleRefresh() async {
     print('🔄 HomeScreen: Pull to refresh triggered');
-    
+
     // Force refresh recent posts (bypass loading check)
     await _fetchRecentPosts(forceRefresh: true);
-    
+
     // Refresh unread message count if authenticated
     if (AuthService.isAuthenticated) {
       await _fetchUnreadMessageCount();
     }
-    
+
     print('✅ HomeScreen: Refresh completed');
   }
 
@@ -359,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (backButtonHasNotBeenPressedOrSnackBarHasBeenClosed) {
       _lastBackPressTime = now;
-      
+
       // Show toast message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -371,7 +378,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Text(
                     t('press_back_to_exit'),
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -415,177 +423,182 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.grey.shade50,
           drawer: const MobileDrawer(),
           body: Stack(
-        children: [
-          // Scrollable content area with pull-to-refresh
-          RefreshIndicator(
-            onRefresh: _handleRefresh,
-            color: const Color(0xFF3B82F6),
-            backgroundColor: Colors.white,
-            edgeOffset: refreshEdgeOffset,
-            displacement: 24,
-            triggerMode: RefreshIndicatorTriggerMode.anywhere,
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: ClampingScrollPhysics(),
-              ),
-              child: Column(
-                children: [
-                  // Add spacing for header
-                  SizedBox(height: topPadding + 56 + 8),
-                  // 1. Hero Banner - Main banner slider + service menu grid
-                  const HeroBanner(),
+            children: [
+              // Scrollable content area with pull-to-refresh
+              AdsyRefreshIndicator(
+                onRefresh: _handleRefresh,
+                color: const Color(0xFF3B82F6),
+                backgroundColor: Colors.white,
+                edgeOffset: refreshEdgeOffset,
+                displacement: 24,
+                triggerMode: RefreshIndicatorTriggerMode.anywhere,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: ClampingScrollPhysics(),
+                  ),
+                  child: Column(
+                    children: [
+                      // Add spacing for header
+                      SizedBox(height: topPadding + 56 + 8),
+                      // 1. Hero Banner - Main banner slider + service menu grid
+                      const HeroBanner(),
 
-                  // 2. Gold Sponsors - existing business network sponsor slider
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(4, 2, 4, 2),
-                    child: GoldSponsorsSlider(margin: EdgeInsets.zero),
-                  ),
-                   
-                  // 3. Sale Category - eShop product categories
-                  const SaleCategory(margin: EdgeInsets.fromLTRB(4, 0, 4, 4)),
-                  
-                  // 4. Food Zone Section - FoodPanda style food listings
-                  FoodZoneSection(baseUrl: ApiService.baseUrl),
-                  
-                  // 5. Classified Services - Service categories
-                  Container(
-                    key: _classifiedSectionKey,
-                    child: const ClassifiedServicesSection(),
-                  ),
-                  
-                  // 6. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
-                  if (_isLoadingPosts)
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                      // 2. Gold Sponsors - existing business network sponsor slider
+                      const Padding(
+                        padding: EdgeInsets.fromLTRB(4, 2, 4, 2),
+                        child: GoldSponsorsSlider(margin: EdgeInsets.zero),
                       ),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF10B981),
+
+                      // 3. Sale Category - eShop product categories
+                      const SaleCategory(
+                          margin: EdgeInsets.fromLTRB(4, 0, 4, 4)),
+
+                      // 4. Food Zone Section - FoodPanda style food listings
+                      FoodZoneSection(baseUrl: ApiService.baseUrl),
+
+                      // 5. Classified Services - Service categories
+                      Container(
+                        key: _classifiedSectionKey,
+                        child: const ClassifiedServicesSection(),
+                      ),
+
+                      // 6. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
+                      if (_isLoadingPosts)
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 4),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(
+                            child: AdsyLoadingIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFF10B981),
+                              ),
+                            ),
+                          ),
+                        )
+                      else if (_recentPosts != null && _recentPosts!.isNotEmpty)
+                        AdsScrollWidget(
+                          ads: _recentPosts,
+                          sectionTitle: t('recent_post'),
+                        )
+                      else
+                        // Debug: Show message if no posts
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 4),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                const Icon(Icons.info_outline,
+                                    size: 40, color: Colors.grey),
+                                const SizedBox(height: 8),
+                                Text(
+                                  t('no_recent_posts'),
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                                Text(
+                                  '${t('posts_loaded')}: ${_recentPosts?.length ?? 0}',
+                                  style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
+
+                      // 7. eShop Product Slider - Product carousel
+                      const EshopSection(),
+
+                      // 8. Micro Gigs Section (with Account Balance & Mobile Recharge inside)
+                      Container(
+                        key: _microGigsSectionKey,
+                        child: const MicroGigsSection(),
                       ),
-                    )
-                  else if (_recentPosts != null && _recentPosts!.isNotEmpty)
-                    AdsScrollWidget(
-                      ads: _recentPosts,
-                      sectionTitle: t('recent_post'),
-                    )
-                  else
-                    // Debug: Show message if no posts
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
+
+                      // Footer - always show the main footer content
+                      const SizedBox(height: 32),
+                      const AppFooter(
+                        showMobileNav: false,
                       ),
-                      child: Center(
-                        child: Column(
-                          children: [
-                            const Icon(Icons.info_outline, size: 40, color: Colors.grey),
-                            const SizedBox(height: 8),
-                            Text(
-                              t('no_recent_posts'),
-                              style: TextStyle(color: Colors.grey.shade600),
-                            ),
-                            Text(
-                              '${t('posts_loaded')}: ${_recentPosts?.length ?? 0}',
-                              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  
-                  // 7. eShop Product Slider - Product carousel
-                  const EshopSection(),
-                  
-                  // 8. Micro Gigs Section (with Account Balance & Mobile Recharge inside)
-                  Container(
-                    key: _microGigsSectionKey,
-                    child: const MicroGigsSection(),
+                      // Space so the floating bottom nav doesn't cover content
+                      const SizedBox(height: 96),
+                    ],
                   ),
-                  
-                  // Footer - always show the main footer content
-                  const SizedBox(height: 32),
-                  const AppFooter(
-                    showMobileNav: false,
-                  ),
-                  // Space so the floating bottom nav doesn't cover content
-                  const SizedBox(height: 96),
-              ],
-            ),
-          ),
-        ),
-        
-        // Animated Header positioned at top with proper elevation
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            transform: Matrix4.translationValues(
-              0,
-              _isHeaderVisible ? 0 : -(topPadding + 56.0),
-              0,
-            ),
-            curve: Curves.easeInOut,
-            child: Material(
-              elevation: 4,
-              shadowColor: Colors.black.withOpacity(0.15),
-              color: Colors.white,
-              child: SafeArea(
-                bottom: false,
-                child: _buildFixedHeader(context),
-              ),
-            ),
-          ),
-        ),
-          
-        // User Dropdown Menu Overlay
-        if (_isDropdownOpen)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isDropdownOpen = false;
-                  });
-                },
-                child: Container(
-                  color: Colors.black.withOpacity(0.1),
                 ),
               ),
-            ),
-          
-          // User Dropdown Menu
-          if (_isDropdownOpen)
-            _buildUserDropdownMenu(context),
-          
-          // Mobile Sticky Navigation — SafeArea guarantees correct inset on
-          // iOS (home indicator) AND Android (gesture / 3-button nav bar).
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              top: false,
-              left: false,
-              right: false,
-              child: MobileStickyNav(
-                currentRoute: 'Home',
-                scrollController: _scrollController,
+
+              // Animated Header positioned at top with proper elevation
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  transform: Matrix4.translationValues(
+                    0,
+                    _isHeaderVisible ? 0 : -(topPadding + 56.0),
+                    0,
+                  ),
+                  curve: Curves.easeInOut,
+                  child: Material(
+                    elevation: 4,
+                    shadowColor: Colors.black.withOpacity(0.15),
+                    color: Colors.white,
+                    child: SafeArea(
+                      bottom: false,
+                      child: _buildFixedHeader(context),
+                    ),
+                  ),
+                ),
               ),
-            ),
+
+              // User Dropdown Menu Overlay
+              if (_isDropdownOpen)
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isDropdownOpen = false;
+                      });
+                    },
+                    child: Container(
+                      color: Colors.black.withOpacity(0.1),
+                    ),
+                  ),
+                ),
+
+              // User Dropdown Menu
+              if (_isDropdownOpen) _buildUserDropdownMenu(context),
+
+              // Mobile Sticky Navigation — SafeArea guarantees correct inset on
+              // iOS (home indicator) AND Android (gesture / 3-button nav bar).
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: SafeArea(
+                  top: false,
+                  left: false,
+                  right: false,
+                  child: MobileStickyNav(
+                    currentRoute: 'Home',
+                    scrollController: _scrollController,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
         ),
       ),
     );
@@ -601,13 +614,17 @@ class _HomeScreenState extends State<HomeScreen> {
       top: topOffset,
       right: isMobile ? 8 : 16,
       child: Container(
-        width: isMobile ? 288 : 320, // w-72 (288px) mobile, sm:w-80 (320px) desktop
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
+        width: isMobile
+            ? 288
+            : 320, // w-72 (288px) mobile, sm:w-80 (320px) desktop
+        constraints:
+            BoxConstraints(maxHeight: MediaQuery.of(context).size.height - 100),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.95),
           borderRadius: BorderRadius.circular(12), // rounded-xl
           border: Border.all(
-            color: const Color(0xFFCBD5E1).withOpacity(0.5), // border-slate-200/50
+            color:
+                const Color(0xFFCBD5E1).withOpacity(0.5), // border-slate-200/50
             width: 1,
           ),
           boxShadow: [
@@ -632,7 +649,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final userState = UserStateService();
     final user = userState.currentUser;
     final isPro = user?.isPro == true || user?.isSuperuser == true;
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -651,33 +668,44 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        
+
         // Membership Section shown on all platforms (upgrade action remains hidden on iOS).
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
           child: _buildMembershipCard(context, isPro, user),
         ),
-        
+
         // Main Navigation Grid - px-4 pt-2 pb-3
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final cardWidth = (constraints.maxWidth - 8) / 2; // Split width evenly minus gap
+              final cardWidth = (constraints.maxWidth - 8) /
+                  2; // Split width evenly minus gap
               return Column(
                 children: [
                   Row(
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'business_network', Icons.public_outlined, 
-                          const Color(0xFFF97316), false, null),
+                        child: _buildNavLink(
+                            context,
+                            'business_network',
+                            Icons.public_outlined,
+                            const Color(0xFFF97316),
+                            false,
+                            null),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'adsy_news', Icons.newspaper_outlined, 
-                          const Color(0xFF8B5CF6), false, null),
+                        child: _buildNavLink(
+                            context,
+                            'adsy_news',
+                            Icons.newspaper_outlined,
+                            const Color(0xFF8B5CF6),
+                            false,
+                            null),
                       ),
                     ],
                   ),
@@ -686,14 +714,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'ad', Icons.campaign_outlined, 
-                          const Color(0xFF10B981), true, t('free')),
+                        child: _buildNavLink(
+                            context,
+                            'ad',
+                            Icons.campaign_outlined,
+                            const Color(0xFF10B981),
+                            true,
+                            t('free')),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'shop_manager', Icons.shopping_bag_outlined, 
-                          const Color(0xFF3B82F6), true, t('pro')),
+                        child: _buildNavLink(
+                            context,
+                            'shop_manager',
+                            Icons.shopping_bag_outlined,
+                            const Color(0xFF3B82F6),
+                            true,
+                            t('pro')),
                       ),
                     ],
                   ),
@@ -702,14 +740,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'adsypay', Icons.account_balance_wallet_outlined, 
-                          const Color(0xFF10B981), false, null),
+                        child: _buildNavLink(
+                            context,
+                            'adsypay',
+                            Icons.account_balance_wallet_outlined,
+                            const Color(0xFF10B981),
+                            false,
+                            null),
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
                         width: cardWidth,
-                        child: _buildNavLink(context, 'mobile_recharge', Icons.phone_android, 
-                          const Color(0xFFF97316), false, null),
+                        child: _buildNavLink(
+                            context,
+                            'mobile_recharge',
+                            Icons.phone_android,
+                            const Color(0xFFF97316),
+                            false,
+                            null),
                       ),
                     ],
                   ),
@@ -718,7 +766,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
-        
+
         // Settings & Logout Section - px-4 py-3
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -743,7 +791,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() => _isDropdownOpen = false);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const SettingsScreen()),
                         );
                       },
                     ),
@@ -759,7 +808,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() => _isDropdownOpen = false);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const VerificationScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => const VerificationScreen()),
                         );
                       },
                     ),
@@ -782,7 +832,8 @@ class _HomeScreenState extends State<HomeScreen> {
       return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE2E8F0)), // border-slate-200
+          border:
+              Border.all(color: const Color(0xFFE2E8F0)), // border-slate-200
           color: Colors.white,
         ),
         child: Column(
@@ -792,9 +843,11 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
                 color: const Color(0xFFF8FAFC), // bg-slate-50
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 border: const Border(
-                  bottom: BorderSide(color: Color(0xFFE2E8F0)), // border-slate-200
+                  bottom:
+                      BorderSide(color: Color(0xFFE2E8F0)), // border-slate-200
                 ),
               ),
               child: Row(
@@ -802,7 +855,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.person_outline, size: 16, color: Colors.grey.shade600),
+                      Icon(Icons.person_outline,
+                          size: 16, color: Colors.grey.shade600),
                       const SizedBox(width: 6),
                       Text(
                         t('current_plan'),
@@ -815,7 +869,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE2E8F0),
                       borderRadius: BorderRadius.circular(12),
@@ -834,118 +889,124 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             // Upgrade to Pro Action - p-3.5 (hidden on iOS)
             if (!isIOSPlatform)
-            InkWell(
-              onTap: () {
-                setState(() => _isDropdownOpen = false);
-                Navigator.pushNamed(context, '/upgrade-to-pro');
-              },
-              child: Container(
-                padding: const EdgeInsets.all(14), // p-3.5
-                child: Row(
-                  children: [
-                    // Pro Badge Icon
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF818CF8), Color(0xFF6366F1)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+              InkWell(
+                onTap: () {
+                  setState(() => _isDropdownOpen = false);
+                  Navigator.pushNamed(context, '/upgrade-to-pro');
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(14), // p-3.5
+                  child: Row(
+                    children: [
+                      // Pro Badge Icon
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF818CF8), Color(0xFF6366F1)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: const Color(0xFFC4B5FD).withOpacity(0.8),
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: const Color(0xFFC4B5FD).withOpacity(0.8),
+                        child: const Center(
+                          child: Text('⭐', style: TextStyle(fontSize: 22)),
                         ),
                       ),
-                      child: const Center(
-                        child: Text('⭐', style: TextStyle(fontSize: 22)),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Upgrade Text
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                t('upgrade_pro'),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1E293B),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                width: 16,
-                                height: 16,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+                      const SizedBox(width: 12),
+                      // Upgrade Text
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  t('upgrade_pro'),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF1E293B),
                                   ),
-                                  shape: BoxShape.circle,
                                 ),
-                                child: const Center(
-                                  child: Text(
-                                    '+',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                                const SizedBox(width: 6),
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFFFBBF24),
+                                        Color(0xFFF59E0B)
+                                      ],
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      '+',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              t('upgrade_pro_text'),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
                               ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Toggle Switch - OFF state (free user)
+                      Container(
+                        width: 48,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.grey.shade300,
+                              Colors.grey.shade400
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            t('upgrade_pro_text'),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        padding: const EdgeInsets.all(2.5),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            width: 21,
+                            height: 21,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 2,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    // Toggle Switch - OFF state (free user)
-                    Container(
-                      width: 48,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.grey.shade300, Colors.grey.shade400],
-                        ),
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                      padding: const EdgeInsets.all(2.5),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Container(
-                          width: 21,
-                          height: 21,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 2,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       );
@@ -968,9 +1029,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 border: Border(
-                  bottom: BorderSide(color: const Color(0xFFE0E7FF).withOpacity(0.3)),
+                  bottom: BorderSide(
+                      color: const Color(0xFFE0E7FF).withOpacity(0.3)),
                 ),
               ),
               child: Row(
@@ -978,7 +1041,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.stars, size: 16, color: Color(0xFF6366F1)),
+                      const Icon(Icons.stars,
+                          size: 16, color: Color(0xFF6366F1)),
                       const SizedBox(width: 6),
                       Text(
                         t('premium_access'),
@@ -991,7 +1055,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFF6366F1), Color(0xFF2563EB)],
@@ -1000,7 +1065,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.shield_outlined, size: 12, color: Colors.white),
+                        const Icon(Icons.shield_outlined,
+                            size: 12, color: Colors.white),
                         const SizedBox(width: 4),
                         Text(
                           t('pro'),
@@ -1041,7 +1107,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFC7D2FE).withOpacity(0.5)),
+                        border: Border.all(
+                            color: const Color(0xFFC7D2FE).withOpacity(0.5)),
                       ),
                       child: const Icon(
                         Icons.shield_outlined,
@@ -1114,7 +1181,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Widget _buildNavLink(BuildContext context, String key, IconData icon, 
+  Widget _buildNavLink(BuildContext context, String key, IconData icon,
       Color color, bool hasBadge, String? badgeText) {
     return InkWell(
       onTap: () {
@@ -1122,7 +1189,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _isDropdownOpen = false;
         });
-        
+
         // Handle navigation based on key
         switch (key) {
           case 'adsypay':
@@ -1243,14 +1310,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
                     gradient: badgeText == 'PRO'
                         ? const LinearGradient(
                             colors: [Color(0xFF6366F1), Color(0xFF2563EB)],
                           )
                         : LinearGradient(
-                            colors: [Colors.grey.shade400, Colors.grey.shade500],
+                            colors: [
+                              Colors.grey.shade400,
+                              Colors.grey.shade500
+                            ],
                           ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1258,7 +1329,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (badgeText == 'PRO') ...[
-                        const Icon(Icons.stars, size: 9, color: Color(0xFFFDE68A)),
+                        const Icon(Icons.stars,
+                            size: 9, color: Color(0xFFFDE68A)),
                         const SizedBox(width: 2),
                       ],
                       Text(
@@ -1280,13 +1352,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, String label, IconData icon, 
+  Widget _buildActionButton(BuildContext context, String label, IconData icon,
       Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8), // Minimal horizontal padding
+        padding: const EdgeInsets.symmetric(
+            horizontal: 4, vertical: 8), // Minimal horizontal padding
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -1301,7 +1374,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Color(0xFFF1F5F9), // bg-slate-100
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 14, color: const Color(0xFF64748B)), // text-slate-500
+              child: Icon(icon,
+                  size: 14, color: const Color(0xFF64748B)), // text-slate-500
             ),
             const SizedBox(width: 4),
             Flexible(
@@ -1326,7 +1400,7 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () async {
         try {
           print('🔵 LOGOUT BUTTON TAPPED');
-          
+
           // Close dropdown first
           if (mounted) {
             setState(() {
@@ -1334,17 +1408,17 @@ class _HomeScreenState extends State<HomeScreen> {
             });
             print('🔵 Dropdown closed');
           }
-          
+
           // Wait for dropdown animation to complete and ensure widget is mounted
           await Future.delayed(const Duration(milliseconds: 250));
-          
+
           if (!mounted) {
             print('⚠️ Widget not mounted, cancelling logout');
             return;
           }
-          
+
           print('🔵 Showing confirmation dialog...');
-          
+
           // Show clean professional confirmation dialog
           final bool? confirmed = await showDialog<bool>(
             context: context,
@@ -1373,7 +1447,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
+
                     // Title
                     const Text(
                       'Logout',
@@ -1384,7 +1458,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Message
                     Text(
                       'Are you sure you want to logout?',
@@ -1396,14 +1470,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Action buttons
                     Row(
                       children: [
                         // Cancel button
                         Expanded(
                           child: TextButton(
-                            onPressed: () => Navigator.of(dialogContext).pop(false),
+                            onPressed: () =>
+                                Navigator.of(dialogContext).pop(false),
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.grey.shade700,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1421,11 +1496,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        
+
                         // Logout button
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () => Navigator.of(dialogContext).pop(true),
+                            onPressed: () =>
+                                Navigator.of(dialogContext).pop(true),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFEF4444),
                               foregroundColor: Colors.white,
@@ -1451,254 +1527,258 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           );
-        
-        // If user confirmed logout
-        if (confirmed == true) {
-          print('🔴 USER CONFIRMED LOGOUT');
-          
-          // Check if widget is still mounted before showing snackbar
-          if (!mounted) {
-            print('⚠️ Widget not mounted after dialog, cancelling logout');
-            return;
-          }
-          
-          // Show professional loading message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(10),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+
+          // If user confirmed logout
+          if (confirmed == true) {
+            print('🔴 USER CONFIRMED LOGOUT');
+
+            // Check if widget is still mounted before showing snackbar
+            if (!mounted) {
+              print('⚠️ Widget not mounted after dialog, cancelling logout');
+              return;
+            }
+
+            // Show professional loading message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: AdsyLoadingIndicator(
+                            strokeWidth: 2.5,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Logging out...',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Please wait a moment',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withOpacity(0.8),
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                backgroundColor: const Color(0xFF6366F1),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                margin: const EdgeInsets.all(16),
+                elevation: 6,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+
+            try {
+              print('🔄 EMERGENCY LOGOUT - Clearing all data manually...');
+
+              // Clear SharedPreferences directly
+              final prefs = await SharedPreferences.getInstance();
+              final keys = prefs.getKeys();
+              print('📦 Found ${keys.length} keys in SharedPreferences');
+
+              // Remove ALL auth-related keys
+              for (final key in keys) {
+                if (key.contains('adsyclub') ||
+                    key.contains('token') ||
+                    key.contains('user') ||
+                    key.contains('auth')) {
+                  print('🗑️ Removing key: $key');
+                  await prefs.remove(key);
+                }
+              }
+
+              print('🔄 Calling AuthService.logout()...');
+              await AuthService.logout();
+              print('✅ AuthService.logout() completed');
+
+              print('🔄 Calling userState.clearUser()...');
+              await userState.clearUser();
+              print('✅ userState.clearUser() completed');
+
+              // Force a small delay to ensure everything is cleared
+              await Future.delayed(const Duration(milliseconds: 500));
+
+              if (mounted) {
+                print('🔄 Navigating to home and clearing stack...');
+                // Navigate to home and clear entire navigation stack
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/',
+                  (route) => false,
+                );
+                print('✅ Navigation completed');
+
+                // Show professional success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
                         children: [
-                          const Text(
-                            'Logging out...',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_circle_rounded,
                               color: Colors.white,
-                              letterSpacing: -0.2,
+                              size: 24,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Please wait a moment',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withOpacity(0.8),
-                              fontWeight: FontWeight.w400,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Logged out successfully',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'See you again soon!',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              backgroundColor: const Color(0xFF6366F1),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.all(16),
-              elevation: 6,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          
-          try {
-            print('🔄 EMERGENCY LOGOUT - Clearing all data manually...');
-            
-            // Clear SharedPreferences directly
-            final prefs = await SharedPreferences.getInstance();
-            final keys = prefs.getKeys();
-            print('📦 Found ${keys.length} keys in SharedPreferences');
-            
-            // Remove ALL auth-related keys
-            for (final key in keys) {
-              if (key.contains('adsyclub') || key.contains('token') || key.contains('user') || key.contains('auth')) {
-                print('🗑️ Removing key: $key');
-                await prefs.remove(key);
+                    backgroundColor: const Color(0xFF10B981),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.all(16),
+                    elevation: 6,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            } catch (e) {
+              print('❌ LOGOUT ERROR: $e');
+              print('Stack trace: ${StackTrace.current}');
+              // Show professional error message if logout fails
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.error_outline_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Logout failed',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Please try again',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    backgroundColor: const Color(0xFFEF4444),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.all(16),
+                    elevation: 6,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
               }
             }
-            
-            print('🔄 Calling AuthService.logout()...');
-            await AuthService.logout();
-            print('✅ AuthService.logout() completed');
-            
-            print('🔄 Calling userState.clearUser()...');
-            await userState.clearUser();
-            print('✅ userState.clearUser() completed');
-            
-            // Force a small delay to ensure everything is cleared
-            await Future.delayed(const Duration(milliseconds: 500));
-            
-            if (mounted) {
-              print('🔄 Navigating to home and clearing stack...');
-              // Navigate to home and clear entire navigation stack
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                '/',
-                (route) => false,
-              );
-              print('✅ Navigation completed');
-              
-              // Show professional success message
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check_circle_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'Logged out successfully',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'See you again soon!',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  backgroundColor: const Color(0xFF10B981),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  margin: const EdgeInsets.all(16),
-                  elevation: 6,
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            }
-          } catch (e) {
-            print('❌ LOGOUT ERROR: $e');
-            print('Stack trace: ${StackTrace.current}');
-            // Show professional error message if logout fails
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.error_outline_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'Logout failed',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                  letterSpacing: -0.2,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Please try again',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  backgroundColor: const Color(0xFFEF4444),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  margin: const EdgeInsets.all(16),
-                  elevation: 6,
-                  duration: const Duration(seconds: 3),
-                ),
-              );
-            }
+          } else if (confirmed == false) {
+            print('❌ USER CANCELLED LOGOUT');
+          } else {
+            print('⚠️ LOGOUT DIALOG RETURNED NULL');
           }
-        } else if (confirmed == false) {
-          print('❌ USER CANCELLED LOGOUT');
-        } else {
-          print('⚠️ LOGOUT DIALOG RETURNED NULL');
-        }
         } catch (e, stackTrace) {
           print('❌ LOGOUT BUTTON ERROR: $e');
           print('Stack trace: $stackTrace');
-          
+
           // Try to show error message if context is still valid
           if (mounted) {
             try {
@@ -1718,7 +1798,8 @@ class _HomeScreenState extends State<HomeScreen> {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // py-2 px-3
+        padding: const EdgeInsets.symmetric(
+            horizontal: 12, vertical: 8), // py-2 px-3
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
@@ -1755,7 +1836,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFixedHeader(BuildContext context) {
     final userState = UserStateService();
-    
+
     return Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1785,14 +1866,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(width: 12),
-              
+
               // Logo
               _buildDynamicLogo(context),
-              
+
               const Spacer(),
-              
+
               // Right side actions
               _buildHeaderActions(context, userState),
             ],
@@ -1923,7 +2004,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       minHeight: 18,
                     ),
                     child: Text(
-                      _unreadMessageCount > 99 ? '99+' : _unreadMessageCount.toString(),
+                      _unreadMessageCount > 99
+                          ? '99+'
+                          : _unreadMessageCount.toString(),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 10,
@@ -1937,9 +2020,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        
+
         SizedBox(width: 4),
-        
+
         // QR Code button
         GestureDetector(
           onTap: () {
@@ -1964,9 +2047,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        
+
         SizedBox(width: 4),
-        
+
         // User profile with Pro/Verified badges
         _buildUserProfile(context, user),
       ],
@@ -1977,9 +2060,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final isPro = user.isPro ?? false;
     final isVerified = user.isVerified ?? false;
     final profilePic = user.profilePicture ?? '';
-    final displayName = user.firstName ?? user.displayName ?? user.username ?? 'U';
+    final displayName =
+        user.firstName ?? user.displayName ?? user.username ?? 'U';
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U';
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -2054,7 +2138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
               ),
             ),
-            
+
             // Pro badge (top-right)
             if (isPro)
               Positioned(
@@ -2095,7 +2179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-            
+
             // Verified badge (bottom-right)
             if (isVerified)
               Positioned(
@@ -2164,14 +2248,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return Positioned(
       left: 24, // mx-6 = 24px
       right: 24,
-      bottom: 8 + MediaQuery.of(context).viewPadding.bottom, // account for iOS home indicator
+      bottom: 8 +
+          MediaQuery.of(context)
+              .viewPadding
+              .bottom, // account for iOS home indicator
       child: Container(
-        width: MediaQuery.of(context).size.width - 48, // Full width minus margins
+        width:
+            MediaQuery.of(context).size.width - 48, // Full width minus margins
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.9), // bg-white/90
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF34D399).withOpacity(0.1), // border-emerald-100
+            color:
+                const Color(0xFF34D399).withOpacity(0.1), // border-emerald-100
             width: 1,
           ),
           boxShadow: [
@@ -2186,8 +2275,9 @@ class _HomeScreenState extends State<HomeScreen> {
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8), // py-2 for better touch targets
-            child: isLoggedIn 
+            padding: const EdgeInsets.symmetric(
+                vertical: 8), // py-2 for better touch targets
+            child: isLoggedIn
                 ? _buildLoggedInNavigation(loadingButtons, unreadCount)
                 : _buildGuestNavigation(loadingButtons),
           ),
@@ -2213,26 +2303,32 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-          onTap: () => _handleButtonClick('mobile_home', 'Home', loadingButtons),
+          onTap: () =>
+              _handleButtonClick('mobile_home', 'Home', loadingButtons),
           buttonId: 'mobile_home',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.account_balance_wallet, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('mobile_deposit', 'AdsyPay', loadingButtons),
+          child: const Icon(Icons.account_balance_wallet,
+              size: 26, color: Color(0xFF34D399)),
+          onTap: () =>
+              _handleButtonClick('mobile_deposit', 'AdsyPay', loadingButtons),
           buttonId: 'mobile_deposit',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.phone_android, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('mobile_recharge', 'Mobile Recharge', loadingButtons),
+          child: const Icon(Icons.phone_android,
+              size: 26, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick(
+              'mobile_recharge', 'Mobile Recharge', loadingButtons),
           buttonId: 'mobile_recharge',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
           child: Stack(
             children: [
-              const Icon(Icons.network_check, size: 26, color: Color(0xFF34D399)),
+              const Icon(Icons.network_check,
+                  size: 26, color: Color(0xFF34D399)),
               if (unreadCount > 0)
                 Positioned(
                   right: -2,
@@ -2260,13 +2356,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
             ],
           ),
-          onTap: () => _handleButtonClick('mobile_business', 'Business Network', loadingButtons),
+          onTap: () => _handleButtonClick(
+              'mobile_business', 'Business Network', loadingButtons),
           buttonId: 'mobile_business',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('mobile_news', 'News', loadingButtons),
+          child:
+              const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
+          onTap: () =>
+              _handleButtonClick('mobile_news', 'News', loadingButtons),
           buttonId: 'mobile_news',
           loadingButtons: loadingButtons,
         ),
@@ -2297,24 +2396,30 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         _buildMobileNavItem(
           child: const Icon(Icons.work, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('guest_microgigs', 'Microgigs', loadingButtons),
+          onTap: () => _handleButtonClick(
+              'guest_microgigs', 'Microgigs', loadingButtons),
           buttonId: 'guest_microgigs',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.shopping_bag, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('guest_eshop', 'eShop', loadingButtons),
+          child: const Icon(Icons.shopping_bag,
+              size: 26, color: Color(0xFF34D399)),
+          onTap: () =>
+              _handleButtonClick('guest_eshop', 'eShop', loadingButtons),
           buttonId: 'guest_eshop',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.network_check, size: 26, color: Color(0xFF34D399)),
-          onTap: () => _handleButtonClick('guest_business', 'Business Network', loadingButtons),
+          child: const Icon(Icons.network_check,
+              size: 26, color: Color(0xFF34D399)),
+          onTap: () => _handleButtonClick(
+              'guest_business', 'Business Network', loadingButtons),
           buttonId: 'guest_business',
           loadingButtons: loadingButtons,
         ),
         _buildMobileNavItem(
-          child: const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
+          child:
+              const Icon(Icons.newspaper, size: 26, color: Color(0xFF34D399)),
           onTap: () => _handleButtonClick('guest_news', 'News', loadingButtons),
           buttonId: 'guest_news',
           loadingButtons: loadingButtons,
@@ -2330,7 +2435,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Set<String> loadingButtons,
   }) {
     final isLoading = loadingButtons.contains(buttonId);
-    
+
     return InkWell(
       onTap: isLoading ? null : onTap,
       child: Container(
@@ -2339,7 +2444,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ? const SizedBox(
                 width: 26,
                 height: 26,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF34D399)),
                 ),
@@ -2349,11 +2454,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _handleButtonClick(String buttonId, String destination, Set<String> loadingButtons) {
+  void _handleButtonClick(
+      String buttonId, String destination, Set<String> loadingButtons) {
     setState(() {
       loadingButtons.add(buttonId);
     });
-    
+
     // Simulate navigation delay
     Future.delayed(const Duration(milliseconds: 1000), () {
       if (mounted) {

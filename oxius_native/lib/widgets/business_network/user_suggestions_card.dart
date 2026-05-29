@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../config/app_config.dart';
 import '../../screens/business_network/profile_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class UserSuggestionsCard extends StatefulWidget {
   final VoidCallback? onRefresh;
-  
+
   const UserSuggestionsCard({
     super.key,
     this.onRefresh,
@@ -31,10 +32,10 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
 
   Future<void> _loadSuggestions() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final suggestions = await UserSuggestionsService.getUserSuggestions();
-      
+
       if (mounted) {
         setState(() {
           _allSuggestions = suggestions;
@@ -59,16 +60,17 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
     // Show random 2-3 users from all suggestions
     final isMobile = MediaQuery.of(context).size.width < 768;
     final count = isMobile ? 2 : 3;
-    
-    final shuffled = List<Map<String, dynamic>>.from(_allSuggestions)..shuffle();
+
+    final shuffled = List<Map<String, dynamic>>.from(_allSuggestions)
+      ..shuffle();
     _displayedSuggestions = shuffled.take(count).toList();
   }
 
   Future<void> _handleRefresh() async {
     setState(() => _isRefreshing = true);
-    
+
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     if (mounted) {
       setState(() {
         _refreshDisplayedSuggestions();
@@ -100,13 +102,16 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
           if (!isFollowing) {
             // User was followed - remove from suggestions list
             _allSuggestions.removeWhere((u) => u['id'].toString() == userId);
-            _displayedSuggestions.removeWhere((u) => u['id'].toString() == userId);
-            
+            _displayedSuggestions
+                .removeWhere((u) => u['id'].toString() == userId);
+
             // If we have more suggestions, add a new one to display
-            if (_displayedSuggestions.length < 2 && _allSuggestions.isNotEmpty) {
-              final remaining = _allSuggestions.where((u) => 
-                !_displayedSuggestions.any((d) => d['id'].toString() == u['id'].toString())
-              ).toList();
+            if (_displayedSuggestions.length < 2 &&
+                _allSuggestions.isNotEmpty) {
+              final remaining = _allSuggestions
+                  .where((u) => !_displayedSuggestions
+                      .any((d) => d['id'].toString() == u['id'].toString()))
+                  .toList();
               if (remaining.isNotEmpty) {
                 remaining.shuffle();
                 _displayedSuggestions.add(remaining.first);
@@ -131,14 +136,14 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
 
   String _getUserDisplayName(Map<String, dynamic>? user) {
     if (user == null) return 'Unknown User';
-    
+
     final firstName = (user['first_name'] ?? '').toString().trim();
     final lastName = (user['last_name'] ?? '').toString().trim();
-    
+
     if (firstName.isEmpty && lastName.isEmpty) {
       return (user['username'] ?? 'Unknown User').toString();
     }
-    
+
     return '$firstName $lastName'.trim();
   }
 
@@ -181,7 +186,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                   Colors.blue.shade700,
                 ],
               ),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -194,7 +200,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.people, size: 16, color: Colors.white),
+                      child: const Icon(Icons.people,
+                          size: 16, color: Colors.white),
                     ),
                     const SizedBox(width: 8),
                     const Text(
@@ -219,12 +226,14 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : const Icon(Icons.refresh_rounded, size: 18, color: Colors.white),
+                          : const Icon(Icons.refresh_rounded,
+                              size: 18, color: Colors.white),
                     ),
                   ),
                 ),
@@ -254,12 +263,15 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
         const mainAxisSpacing = 4.0;
 
         final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-        final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
-        final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
+        final available =
+            (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
+        final cellWidth =
+            (available / crossAxisCount).clamp(0.0, double.infinity);
 
         // Square image (height == width) + details section
         final detailsHeight = isMobile ? 104.0 : 118.0;
-        final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.72;
+        final childAspectRatio =
+            cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : 0.72;
 
         return GridView.builder(
           shrinkWrap: true,
@@ -350,21 +362,27 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
           return v.isNotEmpty;
         });
         final hasAnyMutual = _displayedSuggestions.any((u) {
-          final n = int.tryParse((u['mutual_connections'] ?? 0).toString()) ?? 0;
+          final n =
+              int.tryParse((u['mutual_connections'] ?? 0).toString()) ?? 0;
           return n > 0;
         });
 
         final baseDetails = isMobile ? 74.0 : 78.0;
-        final professionExtra = hasAnyProfession ? (isMobile ? 14.0 : 14.0) : 0.0;
+        final professionExtra =
+            hasAnyProfession ? (isMobile ? 14.0 : 14.0) : 0.0;
         final mutualExtra = hasAnyMutual ? (isMobile ? 21.0 : 21.0) : 0.0;
         final detailsHeight = baseDetails + professionExtra + mutualExtra;
 
         final totalSpacing = crossAxisSpacing * (crossAxisCount - 1);
-        final available = (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
-        final cellWidth = (available / crossAxisCount).clamp(0.0, double.infinity);
+        final available =
+            (constraints.maxWidth - totalSpacing).clamp(0.0, double.infinity);
+        final cellWidth =
+            (available / crossAxisCount).clamp(0.0, double.infinity);
 
         // Square image (height == width) + fixed-ish details block
-        final childAspectRatio = cellWidth > 0 ? (cellWidth / (cellWidth + detailsHeight)) : (isMobile ? 0.72 : 0.66);
+        final childAspectRatio = cellWidth > 0
+            ? (cellWidth / (cellWidth + detailsHeight))
+            : (isMobile ? 0.72 : 0.66);
 
         return GridView.builder(
           shrinkWrap: true,
@@ -397,8 +415,9 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
     final isPending = _followingPending[userId] ?? false;
     final rawImageUrl = user['image']?.toString();
     final imageUrl = _getImageUrl(rawImageUrl);
-    final mutualConnections = int.tryParse((user['mutual_connections'] ?? 0).toString()) ?? 0;
-    
+    final mutualConnections =
+        int.tryParse((user['mutual_connections'] ?? 0).toString()) ?? 0;
+
     // Debug logging
     if (rawImageUrl != null && rawImageUrl.isNotEmpty) {
       print('📸 User: ${user['first_name']} ${user['last_name']}');
@@ -438,7 +457,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
             children: [
               // Profile image - full width
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
                 child: AspectRatio(
                   aspectRatio: 1.0,
                   child: imageUrl.isNotEmpty
@@ -448,7 +468,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                           height: double.infinity,
                           fit: BoxFit.cover,
                           headers: const {
-                            'User-Agent': 'Mozilla/5.0 (compatible; Flutter/3.0)',
+                            'User-Agent':
+                                'Mozilla/5.0 (compatible; Flutter/3.0)',
                           },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
@@ -481,7 +502,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
               ),
 
               // Profession
-              if (user['profession'] != null && user['profession'].toString().isNotEmpty) ...[
+              if (user['profession'] != null &&
+                  user['profession'].toString().isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text(
                   user['profession'].toString(),
@@ -500,7 +522,8 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
               if (mutualConnections > 0) ...[
                 const SizedBox(height: 3),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(10),
@@ -529,23 +552,28 @@ class _UserSuggestionsCardState extends State<UserSuggestionsCard> {
                 child: ElevatedButton(
                   onPressed: isPending ? null : () => _toggleFollow(user),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isFollowing ? Colors.white : Colors.blue.shade600,
-                    foregroundColor: isFollowing ? Colors.blue.shade700 : Colors.white,
+                    backgroundColor:
+                        isFollowing ? Colors.white : Colors.blue.shade600,
+                    foregroundColor:
+                        isFollowing ? Colors.blue.shade700 : Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                       side: isFollowing
                           ? BorderSide(color: Colors.blue.shade200, width: 1.5)
                           : BorderSide.none,
                     ),
-                    shadowColor: isFollowing ? Colors.transparent : Colors.blue.withOpacity(0.3),
+                    shadowColor: isFollowing
+                        ? Colors.transparent
+                        : Colors.blue.withOpacity(0.3),
                   ),
                   child: isPending
                       ? SizedBox(
                           width: 14,
                           height: 14,
-                          child: CircularProgressIndicator(
+                          child: AdsyLoadingIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation(
                               isFollowing ? Colors.blue.shade700 : Colors.white,

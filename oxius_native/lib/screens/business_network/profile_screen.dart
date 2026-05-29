@@ -24,6 +24,7 @@ import '../workspace/gig_detail_screen.dart';
 import 'profile_options.dart';
 import 'post_media_viewer_screen.dart';
 import 'shorts_player_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -37,7 +38,8 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends State<ProfileScreen>
+    with SingleTickerProviderStateMixin {
   bool _isLoading = true;
   Map<String, dynamic>? _userData;
   List<BusinessNetworkPost> _userPosts = [];
@@ -53,10 +55,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   int _profileImageRefreshTick = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final WorkspaceService _workspaceService = WorkspaceService();
-  
+
   late TabController _tabController;
   int _currentTabIndex = 0;
-  
+
   final List<Tab> _tabs = const [
     Tab(text: 'Posts'),
     Tab(text: 'My Workspace'),
@@ -67,14 +69,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   /// Mask phone number based on privacy setting
   String _maskPhoneNumber(String phone, bool? isPublic) {
     if (isPublic == true) return phone;
-    
+
     // Show first 3 digits and last 2 digits, mask the rest
     if (phone.length <= 5) return phone;
-    
+
     final first = phone.substring(0, 3);
     final last = phone.substring(phone.length - 2);
     final masked = 'X' * (phone.length - 5);
-    
+
     return '$first$masked$last';
   }
 
@@ -90,33 +92,35 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     final profileId = (userData['id'] ?? '').toString();
     if (profileId.isNotEmpty && profileId == currentUser.id) return true;
 
-    final profileUuid = (userData['uuid'] ?? userData['user_id'] ?? '').toString();
+    final profileUuid =
+        (userData['uuid'] ?? userData['user_id'] ?? '').toString();
     if (profileUuid.isNotEmpty && profileUuid == currentUser.id) return true;
 
     final profileUsername = (userData['username'] ?? '').toString();
-    if (profileUsername.isNotEmpty && profileUsername == currentUser.username) return true;
+    if (profileUsername.isNotEmpty && profileUsername == currentUser.username)
+      return true;
 
     return false;
   }
-  
+
   /// Mask email based on privacy setting
   String _maskEmail(String email, bool? isPublic) {
     if (isPublic == true) return email;
-    
+
     final parts = email.split('@');
     if (parts.length != 2) return email;
-    
+
     final username = parts[0];
     final domain = parts[1];
-    
+
     // Show first 2 characters of username, mask the rest
     if (username.length <= 2) {
       return '${username}XXX@$domain';
     }
-    
+
     final visiblePart = username.substring(0, 2);
     final masked = 'X' * (username.length - 2);
-    
+
     return '$visiblePart$masked@$domain';
   }
 
@@ -153,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Future<void> _loadUnreadNotificationCount() async {
     if (!AuthService.isAuthenticated) return;
-    
+
     try {
       final result = await NotificationService.getNotifications(page: 1);
       if (mounted) {
@@ -205,20 +209,22 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Future<void> _loadProfileData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       // Load user profile data
-      final userData = await BusinessNetworkService.getUserProfile(widget.userId);
-      
+      final userData =
+          await BusinessNetworkService.getUserProfile(widget.userId);
+
       // Load user posts
-      final postsResult = await BusinessNetworkService.getUserPosts(widget.userId);
-      
+      final postsResult =
+          await BusinessNetworkService.getUserPosts(widget.userId);
+
       if (mounted) {
         setState(() {
           _userData = userData;
           final posts = postsResult['posts'] as List<BusinessNetworkPost>;
           _isFollowing = userData['is_following'] ?? false;
-          
+
           // Update all posts to reflect current follow status
           _userPosts = posts.map((post) {
             return post.copyWith(
@@ -237,7 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ),
             );
           }).toList();
-          
+
           _isLoading = false;
         });
       }
@@ -246,7 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         setState(() => _isLoading = false);
         // Use NetworkErrorHandler for professional error display
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           onRetry: () => _loadProfileData(),
         );
@@ -261,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
     try {
       final savedPosts = await BusinessNetworkService.getSavedPosts();
-      
+
       if (mounted) {
         setState(() {
           _savedPosts = savedPosts;
@@ -273,7 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         setState(() => _isLoadingSaved = false);
         // Use NetworkErrorHandler for professional error display
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           onRetry: () => _loadSavedPosts(),
         );
@@ -286,7 +292,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
     try {
       final result = await _workspaceService.fetchUserGigs(widget.userId);
-      
+
       if (mounted) {
         setState(() {
           _userGigs = result['results'] as List<Map<String, dynamic>>;
@@ -298,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         setState(() => _isLoadingGigs = false);
         // Use NetworkErrorHandler for professional error display
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           onRetry: () => _loadUserGigs(),
         );
@@ -308,31 +314,32 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Future<void> _toggleFollow() async {
     if (_followLoading) return;
-    
+
     setState(() => _followLoading = true);
-    
+
     try {
       final wasFollowing = _isFollowing; // Store original state
-      
+
       print('=== Toggle Follow ===');
       print('User ID: ${widget.userId}');
       print('Was Following: $wasFollowing');
-      
+
       final success = wasFollowing
           ? await BusinessNetworkService.unfollowUser(widget.userId)
           : await BusinessNetworkService.followUser(widget.userId);
-      
+
       print('Success: $success');
-      
+
       if (success && mounted) {
         setState(() {
           _isFollowing = !wasFollowing;
           // Update follower count using original state
           if (_userData != null) {
             final currentCount = _userData!['followers_count'] ?? 0;
-            _userData!['followers_count'] = wasFollowing ? currentCount - 1 : currentCount + 1;
+            _userData!['followers_count'] =
+                wasFollowing ? currentCount - 1 : currentCount + 1;
           }
-          
+
           // Update all posts to reflect new follow status
           _userPosts = _userPosts.map((post) {
             return post.copyWith(
@@ -352,17 +359,20 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             );
           }).toList();
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_isFollowing ? 'Following ${_userData?['name']}' : 'Unfollowed ${_userData?['name']}'),
+            content: Text(_isFollowing
+                ? 'Following ${_userData?['name']}'
+                : 'Unfollowed ${_userData?['name']}'),
             duration: const Duration(seconds: 2),
           ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to ${wasFollowing ? 'unfollow' : 'follow'} user'),
+            content:
+                Text('Failed to ${wasFollowing ? 'unfollow' : 'follow'} user'),
             backgroundColor: Colors.red,
           ),
         );
@@ -371,7 +381,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       if (mounted) {
         // Use NetworkErrorHandler for professional error display
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           customMessage: 'Unable to update follow status',
           onRetry: () => _toggleFollow(),
@@ -386,20 +396,21 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Future<void> _openChatWithUser() async {
     if (_userData == null) return;
-    
+
     try {
       // Show loading indicator
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
 
       // Get or create chatroom with the profile user
-      final chatroom = await AdsyConnectService.getOrCreateChatRoom(widget.userId);
-      
+      final chatroom =
+          await AdsyConnectService.getOrCreateChatRoom(widget.userId);
+
       // Close loading dialog
       if (mounted) Navigator.pop(context);
 
@@ -409,10 +420,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           context,
           chatroomId: chatroom['id'].toString(),
           userId: widget.userId,
-          userName: _userData!['first_name'] != null && _userData!['last_name'] != null
+          userName: _userData!['first_name'] != null &&
+                  _userData!['last_name'] != null
               ? '${_userData!['first_name']} ${_userData!['last_name']}'
               : _userData!['username'] ?? 'User',
-          userAvatar: _userData?['image'] ?? _userData?['profile_picture'] ?? _userData?['avatar'],
+          userAvatar: _userData?['image'] ??
+              _userData?['profile_picture'] ??
+              _userData?['avatar'],
           profession: _userData!['profession'],
           isOnline: false,
         );
@@ -420,11 +434,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     } catch (e) {
       // Close loading dialog if still open
       if (mounted) Navigator.pop(context);
-      
+
       if (mounted) {
         // Use NetworkErrorHandler for professional error display
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           customMessage: 'Unable to open chat',
         );
@@ -460,12 +474,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     ),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.camera_alt, color: Color(0xFF3B82F6)),
+                    leading:
+                        const Icon(Icons.camera_alt, color: Color(0xFF3B82F6)),
                     title: const Text('Take Photo'),
                     onTap: () => Navigator.pop(context, ImageSource.camera),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.photo_library, color: Color(0xFF3B82F6)),
+                    leading: const Icon(Icons.photo_library,
+                        color: Color(0xFF3B82F6)),
                     title: const Text('Choose from Gallery'),
                     onTap: () => Navigator.pop(context, ImageSource.gallery),
                   ),
@@ -501,11 +517,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
       // Upload to server (pass XFile directly for cross-platform support)
       final success = await BusinessNetworkService.uploadProfilePicture(image);
-      
+
       if (mounted) {
         // Hide loading snackbar
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        
+
         if (success) {
           setState(() {
             _profileImageRefreshTick = DateTime.now().millisecondsSinceEpoch;
@@ -518,14 +534,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               duration: Duration(seconds: 2),
             ),
           );
-          
+
           // Reload profile data to show new image
           _loadProfileData();
         } else {
           // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Failed to upload profile picture. Please try again.'),
+              content:
+                  Text('Failed to upload profile picture. Please try again.'),
               backgroundColor: Colors.red,
               duration: Duration(seconds: 3),
             ),
@@ -536,7 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       if (mounted) {
         // Use NetworkErrorHandler for professional error display
         NetworkErrorHandler.showErrorSnackbar(
-          context, 
+          context,
           e,
           customMessage: 'Unable to upload profile picture',
         );
@@ -546,11 +563,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   void _showProfilePictureViewer() {
     if (_userData?['image'] == null) return;
-    
-    final userName = _userData?['first_name'] != null && _userData?['last_name'] != null
-        ? '${_userData!['first_name']} ${_userData!['last_name']}'
-        : _userData?['username'] ?? 'User';
-    
+
+    final userName =
+        _userData?['first_name'] != null && _userData?['last_name'] != null
+            ? '${_userData!['first_name']} ${_userData!['last_name']}'
+            : _userData?['username'] ?? 'User';
+
     showDialog(
       context: context,
       barrierColor: Colors.black87,
@@ -649,10 +667,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     final currentUser = AuthService.currentUser;
     final isOwnProfile = currentUser?.id == widget.userId;
-    
+
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 768;
-    
+
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
@@ -676,10 +694,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           // Already on profile page
         },
       ),
-      drawer: isMobile ? BusinessNetworkDrawer(currentRoute: '/business-network/profile/${widget.userId}') : null,
+      drawer: isMobile
+          ? BusinessNetworkDrawer(
+              currentRoute: '/business-network/profile/${widget.userId}')
+          : null,
       body: _isLoading
           ? _buildLoadingState()
-          : RefreshIndicator(
+          : AdsyRefreshIndicator(
               onRefresh: _refreshCurrentTab,
               color: const Color(0xFF3B82F6),
               child: SingleChildScrollView(
@@ -690,18 +711,18 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       children: [
                         // Profile Header
                         _buildProfileHeader(isOwnProfile),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 4),
                           child: GoldSponsorsSlider(),
                         ),
                         const SizedBox(height: 16),
-                        
+
                         // Tabs
                         _buildTabs(),
-                        
+
                         // Tab Content
                         _buildTabContent(),
                       ],
@@ -723,7 +744,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   void _handleNavTap(int index) {
     if (index == _currentNavIndex && index != 3) return; // Already on profile
-    
+
     switch (index) {
       case 0:
         // Recent - Navigate to business network feed
@@ -818,27 +839,29 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 // Stats row skeleton
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(3, (index) => Column(
-                    children: [
-                      Container(
-                        height: 18,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Container(
-                        height: 12,
-                        width: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ],
-                  )),
+                  children: List.generate(
+                      3,
+                      (index) => Column(
+                            children: [
+                              Container(
+                                height: 18,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                height: 12,
+                                width: 60,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
+                            ],
+                          )),
                 ),
                 const SizedBox(height: 16),
                 // Button skeleton
@@ -853,7 +876,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ],
             ),
           ),
-          
+
           // Posts skeleton
           ListView.builder(
             shrinkWrap: true,
@@ -951,7 +974,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget _buildProfileHeader(bool isOwnProfile) {
     final profession = _stringValue(_userData?['profession']);
     final about = _stringValue(_userData?['about']);
-    final showProfession = profession.isNotEmpty && _isFieldVisible('profession_public');
+    final showProfession =
+        profession.isNotEmpty && _isFieldVisible('profession_public');
     final showAbout = about.isNotEmpty && _isFieldVisible('about_public');
 
     return Container(
@@ -975,7 +999,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       children: [
                         Flexible(
                           child: Text(
-                            _userData?['first_name'] != null && _userData?['last_name'] != null
+                            _userData?['first_name'] != null &&
+                                    _userData?['last_name'] != null
                                 ? '${_userData!['first_name']} ${_userData!['last_name']}'
                                 : _userData?['username'] ?? 'User',
                             style: const TextStyle(
@@ -998,7 +1023,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         if (_userData?['is_pro'] == true) ...[
                           const SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
@@ -1033,9 +1059,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Compact Profile Picture with tap to view
           GestureDetector(
             onTap: () => _showProfilePictureViewer(),
@@ -1064,7 +1090,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     child: ClipOval(
                       child: _userData?['image'] != null
                           ? Image.network(
-                            _getImageUrl(_userData!['image']),
+                              _getImageUrl(_userData!['image']),
                               width: double.infinity,
                               height: double.infinity,
                               fit: BoxFit.cover,
@@ -1114,9 +1140,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ],
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Compact Stats Row
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1128,28 +1154,29 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 color: Colors.grey.shade200,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              _buildStatItem('Followers', _userData?['followers_count'] ?? 0, onTap: () => _showFollowersFollowingSheet('followers')),
+              _buildStatItem('Followers', _userData?['followers_count'] ?? 0,
+                  onTap: () => _showFollowersFollowingSheet('followers')),
               Container(
                 width: 1,
                 height: 28,
                 color: Colors.grey.shade200,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              _buildStatItem('Following', _userData?['following_count'] ?? 0, onTap: () => _showFollowersFollowingSheet('following')),
+              _buildStatItem('Following', _userData?['following_count'] ?? 0,
+                  onTap: () => _showFollowersFollowingSheet('following')),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Action Buttons + Diamond (side by side pill row)
           if (isOwnProfile && _userData?['diamond_balance'] != null)
             _buildOwnProfileActionRow()
           else
             _buildActionButtonsRow(isOwnProfile),
-          
+
           // Bio Section
-          if (showAbout ||
-              isOwnProfile) ...[
+          if (showAbout || isOwnProfile) ...[
             const SizedBox(height: 12),
             Divider(color: Colors.grey.shade200, height: 1),
             const SizedBox(height: 10),
@@ -1158,13 +1185,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               style: TextStyle(
                 fontSize: 13,
                 color: about.isNotEmpty ? Colors.black87 : Colors.grey.shade500,
-                fontStyle: about.isNotEmpty ? FontStyle.normal : FontStyle.italic,
+                fontStyle:
+                    about.isNotEmpty ? FontStyle.normal : FontStyle.italic,
                 height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),
           ],
-          
+
           // Contact Info (without bottom divider)
           _buildContactInfo(),
         ],
@@ -1189,7 +1217,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             label,
             style: TextStyle(
               fontSize: 11,
-              color: onTap != null ? const Color(0xFF8B5CF6) : Colors.grey.shade500,
+              color: onTap != null
+                  ? const Color(0xFF8B5CF6)
+                  : Colors.grey.shade500,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -1258,7 +1288,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                   ),
                   if (!isIOSPlatform) ...[
                     const SizedBox(width: 4),
-                    Icon(Icons.add_circle_outline, size: 14, color: Colors.pink.shade400),
+                    Icon(Icons.add_circle_outline,
+                        size: 14, color: Colors.pink.shade400),
                   ],
                 ],
               ),
@@ -1271,7 +1302,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
   Widget _buildActionButtonsRow(bool isOwnProfile) {
     final isLoggedIn = AuthService.currentUser != null;
-    
+
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade200),
@@ -1295,7 +1326,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             },
             showBorder: true,
           ),
-          
+
           // Chat Button (only for other profiles when logged in)
           if (!isOwnProfile && isLoggedIn) ...[
             _buildPillButton(
@@ -1305,7 +1336,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 height: 18,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return Icon(Icons.chat_bubble_outline_rounded, size: 18, color: Colors.teal.shade600);
+                  return Icon(Icons.chat_bubble_outline_rounded,
+                      size: 18, color: Colors.teal.shade600);
                 },
               ),
               label: 'Chat',
@@ -1314,11 +1346,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               showBorder: true,
             ),
           ],
-          
+
           // Follow/Following Button (only for other profiles when logged in)
           if (!isOwnProfile && isLoggedIn)
             _buildPillButton(
-              icon: _isFollowing ? Icons.check_rounded : Icons.person_add_outlined,
+              icon: _isFollowing
+                  ? Icons.check_rounded
+                  : Icons.person_add_outlined,
               label: _isFollowing ? 'Following' : 'Follow',
               onTap: _followLoading ? null : _toggleFollow,
               isLoading: _followLoading,
@@ -1356,18 +1390,19 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ? SizedBox(
             width: 14,
             height: 14,
-            child: CircularProgressIndicator(
+            child: AdsyLoadingIndicator(
               strokeWidth: 2,
               valueColor: AlwaysStoppedAnimation<Color>(Colors.grey.shade600),
             ),
           )
-        : customIcon ?? (icon != null
-            ? Icon(
-                icon,
-                size: 18,
-                color: Colors.grey.shade700,
-              )
-            : null);
+        : customIcon ??
+            (icon != null
+                ? Icon(
+                    icon,
+                    size: 18,
+                    color: Colors.grey.shade700,
+                  )
+                : null);
 
     return InkWell(
       onTap: onTap,
@@ -1413,7 +1448,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
           Navigator.pop(context);
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ProfileScreen(userId: userId)),
+            MaterialPageRoute(
+                builder: (context) => ProfileScreen(userId: userId)),
           );
         },
       ),
@@ -1482,7 +1518,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     if (_userPosts.isEmpty) {
       return _buildEmptyState('No posts yet', Icons.post_add);
     }
-    
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -1514,11 +1550,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     for (var post in _userPosts) {
       allMedia.addAll(post.media);
     }
-    
+
     if (allMedia.isEmpty) {
       return _buildEmptyState('No media yet', Icons.photo_library);
     }
-    
+
     return Padding(
       padding: const EdgeInsets.all(4),
       child: GridView.builder(
@@ -1533,7 +1569,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         itemCount: allMedia.length,
         itemBuilder: (context, index) {
           final media = allMedia[index];
-          final displayUrl = media.isVideo ? media.bestThumbnailUrl : media.bestUrl;
+          final displayUrl =
+              media.isVideo ? media.bestThumbnailUrl : media.bestUrl;
           return InkWell(
             onTap: () {
               final parentPost = _findParentPostForMedia(media);
@@ -1584,7 +1621,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                             color: Colors.grey.shade400,
                             child: Center(
                               child: Icon(
-                                media.isVideo ? Icons.play_circle_outline : Icons.image_outlined,
+                                media.isVideo
+                                    ? Icons.play_circle_outline
+                                    : Icons.image_outlined,
                                 color: Colors.white.withOpacity(0.7),
                                 size: 40,
                               ),
@@ -1597,7 +1636,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         color: Colors.grey.shade400,
                         child: Center(
                           child: Icon(
-                            media.isVideo ? Icons.play_circle_outline : Icons.image_outlined,
+                            media.isVideo
+                                ? Icons.play_circle_outline
+                                : Icons.image_outlined,
                             color: Colors.white.withOpacity(0.7),
                             size: 40,
                           ),
@@ -1640,7 +1681,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         if (p.media.any((m) => m.bestUrl == target)) return p;
       }
     }
-    return _userPosts.isNotEmpty ? _userPosts.first : BusinessNetworkPost.fromJson({});
+    return _userPosts.isNotEmpty
+        ? _userPosts.first
+        : BusinessNetworkPost.fromJson({});
   }
 
   int _findMediaIndexInPost(BusinessNetworkPost post, PostMedia media) {
@@ -1719,13 +1762,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(40),
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
           ),
         ),
       );
     }
-    
+
     if (_userGigs.isEmpty) {
       return Center(
         child: Container(
@@ -1770,7 +1813,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         ),
       );
     }
-    
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -1827,19 +1870,22 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       ? Image.network(
                           thumbnail,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
                             color: Colors.grey[200],
-                            child: Icon(Icons.work_outline, color: Colors.grey[400], size: 24),
+                            child: Icon(Icons.work_outline,
+                                color: Colors.grey[400], size: 24),
                           ),
                         )
                       : Container(
                           color: Colors.grey[200],
-                          child: Icon(Icons.work_outline, color: Colors.grey[400], size: 24),
+                          child: Icon(Icons.work_outline,
+                              color: Colors.grey[400], size: 24),
                         ),
                 ),
               ),
               const SizedBox(width: 12),
-              
+
               // Content
               Expanded(
                 child: Column(
@@ -1857,12 +1903,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
-                    
+
                     // Stats row
                     Row(
                       children: [
                         // Rating
-                        const Icon(Icons.star, size: 14, color: Color(0xFFFBBF24)),
+                        const Icon(Icons.star,
+                            size: 14, color: Color(0xFFFBBF24)),
                         const SizedBox(width: 3),
                         Text(
                           rating.toStringAsFixed(1),
@@ -1872,7 +1919,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           ),
                         ),
                         const SizedBox(width: 12),
-                        
+
                         // Orders
                         Text(
                           '$ordersCount sold',
@@ -1881,9 +1928,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                             color: Colors.grey[500],
                           ),
                         ),
-                        
+
                         const Spacer(),
-                        
+
                         // Price
                         Text(
                           '$currency $price',
@@ -1908,27 +1955,27 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget _buildSavedTab() {
     final currentUser = AuthService.currentUser;
     final isOwnProfile = currentUser != null && _isOwnProfile();
-    
+
     // Only show saved posts for own profile
     if (!isOwnProfile) {
       return _buildEmptyState('Saved posts are private', Icons.lock_outline);
     }
-    
+
     if (_isLoadingSaved) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(40),
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
           ),
         ),
       );
     }
-    
+
     if (_savedPosts.isEmpty) {
       return _buildEmptyState('No saved posts', Icons.bookmark_border);
     }
-    
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -2002,9 +2049,12 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 
     final showCompany = company.isNotEmpty && _isFieldVisible('company_public');
     final showWebsite = website.isNotEmpty && _isFieldVisible('website_public');
-    final showWhatsapp = whatsapp.isNotEmpty && _isFieldVisible('whatsapp_public');
-    final showInstagram = instagram.isNotEmpty && _isFieldVisible('instagram_public');
-    final showFacebook = facebook.isNotEmpty && _isFieldVisible('facebook_public');
+    final showWhatsapp =
+        whatsapp.isNotEmpty && _isFieldVisible('whatsapp_public');
+    final showInstagram =
+        instagram.isNotEmpty && _isFieldVisible('instagram_public');
+    final showFacebook =
+        facebook.isNotEmpty && _isFieldVisible('facebook_public');
 
     final hasContactInfo = city.isNotEmpty ||
         state.isNotEmpty ||
@@ -2027,13 +2077,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         showFacebook ||
         _userData?['date_joined'] != null;
 
-    final userName = _userData?['first_name'] ?? _userData?['username'] ?? 'User';
+    final userName =
+        _userData?['first_name'] ?? _userData?['username'] ?? 'User';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 12),
-        
+
         // Always visible: Location and Joined Date
         if (city.isNotEmpty || state.isNotEmpty)
           _buildContactItem(
@@ -2041,14 +2092,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             '$city${city.isNotEmpty && state.isNotEmpty ? ', ' : ''}$state',
             Colors.blue.shade500,
           ),
-        
+
         if (showCompany)
           _buildContactItem(
             Icons.business,
             company,
             Colors.purple.shade500,
           ),
-        
+
         // Email (with privacy masking)
         if (email.isNotEmpty)
           _buildContactItem(
@@ -2056,7 +2107,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             _maskEmail(email, _userData?['email_public']),
             Colors.orange.shade600,
           ),
-        
+
         // Phone (with privacy masking)
         if (phone.isNotEmpty)
           _buildContactItem(
@@ -2064,7 +2115,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             _maskPhoneNumber(phone, _userData?['phone_public']),
             Colors.red.shade500,
           ),
-        
+
         // Joined Date (always visible)
         if (_userData?['date_joined'] != null)
           _buildContactItem(
@@ -2072,10 +2123,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             'Joined ${_formatTimeAgo(_userData!['date_joined'])}',
             Colors.green.shade500,
           ),
-        
+
         // Expandable section for additional details
         if (_isContactInfoExpanded == true) ...[
-          
           // Website
           if (showWebsite)
             _buildContactItem(
@@ -2083,7 +2133,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               website,
               Colors.blue.shade600,
             ),
-          
+
           // WhatsApp
           if (showWhatsapp)
             _buildContactItem(
@@ -2098,7 +2148,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               facebook,
               Colors.indigo.shade500,
             ),
-          
+
           // Instagram
           if (showInstagram)
             _buildContactItem(
@@ -2107,7 +2157,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               Colors.pink.shade600,
             ),
         ],
-        
+
         // "See more about [Name]" button
         if (hasAdditionalInfo) ...[
           const SizedBox(height: 4),
@@ -2121,7 +2171,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 _isContactInfoExpanded
-                    ? 'Show less' 
+                    ? 'Show less'
                     : 'See more about $userName...',
                 style: TextStyle(
                   fontSize: 13,
@@ -2165,9 +2215,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     if (!_isFieldVisible('website_public')) {
       return const SizedBox.shrink();
     }
-    
+
     // Only show website link
-    if (_userData!['website'] == null || _userData!['website'].toString().isEmpty) {
+    if (_userData!['website'] == null ||
+        _userData!['website'].toString().isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -2305,7 +2356,8 @@ class _FollowersFollowingSheet extends StatefulWidget {
   });
 
   @override
-  State<_FollowersFollowingSheet> createState() => _FollowersFollowingSheetState();
+  State<_FollowersFollowingSheet> createState() =>
+      _FollowersFollowingSheetState();
 }
 
 class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
@@ -2329,7 +2381,8 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       if (!_isLoading && _hasMore) {
         _loadMore();
       }
@@ -2338,11 +2391,13 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
 
   Future<void> _loadUsers() async {
     setState(() => _isLoading = true);
-    
+
     final result = widget.type == 'followers'
-        ? await BusinessNetworkService.getUserFollowers(widget.userId, page: _page)
-        : await BusinessNetworkService.getUserFollowing(widget.userId, page: _page);
-    
+        ? await BusinessNetworkService.getUserFollowers(widget.userId,
+            page: _page)
+        : await BusinessNetworkService.getUserFollowing(widget.userId,
+            page: _page);
+
     if (mounted) {
       setState(() {
         _users = List<Map<String, dynamic>>.from(result['results'] ?? []);
@@ -2354,11 +2409,13 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
 
   Future<void> _loadMore() async {
     _page++;
-    
+
     final result = widget.type == 'followers'
-        ? await BusinessNetworkService.getUserFollowers(widget.userId, page: _page)
-        : await BusinessNetworkService.getUserFollowing(widget.userId, page: _page);
-    
+        ? await BusinessNetworkService.getUserFollowers(widget.userId,
+            page: _page)
+        : await BusinessNetworkService.getUserFollowing(widget.userId,
+            page: _page);
+
     if (mounted) {
       setState(() {
         _users.addAll(List<Map<String, dynamic>>.from(result['results'] ?? []));
@@ -2386,7 +2443,8 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(16)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.03),
@@ -2433,14 +2491,15 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
               ],
             ),
           ),
-          
+
           // User List
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(
+                    child: AdsyLoadingIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          const Color(0xFF3B82F6)),
                     ),
                   )
                 : _users.isEmpty
@@ -2448,10 +2507,13 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.people_outline_rounded, size: 40, color: Colors.grey.shade300),
+                            Icon(Icons.people_outline_rounded,
+                                size: 40, color: Colors.grey.shade300),
                             const SizedBox(height: 8),
                             Text(
-                              widget.type == 'followers' ? 'No followers yet' : 'Not following anyone',
+                              widget.type == 'followers'
+                                  ? 'No followers yet'
+                                  : 'Not following anyone',
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey.shade500,
@@ -2473,48 +2535,63 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                 child: SizedBox(
                                   width: 18,
                                   height: 18,
-                                  child: CircularProgressIndicator(
+                                  child: AdsyLoadingIndicator(
                                     strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF3B82F6)),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        const Color(0xFF3B82F6)),
                                   ),
                                 ),
                               ),
                             );
                           }
-                          
+
                           final user = _users[index];
                           // API returns follower_details/following_details
-                          final userData = widget.type == 'followers' 
-                              ? user['follower_details'] ?? user['follower'] ?? user 
-                              : user['following_details'] ?? user['following'] ?? user;
-                          
+                          final userData = widget.type == 'followers'
+                              ? user['follower_details'] ??
+                                  user['follower'] ??
+                                  user
+                              : user['following_details'] ??
+                                  user['following'] ??
+                                  user;
+
                           // Get user image
-                          final String? userImage = userData['image']?.toString();
-                          final bool hasImage = userImage != null && userImage.isNotEmpty;
-                          
+                          final String? userImage =
+                              userData['image']?.toString();
+                          final bool hasImage =
+                              userImage != null && userImage.isNotEmpty;
+
                           // Get display name
                           String displayName = 'Unknown';
-                          if (userData['first_name'] != null && userData['first_name'].toString().isNotEmpty) {
+                          if (userData['first_name'] != null &&
+                              userData['first_name'].toString().isNotEmpty) {
                             displayName = userData['first_name'].toString();
-                            if (userData['last_name'] != null && userData['last_name'].toString().isNotEmpty) {
+                            if (userData['last_name'] != null &&
+                                userData['last_name'].toString().isNotEmpty) {
                               displayName += ' ${userData['last_name']}';
                             }
-                          } else if (userData['name'] != null && userData['name'].toString().isNotEmpty) {
+                          } else if (userData['name'] != null &&
+                              userData['name'].toString().isNotEmpty) {
                             displayName = userData['name'].toString();
-                          } else if (userData['username'] != null && userData['username'].toString().isNotEmpty) {
+                          } else if (userData['username'] != null &&
+                              userData['username'].toString().isNotEmpty) {
                             displayName = userData['username'].toString();
                           }
-                          
+
                           // Get profession/headline
-                            final bool showProfession = userData['profession_public'] != false;
-                            final String? profession = showProfession
-                              ? userData['profession']?.toString() ?? userData['headline']?.toString()
+                          final bool showProfession =
+                              userData['profession_public'] != false;
+                          final String? profession = showProfession
+                              ? userData['profession']?.toString() ??
+                                  userData['headline']?.toString()
                               : null;
-                          
+
                           return InkWell(
-                            onTap: () => widget.onUserTap(userData['id']?.toString() ?? ''),
+                            onTap: () => widget
+                                .onUserTap(userData['id']?.toString() ?? ''),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
                               child: Row(
                                 children: [
                                   // Avatar
@@ -2526,7 +2603,9 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                         : null,
                                     child: !hasImage
                                         ? Text(
-                                            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
+                                            displayName.isNotEmpty
+                                                ? displayName[0].toUpperCase()
+                                                : 'U',
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w600,
                                               fontSize: 14,
@@ -2539,7 +2618,8 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                   // Name & Profession
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
@@ -2557,22 +2637,42 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                             ),
                                             if (userData['kyc'] == true)
                                               const Padding(
-                                                padding: EdgeInsets.only(left: 3),
-                                                child: Icon(Icons.verified_rounded, size: 14, color: Color(0xFF3B82F6)),
+                                                padding:
+                                                    EdgeInsets.only(left: 3),
+                                                child: Icon(
+                                                    Icons.verified_rounded,
+                                                    size: 14,
+                                                    color: Color(0xFF3B82F6)),
                                               ),
                                             if (userData['is_pro'] == true)
                                               Container(
-                                                margin: const EdgeInsets.only(left: 3),
-                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                margin: const EdgeInsets.only(
+                                                    left: 3),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 4,
+                                                        vertical: 1),
                                                 decoration: BoxDecoration(
-                                                  gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFF97316)]),
-                                                  borderRadius: BorderRadius.circular(3),
+                                                  gradient:
+                                                      const LinearGradient(
+                                                          colors: [
+                                                        Color(0xFFF59E0B),
+                                                        Color(0xFFF97316)
+                                                      ]),
+                                                  borderRadius:
+                                                      BorderRadius.circular(3),
                                                 ),
-                                                child: const Text('PRO', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w700)),
+                                                child: const Text('PRO',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 8,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
                                               ),
                                           ],
                                         ),
-                                        if (profession != null && profession.isNotEmpty) ...[
+                                        if (profession != null &&
+                                            profession.isNotEmpty) ...[
                                           const SizedBox(height: 2),
                                           Text(
                                             profession,
@@ -2588,7 +2688,8 @@ class _FollowersFollowingSheetState extends State<_FollowersFollowingSheet> {
                                     ),
                                   ),
                                   // Arrow
-                                  Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey.shade400),
+                                  Icon(Icons.chevron_right_rounded,
+                                      size: 18, color: Colors.grey.shade400),
                                 ],
                               ),
                             ),

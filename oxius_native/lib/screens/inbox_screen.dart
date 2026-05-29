@@ -10,6 +10,7 @@ import 'adsy_connect_screen.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'support/create_ticket_screen.dart';
 import 'support/ticket_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class InboxScreen extends StatefulWidget {
   final int initialTab;
@@ -1004,7 +1005,7 @@ class _InboxScreenState extends State<InboxScreen>
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(40),
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
     }
@@ -1093,7 +1094,7 @@ class _InboxScreenState extends State<InboxScreen>
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(40),
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
     }
@@ -1101,7 +1102,7 @@ class _InboxScreenState extends State<InboxScreen>
     final tickets = filteredTickets;
 
     if (tickets.isEmpty) {
-      return RefreshIndicator(
+      return AdsyRefreshIndicator(
         onRefresh: _loadTickets,
         color: const Color(0xFF3B82F6),
         child: SingleChildScrollView(
@@ -1114,7 +1115,7 @@ class _InboxScreenState extends State<InboxScreen>
       );
     }
 
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadTickets,
       color: const Color(0xFF3B82F6),
       child: ListView.builder(
@@ -1812,7 +1813,7 @@ class _NewChatModalState extends State<_NewChatModal> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
 
@@ -1974,7 +1975,7 @@ class _NewChatModalState extends State<_NewChatModal> {
                     child: SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: AdsyLoadingIndicator(strokeWidth: 2),
                     ),
                   )
                 : _searchResults.isEmpty

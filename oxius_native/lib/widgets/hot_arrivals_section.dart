@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class HotArrivalsSection extends StatefulWidget {
   final Function(String)? onCategorySelected;
   final VoidCallback? onViewAllPressed;
-  
+
   const HotArrivalsSection({
     super.key,
     this.onCategorySelected,
@@ -37,10 +38,11 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
   Future<void> _fetchHotArrivals() async {
     try {
       setState(() => _isLoading = true);
-      
+
       // Fetch categories with hot_arrival filter
-      final response = await EshopService.fetchProductCategories(hotArrival: true);
-      
+      final response =
+          await EshopService.fetchProductCategories(hotArrival: true);
+
       if (mounted) {
         setState(() {
           _hotArrivals = response;
@@ -57,7 +59,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
 
   Color _getBadgeColor(String? badgeColor) {
     if (badgeColor == null) return Colors.green.shade600;
-    
+
     // Parse Tailwind-like color classes
     if (badgeColor.contains('red')) return Colors.red.shade500;
     if (badgeColor.contains('orange')) return Colors.orange.shade500;
@@ -76,17 +78,17 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
     if (badgeColor.contains('fuchsia')) return Colors.pink.shade600;
     if (badgeColor.contains('pink')) return Colors.pink.shade400;
     if (badgeColor.contains('rose')) return Colors.red.shade400;
-    
+
     return Colors.green.shade600;
   }
 
   void _handleViewAll() {
     setState(() => _viewAllLoading = true);
-    
+
     if (widget.onViewAllPressed != null) {
       widget.onViewAllPressed!();
     }
-    
+
     // Reset loading after delay
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
@@ -102,7 +104,7 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
         margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
         height: 140,
         child: const Center(
-          child: CircularProgressIndicator(
+          child: AdsyLoadingIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
             strokeWidth: 2.5,
           ),
@@ -153,9 +155,9 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                
+
                 const Spacer(),
-                
+
                 // View All Button
                 Material(
                   color: Colors.transparent,
@@ -163,7 +165,8 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                     onTap: _handleViewAll,
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withOpacity(0.08),
                         borderRadius: BorderRadius.circular(6),
@@ -175,9 +178,10 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                             SizedBox(
                               width: 14,
                               height: 12,
-                              child: CircularProgressIndicator(
+                              child: AdsyLoadingIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF10B981)),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    const Color(0xFF10B981)),
                               ),
                             )
                           else ...[
@@ -204,9 +208,9 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 10),
-          
+
           // Scrollable Cards
           SizedBox(
             height: 120,
@@ -234,11 +238,12 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
     final badgeColorStr = arrival['badge_color']?.toString();
     final description = arrival['description']?.toString();
     final productCount = arrival['product_count'];
-    
+
     // Only show badge if it exists in the data
     final hasBadge = badge != null && badge.isNotEmpty;
-    final badgeColor = hasBadge ? _getBadgeColor(badgeColorStr) : Colors.transparent;
-    
+    final badgeColor =
+        hasBadge ? _getBadgeColor(badgeColorStr) : Colors.transparent;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -298,7 +303,8 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
               Container(
                 height: 70,
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(10)),
                   color: const Color(0xFFF9FAFB),
                 ),
                 child: Stack(
@@ -306,7 +312,8 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                     // Product Image
                     if (imageUrl.isNotEmpty)
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(10)),
                         child: Image.network(
                           imageUrl,
                           width: double.infinity,
@@ -331,14 +338,15 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           color: const Color(0xFF9CA3AF),
                         ),
                       ),
-                    
+
                     // Dynamic Badge - only show if exists
                     if (hasBadge)
                       Positioned(
                         top: 6,
                         right: 6,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 3),
                           decoration: BoxDecoration(
                             color: badgeColor,
                             borderRadius: BorderRadius.circular(6),
@@ -361,14 +369,15 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                           ),
                         ),
                       ),
-                    
+
                     // Product count badge - bottom left
                     if (productCount != null && productCount > 0)
                       Positioned(
                         bottom: 6,
                         left: 6,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.6),
                             borderRadius: BorderRadius.circular(6),
@@ -386,11 +395,12 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                   ],
                 ),
               ),
-              
+
               // Name - Compact padding
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                   alignment: Alignment.center,
                   child: Text(
                     name,

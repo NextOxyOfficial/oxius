@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/translation_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
@@ -50,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
           setState(() {
             _errorMessage = '';
           });
-          
+
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -59,7 +60,9 @@ class _LoginPageState extends State<LoginPage> {
                   const Icon(Icons.check_circle, color: Colors.white),
                   const SizedBox(width: 8),
                   Text(
-                    _ts.t('login_success', fallback: 'Welcome back, ${authResponse.user.displayName}!'),
+                    _ts.t('login_success',
+                        fallback:
+                            'Welcome back, ${authResponse.user.displayName}!'),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ],
@@ -71,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
 
           // Wait a moment for the user to see the success message
           await Future.delayed(const Duration(milliseconds: 500));
-          
+
           // Navigate back to home page
           if (mounted) {
             Navigator.of(context).pushReplacementNamed('/');
@@ -85,7 +88,10 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString().replaceFirst('Exception: ', '').replaceFirst('Login error: ', '');
+          _errorMessage = e
+              .toString()
+              .replaceFirst('Exception: ', '')
+              .replaceFirst('Login error: ', '');
         });
       }
     } finally {
@@ -112,10 +118,10 @@ class _LoginPageState extends State<LoginPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 0.0, vertical: 20.0),
             child: Column(
               children: [
-                
                 // Login Form
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -150,7 +156,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                _ts.t('login_subtitle', fallback: 'Sign in to your account'),
+                                _ts.t('login_subtitle',
+                                    fallback: 'Sign in to your account'),
                                 style: AppFonts.roboto(
                                   fontSize: 16,
                                   color: Colors.grey.shade600,
@@ -159,9 +166,9 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Error message
                         if (_errorMessage != null) ...[
                           Container(
@@ -174,7 +181,8 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
+                                Icon(Icons.error_outline,
+                                    color: Colors.red.shade600, size: 20),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
@@ -190,47 +198,58 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 16),
                         ],
-                        
+
                         // Email field
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           decoration: InputDecoration(
-                            labelText: _ts.t('email_address', fallback: 'Email Address'),
-                            hintText: _ts.t('email_address', fallback: 'Email Address'),
-                            prefixIcon: Icon(Icons.email_outlined, color: Colors.grey.shade500),
+                            labelText: _ts.t('email_address',
+                                fallback: 'Email Address'),
+                            hintText: _ts.t('email_address',
+                                fallback: 'Email Address'),
+                            prefixIcon: Icon(Icons.email_outlined,
+                                color: Colors.grey.shade500),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFF10B981), width: 2),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.red, width: 2),
+                              borderSide:
+                                  const BorderSide(color: Colors.red, width: 2),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return _ts.t('email_required', fallback: 'Email is required');
+                              return _ts.t('email_required',
+                                  fallback: 'Email is required');
                             }
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                              return _ts.t('email_invalid', fallback: 'Please enter a valid email');
+                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                                .hasMatch(value)) {
+                              return _ts.t('email_invalid',
+                                  fallback: 'Please enter a valid email');
                             }
                             return null;
                           },
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Password field
                         TextFormField(
                           controller: _passwordController,
@@ -240,10 +259,13 @@ class _LoginPageState extends State<LoginPage> {
                           decoration: InputDecoration(
                             labelText: _ts.t('password', fallback: 'Password'),
                             hintText: _ts.t('password', fallback: 'Password'),
-                            prefixIcon: Icon(Icons.lock_outlined, color: Colors.grey.shade500),
+                            prefixIcon: Icon(Icons.lock_outlined,
+                                color: Colors.grey.shade500),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                                 color: Colors.grey.shade500,
                               ),
                               onPressed: () {
@@ -254,35 +276,43 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFF10B981), width: 2),
                             ),
                             errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.red, width: 2),
+                              borderSide:
+                                  const BorderSide(color: Colors.red, width: 2),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return _ts.t('password_required', fallback: 'Password is required');
+                              return _ts.t('password_required',
+                                  fallback: 'Password is required');
                             }
                             if (value.length < 6) {
-                              return _ts.t('password_min_length', fallback: 'Password must be at least 6 characters');
+                              return _ts.t('password_min_length',
+                                  fallback:
+                                      'Password must be at least 6 characters');
                             }
                             return null;
                           },
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Remember me and Forgot password
                         Row(
                           children: [
@@ -308,13 +338,16 @@ class _LoginPageState extends State<LoginPage> {
                                 // TODO: Implement forgot password
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(_ts.t('forgot_password_coming_soon', 
-                                        fallback: 'Forgot password feature coming soon!')),
+                                    content: Text(_ts.t(
+                                        'forgot_password_coming_soon',
+                                        fallback:
+                                            'Forgot password feature coming soon!')),
                                   ),
                                 );
                               },
                               child: Text(
-                                _ts.t('forgot_password', fallback: 'Forgot Password?'),
+                                _ts.t('forgot_password',
+                                    fallback: 'Forgot Password?'),
                                 style: const TextStyle(
                                   color: Color(0xFF10B981),
                                   fontSize: 14,
@@ -324,9 +357,9 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Login Button
                         SizedBox(
                           width: double.infinity,
@@ -344,7 +377,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(
+                                    child: AdsyLoadingIndicator(
                                       color: Colors.white,
                                       strokeWidth: 2,
                                     ),
@@ -352,7 +385,8 @@ class _LoginPageState extends State<LoginPage> {
                                 : Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(Icons.login, color: Colors.white),
+                                      const Icon(Icons.login,
+                                          color: Colors.white),
                                       const SizedBox(width: 8),
                                       Text(
                                         _ts.t('sign_in', fallback: 'Sign In'),
@@ -366,9 +400,9 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Register link
                         Center(
                           child: TextButton(
@@ -376,8 +410,9 @@ class _LoginPageState extends State<LoginPage> {
                               // TODO: Navigate to register page
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(_ts.t('register_coming_soon', 
-                                      fallback: 'Registration feature coming soon!')),
+                                  content: Text(_ts.t('register_coming_soon',
+                                      fallback:
+                                          'Registration feature coming soon!')),
                                 ),
                               );
                             },
@@ -389,7 +424,8 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 children: [
                                   TextSpan(
-                                    text: _ts.t('dont_have_account', fallback: "Don't have an account? "),
+                                    text: _ts.t('dont_have_account',
+                                        fallback: "Don't have an account? "),
                                   ),
                                   const TextSpan(
                                     text: 'Sign Up',

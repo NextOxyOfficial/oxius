@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/elearning_models.dart';
 import '../../services/elearning_service.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class SubjectSelector extends StatefulWidget {
   final String? batch;
@@ -79,7 +80,8 @@ class _SubjectSelectorState extends State<SubjectSelector> {
         _error = null;
       });
 
-      final subjects = await ElearningService.fetchSubjectsForDivision(widget.division!);
+      final subjects =
+          await ElearningService.fetchSubjectsForDivision(widget.division!);
 
       setState(() {
         _subjects = subjects;
@@ -133,77 +135,79 @@ class _SubjectSelectorState extends State<SubjectSelector> {
             onTap: isCollapsed ? widget.onTapExpand : null,
             borderRadius: BorderRadius.circular(14),
             child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_indigo, _violet],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.menu_book_rounded,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Choose subject',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: _slate800,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [_indigo, _violet],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Open the exact lesson track',
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Choose subject',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: _slate800,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Open the exact lesson track',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: _slate500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: _indigo.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'Step 3/4',
                         style: TextStyle(
                           fontSize: 11,
-                          color: _slate500,
+                          color: _indigo,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
+                    ),
+                    if (isCollapsed) ...[
+                      const SizedBox(width: 8),
+                      const Icon(Icons.expand_more_rounded,
+                          size: 18, color: _slate500),
                     ],
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: _indigo.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: const Text(
-                      'Step 3/4',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: _indigo,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  if (isCollapsed) ...[
-                    const SizedBox(width: 8),
-                    const Icon(Icons.expand_more_rounded, size: 18, color: _slate500),
                   ],
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
 
@@ -212,7 +216,7 @@ class _SubjectSelectorState extends State<SubjectSelector> {
             const Center(
               child: Padding(
                 padding: EdgeInsets.all(32.0),
-                child: CircularProgressIndicator(),
+                child: AdsyLoadingIndicator(),
               ),
             ),
 
@@ -272,12 +276,16 @@ class _SubjectSelectorState extends State<SubjectSelector> {
           if (!_loading && _error == null && isCollapsed)
             _buildCollapsedSummary(selectedSubject),
 
-          if (!_loading && _error == null && _subjects.isNotEmpty && !isCollapsed)
+          if (!_loading &&
+              _error == null &&
+              _subjects.isNotEmpty &&
+              !isCollapsed)
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _subjects.length,
-              separatorBuilder: (context, index) => Divider(color: _slate200, height: 1),
+              separatorBuilder: (context, index) =>
+                  Divider(color: _slate200, height: 1),
               itemBuilder: (context, index) {
                 final subject = _subjects[index];
                 final isSelected = widget.selectedSubject == subject.code;
@@ -333,7 +341,8 @@ class _SubjectSelectorState extends State<SubjectSelector> {
                         if (isSelected)
                           const Padding(
                             padding: EdgeInsets.only(left: 8, top: 2),
-                            child: Icon(Icons.check_circle_rounded, size: 18, color: _indigo),
+                            child: Icon(Icons.check_circle_rounded,
+                                size: 18, color: _indigo),
                           ),
                       ],
                     ),

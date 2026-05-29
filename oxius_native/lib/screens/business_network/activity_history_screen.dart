@@ -6,6 +6,7 @@ import '../../services/auth_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../utils/time_utils.dart';
 import 'mindforce_detail_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ActivityHistoryScreen extends StatefulWidget {
   const ActivityHistoryScreen({super.key});
@@ -49,10 +50,12 @@ class _MindForceRepliesTabState extends State<_MindForceRepliesTab> {
         final comments = await MindForceService.getComments(problem.id);
         for (final comment in comments) {
           final commentUserId = comment.userDetails.id.toString();
-          final commentUsername = (comment.userDetails.username ?? '').toString();
+          final commentUsername =
+              (comment.userDetails.username ?? '').toString();
 
           final isSelf = commentUserId == currentUser.id ||
-              (commentUsername.isNotEmpty && commentUsername == currentUser.username);
+              (commentUsername.isNotEmpty &&
+                  commentUsername == currentUser.username);
 
           if (!isSelf) continue;
 
@@ -93,7 +96,7 @@ class _MindForceRepliesTabState extends State<_MindForceRepliesTab> {
         child: SizedBox(
           width: 22,
           height: 22,
-          child: CircularProgressIndicator(strokeWidth: 2.5),
+          child: AdsyLoadingIndicator(strokeWidth: 2.5),
         ),
       );
     }
@@ -102,7 +105,8 @@ class _MindForceRepliesTabState extends State<_MindForceRepliesTab> {
       return Center(
         child: Text(
           'Please login to view your activity',
-          style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.grey.shade700, fontWeight: FontWeight.w600),
         ),
       );
     }
@@ -111,12 +115,13 @@ class _MindForceRepliesTabState extends State<_MindForceRepliesTab> {
       return Center(
         child: Text(
           'No MindForce replies yet',
-          style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: Colors.grey.shade700, fontWeight: FontWeight.w600),
         ),
       );
     }
 
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       onRefresh: _loadReplies,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
@@ -167,7 +172,8 @@ class _MindForceReplyTile extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => MindForceDetailScreen(problemId: item.problemId),
+              builder: (context) =>
+                  MindForceDetailScreen(problemId: item.problemId),
             ),
           );
         },
@@ -190,8 +196,12 @@ class _MindForceReplyTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  item.isSolved ? Icons.check_circle_rounded : Icons.chat_bubble_rounded,
-                  color: item.isSolved ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
+                  item.isSolved
+                      ? Icons.check_circle_rounded
+                      : Icons.chat_bubble_rounded,
+                  color: item.isSolved
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF3B82F6),
                   size: 20,
                 ),
               ),
@@ -288,7 +298,8 @@ class _ActivityHistoryScreenState extends State<ActivityHistoryScreen>
           unselectedLabelColor: Colors.grey.shade600,
           indicatorColor: const Color(0xFF3B82F6),
           indicatorWeight: 3,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+          labelStyle:
+              const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
           tabs: const [
             Tab(text: 'Saved'),
             Tab(text: 'Likes'),
@@ -329,7 +340,7 @@ class _SavedPostsTab extends StatelessWidget {
             child: SizedBox(
               width: 22,
               height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
+              child: AdsyLoadingIndicator(strokeWidth: 2.5),
             ),
           );
         }
@@ -338,7 +349,8 @@ class _SavedPostsTab extends StatelessWidget {
           return Center(
             child: Text(
               'Failed to load saved posts',
-              style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: Colors.grey.shade700, fontWeight: FontWeight.w600),
             ),
           );
         }
@@ -348,7 +360,8 @@ class _SavedPostsTab extends StatelessWidget {
           return Center(
             child: Text(
               'No saved posts yet',
-              style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  color: Colors.grey.shade700, fontWeight: FontWeight.w600),
             ),
           );
         }

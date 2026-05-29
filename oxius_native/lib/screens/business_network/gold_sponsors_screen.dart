@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/gold_sponsor_models.dart';
 import '../../services/gold_sponsor_service.dart';
 import '../../utils/url_launcher_utils.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class GoldSponsorsScreen extends StatefulWidget {
   const GoldSponsorsScreen({super.key});
@@ -95,7 +96,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                     return _buildEmptyState();
                   }
 
-                  return RefreshIndicator(
+                  return AdsyRefreshIndicator(
                     color: const Color(0xFFD97706),
                     onRefresh: _refresh,
                     child: ListView.separated(
@@ -442,7 +443,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   }
 
   Widget _buildEmptyState() {
-    return RefreshIndicator(
+    return AdsyRefreshIndicator(
       color: const Color(0xFFD97706),
       onRefresh: _refresh,
       child: ListView(

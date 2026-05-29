@@ -4,6 +4,7 @@ import '../../../models/eshop_manager_models.dart';
 import '../../../services/eshop_manager_service.dart';
 import '../../../widgets/ios_web_redirect_screen.dart';
 import 'buy_slots_bottom_sheet.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class StoreDetailsCard extends StatefulWidget {
   final StoreDetails storeDetails;
@@ -40,9 +41,12 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.storeDetails.storeName);
-    _addressController = TextEditingController(text: widget.storeDetails.storeAddress ?? '');
-    _descriptionController = TextEditingController(text: widget.storeDetails.storeDescription ?? '');
+    _nameController =
+        TextEditingController(text: widget.storeDetails.storeName);
+    _addressController =
+        TextEditingController(text: widget.storeDetails.storeAddress ?? '');
+    _descriptionController =
+        TextEditingController(text: widget.storeDetails.storeDescription ?? '');
   }
 
   @override
@@ -80,7 +84,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
       _showSnackBar('Store updated successfully');
       widget.onStoreUpdated();
     } else {
-      _showSnackBar(result['message'] ?? 'Failed to update store', isError: true);
+      _showSnackBar(result['message'] ?? 'Failed to update store',
+          isError: true);
     }
   }
 
@@ -94,7 +99,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
   }
 
   void _copyToClipboard() {
-    final url = 'https://adsyclub.com/eshop/${widget.storeDetails.storeUsername}';
+    final url =
+        'https://adsyclub.com/eshop/${widget.storeDetails.storeUsername}';
     Clipboard.setData(ClipboardData(text: url));
     setState(() => _copied = true);
     Future.delayed(const Duration(seconds: 2), () {
@@ -106,7 +112,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+        backgroundColor:
+            isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
@@ -115,14 +122,14 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
 
   String _getLastOrderDate() {
     if (widget.orders.isEmpty) return 'No orders yet';
-    
+
     final sortedOrders = [...widget.orders];
     sortedOrders.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    
+
     final lastOrder = sortedOrders.first.createdAt;
     final now = DateTime.now();
     final difference = now.difference(lastOrder);
-    
+
     if (difference.inDays == 0) {
       return 'Today';
     } else if (difference.inDays == 1) {
@@ -137,7 +144,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
   @override
   Widget build(BuildContext context) {
     // Use totalProducts from backend if available, otherwise use loaded products count
-    final actualProductCount = widget.totalProducts > 0 ? widget.totalProducts : widget.products.length;
+    final actualProductCount = widget.totalProducts > 0
+        ? widget.totalProducts
+        : widget.products.length;
     final remainingSlots = widget.productLimit - actualProductCount;
 
     return Container(
@@ -174,7 +183,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.store_rounded, color: Colors.white, size: 20),
+                  const Icon(Icons.store_rounded,
+                      color: Colors.white, size: 20),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
@@ -189,7 +199,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                   ),
                   if (_isEditing)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.yellow.shade600,
                         borderRadius: BorderRadius.circular(12),
@@ -205,7 +216,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                     ),
                   const SizedBox(width: 8),
                   Icon(
-                    _isExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                    _isExpanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
                     color: Colors.white,
                     size: 22,
                   ),
@@ -232,7 +245,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                     InkWell(
                       onTap: _isSaving ? null : _saveChanges,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(6),
@@ -241,15 +255,17 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             ? const SizedBox(
                                 width: 14,
                                 height: 14,
-                                child: CircularProgressIndicator(
+                                child: AdsyLoadingIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation(Color(0xFF10B981)),
+                                  valueColor:
+                                      AlwaysStoppedAnimation(Color(0xFF10B981)),
                                 ),
                               )
                             : const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.check_rounded, color: Color(0xFF10B981), size: 14),
+                                  Icon(Icons.check_rounded,
+                                      color: Color(0xFF10B981), size: 14),
                                   SizedBox(width: 4),
                                   Text(
                                     'Save',
@@ -300,22 +316,27 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                         ? TextField(
                             controller: _nameController,
                             enabled: !_isSaving,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w600),
                             decoration: InputDecoration(
                               hintText: 'Enter shop name',
                               hintStyle: TextStyle(color: Colors.grey.shade400),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFF10B981)),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF10B981)),
                               ),
                             ),
                           )
@@ -338,7 +359,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                       children: [
                         Expanded(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade50,
                               borderRadius: BorderRadius.circular(6),
@@ -370,7 +392,9 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                           child: Icon(
                             _copied ? Icons.check_rounded : Icons.copy_rounded,
                             size: 16,
-                            color: _copied ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+                            color: _copied
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF6B7280),
                           ),
                         ),
                       ],
@@ -402,18 +426,22 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                             decoration: InputDecoration(
                               hintText: 'Enter shop address',
                               hintStyle: TextStyle(color: Colors.grey.shade400),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFF10B981)),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF10B981)),
                               ),
                             ),
                           )
@@ -446,25 +474,30 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                               contentPadding: const EdgeInsets.all(10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Color(0xFF10B981)),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF10B981)),
                               ),
                             ),
                           )
                         : Text(
-                            widget.storeDetails.storeDescription ?? 'No description available',
+                            widget.storeDetails.storeDescription ??
+                                'No description available',
                             style: TextStyle(
                               fontSize: 13,
-                              color: widget.storeDetails.storeDescription != null
-                                  ? const Color(0xFF111827)
-                                  : const Color(0xFF9CA3AF),
+                              color:
+                                  widget.storeDetails.storeDescription != null
+                                      ? const Color(0xFF111827)
+                                      : const Color(0xFF9CA3AF),
                             ),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
@@ -535,7 +568,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                           MaterialPageRoute(
                             builder: (context) => const IOSWebRedirectScreen(
                               title: 'Product Slots',
-                              description: 'This feature is not available in this version of the app.',
+                              description:
+                                  'This feature is not available in this version of the app.',
                               webPath: 'shop-manager',
                               hideWebRedirect: true,
                             ),
@@ -555,7 +589,8 @@ class _StoreDetailsCardState extends State<StoreDetailsCard> {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),

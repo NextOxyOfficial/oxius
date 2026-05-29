@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import '../config/app_config.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 /// Set to true via --dart-define=FORCE_IOS=true to preview iOS layout in Chrome.
 const bool _kForceIOS = bool.fromEnvironment('FORCE_IOS');
@@ -134,7 +135,9 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Icon(
-                  widget.hideWebRedirect ? Icons.info_outline_rounded : Icons.language_rounded,
+                  widget.hideWebRedirect
+                      ? Icons.info_outline_rounded
+                      : Icons.language_rounded,
                   size: 56,
                   color: const Color(0xFF2563EB),
                 ),
@@ -164,34 +167,35 @@ class _IOSWebRedirectScreenState extends State<IOSWebRedirectScreen> {
                 child: widget.hideWebRedirect
                     ? const SizedBox.shrink()
                     : ElevatedButton(
-                  onPressed: _isLoading ? null : _openWebsite,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFF93B4F5),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        onPressed: _isLoading ? null : _openWebsite,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: const Color(0xFF93B4F5),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                        )
-                      : const Text(
-                          'Continue on Website',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          elevation: 0,
                         ),
-                ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: AdsyLoadingIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                'Continue on Website',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
               ),
               if (!widget.hideWebRedirect) const SizedBox(height: 12),
               if (!widget.hideWebRedirect)

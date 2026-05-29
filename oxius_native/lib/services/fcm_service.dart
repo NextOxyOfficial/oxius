@@ -25,6 +25,7 @@ import '../screens/business_network/post_detail_screen.dart';
 import '../screens/inbox_screen.dart';
 import '../screens/workspace/order_detail_screen.dart';
 import '../screens/call_screen.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 void _log(String message) {
   if (kDebugMode) {
@@ -2808,7 +2809,7 @@ class FCMService {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(),
+          child: AdsyLoadingIndicator(),
         ),
       );
 

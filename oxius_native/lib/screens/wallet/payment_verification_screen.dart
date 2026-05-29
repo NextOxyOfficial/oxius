@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../services/wallet_service.dart';
 import '../../widgets/wallet/web_checkout_frame.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class PaymentVerificationScreen extends StatefulWidget {
   final String orderId;
@@ -29,7 +30,8 @@ class PaymentVerificationScreen extends StatefulWidget {
   });
 
   @override
-  State<PaymentVerificationScreen> createState() => _PaymentVerificationScreenState();
+  State<PaymentVerificationScreen> createState() =>
+      _PaymentVerificationScreenState();
 }
 
 class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
@@ -265,7 +267,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
 
     final looksLikeReturnUrl = normalizedUrl.contains('verify-payment') ||
         normalizedUrl.contains('verify-pay') ||
-      normalizedUrl.contains('payment-callback') ||
+        normalizedUrl.contains('payment-callback') ||
         ((normalizedUrl.contains('order_id=') ||
                 normalizedUrl.contains('sp_order_id=')) &&
             normalizedUrl.contains(widget.orderId.toLowerCase()));
@@ -331,8 +333,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
 
         setState(() {
           _status = 'failed';
-          _message =
-              result['message']?.toString() ?? 'Payment could not be completed.';
+          _message = result['message']?.toString() ??
+              'Payment could not be completed.';
           if (paymentDetails is Map<String, dynamic>) {
             _paymentDetails = paymentDetails;
           }
@@ -544,8 +546,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
 
   Widget _buildResultView() {
     final color = _statusColor();
-    final transactionId = _paymentDetails?['shurjopay_order_id']?.toString() ??
-        widget.orderId;
+    final transactionId =
+        _paymentDetails?['shurjopay_order_id']?.toString() ?? widget.orderId;
 
     return Center(
       child: SingleChildScrollView(
@@ -605,8 +607,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                 ),
                 child: Column(
                   children: [
-                    _buildSummaryRow('Amount',
-                        '৳${widget.amount.toStringAsFixed(2)}'),
+                    _buildSummaryRow(
+                        'Amount', '৳${widget.amount.toStringAsFixed(2)}'),
                     const SizedBox(height: 12),
                     _buildSummaryRow(
                       'Transaction ID',
@@ -655,8 +657,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(context)
-                      .pop(_status == 'success'),
+                  onPressed: () =>
+                      Navigator.of(context).pop(_status == 'success'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,
                     foregroundColor: Colors.white,
@@ -744,7 +746,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                 ),
                 child: Column(
                   children: [
-                    _buildSummaryRow('Amount', '৳${widget.amount.toStringAsFixed(2)}'),
+                    _buildSummaryRow(
+                        'Amount', '৳${widget.amount.toStringAsFixed(2)}'),
                     const SizedBox(height: 12),
                     _buildSummaryRow(
                       'Order',
@@ -782,7 +785,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                 child: OutlinedButton(
                   onPressed: () {
                     _checkPaymentStatus(
-                      forceMessage: 'Checking payment status from the gateway...',
+                      forceMessage:
+                          'Checking payment status from the gateway...',
                     );
                   },
                   style: OutlinedButton.styleFrom(
@@ -1013,7 +1017,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                                   url: WebUri(widget.checkoutUrl),
                                 ),
                                 onLoadStart: (controller, url) {
-                                  _handleWebViewLoadStart(url?.toString() ?? '');
+                                  _handleWebViewLoadStart(
+                                      url?.toString() ?? '');
                                 },
                                 onLoadStop: (controller, url) {
                                   _handleWebViewLoadStop(url?.toString() ?? '');
@@ -1050,7 +1055,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                                 const SizedBox(
                                   width: 32,
                                   height: 32,
-                                  child: CircularProgressIndicator(
+                                  child: AdsyLoadingIndicator(
                                     strokeWidth: 3,
                                     color: _indigo,
                                   ),
@@ -1102,7 +1107,7 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
               const SizedBox(
                 width: 36,
                 height: 36,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 3,
                   color: _indigo,
                 ),
@@ -1137,7 +1142,8 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                 ),
                 child: Column(
                   children: [
-                    _buildSummaryRow('Amount', '৳${widget.amount.toStringAsFixed(2)}'),
+                    _buildSummaryRow(
+                        'Amount', '৳${widget.amount.toStringAsFixed(2)}'),
                     const SizedBox(height: 12),
                     _buildSummaryRow(
                       'Order',
@@ -1215,15 +1221,15 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
           ),
         ),
         body: !_supportsEmbeddedCheckout
-          ? _buildUnsupportedPlatformView()
-          : AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          child: isFinished || _status == 'timeout'
-              ? _buildResultView()
-              : widget.resumeOnly
-                  ? _buildVerificationOnlyBody()
-                  : _buildEmbeddedCheckoutBody(),
-        ),
+            ? _buildUnsupportedPlatformView()
+            : AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                child: isFinished || _status == 'timeout'
+                    ? _buildResultView()
+                    : widget.resumeOnly
+                        ? _buildVerificationOnlyBody()
+                        : _buildEmbeddedCheckoutBody(),
+              ),
       ),
     );
   }

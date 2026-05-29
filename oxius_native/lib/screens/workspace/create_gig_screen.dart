@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/workspace_service.dart';
 import '../../utils/network_error_handler.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 const _indigo = Color(0xFF6366F1);
 const _violet = Color(0xFF8B5CF6);
@@ -397,7 +398,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
     if (_isLoadingOptions) {
       return const ColoredBox(
         color: _slate50,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: AdsyLoadingIndicator()),
       );
     }
 
@@ -1447,7 +1448,7 @@ class _CreateGigScreenState extends State<CreateGigScreen> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(
+                        child: AdsyLoadingIndicator(
                           color: Colors.white,
                           strokeWidth: 2,
                         ),

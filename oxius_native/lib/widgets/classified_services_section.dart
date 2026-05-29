@@ -6,12 +6,14 @@ import '../services/classified_category_service.dart';
 import '../config/app_config.dart';
 import 'classified_search_bar.dart';
 import 'classified_categories_grid.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ClassifiedServicesSection extends StatefulWidget {
   const ClassifiedServicesSection({super.key});
 
   @override
-  State<ClassifiedServicesSection> createState() => _ClassifiedServicesSectionState();
+  State<ClassifiedServicesSection> createState() =>
+      _ClassifiedServicesSectionState();
 }
 
 class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
@@ -57,20 +59,22 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Future<void> _loadCategories() async {
-    setState(() { _loadingCategories = true; });
+    setState(() {
+      _loadingCategories = true;
+    });
     try {
       final cats = await ApiService.fetchClassifiedCategories();
       if (!mounted) return;
       final categoryObjects =
           cats.map((catMap) => ClassifiedCategory.fromJson(catMap)).toList();
-      
+
       // Sort categories: featured first, then by update time
       categoryObjects.sort((a, b) {
         if (a.isFeatured && !b.isFeatured) return -1;
         if (!a.isFeatured && b.isFeatured) return 1;
         return 0;
       });
-      
+
       setState(() {
         _categories
           ..clear()
@@ -86,7 +90,9 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Future<void> _loadPosts() async {
-    setState(() { _loadingPosts = true; });
+    setState(() {
+      _loadingPosts = true;
+    });
     final posts = await ApiService.fetchClassifiedPosts(
       query: _searchQuery.isEmpty ? null : _searchQuery,
       categoryId: _selectedCategoryId,
@@ -122,12 +128,12 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
-    
+
     // Determine which categories to show
-    final categoriesToShow = _isExpanded 
-        ? _categories 
+    final categoriesToShow = _isExpanded
+        ? _categories
         : _categories.take(_initialCategoryCount).toList();
-    
+
     final hasMoreCategories = _categories.length > _initialCategoryCount;
 
     return Container(
@@ -206,7 +212,8 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   }
 
   Widget _buildHeader(bool isMobile) {
-    final title = _translationService.t('classified_service', fallback: 'My Services');
+    final title =
+        _translationService.t('classified_service', fallback: 'My Services');
     final subtitle = _translationService.t(
       'my_services_subtitle',
       fallback: 'Browse and post services',
@@ -258,7 +265,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
 
   Widget _buildSeeMoreButton(bool isMobile) {
     final remainingCount = _categories.length - _initialCategoryCount;
-    
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: 4,
@@ -279,7 +286,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  _isExpanded 
+                  _isExpanded
                       ? Icons.keyboard_arrow_up_rounded
                       : Icons.keyboard_arrow_down_rounded,
                   size: 16,
@@ -306,7 +313,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
 
   Widget _buildActionButton(bool isMobile) {
     final isLoading = _loadingButtons.contains('post-free-ad');
-    
+
     return GestureDetector(
       onTap: isLoading ? null : () => _handleButtonClick('post-free-ad'),
       child: Container(
@@ -333,7 +340,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
             ? SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(
+                child: AdsyLoadingIndicator(
                   strokeWidth: 2,
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
@@ -349,7 +356,8 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    _translationService.t('post_free_ad', fallback: 'Post Free Service'),
+                    _translationService.t('post_free_ad',
+                        fallback: 'Post Free Service'),
                     style: AppFonts.roboto(
                       fontSize: isMobile ? 11.5 : 12,
                       fontWeight: FontWeight.w500,
@@ -373,7 +381,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         child: Center(
           child: Column(
             children: [
-              const CircularProgressIndicator(
+              const AdsyLoadingIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
               ),
@@ -407,10 +415,11 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, idx) {
           final p = _posts[idx];
-          final title = (p['title_bn'] ?? p['title_en'] ?? p['title'] ?? '---').toString();
+          final title = (p['title_bn'] ?? p['title_en'] ?? p['title'] ?? '---')
+              .toString();
           final price = p['price']?.toString();
           final imageUrl = _getImageUrl(p);
-          
+
           return Material(
             color: Colors.white,
             elevation: 0,
@@ -506,7 +515,11 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  (p['location'] ?? p['area'] ?? p['city'] ?? 'Not specified').toString(),
+                                  (p['location'] ??
+                                          p['area'] ??
+                                          p['city'] ??
+                                          'Not specified')
+                                      .toString(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppFonts.roboto(
@@ -535,22 +548,25 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
       ),
     );
   }
-  
+
   String? _getImageUrl(Map<String, dynamic> post) {
     String? imageUrl;
-    
+
     if (post['image'] != null && post['image'].toString().isNotEmpty) {
       imageUrl = post['image'].toString();
-    } else if (post['images'] != null && post['images'] is List && (post['images'] as List).isNotEmpty) {
+    } else if (post['images'] != null &&
+        post['images'] is List &&
+        (post['images'] as List).isNotEmpty) {
       imageUrl = (post['images'] as List).first.toString();
-    } else if (post['featured_image'] != null && post['featured_image'].toString().isNotEmpty) {
+    } else if (post['featured_image'] != null &&
+        post['featured_image'].toString().isNotEmpty) {
       imageUrl = post['featured_image'].toString();
     }
-    
+
     if (imageUrl != null && !imageUrl.startsWith('http')) {
       imageUrl = '${AppConfig.mediaBaseUrl}$imageUrl';
     }
-    
+
     return imageUrl;
   }
 }

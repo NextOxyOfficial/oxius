@@ -4,6 +4,7 @@ import '../../models/support_ticket_models.dart';
 import '../../services/support_ticket_service.dart';
 import 'package:intl/intl.dart';
 import '../../utils/url_launcher_utils.dart';
+import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class TicketDetailScreen extends StatefulWidget {
   final String ticketId;
@@ -41,7 +42,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
     setState(() => _isLoading = true);
 
     final ticket = await SupportTicketService.getTicketDetail(widget.ticketId);
-    
+
     if (mounted) {
       setState(() {
         _ticket = ticket;
@@ -232,7 +233,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AdsyLoadingIndicator())
           : _ticket == null
               ? Center(
                   child: Column(
@@ -281,7 +282,8 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(_ticket!.status).withOpacity(0.1),
+                                  color: _getStatusColor(_ticket!.status)
+                                      .withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -360,11 +362,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                   fillColor: const Color(0xFFF9FAFB),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(24),
-                                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFE5E7EB)),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(24),
-                                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                    borderSide: const BorderSide(
+                                        color: Color(0xFFE5E7EB)),
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(24),
@@ -384,7 +388,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                             Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                                  colors: [
+                                    Color(0xFF3B82F6),
+                                    Color(0xFF6366F1)
+                                  ],
                                 ),
                                 shape: BoxShape.circle,
                               ),
@@ -393,9 +400,10 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
                                     ? const SizedBox(
                                         width: 20,
                                         height: 20,
-                                        child: CircularProgressIndicator(
+                                        child: AdsyLoadingIndicator(
                                           strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
                                             Colors.white,
                                           ),
                                         ),
@@ -446,9 +454,13 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             ),
             child: Center(
               child: Icon(
-                isFromAdmin ? Icons.support_agent_rounded : Icons.person_rounded,
+                isFromAdmin
+                    ? Icons.support_agent_rounded
+                    : Icons.person_rounded,
                 size: 18,
-                color: isFromAdmin ? const Color(0xFF3B82F6) : const Color(0xFF10B981),
+                color: isFromAdmin
+                    ? const Color(0xFF3B82F6)
+                    : const Color(0xFF10B981),
               ),
             ),
           ),
