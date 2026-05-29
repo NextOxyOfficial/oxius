@@ -100,7 +100,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                     onRefresh: _refresh,
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(2, 6, 2, 24),
+                      padding: const EdgeInsets.fromLTRB(6, 6, 6, 24),
                       itemCount: sponsors.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 0),
                       itemBuilder: (context, index) {
