@@ -278,6 +278,8 @@ class _HeroBannerState extends State<HeroBanner> {
       children: [
         _buildHeroSlider(bannerHeight),
         const SizedBox(height: 8),
+        _buildFeaturedNewsTicker(),
+        const SizedBox(height: 8),
         _buildServicesSection(),
       ],
     );
@@ -304,10 +306,9 @@ class _HeroBannerState extends State<HeroBanner> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildFeaturedNewsTicker(),
           // Grid area
           Padding(
-            padding: const EdgeInsets.only(top: 2, bottom: 8),
+            padding: const EdgeInsets.only(top: 10, bottom: 8),
             child: _buildMobileServicesGrid(
               margin: EdgeInsets.zero,
             ),
@@ -320,15 +321,15 @@ class _HeroBannerState extends State<HeroBanner> {
   Widget _buildFeaturedNewsTicker() {
     if (_featuredNews.isEmpty) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF6F8FB), Color(0xFFF2F4F7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        margin: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFFF59E0B).withOpacity(0.70),
+            width: 1,
           ),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-          border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
         ),
         child: Center(
           child: _buildTickerLabel(
@@ -343,33 +344,25 @@ class _HeroBannerState extends State<HeroBanner> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 850),
       curve: Curves.easeInOut,
-      margin: const EdgeInsets.fromLTRB(8, 8, 8, 10),
-      padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: _newsGlow
-              ? const [Color(0xFFFFF7ED), Color(0xFFEFF6FF)]
-              : const [Color(0xFFECFDF5), Color(0xFFFFFBEB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _newsGlow ? const Color(0xFFF59E0B) : const Color(0xFF10B981),
-          width: 1.1,
+          color: _newsGlow ? const Color(0xFFF59E0B) : const Color(0xFFFBBF24),
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color:
-                (_newsGlow ? const Color(0xFFF59E0B) : const Color(0xFF10B981))
-                    .withOpacity(_newsGlow ? 0.10 : 0.07),
-            blurRadius: _newsGlow ? 9 : 6,
-            offset: const Offset(0, 2),
+            color: const Color(0xFFF59E0B).withOpacity(_newsGlow ? 0.10 : 0.05),
+            blurRadius: _newsGlow ? 8 : 5,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         onTap: () => _openFeaturedNews(item),
         child: Row(
           children: [
@@ -400,7 +393,7 @@ class _HeroBannerState extends State<HeroBanner> {
   Widget _buildBreakingHeader() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 850),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: const Color(0xFFEF4444),
         borderRadius: BorderRadius.circular(999),
@@ -423,7 +416,7 @@ class _HeroBannerState extends State<HeroBanner> {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 9.5,
+              fontSize: 9,
               fontWeight: FontWeight.w900,
               letterSpacing: 0,
               height: 1,
@@ -457,7 +450,7 @@ class _HeroBannerState extends State<HeroBanner> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            fontSize: 13.5,
+            fontSize: 12.5,
             fontWeight: FontWeight.w800,
             color: Color(0xFF111827),
             height: 1.2,
@@ -469,11 +462,11 @@ class _HeroBannerState extends State<HeroBanner> {
 
   Widget _buildDetailsPill() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.78),
+        color: const Color(0xFFEFFDF8),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFF99F6E4)),
+        border: Border.all(color: const Color(0xFF14B8A6)),
       ),
       child: const Row(
         mainAxisSize: MainAxisSize.min,
