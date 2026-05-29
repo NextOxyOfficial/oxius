@@ -77,7 +77,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFBEB),
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Column(
           children: [
@@ -100,9 +100,9 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                     onRefresh: _refresh,
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 24),
                       itemCount: sponsors.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 0),
                       itemBuilder: (context, index) {
                         return _buildSponsorCard(sponsors[index]);
                       },
@@ -119,83 +119,110 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
 
   Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(14, 10, 14, 8),
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+      margin: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.30)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFB45309).withOpacity(0.08),
-            blurRadius: 18,
+            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+            blurRadius: 16,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          InkWell(
-            onTap: () => Navigator.pop(context),
-            borderRadius: BorderRadius.circular(12),
+          Positioned(
+            left: 54,
+            right: 42,
+            bottom: 0,
             child: Container(
-              width: 38,
-              height: 38,
+              height: 2,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFDE68A)),
-              ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: Color(0xFF92400E),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFF59E0B),
+                    Color(0xFFFACC15),
+                    Color(0xFFF97316)
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(999),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Gold Sponsors',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF78350F),
-                    height: 1.05,
+          Row(
+            children: [
+              InkWell(
+                onTap: () => Navigator.pop(context),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFBEB),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Color(0xFF92400E),
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Premium partners and exclusive offers',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFB45309),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF59E0B), Color(0xFFFACC15)],
               ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(Icons.workspace_premium, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Gold Sponsors',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF111827),
+                        height: 1.05,
+                      ),
+                    ),
+                    SizedBox(height: 3),
+                    Text(
+                      'Premium partners and exclusive offers',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFB45309),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFFACC15)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.20),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.workspace_premium, color: Colors.white),
+              ),
+            ],
           ),
         ],
       ),
@@ -205,92 +232,121 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   Widget _buildSponsorCard(GoldSponsor sponsor) {
     final offerUrl = _offerUrl(sponsor);
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFDE68A)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF92400E).withOpacity(0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildLogo(sponsor.logo),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        sponsor.businessName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF111827),
-                        ),
-                      ),
-                    ),
-                    if (sponsor.isFeatured) _buildFeaturedChip(),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  _descriptionFor(sponsor),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    height: 1.35,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _buildViewsChip(sponsor.views),
-                    const Spacer(),
-                    _buildOfferButton(sponsor, offerUrl != null),
-                  ],
-                ),
-              ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openOffer(sponsor),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFFE5E7EB).withValues(alpha: 0.92),
+              ),
             ),
           ),
-        ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                width: 3,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFF97316)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 0, 10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildLogo(sponsor.logo),
+                      const SizedBox(width: 11),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    sponsor.businessName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFF111827),
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                ),
+                                if (sponsor.isFeatured) _buildFeaturedChip(),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _descriptionFor(sponsor),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                height: 1.25,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                _buildViewsChip(sponsor.views),
+                                const Spacer(),
+                                _buildOfferButton(sponsor, offerUrl != null),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildLogo(String? logo) {
     return Container(
-      width: 62,
-      height: 62,
+      width: 52,
+      height: 52,
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(12),
         gradient: const LinearGradient(
           colors: [Color(0xFFF59E0B), Color(0xFFFACC15)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF59E0B).withOpacity(0.20),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.16),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ClipOval(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
         child: Container(
           color: Colors.white,
           child: logo != null && logo.trim().isNotEmpty
@@ -309,23 +365,25 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
     return const Icon(
       Icons.business_rounded,
       color: Color(0xFFB45309),
-      size: 26,
+      size: 24,
     );
   }
 
   Widget _buildFeaturedChip() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBEB),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.45)),
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+        ),
       ),
       child: const Text(
         'Featured',
         style: TextStyle(
           color: Color(0xFFD97706),
-          fontSize: 10,
+          fontSize: 9.5,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -334,7 +392,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
 
   Widget _buildViewsChip(int views) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(999),
@@ -343,12 +401,13 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.visibility_outlined, size: 13, color: Color(0xFF6B7280)),
+          const Icon(Icons.visibility_outlined,
+              size: 12, color: Color(0xFF6B7280)),
           const SizedBox(width: 4),
           Text(
             '$views views',
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 10.5,
               fontWeight: FontWeight.w700,
               color: Color(0xFF6B7280),
             ),
@@ -363,7 +422,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
       onTap: enabled ? () => _openOffer(sponsor) : null,
       borderRadius: BorderRadius.circular(999),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
           gradient: enabled
               ? const LinearGradient(
@@ -386,7 +445,8 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             ),
             if (enabled) ...[
               const SizedBox(width: 5),
-              const Icon(Icons.open_in_new_rounded, size: 13, color: Colors.white),
+              const Icon(Icons.open_in_new_rounded,
+                  size: 13, color: Colors.white),
             ],
           ],
         ),
@@ -396,16 +456,19 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
 
   Widget _buildLoadingList() {
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 24),
       itemCount: 5,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, __) => const SizedBox(height: 0),
       itemBuilder: (_, __) {
         return Container(
-          height: 120,
+          height: 96,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.70),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFFDE68A)),
+            color: Colors.white,
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFFE5E7EB).withValues(alpha: 0.92),
+              ),
+            ),
           ),
         );
       },
@@ -430,7 +493,8 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             ),
             child: Column(
               children: const [
-                Icon(Icons.workspace_premium, size: 46, color: Color(0xFFF59E0B)),
+                Icon(Icons.workspace_premium,
+                    size: 46, color: Color(0xFFF59E0B)),
                 SizedBox(height: 12),
                 Text(
                   'No sponsors available',
