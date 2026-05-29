@@ -110,15 +110,15 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
 
   @override
   Widget build(BuildContext context) {
-    // The Positioned in home_screen already offsets by padding.bottom,
-    // so we just need a small consistent gap above the home indicator.
+    // Parent screens wrap this widget in SafeArea. Inside that SafeArea,
+    // MediaQuery.padding.bottom becomes 0 on iOS, but viewPadding.bottom still
+    // contains the real home-indicator inset. Use that value so the hide
+    // animation travels past the safe-area gap instead of leaving a visible
+    // slice at the bottom of the screen.
     final bottomMargin = 8.0;
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    // AnimatedSlide offset is relative to this widget's own height. On iOS the
-    // caller wraps the nav in SafeArea, so offset 1.0 only moves the bar into
-    // the safe-area gap and leaves a visible slice above the home indicator.
-    // Add enough extra travel to cover that external inset on iPhone.
-    final hiddenYOffset = 1.0 + (bottomInset / 56.0).clamp(0.0, 1.0);
+    final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+    final hiddenYOffset =
+        1.0 + ((bottomInset + bottomMargin + 12.0) / 56.0).clamp(0.25, 1.0);
 
     return AnimatedSlide(
       offset: _isVisible ? Offset.zero : Offset(0, hiddenYOffset),
