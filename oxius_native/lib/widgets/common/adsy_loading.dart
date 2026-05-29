@@ -321,7 +321,7 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
 
   double _maxVisualPull(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height;
-    return math.min(height * 0.42, 280.0);
+    return math.min(height * 0.25, 190.0);
   }
 
   double _triggerPullExtent(BuildContext context) {
@@ -335,7 +335,7 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
   double _rubberBandOffset(double pull, double maxRawPull) {
     if (pull <= 0) return 0;
     final normalized = (pull / maxRawPull).clamp(0.0, 1.0);
-    final eased = (1 - math.pow(1 - normalized, 2.35)).toDouble();
+    final eased = (1 - math.pow(1 - normalized, 1.55)).toDouble();
     return _maxVisualPull(context) * eased;
   }
 
