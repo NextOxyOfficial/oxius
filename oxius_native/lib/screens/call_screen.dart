@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../services/agora_call_service.dart';
@@ -39,7 +40,8 @@ class CallScreen extends StatefulWidget {
   State<CallScreen> createState() => _CallScreenState();
 }
 
-class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerProviderStateMixin {
+class _CallScreenState extends State<CallScreen>
+    with RouteAware, SingleTickerProviderStateMixin {
   ModalRoute<dynamic>? _route;
   int? _remoteUid;
   bool _localUserJoined = false;
@@ -58,6 +60,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
   StreamSubscription<String>? _engineErrorSub;
   Timer? _durationTimer;
   Timer? _ringingTimer;
+  Timer? _outgoingRingbackTimer;
   DateTime? _callStartedAt;
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
@@ -122,6 +125,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     // Start ringing timeout for outgoing calls — if the other party doesn't
     // pick up within 60 seconds, end the call automatically.
     if (!widget.isIncoming) {
+      _startOutgoingRingback();
       _ringingTimer = Timer(const Duration(seconds: 60), () {
         if (!mounted || _didEndCall || _remoteUid != null) return;
         _showOverlayAndClose('No answer');
@@ -207,6 +211,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       if (!mounted) return;
 
       if (status == 'accepted') {
+        _stopOutgoingRingback();
         setState(() {
           _callAccepted = true;
         });
@@ -260,10 +265,12 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       });
     });
 
-    _remoteJoinSub = AgoraCallService.remoteUserJoinedStream.listen((remoteUid) {
+    _remoteJoinSub =
+        AgoraCallService.remoteUserJoinedStream.listen((remoteUid) {
       if (!mounted) return;
       _ringingTimer?.cancel();
       _ringingTimer = null;
+      _stopOutgoingRingback();
       setState(() {
         _remoteUid = remoteUid;
         _callAccepted = true;
@@ -396,6 +403,37 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     }
   }
 
+  void _startOutgoingRingback() {
+    if (_outgoingRingbackTimer != null || widget.isIncoming) {
+      return;
+    }
+
+    Future<void> playBeep() async {
+      if (_didEndCall || _callAccepted || _remoteUid != null) {
+        _stopOutgoingRingback();
+        return;
+      }
+      try {
+        await _ringtonePlayer.playNotification(volume: 0.55, looping: false);
+      } catch (_) {
+        try {
+          await SystemSound.play(SystemSoundType.click);
+        } catch (_) {
+          // Ignore unavailable platform sounds.
+        }
+      }
+    }
+
+    unawaited(playBeep());
+    _outgoingRingbackTimer = Timer.periodic(
+        const Duration(seconds: 3), (_) => unawaited(playBeep()));
+  }
+
+  void _stopOutgoingRingback() {
+    _outgoingRingbackTimer?.cancel();
+    _outgoingRingbackTimer = null;
+  }
+
   Future<void> _initializeCall() async {
     try {
       // For incoming calls that are still ringing (user hasn't accepted yet) we
@@ -422,6 +460,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         );
 
         if (!notified) {
+          _stopOutgoingRingback();
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -450,7 +489,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              title: Text(isMic ? 'Microphone Access Required' : 'Camera Access Required'),
+              title: Text(isMic
+                  ? 'Microphone Access Required'
+                  : 'Camera Access Required'),
               content: Text(
                 isMic
                     ? 'Microphone permission is blocked. Please go to Settings → AdsyClub → Microphone and enable it.'
@@ -475,8 +516,11 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           final msg = errStr.toLowerCase().contains('permission')
               ? 'Please allow microphone${widget.callType == 'video' ? ' and camera' : ''} permission to start the call.'
               : _formatCallStartError(
-                  AgoraCallService.lastError ?? AgoraCallService.lastNotificationError ?? errStr,
-                  fallback: 'Unable to start call. Please check your connection.',
+                  AgoraCallService.lastError ??
+                      AgoraCallService.lastNotificationError ??
+                      errStr,
+                  fallback:
+                      'Unable to start call. Please check your connection.',
                 );
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(msg), backgroundColor: Colors.red),
@@ -566,7 +610,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              title: Text(isMic ? 'Microphone Access Required' : 'Camera Access Required'),
+              title: Text(isMic
+                  ? 'Microphone Access Required'
+                  : 'Camera Access Required'),
               content: Text(
                 isMic
                     ? 'Microphone permission is blocked. Please go to Settings → AdsyClub → Microphone and enable it.'
@@ -651,6 +697,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     _durationTimer = null;
     _ringingTimer?.cancel();
     _ringingTimer = null;
+    _stopOutgoingRingback();
     if (mounted) {
       _popCallScreen();
     }
@@ -673,7 +720,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
 
     unawaited(_stopIncomingAlert());
 
-    final localOutcome = outcomeOverride ?? ((_callStartedAt != null) ? 'ended' : 'cancelled');
+    final localOutcome =
+        outcomeOverride ?? ((_callStartedAt != null) ? 'ended' : 'cancelled');
 
     // Notify peer in background (fire-and-forget).
     if (notifyPeer) {
@@ -798,7 +846,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     if (lower.contains('token')) {
       return 'Call session expired. Please try again.';
     }
-    if (value.startsWith('{') || value.startsWith('[') || value.startsWith('<')) {
+    if (value.startsWith('{') ||
+        value.startsWith('[') ||
+        value.startsWith('<')) {
       return fallback;
     }
     if (value.length > 140) {
@@ -813,12 +863,15 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     final label = widget.callType == 'video' ? 'Video call' : 'Audio call';
 
     try {
-      final chatroom = await AdsyConnectService.getOrCreateChatRoom(widget.calleeId);
+      final chatroom =
+          await AdsyConnectService.getOrCreateChatRoom(widget.calleeId);
       final chatroomId = chatroom['id']?.toString();
       if (chatroomId == null || chatroomId.isEmpty) return;
 
       String text;
-      if (outcome == 'ended' && _callStartedAt != null && _callDuration.inSeconds >= 1) {
+      if (outcome == 'ended' &&
+          _callStartedAt != null &&
+          _callDuration.inSeconds >= 1) {
         text = '📞 $label • ${_formatDuration(_callDuration)}';
       } else if (outcome == 'busy') {
         text = '📞 $label • Busy';
@@ -881,6 +934,7 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     _engineErrorSub?.cancel();
     _durationTimer?.cancel();
     _ringingTimer?.cancel();
+    _stopOutgoingRingback();
     AgoraCallService.setCallScreenVisible(false);
 
     // CRITICAL: Only tear down the Agora session when the user has explicitly
@@ -919,7 +973,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       // Call is being minimized / backgrounded — keep Agora alive, keep the
       // wakelock active so video/audio stays awake while in the background
       // (this matches WhatsApp/Telegram behaviour).
-      debugPrint('📞 CallScreen disposed while call still active — preserving engine for background continuity');
+      debugPrint(
+          '📞 CallScreen disposed while call still active — preserving engine for background continuity');
     }
 
     _pulseController.dispose();
@@ -965,7 +1020,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withOpacity(hasRemoteVideo ? 0.16 : 0.02),
+                              Colors.black
+                                  .withOpacity(hasRemoteVideo ? 0.16 : 0.02),
                               Colors.transparent,
                               Colors.black.withOpacity(0.38),
                             ],
@@ -975,14 +1031,14 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                     ),
                   ),
                   _buildTopPanel(),
-                  if (_localUserJoined && widget.callType == 'video' && !_isCameraOff)
+                  if (_localUserJoined &&
+                      widget.callType == 'video' &&
+                      !_isCameraOff)
                     _buildLocalPreview(),
                   if (widget.isIncoming && !_callAccepted)
                     _buildIncomingCallUI(),
-                  if (_statusOverlay != null)
-                    _buildStatusOverlay(),
-                  if (_callAccepted || !widget.isIncoming)
-                    _buildCallControls(),
+                  if (_statusOverlay != null) _buildStatusOverlay(),
+                  if (_callAccepted || !widget.isIncoming) _buildCallControls(),
                 ],
               ),
             ),
@@ -1003,10 +1059,12 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         return Align(
           alignment: Alignment.center,
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(24, compact ? 90 : 104, 24, bottomReserved),
+            padding:
+                EdgeInsets.fromLTRB(24, compact ? 90 : 104, 24, bottomReserved),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: math.max(0, constraints.maxHeight - (compact ? 170 : 206)),
+                minHeight:
+                    math.max(0, constraints.maxHeight - (compact ? 170 : 206)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1049,7 +1107,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                         icon: widget.callType == 'video'
                             ? Icons.videocam_outlined
                             : Icons.call_outlined,
-                        label: widget.callType == 'video' ? 'Video ready' : 'Voice ready',
+                        label: widget.callType == 'video'
+                            ? 'Video ready'
+                            : 'Voice ready',
                       ),
                       if (_callAccepted && _callStartedAt != null)
                         _buildInfoPill(
@@ -1149,7 +1209,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       bottom: compact ? 16 : 24,
       child: Center(
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: compact ? 8 : 10),
+          padding: EdgeInsets.symmetric(
+              horizontal: hPad, vertical: compact ? 8 : 10),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.42),
             borderRadius: BorderRadius.circular(999),
@@ -1167,7 +1228,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
               ),
               SizedBox(width: compact ? 8 : 10),
               _buildRoundControl(
-                icon: _isSpeakerOn ? Icons.volume_up_rounded : Icons.volume_down_rounded,
+                icon: _isSpeakerOn
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_down_rounded,
                 size: btnSize,
                 isActive: _isSpeakerOn,
                 activeBg: _accentColor,
@@ -1176,7 +1239,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
               if (isVideo) ...[
                 SizedBox(width: compact ? 8 : 10),
                 _buildRoundControl(
-                  icon: _isCameraOff ? Icons.videocam_off_rounded : Icons.videocam_rounded,
+                  icon: _isCameraOff
+                      ? Icons.videocam_off_rounded
+                      : Icons.videocam_rounded,
                   size: btnSize,
                   isActive: _isCameraOff,
                   activeBg: const Color(0xFFEF4444),
@@ -1247,7 +1312,6 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
     );
   }
 
-
   Color get _accentColor {
     return widget.callType == 'video'
         ? const Color(0xFF38BDF8)
@@ -1267,7 +1331,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
       return 'Connected and stable.';
     }
     if (_isConnecting) {
-      return widget.isIncoming ? 'Joining the call...' : 'Ringing on the other side.';
+      return widget.isIncoming
+          ? 'Joining the call...'
+          : 'Ringing on the other side.';
     }
     return widget.isIncoming ? 'Incoming call' : 'Calling now.';
   }
@@ -1346,7 +1412,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
           children: [
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.38),
                   borderRadius: BorderRadius.circular(999),
@@ -1404,7 +1471,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         children: [
           Expanded(
             child: _buildGlassPanel(
-              padding: EdgeInsets.fromLTRB(compact ? 12 : 14, compact ? 12 : 14, compact ? 12 : 14, compact ? 12 : 14),
+              padding: EdgeInsets.fromLTRB(compact ? 12 : 14, compact ? 12 : 14,
+                  compact ? 12 : 14, compact ? 12 : 14),
               borderRadius: BorderRadius.circular(24),
               child: Row(
                 children: [
@@ -1496,7 +1564,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                     right: 8,
                     bottom: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.46),
                         borderRadius: BorderRadius.circular(12),
@@ -1530,7 +1599,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
             child: KeyedSubtree(
               key: ValueKey<String>(_statusOverlay!),
               child: _buildGlassPanel(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 borderRadius: BorderRadius.circular(20),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1571,7 +1641,9 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            widget.callType == 'video' ? Icons.videocam_rounded : Icons.call_rounded,
+            widget.callType == 'video'
+                ? Icons.videocam_rounded
+                : Icons.call_rounded,
             size: 16,
             color: _accentColor,
           ),
@@ -1608,7 +1680,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                   height: size + 34 + (pulse * 20),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: _accentColor.withOpacity(0.7), width: 1.6),
+                    border: Border.all(
+                        color: _accentColor.withOpacity(0.7), width: 1.6),
                   ),
                 ),
               ),
@@ -1625,7 +1698,8 @@ class _CallScreenState extends State<CallScreen> with RouteAware, SingleTickerPr
                       Colors.white.withOpacity(0.08),
                     ],
                   ),
-                  border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                  border: Border.all(
+                      color: Colors.white.withOpacity(0.2), width: 1.5),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.18),

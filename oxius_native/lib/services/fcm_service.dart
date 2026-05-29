@@ -32,6 +32,22 @@ void _log(String message) {
   }
 }
 
+String _safeCallerName(dynamic raw) {
+  final value = raw?.toString().trim() ?? '';
+  if (value.isEmpty || value.toLowerCase() == 'unknown') {
+    return 'AdsyClub user';
+  }
+
+  if (value.contains('@')) {
+    final localPart = value.split('@').first.trim();
+    if (localPart.isNotEmpty) {
+      return localPart;
+    }
+  }
+
+  return value;
+}
+
 /// Background notification response handler — fires when the user taps a
 /// flutter_local_notifications notification while the app process is dead.
 /// Must be a top-level function annotated with @pragma('vm:entry-point').
@@ -245,7 +261,6 @@ CallKitParams _buildRideRequestCallkitParams(Map<String, dynamic> data) {
 class _CallkitLifecycleObserver extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    FCMService._appLifecycleState = state;
     if (state == AppLifecycleState.resumed) {
       // When user taps the CallKit notification, Android may resume the app without
       // triggering FCM onMessageOpenedApp. Check active calls and navigate.
@@ -331,7 +346,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     }
   }
 
-  final callerName = data['caller_name']?.toString() ?? 'Unknown';
+  final callerName = _safeCallerName(data['caller_name']);
   final callerId = data['caller_id']?.toString() ?? '';
   final callerAvatar = data['caller_avatar']?.toString();
   final callType = data['call_type']?.toString() ?? 'video';
@@ -591,7 +606,6 @@ class FCMService {
   static final StreamController<Map<String, dynamic>>
       _rideshareNotificationController =
       StreamController<Map<String, dynamic>>.broadcast();
-  static AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
   static const int _callRecoveryMaxAgeMs = 30000;
   static bool _callRecoveryEnabled = false;
 
@@ -620,8 +634,6 @@ class FCMService {
       _adsyConnectRealtimeSubscription;
   static final Map<String, int> _recentCallSignalTimestamps = <String, int>{};
 
-  static bool get _isAppInForeground =>
-      _appLifecycleState == AppLifecycleState.resumed;
   static RouteObserver<PageRoute<dynamic>> get routeObserver => _routeObserver;
   static String? get currentRouteName => _routeObserver.currentRouteName;
 
@@ -1301,7 +1313,7 @@ class FCMService {
         'channel_name': channelName,
         'timestamp': timestamp,
         'call_type': extra?['call_type']?.toString() ?? 'video',
-        'caller_name': extra?['caller_name']?.toString() ?? 'Unknown',
+        'caller_name': _safeCallerName(extra?['caller_name']),
         'caller_avatar': extra?['caller_avatar']?.toString() ?? '',
       };
 
@@ -1497,7 +1509,7 @@ class FCMService {
       'channel_name': channelName,
       'timestamp': _parseCallTimestamp(extra['timestamp']),
       'call_type': extra['call_type']?.toString() ?? 'video',
-      'caller_name': extra['caller_name']?.toString() ?? 'Unknown',
+      'caller_name': _safeCallerName(extra['caller_name']),
       'caller_avatar': extra['caller_avatar']?.toString() ?? '',
     };
   }
@@ -1516,7 +1528,7 @@ class FCMService {
     final callerId = extra['caller_id']?.toString();
     final channelName = extra['channel_name']?.toString();
     final callType = extra['call_type']?.toString() ?? 'video';
-    final callerName = extra['caller_name']?.toString() ?? 'Unknown';
+    final callerName = _safeCallerName(extra['caller_name']);
     final callerAvatar = extra['caller_avatar']?.toString();
     final callkitUuid = event.body['id']?.toString() ?? '';
     final timestamp = _parseCallTimestamp(extra['timestamp']);
@@ -1825,7 +1837,43 @@ class FCMService {
       ),
     );
 
-    await FlutterCallkitIncoming.showCallkitIncoming(params);
+    try {
+      await FlutterCallkitIncoming.showCallkitIncoming(params);
+    } catch (e) {
+      releaseIncomingCallTracking(
+        callerId: callerId,
+        channelName: channelName,
+      );
+      _log('⚠️ Native incoming call UI failed: $e');
+      rethrow;
+    }
+  }
+
+  static Future<void> _showNativeIncomingCallOrFallback({
+    required NavigatorState navigator,
+    required Map<String, dynamic> data,
+    required String callerId,
+    required String callerName,
+    String? callerAvatar,
+    required String channelName,
+    required String callType,
+  }) async {
+    try {
+      await showIncomingCall(
+        callerId: callerId,
+        callerName: callerName,
+        callerAvatar: callerAvatar,
+        channelName: channelName,
+        callType: callType,
+        timestamp: int.tryParse(data['timestamp']?.toString() ?? ''),
+        callId: data['call_id']?.toString(),
+      );
+    } catch (_) {
+      _navigateToIncomingCallScreen(navigator, {
+        ...data,
+        'caller_name': callerName,
+      });
+    }
   }
 
   static Future<void> showRideRequestIncomingCall(
@@ -1883,7 +1931,7 @@ class FCMService {
     final callId = data['call_id']?.toString();
     final channelName = data['channel_name']?.toString();
     final callerId = data['caller_id']?.toString();
-    final callerName = data['caller_name']?.toString() ?? 'Unknown';
+    final callerName = _safeCallerName(data['caller_name']);
     final callerAvatar = data['caller_avatar']?.toString();
     final callType = data['call_type']?.toString() ?? 'video';
 
@@ -1930,7 +1978,7 @@ class FCMService {
     final callId = data['call_id']?.toString();
     final channelName = data['channel_name']?.toString();
     final callerId = data['caller_id']?.toString();
-    final callerName = data['caller_name']?.toString() ?? 'Unknown';
+    final callerName = _safeCallerName(data['caller_name']);
     final callerAvatar = data['caller_avatar']?.toString();
     final callType = data['call_type']?.toString() ?? 'video';
     final timestamp = int.tryParse(data['timestamp']?.toString() ?? '');
@@ -2479,7 +2527,7 @@ class FCMService {
     else if (type == 'incoming_call') {
       final channelName = data['channel_name']?.toString();
       final callerId = data['caller_id']?.toString();
-      final callerName = data['caller_name']?.toString() ?? 'Unknown';
+      final callerName = _safeCallerName(data['caller_name']);
       final callerAvatar = data['caller_avatar']?.toString();
       final callType = data['call_type']?.toString() ?? 'video';
 
@@ -2506,19 +2554,15 @@ class FCMService {
         }
 
         _log('   → Incoming call from: $callerName, channel: $channelName');
-        if (_isAppInForeground) {
-          _navigateToIncomingCallScreen(navigator, data);
-        } else {
-          showIncomingCall(
-            callerId: callerId,
-            callerName: callerName,
-            callerAvatar: callerAvatar,
-            channelName: channelName,
-            callType: callType,
-            timestamp: int.tryParse(data['timestamp']?.toString() ?? ''),
-            callId: data['call_id']?.toString(),
-          );
-        }
+        unawaited(_showNativeIncomingCallOrFallback(
+          navigator: navigator,
+          data: data,
+          callerId: callerId,
+          callerName: callerName,
+          callerAvatar: callerAvatar,
+          channelName: channelName,
+          callType: callType,
+        ));
       }
     }
     // ============================================

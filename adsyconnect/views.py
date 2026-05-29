@@ -47,6 +47,46 @@ def _build_user_avatar_url(request, user):
         return image_field.url
 
 
+def _clean_call_display_name(value):
+    value = str(value or '').strip()
+    if not value or value.lower() == 'unknown':
+        return ''
+    if '@' in value:
+        local_part = value.split('@', 1)[0].strip()
+        if local_part:
+            return local_part
+    return value
+
+
+def _build_call_display_name(request, user):
+    full_name = _clean_call_display_name(user.get_full_name())
+    if full_name:
+        return full_name
+
+    first_last = _clean_call_display_name(
+        ' '.join(
+            part.strip()
+            for part in [
+                getattr(user, 'first_name', '') or '',
+                getattr(user, 'last_name', '') or '',
+            ]
+            if part and part.strip()
+        )
+    )
+    if first_last:
+        return first_last
+
+    provided_name = _clean_call_display_name(request.data.get('caller_name'))
+    if provided_name:
+        return provided_name
+
+    username = _clean_call_display_name(getattr(user, 'username', ''))
+    if username:
+        return username
+
+    return 'AdsyClub user'
+
+
 def _get_call_session_for_user(*, user, channel_name, call_id=None):
     queryset = CallSession.objects.filter(channel_name=channel_name).filter(
         Q(caller=user) | Q(callee=user)
@@ -95,7 +135,9 @@ def _send_call_data_message(*, target_user, payload):
                 #   message.data and navigates to the call screen when the app is live.
                 is_ios = fcm_token.device_type == 'ios'
 
-                caller_name = str_payload.get('caller_name', 'Unknown')
+                caller_name = _clean_call_display_name(
+                    str_payload.get('caller_name')
+                ) or 'AdsyClub user'
                 call_type = str_payload.get('call_type', 'audio')
                 call_type_label = 'Video Call' if call_type == 'video' else 'Voice Call'
 
@@ -245,7 +287,7 @@ def send_call_notification(request):
             session_kwargs['id'] = provided_call_id
         call_session = CallSession.objects.create(**session_kwargs)
 
-        caller_name = caller.get_full_name() or caller.username
+        caller_name = _build_call_display_name(request, caller)
         caller_avatar = _build_user_avatar_url(request, caller)
 
         import time

@@ -45,8 +45,9 @@ class AgoraCallService {
   }
 
   static Map<String, dynamic>? _activeCallInfo;
-  static Map<String, dynamic>? get activeCallInfo =>
-      _activeCallInfo == null ? null : Map<String, dynamic>.from(_activeCallInfo!);
+  static Map<String, dynamic>? get activeCallInfo => _activeCallInfo == null
+      ? null
+      : Map<String, dynamic>.from(_activeCallInfo!);
   static bool get activeCallAccepted => _activeCallInfo?['accepted'] == true;
   static int? get activeCallConnectedAtMs {
     return _toInt(_activeCallInfo?['connectedAt']);
@@ -58,7 +59,8 @@ class AgoraCallService {
 
   static final StreamController<Map<String, dynamic>> _callStatusController =
       StreamController<Map<String, dynamic>>.broadcast();
-  static Stream<Map<String, dynamic>> get callStatusStream => _callStatusController.stream;
+  static Stream<Map<String, dynamic>> get callStatusStream =>
+      _callStatusController.stream;
 
   static final StreamController<int> _localUserJoinedController =
       StreamController<int>.broadcast();
@@ -69,9 +71,12 @@ class AgoraCallService {
   static final StreamController<String> _engineErrorController =
       StreamController<String>.broadcast();
 
-  static Stream<int> get localUserJoinedStream => _localUserJoinedController.stream;
-  static Stream<int> get remoteUserJoinedStream => _remoteUserJoinedController.stream;
-  static Stream<int> get remoteUserLeftStream => _remoteUserLeftController.stream;
+  static Stream<int> get localUserJoinedStream =>
+      _localUserJoinedController.stream;
+  static Stream<int> get remoteUserJoinedStream =>
+      _remoteUserJoinedController.stream;
+  static Stream<int> get remoteUserLeftStream =>
+      _remoteUserLeftController.stream;
   static Stream<String> get engineErrorStream => _engineErrorController.stream;
 
   static bool get isInCall => _isInCall;
@@ -158,7 +163,10 @@ class AgoraCallService {
       final info = Map<String, dynamic>.from(decoded);
       final channelName = info['channelName']?.toString().trim();
       final peerId = info['peerId']?.toString().trim();
-      if (channelName == null || channelName.isEmpty || peerId == null || peerId.isEmpty) {
+      if (channelName == null ||
+          channelName.isEmpty ||
+          peerId == null ||
+          peerId.isEmpty) {
         await clearPersistedCallState();
         return;
       }
@@ -201,7 +209,9 @@ class AgoraCallService {
     final callId = data['call_id']?.toString();
     final activeChannelName = _activeCallInfo?['channelName']?.toString();
 
-    if (status == null || channelName == null || activeChannelName != channelName) {
+    if (status == null ||
+        channelName == null ||
+        activeChannelName != channelName) {
       return;
     }
 
@@ -259,14 +269,14 @@ class AgoraCallService {
       } catch (e) {
         _log('⚠️ Warning: enableAudio failed: $e');
       }
-      
+
       // Set client role - wrap in try-catch so initialization continues
       try {
         await engine.setClientRole(role: ClientRoleType.clientRoleBroadcaster);
       } catch (e) {
         _log('⚠️ Warning: setClientRole failed: $e');
       }
-      
+
       engine.registerEventHandler(
         RtcEngineEventHandler(
           onJoinChannelSuccess: (connection, _) {
@@ -282,7 +292,8 @@ class AgoraCallService {
             } catch (_) {}
           },
           onUserJoined: (_, remoteUid, __) {
-            Telemetry.event('agora.remote_joined', tags: {'remote_uid': remoteUid});
+            Telemetry.event('agora.remote_joined',
+                tags: {'remote_uid': remoteUid});
             _ensureActiveInfo();
             _activeCallInfo!['remoteUid'] = remoteUid;
             _schedulePersistedCallStateSync();
@@ -297,10 +308,12 @@ class AgoraCallService {
             // unknown uids prevents the call from ending before the peer even joined.
             final knownRemote = _activeCallInfo?['remoteUid'];
             if (knownRemote == null || knownRemote != remoteUid) {
-              _log('ℹ️ Ignoring onUserOffline for unknown uid $remoteUid (known: $knownRemote)');
+              _log(
+                  'ℹ️ Ignoring onUserOffline for unknown uid $remoteUid (known: $knownRemote)');
               return;
             }
-            Telemetry.event('agora.remote_left', tags: {'remote_uid': remoteUid});
+            Telemetry.event('agora.remote_left',
+                tags: {'remote_uid': remoteUid});
             _activeCallInfo!['remoteUid'] = null;
             _schedulePersistedCallStateSync();
             try {
@@ -323,10 +336,12 @@ class AgoraCallService {
           },
           onError: (error, message) {
             _lastError = _friendlyAgoraError(error, message);
-            Telemetry.event('agora.error', tags: {
-              'code': error.toString().split('.').last,
-              'message': message,
-            }, severity: TelemetrySeverity.error);
+            Telemetry.event('agora.error',
+                tags: {
+                  'code': error.toString().split('.').last,
+                  'message': message,
+                },
+                severity: TelemetrySeverity.error);
             try {
               _engineErrorController.add(_lastError!);
             } catch (_) {}
@@ -365,8 +380,9 @@ class AgoraCallService {
 
       final wantsVideo = callType == 'video';
       final engine = await initEngine(callType: callType);
-      
-  _log('📱 Attempting to join channel: $channelName (uid: $uid, video: $wantsVideo)');
+
+      _log(
+          '📱 Attempting to join channel: $channelName (uid: $uid, video: $wantsVideo)');
 
       if (_joinedChannelName != null && _joinedChannelName != channelName) {
         await engine.leaveChannel();
@@ -386,7 +402,7 @@ class AgoraCallService {
       );
 
       _joinedChannelName = channelName;
-        _log('✅ Successfully joined channel: $channelName');
+      _log('✅ Successfully joined channel: $channelName');
       return true;
     } catch (error) {
       _log('❌ Join channel failed for $channelName: $error');
@@ -472,19 +488,25 @@ class AgoraCallService {
       final callerName = [currentUser.firstName, currentUser.lastName]
           .where((value) => value != null && value.isNotEmpty)
           .join(' ');
+      final fallbackName = currentUser.username.contains('@')
+          ? currentUser.username.split('@').first
+          : currentUser.username;
 
-      final response = await http.post(
-        Uri.parse('${ApiService.baseUrl}/adsyconnect/send-call-notification/'),
-        headers: headers,
-        body: json.encode({
-          'callee_id': calleeId,
-          'channel_name': channelName,
-          'call_type': callType,
-          'call_id': _activeCallInfo?['callId'],
-          'caller_name': callerName.isNotEmpty ? callerName : currentUser.username,
-          'caller_avatar': currentUser.profilePicture,
-        }),
-      ).timeout(_requestTimeout);
+      final response = await http
+          .post(
+            Uri.parse(
+                '${ApiService.baseUrl}/adsyconnect/send-call-notification/'),
+            headers: headers,
+            body: json.encode({
+              'callee_id': calleeId,
+              'channel_name': channelName,
+              'call_type': callType,
+              'call_id': _activeCallInfo?['callId'],
+              'caller_name': callerName.isNotEmpty ? callerName : fallbackName,
+              'caller_avatar': currentUser.profilePicture,
+            }),
+          )
+          .timeout(_requestTimeout);
 
       final ok = response.statusCode == 200 || response.statusCode == 201;
       if (!ok) {
@@ -523,17 +545,19 @@ class AgoraCallService {
       _lastNotificationError = null;
       final headers = await ApiService.getHeaders();
 
-      final response = await http.post(
-        Uri.parse('${ApiService.baseUrl}/adsyconnect/send-call-status/'),
-        headers: headers,
-        body: json.encode({
-          'receiver_id': receiverId,
-          'channel_name': channelName,
-          'status': status,
-          'call_type': callType,
-          'call_id': callId ?? _activeCallInfo?['callId'],
-        }),
-      ).timeout(_requestTimeout);
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/adsyconnect/send-call-status/'),
+            headers: headers,
+            body: json.encode({
+              'receiver_id': receiverId,
+              'channel_name': channelName,
+              'status': status,
+              'call_type': callType,
+              'call_id': callId ?? _activeCallInfo?['callId'],
+            }),
+          )
+          .timeout(_requestTimeout);
 
       final ok = response.statusCode == 200 || response.statusCode == 201;
       if (!ok) {
@@ -541,7 +565,8 @@ class AgoraCallService {
       }
       return ok;
     } on TimeoutException {
-      _lastNotificationError = 'Call status update timed out. Please try again.';
+      _lastNotificationError =
+          'Call status update timed out. Please try again.';
       return false;
     } catch (error) {
       _lastNotificationError = error.toString();
