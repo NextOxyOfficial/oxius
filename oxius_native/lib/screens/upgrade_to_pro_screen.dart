@@ -50,11 +50,12 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
     try {
       final refreshed = await _userState.refreshUser();
-      if (!refreshed && mounted) {
+      if (!refreshed && mounted && _userState.isAuthenticated) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Could not refresh balance. Please try again.'),
             backgroundColor: Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -473,7 +474,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     return SafeArea(
       top: false,
       child: Container(
-        padding: EdgeInsets.fromLTRB(2, 10, 2, bottomInset > 0 ? 6 : 12),
+        padding: EdgeInsets.fromLTRB(12, 10, 12, bottomInset > 0 ? 6 : 12),
         decoration: BoxDecoration(
           color: _panel.withValues(alpha: 0.97),
           border: const Border(top: BorderSide(color: Color(0xFFE5E7EB))),

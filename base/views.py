@@ -913,9 +913,12 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
         upazila = self.request.GET.get("upazila")
         category = self.request.GET.get("category")
         title = self.request.GET.get("title")
+        exclude_state = self.request.GET.get("exclude_state")
+        exclude_city = self.request.GET.get("exclude_city")
+        exclude_upazila = self.request.GET.get("exclude_upazila")
 
         # Filter based on the query parameters
-        filters = Q()
+        filters = Q(service_status="approved", active_service=True)
         if category and category != "undefined" and category.strip():
             try:
                 # Validate that category is a valid UUID before using it
@@ -936,6 +939,12 @@ class ClassifiedCategoryPostFilterView(generics.ListAPIView):
             filters &= Q(upazila__iexact=upazila)
 
         posts = ClassifiedCategoryPost.objects.filter(filters).order_by("-created_at")
+        if exclude_state:
+            posts = posts.exclude(state__iexact=exclude_state)
+        if exclude_city:
+            posts = posts.exclude(city__iexact=exclude_city)
+        if exclude_upazila:
+            posts = posts.exclude(upazila__iexact=exclude_upazila)
         return posts
 
 

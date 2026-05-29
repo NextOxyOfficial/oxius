@@ -1,20 +1,25 @@
 from rest_framework import generics, serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
-from django.db.models import Q, Count, Case, When, IntegerField
-from collections import defaultdict
+from django.db.models import Q, Count
 
 User = get_user_model()
 
 
 class ImprovedUserSerializer(serializers.ModelSerializer):
     mutual_connections = serializers.IntegerField(read_only=True, default=0)
+    suggestion_score = serializers.IntegerField(read_only=True, default=0)
+    suggestion_reasons = serializers.ListField(
+        child=serializers.CharField(), read_only=True, default=list
+    )
     
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 
-                  'image', 'profession', 'city', 'mutual_connections']
+                  'image', 'profession', 'city', 'mutual_connections',
+                  'suggestion_score', 'suggestion_reasons']
 
 
 class ImprovedUserSuggestionsView(generics.ListAPIView):
@@ -37,13 +42,16 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
     serializer_class = ImprovedUserSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def _build_suggestions(self):
         user = self.request.user
+        cache_key = f"bn_user_suggestions_{user.id}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
         
         try:
             from business_network.models import (
                 BusinessNetworkFollowerModel, 
-                BusinessNetworkPost,
                 BusinessNetworkPostLike,
                 BusinessNetworkPostComment
             )
@@ -53,26 +61,20 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                 follower=user
             ).values_list('following_id', flat=True))
             
-            # Get followers of people I follow (friends of friends)
-            friends_of_friends_ids = set(BusinessNetworkFollowerModel.objects.filter(
-                follower_id__in=following_ids
-            ).exclude(
-                following_id=user.id
-            ).exclude(
-                following_id__in=following_ids
-            ).values_list('following_id', flat=True))
-            
-            # Calculate mutual connections count for each suggested user
-            mutual_connections_count = {}
-            for fof_id in friends_of_friends_ids:
-                # Count how many people both user and fof_id follow
-                fof_following = set(BusinessNetworkFollowerModel.objects.filter(
-                    follower_id=fof_id
-                ).values_list('following_id', flat=True))
-                
-                mutual_count = len(following_ids.intersection(fof_following))
-                if mutual_count > 0:
-                    mutual_connections_count[fof_id] = mutual_count
+            # People followed by people I follow.
+            mutual_rows = (
+                BusinessNetworkFollowerModel.objects.filter(
+                    follower_id__in=following_ids
+                )
+                .exclude(following_id=user.id)
+                .exclude(following_id__in=following_ids)
+                .values("following_id")
+                .annotate(mutual_count=Count("follower_id", distinct=True))
+            )
+            mutual_connections_count = {
+                row["following_id"]: row["mutual_count"] for row in mutual_rows
+            }
+            friends_of_friends_ids = set(mutual_connections_count.keys())
             
             # Get posts that the user has interacted with
             user_interacted_posts = set()
@@ -87,30 +89,43 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                 BusinessNetworkPostComment.objects.filter(author=user).values_list('post_id', flat=True)
             )
             
-            # Find users who interacted with the same posts
+            # Find users who interacted with the same posts.
             similar_interest_users = set()
+            shared_interaction_count = {}
             if user_interacted_posts:
-                # Users who liked same posts
-                similar_interest_users.update(
+                same_like_users = (
                     BusinessNetworkPostLike.objects.filter(
                         post_id__in=user_interacted_posts
                     ).exclude(
                         user=user
                     ).exclude(
                         user_id__in=following_ids
-                    ).values_list('user_id', flat=True)
+                    ).values('user_id')
+                    .annotate(shared_count=Count('post_id', distinct=True))
                 )
-                
-                # Users who commented on same posts
-                similar_interest_users.update(
+                for row in same_like_users:
+                    similar_interest_users.add(row['user_id'])
+                    shared_interaction_count[row['user_id']] = (
+                        shared_interaction_count.get(row['user_id'], 0)
+                        + row['shared_count']
+                    )
+
+                same_comment_users = (
                     BusinessNetworkPostComment.objects.filter(
                         post_id__in=user_interacted_posts
                     ).exclude(
                         author=user
                     ).exclude(
                         author_id__in=following_ids
-                    ).values_list('author_id', flat=True)
+                    ).values('author_id')
+                    .annotate(shared_count=Count('post_id', distinct=True))
                 )
+                for row in same_comment_users:
+                    similar_interest_users.add(row['author_id'])
+                    shared_interaction_count[row['author_id']] = (
+                        shared_interaction_count.get(row['author_id'], 0)
+                        + row['shared_count']
+                    )
             
             # Build candidate user IDs - exclude self and already followed users
             candidate_ids = friends_of_friends_ids.union(similar_interest_users)
@@ -119,9 +134,14 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
             
             # If we don't have enough candidates, add recent users
             if len(candidate_ids) < 20:
-                recent_users = set(User.objects.exclude(
-                    Q(id=user.id) | Q(id__in=following_ids)
-                ).order_by('-date_joined').values_list('id', flat=True)[:30])
+                recent_users = set(
+                    User.objects.exclude(
+                        Q(id=user.id) | Q(id__in=following_ids)
+                    )
+                    .exclude(is_superuser=True)
+                    .order_by('-date_joined')
+                    .values_list('id', flat=True)[:40]
+                )
                 candidate_ids = candidate_ids.union(recent_users)
             
             # Final safety check - remove any followed users that might have slipped through
@@ -145,50 +165,81 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                 user_scores[candidate_id] = score
             
             # Get user objects and add location/profession bonuses
-            candidates = User.objects.filter(id__in=candidate_ids)
+            candidates = User.objects.filter(id__in=candidate_ids).exclude(
+                is_superuser=True
+            )
             
             final_scores = []
             for candidate in candidates:
                 score = user_scores.get(candidate.id, 0)
+                reasons = []
                 
                 # Same city bonus
                 if user.city and candidate.city and user.city.lower() == candidate.city.lower():
+                    score += 8
+                    reasons.append(f"Same city: {candidate.city}")
+                elif user.state and candidate.state and user.state.lower() == candidate.state.lower():
                     score += 5
+                    reasons.append(f"Same area: {candidate.state}")
                 
                 # Same profession bonus
                 if user.profession and candidate.profession and user.profession.lower() == candidate.profession.lower():
-                    score += 3
+                    score += 6
+                    reasons.append(f"Also in {candidate.profession}")
+
+                mutual_count = mutual_connections_count.get(candidate.id, 0)
+                if mutual_count:
+                    reasons.insert(0, f"{mutual_count} mutual connection{'s' if mutual_count > 1 else ''}")
+
+                shared_count = shared_interaction_count.get(candidate.id, 0)
+                if shared_count:
+                    reasons.append("Similar activity")
+
+                if not reasons:
+                    reasons.append("Active in Business Network")
                 
                 final_scores.append({
                     'user': candidate,
                     'score': score,
-                    'mutual_connections': mutual_connections_count.get(candidate.id, 0)
+                    'mutual_connections': mutual_count,
+                    'reasons': reasons[:3],
                 })
             
             # Sort by score descending
             final_scores.sort(key=lambda x: x['score'], reverse=True)
             
-            # Return top 20 suggestions
-            return [item['user'] for item in final_scores[:20]]
+            suggestions = final_scores[:20]
+            cache.set(cache_key, suggestions, 300)
+            return suggestions
             
-        except Exception as e:
-            print(f"Error in user suggestions algorithm: {e}")
+        except Exception:
             # Fallback to simple algorithm
             following_ids = BusinessNetworkFollowerModel.objects.filter(
                 follower=user
             ).values_list('following_id', flat=True)
             
-            return User.objects.exclude(
+            fallback_users = User.objects.exclude(
                 Q(id=user.id) | Q(id__in=following_ids)
-            ).order_by('-date_joined')[:20]
+            ).exclude(is_superuser=True).order_by('-date_joined')[:20]
+            return [
+                {
+                    "user": user_obj,
+                    "score": 0,
+                    "mutual_connections": 0,
+                    "reasons": ["Active in Business Network"],
+                }
+                for user_obj in fallback_users
+            ]
+
+    def get_queryset(self):
+        return [item["user"] for item in self._build_suggestions()]
 
     def list(self, request, *args, **kwargs):
         try:
-            queryset = self.get_queryset()
-            
-            # Add mutual connections count to each user
+            suggestions = self._build_suggestions()
             serializer_data = []
-            for user_obj in queryset:
+            for item in suggestions:
+                user_obj = item["user"]
                 data = {
                     'id': str(user_obj.id),
                     'username': user_obj.username,
@@ -198,11 +249,12 @@ class ImprovedUserSuggestionsView(generics.ListAPIView):
                     'image': user_obj.image.url if user_obj.image else None,
                     'profession': user_obj.profession,
                     'city': user_obj.city,
-                    'mutual_connections': getattr(user_obj, 'mutual_connections', 0)
+                    'mutual_connections': item["mutual_connections"],
+                    'suggestion_score': item["score"],
+                    'suggestion_reasons': item["reasons"],
                 }
                 serializer_data.append(data)
             
             return Response(serializer_data)
-        except Exception as e:
-            print(f"Error in list: {e}")
+        except Exception:
             return Response([])

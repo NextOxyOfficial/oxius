@@ -112,14 +112,22 @@ class UserStateService extends ChangeNotifier {
 
   /// Refresh user data from server
   Future<bool> refreshUserData() async {
-    if (!_isAuthenticated) return false;
+    if (!_isAuthenticated) {
+      await AuthService.initialize();
+      if (AuthService.currentUser == null || !AuthService.isAuthenticated) {
+        return false;
+      }
+      _currentUser = AuthService.currentUser;
+      _isAuthenticated = true;
+      notifyListeners();
+    }
 
     try {
-      await AuthService.refreshUserData();
+      final refreshed = await AuthService.refreshUserData();
       if (AuthService.currentUser != null) {
         _currentUser = AuthService.currentUser;
         notifyListeners();
-        return true;
+        return refreshed;
       }
       final isValid = await AuthService.validateToken();
       if (!isValid) {

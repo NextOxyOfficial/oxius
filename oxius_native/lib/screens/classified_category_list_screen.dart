@@ -508,7 +508,9 @@ class _ClassifiedCategoryListScreenState
 
       if (mounted) {
         setState(() {
-          _nearbyPosts = nearby;
+          final mainPostIds = _posts.map((post) => post.id).toSet();
+          _nearbyPosts =
+              nearby.where((post) => !mainPostIds.contains(post.id)).toList();
           _isNearbyLoading = false;
         });
       }

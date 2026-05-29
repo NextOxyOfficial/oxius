@@ -1,5 +1,6 @@
 import base64
 
+from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Case, Count, F, IntegerField, Q, Subquery, Value, When
@@ -178,6 +179,17 @@ def generate_video_thumbnail(video_path):
     return None
 
 
+def _clear_business_network_social_cache(*users):
+    """Clear small relationship/feed caches touched by social actions."""
+    for user in users:
+        user_id = getattr(user, "id", user)
+        if not user_id:
+            continue
+        cache.delete(f"user_feed_relationships_{user_id}")
+        cache.delete(f"user_relationships_{user_id}")
+        cache.delete(f"bn_user_suggestions_{user_id}")
+
+
 # user search generics view
 
 
@@ -281,27 +293,11 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
         user = self.request.user
 
-        # Check for device-specific optimization
         device_level = self.request.query_params.get("device_level", "medium")
-
-        if device_level == "low":
-            # Ultra-simplified query for low-end devices
-            return (
-                BusinessNetworkPost.objects.annotate(
-                    like_count=Count("post_likes"), comment_count=Count("post_comments")
-                )
-                .select_related("author")
-                .order_by("-created_at")
-            )
-
-        # Cache frequently used subqueries for better performance
-        from django.core.cache import cache
-
         cache_key = f"user_feed_relationships_{user.id}"
         cached_data = cache.get(cache_key)
 
         if not cached_data:
-            # Pre-calculate relationships
             users_following = list(
                 BusinessNetworkFollowerModel.objects.filter(follower=user).values_list(
                     "following_id", flat=True
@@ -314,37 +310,137 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 )
             )
 
-            cached_data = {"following": users_following, "followers": users_followers}
+            second_degree_users = list(
+                BusinessNetworkFollowerModel.objects.filter(
+                    follower_id__in=users_following
+                )
+                .exclude(following=user)
+                .exclude(following_id__in=users_following)
+                .values_list("following_id", flat=True)
+                .distinct()
+            )
+
+            cached_data = {
+                "following": users_following,
+                "followers": users_followers,
+                "second_degree": second_degree_users,
+            }
             cache.set(cache_key, cached_data, 300)  # Cache for 5 minutes
 
         users_following = cached_data["following"]
         users_followers = cached_data["followers"]
+        second_degree_users = cached_data.get("second_degree", [])
 
-        # Simplified priority logic for better performance
         from datetime import timedelta
 
         from django.utils import timezone
 
-        recent_threshold = timezone.now() - timedelta(hours=24)
+        now = timezone.now()
+        one_day_ago = now - timedelta(days=1)
+        three_days_ago = now - timedelta(days=3)
+        seven_days_ago = now - timedelta(days=7)
+        thirty_days_ago = now - timedelta(days=30)
+
+        hidden_post_ids = HiddenPost.objects.filter(user=user).values_list(
+            "post_id", flat=True
+        )
+        reported_post_ids = PostReport.objects.filter(user=user).values_list(
+            "post_id", flat=True
+        )
+
+        user_tags = BusinessNetworkPostTag.objects.filter(
+            business_network_posts__author=user
+        ).values_list("tag", flat=True)
+
+        author_location_query = Q()
+        if user.city:
+            author_location_query |= Q(author__city__iexact=user.city)
+        if user.state:
+            author_location_query |= Q(author__state__iexact=user.state)
+
+        queryset = BusinessNetworkPost.objects.filter(
+            Q(visibility="public") | Q(author=user),
+            is_banned=False,
+        ).exclude(
+            Q(id__in=hidden_post_ids) | Q(id__in=reported_post_ids)
+        )
+
+        if device_level == "low":
+            return (
+                queryset.annotate(
+                    like_count=Count("post_likes", distinct=True),
+                    comment_count=Count("post_comments", distinct=True),
+                    follower_count=Count("post_followers", distinct=True),
+                )
+                .select_related("author")
+                .order_by("-created_at")
+            )
 
         queryset = (
-            BusinessNetworkPost.objects.annotate(
-                # Pre-calculate counts to avoid N+1 queries
+            queryset.annotate(
                 like_count=Count("post_likes", distinct=True),
                 comment_count=Count("post_comments", distinct=True),
                 follower_count=Count("post_followers", distinct=True),
+                common_tag_count=Count(
+                    "tags",
+                    filter=Q(tags__tag__in=user_tags),
+                    distinct=True,
+                ),
+                relationship_score=Case(
+                    When(author=user, then=Value(45)),
+                    When(author_id__in=users_following, then=Value(42)),
+                    When(author_id__in=users_followers, then=Value(30)),
+                    When(author_id__in=second_degree_users, then=Value(22)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                location_score=Case(
+                    When(author_location_query, then=Value(12))
+                    if author_location_query
+                    else When(pk__isnull=True, then=Value(0)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                profession_score=Case(
+                    When(
+                        author__profession__iexact=user.profession,
+                        then=Value(8),
+                    )
+                    if user.profession
+                    else When(pk__isnull=True, then=Value(0)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                recency_score=Case(
+                    When(created_at__gte=one_day_ago, then=Value(18)),
+                    When(created_at__gte=three_days_ago, then=Value(12)),
+                    When(created_at__gte=seven_days_ago, then=Value(7)),
+                    When(created_at__gte=thirty_days_ago, then=Value(3)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                engagement_score=(
+                    Count("post_likes", distinct=True) * 2
+                    + Count("post_comments", distinct=True) * 4
+                    + Count("post_followers", distinct=True)
+                ),
+                feed_score=(
+                    F("relationship_score")
+                    + F("location_score")
+                    + F("profession_score")
+                    + F("recency_score")
+                    + (F("common_tag_count") * 7)
+                    + F("engagement_score")
+                ),
             )
-            .select_related(
-                "author"  # Optimize author queries
-            )
+            .select_related("author")
             .prefetch_related(
-                # Limited prefetch for better performance
                 "media__media_likes__user",
                 "tags",
                 "post_likes__user",
                 "post_comments__author",
             )
-            .order_by("-created_at")  # Chronological order like Facebook
+            .order_by("-feed_score", "-created_at")
         )
 
         return queryset
@@ -478,6 +574,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     tag, _ = BusinessNetworkPostTag.objects.get_or_create(tag=tag_data)
                     post.tags.add(tag)
 
+        _clear_business_network_social_cache(request.user)
         response_serializer = self.get_serializer(post)
         headers = self.get_success_headers(response_serializer.data)
         return Response(
@@ -630,6 +727,7 @@ class BusinessNetworkPostLikeCreateView(generics.ListCreateAPIView):
 
         like = BusinessNetworkPostLike(post=post, user=request.user)
         like.save()
+        _clear_business_network_social_cache(request.user, post.author)
         serializer = self.get_serializer(like)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -644,6 +742,11 @@ class BusinessNetworkPostLikeDestroyView(generics.DestroyAPIView):
             BusinessNetworkPostLike, post=post, user=self.request.user
         )
         return like
+
+    def perform_destroy(self, instance):
+        author = instance.post.author
+        instance.delete()
+        _clear_business_network_social_cache(self.request.user, author)
 
 
 # Follow Views
@@ -673,6 +776,7 @@ class BusinessNetworkPostFollowCreateView(generics.ListCreateAPIView):
 
         follow = BusinessNetworkPostFollow(post=post, user=request.user)
         follow.save()
+        _clear_business_network_social_cache(request.user, post.author)
         serializer = self.get_serializer(follow)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -687,6 +791,11 @@ class BusinessNetworkPostFollowDestroyView(generics.DestroyAPIView):
             BusinessNetworkPostFollow, post=post, user=self.request.user
         )
         return follow
+
+    def perform_destroy(self, instance):
+        author = instance.post.author
+        instance.delete()
+        _clear_business_network_social_cache(self.request.user, author)
 
 
 # Comment Views
@@ -742,6 +851,7 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
 
             # Custom save to ensure post and author are set correctly
             comment = serializer.save(post=post, author=request.user)
+            _clear_business_network_social_cache(request.user, post.author)
 
             # Include post author ID in the response
             response_data = serializer.data
@@ -953,6 +1063,7 @@ class UserFollowCreateView(generics.CreateAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
+        _clear_business_network_social_cache(request.user, user_id)
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -971,6 +1082,11 @@ class UserUnfollowDestroyView(generics.DestroyAPIView):
             following=following_user,
         )
         return follow
+
+    def perform_destroy(self, instance):
+        following = instance.following
+        instance.delete()
+        _clear_business_network_social_cache(self.request.user, following)
 
 
 class UserFollowersListView(generics.ListAPIView):
@@ -1980,6 +2096,7 @@ class BusinessNetworkPostLikeCreateView(generics.ListCreateAPIView):
 
         like = BusinessNetworkPostLike(post=post, user=request.user)
         like.save()
+        _clear_business_network_social_cache(request.user, post.author)
         serializer = self.get_serializer(like)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -1994,6 +2111,11 @@ class BusinessNetworkPostLikeDestroyView(generics.DestroyAPIView):
             BusinessNetworkPostLike, post=post, user=self.request.user
         )
         return like
+
+    def perform_destroy(self, instance):
+        author = instance.post.author
+        instance.delete()
+        _clear_business_network_social_cache(self.request.user, author)
 
 
 # Follow Views
@@ -2023,6 +2145,7 @@ class BusinessNetworkPostFollowCreateView(generics.ListCreateAPIView):
 
         follow = BusinessNetworkPostFollow(post=post, user=request.user)
         follow.save()
+        _clear_business_network_social_cache(request.user, post.author)
         serializer = self.get_serializer(follow)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -2037,6 +2160,11 @@ class BusinessNetworkPostFollowDestroyView(generics.DestroyAPIView):
             BusinessNetworkPostFollow, post=post, user=self.request.user
         )
         return follow
+
+    def perform_destroy(self, instance):
+        author = instance.post.author
+        instance.delete()
+        _clear_business_network_social_cache(self.request.user, author)
 
 
 # Comment Views
@@ -2092,6 +2220,7 @@ class BusinessNetworkPostCommentListCreateView(generics.ListCreateAPIView):
 
             # Custom save to ensure post and author are set correctly
             comment = serializer.save(post=post, author=request.user)
+            _clear_business_network_social_cache(request.user, post.author)
 
             # Include post author ID in the response
             response_data = serializer.data
@@ -2303,6 +2432,7 @@ class UserFollowCreateView(generics.CreateAPIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
+        _clear_business_network_social_cache(request.user, user_id)
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -2321,6 +2451,11 @@ class UserUnfollowDestroyView(generics.DestroyAPIView):
             following=following_user,
         )
         return follow
+
+    def perform_destroy(self, instance):
+        following = instance.following
+        instance.delete()
+        _clear_business_network_social_cache(self.request.user, following)
 
 
 class UserFollowersListView(generics.ListAPIView):
@@ -3032,6 +3167,7 @@ class HidePostView(APIView):
                 user=request.user,
                 post=post
             )
+            _clear_business_network_social_cache(request.user, post.author)
             
             if created:
                 return Response(
@@ -3057,6 +3193,7 @@ class HidePostView(APIView):
                 post_id=post_id
             )
             hidden_post.delete()
+            _clear_business_network_social_cache(request.user, post_id)
             return Response(
                 {"message": "Post unhidden successfully"},
                 status=status.HTTP_200_OK
@@ -3095,6 +3232,7 @@ class ReportPostView(APIView):
                 reason=reason,
                 defaults={'description': description}
             )
+            _clear_business_network_social_cache(request.user, post.author)
 
             if created:
                 return Response(

@@ -34,7 +34,7 @@ class FaqScreen extends StatelessWidget {
         centerTitle: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 80),
+        padding: const EdgeInsets.fromLTRB(2, 18, 2, 80),
         children: [
           Text(
             'Common Questions',
@@ -149,6 +149,7 @@ class FaqScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 13),
                     shape: RoundedRectangleBorder(

@@ -183,7 +183,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(2),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -219,7 +219,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
                   // Contact Info Cards
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.zero,
                     child: Row(
                       children: [
                         Expanded(
@@ -250,7 +250,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
                   // Contact Form
                   Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    margin: EdgeInsets.zero,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -429,6 +429,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                               onPressed: _isSubmitting ? null : _submitForm,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: _primary,
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor:
+                                    _primary.withValues(alpha: 0.60),
+                                disabledForegroundColor: Colors.white,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
@@ -475,7 +479,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
 
                   // Support Hours
                   Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    margin: EdgeInsets.zero,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: _softPrimary,
@@ -560,32 +564,39 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
             ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _softPrimary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 22, color: _primary),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: _softPrimary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, size: 17, color: _primary),
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    title,
+                    style: AppFonts.roboto(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.1,
+                      color: _ink,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Text(
-                title,
-                style: AppFonts.roboto(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.1,
-                  color: _ink,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
                 value,
                 style: AppFonts.roboto(
-                  fontSize: 13,
+                  fontSize: 14,
                   color: _muted,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

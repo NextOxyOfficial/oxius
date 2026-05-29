@@ -8,7 +8,7 @@ import '../models/classified_post_form.dart';
 class ClassifiedPostService {
   final String baseUrl;
   final http.Client client;
-  
+
   static const String _tokenKey = 'adsyclub_token';
 
   ClassifiedPostService({
@@ -30,7 +30,8 @@ class ClassifiedPostService {
   /// Get authenticated headers
   Future<Map<String, String>> _getAuthHeaders() async {
     final token = await _getAuthToken();
-    print('Auth token retrieved: ${token != null ? "Yes (${token.substring(0, 10)}...)" : "No"}');
+    print(
+        'Auth token retrieved: ${token != null ? "Yes (${token.substring(0, 10)}...)" : "No"}');
     return {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
@@ -77,9 +78,9 @@ class ClassifiedPostService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('📦 Response data type: ${data.runtimeType}');
-        
+
         List<dynamic> postsData;
-        
+
         // Handle both paginated and direct array responses
         if (data is Map && data.containsKey('results')) {
           postsData = data['results'] as List;
@@ -93,9 +94,10 @@ class ClassifiedPostService {
         }
 
         final posts = postsData
-            .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
+            .map(
+                (item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
             .toList();
-        
+
         print('🎯 Successfully parsed ${posts.length} posts');
         return posts;
       } else {
@@ -115,6 +117,7 @@ class ClassifiedPostService {
     String? categoryId,
     String? title,
     GeoLocation? location,
+    GeoLocation? excludeLocation,
     int page = 1,
     int pageSize = 20,
   }) async {
@@ -134,12 +137,26 @@ class ClassifiedPostService {
 
       if (location != null) {
         queryParams['country'] = location.country;
-        
+
         // Only add state, city, and upazila if not showing all over Bangladesh
         if (!location.allOverBangladesh) {
           if (location.state != null) queryParams['state'] = location.state!;
           if (location.city != null) queryParams['city'] = location.city!;
-          if (location.upazila != null) queryParams['upazila'] = location.upazila!;
+          if (location.upazila != null) {
+            queryParams['upazila'] = location.upazila!;
+          }
+        }
+      }
+
+      if (excludeLocation != null && !excludeLocation.allOverBangladesh) {
+        if (excludeLocation.state != null) {
+          queryParams['exclude_state'] = excludeLocation.state!;
+        }
+        if (excludeLocation.city != null) {
+          queryParams['exclude_city'] = excludeLocation.city!;
+        }
+        if (excludeLocation.upazila != null) {
+          queryParams['exclude_upazila'] = excludeLocation.upazila!;
         }
       }
 
@@ -154,14 +171,17 @@ class ClassifiedPostService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         // Handle both paginated and non-paginated responses
         if (data is Map && data.containsKey('results')) {
           final results = (data['results'] as List)
-              .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
-              .where((post) => post.serviceStatus.toLowerCase() == 'approved' && post.activeService)
+              .map((item) =>
+                  ClassifiedPost.fromJson(item as Map<String, dynamic>))
+              .where((post) =>
+                  post.serviceStatus.toLowerCase() == 'approved' &&
+                  post.activeService)
               .toList();
-          
+
           return ClassifiedPostsResponse(
             results: results,
             count: data['count'] as int? ?? results.length,
@@ -171,10 +191,13 @@ class ClassifiedPostService {
           );
         } else if (data is List) {
           final results = data
-              .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
-              .where((post) => post.serviceStatus.toLowerCase() == 'approved' && post.activeService)
+              .map((item) =>
+                  ClassifiedPost.fromJson(item as Map<String, dynamic>))
+              .where((post) =>
+                  post.serviceStatus.toLowerCase() == 'approved' &&
+                  post.activeService)
               .toList();
-          
+
           return ClassifiedPostsResponse(
             results: results,
             count: results.length,
@@ -182,7 +205,7 @@ class ClassifiedPostService {
           );
         }
       }
-      
+
       return ClassifiedPostsResponse(results: [], count: 0, pageSize: pageSize);
     } catch (e) {
       print('Error fetching posts: $e');
@@ -201,14 +224,15 @@ class ClassifiedPostService {
       if (location.allOverBangladesh) {
         final response = await fetchPosts(
           categoryId: categoryId,
-          location: GeoLocation(country: location.country, allOverBangladesh: true),
+          location:
+              GeoLocation(country: location.country, allOverBangladesh: true),
           pageSize: pageSize,
         );
         return response.results;
       }
 
-      // Try same city first (any upazila)
-      if (location.city != null) {
+      // Try same city first, but never include the selected exact upazila.
+      if (location.city != null && location.upazila != null) {
         final cityResponse = await fetchPosts(
           categoryId: categoryId,
           location: GeoLocation(
@@ -216,15 +240,17 @@ class ClassifiedPostService {
             state: location.state,
             city: location.city,
           ),
+          excludeLocation: GeoLocation(upazila: location.upazila),
           pageSize: pageSize,
         );
-        
-        if (cityResponse.results.isNotEmpty) {
-          return cityResponse.results;
+
+        final cityNearby = _excludeSameLocation(cityResponse.results, location);
+        if (cityNearby.isNotEmpty) {
+          return cityNearby;
         }
       }
 
-      // Try same state (any city)
+      // Try same state, but never include the selected exact city.
       if (location.state != null) {
         final stateResponse = await fetchPosts(
           categoryId: categoryId,
@@ -232,10 +258,11 @@ class ClassifiedPostService {
             country: location.country,
             state: location.state,
           ),
+          excludeLocation: GeoLocation(city: location.city),
           pageSize: pageSize,
         );
-        
-        return stateResponse.results;
+
+        return _excludeSameLocation(stateResponse.results, location);
       }
 
       return [];
@@ -243,6 +270,41 @@ class ClassifiedPostService {
       print('Error fetching nearby posts: $e');
       return [];
     }
+  }
+
+  List<ClassifiedPost> _excludeSameLocation(
+    List<ClassifiedPost> posts,
+    GeoLocation location,
+  ) {
+    return posts.where((post) {
+      if (_sameText(post.country, location.country)) {
+        final sameState =
+            location.state != null && _sameText(post.state, location.state);
+        final sameCity =
+            location.city != null && _sameText(post.city, location.city);
+        final sameUpazila = location.upazila != null &&
+            _sameText(post.upazila, location.upazila);
+
+        if (location.upazila != null) {
+          return !(sameState && sameCity && sameUpazila);
+        }
+
+        if (location.city != null) {
+          return !(sameState && sameCity);
+        }
+
+        if (location.state != null) {
+          return !sameState;
+        }
+      }
+
+      return true;
+    }).toList();
+  }
+
+  bool _sameText(String? left, String? right) {
+    if (left == null || right == null) return false;
+    return left.trim().toLowerCase() == right.trim().toLowerCase();
   }
 
   /// Search posts by description (instructions field)
@@ -264,7 +326,9 @@ class ClassifiedPostService {
       if (!location.allOverBangladesh) {
         if (location.state != null) queryParams['state'] = location.state!;
         if (location.city != null) queryParams['city'] = location.city!;
-        if (location.upazila != null) queryParams['upazila'] = location.upazila!;
+        if (location.upazila != null) {
+          queryParams['upazila'] = location.upazila!;
+        }
       }
 
       final uri = Uri.parse('$baseUrl/classified-posts/filter/').replace(
@@ -278,25 +342,31 @@ class ClassifiedPostService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         // Handle both paginated and non-paginated responses
         if (data is Map && data.containsKey('results')) {
           final results = (data['results'] as List)
-              .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
-              .where((post) => post.serviceStatus.toLowerCase() == 'approved' && post.activeService)
+              .map((item) =>
+                  ClassifiedPost.fromJson(item as Map<String, dynamic>))
+              .where((post) =>
+                  post.serviceStatus.toLowerCase() == 'approved' &&
+                  post.activeService)
               .toList();
-          
+
           return results;
         } else if (data is List) {
           final results = data
-              .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
-              .where((post) => post.serviceStatus.toLowerCase() == 'approved' && post.activeService)
+              .map((item) =>
+                  ClassifiedPost.fromJson(item as Map<String, dynamic>))
+              .where((post) =>
+                  post.serviceStatus.toLowerCase() == 'approved' &&
+                  post.activeService)
               .toList();
-          
+
           return results;
         }
       }
-      
+
       return [];
     } catch (e) {
       print('Error searching by description: $e');
@@ -307,7 +377,8 @@ class ClassifiedPostService {
   /// Fetch category details
   Future<CategoryDetails?> fetchCategoryDetails(String idOrSlug) async {
     try {
-      final uri = Uri.parse('$baseUrl/details/classified-categories/$idOrSlug/');
+      final uri =
+          Uri.parse('$baseUrl/details/classified-categories/$idOrSlug/');
       final response = await client.get(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -337,7 +408,8 @@ class ClassifiedPostService {
         final data = json.decode(response.body);
         if (data is List) {
           return data
-              .map((item) => CategoryDetails.fromJson(item as Map<String, dynamic>))
+              .map((item) =>
+                  CategoryDetails.fromJson(item as Map<String, dynamic>))
               .toList();
         }
       }
@@ -353,15 +425,15 @@ class ClassifiedPostService {
     try {
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/classified-categories-post/');
-      
+
       print('Preparing to create post...');
       final jsonData = form.toJson();
       print('Form data prepared: ${jsonData.keys}');
       print('Medias count: ${jsonData['medias']?.length ?? 0}');
-      
+
       final jsonString = json.encode(jsonData);
       print('JSON encoded successfully, length: ${jsonString.length}');
-      
+
       final response = await client.post(
         uri,
         headers: headers,
@@ -382,11 +454,12 @@ class ClassifiedPostService {
   }
 
   /// Update an existing classified post
-  Future<Map<String, dynamic>?> updatePost(String postId, ClassifiedPostForm form) async {
+  Future<Map<String, dynamic>?> updatePost(
+      String postId, ClassifiedPostForm form) async {
     try {
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/update-user-classified-post/$postId/');
-      
+
       final response = await client.put(
         uri,
         headers: headers,
@@ -410,7 +483,7 @@ class ClassifiedPostService {
     try {
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/user-classified-categories-post/');
-      
+
       final response = await client.get(
         uri,
         headers: headers,
@@ -420,7 +493,8 @@ class ClassifiedPostService {
         final data = json.decode(response.body);
         if (data is List) {
           return data
-              .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
+              .map((item) =>
+                  ClassifiedPost.fromJson(item as Map<String, dynamic>))
               .toList();
         }
       }
@@ -440,7 +514,7 @@ class ClassifiedPostService {
     try {
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/update-user-classified-post/$postId/');
-      
+
       final Map<String, dynamic> data = {};
       if (activeService != null) data['active_service'] = activeService;
       if (serviceStatus != null) data['service_status'] = serviceStatus;
@@ -454,7 +528,8 @@ class ClassifiedPostService {
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
       } else {
-        print('Update status failed: ${response.statusCode} - ${response.body}');
+        print(
+            'Update status failed: ${response.statusCode} - ${response.body}');
       }
       return null;
     } catch (e) {
@@ -469,7 +544,7 @@ class ClassifiedPostService {
       print('Fetching post for edit: $idOrSlug');
       final headers = await _getAuthHeaders();
       final uri = Uri.parse('$baseUrl/classified-categories/post/$idOrSlug/');
-      
+
       print('Request URL: $uri');
       final response = await client.get(
         uri,
@@ -477,7 +552,7 @@ class ClassifiedPostService {
       );
 
       print('Response status: ${response.statusCode}');
-      
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('✅ Post data received successfully!');
@@ -546,7 +621,8 @@ class ClassifiedPostService {
         }
 
         final posts = results
-            .map((item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
+            .map(
+                (item) => ClassifiedPost.fromJson(item as Map<String, dynamic>))
             .where((post) => post.serviceStatus.toLowerCase() == 'approved')
             .toList();
 
@@ -583,9 +659,8 @@ class ClassifiedPostsResponse {
       return 0;
     }
 
-    final divisor = pageSize > 0
-        ? pageSize
-        : (results.isNotEmpty ? results.length : count);
+    final divisor =
+        pageSize > 0 ? pageSize : (results.isNotEmpty ? results.length : count);
 
     if (divisor <= 0) {
       return 0;

@@ -77,9 +77,10 @@ class User {
         }
       }
     }
-    
+
     return User(
-      id: json['id']?.toString() ?? '', // Convert to string to handle both int and string IDs
+      id: json['id']?.toString() ??
+          '', // Convert to string to handle both int and string IDs
       email: json['email'] ?? '',
       username: json['username'] ?? '',
       firstName: json['first_name'],
@@ -91,17 +92,17 @@ class User {
       profilePicture: imageUrl,
       referralCode: json['referral_code'],
       referCount: json['refer_count'],
-      commissionEarned: json['commission_earned'] is String 
-          ? double.tryParse(json['commission_earned']) 
+      commissionEarned: json['commission_earned'] is String
+          ? double.tryParse(json['commission_earned'])
           : (json['commission_earned'] as num?)?.toDouble(),
-      balance: json['balance'] is String 
+      balance: json['balance'] is String
           ? double.tryParse(json['balance']) ?? 0.0
           : (json['balance'] as num?)?.toDouble() ?? 0.0,
-      pendingBalance: json['pending_balance'] is String 
+      pendingBalance: json['pending_balance'] is String
           ? double.tryParse(json['pending_balance']) ?? 0.0
           : (json['pending_balance'] as num?)?.toDouble() ?? 0.0,
-      diamondBalance: json['diamond_balance'] is int 
-          ? json['diamond_balance'] 
+      diamondBalance: json['diamond_balance'] is int
+          ? json['diamond_balance']
           : int.tryParse(json['diamond_balance']?.toString() ?? '0') ?? 0,
       isPro: json['is_pro'] == true,
       isVerified: json['kyc'] == true || json['is_verified'] == true,
@@ -169,7 +170,8 @@ class AuthResponse {
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       user: User.fromJson(json['user'] ?? {}),
-      accessToken: json['access'] ?? json['access_token'] ?? json['token'] ?? '',
+      accessToken:
+          json['access'] ?? json['access_token'] ?? json['token'] ?? '',
       refreshToken: json['refresh'] ?? json['refresh_token'] ?? '',
       loggedIn: true,
     );
@@ -190,8 +192,9 @@ class AuthService {
   // Getters
   static User? get currentUser => _currentUser;
   static String? get accessToken => _accessToken;
-  static bool get isAuthenticated => _currentUser != null && _accessToken != null;
-  
+  static bool get isAuthenticated =>
+      _currentUser != null && _accessToken != null;
+
   // Get token method for compatibility
   static Future<String?> getToken() async {
     return _accessToken;
@@ -223,18 +226,20 @@ class AuthService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final authResponse = AuthResponse.fromJson(data);
-        
+
         // Store auth data
         await _persistAuthData(authResponse);
-        
+
         return authResponse;
       } else {
         // Handle login error
         try {
           final Map<String, dynamic> errorData = jsonDecode(response.body);
-          throw Exception(errorData['error'] ?? errorData['detail'] ?? 'Login failed');
+          throw Exception(
+              errorData['error'] ?? errorData['detail'] ?? 'Login failed');
         } catch (jsonError) {
-          throw Exception('Login failed with status ${response.statusCode}: ${response.body}');
+          throw Exception(
+              'Login failed with status ${response.statusCode}: ${response.body}');
         }
       }
     } catch (e) {
@@ -282,31 +287,32 @@ class AuthService {
     await AdsyConnectRealtimeService.instance.disconnect();
     OnlineStatusService.stop();
     await RideshareDriverPresenceService.stop();
-    
+
     _currentUser = null;
     _accessToken = null;
     _refreshToken = null;
 
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Set a logout flag to prevent session restoration
     await prefs.setBool('adsyclub_logged_out', true);
     print('🚩 Set logout flag to prevent session restoration');
-    
+
     // Remove all auth-related keys
     await prefs.remove(_userKey);
     await prefs.remove(_tokenKey);
     await prefs.remove(_refreshTokenKey);
     await prefs.remove('adsyclub_auth'); // Remove comprehensive auth data
-    
+
     // Also clear any legacy keys that might exist
     await prefs.remove('token');
     await prefs.remove('user');
-    
+
     // List all remaining keys for debugging
     final remainingKeys = prefs.getKeys();
-    print('📋 Remaining keys after clear: ${remainingKeys.where((k) => k.contains('adsy') || k.contains('token') || k.contains('user'))}');
-    
+    print(
+        '📋 Remaining keys after clear: ${remainingKeys.where((k) => k.contains('adsy') || k.contains('token') || k.contains('user'))}');
+
     print('✅ All auth data cleared from SharedPreferences');
   }
 
@@ -330,11 +336,11 @@ class AuthService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         _accessToken = data['access'];
-        
+
         // Update stored token
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_tokenKey, _accessToken!);
-        
+
         return true;
       } else {
         // Refresh token is invalid, clear auth data
@@ -368,16 +374,16 @@ class AuthService {
         while (payload.length % 4 != 0) {
           payload += '=';
         }
-        
+
         final normalizedPayload = base64.normalize(payload);
         final decodedPayload = utf8.decode(base64.decode(normalizedPayload));
         final Map<String, dynamic> payloadMap = jsonDecode(decodedPayload);
-        
+
         final exp = payloadMap['exp'];
         if (exp != null) {
           final expiryTime = DateTime.fromMillisecondsSinceEpoch(exp * 1000);
           final now = DateTime.now();
-          
+
           // If token expires in less than 5 minutes, refresh it
           if (expiryTime.difference(now).inMinutes < 5) {
             print('Token expires soon, refreshing...');
@@ -422,36 +428,36 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         // Update user data if provided
         if (data['user'] != null) {
           _currentUser = User.fromJson(data['user']);
         }
-        
+
         // Update tokens if provided
         if (data['access'] != null) {
           _accessToken = data['access'];
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_tokenKey, _accessToken!);
         }
-        
+
         if (data['refresh'] != null) {
           _refreshToken = data['refresh'];
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_refreshTokenKey, _refreshToken!);
         }
-        
+
         return true;
       } else {
         // Token validation failed, try to refresh
         print('Token validation failed, attempting refresh');
         final refreshSuccess = await refreshTokens();
-        
+
         if (refreshSuccess) {
           // Retry validation with new token
           return await validateToken();
         }
-        
+
         return false;
       }
     } catch (e) {
@@ -464,12 +470,13 @@ class AuthService {
   static Future<String> getDeviceId() async {
     final prefs = await SharedPreferences.getInstance();
     String? deviceId = prefs.getString(_deviceIdKey);
-    
+
     if (deviceId == null) {
-      deviceId = 'device_${DateTime.now().millisecondsSinceEpoch}_${(DateTime.now().millisecondsSinceEpoch * 1000) % 1000}';
+      deviceId =
+          'device_${DateTime.now().millisecondsSinceEpoch}_${(DateTime.now().millisecondsSinceEpoch * 1000) % 1000}';
       await prefs.setString(_deviceIdKey, deviceId);
     }
-    
+
     return deviceId;
   }
 
@@ -480,14 +487,14 @@ class AuthService {
     _refreshToken = authResponse.refreshToken;
 
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Clear logout flag on successful login
     await prefs.remove('adsyclub_logged_out');
     print('🔓 Cleared logout flag - user is now logged in');
-    
+
     // Store user data
     await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
-    
+
     // Store tokens
     await prefs.setString(_tokenKey, _accessToken!);
     await prefs.setString(_refreshTokenKey, _refreshToken!);
@@ -500,7 +507,7 @@ class AuthService {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
       'deviceId': await getDeviceId(),
     };
-    
+
     await prefs.setString('adsyclub_auth', jsonEncode(authData));
     print('💾 Auth data persisted to storage');
   }
@@ -510,7 +517,7 @@ class AuthService {
     try {
       print('🔍 Attempting to restore auth from storage...');
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Check if user explicitly logged out
       final loggedOut = prefs.getBool('adsyclub_logged_out') ?? false;
       if (loggedOut) {
@@ -519,7 +526,7 @@ class AuthService {
         await prefs.remove('adsyclub_logged_out');
         return;
       }
-      
+
       // Try to restore from comprehensive auth data first
       final authDataString = prefs.getString('adsyclub_auth');
       if (authDataString != null) {
@@ -527,7 +534,7 @@ class AuthService {
         final authData = jsonDecode(authDataString);
         final timestamp = authData['timestamp'] ?? 0;
         final now = DateTime.now().millisecondsSinceEpoch;
-        
+
         // Check if data is not too old (within 30 days)
         if (now - timestamp < (30 * 24 * 60 * 60 * 1000)) {
           _currentUser = User.fromJson(authData['user']);
@@ -539,12 +546,12 @@ class AuthService {
           print('⏰ Auth data expired (older than 30 days)');
         }
       }
-      
+
       // Fallback to individual storage items
       final userString = prefs.getString(_userKey);
       final token = prefs.getString(_tokenKey);
       final refreshToken = prefs.getString(_refreshTokenKey);
-      
+
       if (userString != null && token != null && refreshToken != null) {
         print('📦 Found individual auth items');
         _currentUser = User.fromJson(jsonDecode(userString));
@@ -595,10 +602,10 @@ class AuthService {
   }
 
   // Refresh current user data from API
-  static Future<void> refreshUserData() async {
+  static Future<bool> refreshUserData() async {
     try {
       final token = await getValidToken();
-      if (token == null) return;
+      if (token == null) return false;
 
       // Try validate-token endpoint which returns user data
       final response = await http.get(
@@ -614,14 +621,26 @@ class AuthService {
         // validate-token returns user data in 'user' field
         if (data['user'] != null) {
           _currentUser = User.fromJson(data['user']);
-          
+
           // Update stored user data
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
+          final authDataString = prefs.getString('adsyclub_auth');
+          if (authDataString != null) {
+            final authData = jsonDecode(authDataString);
+            authData['user'] = _currentUser!.toJson();
+            authData['token'] = _accessToken;
+            authData['refreshToken'] = _refreshToken;
+            authData['timestamp'] = DateTime.now().millisecondsSinceEpoch;
+            await prefs.setString('adsyclub_auth', jsonEncode(authData));
+          }
+          return true;
         }
       }
+      return false;
     } catch (e) {
       print('Error refreshing user data: $e');
+      return false;
     }
   }
 
@@ -646,7 +665,8 @@ class AuthService {
         return jsonDecode(response.body);
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Failed to send OTP');
+        throw Exception(
+            errorData['error'] ?? errorData['message'] ?? 'Failed to send OTP');
       }
     } catch (e) {
       throw Exception(e.toString().replaceFirst('Exception: ', ''));
@@ -676,7 +696,9 @@ class AuthService {
         return jsonDecode(response.body);
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Invalid verification code');
+        throw Exception(errorData['error'] ??
+            errorData['message'] ??
+            'Invalid verification code');
       }
     } catch (e) {
       throw Exception(e.toString().replaceFirst('Exception: ', ''));
@@ -684,7 +706,8 @@ class AuthService {
   }
 
   // Register new user
-  static Future<Map<String, dynamic>?> register(Map<String, dynamic> formData) async {
+  static Future<Map<String, dynamic>?> register(
+      Map<String, dynamic> formData) async {
     try {
       final response = await http.post(
         Uri.parse('${ApiService.baseUrl}/auth/register/'),
@@ -699,7 +722,9 @@ class AuthService {
         return result;
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Registration failed');
+        throw Exception(errorData['error'] ??
+            errorData['message'] ??
+            'Registration failed');
       }
     } catch (e) {
       throw Exception(e.toString().replaceFirst('Exception: ', ''));
@@ -725,28 +750,30 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final result = jsonDecode(response.body);
-        
+
         // If auto-login is enabled, save tokens
         if (result['auto_login'] == true && result['tokens'] != null) {
           _accessToken = result['tokens']['access'];
           _refreshToken = result['tokens']['refresh'];
-          
+
           // Save tokens
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString(_tokenKey, _accessToken!);
           await prefs.setString(_refreshTokenKey, _refreshToken!);
-          
+
           // Parse and save user data if provided
           if (result['user'] != null) {
             _currentUser = User.fromJson(result['user']);
             await prefs.setString(_userKey, jsonEncode(_currentUser!.toJson()));
           }
         }
-        
+
         return result;
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? errorData['message'] ?? 'Failed to reset password');
+        throw Exception(errorData['error'] ??
+            errorData['message'] ??
+            'Failed to reset password');
       }
     } catch (e) {
       throw Exception(e.toString().replaceFirst('Exception: ', ''));
