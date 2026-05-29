@@ -439,11 +439,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   // 2. Gold Sponsors - existing business network sponsor slider
                   const Padding(
                     padding: EdgeInsets.fromLTRB(4, 2, 4, 2),
-                    child: GoldSponsorsSlider(),
+                    child: GoldSponsorsSlider(margin: EdgeInsets.zero),
                   ),
-                  
+                   
                   // 3. Sale Category - eShop product categories
-                  const SaleCategory(),
+                  const SaleCategory(margin: EdgeInsets.fromLTRB(4, 0, 4, 4)),
                   
                   // 4. Food Zone Section - FoodPanda style food listings
                   FoodZoneSection(baseUrl: ApiService.baseUrl),

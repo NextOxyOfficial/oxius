@@ -7,7 +7,9 @@ import '../../services/gold_sponsor_service.dart';
 import '../../utils/url_launcher_utils.dart';
 
 class GoldSponsorsSlider extends StatefulWidget {
-  const GoldSponsorsSlider({super.key});
+  final EdgeInsetsGeometry? margin;
+
+  const GoldSponsorsSlider({super.key, this.margin});
 
   @override
   State<GoldSponsorsSlider> createState() => _GoldSponsorsSliderState();
@@ -57,7 +59,7 @@ class _GoldSponsorsSliderState extends State<GoldSponsorsSlider> {
   Widget build(BuildContext context) {
     // Always show the container - never hide it completely
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: widget.margin ?? const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.amber.shade50, Colors.yellow.shade50],

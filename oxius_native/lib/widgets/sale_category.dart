@@ -7,7 +7,12 @@ import '../services/category_icon_mapping.dart';
 import '../services/auth_service.dart';
 
 class SaleCategory extends StatefulWidget {
-  const SaleCategory({super.key});
+  final EdgeInsetsGeometry margin;
+
+  const SaleCategory({
+    super.key,
+    this.margin = const EdgeInsets.all(4),
+  });
 
   @override
   State<SaleCategory> createState() => _SaleCategoryState();
@@ -269,7 +274,7 @@ class _SaleCategoryState extends State<SaleCategory> {
     final isMobile = screenWidth < 768;
 
     return Container(
-      margin: const EdgeInsets.all(4),
+      margin: widget.margin,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
