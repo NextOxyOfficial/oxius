@@ -100,7 +100,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                     onRefresh: _refresh,
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 24),
+                      padding: const EdgeInsets.fromLTRB(2, 6, 2, 24),
                       itemCount: sponsors.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 0),
                       itemBuilder: (context, index) {
@@ -229,7 +229,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                  padding: const EdgeInsets.fromLTRB(1, 10, 0, 10),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -293,8 +293,8 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
 
   Widget _buildLogo(String? logo) {
     return Container(
-      width: 52,
-      height: 52,
+      width: 60,
+      height: 60,
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -422,7 +422,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
 
   Widget _buildLoadingList() {
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 24),
+      padding: const EdgeInsets.fromLTRB(2, 6, 2, 24),
       itemCount: 5,
       separatorBuilder: (_, __) => const SizedBox(height: 0),
       itemBuilder: (_, __) {
