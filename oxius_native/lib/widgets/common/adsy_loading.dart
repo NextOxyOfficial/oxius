@@ -182,6 +182,7 @@ class AdsyRefreshIndicator extends StatefulWidget {
 class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
   material.RefreshIndicatorStatus? _status;
   bool _feedbackSent = false;
+  double _pullExtent = 0;
 
   Future<void> _handleRefresh() async {
     await _playRefreshFeedback();
@@ -216,7 +217,66 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
 
     if (status == null || status == material.RefreshIndicatorStatus.done) {
       _feedbackSent = false;
+      setState(() => _pullExtent = 0);
     }
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (!widget.notificationPredicate(notification)) {
+      return false;
+    }
+
+    final atTop = notification.metrics.axis == Axis.vertical &&
+        notification.metrics.pixels <= notification.metrics.minScrollExtent;
+
+    if (notification is ScrollStartNotification &&
+        notification.dragDetails != null) {
+      setState(() => _pullExtent = 0);
+      return false;
+    }
+
+    if (!atTop) {
+      if (_pullExtent != 0 &&
+          _status != material.RefreshIndicatorStatus.refresh) {
+        setState(() => _pullExtent = 0);
+      }
+      return false;
+    }
+
+    double addedPull = 0;
+    if (notification is OverscrollNotification) {
+      addedPull = notification.overscroll < 0 ? -notification.overscroll : 0;
+    } else if (notification is ScrollUpdateNotification &&
+        notification.dragDetails != null) {
+      final delta = notification.scrollDelta ?? 0;
+      addedPull = delta < 0 ? -delta : 0;
+    }
+
+    if (addedPull > 0) {
+      final maxPull = _maxPullOffset(context);
+      setState(() {
+        _pullExtent = (_pullExtent + addedPull).clamp(0, maxPull);
+      });
+    }
+
+    if (notification is ScrollEndNotification &&
+        _status != material.RefreshIndicatorStatus.refresh) {
+      setState(() => _pullExtent = 0);
+    }
+
+    return false;
+  }
+
+  double _maxPullOffset(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
+    return math.min(height * 0.42, 280);
+  }
+
+  double _rubberBandOffset(double pull, double maxPull) {
+    if (pull <= 0) return 0;
+    final normalized = (pull / maxPull).clamp(0.0, 1.0);
+    final eased = 1 - math.pow(1 - normalized, 2.35);
+    return maxPull * eased;
   }
 
   @override
@@ -225,24 +285,35 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
         _status == material.RefreshIndicatorStatus.armed ||
         _status == material.RefreshIndicatorStatus.refresh;
     final color = widget.color ?? Theme.of(context).colorScheme.primary;
-    final topOffset = widget.edgeOffset + 10;
-    final contentOffset = visible ? widget.displacement + 22 : 0.0;
+    final maxPull = _maxPullOffset(context);
+    final refreshRestOffset = math.min(widget.displacement + 34, maxPull);
+    final contentOffset = _status == material.RefreshIndicatorStatus.refresh
+        ? refreshRestOffset
+        : _rubberBandOffset(_pullExtent, maxPull);
+    final topOffset = widget.edgeOffset +
+        math.max(10, math.min(contentOffset * 0.42, maxPull * 0.36));
 
     return Stack(
       alignment: Alignment.topCenter,
       children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.translationValues(0, contentOffset, 0),
-          child: material.RefreshIndicator.noSpinner(
-            onRefresh: _handleRefresh,
-            onStatusChange: _handleStatusChange,
-            triggerMode: widget.triggerMode,
-            notificationPredicate: widget.notificationPredicate,
-            semanticsLabel: widget.semanticsLabel,
-            semanticsValue: widget.semanticsValue,
-            child: widget.child,
+        NotificationListener<ScrollNotification>(
+          onNotification: _handleScrollNotification,
+          child: AnimatedContainer(
+            duration: Duration(
+              milliseconds:
+                  _status == material.RefreshIndicatorStatus.drag ? 40 : 220,
+            ),
+            curve: Curves.easeOutCubic,
+            transform: Matrix4.translationValues(0, contentOffset, 0),
+            child: material.RefreshIndicator.noSpinner(
+              onRefresh: _handleRefresh,
+              onStatusChange: _handleStatusChange,
+              triggerMode: widget.triggerMode,
+              notificationPredicate: widget.notificationPredicate,
+              semanticsLabel: widget.semanticsLabel,
+              semanticsValue: widget.semanticsValue,
+              child: widget.child,
+            ),
           ),
         ),
         Positioned(
