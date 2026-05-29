@@ -1,4 +1,7 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 import 'auth_service.dart';
@@ -13,11 +16,9 @@ class MobileRechargeService {
     int page = 1,
   }) async {
     try {
-      final token = await AuthService.getValidToken();
-      if (token == null) {
-        throw Exception('Not authenticated');
-      }
-
+      final token = AuthService.isAuthenticated
+          ? await AuthService.getValidToken()
+          : null;
       final queryParams = <String, String>{
         'page': page.toString(),
         if (operator != null && operator != 'all') 'operator': operator,
@@ -33,7 +34,7 @@ class MobileRechargeService {
       final response = await http.get(
         uri,
         headers: {
-          'Authorization': 'Bearer $token',
+          if (token != null) 'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
@@ -44,8 +45,9 @@ class MobileRechargeService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('📱 Decoded data type: ${data.runtimeType}');
-        print('📱 Data keys: ${data is Map ? data.keys.toList() : 'Not a Map'}');
-        
+        print(
+            '📱 Data keys: ${data is Map ? data.keys.toList() : 'Not a Map'}');
+
         // Handle both paginated and non-paginated responses
         List<dynamic> results;
         if (data is List) {
@@ -55,21 +57,23 @@ class MobileRechargeService {
         } else {
           results = [];
         }
-        
+
         print('📱 Total results found: ${results.length}');
         if (results.isNotEmpty) {
           print('📱 Sample package: ${results.first}');
         }
-        
+
         return {
           'success': true,
           'results': results,
-          'count': data is Map ? (data['count'] ?? results.length) : results.length,
+          'count':
+              data is Map ? (data['count'] ?? results.length) : results.length,
           'next': data is Map ? data['next'] : null,
           'previous': data is Map ? data['previous'] : null,
         };
       } else {
-        print('❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
+        print(
+            '❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
         throw Exception('Failed to load packages: ${response.statusCode}');
       }
     } catch (e) {
@@ -85,17 +89,16 @@ class MobileRechargeService {
   /// Get available operators
   static Future<List<Map<String, dynamic>>> getOperators() async {
     try {
-      final token = await AuthService.getValidToken();
-      if (token == null) {
-        throw Exception('Not authenticated');
-      }
+      final token = AuthService.isAuthenticated
+          ? await AuthService.getValidToken()
+          : null;
 
       print('📱 Fetching operators from: $baseUrl/mobile-recharge/operators/');
 
       final response = await http.get(
         Uri.parse('$baseUrl/mobile-recharge/operators/'),
         headers: {
-          'Authorization': 'Bearer $token',
+          if (token != null) 'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
       );
@@ -106,7 +109,7 @@ class MobileRechargeService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         List<dynamic> operators;
-        
+
         if (data is List) {
           operators = data;
         } else if (data['results'] != null) {
@@ -116,27 +119,31 @@ class MobileRechargeService {
         }
 
         print('📱 Total operators found: ${operators.length}');
-        
+
         // Process operators to ensure icon URLs are absolute
         final processedOperators = operators.map((op) {
           final operator = Map<String, dynamic>.from(op);
-          
+
           // Convert icon URL to absolute if it's relative
-          if (operator['icon'] != null && operator['icon'].toString().isNotEmpty) {
+          if (operator['icon'] != null &&
+              operator['icon'].toString().isNotEmpty) {
             final iconUrl = operator['icon'].toString();
             if (!iconUrl.startsWith('http')) {
               // Remove leading slash if present
-              final cleanPath = iconUrl.startsWith('/') ? iconUrl.substring(1) : iconUrl;
+              final cleanPath =
+                  iconUrl.startsWith('/') ? iconUrl.substring(1) : iconUrl;
               operator['icon'] = '$baseUrl/$cleanPath';
-              print('📱 Converted operator icon: ${operator['name']} -> ${operator['icon']}');
+              print(
+                  '📱 Converted operator icon: ${operator['name']} -> ${operator['icon']}');
             }
           }
-          
+
           return operator;
         }).toList();
 
-        print('📱 Processed operators: ${processedOperators.map((o) => '${o['name']} (${o['icon']})').join(', ')}');
-        
+        print(
+            '📱 Processed operators: ${processedOperators.map((o) => '${o['name']} (${o['icon']})').join(', ')}');
+
         return List<Map<String, dynamic>>.from(processedOperators);
       }
       return [];
@@ -154,12 +161,15 @@ class MobileRechargeService {
     required double amount,
   }) async {
     try {
-      final token = await AuthService.getValidToken();
+      final token = AuthService.isAuthenticated
+          ? await AuthService.getValidToken()
+          : null;
       if (token == null) {
         throw Exception('Not authenticated');
       }
 
-      print('📱 Submitting recharge: packageId=$packageId, operator=$operator, phone=$phoneNumber, amount=$amount');
+      print(
+          '📱 Submitting recharge: packageId=$packageId, operator=$operator, phone=$phoneNumber, amount=$amount');
 
       final response = await http.post(
         Uri.parse('$baseUrl/mobile-recharge/recharges/'),
@@ -228,7 +238,7 @@ class MobileRechargeService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('📱 Recharge history data type: ${data.runtimeType}');
-        
+
         // Handle both paginated and non-paginated responses
         List<dynamic> results;
         if (data is List) {
@@ -238,16 +248,18 @@ class MobileRechargeService {
         } else {
           results = [];
         }
-        
+
         print('📱 Total recharge records found: ${results.length}');
-        
+
         return {
           'success': true,
           'results': results,
-          'count': data is Map ? (data['count'] ?? results.length) : results.length,
+          'count':
+              data is Map ? (data['count'] ?? results.length) : results.length,
         };
       } else {
-        print('❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
+        print(
+            '❌ API Error: Status ${response.statusCode}, Body: ${response.body}');
         throw Exception('Failed to load history: ${response.statusCode}');
       }
     } catch (e) {

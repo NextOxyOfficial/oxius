@@ -7,7 +7,7 @@ import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
   @override
-  String get searchFieldLabel => 'Search articles...';
+  String get searchFieldLabel => 'Search news...';
 
   @override
   ThemeData appBarTheme(BuildContext context) {
@@ -119,7 +119,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Search for news articles',
+              'Search for news',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -177,7 +177,7 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 4,
               offset: const Offset(0, 1),
             ),
@@ -227,7 +227,8 @@ class NewsSearchDelegate extends SearchDelegate<NewsPost?> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE53E3E).withOpacity(0.1),
+                              color: const Color(0xFFE53E3E)
+                                  .withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(

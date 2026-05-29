@@ -11,6 +11,7 @@ class ClassifiedCategoriesGrid extends StatefulWidget {
   final bool isLoading;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
+  final Widget? trailingTile;
 
   const ClassifiedCategoriesGrid({
     super.key,
@@ -20,10 +21,12 @@ class ClassifiedCategoriesGrid extends StatefulWidget {
     this.isLoading = false,
     this.padding,
     this.margin,
+    this.trailingTile,
   });
 
   @override
-  State<ClassifiedCategoriesGrid> createState() => _ClassifiedCategoriesGridState();
+  State<ClassifiedCategoriesGrid> createState() =>
+      _ClassifiedCategoriesGridState();
 }
 
 class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
@@ -38,12 +41,12 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
                 ? 5
                 : 6;
     final childAspectRatio = width < 340
-      ? 0.72
-      : width < 390
-        ? 0.58
-      : width < 760
-        ? 0.76
-        : 0.84;
+        ? 0.72
+        : width < 390
+            ? 0.58
+            : width < 760
+                ? 0.76
+                : 0.84;
     final spacing = width < 390 ? 8.0 : 10.0;
 
     if (widget.isLoading) {
@@ -55,7 +58,8 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
     }
 
     return Container(
-      margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      margin: widget.margin ??
+          const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       padding: widget.padding,
       child: GridView.builder(
         shrinkWrap: true,
@@ -66,11 +70,16 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
           crossAxisSpacing: spacing,
           childAspectRatio: childAspectRatio,
         ),
-        itemCount: widget.categories.length,
+        itemCount:
+            widget.categories.length + (widget.trailingTile != null ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == widget.categories.length) {
+            return widget.trailingTile!;
+          }
+
           final category = widget.categories[index];
           final isSelected = widget.selectedId == category.id;
-          
+
           return _CategoryTile(
             category: category,
             isSelected: isSelected,
@@ -86,7 +95,8 @@ class _ClassifiedCategoriesGridState extends State<ClassifiedCategoriesGrid> {
     final spacing = width < 390 ? 8.0 : 10.0;
 
     return Container(
-      margin: widget.margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      margin: widget.margin ??
+          const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
@@ -125,17 +135,20 @@ class _CategoryTileState extends State<_CategoryTile> {
   Widget build(BuildContext context) {
     final compact = MediaQuery.of(context).size.width < 390;
     final highlightColor = const Color(0xFF0F766E);
-    final labelColor = widget.isSelected
-        ? const Color(0xFF065F46)
-        : const Color(0xFF334155);
-    
+    final labelColor =
+        widget.isSelected ? const Color(0xFF065F46) : const Color(0xFF334155);
+
     return GestureDetector(
-      onTapDown: widget.onTap == null ? null : (_) => setState(() => _pressed = true),
-      onTapCancel: widget.onTap == null ? null : () => setState(() => _pressed = false),
-      onTapUp: widget.onTap == null ? null : (_) {
-        setState(() => _pressed = false);
-        widget.onTap?.call();
-      },
+      onTapDown:
+          widget.onTap == null ? null : (_) => setState(() => _pressed = true),
+      onTapCancel:
+          widget.onTap == null ? null : () => setState(() => _pressed = false),
+      onTapUp: widget.onTap == null
+          ? null
+          : (_) {
+              setState(() => _pressed = false);
+              widget.onTap?.call();
+            },
       child: AnimatedScale(
         scale: _pressed ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 120),
@@ -146,7 +159,8 @@ class _CategoryTileState extends State<_CategoryTile> {
             borderRadius: BorderRadius.circular(16),
             onTap: widget.onTap,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(compact ? 2 : 4, 6, compact ? 2 : 4, 8),
+              padding:
+                  EdgeInsets.fromLTRB(compact ? 2 : 4, 6, compact ? 2 : 4, 8),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -182,7 +196,9 @@ class _CategoryTileState extends State<_CategoryTile> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: compact ? 11.2 : 12.5,
-                        fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w600,
+                        fontWeight: widget.isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w600,
                         letterSpacing: -0.1,
                         color: labelColor,
                         height: 1.22,
@@ -239,9 +255,9 @@ class _CategoryImage extends StatelessWidget {
   final String? url;
   final String? categoryTitle;
   final double size;
-  
+
   const _CategoryImage({
-    this.url, 
+    this.url,
     this.categoryTitle,
     this.size = 32,
   });
@@ -250,7 +266,7 @@ class _CategoryImage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Debug: Print category info to see what we're working with
     debugPrint('CategoryImage: title="$categoryTitle", url="$url"');
-    
+
     // Priority 1: Try network image first (with original colors preserved)
     if (url != null && url!.isNotEmpty && !_isLocalAsset(url!)) {
       return CachedNetworkImage(
@@ -271,7 +287,7 @@ class _CategoryImage extends StatelessWidget {
         ),
       );
     }
-    
+
     // Priority 2: Use local asset if URL is a local asset path
     if (url != null && url!.isNotEmpty && _isLocalAsset(url!)) {
       return Image.asset(
@@ -282,14 +298,15 @@ class _CategoryImage extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) => _getLocalAssetOrDefault(),
       );
     }
-    
+
     // Priority 3: Use offline local asset mapping or default
     return _getLocalAssetOrDefault();
   }
 
   Widget _getLocalAssetOrDefault() {
     // Try to get local asset mapping first
-    final localAsset = CategoryIconMapping.getClassifiedIconAsset(categoryTitle);
+    final localAsset =
+        CategoryIconMapping.getClassifiedIconAsset(categoryTitle);
     if (localAsset != null) {
       debugPrint('Using local asset: $localAsset for "$categoryTitle"');
       return Image.asset(
@@ -297,11 +314,11 @@ class _CategoryImage extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.contain,
-        errorBuilder: (context, error, stackTrace) => 
-          CategoryIconMapping.getDefaultIcon(isSale: false, size: size),
+        errorBuilder: (context, error, stackTrace) =>
+            CategoryIconMapping.getDefaultIcon(isSale: false, size: size),
       );
     }
-    
+
     // Final fallback to default icon
     return CategoryIconMapping.getDefaultIcon(isSale: false, size: size);
   }
@@ -314,7 +331,7 @@ class _CategoryImage extends StatelessWidget {
 // Shimmer placeholder matching hero section style
 class _ShimmerIcon extends StatelessWidget {
   final double size;
-  
+
   const _ShimmerIcon({required this.size});
 
   @override

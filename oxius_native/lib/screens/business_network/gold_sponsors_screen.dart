@@ -78,82 +78,83 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: FutureBuilder<List<GoldSponsor>>(
-                future: _sponsorsFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _buildLoadingList();
-                  }
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF59E0B), Color(0xFFF97316)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                    child: FutureBuilder<List<GoldSponsor>>(
+                      future: _sponsorsFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return _buildLoadingList();
+                        }
 
-                  final sponsors = snapshot.data ?? [];
-                  if (sponsors.isEmpty) {
-                    return _buildEmptyState();
-                  }
+                        final sponsors = snapshot.data ?? [];
+                        if (sponsors.isEmpty) {
+                          return _buildEmptyState();
+                        }
 
-                  return AdsyRefreshIndicator(
-                    color: const Color(0xFFD97706),
-                    onRefresh: _refresh,
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(6, 6, 6, 24),
-                      itemCount: sponsors.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 0),
-                      itemBuilder: (context, index) {
-                        return _buildSponsorCard(sponsors[index]);
+                        return AdsyRefreshIndicator(
+                          color: const Color(0xFFD97706),
+                          onRefresh: _refresh,
+                          child: ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(6, 6, 6, 24),
+                            itemCount: sponsors.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 0),
+                            itemBuilder: (context, index) {
+                              return _buildSponsorCard(sponsors[index]);
+                            },
+                          ),
+                        );
                       },
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: [
-          InkWell(
-            onTap: () => Navigator.pop(context),
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFDE68A)),
-              ),
-              child: const Icon(
-                Icons.arrow_back_rounded,
-                color: Color(0xFF92400E),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.arrow_back_rounded,
+                color: Colors.white, size: 22),
+            tooltip: 'Back',
+            onPressed: () => Navigator.pop(context),
           ),
-          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,7 +166,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF111827),
+                    color: Colors.white,
                     height: 1.05,
                   ),
                 ),
@@ -177,7 +178,7 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFFB45309),
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -187,19 +188,8 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF59E0B), Color(0xFFFACC15)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: Colors.white.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.20),
-                  blurRadius: 12,
-                  offset: const Offset(0, 5),
-                ),
-              ],
             ),
             child: const Icon(Icons.workspace_premium, color: Colors.white),
           ),
@@ -385,36 +375,29 @@ class _GoldSponsorsScreenState extends State<GoldSponsorsScreen> {
   }
 
   Widget _buildOfferButton(GoldSponsor sponsor, bool enabled) {
+    if (!enabled) {
+      return const SizedBox.shrink();
+    }
+
     return InkWell(
-      onTap: enabled ? () => _openOffer(sponsor) : null,
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        decoration: BoxDecoration(
-          gradient: enabled
-              ? const LinearGradient(
-                  colors: [Color(0xFFF59E0B), Color(0xFFF97316)],
-                )
-              : null,
-          color: enabled ? null : const Color(0xFFE5E7EB),
-          borderRadius: BorderRadius.circular(999),
-        ),
+      onTap: () => _openOffer(sponsor),
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              enabled ? 'View Offer' : 'No Link',
+            const Text(
+              'View Offer',
               style: TextStyle(
-                color: enabled ? Colors.white : const Color(0xFF6B7280),
+                color: Color(0xFFF97316),
                 fontSize: 12,
                 fontWeight: FontWeight.w900,
               ),
             ),
-            if (enabled) ...[
-              const SizedBox(width: 5),
-              const Icon(Icons.open_in_new_rounded,
-                  size: 13, color: Colors.white),
-            ],
+            const SizedBox(width: 4),
+            const Icon(Icons.open_in_new_rounded,
+                size: 13, color: Color(0xFFF97316)),
           ],
         ),
       ),

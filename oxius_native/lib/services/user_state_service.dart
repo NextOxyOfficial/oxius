@@ -12,11 +12,11 @@ import 'rideshare_driver_presence_service.dart';
 /// Similar to Vue's computed isAuthenticated and useState for user
 class UserStateService extends ChangeNotifier {
   static final UserStateService _instance = UserStateService._internal();
-  
+
   factory UserStateService() {
     return _instance;
   }
-  
+
   UserStateService._internal();
 
   User? _currentUser;
@@ -27,17 +27,17 @@ class UserStateService extends ChangeNotifier {
   User? get currentUser => _currentUser;
   bool get isAuthenticated => _isAuthenticated;
   bool get isInitializing => _isInitializing;
-  
+
   String get userName => _currentUser?.displayName ?? 'Guest';
   String get userEmail => _currentUser?.email ?? '';
   String get userType => _currentUser?.userType ?? 'regular';
   bool get isSuperuser => _currentUser?.isSuperuser ?? false;
-  
+
   // Balance getters
   double get balance => _currentUser?.balance ?? 0.0;
   double get userPendingBalance => _currentUser?.pendingBalance ?? 0.0;
   int get userDiamondBalance => _currentUser?.diamondBalance ?? 0;
-  
+
   // Subscription getter
   bool get isPro => _currentUser?.isPro ?? false;
 
@@ -115,17 +115,21 @@ class UserStateService extends ChangeNotifier {
     if (!_isAuthenticated) return false;
 
     try {
-      final isValid = await AuthService.validateToken();
-      if (isValid) {
+      await AuthService.refreshUserData();
+      if (AuthService.currentUser != null) {
         _currentUser = AuthService.currentUser;
         notifyListeners();
         return true;
-      } else {
+      }
+      final isValid = await AuthService.validateToken();
+      if (!isValid) {
         await clearUser();
         return false;
       }
+      _currentUser = AuthService.currentUser;
+      notifyListeners();
+      return _currentUser != null;
     } catch (e) {
-      print('Failed to refresh user data: $e');
       return false;
     }
   }
@@ -139,7 +143,7 @@ class UserStateService extends ChangeNotifier {
   bool hasPermission(String permission) {
     if (_currentUser == null) return false;
     if (_currentUser!.isSuperuser) return true;
-    
+
     // Add custom permission logic here based on user type
     switch (permission) {
       case 'admin':

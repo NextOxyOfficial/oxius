@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/contact_service.dart';
+import '../utils/url_launcher_utils.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ContactUsScreen extends StatefulWidget {
@@ -20,6 +21,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   bool _isSubmitting = false;
   bool _isLoading = true;
   ContactInfo? _contactInfo;
+  static const Color _ink = Color(0xFF111827);
+  static const Color _muted = Color(0xFF64748B);
+  static const Color _primary = Color(0xFF0F766E);
+  static const Color _softPrimary = Color(0xFFE6F7F3);
+  static const Color _border = Color(0xFFE5E7EB);
 
   @override
   void initState() {
@@ -47,7 +53,6 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         });
       }
     } catch (e) {
-      print('Error loading contact info: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -122,6 +127,25 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     }
   }
 
+  Future<void> _openEmail(String email) async {
+    final ok = await UrlLauncherUtils.launchExternalUrl('mailto:$email');
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open mail app')),
+      );
+    }
+  }
+
+  Future<void> _openPhone(String phone) async {
+    final normalized = phone.replaceAll(RegExp(r'\s+'), '');
+    final ok = await UrlLauncherUtils.launchExternalUrl('tel:$normalized');
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open phone app')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,7 +179,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
       body: _isLoading
           ? const Center(
               child: AdsyLoadingIndicator(
-                color: Color(0xFF10B981),
+                color: _primary,
               ),
             )
           : SingleChildScrollView(
@@ -173,10 +197,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                         Text(
                           'Get in Touch',
                           style: AppFonts.roboto(
-                            fontSize: 18,
+                            fontSize: 21,
                             fontWeight: FontWeight.w700,
                             letterSpacing: -0.2,
-                            color: const Color(0xFF1F2937),
+                            color: _ink,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -185,7 +209,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           style: AppFonts.roboto(
                             fontSize: 13,
                             height: 1.5,
-                            color: Colors.grey.shade600,
+                            color: _muted,
                           ),
                         ),
                       ],
@@ -203,6 +227,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             Icons.email_outlined,
                             'Email',
                             _contactInfo?.email ?? 'support@adsyclub.com',
+                            onTap: () => _openEmail(
+                              _contactInfo?.email ?? 'support@adsyclub.com',
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -211,6 +238,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             Icons.phone_outlined,
                             'Phone',
                             _contactInfo?.phone ?? '+880 1896 144066',
+                            onTap: () => _openPhone(
+                              _contactInfo?.phone ?? '+880 1896 144066',
+                            ),
                           ),
                         ),
                       ],
@@ -225,12 +255,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: _border),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
@@ -242,10 +272,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           Text(
                             'Send us a Message',
                             style: AppFonts.roboto(
-                              fontSize: 15,
+                              fontSize: 18,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.1,
-                              color: const Color(0xFF1F2937),
+                              color: _ink,
                             ),
                           ),
                           const SizedBox(height: 12),
@@ -253,15 +283,15 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           // Name
                           TextFormField(
                             controller: _nameController,
-                            style: AppFonts.roboto(fontSize: 14),
+                            style: AppFonts.roboto(fontSize: 15),
                             decoration: InputDecoration(
                               labelText: 'Your Name',
-                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              labelStyle: AppFonts.roboto(fontSize: 14),
                               hintText: 'Enter your full name',
-                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              hintStyle: AppFonts.roboto(fontSize: 14),
                               prefixIcon: const Icon(
                                   Icons.person_outline_rounded,
-                                  size: 18),
+                                  size: 20),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -282,14 +312,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: AppFonts.roboto(fontSize: 14),
+                            style: AppFonts.roboto(fontSize: 15),
                             decoration: InputDecoration(
                               labelText: 'Email Address',
-                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              labelStyle: AppFonts.roboto(fontSize: 14),
                               hintText: 'your@email.com',
-                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              hintStyle: AppFonts.roboto(fontSize: 14),
                               prefixIcon:
-                                  const Icon(Icons.email_outlined, size: 18),
+                                  const Icon(Icons.email_outlined, size: 20),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -313,14 +343,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           TextFormField(
                             controller: _phoneController,
                             keyboardType: TextInputType.phone,
-                            style: AppFonts.roboto(fontSize: 14),
+                            style: AppFonts.roboto(fontSize: 15),
                             decoration: InputDecoration(
                               labelText: 'Phone Number',
-                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              labelStyle: AppFonts.roboto(fontSize: 14),
                               hintText: '+880 1234 567890',
-                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              hintStyle: AppFonts.roboto(fontSize: 14),
                               prefixIcon:
-                                  const Icon(Icons.phone_outlined, size: 18),
+                                  const Icon(Icons.phone_outlined, size: 20),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -340,14 +370,14 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           // Subject
                           TextFormField(
                             controller: _subjectController,
-                            style: AppFonts.roboto(fontSize: 14),
+                            style: AppFonts.roboto(fontSize: 15),
                             decoration: InputDecoration(
                               labelText: 'Subject',
-                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              labelStyle: AppFonts.roboto(fontSize: 14),
                               hintText: 'What is this about?',
-                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              hintStyle: AppFonts.roboto(fontSize: 14),
                               prefixIcon:
-                                  const Icon(Icons.subject_outlined, size: 18),
+                                  const Icon(Icons.subject_outlined, size: 20),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -368,12 +398,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                           TextFormField(
                             controller: _messageController,
                             maxLines: 4,
-                            style: AppFonts.roboto(fontSize: 14),
+                            style: AppFonts.roboto(fontSize: 15),
                             decoration: InputDecoration(
                               labelText: 'Message',
-                              labelStyle: AppFonts.roboto(fontSize: 13),
+                              labelStyle: AppFonts.roboto(fontSize: 14),
                               hintText: 'Write your message here...',
-                              hintStyle: AppFonts.roboto(fontSize: 13),
+                              hintStyle: AppFonts.roboto(fontSize: 14),
                               alignLabelWithHint: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -398,9 +428,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                             child: ElevatedButton(
                               onPressed: _isSubmitting ? null : _submitForm,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
+                                backgroundColor: _primary,
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
+                                    const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -422,12 +452,12 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                                           MainAxisAlignment.center,
                                       children: [
                                         const Icon(Icons.send_rounded,
-                                            size: 16),
-                                        const SizedBox(width: 6),
+                                            size: 18),
+                                        const SizedBox(width: 8),
                                         Text(
                                           'Send Message',
                                           style: AppFonts.roboto(
-                                            fontSize: 14,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.w600,
                                             letterSpacing: -0.1,
                                           ),
@@ -448,22 +478,21 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.08),
+                      color: _softPrimary,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                          color: const Color(0xFF10B981).withOpacity(0.2)),
+                      border: Border.all(color: const Color(0xFF99D9C9)),
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.15),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
                             Icons.access_time_rounded,
-                            color: Color(0xFF10B981),
+                            color: _primary,
                             size: 20,
                           ),
                         ),
@@ -475,10 +504,10 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                               Text(
                                 'Support Hours',
                                 style: AppFonts.roboto(
-                                  fontSize: 13,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: -0.1,
-                                  color: const Color(0xFF1F2937),
+                                  color: _ink,
                                 ),
                               ),
                               const SizedBox(height: 3),
@@ -486,9 +515,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                                 _contactInfo?.supportHours ??
                                     '24/7 Support Available',
                                 style: AppFonts.roboto(
-                                  fontSize: 11,
+                                  fontSize: 13,
                                   height: 1.4,
-                                  color: Colors.grey.shade700,
+                                  color: _muted,
                                 ),
                               ),
                             ],
@@ -505,53 +534,66 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     );
   }
 
-  Widget _buildContactCard(IconData icon, String title, String value) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 4,
-            offset: const Offset(0, 1),
+  Widget _buildContactCard(
+    IconData icon,
+    String title,
+    String value, {
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 20, color: const Color(0xFF10B981)),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _softPrimary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 22, color: _primary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: AppFonts.roboto(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.1,
+                  color: _ink,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: AppFonts.roboto(
+                  fontSize: 13,
+                  color: _muted,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            style: AppFonts.roboto(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.1,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            value,
-            style: AppFonts.roboto(
-              fontSize: 10,
-              color: Colors.grey.shade700,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+        ),
       ),
     );
   }

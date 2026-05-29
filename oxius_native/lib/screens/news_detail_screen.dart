@@ -61,9 +61,11 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
               color: Color(0xFF1F2937), size: 22),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Article',
-          style: TextStyle(
+        title: Text(
+          _post?.title ?? '',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
             color: Color(0xFF1F2937),
             fontWeight: FontWeight.w700,
             fontSize: 16,
@@ -104,7 +106,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
               : SingleChildScrollView(
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 800),
-                    margin: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.all(2),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -134,13 +136,13 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
 
                         Container(
                           margin: const EdgeInsets.only(top: 8),
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
+                                color: Colors.black.withValues(alpha: 0.03),
                                 blurRadius: 4,
                                 offset: const Offset(0, 1),
                               ),
@@ -162,7 +164,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFE53E3E)
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -273,7 +275,7 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
 
                               // Content
                               Html(
-                                data: _post!.content,
+                                data: _constrainHtmlImages(_post!.content),
                                 onLinkTap: (url, attributes, element) {
                                   UrlLauncherUtils.launchExternalUrl(url);
                                 },
@@ -282,6 +284,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                     fontSize: FontSize(15),
                                     lineHeight: const LineHeight(1.7),
                                     color: const Color(0xFF374151),
+                                    margin: Margins.zero,
+                                    padding: HtmlPaddings.zero,
                                   ),
                                   "p": Style(
                                     margin: Margins.only(bottom: 12),
@@ -303,6 +307,8 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                                   ),
                                   "img": Style(
                                     margin: Margins.symmetric(vertical: 12),
+                                    width: Width(100, Unit.percent),
+                                    height: Height.auto(),
                                   ),
                                 },
                               ),
@@ -407,6 +413,30 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                     ),
                   ),
                 ),
+    );
+  }
+
+  String _constrainHtmlImages(String html) {
+    return html.replaceAllMapped(
+      RegExp(r'<img\b([^>]*)>', caseSensitive: false),
+      (match) {
+        final attrs = match.group(1) ?? '';
+        final styleMatch =
+            RegExp(r'style\s*=\s*"([^"]*)"', caseSensitive: false)
+                .firstMatch(attrs);
+        const requiredStyle = 'max-width:100%;height:auto;';
+
+        if (styleMatch != null) {
+          final currentStyle = styleMatch.group(1) ?? '';
+          final nextAttrs = attrs.replaceFirst(
+            styleMatch.group(0)!,
+            'style="$currentStyle;$requiredStyle"',
+          );
+          return '<img$nextAttrs>';
+        }
+
+        return '<img$attrs style="$requiredStyle">';
+      },
     );
   }
 

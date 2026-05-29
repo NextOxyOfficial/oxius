@@ -180,13 +180,40 @@ class AdsyRefreshIndicator extends StatefulWidget {
 }
 
 class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
-  material.RefreshIndicatorStatus? _status;
+  _AdsyRefreshState _state = _AdsyRefreshState.idle;
   bool _feedbackSent = false;
-  double _pullExtent = 0;
+  double _dragExtent = 0;
 
   Future<void> _handleRefresh() async {
+    if (_state == _AdsyRefreshState.refreshing) return;
+
+    setState(() => _state = _AdsyRefreshState.refreshing);
     await _playRefreshFeedback();
-    await widget.onRefresh();
+
+    try {
+      await widget.onRefresh();
+    } catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'adsy refresh indicator',
+          context: ErrorDescription('while running pull-to-refresh'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _state = _AdsyRefreshState.settling;
+          _dragExtent = 0;
+          _feedbackSent = false;
+        });
+        await Future<void>.delayed(const Duration(milliseconds: 220));
+      }
+      if (mounted) {
+        setState(() => _state = _AdsyRefreshState.idle);
+      }
+    }
   }
 
   Future<void> _playRefreshFeedback() async {
@@ -206,21 +233,6 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
     }
   }
 
-  void _handleStatusChange(material.RefreshIndicatorStatus? status) {
-    if (!mounted) return;
-    setState(() => _status = status);
-
-    if (status == material.RefreshIndicatorStatus.armed ||
-        status == material.RefreshIndicatorStatus.refresh) {
-      _playRefreshFeedback();
-    }
-
-    if (status == null || status == material.RefreshIndicatorStatus.done) {
-      _feedbackSent = false;
-      setState(() => _pullExtent = 0);
-    }
-  }
-
   bool _handleScrollNotification(ScrollNotification notification) {
     if (!widget.notificationPredicate(notification)) {
       return false;
@@ -231,67 +243,122 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
 
     if (notification is ScrollStartNotification &&
         notification.dragDetails != null) {
-      setState(() => _pullExtent = 0);
-      return false;
-    }
-
-    if (!atTop) {
-      if (_pullExtent != 0 &&
-          _status != material.RefreshIndicatorStatus.refresh) {
-        setState(() => _pullExtent = 0);
+      if (_state != _AdsyRefreshState.refreshing) {
+        setState(() {
+          _state = _AdsyRefreshState.idle;
+          _dragExtent = 0;
+          _feedbackSent = false;
+        });
       }
       return false;
     }
 
-    double addedPull = 0;
+    if (!atTop) {
+      if (_dragExtent != 0 && _state != _AdsyRefreshState.refreshing) {
+        setState(() {
+          _state = _AdsyRefreshState.idle;
+          _dragExtent = 0;
+          _feedbackSent = false;
+        });
+      }
+      return false;
+    }
+
+    double pullDelta = 0;
     if (notification is OverscrollNotification) {
-      addedPull = notification.overscroll < 0 ? -notification.overscroll : 0;
+      pullDelta = -notification.overscroll;
     } else if (notification is ScrollUpdateNotification &&
         notification.dragDetails != null) {
       final delta = notification.scrollDelta ?? 0;
-      addedPull = delta < 0 ? -delta : 0;
+      pullDelta = -delta;
     }
 
-    if (addedPull > 0) {
-      final maxPull = _maxPullOffset(context);
+    if (pullDelta != 0 && _state != _AdsyRefreshState.refreshing) {
+      final maxPull = _maxRawPull(context);
+      final nextPull = (_dragExtent + pullDelta).clamp(0.0, maxPull);
+      final threshold = _triggerPullExtent(context);
+      final nextState = nextPull >= threshold
+          ? _AdsyRefreshState.armed
+          : _AdsyRefreshState.dragging;
+
       setState(() {
-        _pullExtent = (_pullExtent + addedPull).clamp(0, maxPull);
+        _dragExtent = nextPull;
+        _state = nextPull > 0 ? nextState : _AdsyRefreshState.idle;
       });
+
+      if (nextState != _AdsyRefreshState.armed) {
+        _feedbackSent = false;
+      }
     }
 
     if (notification is ScrollEndNotification &&
-        _status != material.RefreshIndicatorStatus.refresh) {
-      setState(() => _pullExtent = 0);
+        _state != _AdsyRefreshState.refreshing) {
+      if (_dragExtent <= 0 && _state != _AdsyRefreshState.armed) {
+        return false;
+      }
+      if (_dragExtent >= _triggerPullExtent(context)) {
+        _handleRefresh();
+      } else {
+        setState(() {
+          _state = _AdsyRefreshState.settling;
+          _dragExtent = 0;
+          _feedbackSent = false;
+        });
+        Future<void>.delayed(const Duration(milliseconds: 180), () {
+          if (!mounted || _state != _AdsyRefreshState.settling) return;
+          setState(() => _state = _AdsyRefreshState.idle);
+        });
+      }
     }
 
     return false;
   }
 
-  double _maxPullOffset(BuildContext context) {
+  double _maxRawPull(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height;
-    return math.min(height * 0.42, 280);
+    return math.min(height * 0.52, 460.0);
   }
 
-  double _rubberBandOffset(double pull, double maxPull) {
+  double _maxVisualPull(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
+    return math.min(height * 0.42, 280.0);
+  }
+
+  double _triggerPullExtent(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height;
+    return math.min(
+      math.max(widget.displacement + 128, 156.0),
+      height * 0.28,
+    );
+  }
+
+  double _rubberBandOffset(double pull, double maxRawPull) {
     if (pull <= 0) return 0;
-    final normalized = (pull / maxPull).clamp(0.0, 1.0);
-    final eased = 1 - math.pow(1 - normalized, 2.35);
-    return maxPull * eased;
+    final normalized = (pull / maxRawPull).clamp(0.0, 1.0);
+    final eased = (1 - math.pow(1 - normalized, 2.35)).toDouble();
+    return _maxVisualPull(context) * eased;
   }
 
   @override
   Widget build(BuildContext context) {
-    final visible = _status == material.RefreshIndicatorStatus.drag ||
-        _status == material.RefreshIndicatorStatus.armed ||
-        _status == material.RefreshIndicatorStatus.refresh;
+    final visible = _state != _AdsyRefreshState.idle;
     final color = widget.color ?? Theme.of(context).colorScheme.primary;
-    final maxPull = _maxPullOffset(context);
-    final refreshRestOffset = math.min(widget.displacement + 34, maxPull);
-    final contentOffset = _status == material.RefreshIndicatorStatus.refresh
+    final maxRawPull = _maxRawPull(context);
+    final triggerPull = _triggerPullExtent(context);
+    final pullProgress = (_dragExtent / triggerPull).clamp(0.0, 1.0).toDouble();
+    final refreshRestOffset = math
+        .min(
+          math.max(widget.displacement + 52, 84.0),
+          112.0,
+        )
+        .toDouble();
+    final contentOffset = _state == _AdsyRefreshState.refreshing
         ? refreshRestOffset
-        : _rubberBandOffset(_pullExtent, maxPull);
+        : _rubberBandOffset(_dragExtent, maxRawPull);
     final topOffset = widget.edgeOffset +
-        math.max(10, math.min(contentOffset * 0.42, maxPull * 0.36));
+        math
+            .max(10.0, math.min(contentOffset * 0.42, refreshRestOffset))
+            .toDouble();
 
     return Stack(
       alignment: Alignment.topCenter,
@@ -300,20 +367,17 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
           onNotification: _handleScrollNotification,
           child: AnimatedContainer(
             duration: Duration(
-              milliseconds:
-                  _status == material.RefreshIndicatorStatus.drag ? 40 : 220,
+              milliseconds: _state == _AdsyRefreshState.dragging ||
+                      _state == _AdsyRefreshState.armed
+                  ? 26
+                  : 220,
             ),
-            curve: Curves.easeOutCubic,
+            curve: _state == _AdsyRefreshState.dragging ||
+                    _state == _AdsyRefreshState.armed
+                ? Curves.linear
+                : Curves.easeOutCubic,
             transform: Matrix4.translationValues(0, contentOffset, 0),
-            child: material.RefreshIndicator.noSpinner(
-              onRefresh: _handleRefresh,
-              onStatusChange: _handleStatusChange,
-              triggerMode: widget.triggerMode,
-              notificationPredicate: widget.notificationPredicate,
-              semanticsLabel: widget.semanticsLabel,
-              semanticsValue: widget.semanticsValue,
-              child: widget.child,
-            ),
+            child: widget.child,
           ),
         ),
         Positioned(
@@ -346,11 +410,16 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
                     ],
                   ),
                   child: Center(
-                    child: AdsyLoadingIndicator(
-                      size: 28,
-                      color: color,
-                      strokeWidth: 2.6,
-                    ),
+                    child: _state == _AdsyRefreshState.refreshing
+                        ? AdsyLoadingIndicator(
+                            size: 28,
+                            color: color,
+                            strokeWidth: 2.6,
+                          )
+                        : _PullProgressIndicator(
+                            progress: pullProgress,
+                            color: color,
+                          ),
                   ),
                 ),
               ),
@@ -360,4 +429,55 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
       ],
     );
   }
+}
+
+class _PullProgressIndicator extends StatelessWidget {
+  final double progress;
+  final Color color;
+
+  const _PullProgressIndicator({
+    required this.progress,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final clampedProgress = progress.clamp(0.0, 1.0).toDouble();
+
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          material.CircularProgressIndicator(
+            value: clampedProgress <= 0 ? 0.01 : clampedProgress,
+            backgroundColor: color.withValues(alpha: 0.12),
+            color: color,
+            strokeWidth: 2.6,
+            strokeCap: StrokeCap.round,
+          ),
+          Image.asset(
+            'assets/images/favicon.png',
+            width: 15,
+            height: 15,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.autorenew_rounded,
+              size: 15,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _AdsyRefreshState {
+  idle,
+  dragging,
+  armed,
+  refreshing,
+  settling,
 }

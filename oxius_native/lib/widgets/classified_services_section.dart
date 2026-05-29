@@ -129,12 +129,15 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 768;
 
-    // Determine which categories to show
+    final hasMoreCategories = _categories.length > _initialCategoryCount;
+    final visibleCategoryCount = hasMoreCategories && !_isExpanded
+        ? _initialCategoryCount - 1
+        : _categories.length;
     final categoriesToShow = _isExpanded
         ? _categories
-        : _categories.take(_initialCategoryCount).toList();
-
-    final hasMoreCategories = _categories.length > _initialCategoryCount;
+        : _categories.take(visibleCategoryCount).toList();
+    final remainingCount = (_categories.length - visibleCategoryCount)
+        .clamp(0, _categories.length);
 
     return Container(
       margin: EdgeInsets.symmetric(
@@ -190,19 +193,14 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
                   onTap: _onCategoryTap,
                   isLoading: _loadingCategories,
                   margin: const EdgeInsets.fromLTRB(0, 0, 0, 6),
+                  trailingTile: hasMoreCategories && !_loadingCategories
+                      ? _buildSeeMoreTile(
+                          isMobile: isMobile,
+                          remainingCount: remainingCount,
+                        )
+                      : null,
                 ),
-                if (hasMoreCategories && !_loadingCategories)
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      isMobile ? 8 : 12,
-                      0,
-                      isMobile ? 8 : 12,
-                      isMobile ? 10 : 12,
-                    ),
-                    child: _buildSeeMoreButton(isMobile),
-                  )
-                else
-                  SizedBox(height: isMobile ? 10 : 12),
+                SizedBox(height: isMobile ? 10 : 12),
               ],
             ),
           ),
@@ -263,49 +261,68 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     );
   }
 
-  Widget _buildSeeMoreButton(bool isMobile) {
-    final remainingCount = _categories.length - _initialCategoryCount;
+  Widget _buildSeeMoreTile({
+    required bool isMobile,
+    required int remainingCount,
+  }) {
+    final isSeeLess = _isExpanded;
+    final compact = MediaQuery.of(context).size.width < 390;
+    final label = isSeeLess
+        ? _translationService.t('see_less', fallback: 'See Less')
+        : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)';
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: 4,
-        vertical: 4,
-      ),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              _isExpanded = !_isExpanded;
-            });
-          },
-          borderRadius: BorderRadius.circular(4),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _isExpanded
-                      ? Icons.keyboard_arrow_up_rounded
-                      : Icons.keyboard_arrow_down_rounded,
-                  size: 16,
-                  color: const Color(0xFF06B6D4),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _isExpanded
-                      ? _translationService.t('see_less', fallback: 'See Less')
-                      : '${_translationService.t('see_more', fallback: 'See More')} ($remainingCount)',
-                  style: AppFonts.roboto(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF06B6D4),
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(compact ? 2 : 4, 6, compact ? 2 : 4, 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              width: compact ? 50 : 56,
+              height: compact ? 50 : 56,
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFEFF),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF67E8F9)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF06B6D4).withValues(alpha: 0.10),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Icon(
+                isSeeLess
+                    ? Icons.keyboard_arrow_up_rounded
+                    : Icons.keyboard_arrow_down_rounded,
+                size: compact ? 26 : 30,
+                color: const Color(0xFF0891B2),
+              ),
             ),
-          ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: compact ? 32 : 34,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: AppFonts.roboto(
+                  fontSize: compact ? 11.2 : 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0891B2),
+                  height: 1.22,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -374,6 +391,7 @@ class _ClassifiedServicesSectionState extends State<ClassifiedServicesSection> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildPostsArea(bool isMobile) {
     if (_loadingPosts) {
       return Container(

@@ -1133,27 +1133,111 @@ class _MyGigsScreenState extends State<MyGigsScreen> {
   Widget _buildUserGigsSection(bool isMobile) {
     if (!AuthService.isAuthenticated) {
       return Container(
-        padding: const EdgeInsets.all(24),
+        width: double.infinity,
+        margin:
+            EdgeInsets.fromLTRB(isMobile ? 6 : 12, 10, isMobile ? 6 : 12, 0),
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
         decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.login, size: 48, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              'Please login to view your gigs',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.work_outline_rounded,
+                    size: 22,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Login to manage gigs',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        'View your posted gigs, status, orders, and earnings from one place.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.4,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/login'),
-              child: const Text('Login'),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.pushNamed(context, '/login'),
+                    style: ElevatedButton.styleFrom(
+                      elevation: 0,
+                      backgroundColor: const Color(0xFF111827),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.login_rounded, size: 18),
+                    label: const Text(
+                      'Login',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/micro-gigs'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF111827),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.explore_outlined, size: 18),
+                    label: const Text(
+                      'Browse Gigs',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

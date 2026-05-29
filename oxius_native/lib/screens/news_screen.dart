@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/news_models.dart';
 import '../services/news_service.dart';
+import '../services/translation_service.dart';
 import '../utils/network_error_handler.dart';
 import '../widgets/news/hero_banner.dart';
 import '../widgets/news/trending_carousel.dart';
@@ -17,6 +18,8 @@ class NewsScreen extends StatefulWidget {
 }
 
 class _NewsScreenState extends State<NewsScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final TranslationService _translationService = TranslationService();
   List<NewsPost> _allPosts = [];
   List<NewsCategory> _categories = [];
   List<TipSuggestion> _tips = [];
@@ -25,14 +28,33 @@ class _NewsScreenState extends State<NewsScreen> {
   Object? _error;
   int _currentPage = 1;
   bool _hasMore = true;
-  bool _isGridLayout = true;
+  bool _isGridLayout = false;
   List<TipSuggestion> _visibleTips = [];
   String? _newsLogoUrl;
+  NewsCategory? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
+    _translationService.addListener(_onTranslationsChanged);
     _loadInitialData();
+  }
+
+  @override
+  void dispose() {
+    _translationService.removeListener(_onTranslationsChanged);
+    super.dispose();
+  }
+
+  void _onTranslationsChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  String _t(String key, {required String en, required String bn}) {
+    final fallback =
+        _translationService.currentLanguage.startsWith('en') ? en : bn;
+    return _translationService.t(key, fallback: fallback);
   }
 
   Future<void> _loadInitialData() async {
@@ -62,6 +84,8 @@ class _NewsScreenState extends State<NewsScreen> {
         _hasMore = paginatedResponse.hasMore;
         _newsLogoUrl = logoUrl;
         _loading = false;
+        _selectedCategory = null;
+        _currentPage = 1;
       });
     } catch (e) {
       setState(() {
@@ -72,7 +96,7 @@ class _NewsScreenState extends State<NewsScreen> {
   }
 
   Future<void> _loadMorePosts() async {
-    if (_loadingMore || !_hasMore) return;
+    if (_loadingMore || !_hasMore || _selectedCategory != null) return;
 
     setState(() {
       _loadingMore = true;
@@ -102,6 +126,36 @@ class _NewsScreenState extends State<NewsScreen> {
     });
   }
 
+  Future<void> _selectCategory(NewsCategory? category) async {
+    Navigator.of(context).maybePop();
+
+    setState(() {
+      _selectedCategory = category;
+      _loading = true;
+      _error = null;
+      _currentPage = 1;
+      _hasMore = category == null;
+    });
+
+    try {
+      final posts = category == null
+          ? (await NewsService.getPosts(page: 1)).results
+          : await NewsService.getPostsByCategory(category.slug);
+
+      if (!mounted) return;
+      setState(() {
+        _allPosts = posts;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
+  }
+
   void _navigateToDetail(NewsPost post) {
     Navigator.push(
       context,
@@ -117,6 +171,7 @@ class _NewsScreenState extends State<NewsScreen> {
     final isMobile = screenWidth < 768;
 
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -146,6 +201,11 @@ class _NewsScreenState extends State<NewsScreen> {
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.tune_rounded,
+                color: Color(0xFF1F2937), size: 22),
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+          ),
           const SizedBox(width: 4),
         ],
         bottom: PreferredSize(
@@ -153,6 +213,7 @@ class _NewsScreenState extends State<NewsScreen> {
           child: Container(height: 1, color: Colors.grey.shade200),
         ),
       ),
+      endDrawer: _buildCategoryDrawer(),
       body: _loading
           ? const Center(child: AdsyLoadingIndicator())
           : _error != null
@@ -189,7 +250,7 @@ class _NewsScreenState extends State<NewsScreen> {
               : SingleChildScrollView(
                   child: Container(
                     constraints: const BoxConstraints(maxWidth: 1280),
-                    margin: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.all(2),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -209,17 +270,23 @@ class _NewsScreenState extends State<NewsScreen> {
 
                         // All News Section Header
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+                          padding: const EdgeInsets.fromLTRB(2, 16, 2, 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'All News',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.1,
-                                  color: Color(0xFF1F2937),
+                              Expanded(
+                                child: Text(
+                                  _selectedCategory?.name ??
+                                      _t('all_news',
+                                          en: 'All News', bn: 'সব সংবাদ'),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.1,
+                                    color: Color(0xFF1F2937),
+                                  ),
                                 ),
                               ),
                               Row(
@@ -260,7 +327,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
                         // News Grid/List
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: _isGridLayout
                               ? GridView.builder(
                                   shrinkWrap: true,
@@ -305,7 +372,7 @@ class _NewsScreenState extends State<NewsScreen> {
                         if (_hasMore)
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                vertical: 16, horizontal: 4),
+                                vertical: 16, horizontal: 2),
                             child: Center(
                               child: ElevatedButton(
                                 onPressed: _loadingMore ? null : _loadMorePosts,
@@ -323,8 +390,12 @@ class _NewsScreenState extends State<NewsScreen> {
                                 ),
                                 child: Text(
                                   _loadingMore
-                                      ? 'Loading...'
-                                      : 'Load More Articles',
+                                      ? _t('loading_news',
+                                          en: 'Loading news...',
+                                          bn: 'সংবাদ লোড হচ্ছে...')
+                                      : _t('read_more_news',
+                                          en: 'Read More News',
+                                          bn: 'আরও সংবাদ পড়ুন'),
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13),
@@ -333,85 +404,11 @@ class _NewsScreenState extends State<NewsScreen> {
                             ),
                           ),
 
-                        // Trending Topics
-                        if (_categories.isNotEmpty)
-                          Container(
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 4),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Trending Topics',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.1,
-                                    color: Color(0xFF1F2937),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  children: _categories.take(7).map((category) {
-                                    return InkWell(
-                                      onTap: () {
-                                        // TODO: Navigate to category
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black
-                                                  .withOpacity(0.05),
-                                              blurRadius: 4,
-                                            ),
-                                          ],
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.trending_up_rounded,
-                                              size: 14,
-                                              color: Color(0xFFE53E3E),
-                                            ),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              category.name,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          ),
-
                         // Tips and Suggestions
                         if (_tips.isNotEmpty)
                           Container(
                             margin: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 4),
+                                vertical: 8, horizontal: 2),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
@@ -420,9 +417,11 @@ class _NewsScreenState extends State<NewsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  'Tips and Suggestions',
-                                  style: TextStyle(
+                                Text(
+                                  _t('tips_and_suggestions',
+                                      en: 'Tips and Suggestions',
+                                      bn: 'টিপস ও পরামর্শ'),
+                                  style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: -0.1,
@@ -450,8 +449,8 @@ class _NewsScreenState extends State<NewsScreen> {
                                         borderRadius: BorderRadius.circular(8),
                                         boxShadow: [
                                           BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.05),
+                                            color: Colors.black
+                                                .withValues(alpha: 0.05),
                                             blurRadius: 4,
                                           ),
                                         ],
@@ -529,6 +528,106 @@ class _NewsScreenState extends State<NewsScreen> {
     final sorted = List<NewsPost>.from(_allPosts);
     sorted.sort((a, b) => b.comments.length.compareTo(a.comments.length));
     return sorted.take(8).toList();
+  }
+
+  Widget _buildCategoryDrawer() {
+    return Drawer(
+      backgroundColor: Colors.white,
+      width: mathMin(MediaQuery.of(context).size.width * 0.82, 340),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 10, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _t('news_categories',
+                          en: 'News Categories', bn: 'সংবাদ ক্যাটাগরি'),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF111827),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+                children: [
+                  _buildCategoryDrawerTile(null),
+                  ..._categories.map(_buildCategoryDrawerTile),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  double mathMin(double a, double b) => a < b ? a : b;
+
+  Widget _buildCategoryDrawerTile(NewsCategory? category) {
+    final selected = category == null
+        ? _selectedCategory == null
+        : _selectedCategory?.slug == category.slug;
+    final title =
+        category?.name ?? _t('all_news', en: 'All News', bn: 'সব সংবাদ');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: selected ? const Color(0xFFFFF1F2) : Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: () => _selectCategory(category),
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            child: Row(
+              children: [
+                Icon(
+                  category == null
+                      ? Icons.newspaper_rounded
+                      : Icons.label_outline_rounded,
+                  size: 19,
+                  color: selected
+                      ? const Color(0xFFE53E3E)
+                      : const Color(0xFF6B7280),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                      color: selected
+                          ? const Color(0xFFE53E3E)
+                          : const Color(0xFF1F2937),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAdsyNewsTextLogo() {

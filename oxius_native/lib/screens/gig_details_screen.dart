@@ -207,7 +207,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           'Gig Details',
           style: AppFonts.roboto(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
+            fontSize: 17,
             letterSpacing: -0.2,
           ),
         ),
@@ -244,7 +244,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.green.withOpacity(0.3),
+                    color: Colors.green.withValues(alpha: 0.3),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -282,7 +282,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),
@@ -373,13 +373,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
     final price = _gig!['price'] ?? 0;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -394,12 +394,12 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
                   Icons.work_outline_rounded,
-                  size: 16,
+                  size: 18,
                   color: Color(0xFF10B981),
                 ),
               ),
@@ -408,10 +408,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 child: Text(
                   title,
                   style: AppFonts.roboto(
-                    fontSize: 15,
+                    fontSize: 17,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF1F2937),
-                    height: 1.3,
+                    height: 1.35,
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -425,10 +425,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                    color: const Color(0xFF10B981).withOpacity(0.3),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -438,13 +438,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     const Icon(
                       Icons.monetization_on_rounded,
                       color: Color(0xFF10B981),
-                      size: 14,
+                      size: 16,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Earn: ',
                       style: AppFonts.roboto(
-                        fontSize: 11,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF6B7280),
                       ),
@@ -452,7 +452,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     Text(
                       '৳$price',
                       style: AppFonts.roboto(
-                        fontSize: 15,
+                        fontSize: 17,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF10B981),
                         letterSpacing: -0.3,
@@ -480,13 +480,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       Icon(
                         Icons.check_circle_rounded,
                         color: Colors.orange.shade700,
-                        size: 12,
+                        size: 14,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         'Submitted',
                         style: AppFonts.roboto(
-                          fontSize: 11,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: Colors.orange.shade700,
                         ),
@@ -506,13 +506,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -526,20 +526,20 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
                   Icons.description_outlined,
                   color: Color(0xFF3B82F6),
-                  size: 14,
+                  size: 16,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 'Instructions',
                 style: AppFonts.roboto(
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1F2937),
                   letterSpacing: -0.1,
@@ -565,10 +565,10 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               },
               style: {
                 "body": Style(
-                  fontSize: FontSize(13),
+                  fontSize: FontSize(15),
                   textAlign: TextAlign.justify,
                   color: const Color(0xFF374151),
-                  lineHeight: const LineHeight(1.5),
+                  lineHeight: const LineHeight(1.55),
                 ),
               },
             ),
@@ -583,13 +583,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -603,20 +603,20 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.1),
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
                   Icons.photo_library_outlined,
                   color: Color(0xFF8B5CF6),
-                  size: 14,
+                  size: 16,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 'Reference Media',
                 style: AppFonts.roboto(
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1F2937),
                   letterSpacing: -0.1,
@@ -720,7 +720,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
           }
         },
         child: Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: const Color(0xFFFEF3C7),
             borderRadius: BorderRadius.circular(8),
@@ -740,7 +740,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                 child: const Icon(
                   Icons.link_rounded,
                   color: Colors.white,
-                  size: 14,
+                  size: 16,
                 ),
               ),
               const SizedBox(width: 8),
@@ -751,7 +751,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     Text(
                       'Action URL',
                       style: AppFonts.roboto(
-                        fontSize: 10,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF92400E),
                       ),
@@ -760,7 +760,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     Text(
                       actionLink,
                       style: AppFonts.roboto(
-                        fontSize: 11,
+                        fontSize: 14,
                         color: const Color(0xFF78350F),
                         fontWeight: FontWeight.w500,
                       ),
@@ -774,7 +774,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Icon(
                 Icons.open_in_new_rounded,
                 color: const Color(0xFFFBBF24),
-                size: 14,
+                size: 17,
               ),
             ],
           ),
@@ -785,13 +785,13 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
 
   Widget _buildUploadSection() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -806,20 +806,20 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(
                   Icons.cloud_upload_outlined,
                   color: Color(0xFF10B981),
-                  size: 14,
+                  size: 16,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 'Upload Your Work',
                 style: AppFonts.roboto(
-                  fontSize: 13,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1F2937),
                   letterSpacing: -0.1,
@@ -835,7 +835,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Text(
                 'Submit Details *',
                 style: AppFonts.roboto(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF374151),
                 ),
@@ -844,12 +844,12 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               TextField(
                 controller: _submitDetailsController,
                 maxLines: 4,
-                style: AppFonts.roboto(fontSize: 13),
+                style: AppFonts.roboto(fontSize: 15),
                 decoration: InputDecoration(
                   hintText: 'Describe how you completed this task...',
                   hintStyle: AppFonts.roboto(
                     color: Colors.grey.shade400,
-                    fontSize: 12,
+                    fontSize: 14,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -866,12 +866,12 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   ),
                   filled: true,
                   fillColor: const Color(0xFFF9FAFB),
-                  contentPadding: const EdgeInsets.all(10),
+                  contentPadding: const EdgeInsets.all(12),
                   errorText: _showValidationErrors &&
                           _submitDetailsController.text.trim().isEmpty
                       ? 'Please enter your work details'
                       : null,
-                  errorStyle: AppFonts.roboto(fontSize: 11),
+                  errorStyle: AppFonts.roboto(fontSize: 12),
                 ),
               ),
               const SizedBox(height: 12),
@@ -880,7 +880,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
               Text(
                 'Upload Proof Images',
                 style: AppFonts.roboto(
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF374151),
                 ),
@@ -897,8 +897,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                     return Stack(
                       children: [
                         Container(
-                          width: 70,
-                          height: 70,
+                          width: 76,
+                          height: 76,
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(8),
@@ -942,8 +942,8 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                   GestureDetector(
                     onTap: _pickImage,
                     child: Container(
-                      width: 70,
-                      height: 70,
+                      width: 76,
+                      height: 76,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF9FAFB),
                         borderRadius: BorderRadius.circular(8),
@@ -957,14 +957,14 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                         children: [
                           const Icon(
                             Icons.add_photo_alternate_outlined,
-                            size: 24,
+                            size: 26,
                             color: Color(0xFF10B981),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'Add',
                             style: AppFonts.roboto(
-                              fontSize: 10,
+                              fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF10B981),
                             ),
@@ -995,7 +995,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Transform.scale(
-                          scale: 0.9,
+                          scale: 1.0,
                           child: Checkbox(
                             value: _acceptedTerms,
                             onChanged: (value) =>
@@ -1014,7 +1014,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                 Text(
                                   'I accept ',
                                   style: AppFonts.roboto(
-                                    fontSize: 11,
+                                    fontSize: 13,
                                     color: const Color(0xFF374151),
                                   ),
                                 ),
@@ -1031,7 +1031,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                   child: Text(
                                     'Terms & Condition',
                                     style: AppFonts.roboto(
-                                      fontSize: 11,
+                                      fontSize: 13,
                                       color: const Color(0xFF3B82F6),
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.underline,
@@ -1041,7 +1041,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                 Text(
                                   ', ',
                                   style: AppFonts.roboto(
-                                    fontSize: 11,
+                                    fontSize: 13,
                                     color: const Color(0xFF374151),
                                   ),
                                 ),
@@ -1058,7 +1058,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                   child: Text(
                                     'Privacy Policy',
                                     style: AppFonts.roboto(
-                                      fontSize: 11,
+                                      fontSize: 13,
                                       color: const Color(0xFF3B82F6),
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.underline,
@@ -1068,7 +1068,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                 Text(
                                   '.',
                                   style: AppFonts.roboto(
-                                    fontSize: 11,
+                                    fontSize: 13,
                                     color: const Color(0xFF374151),
                                   ),
                                 ),
@@ -1089,7 +1089,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             Text(
                               'Please accept Terms & Conditions',
                               style: AppFonts.roboto(
-                                fontSize: 10,
+                                fontSize: 12,
                                 color: Colors.red.shade700,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1105,7 +1105,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Transform.scale(
-                          scale: 0.9,
+                          scale: 1.0,
                           child: Checkbox(
                             value: _acceptedCondition,
                             onChanged: (value) => setState(
@@ -1122,7 +1122,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             child: Text(
                               'I am aware that fake and fraud submission may lead to account ban!',
                               style: AppFonts.roboto(
-                                fontSize: 11,
+                                fontSize: 13,
                                 color: Colors.red.shade700,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -1142,7 +1142,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                             Text(
                               'Please acknowledge the warning',
                               style: AppFonts.roboto(
-                                fontSize: 10,
+                                fontSize: 12,
                                 color: Colors.red.shade700,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -1166,7 +1166,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                         ? Colors.grey.shade400
                         : const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -1192,7 +1192,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                               _hasSubmitted
                                   ? Icons.check_circle_rounded
                                   : Icons.check_circle_rounded,
-                              size: 16,
+                              size: 18,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -1200,7 +1200,7 @@ class _GigDetailsScreenState extends State<GigDetailsScreen> {
                                   ? 'Already Submitted'
                                   : 'Submit Work',
                               style: AppFonts.roboto(
-                                fontSize: 14,
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: -0.1,
                               ),

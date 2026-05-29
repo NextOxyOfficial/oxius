@@ -18,7 +18,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   static const Color _ink = Color(0xFF14213D);
   static const Color _muted = Color(0xFF64748B);
-  static const Color _surface = Color(0xFFFFFBF4);
+  static const Color _surface = Color(0xFFF8FAFC);
   static const Color _panel = Color(0xFFFFFFFF);
   static const Color _gold = Color(0xFFF59E0B);
   static const Color _peach = Color(0xFFFFE7C7);
@@ -27,7 +27,7 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   static const Color _primary = Color(0xFF2563EB);
 
   bool _isSubscribing = false;
-  bool _isLoadingBalance = true;
+  bool _isLoadingBalance = false;
   int _selectedMonths = 1;
   final int _monthlyPrice = 149;
   final int _yearlyDiscount = 289;
@@ -43,10 +43,25 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
   }
 
   Future<void> _refreshBalance() async {
-    setState(() => _isLoadingBalance = true);
-    await _userState.refreshUser();
+    if (_isLoadingBalance && mounted) return;
     if (mounted) {
-      setState(() => _isLoadingBalance = false);
+      setState(() => _isLoadingBalance = true);
+    }
+
+    try {
+      final refreshed = await _userState.refreshUser();
+      if (!refreshed && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not refresh balance. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingBalance = false);
+      }
     }
   }
 
@@ -83,163 +98,19 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(4, 6, 4, bottomInset + 140),
+        padding: EdgeInsets.fromLTRB(2, 8, 2, bottomInset + 112),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildHeroSection(),
-            const SizedBox(height: 14),
             _buildQuickStatusStrip(),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             _buildPlanComposer(),
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
             _buildFeaturesSection(),
           ],
         ),
       ),
       bottomNavigationBar: _buildBottomCheckoutBar(bottomInset),
-    );
-  }
-
-  Widget _buildHeroSection() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF123261),
-            Color(0xFF1E4EA8),
-            Color(0xFF3B82F6),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: _primary.withValues(alpha: 0.22),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -28,
-              right: -18,
-              child: Container(
-                width: 118,
-                height: 118,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.10),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -36,
-              left: -8,
-              child: Container(
-                width: 138,
-                height: 138,
-                decoration: BoxDecoration(
-                  color: _gold.withValues(alpha: 0.18),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.18),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.auto_awesome, size: 14, color: Colors.white),
-                        SizedBox(width: 6),
-                        Text(
-                          'Premium membership',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'Move faster with Pro access',
-                    style: TextStyle(
-                      fontSize: 28,
-                      height: 1.08,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: -0.9,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Sell more, post more, and unlock the tools that make your account work like a business hub.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      height: 1.45,
-                      color: Colors.white.withValues(alpha: 0.88),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeroStat(String label, String value) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withValues(alpha: 0.82),
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -250,8 +121,8 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF1E8D7)),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Row(
         children: [
@@ -286,40 +157,52 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
           ),
           const Spacer(),
           // Wallet balance chip
-          GestureDetector(
-            onTap: _refreshBalance,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: _mint.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.account_balance_wallet_rounded,
-                      size: 14, color: _mint),
-                  const SizedBox(width: 5),
-                  _isLoadingBalance
-                      ? const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: AdsyLoadingIndicator(
-                              strokeWidth: 1.5, color: _mint),
-                        )
-                      : Text(
-                          '৳${balance.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: _mint,
+          Container(
+            padding: const EdgeInsets.only(left: 10, right: 4),
+            decoration: BoxDecoration(
+              color: _mint.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.account_balance_wallet_rounded,
+                    size: 15, color: _mint),
+                const SizedBox(width: 5),
+                Text(
+                  '৳${balance.toStringAsFixed(0)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: _mint,
+                  ),
+                ),
+                SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: IconButton(
+                    tooltip: 'Refresh balance',
+                    onPressed: _refreshBalance,
+                    padding: EdgeInsets.zero,
+                    icon: _isLoadingBalance
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: AdsyLoadingIndicator(
+                              strokeWidth: 1.7,
+                              color: _mint,
+                            ),
+                          )
+                        : Icon(
+                            Icons.refresh_rounded,
+                            size: 21,
+                            color: _mint.withValues(alpha: 0.9),
                           ),
-                        ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.refresh_rounded,
-                      size: 12, color: _mint.withValues(alpha: 0.7)),
-                ],
-              ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -329,16 +212,16 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   Widget _buildPlanComposer() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFF1E8D7)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
             color: _ink.withValues(alpha: 0.04),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -346,36 +229,33 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Choose your Pro rhythm',
+            'Choose Pro plan',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.w800,
               color: _ink,
-              letterSpacing: -0.4,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           const Text(
-            'Pick a plan that matches how fast you want to grow. Yearly keeps the price lower and unlocks the same tools.',
+            'Same features, different billing period.',
             style: TextStyle(
-              fontSize: 13,
-              height: 1.5,
+              fontSize: 12,
+              height: 1.35,
               color: _muted,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildDurationOption(
             1,
             'Monthly',
-            'Flexible start',
             accent: _peach,
-            badge: 'Popular for trial',
+            badge: 'Trial',
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           _buildDurationOption(
             12,
             'Yearly',
-            'Best value for sellers',
             accent: _sage,
             badge: 'Save ৳$_yearlyDiscount',
           ),
@@ -384,35 +264,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     );
   }
 
-  Widget _buildSummaryMetric(String label, String value, Color accent) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: _muted,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: accent,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildDurationOption(
     int months,
-    String title,
-    String subtitle, {
+    String title, {
     required Color accent,
     String? badge,
   }) {
@@ -427,112 +281,103 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedMonths = months),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? _ink : accent.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(22),
+          color: isSelected ? const Color(0xFFF8FAFC) : Colors.white,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? _ink : accent,
-            width: 2,
+            color: isSelected ? _ink : const Color(0xFFE5E7EB),
+            width: isSelected ? 1.4 : 1,
           ),
         ),
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(15),
+                color: accent.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 months == 1
                     ? Icons.flash_on_rounded
                     : Icons.workspace_premium_rounded,
-                color: isSelected ? Colors.white : _ink,
+                color: _ink,
+                size: 19,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
                           title,
-                          style: TextStyle(
-                            fontSize: 16,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
                             fontWeight: FontWeight.w800,
-                            color: isSelected ? Colors.white : _ink,
+                            color: _ink,
                           ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          total,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: _muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (badge != null) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        badge,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: _ink,
                         ),
                       ),
-                      if (badge != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? _gold.withValues(alpha: 0.18)
-                                : Colors.white,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            badge,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color:
-                                  isSelected ? const Color(0xFFFFF3C4) : _ink,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: isSelected
-                          ? Colors.white.withValues(alpha: 0.82)
-                          : _muted,
                     ),
-                  ),
-                  const SizedBox(height: 8),
+                  ],
+                  const SizedBox(width: 8),
                   Text(
                     price,
-                    style: TextStyle(
-                      fontSize: 14,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? Colors.white : _primary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    total,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white.withValues(alpha: 0.76)
-                          : _muted,
+                      color: _primary,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Icon(
               isSelected
                   ? Icons.radio_button_checked_rounded
                   : Icons.radio_button_off_rounded,
-              color: isSelected ? Colors.white : _muted,
+              color: isSelected ? _ink : _muted,
             ),
           ],
         ),
@@ -542,82 +387,64 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
 
   Widget _buildFeaturesSection() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: _panel,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: const Color(0xFFF1E8D7)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Everything you unlock',
+            'Included with Pro',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 17,
               fontWeight: FontWeight.w800,
               color: _ink,
-              letterSpacing: -0.4,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Designed for sellers, service providers, and members who want stronger visibility across the app.',
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.5,
-              color: _muted,
-            ),
-          ),
-          const SizedBox(height: 18),
-          _buildFeature(
-              Icons.storefront_rounded, 'Access to eShop Manager', _peach),
-          _buildFeature(Icons.shopping_bag_rounded,
-              'Sell products across AdsyClub', _sage),
-          _buildFeature(Icons.inventory_2_rounded, 'Add up to 10 products',
-              const Color(0xFFE5DEFF)),
-          _buildFeature(Icons.all_inbox_rounded, 'Receive unlimited orders',
-              const Color(0xFFFFE2E2)),
-          _buildFeature(Icons.campaign_rounded, 'Post unlimited ads',
-              const Color(0xFFDFF7F0)),
-          _buildFeature(Icons.task_alt_rounded, 'Earn from completing tasks',
-              const Color(0xFFFDE9D5)),
-          _buildFeature(Icons.account_balance_wallet_rounded,
-              'Fast deposit and withdraw', const Color(0xFFE0F2FE)),
-          _buildFeature(Icons.support_agent_rounded, 'Priority support 24/7',
-              const Color(0xFFFFF1CC)),
+          const SizedBox(height: 12),
+          _buildFeature(Icons.storefront_rounded, 'eShop Manager access'),
+          _buildFeature(Icons.inventory_2_rounded, 'Add up to 10 products'),
+          _buildFeature(Icons.campaign_rounded, 'Unlimited ad posting'),
+          _buildFeature(Icons.school_rounded, 'Unlimited eLearning access'),
+          _buildFeature(Icons.task_alt_rounded, 'Task earning access'),
+          _buildFeature(Icons.support_agent_rounded, 'Priority support'),
         ],
       ),
     );
   }
 
-  Widget _buildFeature(IconData icon, String text, Color tint) {
+  Widget _buildFeature(IconData icon, String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 42,
-            height: 42,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
-              color: tint,
-              borderRadius: BorderRadius.circular(14),
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               icon,
-              size: 18,
+              size: 16,
               color: _ink,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
                 text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   height: 1.35,
                   color: _ink,
                   fontWeight: FontWeight.w600,
@@ -626,10 +453,10 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
             ),
           ),
           const Padding(
-            padding: EdgeInsets.only(top: 8),
+            padding: EdgeInsets.only(top: 7),
             child: Icon(
               Icons.check_circle_rounded,
-              size: 18,
+              size: 16,
               color: _mint,
             ),
           ),
@@ -646,10 +473,10 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
     return SafeArea(
       top: false,
       child: Container(
-        padding: EdgeInsets.fromLTRB(16, 12, 16, bottomInset > 0 ? 6 : 14),
+        padding: EdgeInsets.fromLTRB(2, 10, 2, bottomInset > 0 ? 6 : 12),
         decoration: BoxDecoration(
           color: _panel.withValues(alpha: 0.97),
-          border: const Border(top: BorderSide(color: Color(0xFFF1E8D7))),
+          border: const Border(top: BorderSide(color: Color(0xFFE5E7EB))),
           boxShadow: [
             BoxShadow(
               color: _ink.withValues(alpha: 0.05),
@@ -733,15 +560,14 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                       Text(
                         isPro ? 'Pro active ✓' : '৳$_totalPrice',
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.w900,
                           color: _ink,
-                          letterSpacing: -0.5,
                         ),
                       ),
                       if (!isPro)
                         Text(
-                          'Wallet: ৳${balance.toStringAsFixed(0)} available',
+                          'Wallet: ৳${balance.toStringAsFixed(0)}',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
@@ -761,9 +587,9 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                       backgroundColor: isPro ? _mint : _ink,
                       foregroundColor: Colors.white,
                       disabledBackgroundColor: _ink.withValues(alpha: 0.55),
-                      padding: const EdgeInsets.symmetric(vertical: 17),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       elevation: 0,
                     ),
@@ -788,22 +614,6 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
                 ),
               ],
             ),
-            // Trust pills
-            if (!isPro) ...[
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  _TrustPill(icon: Icons.lock_rounded, label: 'Secure'),
-                  SizedBox(width: 6),
-                  _TrustPill(icon: Icons.bolt_rounded, label: 'Instant'),
-                  SizedBox(width: 6),
-                  _TrustPill(
-                      icon: Icons.receipt_long_rounded,
-                      label: 'Wallet billing'),
-                ],
-              ),
-            ],
           ],
         ),
       ),
@@ -1000,39 +810,6 @@ class _UpgradeToProScreenState extends State<UpgradeToProScreen> {
       SnackBar(
         content: Text('Error: $message'),
         backgroundColor: const Color(0xFFEF4444),
-      ),
-    );
-  }
-}
-
-class _TrustPill extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _TrustPill({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: const Color(0xFF475569)),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF334155),
-            ),
-          ),
-        ],
       ),
     );
   }
