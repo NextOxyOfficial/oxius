@@ -438,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   // 2. Gold Sponsors - existing business network sponsor slider
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.fromLTRB(4, 2, 4, 2),
                     child: GoldSponsorsSlider(),
                   ),
                   

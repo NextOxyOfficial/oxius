@@ -279,7 +279,7 @@ class _HeroBannerState extends State<HeroBanner> {
         _buildHeroSlider(bannerHeight),
         const SizedBox(height: 8),
         _buildFeaturedNewsTicker(),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _buildServicesSection(),
       ],
     );
@@ -321,7 +321,7 @@ class _HeroBannerState extends State<HeroBanner> {
   Widget _buildFeaturedNewsTicker() {
     if (_featuredNews.isEmpty) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 14),
+        margin: const EdgeInsets.symmetric(horizontal: 2),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -344,7 +344,7 @@ class _HeroBannerState extends State<HeroBanner> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 850),
       curve: Curves.easeInOut,
-      margin: const EdgeInsets.symmetric(horizontal: 14),
+      margin: const EdgeInsets.symmetric(horizontal: 2),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -364,13 +364,22 @@ class _HeroBannerState extends State<HeroBanner> {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => _openFeaturedNews(item),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildBreakingHeader(),
-            const SizedBox(width: 7),
-            Expanded(child: _buildFeaturedNewsTitle(item)),
-            const SizedBox(width: 8),
-            _buildDetailsPill(),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _buildBreakingHeader(),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Expanded(child: _buildFeaturedNewsTitle(item)),
+                const SizedBox(width: 8),
+                _buildDetailsPill(),
+              ],
+            ),
           ],
         ),
       ),
