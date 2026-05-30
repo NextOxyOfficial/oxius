@@ -59,6 +59,11 @@ urlpatterns = [
     path("food-zone/categories/", GetFoodZoneCategories.as_view(), name="food-zone-categories"),
     path("classified-categories/<str:cid>/", classifiedCategoryPosts),
     path(
+        "classified-categories/post/<str:slug>/report/",
+        report_classified_post,
+        name="classified-post-report",
+    ),
+    path(
         "classified-categories/post/<str:slug>/",
         classifiedCategoryPost,
         name="classified-post-detail",

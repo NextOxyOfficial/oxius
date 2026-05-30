@@ -729,6 +729,7 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
         "state",
         "city",
         "active_service",
+        "views_count",
         "colored_service_status",
         "created_at",
         "updated_at",
@@ -777,6 +778,21 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ClassifiedCategoryPost, ClassifiedCategoryPostAdmin)
+
+
+@admin.register(ClassifiedCategoryPostReport)
+class ClassifiedCategoryPostReportAdmin(admin.ModelAdmin):
+    list_display = (
+        "post",
+        "reported_by",
+        "reason",
+        "reviewed",
+        "created_at",
+    )
+    list_filter = ("reason", "reviewed", "created_at")
+    search_fields = ("post__title", "reported_by__email", "reported_by__username")
+    readonly_fields = ("created_at",)
+
 
 @admin.register(Logo)
 class LogoAdmin(admin.ModelAdmin):

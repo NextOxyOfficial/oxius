@@ -757,104 +757,13 @@
         </div>
       </div>
 
-      <!-- Report Dialog -->
-      <div
-        v-if="showReportDialog"
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-        @click="closeReportDialog"
-      >
-        <div
-          class="bg-white rounded-lg max-w-md w-full mx-4 border border-gray-200"
-          @click.stop
-        >
-          <div class="flex justify-between items-center p-5 border-b">
-            <h3 class="font-semibold text-gray-800">Report Ad</h3>
-            <button
-              @click="closeReportDialog"
-              class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-            >
-              <X class="h-5 w-5" />
-            </button>
-          </div>
-          <div class="p-5">
-            <p class="text-sm text-gray-600 mb-4">
-              Please select a reason for reporting this ad:
-            </p>
-
-            <div class="space-y-2">
-              <label class="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  v-model="reportReason"
-                  value="fake"
-                  class="text-emerald-600"
-                />
-                <span class="text-sm text-gray-800"
-                  >Fake or misleading listing</span
-                >
-              </label>
-              <label class="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  v-model="reportReason"
-                  value="prohibited"
-                  class="text-emerald-600"
-                />
-                <span class="text-sm text-gray-800">Prohibited item</span>
-              </label>
-              <label class="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  v-model="reportReason"
-                  value="offensive"
-                  class="text-emerald-600"
-                />
-                <span class="text-sm text-gray-800">Offensive content</span>
-              </label>
-              <label class="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  v-model="reportReason"
-                  value="scam"
-                  class="text-emerald-600"
-                />
-                <span class="text-sm text-gray-800">Scam or fraud</span>
-              </label>
-              <label class="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  v-model="reportReason"
-                  value="other"
-                  class="text-emerald-600"
-                />
-                <span class="text-sm text-gray-800">Other</span>
-              </label>
-            </div>
-
-            <textarea
-              v-if="reportReason === 'other'"
-              v-model="reportDetails"
-              placeholder="Please provide details about your report..."
-              class="mt-4 w-full border border-gray-200 rounded-md p-2 text-sm text-gray-800 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
-            ></textarea>
-
-            <div class="mt-6 flex justify-end space-x-3">
-              <button
-                class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50"
-                @click="closeReportDialog"
-              >
-                Cancel
-              </button>
-              <button
-                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm transition-colors duration-200"
-                @click="submitReport"
-              >
-                Submit Report
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CommonUniversalReportDialog
+        v-model="showReportDialog"
+        title="Report Ad"
+        prompt="Please select a reason for reporting this ad:"
+        :options="saleReportOptions"
+        :on-submit="submitReport"
+      />
     </div>
   </div>
 </template>
@@ -895,7 +804,7 @@ const { user, isAuthenticated } = useAuth();
 const { chatIconPath } = useStaticAssets();
 
 const { params } = useRoute();
-const { get } = useApi();
+const { get, post } = useApi();
 const product = ref({});
 const similarProducts = ref([]);
 
@@ -935,8 +844,13 @@ const galleryRef = ref(null);
 const touchStartX = ref(0);
 const touchEndX = ref(0);
 const shareUrl = ref("");
-const reportReason = ref("");
-const reportDetails = ref("");
+const saleReportOptions = [
+  { label: "Spam or misleading", value: "spam" },
+  { label: "Inappropriate content", value: "inappropriate" },
+  { label: "Duplicate listing", value: "duplicate" },
+  { label: "Fraudulent", value: "fraud" },
+  { label: "Other", value: "other" },
+];
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());
@@ -1192,18 +1106,18 @@ const openReportDialog = () => {
   showReportDialog.value = true;
 };
 
-const closeReportDialog = () => {
-  showReportDialog.value = false;
+const submitReport = async ({ reason, details }) => {
+  const response = await post(`/sale/posts/${params.slug}/report/`, {
+    reason,
+    details,
+  });
+  return !response.error;
 };
 
 // Function to capitalize first letter of title
 const capitalizeTitle = (title) => {
   if (!title) return "";
   return title.charAt(0).toUpperCase() + title.slice(1);
-};
-
-const submitReport = () => {
-  closeReportDialog();
 };
 
 // Search handlers for the search bar

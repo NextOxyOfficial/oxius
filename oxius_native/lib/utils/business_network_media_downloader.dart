@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../models/business_network_models.dart';
 import '../widgets/common/adsy_loading.dart';
+import 'download_open_utils.dart';
 
 class BusinessNetworkMediaDownloader {
   static Future<void> download(
@@ -77,7 +78,14 @@ class BusinessNetworkMediaDownloader {
             ],
           ),
           backgroundColor: Colors.green,
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 8),
+          action: SnackBarAction(
+            label: 'Open',
+            textColor: Colors.white,
+            onPressed: () {
+              DownloadOpenUtils.openFile(context, filePath);
+            },
+          ),
         ),
       );
     } catch (e) {

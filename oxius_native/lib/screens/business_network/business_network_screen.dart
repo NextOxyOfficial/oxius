@@ -14,6 +14,7 @@ import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import '../../widgets/business_network/user_suggestions_card.dart';
 import '../../widgets/business_network/sponsored_products_card.dart';
+import '../../widgets/common/adsy_loading.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
 import 'search_screen.dart';
@@ -45,6 +46,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
   double _lastScrollPosition = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Random _random = Random();
+
+  static const ScrollPhysics _feedScrollPhysics =
+      AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics());
 
   @override
   void initState() {
@@ -496,25 +500,39 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
                     maxWidth: 672), // max-w-3xl (768px - padding)
-                child: _isLoading
-                    ? _buildLoadingState()
-                    : _errorMessage != null
-                        ? _buildErrorState()
-                        : visiblePosts.isEmpty
-                            ? _buildEmptyState()
-                            : ListView.builder(
-                                controller: _scrollController,
-                                padding: EdgeInsets.fromLTRB(
-                                  1,
-                                  headerHeight + 8,
-                                  1,
-                                  isMobile ? 80 : 16,
+                child: AdsyRefreshIndicator(
+                  onRefresh: _refreshPosts,
+                  color: const Color(0xFF3B82F6),
+                  edgeOffset: headerHeight,
+                  child: _isLoading
+                      ? _buildLoadingState(headerHeight, isMobile)
+                      : _errorMessage != null
+                          ? _buildRefreshableState(
+                              child: _buildErrorState(),
+                              headerHeight: headerHeight,
+                              isMobile: isMobile,
+                            )
+                          : visiblePosts.isEmpty
+                              ? _buildRefreshableState(
+                                  child: _buildEmptyState(),
+                                  headerHeight: headerHeight,
+                                  isMobile: isMobile,
+                                )
+                              : ListView.builder(
+                                  controller: _scrollController,
+                                  physics: _feedScrollPhysics,
+                                  padding: EdgeInsets.fromLTRB(
+                                    1,
+                                    headerHeight + 8,
+                                    1,
+                                    isMobile ? 80 : 16,
+                                  ),
+                                  itemCount: _calculateTotalItems(visiblePosts),
+                                  itemBuilder: (context, index) {
+                                    return _buildFeedItem(index, visiblePosts);
+                                  },
                                 ),
-                                itemCount: _calculateTotalItems(visiblePosts),
-                                itemBuilder: (context, index) {
-                                  return _buildFeedItem(index, visiblePosts);
-                                },
-                              ),
+                ),
               ),
             ),
             Positioned(
@@ -717,9 +735,34 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     return const SizedBox(height: 80);
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildRefreshableState({
+    required Widget child,
+    required double headerHeight,
+    required bool isMobile,
+  }) {
+    final bottomPadding = isMobile ? 80.0 : 16.0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final minHeight =
+            max(0.0, constraints.maxHeight - headerHeight - bottomPadding - 8);
+
+        return SingleChildScrollView(
+          physics: _feedScrollPhysics,
+          padding: EdgeInsets.fromLTRB(1, headerHeight + 8, 1, bottomPadding),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: minHeight),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingState(double headerHeight, bool isMobile) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      physics: _feedScrollPhysics,
+      padding: EdgeInsets.fromLTRB(4, headerHeight + 8, 4, isMobile ? 80 : 16),
       itemCount: 3,
       itemBuilder: (context, index) {
         return Container(

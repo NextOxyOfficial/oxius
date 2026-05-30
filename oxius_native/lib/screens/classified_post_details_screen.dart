@@ -14,6 +14,7 @@ import '../services/adsyconnect_service.dart';
 import '../config/app_config.dart';
 import '../utils/url_launcher_utils.dart';
 import '../widgets/skeleton_loader.dart';
+import '../widgets/common/adsy_report_sheet.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'user_posts_screen.dart';
@@ -1021,6 +1022,16 @@ class _ClassifiedPostDetailsScreenState
     final post = _post;
     if (post == null) return;
 
+    String? mediaImage;
+    for (final media in post.medias ?? const <MediaItem>[]) {
+      final image = media.image?.trim();
+      if (image != null && image.isNotEmpty) {
+        mediaImage = image;
+        break;
+      }
+    }
+    final shareImageUrl = mediaImage ?? post.categoryDetails?.image?.trim();
+
     final shareUrl =
         'https://adsyclub.com/classified-categories/details/${post.slug ?? post.id}';
     await AdsyShareSheet.show(
@@ -1029,9 +1040,7 @@ class _ClassifiedPostDetailsScreenState
         title: post.title,
         description: post.instructions,
         url: shareUrl,
-        imageUrl: post.medias != null && post.medias!.isNotEmpty
-            ? post.medias!.first.image
-            : null,
+        imageUrl: shareImageUrl,
         subject: post.title,
         eyebrow: 'Classified',
       ),
@@ -1043,101 +1052,21 @@ class _ClassifiedPostDetailsScreenState
   }
 
   void _showReportDialog() {
-    String? reportReason;
-    final TextEditingController detailsController = TextEditingController();
+    final post = _post;
+    if (post == null) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Report Service'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Please select a reason for reporting this service:',
-                  style: TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 12),
-                RadioListTile<String>(
-                  value: 'spam',
-                  groupValue: reportReason,
-                  onChanged: (value) =>
-                      setDialogState(() => reportReason = value),
-                  title: const Text('Spam or misleading',
-                      style: TextStyle(fontSize: 14)),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                RadioListTile<String>(
-                  value: 'inappropriate',
-                  groupValue: reportReason,
-                  onChanged: (value) =>
-                      setDialogState(() => reportReason = value),
-                  title: const Text('Inappropriate content',
-                      style: TextStyle(fontSize: 14)),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                RadioListTile<String>(
-                  value: 'fraud',
-                  groupValue: reportReason,
-                  onChanged: (value) =>
-                      setDialogState(() => reportReason = value),
-                  title: const Text('Fraudulent or scam',
-                      style: TextStyle(fontSize: 14)),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                RadioListTile<String>(
-                  value: 'other',
-                  groupValue: reportReason,
-                  onChanged: (value) =>
-                      setDialogState(() => reportReason = value),
-                  title: const Text('Other', style: TextStyle(fontSize: 14)),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: detailsController,
-                  decoration: const InputDecoration(
-                    hintText: 'Additional details (optional)',
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 3,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (reportReason != null) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content:
-                          Text('Report submitted. We will review it shortly.'),
-                      backgroundColor: Color(0xFF10B981),
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF10B981),
-              ),
-              child: const Text('Submit'),
-            ),
-          ],
-        ),
-      ),
+    AdsyReportSheet.show(
+      context,
+      title: 'Report Service',
+      prompt: 'Please select a reason for reporting this service.',
+      options: AdsyReportSheet.postOptions,
+      onSubmit: (option, details) {
+        return _postService.reportPost(
+          post.slug ?? post.id,
+          option.value,
+          details: details,
+        );
+      },
     );
   }
 

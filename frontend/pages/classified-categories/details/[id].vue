@@ -568,104 +568,13 @@
       </div>
     </div>
 
-    <!-- Report Dialog -->
-    <div
-      v-if="showReportDialog"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      @click="closeReportDialog"
-    >
-      <div
-        class="bg-white rounded-lg max-w-md w-full mx-4 border border-gray-200"
-        @click.stop
-      >
-        <div class="flex justify-between items-center p-5 border-b">
-          <h3 class="font-semibold text-gray-800">Report Service</h3>
-          <button
-            @click="closeReportDialog"
-            class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-          >
-            <X class="h-5 w-5" />
-          </button>
-        </div>
-        <div class="p-5">
-          <p class="text-sm text-gray-600 mb-4">
-            Please select a reason for reporting this service:
-          </p>
-
-          <div class="space-y-2">
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                v-model="reportReason"
-                value="fake"
-                class="text-emerald-600"
-              />
-              <span class="text-sm text-gray-800"
-                >Fake or misleading service</span
-              >
-            </label>
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                v-model="reportReason"
-                value="prohibited"
-                class="text-emerald-600"
-              />
-              <span class="text-sm text-gray-800">Prohibited service</span>
-            </label>
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                v-model="reportReason"
-                value="offensive"
-                class="text-emerald-600"
-              />
-              <span class="text-sm text-gray-800">Offensive content</span>
-            </label>
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                v-model="reportReason"
-                value="scam"
-                class="text-emerald-600"
-              />
-              <span class="text-sm text-gray-800">Scam or fraud</span>
-            </label>
-            <label class="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="radio"
-                v-model="reportReason"
-                value="other"
-                class="text-emerald-600"
-              />
-              <span class="text-sm text-gray-800">Other</span>
-            </label>
-          </div>
-
-          <textarea
-            v-if="reportReason === 'other'"
-            v-model="reportDetails"
-            placeholder="Please provide details about your report..."
-            class="mt-4 w-full border border-gray-200 rounded-md p-2 text-sm text-gray-800 h-24 resize-none focus:outline-none focus:ring-1 focus:ring-emerald-500"
-          ></textarea>
-
-          <div class="mt-6 flex justify-end space-x-3">
-            <button
-              class="px-4 py-2 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50"
-              @click="closeReportDialog"
-            >
-              Cancel
-            </button>
-            <button
-              class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm transition-colors duration-200"
-              @click="submitReport"
-            >
-              Submit Report
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <CommonUniversalReportDialog
+      v-model="showReportDialog"
+      title="Report Service"
+      prompt="Please select a reason for reporting this service:"
+      :options="classifiedReportOptions"
+      :on-submit="submitReport"
+    />
   </div>
 </template>
 
@@ -706,7 +615,7 @@ const toast = useToast();
 const { user, isAuthenticated } = useAuth();
 const { chatIconPath } = useStaticAssets();
 
-const { baseURL, staticURL } = useApi();
+const { baseURL, staticURL, post } = useApi();
 const service = ref({});
 const router = useRoute();
 
@@ -727,8 +636,14 @@ const galleryRef = ref(null);
 const touchStartX = ref(0);
 const touchEndX = ref(0);
 const shareUrl = ref("");
-const reportReason = ref("");
-const reportDetails = ref("");
+const classifiedReportOptions = [
+  { label: "Spam or misleading", value: "spam" },
+  { label: "Inappropriate content", value: "inappropriate" },
+  { label: "Harassment or hate speech", value: "harassment" },
+  { label: "Violence or dangerous content", value: "violence" },
+  { label: "Fraudulent or scam", value: "fraud" },
+  { label: "Other", value: "other" },
+];
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());
@@ -985,22 +900,13 @@ const openReportDialog = () => {
   showReportDialog.value = true;
 };
 
-const closeReportDialog = () => {
-  showReportDialog.value = false;
-  reportReason.value = "";
-  reportDetails.value = "";
-};
-
-const submitReport = () => {
-  // Show success message
-  toast.add({
-    title: "Report Submitted",
-    description: "Thank you for your report. We will review it shortly.",
-    color: "green",
-    icon: "i-heroicons-check-circle",
+const submitReport = async ({ reason, details }) => {
+  const slug = service.value?.slug || router.params.id;
+  const response = await post(`/classified-categories/post/${slug}/report/`, {
+    reason,
+    details,
   });
-
-  closeReportDialog();
+  return !response.error;
 };
 
 // Function to capitalize first letter of title

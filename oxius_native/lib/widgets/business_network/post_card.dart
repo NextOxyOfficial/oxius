@@ -13,6 +13,7 @@ import '../../utils/mention_parser.dart';
 import '../../utils/business_network_media_downloader.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
+import '../../widgets/common/adsy_report_sheet.dart';
 import '../../widgets/common/adsy_share_sheet.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
@@ -595,67 +596,25 @@ class _PostCardState extends State<PostCard> {
   }
 
   void _handleReportPost() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Report Post'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Why are you reporting this post?'),
-            const SizedBox(height: 16),
-            _buildReportOption('Spam or misleading'),
-            _buildReportOption('Harassment or hate speech'),
-            _buildReportOption('Violence or dangerous content'),
-            _buildReportOption('Inappropriate content'),
-            _buildReportOption('Other'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReportOption(String reason) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(context);
-        _submitReport(reason);
+    AdsyReportSheet.show(
+      context,
+      title: 'Report Post',
+      prompt: 'Why are you reporting this post?',
+      options: const [
+        AdsyReportOption(label: 'Spam or misleading', value: 'spam'),
+        AdsyReportOption(
+            label: 'Harassment or hate speech', value: 'harassment'),
+        AdsyReportOption(
+            label: 'Violence or dangerous content', value: 'violence'),
+        AdsyReportOption(
+            label: 'Inappropriate content', value: 'inappropriate'),
+        AdsyReportOption(label: 'Other', value: 'other'),
+      ],
+      successMessage: 'Post reported. We will review it shortly.',
+      onSubmit: (option, details) {
+        return BusinessNetworkService.reportPost(_post.id, option.label);
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(
-          reason,
-          style: const TextStyle(fontSize: 15),
-        ),
-      ),
     );
-  }
-
-  Future<void> _submitReport(String reason) async {
-    final success = await BusinessNetworkService.reportPost(_post.id, reason);
-
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Post reported: $reason'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to report post'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 
   Future<void> _handleBlockUser() async {

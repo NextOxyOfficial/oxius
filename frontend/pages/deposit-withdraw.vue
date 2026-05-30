@@ -1993,6 +1993,8 @@ const showSuccess = ref(false);
 const isOpenTransfer = ref(false);
 const isOpen = ref(false);
 const toast = useToast();
+const route = useRoute();
+const router = useRouter();
 const { post, get } = useApi();
 const { user, jwtLogin } = useAuth();
 const { formatDate } = useUtils();
@@ -2829,7 +2831,9 @@ const deposit = async () => {
       `&customer_address=${encodeURIComponent(address)}` +
       `&customer_phone=${encodeURIComponent(phone)}` +
       `&customer_city=${encodeURIComponent(city)}` +
-      `&customer_post_code=${encodeURIComponent(zip)}`;
+      `&customer_post_code=${encodeURIComponent(zip)}` +
+      `&return_url=${encodeURIComponent(`${window.location.origin}/payment-callback.html`)}` +
+      `&cancel_url=${encodeURIComponent(`${window.location.origin}/payment-cancel.html`)}`;
 
     const payment = await get(paymentUrl);
 
@@ -2889,6 +2893,161 @@ const deposit = async () => {
         });
       }, 1000);
     }
+  } finally {
+    isDepositLoading.value = false;
+  }
+};
+
+const extractPaymentCallbackParams = (callbackUrl) => {
+  try {
+    const parsed = new URL(callbackUrl, window.location.origin);
+    return parsed.searchParams;
+  } catch (_) {
+    return new URLSearchParams();
+  }
+};
+
+const addVerifiedDepositToBalance = async (paymentDetails) => {
+  const {
+    bank_status,
+    payment_method,
+    amount,
+    payable_amount,
+    received_amount,
+    merchant_invoice_no,
+    shurjopay_order_id,
+    payment_confirmed_at,
+  } = paymentDetails || {};
+
+  return await post("/add-user-balance/", {
+    bank_status: (bank_status || "completed").toString().toLowerCase(),
+    transaction_type: "Deposit",
+    payment_method,
+    amount,
+    payable_amount,
+    received_amount,
+    merchant_invoice_no,
+    shurjopay_order_id,
+    payment_confirmed_at,
+  });
+};
+
+const clearPaymentCallbackQuery = async () => {
+  await router.replace({ path: "/deposit-withdraw", query: {} });
+};
+
+const handlePaymentCallback = async () => {
+  const callbackUrl = route.query.payment_callback_url?.toString();
+  if (!callbackUrl) return;
+
+  const callbackParams = extractPaymentCallbackParams(callbackUrl);
+  const callbackLower = callbackUrl.toLowerCase();
+  const wasCancelled =
+    route.query.payment_cancelled === "1" ||
+    callbackLower.includes("payment-cancel");
+
+  if (wasCancelled) {
+    toast.add({
+      title: "Payment Cancelled",
+      description: "Your deposit was cancelled before completion.",
+      color: "amber",
+      icon: "i-heroicons-exclamation-circle",
+    });
+    await clearPaymentCallbackQuery();
+    return;
+  }
+
+  const orderId =
+    callbackParams.get("sp_order_id") ||
+    callbackParams.get("order_id") ||
+    callbackParams.get("merchant_invoice_no") ||
+    callbackParams.get("invoice_no");
+  const paymentRef =
+    callbackParams.get("payment_ref") || callbackParams.get("payment_state");
+
+  if (!orderId) {
+    toast.add({
+      title: "Payment Verification Failed",
+      description: "Payment gateway did not return an order ID.",
+      color: "red",
+      icon: "i-heroicons-x-circle",
+    });
+    await clearPaymentCallbackQuery();
+    return;
+  }
+
+  try {
+    isDepositLoading.value = true;
+
+    if (paymentRef) {
+      const res = await post("/verify-pay/finalize/", {
+        payment_ref: paymentRef,
+        sp_order_id: orderId,
+      });
+
+      if (res.data?.success && res.data?.status === "success") {
+        toast.add({
+          title: "Payment Successful!",
+          description: res.data.message || "Your balance has been updated.",
+          color: "green",
+          icon: "i-heroicons-check-circle",
+        });
+        await jwtLogin();
+        await getTransactionHistory();
+        await clearPaymentCallbackQuery();
+        return;
+      }
+
+      throw new Error(
+        res.data?.message ||
+          res.error?.data?.error ||
+          "Could not finalize payment."
+      );
+    }
+
+    const verifyResponse = await get(
+      `/verify-pay/?sp_order_id=${encodeURIComponent(orderId)}`
+    );
+    const paymentDetails = verifyResponse.data;
+    const message = paymentDetails?.shurjopay_message?.toString().toLowerCase();
+    const bankStatus = paymentDetails?.bank_status?.toString().toLowerCase();
+    const isSuccess =
+      message === "success" ||
+      bankStatus === "success" ||
+      bankStatus === "completed";
+
+    if (!isSuccess) {
+      throw new Error(
+        paymentDetails?.shurjopay_message || "Payment is not confirmed yet."
+      );
+    }
+
+    const balanceResponse = await addVerifiedDepositToBalance(paymentDetails);
+    if (balanceResponse.error) {
+      throw new Error(
+        balanceResponse.error?.data?.error ||
+          balanceResponse.error ||
+          "Could not update balance."
+      );
+    }
+
+    toast.add({
+      title: "Payment Successful!",
+      description: `৳${paymentDetails.amount || amount.value || "0"} has been added to your balance.`,
+      color: "green",
+      icon: "i-heroicons-check-circle",
+    });
+    await jwtLogin();
+    await getTransactionHistory();
+    await clearPaymentCallbackQuery();
+  } catch (error) {
+    toast.add({
+      title: "Payment Verification Failed",
+      description:
+        error?.message || "Could not confirm your payment. Please try again.",
+      color: "red",
+      icon: "i-heroicons-x-circle",
+    });
   } finally {
     isDepositLoading.value = false;
   }
@@ -3242,6 +3401,7 @@ function reset() {
 // Initialize the component
 onMounted(() => {
   getTransactionHistory();
+  handlePaymentCallback();
 });
 
 // Reset pagination when changing transaction tabs

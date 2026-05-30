@@ -1048,6 +1048,7 @@ class FCMService {
           await _getPersistedFcmToken() ??
           await _resolveUsableFcmToken();
       if (token == null || token.isEmpty) {
+        await _syncVoipTokenWithBackend();
         _log('❌ Cannot sync token: FCM token is null/empty');
         return;
       }
@@ -1135,6 +1136,7 @@ class FCMService {
         await _sendTokenToBackend(_fcmToken!);
         await _syncVoipTokenWithBackend();
       } else {
+        await _syncVoipTokenWithBackend();
         _log('❌ Failed to get FCM token');
       }
 

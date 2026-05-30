@@ -585,13 +585,19 @@ class BusinessNetworkService {
     }
   }
 
-  /// Get a single post by ID
+  /// Get a single post by ID.
   static Future<BusinessNetworkPost?> getPost(int postId) async {
+    return getPostByIdentifier(postId.toString());
+  }
+
+  /// Get a single post by ID-like identifier from deep links.
+  static Future<BusinessNetworkPost?> getPostByIdentifier(
+      String postIdentifier) async {
     try {
       final headers = await ApiService.getHeaders();
 
       final response = await http.get(
-        Uri.parse('$_baseUrl/posts/$postId/'),
+        Uri.parse('$_baseUrl/posts/$postIdentifier/'),
         headers: headers,
       );
 

@@ -357,6 +357,7 @@ RIDESHARE_NOMINATIM_URL = os.getenv("RIDESHARE_NOMINATIM_URL", "https://nominati
 APNS_AUTH_KEY_PATH = os.getenv("APNS_AUTH_KEY_PATH", "")
 APNS_KEY_ID = os.getenv("APNS_KEY_ID", "")
 APNS_TEAM_ID = os.getenv("APNS_TEAM_ID", "")
+IOS_APP_TEAM_ID = os.getenv("IOS_APP_TEAM_ID", APNS_TEAM_ID)
 APNS_VOIP_TOPIC = os.getenv("APNS_VOIP_TOPIC", "")
 APNS_ENVIRONMENT = os.getenv("APNS_ENVIRONMENT", "production")
 

@@ -858,6 +858,14 @@
         <video v-else-if="fullMediaItem && fullMediaItem.type === 'video'" :src="fullMediaItem.url" controls class="max-h-[80vh] max-w-[90vw]"></video>
       </div>
     </div>
+
+    <CommonUniversalReportDialog
+      v-model="showReportDialog"
+      title="Report User"
+      :prompt="`Why are you reporting ${activeChat?.name || 'this user'}?`"
+      :options="chatReportOptions"
+      :on-submit="submitReport"
+    />
   </div>
   </template>
   
@@ -918,6 +926,7 @@
   
   // Settings state
   const showSettings = ref(false)
+  const { post } = useApi()
   
   const openSettings = () => {
     showSettings.value = true
@@ -1310,10 +1319,18 @@
   const selectedFile = ref(null)
   const selectedFileName = ref("")
   const showChatOptions = ref(false)
+  const showReportDialog = ref(false)
   const showDeleteConfirmation = ref(false)
   const showFullMedia = ref(false)
   const fullMediaItem = ref(null)
   const uploadedMedia = ref([])
+  const chatReportOptions = [
+    { label: "Spam", value: "spam" },
+    { label: "Harassment", value: "harassment" },
+    { label: "Inappropriate content", value: "inappropriate" },
+    { label: "Scam or fraud", value: "scam" },
+    { label: "Other", value: "other" },
+  ]
   
   // Emojis for picker
   const emojis = ref(["😊", "😂", "❤️", "👍", "🎉", "🔥", "😎", "🙏", "😢", "😍", "🤔", "👏", "💪", "🌟", "💯", "🤣"])
@@ -1566,10 +1583,20 @@
   // Report user as spam
   const reportSpam = () => {
     if (activeChatType.value === "friend" && activeChat.value) {
-      // In a real app, this would send a report to the server
-      alert(`${activeChat.value.name} has been reported as spam`)
+      showReportDialog.value = true
       showChatOptions.value = false
     }
+  }
+
+  const submitReport = async ({ reason, details }) => {
+    if (!activeChatId.value) return false
+
+    const response = await post("/adsyconnect/reports/", {
+      reported_user: activeChatId.value,
+      reason,
+      description: details,
+    })
+    return !response.error
   }
   
   const sendMessage = () => {

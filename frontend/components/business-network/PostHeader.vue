@@ -151,6 +151,7 @@
 
             <button
               class="flex items-center w-full px-4 py-2.5 text-sm text-gray-800 dark:text-gray-300 hover:bg-blue-50/50 dark:hover:bg-slate-700/50 transition-colors"
+              @click.stop="$emit('report-post', post)"
               v-if="user"
             >
               <Flag class="h-4 w-4 mr-2.5 text-amber-600 dark:text-amber-400" />
@@ -266,6 +267,7 @@ const emit = defineEmits([
   "toggle-dropdown",
   "toggle-save",
   "copy-link",
+  "report-post",
   "post-updated",
 ]);
 

@@ -201,7 +201,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
       data: AdsyShareData(
         title: '$sellerName on AdsyClub',
         description: 'View listings and profile details for $sellerName.',
-        url: 'https://adsyclub.com/seller/$sellerId',
+        url: 'https://adsyclub.com/sale/user-profile/$sellerId',
         imageUrl: _seller?['image']?.toString(),
         subject: sellerName,
         eyebrow: 'Seller Profile',

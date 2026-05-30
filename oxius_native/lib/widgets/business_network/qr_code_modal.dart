@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../../config/app_config.dart';
+import '../../utils/download_open_utils.dart';
 import '../common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -134,7 +135,14 @@ class _QrCodeModalState extends State<QrCodeModal> {
               ],
             ),
             backgroundColor: Colors.green,
-            duration: const Duration(seconds: 4),
+            duration: const Duration(seconds: 8),
+            action: SnackBarAction(
+              label: 'Open',
+              textColor: Colors.white,
+              onPressed: () {
+                DownloadOpenUtils.openFile(context, filePath);
+              },
+            ),
           ),
         );
       }

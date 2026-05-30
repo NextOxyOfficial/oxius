@@ -11,7 +11,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import check_password
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
-from django.db.models import Q
+from django.db.models import F, Q
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from rest_framework import filters, generics, status
@@ -874,18 +874,75 @@ def UserClassifiedCategoryPosts(request):
 def classifiedCategoryPost(request, slug):
     try:
         post = ClassifiedCategoryPost.objects.get(slug=slug)
+        ClassifiedCategoryPost.objects.filter(pk=post.pk).update(
+            views_count=F("views_count") + 1
+        )
+        post.refresh_from_db(fields=["views_count"])
         serializer = ClassifiedPostSerializer(post)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except ClassifiedCategoryPost.DoesNotExist:
         # Fallback to ID in case slug is not found (for backwards compatibility)
         try:
             post = ClassifiedCategoryPost.objects.get(id=slug)
+            ClassifiedCategoryPost.objects.filter(pk=post.pk).update(
+                views_count=F("views_count") + 1
+            )
+            post.refresh_from_db(fields=["views_count"])
             serializer = ClassifiedPostSerializer(post)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ClassifiedCategoryPost.DoesNotExist:
             return Response(
                 {"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND
             )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def report_classified_post(request, slug):
+    try:
+        post = ClassifiedCategoryPost.objects.get(slug=slug)
+    except ClassifiedCategoryPost.DoesNotExist:
+        try:
+            post = ClassifiedCategoryPost.objects.get(id=slug)
+        except ClassifiedCategoryPost.DoesNotExist:
+            return Response(
+                {"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    reason = (request.data.get("reason") or "").strip()
+    details = (request.data.get("details") or request.data.get("description") or "").strip()
+    valid_reasons = [
+        choice[0] for choice in ClassifiedCategoryPostReport.REASON_CHOICES
+    ]
+
+    if reason not in valid_reasons:
+        return Response(
+            {"error": "Invalid report reason"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    report, created = ClassifiedCategoryPostReport.objects.get_or_create(
+        post=post,
+        reported_by=request.user,
+        defaults={
+            "reason": reason,
+            "details": details or None,
+        },
+    )
+
+    if not created:
+        return Response(
+            {"message": "You have already reported this service."},
+            status=status.HTTP_200_OK,
+        )
+
+    return Response(
+        {
+            "message": "Report submitted successfully. We will review this service.",
+            "report_id": str(report.id),
+        },
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(["PUT"])
@@ -5054,12 +5111,7 @@ def apple_app_site_association(request):
             {
                 "appID": f"{ios_team_id}.com.oxius.app",
                 "paths": [
-                    "/verify-payment*",
-                    "/deposit-withdraw*",
-                    "/business-network*",
-                    "/classified-details*",
-                    "/sale*",
-                    "/food-zone*",
+                    "*",
                 ],
             }
         )
@@ -5459,7 +5511,7 @@ def save_fcm_token(request):
                 defaults=defaults
             )
         else:
-            synthetic_token = f"voip:{voip_token}"[:255]
+            synthetic_token = f"voip:{voip_token}"
             token_obj, created = FCMToken.objects.update_or_create(
                 user=request.user,
                 voip_token=voip_token,

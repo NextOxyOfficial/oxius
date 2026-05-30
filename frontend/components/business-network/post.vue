@@ -44,6 +44,7 @@
               @toggle-dropdown="toggleDropdown"
               @toggle-save="toggleSave"
               @copy-link="copyLink"
+              @report-post="openReportDialog"
               @post-updated="handlePostUpdate"
             />
 
@@ -403,6 +404,14 @@
       :isCreatePostOpen="isCreatePostOpen"
       :createPostTitle="createPostTitle"
     />
+
+    <CommonUniversalReportDialog
+      v-model="showReportDialog"
+      title="Report Post"
+      prompt="Why are you reporting this post?"
+      :options="postReportOptions"
+      :on-submit="submitReport"
+    />
   </div>
 </template>
 
@@ -436,6 +445,15 @@ const emit = defineEmits(["gift-sent"]);
 const { user } = useAuth();
 const { post, del, put, get } = useApi();
 const toast = useToast();
+const showReportDialog = ref(false);
+const reportTargetPost = ref(null);
+const postReportOptions = [
+  { label: "Spam or misleading", value: "spam" },
+  { label: "Harassment or hate speech", value: "harassment" },
+  { label: "Violence or dangerous content", value: "violence" },
+  { label: "Inappropriate content", value: "inappropriate" },
+  { label: "Other", value: "other" },
+];
 
 // Highlight search terms in post content
 const highlightSearchTerms = (content, fieldType = "content") => {
@@ -845,6 +863,25 @@ const copyLink = (postToCopy) => {
   toast.add({
     title: "Link copied to clipboard",
   });
+};
+
+const openReportDialog = (postToReport) => {
+  reportTargetPost.value = postToReport;
+  if (postToReport) {
+    postToReport.showDropdown = false;
+  }
+  showReportDialog.value = true;
+};
+
+const submitReport = async ({ reason, details }) => {
+  const target = reportTargetPost.value?.post_details || reportTargetPost.value;
+  if (!target?.id) return false;
+
+  const response = await post(`/bn/posts/${target.id}/report/`, {
+    reason,
+    description: details,
+  });
+  return !response.error;
 };
 
 // Handle post update from PostHeader component

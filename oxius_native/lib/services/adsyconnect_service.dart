@@ -39,14 +39,16 @@ class AdsyConnectService {
       if (otherUser is Map && otherUser['id']?.toString() == userId) {
         return map;
       }
-      if (map['user1']?.toString() == userId || map['user2']?.toString() == userId) {
+      if (map['user1']?.toString() == userId ||
+          map['user2']?.toString() == userId) {
         return map;
       }
     }
     return null;
   }
 
-  static Future<Map<String, dynamic>?> findExistingChatRoom(String userId) async {
+  static Future<Map<String, dynamic>?> findExistingChatRoom(
+      String userId) async {
     try {
       final rooms = await getChatRooms(pageSize: 100);
       return _matchChatRoomForUser(rooms, userId);
@@ -83,7 +85,8 @@ class AdsyConnectService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return _normalizeChatroomPayload(jsonDecode(response.body));
       } else {
-        throw Exception('Failed to get or create chat room: ${response.statusCode} - ${response.body}');
+        throw Exception(
+            'Failed to get or create chat room: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       print('Error getting or creating chat room: $e');
@@ -95,7 +98,8 @@ class AdsyConnectService {
     }
   }
 
-  static Future<Map<String, dynamic>?> getChatRoomDetails(String chatroomId) async {
+  static Future<Map<String, dynamic>?> getChatRoomDetails(
+      String chatroomId) async {
     try {
       final headers = await _getHeaders();
       final response = await http.get(
@@ -135,12 +139,12 @@ class AdsyConnectService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         // Check if it's a paginated response with 'results' key
         if (data is Map && data.containsKey('results')) {
           return List<dynamic>.from(data['results'] ?? []);
         }
-        
+
         // Otherwise assume it's a direct list
         if (data is List) {
           final full = List<dynamic>.from(data);
@@ -148,14 +152,17 @@ class AdsyConnectService {
           if (start >= full.length) {
             return [];
           }
-          final end = (start + pageSize) > full.length ? full.length : (start + pageSize);
+          final end = (start + pageSize) > full.length
+              ? full.length
+              : (start + pageSize);
           return full.sublist(start, end);
         }
-        
+
         // If neither, return empty list
         return [];
       } else {
-        throw Exception('Failed to load chat rooms: ${response.statusCode} - ${response.body}');
+        throw Exception(
+            'Failed to load chat rooms: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       rethrow;
@@ -170,10 +177,12 @@ class AdsyConnectService {
   }) async {
     try {
       final headers = await _getHeaders();
-      print('🔵 Fetching messages from: $baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize');
-      
+      print(
+          '🔵 Fetching messages from: $baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize');
+
       final response = await http.get(
-        Uri.parse('$baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize'),
+        Uri.parse(
+            '$baseUrl/messages/?chatroom=$chatroomId&page=$page&page_size=$pageSize'),
         headers: headers,
       );
 
@@ -182,12 +191,12 @@ class AdsyConnectService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
+
         // Check if it's a paginated response with 'results' key
         if (data is Map && data.containsKey('results')) {
           return List<dynamic>.from(data['results'] ?? []);
         }
-        
+
         // Otherwise assume it's a direct list
         if (data is List) {
           final full = List<dynamic>.from(data);
@@ -200,11 +209,12 @@ class AdsyConnectService {
           final start = max(0, end - pageSize);
           return full.sublist(start, end);
         }
-        
+
         // If neither, return empty list
         return [];
       } else {
-        throw Exception('Failed to load messages: ${response.statusCode} - ${response.body}');
+        throw Exception(
+            'Failed to load messages: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       print('🔴 Error loading messages: $e');
@@ -241,23 +251,25 @@ class AdsyConnectService {
     try {
       // Get headers with active chat ID to prevent unnecessary notifications
       final headers = await _getHeaders();
-      
+
       // Add active chat ID if available (imported at top of file)
       final activeChatId = ActiveChatTracker.activeChatId;
       if (activeChatId != null) {
         headers['X-Active-Chat-ID'] = activeChatId;
       }
-      
-      final response = await http.post(
-        Uri.parse('$baseUrl/messages/'),
-        headers: headers,
-        body: jsonEncode({
-          'chatroom': chatroomId,
-          'receiver': receiverId,
-          'message_type': 'text',
-          'content': content,
-        }),
-      ).timeout(const Duration(seconds: 15));
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/messages/'),
+            headers: headers,
+            body: jsonEncode({
+              'chatroom': chatroomId,
+              'receiver': receiverId,
+              'message_type': 'text',
+              'content': content,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 201) {
         return jsonDecode(response.body);
@@ -296,11 +308,11 @@ class AdsyConnectService {
   }) async {
     try {
       final token = AuthService.accessToken;
-      
+
       if (mediaFilePath == null && mediaBytes == null) {
         throw Exception('Either mediaFilePath or mediaBytes must be provided');
       }
-      
+
       final request = http.MultipartRequest(
         'POST',
         Uri.parse('$baseUrl/messages/'),
@@ -340,7 +352,8 @@ class AdsyConnectService {
         );
       }
 
-      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      final streamedResponse =
+          await request.send().timeout(const Duration(seconds: 30));
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 201) {
@@ -419,7 +432,8 @@ class AdsyConnectService {
   }
 
   // Edit message
-  static Future<Map<String, dynamic>> editMessage(String messageId, String newContent) async {
+  static Future<Map<String, dynamic>> editMessage(
+      String messageId, String newContent) async {
     try {
       final headers = await _getHeaders();
       final response = await http.patch(
@@ -489,11 +503,14 @@ class AdsyConnectService {
         body['message'] = messageId;
       }
 
-      await http.post(
+      final response = await http.post(
         Uri.parse('$baseUrl/reports/'),
         headers: headers,
         body: jsonEncode(body),
       );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception('Failed to report user: ${response.statusCode}');
+      }
     } catch (e) {
       print('Error reporting user: $e');
       rethrow;
@@ -550,7 +567,8 @@ class AdsyConnectService {
   }
 
   // Update typing status
-  static Future<void> updateTypingStatus(String chatroomId, bool isTyping) async {
+  static Future<void> updateTypingStatus(
+      String chatroomId, bool isTyping) async {
     try {
       final headers = await _getHeaders();
       await http.post(

@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 import uuid
 
@@ -27,10 +28,24 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 _CALL_TYPE_SET = {'audio', 'video'}
+_CHANNEL_NAME_RE = re.compile(r'^[A-Za-z0-9_]{1,64}$')
 _CALL_STATUS_ALIASES = {
     'declined': CallSession.STATUS_REJECTED,
     'no_answer': CallSession.STATUS_MISSED,
 }
+
+
+def _is_valid_channel_name(channel_name):
+    return bool(channel_name and _CHANNEL_NAME_RE.match(str(channel_name)))
+
+
+def _active_call_for_user(user):
+    cutoff = timezone.now() - timezone.timedelta(seconds=90)
+    return CallSession.objects.filter(
+        Q(caller=user) | Q(callee=user),
+        status__in=[CallSession.STATUS_RINGING, CallSession.STATUS_ACCEPTED],
+        last_status_at__gte=cutoff,
+    ).order_by('-last_status_at').first()
 
 
 def _build_user_avatar_url(request, user):
@@ -123,6 +138,9 @@ def _send_call_data_message(*, target_user, payload):
 
         for fcm_token in fcm_tokens:
             try:
+                if str(fcm_token.token or '').startswith('voip:'):
+                    continue
+
                 # Bug fix: enforce ALL payload values are strings.
                 str_payload = {k: str(v) if v is not None else '' for k, v in payload.items()}
 
@@ -333,6 +351,8 @@ def send_call_notification(request):
 
         if not callee_id or not channel_name:
             return Response({'error': 'callee_id and channel_name are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not _is_valid_channel_name(channel_name):
+            return Response({'error': 'Invalid channel_name'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             callee = User.objects.get(id=callee_id)
@@ -342,6 +362,44 @@ def send_call_notification(request):
         caller = request.user
         if caller == callee:
             return Response({'error': 'Cannot call yourself'}, status=status.HTTP_400_BAD_REQUEST)
+
+        caller_active_call = _active_call_for_user(caller)
+        if caller_active_call:
+            return Response(
+                {
+                    'error': 'You already have an active call',
+                    'active_call_id': str(caller_active_call.id),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        callee_active_call = _active_call_for_user(callee)
+        if callee_active_call:
+            busy_payload = {
+                'type': 'call_status',
+                'call_id': str(callee_active_call.id),
+                'channel_name': str(channel_name),
+                'call_type': call_type,
+                'status': CallSession.STATUS_BUSY,
+                'sender_id': str(callee.id),
+                'receiver_id': str(caller.id),
+                **_call_event_metadata(),
+            }
+            _broadcast_to_user(
+                caller.id,
+                {
+                    'type': 'call_status_event',
+                    'payload': busy_payload,
+                },
+            )
+            return Response(
+                {
+                    'error': 'Recipient is busy',
+                    'status': CallSession.STATUS_BUSY,
+                    'active_call_id': str(callee_active_call.id),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
 
         provided_call_id = request.data.get('call_id')
         session_kwargs = {
@@ -408,6 +466,8 @@ def send_call_status(request):
                 {'error': 'receiver_id, channel_name and status are required'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if not _is_valid_channel_name(channel_name):
+            return Response({'error': 'Invalid channel_name'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             receiver = User.objects.get(id=receiver_id)

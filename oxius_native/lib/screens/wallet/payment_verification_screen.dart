@@ -159,6 +159,9 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
           },
           onNavigationRequest: (request) {
             _handleGatewayUrl(request.url);
+            if (_shouldKeepCallbackInsideApp(request.url)) {
+              return NavigationDecision.prevent;
+            }
             return NavigationDecision.navigate;
           },
           onWebResourceError: (error) {
@@ -240,6 +243,34 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
     });
   }
 
+  bool _shouldKeepCallbackInsideApp(String url) {
+    return _isAdsyClubPaymentUrl(url);
+  }
+
+  bool _isAdsyClubPaymentUrl(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      return false;
+    }
+
+    final host = uri.host.toLowerCase();
+    final path = uri.path.toLowerCase();
+    final isAdsyClubHost = host == 'adsyclub.com' ||
+        host == 'www.adsyclub.com' ||
+        host == 'localhost' ||
+        host == '127.0.0.1';
+
+    if (!isAdsyClubHost && uri.scheme != 'adsyclub') {
+      return false;
+    }
+
+    return path.contains('verify-payment') ||
+        path.contains('verify-pay') ||
+        path.contains('payment-callback') ||
+        path.contains('payment-cancel') ||
+        path.contains('deposit-withdraw');
+  }
+
   void _handleGatewayUrl(String url) {
     final resolvedOrderId = _extractVerificationOrderIdFromUrl(url);
     if (resolvedOrderId != null && resolvedOrderId.isNotEmpty) {
@@ -252,8 +283,16 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
       return;
     }
 
-    if (normalizedUrl.contains('deposit-withdraw') ||
-        normalizedUrl.contains('payment-cancel')) {
+    final isAdsyClubPaymentUrl = _isAdsyClubPaymentUrl(url);
+    final hasReturnData = isAdsyClubPaymentUrl ||
+        normalizedUrl.contains('order_id=') ||
+        normalizedUrl.contains('sp_order_id=') ||
+        normalizedUrl.contains('merchant_invoice_no=') ||
+        normalizedUrl.contains('payment_ref=');
+
+    if (!hasReturnData &&
+        (normalizedUrl.contains('deposit-withdraw') ||
+            normalizedUrl.contains('payment-cancel'))) {
       _pollingTimer?.cancel();
       WalletService.clearPendingPaymentSession();
       if (mounted) {
@@ -265,14 +304,19 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
       return;
     }
 
-    final looksLikeReturnUrl = normalizedUrl.contains('verify-payment') ||
-        normalizedUrl.contains('verify-pay') ||
-        normalizedUrl.contains('payment-callback') ||
+    final looksLikeReturnUrl = isAdsyClubPaymentUrl ||
+        normalizedUrl.contains('deposit-withdraw?payment_callback_url=') ||
         ((normalizedUrl.contains('order_id=') ||
                 normalizedUrl.contains('sp_order_id=')) &&
             normalizedUrl.contains(widget.orderId.toLowerCase()));
 
     if (looksLikeReturnUrl) {
+      if (mounted) {
+        setState(() {
+          _isPageLoading = false;
+          _message = 'Confirming your payment...';
+        });
+      }
       _checkPaymentStatus(forceMessage: 'Confirming your payment...');
     }
   }
@@ -1030,6 +1074,10 @@ class _PaymentVerificationScreenState extends State<PaymentVerificationScreen> {
                                           ?.toString() ??
                                       '';
                                   _handleGatewayUrl(currentUrl);
+                                  if (_shouldKeepCallbackInsideApp(
+                                      currentUrl)) {
+                                    return NavigationActionPolicy.CANCEL;
+                                  }
                                   return NavigationActionPolicy.ALLOW;
                                 },
                                 onReceivedError: (controller, request, error) {

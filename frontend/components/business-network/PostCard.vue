@@ -11,6 +11,7 @@
         @toggle-dropdown="$emit('toggle-dropdown', post)"
         @toggle-save="$emit('toggle-save', post)"
         @copy-link="$emit('copy-link', post)"
+        @report-post="$emit('report-post', post)"
         @post-updated="$emit('post-updated', $event)"
       />
 
@@ -111,6 +112,7 @@ defineEmits([
   "toggle-dropdown",
   "toggle-save",
   "copy-link",
+  "report-post",
   "toggle-description",
   "open-media",
   "toggle-like",

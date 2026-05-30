@@ -46,8 +46,7 @@ class ClassifiedPost {
   });
 
   factory ClassifiedPost.fromJson(Map<String, dynamic> json) {
-    final dynamic rawUser =
-        json['user'] ??
+    final dynamic rawUser = json['user'] ??
         json['seller'] ??
         json['owner'] ??
         json['provider'] ??
@@ -68,7 +67,9 @@ class ClassifiedPost {
       title: json['title']?.toString() ?? '',
       slug: json['slug']?.toString(),
       instructions: json['instructions']?.toString(),
-      price: json['price'] != null ? double.tryParse(json['price'].toString()) : null,
+      price: json['price'] != null
+          ? double.tryParse(json['price'].toString())
+          : null,
       negotiable: json['negotiable'] as bool?,
       country: json['country']?.toString(),
       state: json['state']?.toString(),
@@ -79,17 +80,104 @@ class ClassifiedPost {
       longitude: json['longitude']?.toString(),
       serviceStatus: json['service_status']?.toString() ?? 'pending',
       activeService: json['active_service'] as bool? ?? false,
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null,
-      categoryDetails: json['category_details'] != null 
-          ? CategoryDetails.fromJson(json['category_details'] as Map<String, dynamic>) 
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'].toString())
+          : null,
+      categoryDetails: json['category_details'] is Map
+          ? CategoryDetails.fromJson(
+              Map<String, dynamic>.from(json['category_details'] as Map),
+            )
           : null,
       user: user,
-      medias: json['medias'] != null
-          ? (json['medias'] as List).map((m) => MediaItem.fromJson(m as Map<String, dynamic>)).toList()
-          : null,
-      viewsCount: json['views_count'] as int? ?? 0,
+      medias: _parseMediaItems(json),
+      viewsCount: json['views_count'] is int
+          ? json['views_count'] as int
+          : int.tryParse(
+                  (json['views_count'] ?? json['view_count'] ?? json['views'])
+                          ?.toString() ??
+                      '') ??
+              0,
     );
+  }
+
+  static List<MediaItem>? _parseMediaItems(Map<String, dynamic> json) {
+    final items = <MediaItem>[];
+
+    void add(dynamic raw) {
+      if (raw == null) return;
+
+      if (raw is String) {
+        final value = raw.trim();
+        if (value.isNotEmpty) items.add(MediaItem(image: value));
+        return;
+      }
+
+      if (raw is List) {
+        for (final item in raw) {
+          add(item);
+        }
+        return;
+      }
+
+      if (raw is Map) {
+        final map = Map<String, dynamic>.from(raw);
+        final image = MediaItem.extractImageUrl(map);
+        if ((image ?? '').trim().isNotEmpty) {
+          items.add(MediaItem.fromJson(map));
+          return;
+        }
+
+        for (final key in const [
+          'medias',
+          'media',
+          'images',
+          'image_details',
+          'imageDetails',
+          'gallery',
+          'photos',
+          'files',
+        ]) {
+          add(map[key]);
+        }
+      }
+    }
+
+    for (final key in const [
+      'medias',
+      'media',
+      'images',
+      'image_details',
+      'imageDetails',
+      'gallery',
+      'photos',
+      'files',
+    ]) {
+      add(json[key]);
+    }
+
+    if (items.isEmpty) {
+      for (final key in const [
+        'image',
+        'featured_image',
+        'featuredImage',
+        'thumbnail',
+        'thumb',
+        'photo',
+      ]) {
+        add(json[key]);
+      }
+    }
+
+    final unique = <String, MediaItem>{};
+    for (final item in items) {
+      final image = (item.image ?? '').trim();
+      if (image.isNotEmpty) unique.putIfAbsent(image, () => item);
+    }
+
+    return unique.isEmpty ? null : unique.values.toList();
   }
 
   Map<String, dynamic> toJson() {
@@ -133,7 +221,8 @@ class ClassifiedPost {
     if (difference.inMinutes < 60) return '${difference.inMinutes} minutes ago';
     if (difference.inHours < 24) return '${difference.inHours} hours ago';
     if (difference.inDays < 30) return '${difference.inDays} days ago';
-    if (difference.inDays < 365) return '${(difference.inDays / 30).floor()} months ago';
+    if (difference.inDays < 365)
+      return '${(difference.inDays / 30).floor()} months ago';
     return '${(difference.inDays / 365).floor()} years ago';
   }
 }
@@ -204,8 +293,7 @@ class UserDetails {
   });
 
   factory UserDetails.fromJson(Map<String, dynamic> json) {
-    final dynamic rawProfilePicture =
-        json['profile_picture'] ??
+    final dynamic rawProfilePicture = json['profile_picture'] ??
         json['profilePicture'] ??
         json['profile_photo'] ??
         json['profilePhoto'] ??
@@ -256,8 +344,8 @@ class UserDetails {
       faceLink: json['face_link']?.toString(),
       instagramLink: json['instagram_link']?.toString(),
       whatsappLink: json['whatsapp_link']?.toString(),
-      createdAt: json['created_at'] != null 
-          ? DateTime.tryParse(json['created_at'].toString()) 
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
           : null,
     );
   }
@@ -306,11 +394,45 @@ class MediaItem {
   });
 
   factory MediaItem.fromJson(Map<String, dynamic> json) {
+    final rawOrder = json['order'] ?? json['sort_order'] ?? json['position'];
+
     return MediaItem(
       id: json['id']?.toString(),
-      image: json['image']?.toString(),
-      order: json['order'] as int?,
+      image: extractImageUrl(json),
+      order:
+          rawOrder is int ? rawOrder : int.tryParse(rawOrder?.toString() ?? ''),
     );
+  }
+
+  static String? extractImageUrl(Map<String, dynamic> json) {
+    final rawImage = json['image'] ??
+        json['url'] ??
+        json['file'] ??
+        json['path'] ??
+        json['src'] ??
+        json['photo'] ??
+        json['thumbnail'] ??
+        json['thumb'];
+
+    if (rawImage is String) {
+      return rawImage;
+    }
+    if (rawImage is Map) {
+      final map = Map<String, dynamic>.from(rawImage);
+      return extractImageUrl(map);
+    }
+    if (rawImage is List && rawImage.isNotEmpty) {
+      final first = rawImage.first;
+      if (first is String) {
+        return first;
+      }
+      if (first is Map) {
+        return extractImageUrl(Map<String, dynamic>.from(first));
+      }
+      return first?.toString();
+    }
+
+    return rawImage?.toString();
   }
 
   Map<String, dynamic> toJson() {

@@ -19,7 +19,10 @@ void _log(String message) {
 }
 
 class AgoraCallService {
-  static const String appId = '9eba1a50633041d08dbe75b0fde2ed8a';
+  static const String appId = String.fromEnvironment(
+    'AGORA_APP_ID',
+    defaultValue: '9eba1a50633041d08dbe75b0fde2ed8a',
+  );
   static const Duration _requestTimeout = Duration(seconds: 10);
   static const Duration _restorableCallAge = Duration(hours: 8);
   static const String _prefsInCallKey = 'adsyconnect_active_call_in_call';
@@ -371,6 +374,9 @@ class AgoraCallService {
   }) async {
     try {
       _lastError = null;
+      if (appId.trim().isEmpty) {
+        throw StateError('missing_agora_app_id');
+      }
       final channelNameOk = channelName.isNotEmpty &&
           channelName.length <= 64 &&
           RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(channelName);
@@ -414,6 +420,8 @@ class AgoraCallService {
         _lastError = 'Invalid call session. Please try again.';
       } else if (raw.contains('token')) {
         _lastError = 'Call session expired. Please try again.';
+      } else if (raw.contains('missing_agora_app_id')) {
+        _lastError = 'Call service is not configured yet.';
       } else {
         _lastError = 'Could not join the call. Please try again.';
       }
@@ -722,6 +730,8 @@ class AgoraCallService {
         return 'Your session expired. Please sign in again.';
       case 404:
         return 'Recipient is unavailable right now.';
+      case 409:
+        return 'Recipient is already on another call.';
       default:
         if (response.statusCode >= 500) {
           return 'Call service is unavailable right now. Please try again.';

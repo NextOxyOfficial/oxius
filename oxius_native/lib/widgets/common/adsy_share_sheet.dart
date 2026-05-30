@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../config/app_config.dart';
 import '../../utils/url_launcher_utils.dart';
 
 class AdsyShareData {
@@ -23,13 +24,23 @@ class AdsyShareData {
     this.hashtags = const [],
   });
 
-  String get cleanTitle => title.trim().isEmpty ? 'AdsyClub' : title.trim();
+  String get cleanTitle {
+    final value = _plainText(title);
+    return value.isEmpty ? 'AdsyClub' : value;
+  }
 
   String get cleanUrl => url.trim();
 
-  String get cleanDescription => (description ?? '').trim();
+  String get cleanDescription => _plainText(description ?? '');
 
-  String get shareSubject => (subject ?? cleanTitle).trim();
+  String get cleanImageUrl => AppConfig.getAbsoluteUrl(imageUrl);
+
+  String get shareSubject {
+    final value = _plainText(subject ?? cleanTitle);
+    return value.isEmpty ? cleanTitle : value;
+  }
+
+  String get cleanEyebrow => _plainText(eyebrow ?? '');
 
   String get shareText {
     final parts = <String>[
@@ -45,6 +56,61 @@ class AdsyShareData {
         .map((tag) => tag.trim().replaceAll('#', ''))
         .where((tag) => tag.isNotEmpty)
         .join(',');
+  }
+
+  static String _plainText(String value) {
+    var text = value.trim();
+    if (text.isEmpty) return '';
+
+    text = text.replaceAll(
+      RegExp(
+        r'</?(br|p|div|li|ul|ol|h[1-6]|blockquote|section|article)[^>]*>',
+        caseSensitive: false,
+      ),
+      ' ',
+    );
+    text = text.replaceAll(RegExp(r'<[^>]*>'), ' ');
+    text = _decodeHtmlEntities(text);
+    text = text.replaceAll(RegExp(r'<[^>]*>'), ' ');
+    return text.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  static String _decodeHtmlEntities(String value) {
+    const namedEntities = <String, String>{
+      'amp': '&',
+      'lt': '<',
+      'gt': '>',
+      'quot': '"',
+      'apos': "'",
+      '#39': "'",
+      'nbsp': ' ',
+      'ndash': '-',
+      'mdash': '-',
+      'hellip': '...',
+    };
+
+    return value.replaceAllMapped(
+      RegExp(r'&(#x?[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]+);'),
+      (match) {
+        final entity = match.group(1)!;
+        final lower = entity.toLowerCase();
+        final named = namedEntities[lower];
+        if (named != null) return named;
+
+        int? codePoint;
+        if (lower.startsWith('#x')) {
+          codePoint = int.tryParse(lower.substring(2), radix: 16);
+        } else if (lower.startsWith('#')) {
+          codePoint = int.tryParse(lower.substring(1));
+        }
+
+        if (codePoint == null || codePoint <= 0 || codePoint > 0x10FFFF) {
+          return match.group(0)!;
+        }
+
+        return String.fromCharCode(codePoint);
+      },
+    );
   }
 }
 
@@ -365,7 +431,7 @@ class _SharePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = (data.imageUrl ?? '').trim();
+    final imageUrl = data.cleanImageUrl;
 
     return Container(
       decoration: BoxDecoration(
@@ -406,9 +472,9 @@ class _SharePreview extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if ((data.eyebrow ?? '').trim().isNotEmpty) ...[
+                  if (data.cleanEyebrow.isNotEmpty) ...[
                     Text(
-                      data.eyebrow!.trim().toUpperCase(),
+                      data.cleanEyebrow.toUpperCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

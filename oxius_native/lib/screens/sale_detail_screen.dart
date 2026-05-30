@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
 import '../widgets/linkify_text.dart';
+import '../widgets/common/adsy_report_sheet.dart';
 import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -36,10 +37,6 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
   int _currentImageIndex = 0;
   final PageController _pageController = PageController();
 
-  // Dialog states
-  bool _showReportDialog = false;
-  String _reportReason = '';
-  String _reportDetails = '';
   bool _showPhone = false;
 
   @override
@@ -189,8 +186,6 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
               : _post == null
                   ? _buildErrorState()
                   : _buildContent(),
-          // Report Dialog
-          if (_showReportDialog) _buildReportDialog(),
         ],
       ),
       bottomNavigationBar: _post != null ? _buildBottomBar() : null,
@@ -538,7 +533,7 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
                 ],
               ),
               GestureDetector(
-                onTap: () => setState(() => _showReportDialog = true),
+                onTap: _openReportSheet,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
@@ -1471,202 +1466,24 @@ class _SaleDetailScreenState extends State<SaleDetailScreen> {
     );
   }
 
-  Widget _buildReportDialog() {
-    return GestureDetector(
-      onTap: () => setState(() {
-        _showReportDialog = false;
-        _reportReason = '';
-        _reportDetails = '';
-      }),
-      child: Container(
-        color: Colors.black54,
-        child: Center(
-          child: GestureDetector(
-            onTap: () {},
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Report this listing',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => setState(() {
-                          _showReportDialog = false;
-                          _reportReason = '';
-                          _reportDetails = '';
-                        }),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Select a reason:',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildReportOption('Spam or misleading', 'spam'),
-                  _buildReportOption('Inappropriate content', 'inappropriate'),
-                  _buildReportOption('Duplicate listing', 'duplicate'),
-                  _buildReportOption('Fraudulent', 'fraud'),
-                  _buildReportOption('Other', 'other'),
-                  if (_reportReason == 'other') ...[
-                    const SizedBox(height: 12),
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Please provide details...',
-                        hintStyle: const TextStyle(fontSize: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                      maxLines: 3,
-                      style: const TextStyle(fontSize: 12),
-                      onChanged: (value) => _reportDetails = value,
-                    ),
-                  ],
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => setState(() {
-                            _showReportDialog = false;
-                            _reportReason = '';
-                            _reportDetails = '';
-                          }),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF6B7280),
-                            side: const BorderSide(
-                                color: Color(0xFFD1D5DB), width: 1),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text('Cancel',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _reportReason.isEmpty
-                              ? null
-                              : () async {
-                                  if (_post?.slug == null) return;
+  void _openReportSheet() {
+    final post = _post;
+    final slug = post?.slug ?? widget.slug ?? widget.id;
+    if (slug == null || slug.isEmpty) return;
 
-                                  // Show loading
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: AdsyLoadingIndicator(
-                                              strokeWidth: 2,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                      Colors.white),
-                                            ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text('Submitting report...'),
-                                        ],
-                                      ),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-
-                                  // Submit report to backend
-                                  final success = await _postService.reportPost(
-                                    _post!.slug,
-                                    _reportReason,
-                                    details: _reportReason == 'other'
-                                        ? _reportDetails
-                                        : null,
-                                  );
-
-                                  setState(() {
-                                    _showReportDialog = false;
-                                    _reportReason = '';
-                                    _reportDetails = '';
-                                  });
-
-                                  // Show result
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          success
-                                              ? 'Thank you for reporting. We will review this listing.'
-                                              : 'Failed to submit report. Please try again.',
-                                        ),
-                                        backgroundColor: success
-                                            ? const Color(0xFF10B981)
-                                            : const Color(0xFFEF4444),
-                                      ),
-                                    );
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: const Color(0xFFD1D5DB),
-                            disabledForegroundColor: const Color(0xFF9CA3AF),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text('Submit',
-                              style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReportOption(String label, String value) {
-    return RadioListTile<String>(
-      title: Text(label, style: const TextStyle(fontSize: 13)),
-      value: value,
-      groupValue: _reportReason,
-      onChanged: (String? newValue) {
-        setState(() {
-          _reportReason = newValue ?? '';
-        });
+    AdsyReportSheet.show(
+      context,
+      title: 'Report Listing',
+      prompt: 'Please select a reason for reporting this listing.',
+      options: AdsyReportSheet.saleOptions,
+      successMessage: 'Thank you for reporting. We will review this listing.',
+      onSubmit: (option, details) {
+        return _postService.reportPost(
+          slug,
+          option.value,
+          details: details,
+        );
       },
-      dense: true,
-      activeColor: const Color(0xFF10B981),
     );
   }
 

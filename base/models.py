@@ -407,6 +407,7 @@ class ClassifiedCategoryPost(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     active_service = models.BooleanField(default=True)
+    views_count = models.PositiveIntegerField(default=0)
     GIG_STATUS = [
         ("pending", "Pending"),
         ("approved", "Approved"),
@@ -424,6 +425,44 @@ class ClassifiedCategoryPost(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ClassifiedCategoryPostReport(models.Model):
+    REASON_CHOICES = [
+        ("spam", "Spam or misleading"),
+        ("inappropriate", "Inappropriate content"),
+        ("harassment", "Harassment or hate speech"),
+        ("violence", "Violence or dangerous content"),
+        ("fraud", "Fraudulent or scam"),
+        ("other", "Other"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(
+        ClassifiedCategoryPost, on_delete=models.CASCADE, related_name="reports"
+    )
+    reported_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="classified_post_reports"
+    )
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    details = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed = models.BooleanField(default=False)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_classified_post_reports",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ["post", "reported_by"]
+
+    def __str__(self):
+        return f"Report by {self.reported_by} on {self.post}"
 
 
 class MicroGigCategory(models.Model):
@@ -1508,7 +1547,7 @@ class SearchHistory(models.Model):
 class FCMToken(models.Model):
     """Model to store FCM tokens for push notifications"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_tokens')
-    token = models.CharField(max_length=255, unique=True)
+    token = models.TextField(unique=True)
     device_type = models.CharField(max_length=20, default='android')
     voip_token = models.TextField(blank=True, default='')
     voip_environment = models.CharField(max_length=20, blank=True, default='')

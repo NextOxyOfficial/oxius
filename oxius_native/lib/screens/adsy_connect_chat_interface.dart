@@ -28,6 +28,7 @@ import '../widgets/chat/chat_message_input.dart';
 import 'business_network/profile_screen.dart';
 import 'call_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:oxius_native/widgets/common/adsy_report_sheet.dart';
 
 class AdsyConnectChatInterface extends StatefulWidget {
   final String chatroomId;
@@ -2710,89 +2711,23 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _showReportDialog() {
-    String? selectedReason;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.flag_rounded,
-                    color: Color(0xFFEF4444), size: 20),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Report User',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Why are you reporting ${widget.userName}?',
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-              ),
-              const SizedBox(height: 16),
-              ...[
-                'Spam',
-                'Harassment',
-                'Inappropriate content',
-                'Scam or fraud',
-                'Other'
-              ].map(
-                (reason) => RadioListTile<String>(
-                  title: Text(reason, style: const TextStyle(fontSize: 13)),
-                  value: reason,
-                  groupValue: selectedReason,
-                  onChanged: (value) => setState(() => selectedReason = value),
-                  contentPadding: EdgeInsets.zero,
-                  dense: true,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child:
-                  Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
-            ),
-            ElevatedButton(
-              onPressed: selectedReason != null
-                  ? () {
-                      Navigator.pop(context);
-                      // TODO: Submit report
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Report submitted. We\'ll review it shortly.'),
-                          backgroundColor: Color(0xFFEF4444),
-                        ),
-                      );
-                    }
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('Report'),
-            ),
-          ],
-        ),
-      ),
+    AdsyReportSheet.show(
+      context,
+      title: 'Report User',
+      prompt: 'Why are you reporting ${widget.userName}?',
+      options: AdsyReportSheet.userOptions,
+      onSubmit: (option, details) async {
+        try {
+          await AdsyConnectService.reportUser(
+            reportedUserId: widget.userId,
+            reason: option.value,
+            description: details.trim().isEmpty ? null : details.trim(),
+          );
+          return true;
+        } catch (_) {
+          return false;
+        }
+      },
     );
   }
 

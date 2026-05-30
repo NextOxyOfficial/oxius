@@ -58,6 +58,31 @@ class ClassifiedPostService {
     }
   }
 
+  Future<bool> reportPost(
+    String idOrSlug,
+    String reason, {
+    String? details,
+  }) async {
+    try {
+      final headers = await _getAuthHeaders();
+      final uri =
+          Uri.parse('$baseUrl/classified-categories/post/$idOrSlug/report/');
+      final response = await client.post(
+        uri,
+        headers: headers,
+        body: json.encode({
+          'reason': reason,
+          if ((details ?? '').trim().isNotEmpty) 'details': details!.trim(),
+        }),
+      );
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print('Error reporting classified post: $e');
+      return false;
+    }
+  }
+
   /// Fetch recent classified posts (for home page carousel)
   /// Uses the same endpoint as Vue: /classified-posts/?limit=X
   Future<List<ClassifiedPost>> fetchRecentPosts({int limit = 10}) async {

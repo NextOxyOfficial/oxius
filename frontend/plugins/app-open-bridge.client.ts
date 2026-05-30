@@ -8,6 +8,27 @@ const deepLinkPrefixes = [
   '/deposit-withdraw',
   '/verify-payment',
   '/payment-callback.html',
+  '/payment-cancel.html',
+  '/adsy-news',
+  '/business-network',
+  '/classified-details',
+  '/classified-categories',
+  '/product-details',
+  '/eshop',
+  '/order',
+  '/my-gigs',
+  '/pending-tasks',
+  '/post-a-gig',
+  '/micro-gigs',
+  '/workspace',
+  '/workspaces',
+  '/seller',
+  '/sale',
+  '/food-zone',
+  '/mobile-recharge',
+  '/upgrade-to-pro',
+  '/shop-manager',
+  '/rideshare',
 ]
 
 function isDeepLinkPath(path: string) {
@@ -16,8 +37,17 @@ function isDeepLinkPath(path: string) {
   )
 }
 
+function isPaymentPath(path: string) {
+  return [
+    '/deposit-withdraw',
+    '/verify-payment',
+    '/payment-callback.html',
+    '/payment-cancel.html',
+  ].some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+}
+
 export default defineNuxtPlugin(() => {
-  if (process.server || typeof window === 'undefined') {
+  if (typeof window === 'undefined') {
     return
   }
 
@@ -37,15 +67,15 @@ export default defineNuxtPlugin(() => {
       return
     }
 
-    // Only silently bridge deep-linkable flows (no store fallback).
-    // The SmartAppBanner handles everything else with a user-visible prompt.
+    // Bridge only URLs that the native router can resolve. If the app is not
+    // installed, mobile users land in the correct store instead of a dead page.
     if (!isDeepLinkPath(pathOnly)) {
       return
     }
 
     await tryOpenApp({
       fullPath,
-      fallbackToStore: false,
+      fallbackToStore: !isPaymentPath(pathOnly),
       fallbackDelayMs: 2500,
       cooldownMs: 15000,
     })

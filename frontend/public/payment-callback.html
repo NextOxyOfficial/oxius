@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Confirmation</title>
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .message {
+      max-width: 340px;
+      padding: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="message">
+    <h2>Payment received</h2>
+    <p>Confirming your deposit.</p>
+  </div>
+  <script>
+    const target = '/deposit-withdraw?payment_callback_url=' + encodeURIComponent(window.location.href);
+
+    if (window.opener && !window.opener.closed) {
+      try {
+        window.opener.location.href = target;
+        window.close();
+      } catch (_) {
+        window.location.replace(target);
+      }
+    } else {
+      window.location.replace(target);
+    }
+  </script>
+</body>
+</html>

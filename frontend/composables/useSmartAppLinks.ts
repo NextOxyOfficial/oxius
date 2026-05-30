@@ -15,7 +15,6 @@ export function useSmartAppLinks() {
   const runtimeConfig = useRuntimeConfig()
 
   const deepLinkScheme = runtimeConfig.public.deepLinkScheme || 'adsyclub'
-  const homeDeepLinkPath = runtimeConfig.public.homeDeepLinkPath || 'home'
   const androidStoreUrl =
     runtimeConfig.public.androidStoreUrl ||
     `https://play.google.com/store/apps/details?id=${runtimeConfig.public.androidAppPackage || 'com.oxius.app'}`
@@ -57,12 +56,9 @@ export function useSmartAppLinks() {
 
   const buildDeepLink = (fullPath = '/') => {
     const parsedUrl = new URL(fullPath, 'https://adsyclub.com')
-    const normalizedPath =
-      parsedUrl.pathname === '/'
-        ? homeDeepLinkPath
-        : parsedUrl.pathname.replace(/^\/+/, '')
+    const absoluteUrl = `${parsedUrl.origin}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`
 
-    return `${deepLinkScheme}://${normalizedPath}${parsedUrl.search}${parsedUrl.hash}`
+    return `${deepLinkScheme}://open?url=${encodeURIComponent(absoluteUrl)}`
   }
 
   const getStoreUrl = (platform = getPlatform()) => {
