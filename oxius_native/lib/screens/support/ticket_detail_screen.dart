@@ -200,6 +200,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -338,85 +339,84 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
 
                     // Reply Input (only if ticket is not closed)
                     if (_ticket!.status != 'closed')
-                      Container(
-                        color: Colors.white,
-                        padding: EdgeInsets.only(
-                          left: 16,
-                          right: 16,
-                          top: 12,
-                          bottom: MediaQuery.of(context).viewInsets.bottom + 12,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _replyController,
-                                maxLines: null,
-                                decoration: InputDecoration(
-                                  hintText: 'Type your reply...',
-                                  hintStyle: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[400],
-                                  ),
-                                  filled: true,
-                                  fillColor: const Color(0xFFF9FAFB),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                    borderSide: const BorderSide(
-                                        color: Color(0xFFE5E7EB)),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                    borderSide: const BorderSide(
-                                        color: Color(0xFFE5E7EB)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(24),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFF3B82F6),
-                                      width: 2,
+                      SafeArea(
+                        top: false,
+                        child: Container(
+                          color: Colors.white,
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _replyController,
+                                  maxLines: null,
+                                  decoration: InputDecoration(
+                                    hintText: 'Type your reply...',
+                                    hintStyle: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[400],
+                                    ),
+                                    filled: true,
+                                    fillColor: const Color(0xFFF9FAFB),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE5E7EB)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                      borderSide: const BorderSide(
+                                          color: Color(0xFFE5E7EB)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFF3B82F6),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
                                     ),
                                   ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xFF3B82F6),
+                                      Color(0xFF6366F1)
+                                    ],
                                   ),
+                                  shape: BoxShape.circle,
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF3B82F6),
-                                    Color(0xFF6366F1)
-                                  ],
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: _isSendingReply
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: AdsyLoadingIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
+                                child: IconButton(
+                                  icon: _isSendingReply
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: AdsyLoadingIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
                                           ),
+                                        )
+                                      : const Icon(
+                                          Icons.send_rounded,
+                                          color: Colors.white,
+                                          size: 20,
                                         ),
-                                      )
-                                    : const Icon(
-                                        Icons.send_rounded,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                onPressed: _isSendingReply ? null : _sendReply,
+                                  onPressed:
+                                      _isSendingReply ? null : _sendReply,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                   ],

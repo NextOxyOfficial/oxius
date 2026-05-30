@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '../services/eshop_service.dart';
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import '../utils/url_launcher_utils.dart';
 import '../models/cart_item.dart';
+import '../widgets/common/adsy_share_sheet.dart';
 import '../widgets/product_card.dart';
 import 'vendor_store_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -514,20 +514,26 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
     final product = _activeProduct;
     final productTitle = product['name'] ?? product['title'] ?? 'Product';
     final productSlug = (product['slug'] ?? product['id'])?.toString().trim();
-    final shareText =
-        'Check out this product: $productTitle\n\nView on AdsyClub: https://adsyclub.com/product-details/$productSlug';
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    try {
-      await Share.share(shareText);
-    } catch (_) {
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('Unable to share this product right now.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    final imageDetails = product['image_details'];
+    String? imageUrl;
+    if (imageDetails is List && imageDetails.isNotEmpty) {
+      final first = imageDetails.first;
+      if (first is Map) {
+        imageUrl = (first['image'] ?? first['url'])?.toString();
+      }
     }
+
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: productTitle.toString(),
+        description: 'View this product on AdsyClub.',
+        url: 'https://adsyclub.com/product-details/$productSlug',
+        imageUrl: imageUrl,
+        subject: productTitle.toString(),
+        eyebrow: 'AdsyClub Shop',
+      ),
+    );
   }
 
   Widget _buildChromeActionButton({

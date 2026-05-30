@@ -88,6 +88,7 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     phone = models.CharField(unique=True, max_length=100, default="", blank=True)
     email = models.EmailField(unique=True, default="", null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
     age = models.IntegerField(blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
     kyc_pending = models.BooleanField(default=False)

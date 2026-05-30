@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_html/flutter_html.dart';
@@ -15,6 +14,7 @@ import '../services/adsyconnect_service.dart';
 import '../config/app_config.dart';
 import '../utils/url_launcher_utils.dart';
 import '../widgets/skeleton_loader.dart';
+import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'user_posts_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -1017,117 +1017,29 @@ class _ClassifiedPostDetailsScreenState
     return numericId.length > 10 ? numericId.substring(0, 10) : numericId;
   }
 
-  void _sharePost() {
-    if (_post == null) return;
+  Future<void> _sharePost() async {
+    final post = _post;
+    if (post == null) return;
 
     final shareUrl =
-        'https://adsyclub.com/classified-categories/details/${_post!.slug ?? _post!.id}';
-    Share.share(
-      '${_post!.title}\n\n$shareUrl',
-      subject: _post!.title,
+        'https://adsyclub.com/classified-categories/details/${post.slug ?? post.id}';
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: post.title,
+        description: post.instructions,
+        url: shareUrl,
+        imageUrl: post.medias != null && post.medias!.isNotEmpty
+            ? post.medias!.first.image
+            : null,
+        subject: post.title,
+        eyebrow: 'Classified',
+      ),
     );
   }
 
   void _showShareDialog() {
-    if (_post == null) return;
-
-    final shareUrl =
-        'https://adsyclub.com/classified-categories/details/${_post!.slug ?? _post!.id}';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Share this service'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      shareUrl,
-                      style: const TextStyle(fontSize: 12),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 20),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: shareUrl));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Link copied to clipboard')),
-                      );
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text('Share via',
-                style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildShareButton('Facebook', Icons.facebook, () {
-                  launchUrl(Uri.parse(
-                      'https://www.facebook.com/sharer/sharer.php?u=$shareUrl'));
-                  Navigator.pop(context);
-                }),
-                _buildShareButton('WhatsApp', Icons.message, () {
-                  launchUrl(Uri.parse(
-                      'https://api.whatsapp.com/send?text=${_post!.title} $shareUrl'));
-                  Navigator.pop(context);
-                }),
-                _buildShareButton('Email', Icons.email, () {
-                  launchUrl(Uri.parse(
-                      'mailto:?subject=${_post!.title}&body=$shareUrl'));
-                  Navigator.pop(context);
-                }),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShareButton(String label, IconData icon, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20),
-            const SizedBox(width: 8),
-            Text(label),
-          ],
-        ),
-      ),
-    );
+    _sharePost();
   }
 
   void _showReportDialog() {

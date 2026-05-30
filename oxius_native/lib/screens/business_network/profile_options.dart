@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../services/auth_service.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
@@ -17,6 +16,7 @@ import '../workspace/workspace_screen.dart';
 import '../settings_screen.dart';
 import '../verification_screen.dart';
 import '../../widgets/business_network/qr_code_modal.dart';
+import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ProfileOptionsScreen extends StatefulWidget {
@@ -688,11 +688,23 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   void _shareProfile(BuildContext context) {
     final user = AuthService.currentUser;
     if (user == null) return;
+    final displayName = [user.firstName, user.lastName]
+        .where((part) => part != null && part.trim().isNotEmpty)
+        .map((part) => part!.trim())
+        .join(' ');
+    final name = displayName.isNotEmpty ? displayName : user.username;
     final profileUrl =
         '${AppConfig.mediaBaseUrl}/business-network/profile/${user.id}';
-    Share.share(
-      'Check out my profile on Oxius: $profileUrl',
-      subject: 'My Oxius Profile',
+    AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: '$name on AdsyClub',
+        description: 'Check out my profile on AdsyClub Business Network.',
+        url: profileUrl,
+        imageUrl: user.profilePicture,
+        subject: '$name on AdsyClub',
+        eyebrow: 'Business Network Profile',
+      ),
     );
   }
 

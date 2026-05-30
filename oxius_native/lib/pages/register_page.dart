@@ -46,6 +46,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _dateOfBirthController = TextEditingController();
   final _ageController = TextEditingController();
   final _zipController = TextEditingController();
   final _addressController = TextEditingController();
@@ -55,6 +56,7 @@ class _RegisterPageState extends State<RegisterPage> {
   File? _profileImageFile;
   Uint8List? _profileImageBytes;
   String? _profileImageName;
+  DateTime? _selectedDateOfBirth;
   String _gender = '';
   final String _country = 'Bangladesh';
   String? _selectedRegion;
@@ -83,6 +85,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _dateOfBirthController.dispose();
     _ageController.dispose();
     _zipController.dispose();
     _addressController.dispose();
@@ -236,6 +239,11 @@ class _RegisterPageState extends State<RegisterPage> {
       isValid = false;
     }
 
+    if (_selectedDateOfBirth == null) {
+      _errors['date_of_birth'] = 'Date of birth is required';
+      isValid = false;
+    }
+
     final age = _ageController.text.trim();
     if (age.isEmpty) {
       _errors['age'] = 'Age is required';
@@ -252,6 +260,45 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() {});
     return isValid;
+  }
+
+  int _calculateAge(DateTime dateOfBirth) {
+    final today = DateTime.now();
+    var age = today.year - dateOfBirth.year;
+    final birthdayThisYear =
+        DateTime(today.year, dateOfBirth.month, dateOfBirth.day);
+    if (today.isBefore(birthdayThisYear)) {
+      age--;
+    }
+    return age;
+  }
+
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  Future<void> _pickDateOfBirth() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate:
+          _selectedDateOfBirth ?? DateTime(now.year - 18, now.month, now.day),
+      firstDate: DateTime(1900),
+      lastDate: now,
+      helpText: 'Select date of birth',
+    );
+
+    if (picked == null) return;
+
+    setState(() {
+      _selectedDateOfBirth = picked;
+      _dateOfBirthController.text = _formatDate(picked);
+      _ageController.text = _calculateAge(picked).toString();
+      _errors.remove('date_of_birth');
+      _errors.remove('age');
+    });
   }
 
   Future<void> _handleSubmit() async {
@@ -274,6 +321,7 @@ class _RegisterPageState extends State<RegisterPage> {
         'username': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
         'password': _passwordController.text,
+        'date_of_birth': _dateOfBirthController.text,
         'age': int.parse(_ageController.text),
         'gender': _gender,
         'country': _country,
@@ -433,8 +481,6 @@ class _RegisterPageState extends State<RegisterPage> {
         children: [
           _buildTopBar(),
           const SizedBox(height: 12),
-          _buildHeroCard(),
-          const SizedBox(height: 16),
           _buildRegistrationCard(isMobile),
           const SizedBox(height: 14),
           _buildFooter(),
@@ -490,93 +536,6 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildHeroCard() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_surfaceColor, _primarySoftColor],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: _cardBorderColor),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: _surfaceColor.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFD7E5FF)),
-            ),
-            child: Text(
-              'Create your member profile',
-              style: AppFonts.roboto(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: _primaryDarkColor,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: 92,
-            height: 92,
-            decoration: BoxDecoration(
-              color: _surfaceColor.withValues(alpha: 0.94),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: _primaryDarkColor.withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Image.asset(
-                'assets/images/logo.png',
-                height: 66,
-                width: 66,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.storefront_rounded,
-                    size: 48,
-                    color: _primaryColor,
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Create your account',
-            textAlign: TextAlign.center,
-            style: AppFonts.roboto(
-              fontSize: 25,
-              fontWeight: FontWeight.w700,
-              color: _headingTextColor,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Complete your details once and start using your account right away.',
-            textAlign: TextAlign.center,
-            style: AppFonts.roboto(
-              fontSize: 12,
-              color: _bodyTextColor,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -666,23 +625,33 @@ class _RegisterPageState extends State<RegisterPage> {
           const SizedBox(height: 12),
           _buildTwoColumnRow(
             isMobile: isMobile,
-            left: _buildTextField(
+            left: _buildDateField(
+              label: 'Date of Birth',
+              hintText: 'Select birth date',
+              controller: _dateOfBirthController,
+              icon: Icons.event_outlined,
+              error: _errors['date_of_birth'],
+              onTap: _pickDateOfBirth,
+            ),
+            right: _buildTextField(
               label: 'Age',
-              hintText: 'Enter your age',
+              hintText: 'Auto-filled',
               controller: _ageController,
               icon: Icons.cake_outlined,
               keyboardType: TextInputType.number,
+              readOnly: true,
               error: _errors['age'],
             ),
-            right: _buildDropdownField(
-              label: 'Gender',
-              hintText: 'Select gender',
-              icon: Icons.wc_rounded,
-              value: _gender.isEmpty ? null : _gender,
-              items: const ['Male', 'Female', 'Others'],
-              onChanged: (value) => setState(() => _gender = value ?? ''),
-              error: _errors['gender'],
-            ),
+          ),
+          const SizedBox(height: 12),
+          _buildDropdownField(
+            label: 'Gender',
+            hintText: 'Select gender',
+            icon: Icons.wc_rounded,
+            value: _gender.isEmpty ? null : _gender,
+            items: const ['Male', 'Female', 'Others'],
+            onChanged: (value) => setState(() => _gender = value ?? ''),
+            error: _errors['gender'],
           ),
           const SizedBox(height: 12),
           _buildTextField(
@@ -1102,6 +1071,7 @@ class _RegisterPageState extends State<RegisterPage> {
     VoidCallback? onToggleVisibility,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool readOnly = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1113,6 +1083,7 @@ class _RegisterPageState extends State<RegisterPage> {
           keyboardType: keyboardType,
           maxLines: isPassword ? 1 : maxLines,
           obscureText: isPassword ? !isVisible : false,
+          readOnly: readOnly,
           style: AppFonts.roboto(
             fontSize: 13.5,
             color: _headingTextColor,
@@ -1136,6 +1107,74 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: onToggleVisibility,
                   )
                 : null,
+            filled: true,
+            fillColor: _surfaceColor,
+            errorText: error,
+            errorMaxLines: 2,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _cardBorderColor),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _primaryColor, width: 1.8),
+            ),
+            errorBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _dangerColor),
+            ),
+            focusedErrorBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderSide: BorderSide(color: _dangerColor, width: 1.5),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDateField({
+    required String label,
+    required String hintText,
+    required TextEditingController controller,
+    required IconData icon,
+    required VoidCallback onTap,
+    String? error,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInputLabel(label),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          readOnly: true,
+          onTap: onTap,
+          style: AppFonts.roboto(
+            fontSize: 13.5,
+            color: _headingTextColor,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: AppFonts.roboto(color: _mutedTextColor, fontSize: 13),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 54, minHeight: 44),
+            prefixIcon: _buildFieldIcon(icon),
+            suffixIcon: IconButton(
+              icon: const Icon(
+                Icons.calendar_month_outlined,
+                color: _bodyTextColor,
+                size: 18,
+              ),
+              onPressed: onTap,
+            ),
             filled: true,
             fillColor: _surfaceColor,
             errorText: error,

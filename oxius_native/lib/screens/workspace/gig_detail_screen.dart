@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../services/workspace_service.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/adsyconnect_service.dart';
 import '../adsy_connect_chat_interface.dart';
 import '../wallet/wallet_screen.dart';
+import '../../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class GigDetailScreen extends StatefulWidget {
@@ -363,19 +362,19 @@ class _GigDetailScreenState extends State<GigDetailScreen> {
   Future<void> _handleShare() async {
     if (_gig == null) return;
 
-    try {
-      await Share.share(
-        'Check out this gig: ${_gig!['title']}\n\nhttps://adsyclub.com/business-network/workspace-details?id=${widget.gigId}',
-        subject: _gig!['title'],
-      );
-    } catch (e) {
-      // Fallback to clipboard
-      await Clipboard.setData(ClipboardData(
-        text:
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: _gig!['title']?.toString() ?? 'Workspace Gig',
+        description:
+            'Starting at BDT ${_gigPrice.toStringAsFixed(0)} on AdsyClub Workspace.',
+        url:
             'https://adsyclub.com/business-network/workspace-details?id=${widget.gigId}',
-      ));
-      _showSnackBar('Link copied to clipboard', Colors.green);
-    }
+        imageUrl: _gigImages.isNotEmpty ? _gigImages.first : null,
+        subject: _gig!['title']?.toString() ?? 'Workspace Gig',
+        eyebrow: 'Workspace Gig',
+      ),
+    );
   }
 
   String _getCategoryLabel(String? category) {

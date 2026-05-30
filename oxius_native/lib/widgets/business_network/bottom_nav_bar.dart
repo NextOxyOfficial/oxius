@@ -46,11 +46,13 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         right: true,
         bottom: true,
         child: Container(
-          height: 68,
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+          height: 56,
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: isLoggedIn ? _buildLoggedInNav(context) : _buildLoggedOutNav(context),
+            children: isLoggedIn
+                ? _buildLoggedInNav(context)
+                : _buildLoggedOutNav(context),
           ),
         ),
       ),
@@ -69,7 +71,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         color: const Color(0xFF3B82F6),
         isActive: currentIndex == 0,
       ),
-      
+
       // Notifications
       _buildNavItem(
         context,
@@ -80,10 +82,10 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         isActive: currentIndex == 1,
         badge: unreadCount > 0 ? unreadCount : null,
       ),
-      
+
       // Create Post (Center - Elevated)
       _buildCreateButton(context, enabled: true),
-      
+
       // Profile
       _buildNavItem(
         context,
@@ -93,7 +95,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         color: const Color(0xFFA855F7),
         isActive: currentIndex == 3,
       ),
-      
+
       // AdsyClub
       _buildNavItem(
         context,
@@ -119,7 +121,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         color: const Color(0xFF3B82F6),
         isActive: currentIndex == 0,
       ),
-      
+
       // Login
       _buildNavItem(
         context,
@@ -129,10 +131,10 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         color: const Color(0xFFA855F7),
         isActive: currentIndex == 1,
       ),
-      
+
       // Create Post (Disabled - grayed out)
       _buildCreateButton(context, enabled: false),
-      
+
       // Earn
       _buildNavItem(
         context,
@@ -142,7 +144,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
         color: const Color(0xFFF59E0B),
         isActive: currentIndex == 3,
       ),
-      
+
       // AdsyClub
       _buildNavItem(
         context,
@@ -181,8 +183,8 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 children: [
                   // Icon or Favicon with gradient effect when active
                   Container(
-                    width: 34,
-                    height: 34,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       gradient: isActive
                           ? RadialGradient(
@@ -197,51 +199,51 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                     child: useFavicon
                         ? Image.asset(
                             'assets/images/favicon.png',
-                            width: 26,
-                            height: 26,
+                            width: 22,
+                            height: 22,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               return Icon(
                                 icon,
-                                size: 26,
+                                size: 22,
                                 color: isActive ? color : Colors.grey.shade600,
                               );
                             },
                           )
                         : Icon(
                             icon,
-                            size: 26,
+                            size: 22,
                             color: isActive ? color : Colors.grey.shade600,
                           ),
                   ),
-                  
+
                   // Badge for notifications
                   if (badge != null && badge > 0)
                     Positioned(
-                      top: -4,
-                      right: -4,
+                      top: -3,
+                      right: -3,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(3),
                         decoration: const BoxDecoration(
                           color: Color(0xFFEF4444),
                           shape: BoxShape.circle,
                         ),
                         constraints: const BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
+                          minWidth: 16,
+                          minHeight: 16,
                         ),
                         child: Text(
                           badge > 99 ? '99+' : badge.toString(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
                     ),
-                  
+
                   // Ping animation for active state
                   if (isActive)
                     Positioned.fill(
@@ -268,7 +270,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: FontWeight.w600,
                   color: isActive ? color : Colors.grey.shade600,
                   letterSpacing: 0,
@@ -277,7 +279,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              
+
               // Active indicator line
               if (isActive) const SizedBox.shrink(),
             ],
@@ -290,21 +292,21 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
   Widget _buildCreateButton(BuildContext context, {required bool enabled}) {
     return Expanded(
       child: GestureDetector(
-        onTap: enabled 
-            ? () => onTap(2) 
+        onTap: enabled
+            ? () => onTap(2)
             : () => LoginPromptDialog.show(
-                context, 
-                action: 'create posts',
-                icon: Icons.edit_note_rounded,
-              ),
+                  context,
+                  action: 'create posts',
+                  icon: Icons.edit_note_rounded,
+                ),
         child: Transform.translate(
-          offset: const Offset(0, -8),
+          offset: const Offset(0, -5),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 50,
-                height: 50,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   gradient: enabled
                       ? const LinearGradient(
@@ -317,7 +319,8 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                           end: Alignment.bottomRight,
                         )
                       : null,
-                  color: enabled ? null : const Color(0xFFCBD5E1).withOpacity(0.3),
+                  color:
+                      enabled ? null : const Color(0xFFCBD5E1).withOpacity(0.3),
                   shape: BoxShape.circle,
                   boxShadow: enabled
                       ? [
@@ -338,7 +341,7 @@ class BusinessNetworkBottomNavBar extends StatelessWidget {
                 child: Icon(
                   Icons.add,
                   color: enabled ? Colors.white : Colors.grey.shade300,
-                  size: 24,
+                  size: 22,
                 ),
               ),
             ],

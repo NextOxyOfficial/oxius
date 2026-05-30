@@ -13,14 +13,12 @@ import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
 import '../../widgets/business_network/user_suggestions_card.dart';
-import '../../widgets/ios_web_redirect_screen.dart';
 import '../../widgets/business_network/sponsored_products_card.dart';
 import 'create_post_screen.dart';
 import 'profile_screen.dart';
 import 'search_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_options.dart';
-import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class BusinessNetworkScreen extends StatefulWidget {
   const BusinessNetworkScreen({super.key});
@@ -498,30 +496,25 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
                     maxWidth: 672), // max-w-3xl (768px - padding)
-                child: AdsyRefreshIndicator(
-                  onRefresh: _refreshPosts,
-                  color: const Color(0xFF3B82F6),
-                  edgeOffset: headerHeight,
-                  child: _isLoading
-                      ? _buildLoadingState()
-                      : _errorMessage != null
-                          ? _buildErrorState()
-                          : visiblePosts.isEmpty
-                              ? _buildEmptyState()
-                              : ListView.builder(
-                                  controller: _scrollController,
-                                  padding: EdgeInsets.fromLTRB(
-                                    1,
-                                    headerHeight + 8,
-                                    1,
-                                    isMobile ? 80 : 16,
-                                  ),
-                                  itemCount: _calculateTotalItems(visiblePosts),
-                                  itemBuilder: (context, index) {
-                                    return _buildFeedItem(index, visiblePosts);
-                                  },
+                child: _isLoading
+                    ? _buildLoadingState()
+                    : _errorMessage != null
+                        ? _buildErrorState()
+                        : visiblePosts.isEmpty
+                            ? _buildEmptyState()
+                            : ListView.builder(
+                                controller: _scrollController,
+                                padding: EdgeInsets.fromLTRB(
+                                  1,
+                                  headerHeight + 8,
+                                  1,
+                                  isMobile ? 80 : 16,
                                 ),
-                ),
+                                itemCount: _calculateTotalItems(visiblePosts),
+                                itemBuilder: (context, index) {
+                                  return _buildFeedItem(index, visiblePosts);
+                                },
+                              ),
               ),
             ),
             Positioned(
@@ -608,9 +601,8 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
 
     switch (index) {
       case 0:
-        // Recent - already on this screen, refresh
+        // Recent - already on this screen.
         setState(() => _currentNavIndex = 0);
-        _refreshPosts();
         break;
       case 1:
         if (isLoggedIn) {

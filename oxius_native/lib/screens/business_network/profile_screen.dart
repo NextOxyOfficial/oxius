@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -17,6 +16,7 @@ import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/diamond_purchase_bottom_sheet.dart';
 import '../../widgets/ios_web_redirect_screen.dart';
 import '../../widgets/business_network/gold_sponsors_slider.dart';
+import '../../widgets/common/adsy_share_sheet.dart';
 
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
@@ -410,9 +410,19 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Future<void> _shareProfile() async {
     final name = _profileDisplayName();
-    await Share.share(
-      'View $name on Business Network: https://adsyclub.com/business-network/profile/${widget.userId}',
-      subject: '$name on Business Network',
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: '$name on Business Network',
+        description: 'View $name on AdsyClub Business Network.',
+        url:
+            '${AppConfig.mediaBaseUrl}/business-network/profile/${widget.userId}',
+        imageUrl: _stringValue(_userData?['image']).isNotEmpty
+            ? _stringValue(_userData?['image'])
+            : _stringValue(_userData?['profile_picture']),
+        subject: '$name on Business Network',
+        eyebrow: 'Business Network Profile',
+      ),
     );
   }
 

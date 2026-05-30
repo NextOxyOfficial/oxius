@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
@@ -12,6 +11,7 @@ import '../../widgets/business_network/post_comment_input.dart';
 import '../../widgets/business_network/post_comments_preview.dart';
 import '../../widgets/business_network/diamond_gift_bottom_sheet.dart';
 import '../../widgets/login_prompt_dialog.dart';
+import '../../widgets/common/adsy_share_sheet.dart';
 import 'profile_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -1031,32 +1031,23 @@ class _ShortVideoPageState extends State<_ShortVideoPage>
   }
 
   Future<void> _handleShare() async {
-    try {
-      String shareText = '';
-      final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
-
-      if (_post.title.isNotEmpty) {
-        shareText += '${_post.title}\n\n';
-      }
-
-      shareText += plainPostContent;
-      shareText +=
-          '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
-
-      await Share.share(
-        shareText,
+    final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: _post.title.isNotEmpty
+            ? _post.title
+            : '${_post.user.name} on Business Network',
+        description: HtmlContentUtils.previewText(plainPostContent, 140),
+        url: 'https://adsyclub.com/business-network/posts/${_post.id}',
+        imageUrl:
+            _post.media.isNotEmpty ? _post.media.first.bestThumbnailUrl : null,
         subject: _post.title.isNotEmpty ? _post.title : 'Business Network Post',
-      );
-      widget.onShare?.call(_post);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to share: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+        eyebrow: 'Business Network',
+        hashtags: _post.tags.map((tag) => tag.tag).toList(),
+      ),
+    );
+    widget.onShare?.call(_post);
   }
 
   Future<void> _openCommentsSheet() async {

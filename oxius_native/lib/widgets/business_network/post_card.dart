@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
@@ -14,6 +13,7 @@ import '../../utils/mention_parser.dart';
 import '../../utils/business_network_media_downloader.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
+import '../../widgets/common/adsy_share_sheet.dart';
 import 'post_header.dart';
 import 'post_media_gallery.dart';
 import 'post_actions.dart';
@@ -226,36 +226,23 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _handleShare() async {
-    try {
-      // Create share text with post title and content
-      String shareText = '';
-      final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
-
-      if (_post.title.isNotEmpty) {
-        shareText += '${_post.title}\n\n';
-      }
-
-      shareText += plainPostContent;
-
-      // Add post link
-      shareText +=
-          '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
-
-      // Share the content
-      await Share.share(
-        shareText,
+    final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: _post.title.isNotEmpty
+            ? _post.title
+            : '${_post.user.name} on Business Network',
+        description: HtmlContentUtils.previewText(plainPostContent, 140),
+        url: 'https://adsyclub.com/business-network/posts/${_post.id}',
+        imageUrl: _post.media.isNotEmpty
+            ? _post.media.first.bestThumbnailUrl
+            : _post.user.image ?? _post.user.avatar,
         subject: _post.title.isNotEmpty ? _post.title : 'Business Network Post',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+        eyebrow: 'Business Network',
+        hashtags: _post.tags.map((tag) => tag.tag).toList(),
+      ),
+    );
   }
 
   Future<void> _handleLike() async {

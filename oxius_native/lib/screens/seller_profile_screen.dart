@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
 import '../models/sale_post.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../widgets/common/adsy_share_sheet.dart';
 import 'adsy_connect_chat_interface.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -35,8 +34,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
   bool _isLoading = true;
   bool _isLoadingPosts = true;
   bool _showPhone = false;
-  bool _showShareDialog = false;
-  bool _copied = false;
   String _selectedSort = 'recent';
   String? _selectedCategory;
 
@@ -180,6 +177,38 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
     return phone.substring(0, 3) + '****' + phone.substring(phone.length - 2);
   }
 
+  String _sellerDisplayName() {
+    if (_seller != null) {
+      final name = _seller!['name']?.toString() ?? '';
+      if (name.trim().isNotEmpty) return name.trim();
+
+      final firstName = _seller!['first_name']?.toString() ?? '';
+      final lastName = _seller!['last_name']?.toString() ?? '';
+      final fullName = '$firstName $lastName'.trim();
+      if (fullName.isNotEmpty) return fullName;
+    }
+
+    return widget.userName ?? 'Seller Profile';
+  }
+
+  Future<void> _openShareSheet() async {
+    final sellerId = widget.userId ?? '';
+    if (sellerId.isEmpty) return;
+
+    final sellerName = _sellerDisplayName();
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: '$sellerName on AdsyClub',
+        description: 'View listings and profile details for $sellerName.',
+        url: 'https://adsyclub.com/seller/$sellerId',
+        imageUrl: _seller?['image']?.toString(),
+        subject: sellerName,
+        eyebrow: 'Seller Profile',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get seller name — prefer live API data, fall back to passed-in name
@@ -217,7 +246,7 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.share_rounded, size: 21),
-            onPressed: () => setState(() => _showShareDialog = true),
+            onPressed: _openShareSheet,
           ),
         ],
       ),
@@ -229,9 +258,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
               : _seller == null
                   ? _buildErrorState()
                   : _buildContent(),
-
-          // Share Dialog
-          if (_showShareDialog) _buildShareDialog(),
         ],
       ),
     );
@@ -887,176 +913,6 @@ class _SellerProfileScreenState extends State<SellerProfileScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildShareDialog() {
-    final sellerId = widget.userId ?? '';
-    final sellerName = _seller?['name'] ?? 'Seller';
-    final shareUrl = 'https://adsyclub.com/seller/$sellerId';
-    final shareText = 'Check out $sellerName on AdsyClub\n$shareUrl';
-
-    Future<void> launch(String url) async {
-      try {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      } catch (_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not open the app')),
-          );
-        }
-      }
-    }
-
-    return GestureDetector(
-      onTap: () => setState(() => _showShareDialog = false),
-      child: Container(
-        color: Colors.black54,
-        child: Center(
-          child: GestureDetector(
-            onTap: () {},
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Share Profile',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w700)),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () =>
-                            setState(() => _showShareDialog = false),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.ios_share_rounded,
-                          color: Color(0xFF10B981)),
-                    ),
-                    title: const Text('Share via...',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    onTap: () {
-                      setState(() => _showShareDialog = false);
-                      Share.share(shareText, subject: sellerName);
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.link, color: Color(0xFF6B7280)),
-                    ),
-                    title: const Text('Copy Link',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    trailing: _copied
-                        ? const Icon(Icons.check, color: Color(0xFF10B981))
-                        : null,
-                    onTap: () async {
-                      await Clipboard.setData(ClipboardData(text: shareUrl));
-                      setState(() => _copied = true);
-                      Future.delayed(const Duration(seconds: 2), () {
-                        if (mounted) setState(() => _copied = false);
-                      });
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF25D366).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.chat_rounded,
-                          color: Color(0xFF25D366)),
-                    ),
-                    title: const Text('Share on WhatsApp',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    onTap: () {
-                      setState(() => _showShareDialog = false);
-                      launch(
-                          'https://wa.me/?text=${Uri.encodeComponent(shareText)}');
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text('𝕏',
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black)),
-                    ),
-                    title: const Text('Share on X',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    onTap: () {
-                      setState(() => _showShareDialog = false);
-                      launch(
-                          'https://x.com/intent/tweet?text=${Uri.encodeComponent(sellerName)}&url=${Uri.encodeComponent(shareUrl)}');
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1877F2).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child:
-                          const Icon(Icons.facebook, color: Color(0xFF1877F2)),
-                    ),
-                    title: const Text('Share on Facebook',
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    onTap: () {
-                      setState(() => _showShareDialog = false);
-                      launch(
-                          'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(shareUrl)}');
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
         ),
       ),
     );

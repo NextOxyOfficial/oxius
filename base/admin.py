@@ -378,6 +378,7 @@ class CustomUserAdmin(UserAdmin):
                         "last_name",
                         "name",
                         "phone",
+                        "date_of_birth",
                         "age",
                         "gender",
                         "image",

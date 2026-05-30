@@ -1,9 +1,9 @@
 from rest_framework import generics, status
-from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from django.db import models
+from django.db.models import F
 from business_network.models import SponsorshipPackage, GoldSponsor,GoldSponsorBanner
 from .serializers import SponsorshipPackageSerializer, GoldSponsorCreateSerializer, GoldSponsorSerializer
 
@@ -192,8 +192,14 @@ def delete_gold_sponsor(request, sponsor_id):
 def increment_sponsor_views(request, sponsor_id):
     """Increment views count for a sponsor"""
     try:
-        sponsor = GoldSponsor.objects.get(id=sponsor_id, status='active')
-        sponsor.increment_views()
+        updated = GoldSponsor.objects.filter(
+            id=sponsor_id,
+            status='active',
+        ).update(views=F('views') + 1)
+        if not updated:
+            return Response({'error': 'Sponsor not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        sponsor = GoldSponsor.objects.get(id=sponsor_id)
         return Response({
             'message': 'Views incremented',
             'views': sponsor.views

@@ -195,21 +195,6 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
         children: [
           _buildTopBar(),
           const SizedBox(height: 14),
-          _buildHeroCard(),
-          const SizedBox(height: 18),
-          Container(
-            margin: const EdgeInsets.only(bottom: 18),
-            height: 1,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFE2E8F0).withValues(alpha: 0.0),
-                  const Color(0xFFE2E8F0),
-                  const Color(0xFFE2E8F0).withValues(alpha: 0.0),
-                ],
-              ),
-            ),
-          ),
           _buildLoginCard(),
           const SizedBox(height: 16),
           _buildFooter(),
@@ -261,94 +246,6 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildHeroCard() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_surfaceColor, _primarySoftColor],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: _cardBorderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: _surfaceColor.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFFD7E5FF)),
-            ),
-            child: Text(
-              'Member access',
-              style: AppFonts.roboto(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: _primaryDarkColor,
-                letterSpacing: 0.25,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: 92,
-            height: 92,
-            decoration: BoxDecoration(
-              color: _surfaceColor.withValues(alpha: 0.94),
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: _primaryDarkColor.withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Image.asset(
-                'assets/images/logo.png',
-                height: 66,
-                width: 66,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.storefront_rounded,
-                    size: 52,
-                    color: _primaryColor,
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Welcome back',
-            textAlign: TextAlign.center,
-            style: AppFonts.roboto(
-              fontSize: 25,
-              fontWeight: FontWeight.w700,
-              color: _headingTextColor,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Sign in to access your dashboard, messages and business activity in one place.',
-            textAlign: TextAlign.center,
-            style: AppFonts.roboto(
-              fontSize: 12,
-              color: _bodyTextColor,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

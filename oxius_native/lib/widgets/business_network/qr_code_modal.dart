@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:flutter/rendering.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import '../../config/app_config.dart';
+import '../common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class QrCodeModal extends StatefulWidget {
@@ -161,21 +161,17 @@ class _QrCodeModalState extends State<QrCodeModal> {
   }
 
   Future<void> shareProfile() async {
-    try {
-      await Share.share(
-        'Check out $userName\'s profile on AdsyClub Business Network!\n$profileUrl',
-        subject: '$userName\'s Profile',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error sharing: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+    await AdsyShareSheet.show(
+      context,
+      data: AdsyShareData(
+        title: '$userName on AdsyClub',
+        description: 'Check out this profile on AdsyClub Business Network.',
+        url: profileUrl,
+        imageUrl: widget.user['image']?.toString(),
+        subject: '$userName Profile',
+        eyebrow: 'Business Network Profile',
+      ),
+    );
   }
 
   @override

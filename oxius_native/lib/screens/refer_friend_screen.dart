@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import '../widgets/ios_web_redirect_screen.dart';
 import '../services/referral_service.dart';
 import '../models/referral_models.dart';
 import '../models/referral_reward_models.dart';
+import '../widgets/common/adsy_share_sheet.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class ReferFriendScreen extends StatefulWidget {
@@ -277,240 +275,24 @@ class _ReferFriendScreenState extends State<ReferFriendScreen>
     );
   }
 
-  void _shareLink() {
+  Future<void> _shareLink() async {
     if (_referralLink != null) {
-      Share.share(
-        'Join me on AdsyClub and start earning! Use my referral link: $_referralLink',
-        subject: 'Join AdsyClub',
+      await AdsyShareSheet.show(
+        context,
+        data: AdsyShareData(
+          title: 'Join me on AdsyClub',
+          description: 'Start earning with my referral link.',
+          url: _referralLink!,
+          subject: 'Join AdsyClub',
+          eyebrow: 'Refer and Earn',
+          hashtags: const ['AdsyClub', 'Referral'],
+        ),
       );
     }
   }
 
   void _openShareSheet() {
-    final link = _referralLink;
-    if (link == null || link.isEmpty) return;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SafeArea(
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Share Your Referral Link',
-                          style: AppFonts.roboto(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1F2937),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            link,
-                            style: AppFonts.roboto(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF111827),
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          height: 34,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _copyToClipboard(link),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              elevation: 0,
-                            ),
-                            icon: const Icon(Icons.copy_rounded,
-                                size: 16, color: Colors.white),
-                            label: Text(
-                              'Copy',
-                              style: AppFonts.roboto(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: QrImageView(
-                        data: link,
-                        size: 160,
-                        backgroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Center(
-                    child: Text(
-                      'Scan to open referral link',
-                      style: AppFonts.roboto(
-                          fontSize: 11, color: Colors.grey.shade600),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    'Share on Social Media',
-                    style: AppFonts.roboto(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSocialButton(
-                          'Facebook',
-                          Icons.facebook,
-                          const Color(0xFF1877F2),
-                          () => _shareOnSocial('facebook')),
-                      _buildSocialButton(
-                          'Twitter',
-                          Icons.alternate_email,
-                          const Color(0xFF1DA1F2),
-                          () => _shareOnSocial('twitter')),
-                      _buildSocialButton(
-                          'WhatsApp',
-                          Icons.chat,
-                          const Color(0xFF25D366),
-                          () => _shareOnSocial('whatsapp')),
-                      _buildSocialButton('More', Icons.share_rounded,
-                          const Color(0xFF10B981), _shareLink),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSocialButton(
-      String label, IconData icon, Color color, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.18)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: AppFonts.roboto(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1F2937)),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _shareOnSocial(String platform) async {
-    if (_referralLink == null) return;
-
-    final encodedLink = Uri.encodeComponent(_referralLink!);
-    final text = Uri.encodeComponent('Join me on AdsyClub and start earning!');
-    String url = '';
-
-    switch (platform) {
-      case 'facebook':
-        url = 'https://www.facebook.com/sharer/sharer.php?u=$encodedLink';
-        break;
-      case 'twitter':
-        url = 'https://twitter.com/intent/tweet?url=$encodedLink&text=$text';
-        break;
-      case 'whatsapp':
-        url = 'https://wa.me/?text=$text%20$encodedLink';
-        break;
-      case 'linkedin':
-        url =
-            'https://www.linkedin.com/sharing/share-offsite/?url=$encodedLink';
-        break;
-    }
-
-    if (url.isNotEmpty) {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    }
+    _shareLink();
   }
 
   String _formatDate(String dateString) {
