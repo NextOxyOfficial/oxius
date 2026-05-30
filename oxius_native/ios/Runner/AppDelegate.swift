@@ -49,7 +49,7 @@ import flutter_callkit_incoming
   // can hang on iOS, contributing to a blank-screen launch on iPad.
   override func application(
     _ application: UIApplication,
-    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Foundation.Data
   ) {
     let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
 
