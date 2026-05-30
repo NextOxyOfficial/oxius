@@ -352,6 +352,14 @@ RIDESHARE_OSRM_FALLBACK_URLS = [
 ]
 RIDESHARE_NOMINATIM_URL = os.getenv("RIDESHARE_NOMINATIM_URL", "https://nominatim.openstreetmap.org")
 
+# iOS VoIP/APNs settings for native CallKit incoming calls.
+# APNS_VOIP_TOPIC normally looks like: com.your.bundle.id.voip
+APNS_AUTH_KEY_PATH = os.getenv("APNS_AUTH_KEY_PATH", "")
+APNS_KEY_ID = os.getenv("APNS_KEY_ID", "")
+APNS_TEAM_ID = os.getenv("APNS_TEAM_ID", "")
+APNS_VOIP_TOPIC = os.getenv("APNS_VOIP_TOPIC", "")
+APNS_ENVIRONMENT = os.getenv("APNS_ENVIRONMENT", "production")
+
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # You can change this to your Redis URL
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
@@ -381,6 +389,10 @@ CELERY_BEAT_SCHEDULE = {
     "mark-stale-drivers-offline": {
         "task": "rideshare.tasks.mark_stale_drivers_offline",
         "schedule": timedelta(minutes=2),  # Run every 2 minutes to auto-offline stale drivers
+    },
+    "cleanup-stale-adsyconnect-calls": {
+        "task": "adsyconnect.tasks.cleanup_stale_call_sessions",
+        "schedule": timedelta(minutes=1),  # Clear stuck ringing/joining calls
     },
 }
 

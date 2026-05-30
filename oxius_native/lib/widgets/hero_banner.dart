@@ -309,7 +309,7 @@ class _HeroBannerState extends State<HeroBanner> {
         children: [
           // Grid area
           Padding(
-            padding: const EdgeInsets.only(top: 10, bottom: 8),
+            padding: const EdgeInsets.only(top: 2, bottom: 8),
             child: _buildMobileServicesGrid(
               margin: EdgeInsets.zero,
             ),
@@ -838,6 +838,8 @@ class _HeroBannerState extends State<HeroBanner> {
     return Padding(
       padding: margin ?? const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
       child: GridView.builder(
+        padding: EdgeInsets.zero,
+        primary: false,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

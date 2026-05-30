@@ -1509,6 +1509,8 @@ class FCMToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_tokens')
     token = models.CharField(max_length=255, unique=True)
     device_type = models.CharField(max_length=20, default='android')
+    voip_token = models.TextField(blank=True, default='')
+    voip_environment = models.CharField(max_length=20, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)

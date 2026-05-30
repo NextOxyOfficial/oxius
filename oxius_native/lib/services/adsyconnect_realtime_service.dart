@@ -196,14 +196,7 @@ class AdsyConnectRealtimeService {
         // Dedup by stable identifier when the server provides one. Falls back
         // to a composite fingerprint so legacy events without event_id still
         // get a basic duplicate filter without blocking legitimate updates.
-        final eventId =
-            decoded['event_id'] ?? decoded['id'] ?? decoded['message_id'];
-        final fingerprint = eventId != null
-            ? 'id:$eventId'
-            : '${decoded['type'] ?? ''}|'
-                '${decoded['chatroom_id'] ?? ''}|'
-                '${decoded['user_id'] ?? ''}|'
-                '${decoded['timestamp'] ?? decoded['created_at'] ?? ''}';
+        final fingerprint = _eventFingerprint(decoded);
 
         if (fingerprint.isNotEmpty && fingerprint != 'id:null') {
           if (_recentFingerprints.contains(fingerprint)) {
@@ -220,6 +213,31 @@ class AdsyConnectRealtimeService {
     } catch (_) {
       // Ignore malformed frames and keep the socket alive.
     }
+  }
+
+  String _eventFingerprint(Map<String, dynamic> event) {
+    final eventId = event['event_id'] ?? event['id'] ?? event['message_id'];
+    if (eventId != null && eventId.toString().isNotEmpty) {
+      return 'id:$eventId';
+    }
+
+    final type = event['type']?.toString() ?? '';
+    if (type == 'incoming_call' || type == 'call_status') {
+      return [
+        type,
+        event['call_id']?.toString() ?? '',
+        event['channel_name']?.toString() ?? '',
+        event['status']?.toString() ?? '',
+        event['caller_id']?.toString() ?? event['sender_id']?.toString() ?? '',
+        event['receiver_id']?.toString() ?? '',
+        event['timestamp']?.toString() ?? '',
+      ].join('|');
+    }
+
+    return '$type|'
+        '${event['chatroom_id'] ?? ''}|'
+        '${event['user_id'] ?? ''}|'
+        '${event['timestamp'] ?? event['created_at'] ?? ''}';
   }
 
   void _send(Map<String, dynamic> payload) {

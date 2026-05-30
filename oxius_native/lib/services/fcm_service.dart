@@ -93,6 +93,8 @@ const Set<String> _callNotificationTypes = <String>{
   'accepted_call',
 };
 
+const String _callNotificationChannelId = 'oxius_calls_custom_v1';
+
 const Set<String> _rideshareStatusTypes = <String>{
   'searching_driver',
   'accepted',
@@ -368,7 +370,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
         AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin
         ?.createNotificationChannel(const AndroidNotificationChannel(
-      'oxius_calls',
+      _callNotificationChannelId,
       'Incoming Calls',
       description: 'Incoming voice and video call alerts',
       importance: Importance.max,
@@ -380,8 +382,8 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     ));
 
     final callTypeLabel = callType == 'video' ? 'Video Call' : 'Voice Call';
-    final details = AndroidNotificationDetails(
-      'oxius_calls',
+    const details = AndroidNotificationDetails(
+      _callNotificationChannelId,
       'Incoming Calls',
       channelDescription: 'Incoming voice and video call alerts',
       importance: Importance.max,
@@ -620,6 +622,8 @@ class FCMService {
 
   static const String _fcmTokenKey = 'adsyclub_fcm_token';
   static const String _lastUploadedKey = 'adsyclub_fcm_token_last_uploaded';
+  static const String _lastVoipUploadedKey =
+      'adsyclub_voip_token_last_uploaded';
   static const Duration _iosApnsWaitTimeout = Duration(seconds: 12);
   static const Duration _iosTokenPollInterval = Duration(milliseconds: 350);
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -707,12 +711,20 @@ class FCMService {
       (_, timestamp) => now - timestamp > 60000,
     );
 
-    final signalKey = [
-      type,
-      channelName,
-      data['status']?.toString() ?? '',
-      data['caller_id']?.toString() ?? data['sender_id']?.toString() ?? '',
-    ].join('|');
+    final eventId = data['event_id']?.toString();
+    final signalKey = eventId != null && eventId.isNotEmpty
+        ? 'id:$eventId'
+        : [
+            type,
+            data['call_id']?.toString() ?? '',
+            channelName,
+            data['status']?.toString() ?? '',
+            data['caller_id']?.toString() ??
+                data['sender_id']?.toString() ??
+                '',
+            data['receiver_id']?.toString() ?? '',
+            data['timestamp']?.toString() ?? '',
+          ].join('|');
 
     final previousTimestamp = _recentCallSignalTimestamps[signalKey];
     if (previousTimestamp != null && now - previousTimestamp <= dedupWindowMs) {
@@ -1043,6 +1055,7 @@ class FCMService {
       _fcmToken = token;
       await _persistFcmToken(token);
       await _sendTokenToBackend(token);
+      await _syncVoipTokenWithBackend();
     } catch (e) {
       _log('❌ Error syncing FCM token: $e');
     }
@@ -1120,6 +1133,7 @@ class FCMService {
       if (_fcmToken != null) {
         _log('📤 Sending FCM token to backend...');
         await _sendTokenToBackend(_fcmToken!);
+        await _syncVoipTokenWithBackend();
       } else {
         _log('❌ Failed to get FCM token');
       }
@@ -1382,7 +1396,7 @@ class FCMService {
     // honours it in Priority-only / DnD-allow-calls modes (closest equivalent
     // to bypassDnd available through flutter_local_notifications today).
     const AndroidNotificationChannel callChannel = AndroidNotificationChannel(
-      'oxius_calls', // id
+      _callNotificationChannelId, // id
       'Incoming Calls', // name
       description: 'Notifications for incoming voice and video calls',
       importance: Importance.max,
@@ -1433,6 +1447,12 @@ class FCMService {
         _log('📞 CallKit Event: ${event.event}');
 
         switch (event.event) {
+          case Event.actionDidUpdateDevicePushTokenVoip:
+            final token = event.body is Map
+                ? event.body['deviceTokenVoIP']?.toString()
+                : null;
+            unawaited(_syncVoipTokenWithBackend(token));
+            break;
           case Event.actionCallIncoming:
             _cacheCallIncoming(event);
             break;
@@ -2712,6 +2732,65 @@ class FCMService {
       _log('   ⚠️ Unknown notification type: $type');
       // Default to inbox
       navigator.pushNamed('/inbox');
+    }
+  }
+
+  /// Send iOS VoIP token to backend for PushKit/CallKit wakeups.
+  static Future<void> _syncVoipTokenWithBackend([String? providedToken]) async {
+    if (!Platform.isIOS) {
+      return;
+    }
+
+    try {
+      final rawToken = providedToken ??
+          (await FlutterCallkitIncoming.getDevicePushTokenVoIP())?.toString();
+      final voipToken = rawToken?.trim() ?? '';
+      if (voipToken.isEmpty) {
+        _log('   VoIP token not ready yet');
+        return;
+      }
+
+      final authToken = await AuthService.getValidToken();
+      if (authToken == null) {
+        _log('   No auth token, skipping VoIP token upload');
+        return;
+      }
+
+      final currentUserId = AuthService.currentUser?.id ?? '';
+      final fcmToken = _fcmToken ?? await _getPersistedFcmToken();
+      final uploadKey = '$currentUserId:$voipToken:${fcmToken ?? ''}';
+
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getString(_lastVoipUploadedKey) == uploadKey) {
+        return;
+      }
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/save-fcm-token/'),
+            headers: {
+              'Authorization': 'Bearer $authToken',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              if (fcmToken != null && fcmToken.isNotEmpty)
+                'fcm_token': fcmToken,
+              'voip_token': voipToken,
+              'voip_environment': kReleaseMode ? 'production' : 'sandbox',
+              'device_type': 'ios',
+            }),
+          )
+          .timeout(const Duration(seconds: 6));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await prefs.setString(_lastVoipUploadedKey, uploadKey);
+        _log('   VoIP token sent to backend successfully');
+      } else {
+        _log('   Failed to send VoIP token: ${response.statusCode}');
+        _log('   Response: ${response.body}');
+      }
+    } catch (e) {
+      _log('   Error sending VoIP token: $e');
     }
   }
 

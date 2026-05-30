@@ -1,4 +1,6 @@
 import logging
+import time
+import uuid
 
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
@@ -102,6 +104,7 @@ def _send_call_data_message(*, target_user, payload):
     success_count = 0
     total_tokens = 0
     last_send_error = None
+    voip_result = _send_voip_call_pushes(target_user=target_user, payload=payload)
 
     try:
         import os
@@ -212,6 +215,7 @@ def _send_call_data_message(*, target_user, payload):
         'sent_to': success_count,
         'total_tokens': total_tokens,
         'fcm_error': last_send_error,
+        **voip_result,
     }
 
 
@@ -228,6 +232,70 @@ def _broadcast_to_user(user_id, event):
             event.get('type'),
             exc,
         )
+
+
+def _call_event_metadata():
+    return {
+        'event_id': str(uuid.uuid4()),
+        'timestamp': str(int(time.time() * 1000)),
+    }
+
+
+def _build_callkit_voip_payload(payload):
+    call_type = str(payload.get('call_type') or 'audio')
+    caller_name = _clean_call_display_name(payload.get('caller_name')) or 'AdsyClub user'
+    callkit_id = str(uuid.uuid4())
+    return {
+        'id': callkit_id,
+        'nameCaller': caller_name,
+        'appName': 'AdsyClub',
+        'avatar': str(payload.get('caller_avatar') or ''),
+        'handle': 'Video Call' if call_type == 'video' else 'Voice Call',
+        'type': 1 if call_type == 'video' else 0,
+        'duration': 60000,
+        'extra': {k: str(v) if v is not None else '' for k, v in payload.items()},
+    }
+
+
+def _send_voip_call_pushes(*, target_user, payload):
+    if payload.get('type') != 'incoming_call':
+        return {'voip_sent_to': 0, 'voip_total_tokens': 0, 'voip_error': None}
+
+    from base.models import FCMToken
+    from .apns_voip import send_voip_push
+
+    tokens = FCMToken.objects.filter(
+        user=target_user,
+        is_active=True,
+        device_type='ios',
+    ).exclude(voip_token='')
+    total_tokens = tokens.count()
+    success_count = 0
+    last_error = None
+    callkit_payload = _build_callkit_voip_payload(payload)
+    collapse_id = payload.get('channel_name') or payload.get('call_id')
+
+    for token in tokens:
+        try:
+            result = send_voip_push(
+                token.voip_token,
+                callkit_payload,
+                collapse_id=collapse_id,
+                environment=token.voip_environment,
+            )
+            if result.get('sent'):
+                success_count += 1
+            elif result.get('error'):
+                last_error = result.get('error')
+        except Exception as exc:
+            last_error = str(exc)
+            logger.warning('Failed to send AdsyConnect VoIP push: %s', exc)
+
+    return {
+        'voip_sent_to': success_count,
+        'voip_total_tokens': total_tokens,
+        'voip_error': last_error,
+    }
 
 
 @api_view(['GET'])
@@ -290,9 +358,6 @@ def send_call_notification(request):
         caller_name = _build_call_display_name(request, caller)
         caller_avatar = _build_user_avatar_url(request, caller)
 
-        import time
-        timestamp = int(time.time() * 1000)  # milliseconds for call age validation
-
         payload = {
             'type': 'incoming_call',
             'call_id': str(call_session.id),
@@ -301,7 +366,7 @@ def send_call_notification(request):
             'caller_name': caller_name,
             'call_type': call_session.call_type,
             'caller_avatar': caller_avatar or '',
-            'timestamp': str(timestamp),
+            **_call_event_metadata(),
         }
 
         _broadcast_to_user(
@@ -362,13 +427,18 @@ def send_call_status(request):
 
         payload = {
             'type': 'call_status',
+            'event_id': str(uuid.uuid4()),
             'channel_name': str(channel_name),
             'call_type': str(call_type),
             'status': str(status_value),
             'sender_id': str(sender.id),
+            'receiver_id': str(receiver.id),
+            'timestamp': str(int(time.time() * 1000)),
         }
         if call_session:
             payload['call_id'] = str(call_session.id)
+        elif call_id:
+            payload['call_id'] = str(call_id)
 
         _broadcast_to_user(
             receiver.id,

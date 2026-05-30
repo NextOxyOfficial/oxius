@@ -4,6 +4,7 @@ import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
 import PushKit
+import flutter_callkit_incoming
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -185,13 +186,18 @@ extension AppDelegate: PKPushRegistryDelegate {
     didUpdate pushCredentials: PKPushCredentials,
     for type: PKPushType
   ) {
-    // Log the VoIP token. If you later want server-side VoIP push delivery,
-    // send this token to your backend here.
     let tokenData = pushCredentials.token
     let token = tokenData.map { String(format: "%02.2hhx", $0) }.joined()
     print("[AdsyClub] VoIP push token: \(token)")
-    // flutter_callkit_incoming handles its own push delivery via FCM.
-    // This token is available if you want to switch to direct VoIP APNs delivery.
+    SwiftFlutterCallkitIncomingPlugin.sharedInstance?.setDevicePushTokenVoIP(token)
+  }
+
+  func pushRegistry(
+    _ registry: PKPushRegistry,
+    didInvalidatePushTokenFor type: PKPushType
+  ) {
+    print("[AdsyClub] VoIP push token invalidated")
+    SwiftFlutterCallkitIncomingPlugin.sharedInstance?.setDevicePushTokenVoIP("")
   }
 
   func pushRegistry(
@@ -200,9 +206,13 @@ extension AppDelegate: PKPushRegistryDelegate {
     for type: PKPushType,
     completion: @escaping () -> Void
   ) {
-    // A VoIP push was received while the app was in the background or killed.
-    // Forward it to flutter_callkit_incoming so the Dart background handler
-    // can trigger the CallKit incoming-call UI with the native device ringtone.
+    // Report the VoIP push to CallKit immediately so iOS can show the
+    // native incoming-call UI even when the Flutter isolate is not running.
+    guard type == .voIP else {
+      completion()
+      return
+    }
+
     let dict = payload.dictionaryPayload as NSDictionary
     print("[AdsyClub] VoIP push received: \(dict)")
 
@@ -211,6 +221,44 @@ extension AppDelegate: PKPushRegistryDelegate {
     // Dart-side FCM handler shows the CallKit UI via showCallkitIncoming().
     // Call completion() to satisfy iOS requirement — must be called within
     // the same runloop or CallKit will not display the incoming call screen.
-    completion()
+    let id = dict["id"] as? String ?? UUID().uuidString
+    let nameCaller = dict["nameCaller"] as? String ?? "AdsyClub user"
+    let handle = dict["handle"] as? String ?? "Voice Call"
+    let typeValue = dict["type"] as? Int ?? 0
+
+    let data = flutter_callkit_incoming.Data(
+      id: id,
+      nameCaller: nameCaller,
+      handle: handle,
+      type: typeValue
+    )
+    data.appName = dict["appName"] as? String ?? "AdsyClub"
+    data.duration = dict["duration"] as? Int ?? 60000
+    data.iconName = "CallKitLogo"
+    data.handleType = "generic"
+    data.supportsVideo = true
+    data.maximumCallGroups = 2
+    data.maximumCallsPerCallGroup = 1
+    data.ringtonePath = "default"
+
+    if let avatar = dict["avatar"] as? String {
+      data.avatar = avatar
+    }
+    if let extra = dict["extra"] as? NSDictionary {
+      data.extra = extra
+    } else {
+      data.extra = dict
+    }
+
+    if let callkit = SwiftFlutterCallkitIncomingPlugin.sharedInstance {
+      callkit.showCallkitIncoming(
+        data,
+        fromPushKit: true
+      ) {
+        completion()
+      }
+    } else {
+      completion()
+    }
   }
 }

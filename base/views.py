@@ -5530,36 +5530,52 @@ def save_fcm_token(request):
     print(f'   User: {request.user.email}')
     print(f'   Request data: {request.data}')
     
-    fcm_token = request.data.get('fcm_token')
+    fcm_token = str(request.data.get('fcm_token') or '').strip()
+    voip_token = str(request.data.get('voip_token') or '').strip()
+    voip_environment = str(request.data.get('voip_environment') or '').strip()
     device_type = request.data.get('device_type', 'android')
     
-    if not fcm_token:
+    if not fcm_token and not voip_token:
         print(f'   ❌ No FCM token provided')
         return Response(
-            {'error': 'FCM token is required'},
+            {'error': 'FCM token or VoIP token is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     print(f'   Token: {fcm_token[:50]}...')
+    print(f'   VoIP Token: {voip_token[:24]}...')
     print(f'   Device: {device_type}')
     
     try:
-        # Create or update token
-        token_obj, created = FCMToken.objects.update_or_create(
-            user=request.user,
-            token=fcm_token,
-            defaults={
-                'is_active': True,
-                'device_type': device_type
-            }
-        )
+        defaults = {
+            'is_active': True,
+            'device_type': device_type
+        }
+        if voip_token:
+            defaults['voip_token'] = voip_token
+            defaults['voip_environment'] = voip_environment
+
+        if fcm_token:
+            token_obj, created = FCMToken.objects.update_or_create(
+                user=request.user,
+                token=fcm_token,
+                defaults=defaults
+            )
+        else:
+            synthetic_token = f"voip:{voip_token}"[:255]
+            token_obj, created = FCMToken.objects.update_or_create(
+                user=request.user,
+                voip_token=voip_token,
+                defaults={**defaults, 'token': synthetic_token}
+            )
         
         action = 'created' if created else 'updated'
         print(f'   ✅ FCM token {action} successfully')
         
         return Response({
             'message': 'FCM token saved successfully',
-            'created': created
+            'created': created,
+            'voip_saved': bool(voip_token),
         }, status=status.HTTP_200_OK)
     except Exception as e:
         print(f'   ❌ Error: {e}')

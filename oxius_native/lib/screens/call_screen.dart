@@ -5,6 +5,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:vibration/vibration.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../services/agora_call_service.dart';
@@ -68,6 +69,7 @@ class _CallScreenState extends State<CallScreen>
   bool _isMinimizing = false;
   bool _didEndCall = false;
   final FlutterRingtonePlayer _ringtonePlayer = FlutterRingtonePlayer();
+  final AudioPlayer _outgoingTonePlayer = AudioPlayer();
   bool _incomingAlertActive = false;
   bool _acceptanceSent = false;
   late final AnimationController _pulseController;
@@ -414,7 +416,10 @@ class _CallScreenState extends State<CallScreen>
         return;
       }
       try {
-        await _ringtonePlayer.playNotification(volume: 0.55, looping: false);
+        await _outgoingTonePlayer.stop();
+        await _outgoingTonePlayer.setAsset('assets/audio/adsy_call_tone.wav');
+        await _outgoingTonePlayer.setVolume(0.55);
+        unawaited(_outgoingTonePlayer.play());
       } catch (_) {
         try {
           await SystemSound.play(SystemSoundType.click);
@@ -432,6 +437,7 @@ class _CallScreenState extends State<CallScreen>
   void _stopOutgoingRingback() {
     _outgoingRingbackTimer?.cancel();
     _outgoingRingbackTimer = null;
+    unawaited(_outgoingTonePlayer.stop());
   }
 
   Future<void> _initializeCall() async {
@@ -978,6 +984,7 @@ class _CallScreenState extends State<CallScreen>
     }
 
     _pulseController.dispose();
+    unawaited(_outgoingTonePlayer.dispose());
     super.dispose();
   }
 
@@ -1331,6 +1338,9 @@ class _CallScreenState extends State<CallScreen>
       return 'Connected and stable.';
     }
     if (_isConnecting) {
+      if (_callAccepted) {
+        return 'Connecting the call...';
+      }
       return widget.isIncoming
           ? 'Joining the call...'
           : 'Ringing on the other side.';
