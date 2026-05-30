@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/business_network_models.dart';
 import '../../services/auth_service.dart';
+import '../../utils/business_network_media_downloader.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import 'create_post_screen.dart';
 import 'notifications_screen.dart';
@@ -136,6 +137,51 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
     }
   }
 
+  void _showMediaOptions() {
+    if (_post.media.isEmpty) return;
+    final media = _post.media[_currentIndex];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade700,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.download_rounded,
+                    color: Color(0xFF3B82F6)),
+                title:
+                    Text(media.isVideo ? 'Download Video' : 'Download Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  BusinessNetworkMediaDownloader.download(
+                    this.context,
+                    media,
+                    ownerName: _post.user.name,
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildVideoPreview(PostMedia media) {
     final thumbUrl = media.bestThumbnailUrl;
 
@@ -252,10 +298,11 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.45),
+                                color: Colors.black.withValues(alpha: 0.45),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: Colors.white.withOpacity(0.16)),
+                                    color:
+                                        Colors.white.withValues(alpha: 0.16)),
                               ),
                               child: const Icon(Icons.arrow_back,
                                   color: Colors.white, size: 22),
@@ -281,6 +328,22 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
                             ),
                           ),
                           const Spacer(),
+                          GestureDetector(
+                            onTap: _showMediaOptions,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.45),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.16)),
+                              ),
+                              child: const Icon(Icons.more_horiz,
+                                  color: Colors.white, size: 22),
+                            ),
+                          ),
                         ],
                       ),
                     ),

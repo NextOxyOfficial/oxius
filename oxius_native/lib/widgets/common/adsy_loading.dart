@@ -70,7 +70,7 @@ class _AdsyLoadingIndicatorState extends State<AdsyLoadingIndicator>
           constraints.hasBoundedHeight ? constraints.maxHeight : 42,
         );
         final size = (widget.size ?? boundedMax).clamp(14.0, 46.0).toDouble();
-        final logoSize = (size * 0.54).clamp(12.0, 24.0).toDouble();
+        final logoSize = (size * 0.66).clamp(14.0, 30.0).toDouble();
         final dotSize = (size * 0.12).clamp(2.2, 4.8).toDouble();
 
         return SizedBox(
@@ -276,14 +276,17 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
     if (pullDelta != 0 && _state != _AdsyRefreshState.refreshing) {
       final maxPull = _maxRawPull(context);
       final nextPull = (_dragExtent + pullDelta).clamp(0.0, maxPull);
+      final activePull = _activePullExtent(nextPull);
       final threshold = _triggerPullExtent(context);
-      final nextState = nextPull >= threshold
+      final nextState = activePull >= threshold
           ? _AdsyRefreshState.armed
-          : _AdsyRefreshState.dragging;
+          : activePull > 0
+              ? _AdsyRefreshState.dragging
+              : _AdsyRefreshState.idle;
 
       setState(() {
         _dragExtent = nextPull;
-        _state = nextPull > 0 ? nextState : _AdsyRefreshState.idle;
+        _state = nextState;
       });
 
       if (nextState != _AdsyRefreshState.armed) {
@@ -293,10 +296,18 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
 
     if (notification is ScrollEndNotification &&
         _state != _AdsyRefreshState.refreshing) {
-      if (_dragExtent <= 0 && _state != _AdsyRefreshState.armed) {
+      final activePull = _activePullExtent(_dragExtent);
+      if (activePull <= 0 && _state != _AdsyRefreshState.armed) {
+        if (_dragExtent != 0 || _state != _AdsyRefreshState.idle) {
+          setState(() {
+            _state = _AdsyRefreshState.idle;
+            _dragExtent = 0;
+            _feedbackSent = false;
+          });
+        }
         return false;
       }
-      if (_dragExtent >= _triggerPullExtent(context)) {
+      if (activePull >= _triggerPullExtent(context)) {
         _handleRefresh();
       } else {
         setState(() {
@@ -332,6 +343,14 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
     );
   }
 
+  double _activationPullExtent() {
+    return 32.0;
+  }
+
+  double _activePullExtent(double rawPull) {
+    return math.max(0.0, rawPull - _activationPullExtent()).toDouble();
+  }
+
   double _rubberBandOffset(double pull, double maxRawPull) {
     if (pull <= 0) return 0;
     final normalized = (pull / maxRawPull).clamp(0.0, 1.0);
@@ -341,11 +360,12 @@ class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
 
   @override
   Widget build(BuildContext context) {
-    final visible = _state != _AdsyRefreshState.idle;
     final color = widget.color ?? Theme.of(context).colorScheme.primary;
     final maxRawPull = _maxRawPull(context);
     final triggerPull = _triggerPullExtent(context);
-    final pullProgress = (_dragExtent / triggerPull).clamp(0.0, 1.0).toDouble();
+    final activePull = _activePullExtent(_dragExtent);
+    final visible = _state == _AdsyRefreshState.refreshing || activePull > 0.0;
+    final pullProgress = (activePull / triggerPull).clamp(0.0, 1.0).toDouble();
     final refreshRestOffset = math
         .min(
           math.max(widget.displacement + 52, 84.0),
@@ -459,8 +479,8 @@ class _PullProgressIndicator extends StatelessWidget {
           ),
           Image.asset(
             'assets/images/favicon.png',
-            width: 15,
-            height: 15,
+            width: 18,
+            height: 18,
             fit: BoxFit.contain,
             errorBuilder: (_, __, ___) => Icon(
               Icons.autorenew_rounded,

@@ -11,6 +11,7 @@ import '../../screens/business_network/profile_screen.dart';
 import '../../utils/network_error_handler.dart';
 import '../../utils/html_content_utils.dart';
 import '../../utils/mention_parser.dart';
+import '../../utils/business_network_media_downloader.dart';
 import '../../widgets/link_preview_card.dart';
 import '../../widgets/login_prompt_dialog.dart';
 import 'post_header.dart';
@@ -71,19 +72,19 @@ class _PostCardState extends State<PostCard> {
   bool _isSelfPost() {
     final currentUser = AuthService.currentUser;
     if (currentUser == null) return false;
-    
+
     return _post.user.username == currentUser.username ||
-           _post.user.uuid == currentUser.id ||
-           _post.user.id.toString() == currentUser.id;
+        _post.user.uuid == currentUser.id ||
+        _post.user.id.toString() == currentUser.id;
   }
-  
+
   bool _shouldShowFollowButton() {
     // Don't show if user is not logged in
     if (AuthService.currentUser == null) return false;
-    
+
     // Don't show on own posts
     if (_isSelfPost()) return false;
-    
+
     return true;
   }
 
@@ -119,7 +120,7 @@ class _PostCardState extends State<PostCard> {
     if (comment != null && mounted) {
       // Small delay to allow UI to update smoothly
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       // Reload post from API to ensure gift comments and all properties are preserved
       final updatedPost = await BusinessNetworkService.getPost(_post.id);
       if (updatedPost != null && mounted) {
@@ -127,7 +128,7 @@ class _PostCardState extends State<PostCard> {
           _post = updatedPost;
           _isAddingComment = false;
         });
-        
+
         widget.onCommentAdded?.call(comment);
       } else if (mounted) {
         // Fallback to local update
@@ -138,7 +139,7 @@ class _PostCardState extends State<PostCard> {
           );
           _isAddingComment = false;
         });
-        
+
         widget.onCommentAdded?.call(comment);
       }
     } else if (mounted) {
@@ -153,8 +154,7 @@ class _PostCardState extends State<PostCard> {
 
   Future<void> _handleMediaTapAsync(int index) async {
     if (_post.media.length == 1 && index == 0 && _post.media[0].isVideo) {
-      final updates = await Navigator.push<Map<int, BusinessNetworkPost>?>
-      (
+      final updates = await Navigator.push<Map<int, BusinessNetworkPost>?>(
         context,
         MaterialPageRoute(
           builder: (context) => ShortsPlayerScreen(
@@ -203,14 +203,14 @@ class _PostCardState extends State<PostCard> {
       _showLoginPrompt('view comments');
       return;
     }
-    
+
     final updatedPost = await Navigator.push<BusinessNetworkPost>(
       context,
       MaterialPageRoute(
         builder: (context) => PostDetailScreen(post: _post),
       ),
     );
-    
+
     // Update the post if it was modified (e.g., new comments added)
     if (updatedPost != null && mounted) {
       setState(() {
@@ -218,7 +218,7 @@ class _PostCardState extends State<PostCard> {
       });
     }
   }
-  
+
   void _showLoginPrompt(String action) {
     LoginPromptDialog.show(context, action: action);
   }
@@ -228,16 +228,17 @@ class _PostCardState extends State<PostCard> {
       // Create share text with post title and content
       String shareText = '';
       final plainPostContent = HtmlContentUtils.toPlainText(_post.content);
-      
+
       if (_post.title.isNotEmpty) {
         shareText += '${_post.title}\n\n';
       }
-      
+
       shareText += plainPostContent;
-      
+
       // Add post link
-      shareText += '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
-      
+      shareText +=
+          '\n\nView on Business Network: https://adsyclub.com/business-network/posts/${_post.id}';
+
       // Share the content
       await Share.share(
         shareText,
@@ -261,28 +262,29 @@ class _PostCardState extends State<PostCard> {
       _showLoginPrompt('like this post');
       return;
     }
-    
+
     // Prevent double-clicking
     if (_isLiking) return;
-    
+
     _isLiking = true;
-    
+
     // Store original state for rollback
     final originalIsLiked = _post.isLiked;
     final originalLikesCount = _post.likesCount;
-    
+
     // Optimistic update - update UI immediately
     if (mounted) {
       final updated = _post.copyWith(
         isLiked: !originalIsLiked,
-        likesCount: originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1,
+        likesCount:
+            originalIsLiked ? originalLikesCount - 1 : originalLikesCount + 1,
       );
       setState(() {
         _post = updated;
       });
       widget.onPostUpdated?.call(updated);
     }
-    
+
     // Make API call
     try {
       await BusinessNetworkService.toggleLike(_post.id, originalIsLiked);
@@ -290,7 +292,7 @@ class _PostCardState extends State<PostCard> {
       widget.onPostUpdated?.call(_post);
     } catch (e) {
       _isLiking = false;
-      
+
       // Failed - rollback to original state
       if (mounted) {
         final rolledBack = _post.copyWith(
@@ -301,7 +303,7 @@ class _PostCardState extends State<PostCard> {
           _post = rolledBack;
         });
         widget.onPostUpdated?.call(rolledBack);
-        
+
         // Show professional error message
         NetworkErrorHandler.showErrorSnackbar(
           context,
@@ -318,7 +320,7 @@ class _PostCardState extends State<PostCard> {
       _showLoginPrompt('save this post');
       return;
     }
-    
+
     final originalIsSaved = _post.isSaved;
     final updated = _post.copyWith(isSaved: !originalIsSaved);
 
@@ -329,11 +331,12 @@ class _PostCardState extends State<PostCard> {
       widget.onPostUpdated?.call(updated);
     }
 
-    final success = await BusinessNetworkService.toggleSave(_post.id, originalIsSaved);
-    
+    final success =
+        await BusinessNetworkService.toggleSave(_post.id, originalIsSaved);
+
     if (success && mounted) {
       widget.onSaveChanged?.call(_post.id, _post.isSaved);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_post.isSaved ? 'Post saved' : 'Post unsaved'),
@@ -365,7 +368,7 @@ class _PostCardState extends State<PostCard> {
       _post.user.uuid!,
       _post.user.isFollowing,
     );
-    
+
     if (success && mounted) {
       setState(() {
         // Create updated user with toggled follow status
@@ -382,7 +385,7 @@ class _PostCardState extends State<PostCard> {
           lastName: _post.user.lastName,
           isFollowing: !_post.user.isFollowing,
         );
-        
+
         _post = _post.copyWith(user: updatedUser);
       });
     }
@@ -390,7 +393,7 @@ class _PostCardState extends State<PostCard> {
 
   void _showPostOptions() {
     final isSelf = _isSelfPost();
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -411,6 +414,16 @@ class _PostCardState extends State<PostCard> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
+              if (_post.media.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.download_rounded,
+                      color: Color(0xFF3B82F6)),
+                  title: Text(_downloadMenuTitle()),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleDownloadMedia();
+                  },
+                ),
               // Options for own posts
               if (isSelf) ...[
                 ListTile(
@@ -423,7 +436,8 @@ class _PostCardState extends State<PostCard> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.delete, color: Colors.red),
-                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  title:
+                      const Text('Delete', style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _handleDeletePost();
@@ -442,7 +456,8 @@ class _PostCardState extends State<PostCard> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.block, color: Colors.red),
-                  title: const Text('Block User', style: TextStyle(color: Colors.red)),
+                  title: const Text('Block User',
+                      style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _handleBlockUser();
@@ -465,6 +480,69 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
+  String _downloadMenuTitle() {
+    if (_post.media.length > 1) return 'Download Media';
+    return _post.media.first.isVideo ? 'Download Video' : 'Download Photo';
+  }
+
+  Future<void> _handleDownloadMedia() async {
+    if (_post.media.length == 1) {
+      await BusinessNetworkMediaDownloader.download(
+        context,
+        _post.media.first,
+        ownerName: _post.user.name,
+      );
+      return;
+    }
+
+    final selectedMedia = await showModalBottomSheet<PostMedia>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              for (var i = 0; i < _post.media.length; i++)
+                ListTile(
+                  leading: Icon(
+                    _post.media[i].isVideo
+                        ? Icons.videocam_rounded
+                        : Icons.image_rounded,
+                    color: const Color(0xFF3B82F6),
+                  ),
+                  title: Text(
+                    '${_post.media[i].isVideo ? 'Video' : 'Photo'} ${i + 1}',
+                  ),
+                  trailing: const Icon(Icons.download_rounded),
+                  onTap: () => Navigator.pop(context, _post.media[i]),
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (selectedMedia == null || !mounted) return;
+    await BusinessNetworkMediaDownloader.download(
+      context,
+      selectedMedia,
+      ownerName: _post.user.name,
+    );
+  }
+
   void _handleEditPost() {
     // TODO: Navigate to edit post screen
     ScaffoldMessenger.of(context).showSnackBar(
@@ -480,7 +558,8 @@ class _PostCardState extends State<PostCard> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Post'),
-        content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
+        content: const Text(
+            'Are you sure you want to delete this post? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -497,7 +576,7 @@ class _PostCardState extends State<PostCard> {
 
     if (confirmed == true) {
       final success = await BusinessNetworkService.deletePost(_post.id);
-      
+
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -563,7 +642,7 @@ class _PostCardState extends State<PostCard> {
 
   Future<void> _submitReport(String reason) async {
     final success = await BusinessNetworkService.reportPost(_post.id, reason);
-    
+
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -588,7 +667,9 @@ class _PostCardState extends State<PostCard> {
     if (userId.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cannot block this user'), backgroundColor: Colors.red),
+          const SnackBar(
+              content: Text('Cannot block this user'),
+              backgroundColor: Colors.red),
         );
       }
       return;
@@ -605,7 +686,9 @@ class _PostCardState extends State<PostCard> {
               : 'Block ${_post.user.name}? You will no longer see their posts.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -633,7 +716,7 @@ class _PostCardState extends State<PostCard> {
 
   Future<void> _handleHidePost() async {
     final success = await BusinessNetworkService.hidePost(_post.id);
-    
+
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -750,10 +833,13 @@ class _PostCardState extends State<PostCard> {
                               baseline: TextBaseline.alphabetic,
                               child: GestureDetector(
                                 onTap: () {
-                                  setState(() => _showFullContent = !_showFullContent);
+                                  setState(() =>
+                                      _showFullContent = !_showFullContent);
                                 },
                                 child: Text(
-                                  _showFullContent ? '  কম পড়ুন' : '  আরো পড়ুন',
+                                  _showFullContent
+                                      ? '  কম পড়ুন'
+                                      : '  আরো পড়ুন',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -828,22 +914,23 @@ class _PostCardState extends State<PostCard> {
             onCommentCountChanged: () {
               setState(() {
                 _post = _post.copyWith(
-                  commentsCount: _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
+                  commentsCount:
+                      _post.commentsCount > 0 ? _post.commentsCount - 1 : 0,
                 );
               });
             },
             onReplySubmit: (comment, content) async {
               if (_isAddingComment) return;
-              
+
               setState(() => _isAddingComment = true);
-              
+
               // Don't add automatic @mention - user can type @ if they want
               final newComment = await BusinessNetworkService.addComment(
                 postId: _post.id,
                 content: content,
                 parentCommentId: comment.id,
               );
-              
+
               if (newComment != null && mounted) {
                 // Just add the new comment to existing list instead of reloading
                 // This prevents losing parent comments when API returns incomplete data
@@ -853,28 +940,32 @@ class _PostCardState extends State<PostCard> {
                 print('New reply ID: ${newComment.id}');
                 print('Comments before add:');
                 for (var c in _post.comments) {
-                  print('  - Comment ${c.id}: parentComment=${c.parentComment}');
+                  print(
+                      '  - Comment ${c.id}: parentComment=${c.parentComment}');
                 }
-                
+
                 setState(() {
                   // Create a completely new immutable list
-                  final updatedComments = List<BusinessNetworkComment>.from(_post.comments)
-                    ..add(newComment);
-                  
+                  final updatedComments =
+                      List<BusinessNetworkComment>.from(_post.comments)
+                        ..add(newComment);
+
                   _post = _post.copyWith(
                     commentsCount: _post.commentsCount + 1,
                     comments: updatedComments,
                   );
                   _isAddingComment = false;
                 });
-                
+
                 print('Comments after add:');
                 for (var c in _post.comments) {
-                  print('  - Comment ${c.id}: parentComment=${c.parentComment}');
+                  print(
+                      '  - Comment ${c.id}: parentComment=${c.parentComment}');
                 }
-                print('Post comments list identity: ${_post.comments.hashCode}');
+                print(
+                    'Post comments list identity: ${_post.comments.hashCode}');
                 print('Post object identity: ${_post.hashCode}');
-                
+
                 widget.onCommentAdded?.call(newComment);
               } else if (mounted) {
                 setState(() => _isAddingComment = false);
@@ -891,9 +982,10 @@ class _PostCardState extends State<PostCard> {
             onGiftSent: () async {
               // Small delay to allow UI to update smoothly
               await Future.delayed(const Duration(milliseconds: 100));
-              
+
               // Reload post data to show new gift comment
-              final updatedPost = await BusinessNetworkService.getPost(_post.id);
+              final updatedPost =
+                  await BusinessNetworkService.getPost(_post.id);
               if (updatedPost != null && mounted) {
                 setState(() {
                   _post = updatedPost;
