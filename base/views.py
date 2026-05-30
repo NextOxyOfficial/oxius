@@ -8,7 +8,6 @@ from random import shuffle
 
 import requests
 from django.conf import settings
-from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import check_password
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
@@ -26,78 +25,24 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from django.core.cache import cache
 
 from .models import *
 from .pagination import *
 from .police_stations import CITY_AREAS
 from .serializers import *
+from .view_modules.auth_token_views import (
+    exchange_web_login_token,
+    generate_web_login_token,
+    login_as_view,
+)
+from .view_modules.public_content_views import (
+    getAdminNotice,
+    getAuthenticationBanner,
+    getLogo,
+    get_eshop_logo,
+)
 
 # Create your views here.
-
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def generate_web_login_token(request):
-    """Generate a short-lived single-use token for app-to-web login handoff."""
-    token_key = f"app_web_token_{uuid.uuid4().hex}"
-    user_id = request.user.id
-    # Store in cache for 120 seconds, single use
-    cache.set(token_key, user_id, timeout=120)
-    return Response({"token": token_key})
-
-
-@api_view(["POST"])
-@permission_classes([AllowAny])
-def exchange_web_login_token(request):
-    """Exchange a single-use app-to-web token for JWT tokens."""
-    token_key = request.data.get("token")
-    if not token_key or not token_key.startswith("app_web_token_"):
-        return Response({"error": "Invalid token"}, status=400)
-    
-    user_id = cache.get(token_key)
-    if user_id is None:
-        return Response({"error": "Token expired or invalid"}, status=401)
-    
-    # Delete token immediately (single use)
-    cache.delete(token_key)
-    
-    try:
-        user = User.objects.get(id=user_id)
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-        })
-    except User.DoesNotExist:
-        return Response({"error": "User not found"}, status=404)
-
-
-@api_view(["POST"])
-def login_as_view(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
-    # Username of the user to log in as
-    login_as = request.data.get("login_as")
-
-    user = authenticate(username=username, password=password)
-
-    if user is not None and user.is_staff:  # check if user is admin
-        try:
-            login_as_user = User.objects.get(
-                username=login_as
-            )  # Get the user to log in as
-            refresh = RefreshToken.for_user(login_as_user)
-            return Response(
-                {
-                    "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                }
-            )
-        except User.DoesNotExist:
-            return Response({"error": "Target user not found"}, status=404)
-    else:
-        return Response({"error": "Invalid admin credentials"}, status=400)
 
 
 # move this function to util later
@@ -118,54 +63,6 @@ def base64ToFile(base64_data):
     # Save the file to the appropriate storage (e.g., media directory)
     file.name = filename
     return file
-
-
-@api_view(["GET"])
-def getLogo(request):
-    logo = get_object_or_404(Logo)
-    serializer = logoSerializer(logo)
-    return Response(serializer.data)
-
-
-@api_view(["GET"])
-def get_eshop_logo(request):
-    e_shop_logo = get_object_or_404(EshopLogo)
-    serializer = EshopLogoSerializer(e_shop_logo)
-    return Response(serializer.data)
-
-
-@api_view(["GET"])
-def getAuthenticationBanner(request):
-    banner = get_object_or_404(AuthenticationBanner)
-    serializer = AuthenticationBannerSerializer(banner)
-    return Response(serializer.data)
-
-
-@api_view(["GET"])
-def getAdminNotice(request):
-    # Get query parameters
-    notification_type = request.GET.get("type", None)
-    user_id = request.user.id if request.user.is_authenticated else None
-
-    # Base queryset - include global notices and user-specific notices
-    queryset = AdminNotice.objects.all()
-
-    if user_id:
-        # Include global notices (user=None) and user-specific notices
-        queryset = queryset.filter(models.Q(user=None) | models.Q(user_id=user_id))
-    else:
-        # For anonymous users, only show global notices
-        queryset = queryset.filter(user=None)
-
-    # Filter by notification type if specified
-    if notification_type and notification_type != "all":
-        queryset = queryset.filter(notification_type=notification_type)
-
-    # Order by creation date
-    queryset = queryset.order_by("-created_at")
-
-    serializer = AdminNoticeSerializer(queryset, many=True)
-    return Response(serializer.data)
 
 
 @api_view(["POST"])
