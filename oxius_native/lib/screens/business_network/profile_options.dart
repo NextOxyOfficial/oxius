@@ -11,6 +11,7 @@ import 'notifications_screen.dart';
 import 'create_post_screen.dart';
 import 'shorts_player_screen.dart';
 import 'activity_history_screen.dart';
+import 'blocked_users_screen.dart';
 import '../inbox_screen.dart';
 import '../workspace/workspace_screen.dart';
 import '../settings_screen.dart';
@@ -344,10 +345,22 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
                       ),
                       _MenuItem(
                         icon: Icons.settings_outlined,
-                        label: 'Settings',
+                        label: 'Settings & Privacy',
                         subtitle: 'App preferences',
                         gradient: const [Color(0xFF78716C), Color(0xFF57534E)],
                         onTap: () => _openSettings(context),
+                      ),
+                      _MenuItem(
+                        icon: Icons.block_rounded,
+                        label: 'Blocked Users',
+                        subtitle: 'Manage people you have blocked',
+                        gradient: const [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const BlockedUsersScreen(),
+                          ),
+                        ),
                       ),
                     ],
                   ),

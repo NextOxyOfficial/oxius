@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
@@ -47,6 +48,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   List<Map<String, dynamic>> _userGigs = [];
   bool _isFollowing = false;
   bool _followLoading = false;
+  bool _isBlockedProfile = false;
+  bool _isBlocking = false;
   int _currentNavIndex = 3; // Profile tab is index 3
   int _unreadNotificationCount = 0;
   bool _isLoadingSaved = false;
@@ -224,6 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           _userData = userData;
           final posts = postsResult['posts'] as List<BusinessNetworkPost>;
           _isFollowing = userData['is_following'] ?? false;
+          _isBlockedProfile = userData['is_blocked_by_me'] ?? false;
 
           // Update all posts to reflect current follow status
           _userPosts = posts.map((post) {
@@ -392,6 +396,122 @@ class _ProfileScreenState extends State<ProfileScreen>
         setState(() => _followLoading = false);
       }
     }
+  }
+
+  String _profileDisplayName() {
+    final first = _stringValue(_userData?['first_name']);
+    final last = _stringValue(_userData?['last_name']);
+    final fullName = [first, last].where((part) => part.isNotEmpty).join(' ');
+    if (fullName.isNotEmpty) return fullName;
+    return _stringValue(_userData?['username']).isNotEmpty
+        ? _stringValue(_userData?['username'])
+        : 'User';
+  }
+
+  Future<void> _shareProfile() async {
+    final name = _profileDisplayName();
+    await Share.share(
+      'View $name on Business Network: https://adsyclub.com/business-network/profile/${widget.userId}',
+      subject: '$name on Business Network',
+    );
+  }
+
+  Future<void> _blockProfileUser() async {
+    if (_isOwnProfile() || _isBlocking) return;
+
+    final name = _profileDisplayName();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Block User'),
+        content: Text(
+          'Block $name? You will no longer see their posts in your feed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Block'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isBlocking = true);
+    final success = await BusinessNetworkService.blockUser(widget.userId);
+    if (!mounted) return;
+
+    setState(() {
+      _isBlocking = false;
+      if (success) {
+        _isBlockedProfile = true;
+        _userPosts = [];
+        _savedPosts.removeWhere((post) {
+          return post.user.uuid == widget.userId ||
+              post.user.id.toString() == widget.userId;
+        });
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'User blocked' : 'Failed to block user'),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
+  }
+
+  void _showProfileOptions(bool isOwnProfile) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.share_outlined, color: Color(0xFF3B82F6)),
+                title: const Text('Share Profile'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _shareProfile();
+                },
+              ),
+              if (!isOwnProfile && AuthService.isAuthenticated)
+                ListTile(
+                  leading: const Icon(Icons.block_rounded, color: Colors.red),
+                  title: const Text('Block User',
+                      style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _blockProfileUser();
+                  },
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _openChatWithUser() async {
@@ -1057,6 +1177,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ],
                 ),
               ),
+              IconButton(
+                tooltip: 'Profile options',
+                onPressed: () => _showProfileOptions(isOwnProfile),
+                icon: const Icon(Icons.more_horiz_rounded),
+              ),
             ],
           ),
 
@@ -1170,7 +1295,23 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 12),
 
           // Action Buttons + Diamond (side by side pill row)
-          if (isOwnProfile && _userData?['diamond_balance'] != null)
+          if (_isBlockedProfile)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(50),
+                border: Border.all(color: Colors.red.shade100),
+              ),
+              child: Text(
+                'Blocked',
+                style: TextStyle(
+                  color: Colors.red.shade700,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          else if (isOwnProfile && _userData?['diamond_balance'] != null)
             _buildOwnProfileActionRow()
           else
             _buildActionButtonsRow(isOwnProfile),
@@ -1539,6 +1680,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               _userPosts.removeAt(index);
             });
           },
+          onUserBlocked: _handleUserBlocked,
         );
       },
     );
@@ -2003,9 +2145,22 @@ class _ProfileScreenState extends State<ProfileScreen>
               _savedPosts.removeAt(index);
             });
           },
+          onUserBlocked: _handleUserBlocked,
         );
       },
     );
+  }
+
+  void _handleUserBlocked(String userId) {
+    setState(() {
+      _userPosts.removeWhere((post) =>
+          post.user.uuid == userId || post.user.id.toString() == userId);
+      _savedPosts.removeWhere((post) =>
+          post.user.uuid == userId || post.user.id.toString() == userId);
+      if (widget.userId == userId) {
+        _isBlockedProfile = true;
+      }
+    });
   }
 
   Widget _buildEmptyState(String message, IconData icon) {

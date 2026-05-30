@@ -709,6 +709,7 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
           onCommentAdded: (comment) =>
               _handleCommentAddedByPostId(post.id, comment),
           onPostDeleted: () => _handlePostDeletedByPostId(post.id),
+          onUserBlocked: _handleUserBlocked,
         );
       }
       currentIndex++;
@@ -1079,5 +1080,17 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         _posts.removeWhere((p) => p.id == postId);
       });
     }
+  }
+
+  void _handleUserBlocked(String userId) {
+    setState(() {
+      _posts.removeWhere((post) {
+        final postUserIds = {
+          post.user.uuid,
+          post.user.id.toString(),
+        }.whereType<String>();
+        return postUserIds.contains(userId);
+      });
+    });
   }
 }

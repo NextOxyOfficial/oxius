@@ -27,6 +27,7 @@ class PostCard extends StatefulWidget {
   final void Function(BusinessNetworkPost updatedPost)? onPostUpdated;
   final Function(BusinessNetworkComment)? onCommentAdded;
   final VoidCallback? onPostDeleted;
+  final void Function(String userId)? onUserBlocked;
   final void Function(int postId, bool isSaved)? onSaveChanged;
 
   const PostCard({
@@ -35,6 +36,7 @@ class PostCard extends StatefulWidget {
     this.onPostUpdated,
     this.onCommentAdded,
     this.onPostDeleted,
+    this.onUserBlocked,
     this.onSaveChanged,
   });
 
@@ -447,6 +449,15 @@ class _PostCardState extends State<PostCard> {
               // Options for public posts
               if (!isSelf) ...[
                 ListTile(
+                  leading: const Icon(Icons.share_outlined,
+                      color: Color(0xFF3B82F6)),
+                  title: const Text('Share Post'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _handleShare();
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.report, color: Colors.orange),
                   title: const Text('Report'),
                   onTap: () {
@@ -709,6 +720,7 @@ class _PostCardState extends State<PostCard> {
         ),
       );
       if (success) {
+        widget.onUserBlocked?.call(userId);
         widget.onPostDeleted?.call(); // Remove post from feed
       }
     }

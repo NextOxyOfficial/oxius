@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from base.models import User
+from adsyconnect.models import BlockedUser
 
 from .models import *
 from .pagination import *
@@ -347,6 +348,9 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         reported_post_ids = PostReport.objects.filter(user=user).values_list(
             "post_id", flat=True
         )
+        blocked_user_ids = BlockedUser.objects.filter(blocker=user).values_list(
+            "blocked_id", flat=True
+        )
 
         user_tags = BusinessNetworkPostTag.objects.filter(
             business_network_posts__author=user
@@ -362,7 +366,9 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
             Q(visibility="public") | Q(author=user),
             is_banned=False,
         ).exclude(
-            Q(id__in=hidden_post_ids) | Q(id__in=reported_post_ids)
+            Q(id__in=hidden_post_ids)
+            | Q(id__in=reported_post_ids)
+            | Q(author_id__in=blocked_user_ids)
         )
 
         if device_level == "low":
@@ -623,7 +629,15 @@ class UserPostsListView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs.get("user_id")
-        return BusinessNetworkPost.objects.filter(author__id=user_id).order_by(
+        queryset = BusinessNetworkPost.objects.filter(author__id=user_id)
+        if self.request.user.is_authenticated:
+            is_blocked = BlockedUser.objects.filter(
+                blocker=self.request.user,
+                blocked_id=user_id,
+            ).exists()
+            if is_blocked:
+                return BusinessNetworkPost.objects.none()
+        return queryset.order_by(
             "-created_at"
         )
 

@@ -181,11 +181,12 @@ class MessageReportSerializer(serializers.ModelSerializer):
 class BlockedUserSerializer(serializers.ModelSerializer):
     """Blocked user serializer"""
     blocker = UserBasicSerializer(read_only=True)
-    blocked = UserBasicSerializer(read_only=True)
+    blocked = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    blocked_info = UserBasicSerializer(source='blocked', read_only=True)
     
     class Meta:
         model = BlockedUser
-        fields = ['id', 'blocker', 'blocked', 'reason', 'created_at']
+        fields = ['id', 'blocker', 'blocked', 'blocked_info', 'reason', 'created_at']
         read_only_fields = ['id', 'blocker', 'created_at']
     
     def create(self, validated_data):
