@@ -173,7 +173,7 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: EdgeInsets.only(bottom: bottomInset),
+        padding: EdgeInsets.fromLTRB(2, 0, 2, bottomInset),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -289,48 +289,56 @@ class _AdsyShareSheetBodyState extends State<_AdsyShareSheetBody> {
                       children: [
                         _SharePlatformButton(
                           tooltip: 'More apps',
+                          label: 'More',
                           iconAsset: 'assets/icons/share.png',
                           color: const Color(0xFF4F46E5),
                           onTap: _nativeShare,
                         ),
                         _SharePlatformButton(
                           tooltip: 'WhatsApp',
+                          label: 'WhatsApp',
                           icon: Icons.chat_rounded,
                           color: const Color(0xFF16A34A),
                           onTap: () => _openShareUrl(_platformUrl('whatsapp')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'Facebook',
+                          label: 'Facebook',
                           icon: Icons.facebook_rounded,
                           color: const Color(0xFF1877F2),
                           onTap: () => _openShareUrl(_platformUrl('facebook')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'X',
-                          icon: Icons.alternate_email_rounded,
+                          label: 'X',
+                          textIcon: 'X',
                           color: const Color(0xFF111827),
                           onTap: () => _openShareUrl(_platformUrl('x')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'LinkedIn',
+                          label: 'LinkedIn',
                           icon: Icons.business_center_rounded,
                           color: const Color(0xFF0A66C2),
                           onTap: () => _openShareUrl(_platformUrl('linkedin')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'Telegram',
+                          label: 'Telegram',
                           icon: Icons.send_rounded,
                           color: const Color(0xFF229ED9),
                           onTap: () => _openShareUrl(_platformUrl('telegram')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'Email',
+                          label: 'Email',
                           icon: Icons.email_rounded,
                           color: const Color(0xFFEA580C),
                           onTap: () => _openShareUrl(_platformUrl('email')),
                         ),
                         _SharePlatformButton(
                           tooltip: 'Copy',
+                          label: 'Copy',
                           icon: _copied
                               ? Icons.check_rounded
                               : Icons.copy_rounded,
@@ -368,25 +376,28 @@ class _SharePreview extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
-          Container(
-            width: 76,
-            height: 76,
-            color: const Color(0xFFF1F5F9),
-            child: imageUrl.isEmpty
-                ? const Icon(
-                    Icons.public_rounded,
-                    color: Color(0xFF64748B),
-                    size: 28,
-                  )
-                : Image.network(
-                    imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(
+          Padding(
+            padding: const EdgeInsets.only(left: 2),
+            child: Container(
+              width: 76,
+              height: 76,
+              color: const Color(0xFFF1F5F9),
+              child: imageUrl.isEmpty
+                  ? const Icon(
                       Icons.public_rounded,
                       color: Color(0xFF64748B),
                       size: 28,
+                    )
+                  : Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.public_rounded,
+                        color: Color(0xFF64748B),
+                        size: 28,
+                      ),
                     ),
-                  ),
+            ),
           ),
           Expanded(
             child: Padding(
@@ -444,17 +455,21 @@ class _SharePreview extends StatelessWidget {
 
 class _SharePlatformButton extends StatelessWidget {
   final String tooltip;
+  final String label;
   final IconData? icon;
   final String? iconAsset;
+  final String? textIcon;
   final Color color;
   final VoidCallback onTap;
 
   const _SharePlatformButton({
     required this.tooltip,
+    required this.label,
     required this.color,
     required this.onTap,
     this.icon,
     this.iconAsset,
+    this.textIcon,
   });
 
   @override
@@ -465,19 +480,49 @@ class _SharePlatformButton extends StatelessWidget {
         message: tooltip,
         child: InkWell(
           onTap: onTap,
-          customBorder: const CircleBorder(),
+          borderRadius: BorderRadius.circular(10),
           child: SizedBox(
-            width: 42,
-            height: 42,
-            child: Center(
-              child: iconAsset != null
-                  ? Image.asset(
-                      iconAsset!,
-                      width: 24,
-                      height: 24,
-                      fit: BoxFit.contain,
-                    )
-                  : Icon(icon, size: 24, color: color),
+            width: 54,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 30,
+                  height: 28,
+                  child: Center(
+                    child: iconAsset != null
+                        ? Image.asset(
+                            iconAsset!,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.contain,
+                          )
+                        : textIcon != null
+                            ? Text(
+                                textIcon!,
+                                style: TextStyle(
+                                  color: color,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1,
+                                ),
+                              )
+                            : Icon(icon, size: 23, color: color),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF374151),
+                    height: 1.1,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
