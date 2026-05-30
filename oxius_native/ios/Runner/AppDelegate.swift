@@ -79,7 +79,7 @@ import flutter_callkit_incoming
     return .sandbox
     #else
     guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
-          let data = try? Data(contentsOf: url),
+          let data = try? Foundation.Data(contentsOf: url),
           let raw = String(data: data, encoding: .isoLatin1) else {
       return .prod
     }
