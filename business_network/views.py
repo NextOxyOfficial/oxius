@@ -284,7 +284,12 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         """
-        Optimized prioritized post feed logic for medium devices:
+        Community-hub feed ranking:
+        - Strong direct network: own posts, followed users, followers.
+        - Extended network: people followed by the users I follow.
+        - Community proof: posts liked/commented on by known people.
+        - Interest graph: tags from my posts and posts I liked/commented/saved.
+        - Context: location, profession, freshness, and organic engagement.
         """
         if not self.request.user.is_authenticated:
             # For unauthenticated users, show recent posts with minimal data
@@ -321,16 +326,75 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 .distinct()
             )
 
+            interacted_post_ids = set(
+                BusinessNetworkPostLike.objects.filter(user=user).values_list(
+                    "post_id", flat=True
+                )
+            )
+            interacted_post_ids.update(
+                BusinessNetworkPostComment.objects.filter(author=user).values_list(
+                    "post_id", flat=True
+                )
+            )
+            interacted_post_ids.update(
+                UserSavedPosts.objects.filter(user=user).values_list(
+                    "post_id", flat=True
+                )
+            )
+
+            interest_tags = set(
+                BusinessNetworkPostTag.objects.filter(
+                    Q(business_network_posts__author=user)
+                    | Q(business_network_posts__id__in=interacted_post_ids)
+                )
+                .values_list("tag", flat=True)
+                .distinct()[:80]
+            )
+
+            co_engaged_author_ids = set(
+                BusinessNetworkPost.objects.filter(id__in=interacted_post_ids)
+                .exclude(author=user)
+                .values_list("author_id", flat=True)
+                .distinct()[:80]
+            )
+            co_engaged_author_ids.update(
+                BusinessNetworkPostComment.objects.filter(
+                    post__author=user
+                )
+                .exclude(author=user)
+                .values_list("author_id", flat=True)
+                .distinct()[:80]
+            )
+            co_engaged_author_ids.update(
+                BusinessNetworkPostLike.objects.filter(post__author=user)
+                .exclude(user=user)
+                .values_list("user_id", flat=True)
+                .distinct()[:80]
+            )
+
             cached_data = {
                 "following": users_following,
                 "followers": users_followers,
                 "second_degree": second_degree_users,
+                "interest_tags": list(interest_tags),
+                "co_engaged_authors": list(co_engaged_author_ids),
             }
             cache.set(cache_key, cached_data, 300)  # Cache for 5 minutes
 
         users_following = cached_data["following"]
         users_followers = cached_data["followers"]
         second_degree_users = cached_data.get("second_degree", [])
+        interest_tags = cached_data.get("interest_tags", [])
+        co_engaged_author_ids = cached_data.get("co_engaged_authors", [])
+        trusted_network_user_ids = list(
+            {
+                user.id,
+                *users_following,
+                *users_followers,
+                *second_degree_users,
+                *co_engaged_author_ids,
+            }
+        )
 
         from datetime import timedelta
 
@@ -351,10 +415,6 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         blocked_user_ids = BlockedUser.objects.filter(blocker=user).values_list(
             "blocked_id", flat=True
         )
-
-        user_tags = BusinessNetworkPostTag.objects.filter(
-            business_network_posts__author=user
-        ).values_list("tag", flat=True)
 
         author_location_query = Q()
         if user.city:
@@ -389,16 +449,73 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 follower_count=Count("post_followers", distinct=True),
                 common_tag_count=Count(
                     "tags",
-                    filter=Q(tags__tag__in=user_tags),
+                    filter=Q(tags__tag__in=interest_tags),
+                    distinct=True,
+                ),
+                known_comment_count=Count(
+                    "post_comments",
+                    filter=Q(post_comments__author_id__in=trusted_network_user_ids),
+                    distinct=True,
+                ),
+                recent_known_comment_count=Count(
+                    "post_comments",
+                    filter=Q(
+                        post_comments__author_id__in=trusted_network_user_ids,
+                        post_comments__created_at__gte=seven_days_ago,
+                    ),
+                    distinct=True,
+                ),
+                known_like_count=Count(
+                    "post_likes",
+                    filter=Q(post_likes__user_id__in=trusted_network_user_ids),
+                    distinct=True,
+                ),
+                mutual_connection_count=Count(
+                    "author__business_network_following",
+                    filter=Q(
+                        author__business_network_following__follower_id__in=users_following
+                    ),
                     distinct=True,
                 ),
                 relationship_score=Case(
-                    When(author=user, then=Value(45)),
-                    When(author_id__in=users_following, then=Value(42)),
-                    When(author_id__in=users_followers, then=Value(30)),
-                    When(author_id__in=second_degree_users, then=Value(22)),
+                    When(author=user, then=Value(55)),
+                    When(author_id__in=users_following, then=Value(52)),
+                    When(author_id__in=users_followers, then=Value(35)),
+                    When(author_id__in=co_engaged_author_ids, then=Value(28)),
+                    When(author_id__in=second_degree_users, then=Value(24)),
                     default=Value(0),
                     output_field=IntegerField(),
+                ),
+                community_score=(
+                    Count(
+                        "post_comments",
+                        filter=Q(post_comments__author_id__in=trusted_network_user_ids),
+                        distinct=True,
+                    )
+                    * 9
+                    + Count(
+                        "post_comments",
+                        filter=Q(
+                            post_comments__author_id__in=trusted_network_user_ids,
+                            post_comments__created_at__gte=seven_days_ago,
+                        ),
+                        distinct=True,
+                    )
+                    * 8
+                    + Count(
+                        "post_likes",
+                        filter=Q(post_likes__user_id__in=trusted_network_user_ids),
+                        distinct=True,
+                    )
+                    * 4
+                    + Count(
+                        "author__business_network_following",
+                        filter=Q(
+                            author__business_network_following__follower_id__in=users_following
+                        ),
+                        distinct=True,
+                    )
+                    * 3
                 ),
                 location_score=Case(
                     When(author_location_query, then=Value(12))
@@ -430,12 +547,14 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     + Count("post_comments", distinct=True) * 4
                     + Count("post_followers", distinct=True)
                 ),
+                interest_score=(F("common_tag_count") * 10),
                 feed_score=(
                     F("relationship_score")
+                    + F("community_score")
                     + F("location_score")
                     + F("profession_score")
                     + F("recency_score")
-                    + (F("common_tag_count") * 7)
+                    + F("interest_score")
                     + F("engagement_score")
                 ),
             )
