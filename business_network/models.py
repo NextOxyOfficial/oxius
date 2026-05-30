@@ -268,6 +268,11 @@ class BusinessNetworkPostTag(models.Model):
     tag = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["tag"], name="bn_post_tag_tag_idx"),
+        ]
+
     def generate_id(self):
         from datetime import datetime
         import random
@@ -300,6 +305,18 @@ class BusinessNetworkPost(models.Model):
     is_banned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["visibility", "is_banned", "-created_at"],
+                name="bn_post_feed_idx",
+            ),
+            models.Index(
+                fields=["author", "-created_at"],
+                name="bn_post_author_recent_idx",
+            ),
+        ]
     
     def generate_id(self):
         from datetime import datetime
@@ -331,6 +348,10 @@ class BusinessNetworkPostLike(models.Model):
 
     class Meta:
         unique_together = ['post', 'user']
+        indexes = [
+            models.Index(fields=["user", "-created_at"], name="bn_like_user_recent_idx"),
+            models.Index(fields=["post", "user"], name="bn_like_post_user_idx"),
+        ]
 
     def generate_id(self):
         from datetime import datetime
@@ -384,6 +405,10 @@ class BusinessNetworkPostComment(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=["author", "-created_at"], name="bn_comment_author_recent_idx"),
+            models.Index(fields=["post", "author", "-created_at"], name="bn_comment_post_author_idx"),
+        ]
     def generate_id(self):
         from datetime import datetime
         import random
@@ -458,6 +483,10 @@ class BusinessNetworkFollowerModel(models.Model):
     
     class Meta:
         unique_together = ['follower', 'following']  # Prevent duplicate follows
+        indexes = [
+            models.Index(fields=["follower", "following"], name="bn_follow_follower_idx"),
+            models.Index(fields=["following", "follower"], name="bn_follow_following_idx"),
+        ]
     
     def generate_id(self):
         from datetime import datetime
