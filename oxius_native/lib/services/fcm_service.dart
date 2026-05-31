@@ -7,6 +7,7 @@ import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:vibration/vibration.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -595,6 +596,12 @@ Future<void> _showBackgroundRideRequestNotification(
       ongoing: true,
       vibrationPattern: _buildRideRequestVibrationPattern(),
       audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
+      // FLAG_INSISTENT (4): loop the alert sound until the driver responds, so
+      // a request is not missed in a pocket even when the CallKit continuous
+      // ring fails to start (OEM kills the foreground service). The OS stops
+      // the loop automatically when the notification is tapped, dismissed, or
+      // times out (timeoutAfter / autoCancel above).
+      additionalFlags: Int32List.fromList(<int>[4]),
     );
 
     await plugin.show(
@@ -621,6 +628,26 @@ Future<void> _showBackgroundRideRequestNotification(
   } catch (e) {
     _log('⚠️ Secondary CallKit ride-request UI failed (non-fatal): $e');
   }
+}
+
+/// Summary of the OS-gated permissions a driver needs for reliable
+/// locked-device ride-request alerts. See [FCMService.ensureDriverAlertPermissions].
+class DriverAlertReadiness {
+  final bool notificationsGranted;
+  final bool fullScreenIntentGranted;
+  final bool batteryOptimizationIgnored;
+
+  const DriverAlertReadiness({
+    required this.notificationsGranted,
+    required this.fullScreenIntentGranted,
+    required this.batteryOptimizationIgnored,
+  });
+
+  /// True when every alert-critical permission is in place.
+  bool get isFullyReady =>
+      notificationsGranted &&
+      fullScreenIntentGranted &&
+      batteryOptimizationIgnored;
 }
 
 class FCMService {
@@ -652,6 +679,23 @@ class FCMService {
   static const Duration _iosTokenPollInterval = Duration(milliseconds: 350);
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
+
+  /// Hook that dismisses any full-screen chat overlay that is rendered ABOVE
+  /// the root Navigator (e.g. AdsyConnect's chat overlay). Such overlays sit on
+  /// top of the Navigator's routes, so a CallScreen pushed onto the Navigator
+  /// would be hidden behind them — the user hears the ringtone but never sees
+  /// the accept/decline UI. AdsyConnectScreen registers this; we invoke it right
+  /// before navigating to any CallScreen so the call surface is always visible.
+  static VoidCallback? dismissBlockingChatOverlay;
+
+  static void _dismissBlockingChatOverlay() {
+    try {
+      dismissBlockingChatOverlay?.call();
+    } catch (_) {
+      // Ignore — never let overlay cleanup block call navigation.
+    }
+  }
+
   static Map<String, dynamic>? _pendingNavigationData;
   static Timer? _pendingNavigationTimer;
   static int _pendingNavigationAttempts = 0;
@@ -1256,6 +1300,73 @@ class FCMService {
     } catch (e) {
       _log('⚠️ Failed to request full-screen intent permission: $e');
     }
+  }
+
+  /// Ensure a driver's device can reliably ring for incoming ride requests
+  /// while locked / in a pocket. Best-effort and idempotent — safe to call
+  /// every time a driver goes online. Returns a readiness summary so the UI
+  /// can guide the driver if something the OS gates is still missing.
+  ///
+  ///   * notifications — without POST_NOTIFICATIONS nothing is shown at all.
+  ///   * full-screen intent — Android 14+ gates this; without it the request
+  ///     only shows a heads-up instead of waking the screen.
+  ///   * battery optimization — Doze / OEM battery savers delay or drop the
+  ///     high-priority wake-up push; exempting the app is the single biggest
+  ///     reliability win on Xiaomi/Oppo/Vivo/Realme devices.
+  static Future<DriverAlertReadiness> ensureDriverAlertPermissions() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return const DriverAlertReadiness(
+        notificationsGranted: true,
+        fullScreenIntentGranted: true,
+        batteryOptimizationIgnored: true,
+      );
+    }
+
+    var notificationsGranted = true;
+    var fullScreenIntentGranted = true;
+    var batteryOptimizationIgnored = true;
+
+    // 1. Notifications (Android 13+ runtime permission).
+    try {
+      final status = await Permission.notification.status;
+      if (!status.isGranted) {
+        notificationsGranted =
+            (await Permission.notification.request()).isGranted;
+      }
+    } catch (e) {
+      _log('⚠️ Driver notification permission check failed: $e');
+    }
+
+    // 2. Full-screen intent (Android 14+).
+    try {
+      final canUse = await FlutterCallkitIncoming.canUseFullScreenIntent();
+      fullScreenIntentGranted = canUse == true;
+      if (!fullScreenIntentGranted) {
+        await FlutterCallkitIncoming.requestFullIntentPermission();
+        // Re-read; the user may have just toggled it on.
+        fullScreenIntentGranted =
+            (await FlutterCallkitIncoming.canUseFullScreenIntent()) == true;
+      }
+    } catch (e) {
+      _log('⚠️ Driver full-screen-intent check failed: $e');
+    }
+
+    // 3. Battery optimization exemption (Doze / OEM savers).
+    try {
+      final status = await Permission.ignoreBatteryOptimizations.status;
+      if (!status.isGranted) {
+        batteryOptimizationIgnored =
+            (await Permission.ignoreBatteryOptimizations.request()).isGranted;
+      }
+    } catch (e) {
+      _log('⚠️ Driver battery-optimization request failed: $e');
+    }
+
+    return DriverAlertReadiness(
+      notificationsGranted: notificationsGranted,
+      fullScreenIntentGranted: fullScreenIntentGranted,
+      batteryOptimizationIgnored: batteryOptimizationIgnored,
+    );
   }
 
   static Future<void> _tryNavigateToActiveCallkitCall() async {
@@ -2072,6 +2183,8 @@ class FCMService {
     }
 
     _log('📞 Navigating directly to CallScreen (accepted call)');
+    // Close any full-screen chat overlay so the CallScreen is not pushed behind it.
+    _dismissBlockingChatOverlay();
     navigator.push(
       MaterialPageRoute(
         builder: (context) => CallScreen(
@@ -2116,6 +2229,11 @@ class FCMService {
     }
 
     unawaited(dismissVisibleCallUi(channelName: channelName));
+
+    // Close any full-screen chat overlay first — otherwise the CallScreen would
+    // be pushed BEHIND it and the user could hear the ringtone without ever
+    // seeing the accept/decline buttons.
+    _dismissBlockingChatOverlay();
 
     navigator.push(
       MaterialPageRoute(
@@ -2286,6 +2404,8 @@ class FCMService {
       autoCancel: true,
       vibrationPattern: _buildRideRequestVibrationPattern(),
       audioAttributesUsage: AudioAttributesUsage.notificationRingtone,
+      // FLAG_INSISTENT (4): loop the alert sound until the driver responds.
+      additionalFlags: Int32List.fromList(<int>[4]),
       styleInformation: BigTextStyleInformation(
         body,
         contentTitle: title,
@@ -2535,6 +2655,12 @@ class FCMService {
         _log('   → Rideshare screen already open, refreshing in place');
         return;
       }
+
+      // Close any full-screen chat overlay first. It is inserted into the root
+      // Overlay (above the root Navigator), so the rideshare driver panel pushed
+      // below would be hidden behind it — the driver hears the ride-request ring
+      // but never sees the panel until they manually dismiss the chat.
+      _dismissBlockingChatOverlay();
 
       navigator.pushNamed(
         '/rideshare',

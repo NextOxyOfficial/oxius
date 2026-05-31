@@ -39,6 +39,8 @@ class UserSerializer(serializers.ModelSerializer):
     sale_post_count = serializers.SerializerMethodField()
     rating = serializers.SerializerMethodField()
     is_following = serializers.SerializerMethodField()
+    is_blocked_by_me = serializers.SerializerMethodField()
+    is_blocked_by_them = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -74,6 +76,28 @@ class UserSerializer(serializers.ModelSerializer):
             return BusinessNetworkFollowerModel.objects.filter(
                 follower=request.user,
                 following=obj
+            ).exists()
+        return False
+
+    def get_is_blocked_by_me(self, obj):
+        """True if the current user has blocked this profile's user."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from adsyconnect.models import BlockedUser
+            return BlockedUser.objects.filter(
+                blocker=request.user,
+                blocked=obj,
+            ).exists()
+        return False
+
+    def get_is_blocked_by_them(self, obj):
+        """True if this profile's user has blocked the current user."""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from adsyconnect.models import BlockedUser
+            return BlockedUser.objects.filter(
+                blocker=obj,
+                blocked=request.user,
             ).exists()
         return False
 

@@ -2812,11 +2812,14 @@ class NearestDriverDispatch:
         }
 
         from base.fcm_service import send_fcm_data_message_async
+        # TTL must match the offer window. The default driver_response_timeout is
+        # 60s (configurable up to 300s), so a hardcoded 45s TTL would let FCM drop
+        # a push for a Doze/locked device while the targeted offer is still open —
+        # the driver would never get woken even though the request is still valid.
+        offer_ttl = cls.driver_timeout_seconds()
         tokens = RideNotificationService._get_user_fcm_tokens(driver.user)
         for token in tokens:
-            # 45s TTL aligns with driver_timeout_seconds; if the device can't
-            # be reached in that window the targeted offer is moot.
-            send_fcm_data_message_async(token, data, ttl_seconds=45)
+            send_fcm_data_message_async(token, data, ttl_seconds=offer_ttl)
 
         # Also send websocket event to specific driver
         DispatchService._group_send(

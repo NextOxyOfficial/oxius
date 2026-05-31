@@ -69,6 +69,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
   bool _pendingOnlineAfterPermission = false;
   bool _isProfileExpanded = true;
   bool _profileExpansionInitialized = false;
+  bool _alertReadinessChecked = false;
 
   final _licenseController = TextEditingController();
   final _nidController = TextEditingController();
@@ -1318,6 +1319,7 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
           _syncRealtimeConnections();
           _showSuccess(
               t('rideshare_now_online', fallback: 'You are now online'));
+          unawaited(_ensureDriverAlertReadiness());
         } else {
           _stopLocationTracking();
           setState(() => _availableRequests = []);
@@ -1333,6 +1335,137 @@ class _RideshareDriverPanelState extends State<RideshareDriverPanel>
         _showError(result.message);
       }
     }
+  }
+
+  /// One-time-per-session check that the OS will actually let ride-request
+  /// alerts ring when the phone is locked / in a pocket. Best-effort: it never
+  /// blocks going online, it just nudges the driver to fix whatever the OS is
+  /// still gating (battery optimization is the common culprit on BD OEMs).
+  Future<void> _ensureDriverAlertReadiness() async {
+    if (_alertReadinessChecked) return;
+    _alertReadinessChecked = true;
+
+    final readiness = await FCMService.ensureDriverAlertPermissions();
+    if (!mounted || readiness.isFullyReady) return;
+
+    final issues = <String>[
+      if (!readiness.notificationsGranted)
+        'নোটিফিকেশন অনুমতি — রাইড রিকোয়েস্ট দেখানোর জন্য আবশ্যক।',
+      if (!readiness.batteryOptimizationIgnored)
+        'ব্যাটারি অপটিমাইজেশন বন্ধ — ফোন লক থাকলেও রিকোয়েস্ট পেতে দরকার।',
+      if (!readiness.fullScreenIntentGranted)
+        'ফুল-স্ক্রিন অ্যালার্ট — কল-এর মতো স্ক্রিন জাগিয়ে দেখানোর জন্য।',
+    ];
+    if (issues.isEmpty) return;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'রাইড অ্যালার্ট সেটআপ সম্পন্ন করুন',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: _slate800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'ফোন লক বা পকেটে থাকা অবস্থায় রাইড রিকোয়েস্ট মিস না করতে নিচের অনুমতিগুলো চালু রাখুন:',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: _slate500,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 14),
+              for (final issue in issues)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 2),
+                        child: Icon(Icons.error_outline_rounded,
+                            size: 16, color: Color(0xFFF59E0B)),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          issue,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            color: _slate600,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(sheetContext).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: _slate200),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'পরে',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          color: _slate600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        Navigator.of(sheetContext).pop();
+                        // Re-run the permission requests; allow the prompt to
+                        // surface again next time if the driver dismisses it.
+                        _alertReadinessChecked = false;
+                        unawaited(FCMService.ensureDriverAlertPermissions());
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _indigo,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'অনুমতি দিন',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _payOutstandingCashDues(

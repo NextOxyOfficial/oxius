@@ -2647,7 +2647,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   void _showBlockConfirmation() {
     showModalBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
+      // Must use the LOCAL navigator, not the root one. This chat screen is
+      // rendered inside the AdsyConnect chat OverlayEntry which sits ABOVE the
+      // root Navigator, so a root-navigator sheet would be pushed BEHIND the
+      // overlay and stay invisible until the user pops the overlay with Back.
+      useRootNavigator: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _buildUserActionSheet(
@@ -2667,7 +2671,8 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   void _showUnblockConfirmation() {
     showModalBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
+      // Local navigator — see _showBlockConfirmation for the overlay rationale.
+      useRootNavigator: false,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _buildUserActionSheet(
@@ -3507,7 +3512,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       onStartRecording: _startRecording,
       onStopRecording: _stopRecording,
       onCancelRecording: _cancelRecording,
-      onUnblock: _unblockUser,
+      onUnblock: _showUnblockConfirmation,
       onCancelReply: _cancelReply,
       onShowAttachmentOptions: _showAttachmentOptions,
       onSendImages: _sendSelectedImages,

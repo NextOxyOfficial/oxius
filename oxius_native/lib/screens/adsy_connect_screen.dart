@@ -72,6 +72,17 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     _startRealTimePolling();
     _startOnlineStatusPolling();
     _chatSearchController.addListener(_onChatSearchChanged);
+
+    // Let FCMService close our full-screen chat overlay before it pushes a
+    // CallScreen. The chat overlay is inserted into the root Overlay (above the
+    // root Navigator), so without this the CallScreen would be hidden behind it
+    // and the user could hear the ringtone without seeing the accept UI.
+    FCMService.dismissBlockingChatOverlay = _dismissChatOverlayForIncomingCall;
+  }
+
+  void _dismissChatOverlayForIncomingCall() {
+    if (!mounted || _activeChatOverlay == null) return;
+    _removeActiveChatOverlay(refreshAfterClose: false);
   }
 
   void _handleRealtimeEvent(Map<String, dynamic> event) {
@@ -212,6 +223,12 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
 
   @override
   void dispose() {
+    // Only clear the hook if it still points at this State instance, so a newer
+    // AdsyConnectScreen that registered after us isn't accidentally unhooked.
+    if (FCMService.dismissBlockingChatOverlay ==
+        _dismissChatOverlayForIncomingCall) {
+      FCMService.dismissBlockingChatOverlay = null;
+    }
     _pollingTimer?.cancel();
     _onlineStatusTimer?.cancel();
     _realtimeSubscription?.cancel();
@@ -308,6 +325,44 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
     }
   }
 
+  /// Reply messages are stored as a single string in this format:
+  ///   `↩️ (uuid) Sender: quoted preview\n\nActual message`
+  /// Older messages were saved with a mojibaked `â†©ï¸` prefix (UTF-8 bytes
+  /// mis-decoded as Latin-1), which previously leaked the raw `(uuid)` header
+  /// into the chat list. Returns a clean `↩️ <actual message>` preview, or
+  /// null when [content] is not a reply.
+  String? _formatReplyPreview(String content) {
+    final text = content.trimLeft();
+    const correctPrefix = '↩️';
+    const legacyPrefix = 'â†©ï¸';
+
+    final String prefix;
+    if (text.startsWith(correctPrefix)) {
+      prefix = correctPrefix;
+    } else if (text.startsWith(legacyPrefix)) {
+      prefix = legacyPrefix;
+    } else {
+      return null;
+    }
+
+    // The actual message sits after the blank-line separator.
+    final parts = text.split('\n\n');
+    if (parts.length >= 2) {
+      final actualText = parts.sublist(1).join('\n\n').trim();
+      if (actualText.isNotEmpty) return '↩️ $actualText';
+    }
+
+    // No body — strip the "(uuid) Sender:" header and show whatever remains.
+    var rest = text.substring(prefix.length).trim();
+    if (rest.startsWith('(')) {
+      final end = rest.indexOf(')');
+      if (end != -1) rest = rest.substring(end + 1).trim();
+    }
+    final colon = rest.indexOf(':');
+    if (colon != -1) rest = rest.substring(colon + 1).trim();
+    return rest.isNotEmpty ? '↩️ $rest' : '↩️ Reply';
+  }
+
   List<Map<String, dynamic>> _parseChatRooms(List<dynamic> chatRooms) {
     return chatRooms.map((room) {
       final otherUser = room['other_user'] ?? {};
@@ -325,19 +380,9 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
         displayMessage = 'Message removed';
       } else if (messageContent.isEmpty) {
         displayMessage = 'No messages yet';
-      } else if (messageContent.trimLeft().startsWith('↩️')) {
-        // Reply message: extract actual message text from format:
-        // ↩️ (uuid) Sender: preview\n\nActual message
-        final parts = messageContent.split('\n\n');
-        if (parts.length >= 2) {
-          final actualText = parts.sublist(1).join('\n\n').trim();
-          displayMessage =
-              actualText.isNotEmpty ? '↩️ $actualText' : messageContent;
-        } else {
-          displayMessage = messageContent;
-        }
       } else {
-        displayMessage = messageContent;
+        displayMessage =
+            _formatReplyPreview(messageContent) ?? messageContent;
       }
 
       return {

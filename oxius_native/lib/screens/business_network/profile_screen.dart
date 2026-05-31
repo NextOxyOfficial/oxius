@@ -478,6 +478,56 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  Future<void> _unblockProfileUser() async {
+    if (_isOwnProfile() || _isBlocking) return;
+
+    final name = _profileDisplayName();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Unblock User'),
+        content: Text(
+          'Unblock $name? You will be able to see each other again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Unblock'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isBlocking = true);
+    final success = await BusinessNetworkService.unblockUser(widget.userId);
+    if (!mounted) return;
+
+    setState(() {
+      _isBlocking = false;
+      if (success) {
+        _isBlockedProfile = false;
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'User unblocked' : 'Failed to unblock user'),
+        backgroundColor: success ? Colors.green : Colors.red,
+      ),
+    );
+
+    if (success) {
+      // Reload the profile so the now-visible posts/feed come back.
+      await _loadProfileData();
+    }
+  }
+
   void _showProfileOptions(bool isOwnProfile) {
     showModalBottomSheet(
       context: context,
@@ -508,15 +558,26 @@ class _ProfileScreenState extends State<ProfileScreen>
                 },
               ),
               if (!isOwnProfile && AuthService.isAuthenticated)
-                ListTile(
-                  leading: const Icon(Icons.block_rounded, color: Colors.red),
-                  title: const Text('Block User',
-                      style: TextStyle(color: Colors.red)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _blockProfileUser();
-                  },
-                ),
+                if (_isBlockedProfile)
+                  ListTile(
+                    leading: const Icon(Icons.lock_open_rounded,
+                        color: Color(0xFF3B82F6)),
+                    title: const Text('Unblock User'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _unblockProfileUser();
+                    },
+                  )
+                else
+                  ListTile(
+                    leading: const Icon(Icons.block_rounded, color: Colors.red),
+                    title: const Text('Block User',
+                        style: TextStyle(color: Colors.red)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _blockProfileUser();
+                    },
+                  ),
               const SizedBox(height: 8),
             ],
           ),
@@ -1309,18 +1370,51 @@ class _ProfileScreenState extends State<ProfileScreen>
           // Action Buttons + Diamond (side by side pill row)
           if (_isBlockedProfile)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
               decoration: BoxDecoration(
                 color: Colors.red.shade50,
                 borderRadius: BorderRadius.circular(50),
                 border: Border.all(color: Colors.red.shade100),
               ),
-              child: Text(
-                'Blocked',
-                style: TextStyle(
-                  color: Colors.red.shade700,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.block_rounded,
+                      size: 16, color: Colors.red.shade700),
+                  const SizedBox(width: 6),
+                  Text(
+                    'You blocked this user',
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton(
+                    onPressed: _isBlocking ? null : _unblockProfileUser,
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    child: _isBlocking
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Text('Unblock'),
+                  ),
+                ],
               ),
             )
           else if (isOwnProfile && _userData?['diamond_balance'] != null)

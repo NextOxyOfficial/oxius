@@ -139,14 +139,33 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     other_user = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
-    
+    blocked_by_me = serializers.SerializerMethodField()
+
     class Meta:
         model = ChatRoom
         fields = [
             'id', 'other_user', 'last_message_at', 'last_message_preview',
             'unread_count', 'last_message', 'is_blocked', 'blocked_by',
-            'created_at', 'updated_at'
+            'blocked_by_me', 'created_at', 'updated_at'
         ]
+
+    def get_blocked_by_me(self, obj):
+        """True if the current user is the one who blocked this conversation.
+
+        The frontend uses this to decide whether to show the 'Unblock' action:
+        only the user who placed the block can lift it. Computed from the
+        canonical BlockedUser table so it stays correct regardless of which
+        surface (chat or business-network profile) created the block.
+        """
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if user and user.is_authenticated:
+            other_user = obj.get_other_user(user)
+            if other_user:
+                return BlockedUser.objects.filter(
+                    blocker=user, blocked=other_user
+                ).exists()
+        return False
     
     def get_other_user(self, obj):
         request = self.context.get('request')

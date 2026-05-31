@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../models/business_network_models.dart';
 import '../widgets/common/adsy_loading.dart';
 import 'download_open_utils.dart';
+import 'gallery_saver.dart';
 
 class BusinessNetworkMediaDownloader {
   static Future<void> download(
@@ -42,18 +43,19 @@ class BusinessNetworkMediaDownloader {
     );
 
     try {
-      final directory = await _downloadDirectory();
-      if (directory == null) {
-        throw Exception('Could not access storage directory');
-      }
-
-      await directory.create(recursive: true);
       final fileName = _fileNameFor(url, media, ownerName: ownerName);
-      final filePath = '${directory.path}${Platform.pathSeparator}$fileName';
+
+      // Always download to an app-private cache file first — this never needs a
+      // storage permission. We then hand the file to the platform so it can be
+      // copied into the phone gallery (Android) or opened directly (other OSes).
+      final cacheDir = await getTemporaryDirectory();
+      await cacheDir.create(recursive: true);
+      final cachePath =
+          '${cacheDir.path}${Platform.pathSeparator}$fileName';
 
       await Dio().download(
         url,
-        filePath,
+        cachePath,
         options: Options(
           headers: const {'User-Agent': 'OxiUsFlutter/1.0'},
           followRedirects: true,
@@ -62,36 +64,106 @@ class BusinessNetworkMediaDownloader {
       );
 
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.check_circle, color: Colors.white),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Saved: $fileName',
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 8),
-          action: SnackBarAction(
-            label: 'Open',
-            textColor: Colors.white,
-            onPressed: () {
-              DownloadOpenUtils.openFile(context, filePath);
-            },
-          ),
-        ),
-      );
+
+      if (Platform.isAndroid) {
+        // Copy into the device gallery (Pictures/Movies) via MediaStore so the
+        // item is visible in the phone's Gallery/Photos app.
+        final uri = await GallerySaver.saveToGallery(
+          sourcePath: cachePath,
+          fileName: fileName,
+          isVideo: media.isVideo,
+        );
+        if (!context.mounted) return;
+        _showSavedToGallery(context, uri, media.isVideo, cachePath);
+        return;
+      }
+
+      // iOS / other platforms: keep the file in a stable Downloads location and
+      // let the user open it from the success banner.
+      final directory = await _downloadDirectory();
+      if (directory == null) {
+        throw Exception('Could not access storage directory');
+      }
+      await directory.create(recursive: true);
+      final filePath = '${directory.path}${Platform.pathSeparator}$fileName';
+      await File(cachePath).copy(filePath);
+      if (!context.mounted) return;
+      _showSavedToFile(context, fileName, filePath);
     } catch (e) {
       if (!context.mounted) return;
       _showError(context, 'Download failed: $e');
     }
+  }
+
+  static void _showSavedToGallery(
+    BuildContext context,
+    String? galleryUri,
+    bool isVideo,
+    String fallbackPath,
+  ) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: const [
+            Icon(Icons.check_circle, color: Colors.white),
+            SizedBox(width: 12),
+            Expanded(child: Text('Saved to Gallery')),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 8),
+        action: SnackBarAction(
+          label: 'Open',
+          textColor: Colors.white,
+          onPressed: () async {
+            // Prefer opening the gallery item directly; fall back to the cached
+            // file if the platform did not return a content URI.
+            if (galleryUri != null && galleryUri.isNotEmpty) {
+              try {
+                await GallerySaver.openMedia(uri: galleryUri, isVideo: isVideo);
+                return;
+              } catch (_) {
+                // Fall through to the file-based open below.
+              }
+            }
+            if (context.mounted) {
+              DownloadOpenUtils.openFile(context, fallbackPath);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  static void _showSavedToFile(
+    BuildContext context,
+    String fileName,
+    String filePath,
+  ) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('Saved: $fileName', overflow: TextOverflow.ellipsis),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 8),
+        action: SnackBarAction(
+          label: 'Open',
+          textColor: Colors.white,
+          onPressed: () {
+            DownloadOpenUtils.openFile(context, filePath);
+          },
+        ),
+      ),
+    );
   }
 
   static Future<Directory?> _downloadDirectory() async {

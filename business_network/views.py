@@ -240,7 +240,22 @@ class UserSearchView(generics.ListAPIView):
         
         # Get all matching users (excluding superusers)
         users = User.objects.filter(search_query).exclude(is_superuser=True)
-        
+
+        # Hide blocked relationships in BOTH directions: a user I blocked must
+        # not appear in my search, and a user who blocked me must not appear in
+        # my search either (and vice-versa) — until the block is removed.
+        request_user = self.request.user
+        if request_user.is_authenticated:
+            blocked_ids = BlockedUser.objects.filter(
+                blocker=request_user
+            ).values_list("blocked_id", flat=True)
+            blocked_by_ids = BlockedUser.objects.filter(
+                blocked=request_user
+            ).values_list("blocker_id", flat=True)
+            users = users.exclude(id__in=blocked_ids).exclude(
+                id__in=blocked_by_ids
+            )
+
         # Add priority scoring for ordering
         users = users.annotate(
             priority=Case(
@@ -412,8 +427,13 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         reported_post_ids = PostReport.objects.filter(user=user).values_list(
             "post_id", flat=True
         )
+        # Mutual block invisibility: hide posts from users I blocked AND from
+        # users who blocked me (Facebook-style — neither side sees the other).
         blocked_user_ids = BlockedUser.objects.filter(blocker=user).values_list(
             "blocked_id", flat=True
+        )
+        blocked_by_user_ids = BlockedUser.objects.filter(blocked=user).values_list(
+            "blocker_id", flat=True
         )
 
         author_location_query = Q()
@@ -429,6 +449,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
             Q(id__in=hidden_post_ids)
             | Q(id__in=reported_post_ids)
             | Q(author_id__in=blocked_user_ids)
+            | Q(author_id__in=blocked_by_user_ids)
         )
 
         if device_level == "low":
@@ -750,9 +771,11 @@ class UserPostsListView(generics.ListAPIView):
         user_id = self.kwargs.get("user_id")
         queryset = BusinessNetworkPost.objects.filter(author__id=user_id)
         if self.request.user.is_authenticated:
+            # Hide this profile's posts if EITHER side blocked the other, so a
+            # blocked user can't browse the blocker's posts and vice-versa.
             is_blocked = BlockedUser.objects.filter(
-                blocker=self.request.user,
-                blocked_id=user_id,
+                Q(blocker=self.request.user, blocked_id=user_id)
+                | Q(blocker_id=user_id, blocked=self.request.user)
             ).exists()
             if is_blocked:
                 return BusinessNetworkPost.objects.none()
@@ -1162,6 +1185,22 @@ class BusinessNetworkPostSearchView(generics.ListAPIView):
                 # If only tag search, convert list back to queryset
                 post_ids = [post.id for post in tag_query_results]
                 queryset = BusinessNetworkPost.objects.filter(id__in=post_ids)
+
+        # Mutual block invisibility: hide posts whose author is in a block
+        # relationship with the current user, in EITHER direction. A blocked
+        # user's posts must not surface in my search, and my posts must not
+        # surface in a blocker's search — until the block is removed.
+        request_user = self.request.user
+        if request_user.is_authenticated:
+            blocked_ids = BlockedUser.objects.filter(
+                blocker=request_user
+            ).values_list("blocked_id", flat=True)
+            blocked_by_ids = BlockedUser.objects.filter(
+                blocked=request_user
+            ).values_list("blocker_id", flat=True)
+            queryset = queryset.exclude(author_id__in=blocked_ids).exclude(
+                author_id__in=blocked_by_ids
+            )
 
         # Ensure we always return distinct results
         return queryset.distinct().order_by("-created_at")
