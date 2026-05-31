@@ -1227,21 +1227,56 @@ class Order(models.Model):
 
 
 class BannerImage(models.Model):
+    LINK_TYPE_CHOICES = [
+        ("internal", "Internal app/web page"),
+        ("external", "External browser link"),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to="banner_images/")
     title = models.CharField(max_length=255, blank=True, null=True)
-    link = models.CharField(max_length=255, blank=True, null=True)
+    link = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Use a full URL or app path. Internal links open inside the app.",
+    )
+    link_type = models.CharField(
+        max_length=10,
+        choices=LINK_TYPE_CHOICES,
+        default="internal",
+        help_text="Internal opens supported AdsyClub URLs inside the app. External opens in browser.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title or f"Banner {self.id}"
 
 
 class ShopBannerImage(models.Model):
+    LINK_TYPE_CHOICES = BannerImage.LINK_TYPE_CHOICES
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to="shop_banner_images/")
     title = models.CharField(max_length=255, blank=True, null=True)
-    link = models.CharField(max_length=255, blank=True, null=True)
+    link = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Use a full URL or app path. Internal links open inside the app.",
+    )
+    link_type = models.CharField(
+        max_length=10,
+        choices=LINK_TYPE_CHOICES,
+        default="internal",
+        help_text="Internal opens supported AdsyClub URLs inside the app. External opens in browser.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title or f"Shop Banner {self.id}"
 
 
 class EshopBanner(models.Model):
@@ -1250,6 +1285,7 @@ class EshopBanner(models.Model):
         ("mobile", "Mobile Only"),
         ("desktop", "Desktop Only"),
     ]
+    LINK_TYPE_CHOICES = BannerImage.LINK_TYPE_CHOICES
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to="eshop_banner/")
@@ -1260,7 +1296,18 @@ class EshopBanner(models.Model):
         help_text="Optimized image for mobile devices",
     )
     title = models.CharField(max_length=255, blank=True, null=True)
-    link = models.CharField(max_length=255, blank=True, null=True)
+    link = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Use a full URL or app path. Internal links open inside the app.",
+    )
+    link_type = models.CharField(
+        max_length=10,
+        choices=LINK_TYPE_CHOICES,
+        default="internal",
+        help_text="Internal opens supported AdsyClub URLs inside the app. External opens in browser.",
+    )
     device_type = models.CharField(
         max_length=10,
         choices=DEVICE_CHOICES,

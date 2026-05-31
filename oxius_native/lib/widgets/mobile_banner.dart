@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../services/deep_link_service.dart';
 import '../services/eshop_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
@@ -159,9 +161,46 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       _previousSlide(); // Swipe right = previous slide
     } else if (swipeDiff < -minSwipeDistance) {
       _nextSlide(); // Swipe left = next slide
+    } else {
+      _openCurrentBanner();
     }
 
     _resetAutoplay();
+  }
+
+  Future<void> _openCurrentBanner() async {
+    if (_banners.isEmpty || _currentSlide >= _banners.length) return;
+    final banner = _banners[_currentSlide];
+    final target = (banner['link'] ??
+            banner['target'] ??
+            banner['url'] ??
+            banner['href'] ??
+            '')
+        .toString()
+        .trim();
+    if (target.isEmpty) return;
+
+    final linkType = (banner['link_type'] ??
+            banner['linkType'] ??
+            banner['open_type'] ??
+            'internal')
+        .toString()
+        .trim()
+        .toLowerCase();
+
+    if (linkType == 'external') {
+      final parsed = Uri.tryParse(target);
+      final externalUri = parsed?.hasScheme == true
+          ? parsed!
+          : Uri.tryParse(
+              target.startsWith('http') ? target : 'https://$target');
+      if (externalUri != null) {
+        await launchUrl(externalUri, mode: LaunchMode.externalApplication);
+      }
+      return;
+    }
+
+    await DeepLinkService.instance.openInternalLink(target);
   }
 
   @override

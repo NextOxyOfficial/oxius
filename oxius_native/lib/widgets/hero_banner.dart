@@ -6,6 +6,7 @@ import '../services/news_service.dart';
 import '../services/translation_service.dart';
 import '../services/notification_service.dart';
 import '../services/user_state_service.dart';
+import '../services/deep_link_service.dart';
 import '../models/news_models.dart';
 import '../config/app_config.dart';
 import '../screens/eshop_screen.dart';
@@ -650,13 +651,15 @@ class _HeroBannerState extends State<HeroBanner> {
                 final rawImageUrl = banner['image'] ?? '';
                 final imageUrl = AppConfig.getAbsoluteUrl(rawImageUrl);
                 final target = _bannerTarget(banner);
+                final linkType = _bannerLinkType(banner);
 
                 print('🖼️ Loading banner image: $imageUrl');
 
                 return GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap:
-                      target == null ? null : () => _openBannerTarget(target),
+                  onTap: target == null
+                      ? null
+                      : () => _openBannerTarget(target, linkType: linkType),
                   child: Container(
                     width: double.infinity,
                     child: Image.network(
@@ -739,14 +742,47 @@ class _HeroBannerState extends State<HeroBanner> {
   }
 
   String? _bannerTarget(Map<String, dynamic> banner) {
-    final raw = (banner['link'] ?? banner['target'] ?? banner['url'] ?? '')
+    final raw = (banner['link'] ??
+            banner['target'] ??
+            banner['url'] ??
+            banner['href'] ??
+            '')
         .toString()
         .trim();
     return raw.isEmpty ? null : raw;
   }
 
-  Future<void> _openBannerTarget(String target) async {
+  String _bannerLinkType(Map<String, dynamic> banner) {
+    final raw =
+        (banner['link_type'] ?? banner['linkType'] ?? banner['open_type'] ?? '')
+            .toString()
+            .trim()
+            .toLowerCase();
+    return raw == 'external' ? 'external' : 'internal';
+  }
+
+  Future<void> _openBannerTarget(
+    String target, {
+    String linkType = 'internal',
+  }) async {
     final parsed = Uri.tryParse(target);
+    final forceExternal = linkType == 'external';
+    if (forceExternal) {
+      final externalUri = parsed?.hasScheme == true
+          ? parsed!
+          : Uri.tryParse(
+              target.startsWith('http') ? target : 'https://$target');
+      if (externalUri != null) {
+        await launchUrl(externalUri, mode: LaunchMode.externalApplication);
+      }
+      return;
+    }
+
+    if (linkType == 'internal') {
+      await DeepLinkService.instance.openInternalLink(target);
+      return;
+    }
+
     if (parsed != null && parsed.hasScheme) {
       final isAdsyclub =
           parsed.host == 'adsyclub.com' || parsed.host == 'www.adsyclub.com';

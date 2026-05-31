@@ -278,7 +278,9 @@ class AdsyConnectService {
       } else if (response.statusCode == 403) {
         throw Exception('Permission denied');
       } else {
-        throw Exception('Failed to send message: ${response.statusCode}');
+        throw Exception(
+          'Failed to send message: ${response.statusCode} - ${response.body}',
+        );
       }
     } on http.ClientException {
       throw Exception('Connection error');
@@ -365,7 +367,9 @@ class AdsyConnectService {
       } else if (response.statusCode == 413) {
         throw Exception('File too large');
       } else {
-        throw Exception('Failed to send media: ${response.statusCode}');
+        throw Exception(
+          'Failed to send media: ${response.statusCode} - ${response.body}',
+        );
       }
     } on http.ClientException {
       throw Exception('Connection error');
@@ -457,10 +461,15 @@ class AdsyConnectService {
   static Future<void> blockUser(String chatroomId) async {
     try {
       final headers = await _getHeaders();
-      await http.post(
+      final response = await http.post(
         Uri.parse('$baseUrl/chatrooms/$chatroomId/block/'),
         headers: headers,
       );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception(
+          'Failed to block user: ${response.statusCode} - ${response.body}',
+        );
+      }
     } catch (e) {
       print('Error blocking user: $e');
       rethrow;
@@ -471,10 +480,15 @@ class AdsyConnectService {
   static Future<void> unblockUser(String chatroomId) async {
     try {
       final headers = await _getHeaders();
-      await http.post(
+      final response = await http.post(
         Uri.parse('$baseUrl/chatrooms/$chatroomId/unblock/'),
         headers: headers,
       );
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw Exception(
+          'Failed to unblock user: ${response.statusCode} - ${response.body}',
+        );
+      }
     } catch (e) {
       print('Error unblocking user: $e');
       rethrow;

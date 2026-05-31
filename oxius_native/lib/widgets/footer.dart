@@ -22,6 +22,9 @@ class AppFooter extends StatefulWidget {
 
 class _AppFooterState extends State<AppFooter>
     with AutomaticKeepAliveClientMixin {
+  static const String _supportEmail = 'support@adsyclub.com';
+  static const String _supportPhone = '+8801896144067';
+
   Map<String, dynamic>? logoData;
   List<dynamic> footerBanners = [];
   bool isLoading = true;
@@ -185,6 +188,9 @@ class _AppFooterState extends State<AppFooter>
             // Quick links
             _buildNavigationSection(context, isMobile),
             const SizedBox(height: 12),
+            // Support contact
+            _buildSupportContactSection(context, isMobile),
+            const SizedBox(height: 12),
             // Payment methods
             _buildAppPaymentSection(context, isMobile),
             const SizedBox(height: 10),
@@ -219,7 +225,7 @@ class _AppFooterState extends State<AppFooter>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'আয় করুন • সংযুক্ত হন • সেবা খুঁজুন',
+            'জয়েন হন • আয় করুন • সেবা খুঁজুন',
             style: AppFonts.roboto(
               fontSize: 13,
               color: Colors.grey.shade500,
@@ -285,6 +291,80 @@ class _AppFooterState extends State<AppFooter>
       constraints: const BoxConstraints(maxWidth: 1000),
       child: Center(
         child: _buildPaymentSection(context, isMobile),
+      ),
+    );
+  }
+
+  Widget _buildSupportContactSection(BuildContext context, bool isMobile) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _buildSupportChip(
+            icon: Icons.phone_rounded,
+            label: _supportPhone,
+            color: const Color(0xFF10B981),
+            onTap: () => UrlLauncherUtils.launchExternalUrl(
+              'tel:$_supportPhone',
+            ),
+          ),
+          _buildSupportChip(
+            icon: Icons.email_rounded,
+            label: _supportEmail,
+            color: const Color(0xFF0EA5E9),
+            onTap: () => UrlLauncherUtils.launchExternalUrl(
+              'mailto:$_supportEmail',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSupportChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.78),
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: color.withValues(alpha: 0.22)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.035),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 7),
+              Text(
+                label,
+                style: AppFonts.roboto(
+                  fontSize: 12,
+                  color: const Color(0xFF334155),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -492,7 +572,7 @@ class _AppFooterState extends State<AppFooter>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'তৈরি করেছে ❤️ Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
+            'Developed with ❤️ by Lyricz Softwares & Technology Limited © ${DateTime.now().year}',
             style: AppFonts.roboto(
               fontSize: 13,
               color: Colors.grey.shade400,

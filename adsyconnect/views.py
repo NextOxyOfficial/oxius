@@ -643,6 +643,25 @@ def send_call_status(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+def _sync_blocked_chatrooms(blocker, blocked, *, is_blocked):
+    chatrooms = ChatRoom.objects.filter(
+        Q(user1=blocker, user2=blocked) | Q(user1=blocked, user2=blocker)
+    )
+    if is_blocked:
+        chatrooms.update(
+            is_blocked=True,
+            blocked_by=blocker,
+            blocked_at=timezone.now(),
+        )
+        return
+
+    chatrooms.filter(blocked_by=blocker).update(
+        is_blocked=False,
+        blocked_by=None,
+        blocked_at=None,
+    )
+
+
 class ChatRoomViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing chat rooms
@@ -698,6 +717,11 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
                 {'error': 'User not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+        block = BlockedUser.objects.filter(
+            Q(blocker=request.user, blocked=other_user) |
+            Q(blocker=other_user, blocked=request.user)
+        ).first()
         
         # Get or create chat room (ensure no duplicates)
         chatroom = ChatRoom.objects.filter(
@@ -709,6 +733,19 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             chatroom = ChatRoom.objects.create(
                 user1=request.user,
                 user2=other_user
+            )
+
+        if block:
+            chatroom.is_blocked = True
+            chatroom.blocked_by = block.blocker
+            chatroom.blocked_at = block.created_at
+            chatroom.save(
+                update_fields=[
+                    'is_blocked',
+                    'blocked_by',
+                    'blocked_at',
+                    'updated_at',
+                ]
             )
         
         serializer = self.get_serializer(chatroom)
@@ -767,6 +804,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         chatroom.blocked_by = request.user
         chatroom.blocked_at = timezone.now()
         chatroom.save()
+        _sync_blocked_chatrooms(request.user, other_user, is_blocked=True)
         
         return Response({'status': 'user blocked'})
     
@@ -787,6 +825,7 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         chatroom.blocked_by = None
         chatroom.blocked_at = None
         chatroom.save()
+        _sync_blocked_chatrooms(request.user, other_user, is_blocked=False)
         
         return Response({'status': 'user unblocked'})
 
@@ -988,6 +1027,11 @@ class BlockedUserViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Block a user and notify admin (Apple App Store Guideline 1.2)"""
         instance = serializer.save(blocker=self.request.user)
+        _sync_blocked_chatrooms(
+            self.request.user,
+            instance.blocked,
+            is_blocked=True,
+        )
         try:
             from base.email_service import notify_admin_user_blocked
             notify_admin_user_blocked(
@@ -1013,6 +1057,15 @@ class BlockedUserViewSet(viewsets.ModelViewSet):
             blocker=request.user,
             blocked_id=blocked_user_id
         ).delete()
+        try:
+            blocked_user = User.objects.get(id=blocked_user_id)
+            _sync_blocked_chatrooms(
+                request.user,
+                blocked_user,
+                is_blocked=False,
+            )
+        except User.DoesNotExist:
+            pass
         
         return Response({'status': 'user unblocked'})
 

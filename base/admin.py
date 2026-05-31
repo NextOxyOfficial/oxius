@@ -64,6 +64,7 @@ class ProductSlotPackageAdmin(admin.ModelAdmin):
 class EshopBannerAdmin(admin.ModelAdmin):
     list_display = (
         "title",
+        "link_type",
         "device_type",
         "is_active",
         "order",
@@ -71,15 +72,25 @@ class EshopBannerAdmin(admin.ModelAdmin):
         "mobile_image_preview",
         "created_at",
     )
-    list_filter = ("device_type", "is_active", "created_at")
+    list_filter = ("link_type", "device_type", "is_active", "created_at")
     search_fields = ("title", "link")
     list_editable = ("is_active", "order", "device_type")
     ordering = ("order", "-created_at")
+    radio_fields = {"link_type": admin.HORIZONTAL}
 
     fieldsets = (
         (
             "Basic Information",
-            {"fields": ("title", "link", "device_type", "is_active", "order")},
+            {
+                "fields": (
+                    "title",
+                    "link_type",
+                    "link",
+                    "device_type",
+                    "is_active",
+                    "order",
+                )
+            },
         ),
         (
             "Images",
@@ -1514,12 +1525,18 @@ class OrderAdmin(admin.ModelAdmin):
 admin.site.register(Order, OrderAdmin)
 @admin.register(BannerImage)
 class BannerImageAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'id')
+    list_display = ("__str__", "link_type", "id")
+    list_filter = ("link_type", "created_at")
+    search_fields = ("title", "link")
+    radio_fields = {"link_type": admin.HORIZONTAL}
 
 
 @admin.register(ShopBannerImage)
 class ShopBannerImageAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'id')
+    list_display = ("__str__", "link_type", "id")
+    list_filter = ("link_type", "created_at")
+    search_fields = ("title", "link")
+    radio_fields = {"link_type": admin.HORIZONTAL}
 
 
 @admin.register(ProductBenefit)

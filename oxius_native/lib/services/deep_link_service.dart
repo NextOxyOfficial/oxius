@@ -53,6 +53,21 @@ class DeepLinkService {
     _initialized = false;
   }
 
+  Future<void> openInternalLink(String link) async {
+    final trimmed = link.trim();
+    if (trimmed.isEmpty) return;
+
+    final parsed = Uri.tryParse(trimmed);
+    if (parsed != null && parsed.hasScheme) {
+      await _handleUri(parsed);
+      return;
+    }
+
+    final path = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    final internalUri = Uri.parse('https://adsyclub.com$path');
+    await _handleUri(internalUri);
+  }
+
   Future<void> _handleUri(Uri uri) async {
     final host = uri.host.toLowerCase();
     final isWebLink = uri.scheme == 'https' &&

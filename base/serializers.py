@@ -674,6 +674,7 @@ class EshopBannerSerializer(serializers.ModelSerializer):
             "mobile_image_url",
             "title",
             "link",
+            "link_type",
             "device_type",
             "is_active",
             "order",
@@ -706,7 +707,7 @@ class MobileBannerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EshopBanner
-        fields = ["id", "image", "title", "link", "order"]
+        fields = ["id", "image", "title", "link", "link_type", "order"]
 
     def get_image(self, obj):
         # Return mobile-optimized image if available, otherwise fallback to regular image

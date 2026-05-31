@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from .models import (
-    ChatRoom, Message, MessageReport, 
+    ChatRoom, Message, MessageReport,
     BlockedUser, TypingStatus, OnlineStatus
 )
 
@@ -102,6 +103,10 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         message_type = data.get('message_type')
         content = data.get('content')
         media_file = data.get('media_file')
+        request = self.context.get('request')
+        sender = getattr(request, 'user', None)
+        receiver = data.get('receiver')
+        chatroom = data.get('chatroom')
         
         # Validate based on message type
         if message_type == 'text' and not content:
@@ -109,6 +114,17 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         
         if message_type in ['image', 'video', 'document', 'voice'] and not media_file:
             raise serializers.ValidationError(f"{message_type} messages must have a media file")
+
+        if sender and receiver and chatroom:
+            is_chat_blocked = bool(chatroom.is_blocked)
+            is_user_blocked = BlockedUser.objects.filter(
+                Q(blocker=sender, blocked=receiver) |
+                Q(blocker=receiver, blocked=sender)
+            ).exists()
+            if is_chat_blocked or is_user_blocked:
+                raise serializers.ValidationError(
+                    "Messaging is disabled because one of the users has blocked this conversation."
+                )
         
         return data
     

@@ -5301,19 +5301,22 @@ def get_banners(request):
                 "id": 1,
                 "image_url": f"{request.build_absolute_uri('/static/')}images/banner1.jpg",
                 "title": "Welcome to AdsyClub",
-                "subtitle": "Your Social Business Network"
+                "subtitle": "Your Social Business Network",
+                "link_type": "internal",
             },
             {
                 "id": 2,
                 "image_url": f"{request.build_absolute_uri('/static/')}images/banner2.jpg", 
                 "title": "Earn Money Online",
-                "subtitle": "Start your journey today"
+                "subtitle": "Start your journey today",
+                "link_type": "internal",
             },
             {
                 "id": 3,
                 "image_url": f"{request.build_absolute_uri('/static/')}images/banner3.jpg",
                 "title": "E-Learning Platform", 
-                "subtitle": "Learn new skills"
+                "subtitle": "Learn new skills",
+                "link_type": "internal",
             }
         ]
         

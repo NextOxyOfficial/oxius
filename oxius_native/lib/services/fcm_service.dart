@@ -1078,6 +1078,12 @@ class FCMService {
         _lifecycleObserverInstalled = true;
       }
 
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      }
+
       // Request notification permissions with more aggressive settings
       NotificationSettings settings =
           await _firebaseMessaging.requestPermission(

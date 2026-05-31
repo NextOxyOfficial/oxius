@@ -116,6 +116,28 @@
         </div>
 
         <div
+          class="mb-7 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-700 dark:text-gray-200"
+        >
+          <a
+            :href="`tel:${supportPhone}`"
+            class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2 font-semibold shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:text-emerald-300"
+          >
+            <UIcon name="i-heroicons-phone" class="h-4 w-4 text-emerald-500" />
+            <span>{{ supportPhone }}</span>
+          </a>
+          <a
+            :href="`mailto:${supportEmail}`"
+            class="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white/80 px-4 py-2 font-semibold shadow-sm transition hover:border-sky-400 hover:text-sky-600 dark:border-slate-700 dark:bg-slate-800/80 dark:hover:text-sky-300"
+          >
+            <UIcon
+              name="i-material-symbols-mail-outline-rounded"
+              class="h-4 w-4 text-sky-500"
+            />
+            <span>{{ supportEmail }}</span>
+          </a>
+        </div>
+
+        <div
           class="flex flex-col sm:flex-row justify-between gap-5 lg:gap-12 sm:items-center px-[7px] max-w-5xl mx-auto dark:text-gray-300"
         >
           <div class="flex flex-col gap-4">
@@ -418,6 +440,8 @@ const toggleStatus = ref("");
 const { user } = useAuth();
 const { unreadCount, fetchUnreadCount } = useNotifications(); // Import useNotifications
 const toast = useToast();
+const supportEmail = "support@adsyclub.com";
+const supportPhone = "+8801896144067";
 
 // Loading state for buttons
 const loadingButtons = ref(new Set());
