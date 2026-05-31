@@ -173,86 +173,146 @@ class ChatMessageInput extends StatelessWidget {
 
   Widget _buildRecordingUI() {
     return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withOpacity(0.05),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+      decoration: const BoxDecoration(
+        color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: const Color(0xFFEF4444).withOpacity(0.3),
+            color: Color(0xFFE5E7EB),
             width: 1,
           ),
         ),
       ),
       child: SafeArea(
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.close_rounded, size: 22),
-              color: const Color(0xFFEF4444),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              onPressed: onCancelRecording,
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 12,
-              height: 12,
-              decoration: const BoxDecoration(
-                color: Color(0xFFEF4444),
-                shape: BoxShape.circle,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 56),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF1F2),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFFECACA)),
+          ),
+          child: Row(
+            children: [
+              _recordingRoundButton(
+                icon: Icons.close_rounded,
+                color: const Color(0xFFEF4444),
+                backgroundColor: Colors.white,
+                onTap: onCancelRecording,
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              _fmt(recordDuration),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFEF4444),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Container(
-                height: 30,
-                alignment: Alignment.center,
+              const SizedBox(width: 10),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: const Color(0xFFFECACA)),
+                ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    20,
-                    (i) => Container(
-                      width: 3,
-                      height: (i % 3 + 1) * 8.0,
-                      margin: const EdgeInsets.symmetric(horizontal: 1),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444).withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(2),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
                       ),
                     ),
+                    const SizedBox(width: 7),
+                    Text(
+                      _fmt(recordDuration),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFB91C1C),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  height: 42,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.78),
+                    borderRadius: BorderRadius.circular(14),
                   ),
+                  child: _buildRecordingWaveform(),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF10B981), Color(0xFF059669)],
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.send_rounded, size: 20),
+              const SizedBox(width: 10),
+              _recordingRoundButton(
+                icon: Icons.send_rounded,
                 color: Colors.white,
-                padding: EdgeInsets.zero,
-                onPressed: onStopRecording,
+                backgroundColor: const Color(0xFF10B981),
+                onTap: onStopRecording,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _recordingRoundButton({
+    required IconData icon,
+    required Color color,
+    required Color backgroundColor,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: backgroundColor,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: Icon(icon, size: 21, color: color),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordingWaveform() {
+    const heights = <double>[
+      12,
+      22,
+      16,
+      28,
+      18,
+      34,
+      14,
+      26,
+      20,
+      32,
+      15,
+      24,
+      18,
+      30,
+      13,
+      21,
+    ];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (final height in heights)
+          Container(
+            width: 3,
+            height: height,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFB7185),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+      ],
     );
   }
 

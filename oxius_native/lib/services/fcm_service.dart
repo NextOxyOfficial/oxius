@@ -2577,15 +2577,21 @@ class FCMService {
         }
 
         _log('   → Incoming call from: $callerName, channel: $channelName');
-        unawaited(_showNativeIncomingCallOrFallback(
-          navigator: navigator,
-          data: data,
-          callerId: callerId,
-          callerName: callerName,
-          callerAvatar: callerAvatar,
-          channelName: channelName,
-          callType: callType,
-        ));
+        final lifecycleState = WidgetsBinding.instance.lifecycleState;
+        if (lifecycleState == null ||
+            lifecycleState == AppLifecycleState.resumed) {
+          _navigateToIncomingCallScreen(navigator, data);
+        } else {
+          unawaited(_showNativeIncomingCallOrFallback(
+            navigator: navigator,
+            data: data,
+            callerId: callerId,
+            callerName: callerName,
+            callerAvatar: callerAvatar,
+            channelName: channelName,
+            callType: callType,
+          ));
+        }
       }
     }
     // ============================================

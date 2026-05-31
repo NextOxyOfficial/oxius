@@ -361,6 +361,14 @@ IOS_APP_TEAM_ID = os.getenv("IOS_APP_TEAM_ID", APNS_TEAM_ID)
 APNS_VOIP_TOPIC = os.getenv("APNS_VOIP_TOPIC", "")
 APNS_ENVIRONMENT = os.getenv("APNS_ENVIRONMENT", "production")
 
+# Agora real-time audio/video call settings.
+# If AGORA_APP_CERTIFICATE is empty the app continues to use Agora's no-token
+# mode. When a certificate is configured, native clients must request scoped
+# RTC tokens from the backend before joining a channel.
+AGORA_APP_ID = os.getenv("AGORA_APP_ID", "9eba1a50633041d08dbe75b0fde2ed8a")
+AGORA_APP_CERTIFICATE = os.getenv("AGORA_APP_CERTIFICATE", "")
+AGORA_TOKEN_EXPIRE_SECONDS = int(os.getenv("AGORA_TOKEN_EXPIRE_SECONDS", "3600"))
+
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  # You can change this to your Redis URL
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'

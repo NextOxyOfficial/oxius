@@ -503,8 +503,17 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             final result = await showMenu<String>(
               context: ctx,
               position: position,
+              color: Colors.white,
+              elevation: 14,
+              shadowColor: Colors.black.withValues(alpha: 0.16),
+              surfaceTintColor: Colors.white,
+              clipBehavior: Clip.antiAlias,
+              constraints: const BoxConstraints(
+                minWidth: 196,
+                maxWidth: 224,
+              ),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(18)),
               items: [
                 _menuItem('search', Icons.search_rounded, 'Search messages',
                     const Color(0xFF3B82F6)),
@@ -537,16 +546,30 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   ) {
     return PopupMenuItem(
       value: value,
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: iconColor),
-          const SizedBox(width: 12),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade800,
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 17, color: iconColor),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+              ),
             ),
           ),
         ],

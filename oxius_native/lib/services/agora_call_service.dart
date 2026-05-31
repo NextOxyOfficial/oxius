@@ -33,6 +33,8 @@ class AgoraCallService {
   static bool _isInCall = false;
   static bool _isCallScreenVisible = false;
   static String? _joinedChannelName;
+  static int? _joinedUid;
+  static String? _joinedToken;
   static String? _lastError;
   static String? get lastError => _lastError;
   static String? _lastNotificationError;
@@ -88,6 +90,8 @@ class AgoraCallService {
     _isInCall = value;
     if (!value) {
       _joinedChannelName = null;
+      _joinedUid = null;
+      _joinedToken = null;
       _activeCallInfo = null;
     }
     _schedulePersistedCallStateSync();
@@ -337,6 +341,13 @@ class AgoraCallService {
               } catch (_) {}
             }
           },
+          onTokenPrivilegeWillExpire: (connection, _) {
+            final channelName = connection.channelId;
+            final uid = connection.localUid ?? _joinedUid;
+            if (channelName != null && uid != null) {
+              unawaited(_renewAgoraToken(channelName: channelName, uid: uid));
+            }
+          },
           onError: (error, message) {
             _lastError = _friendlyAgoraError(error, message);
             Telemetry.event('agora.error',
@@ -394,8 +405,13 @@ class AgoraCallService {
         await engine.leaveChannel();
       }
 
+      final agoraToken = await _fetchAgoraToken(
+        channelName: channelName,
+        uid: uid,
+      );
+
       await engine.joinChannel(
-        token: '',
+        token: agoraToken,
         channelId: channelName,
         uid: uid,
         options: ChannelMediaOptions(
@@ -408,6 +424,8 @@ class AgoraCallService {
       );
 
       _joinedChannelName = channelName;
+      _joinedUid = uid;
+      _joinedToken = agoraToken;
       _log('✅ Successfully joined channel: $channelName');
       return true;
     } catch (error) {
@@ -440,6 +458,8 @@ class AgoraCallService {
     } finally {
       _engine = null;
       _joinedChannelName = null;
+      _joinedUid = null;
+      _joinedToken = null;
       if (_activeCallInfo != null) {
         _activeCallInfo!['remoteUid'] = null;
         _schedulePersistedCallStateSync();
@@ -472,6 +492,8 @@ class AgoraCallService {
     } finally {
       _engine = null;
       _joinedChannelName = null;
+      _joinedUid = null;
+      _joinedToken = null;
       _activeCallInfo = null;
       _isInCall = false;
       unawaited(clearPersistedCallState());
@@ -579,6 +601,81 @@ class AgoraCallService {
     } catch (error) {
       _lastNotificationError = error.toString();
       return false;
+    }
+  }
+
+  static Future<String> _fetchAgoraToken({
+    required String channelName,
+    required int uid,
+  }) async {
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http
+          .post(
+            Uri.parse('${ApiService.baseUrl}/adsyconnect/agora-token/'),
+            headers: headers,
+            body: json.encode({
+              'channel_name': channelName,
+              'uid': uid,
+              'role': 'publisher',
+              'call_id': _activeCallInfo?['callId'],
+            }),
+          )
+          .timeout(_requestTimeout);
+
+      if (response.statusCode == 404) {
+        final contentType = response.headers['content-type'] ?? '';
+        if (!contentType.toLowerCase().contains('application/json')) {
+          return '';
+        }
+      }
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        _lastError = _friendlyHttpError(response);
+        throw StateError('agora_token_request_failed:${response.statusCode}');
+      }
+
+      final decoded = json.decode(response.body);
+      if (decoded is! Map<String, dynamic>) {
+        throw StateError('invalid_agora_token_response');
+      }
+
+      final tokenRequired = decoded['token_required'] == true ||
+          decoded['token_required']?.toString().toLowerCase() == 'true';
+      final tokenAppId = decoded['app_id']?.toString().trim();
+      if (tokenAppId != null && tokenAppId.isNotEmpty && tokenAppId != appId) {
+        _lastError =
+            'Call configuration mismatch. Please update the app and try again.';
+        throw StateError('agora_app_id_mismatch');
+      }
+      final token = decoded['token']?.toString() ?? '';
+      if (tokenRequired && token.isEmpty) {
+        throw StateError('empty_agora_token');
+      }
+
+      return token;
+    } on TimeoutException {
+      _lastError = 'Call token request timed out. Please try again.';
+      rethrow;
+    }
+  }
+
+  static Future<void> _renewAgoraToken({
+    required String channelName,
+    required int uid,
+  }) async {
+    try {
+      final token = await _fetchAgoraToken(channelName: channelName, uid: uid);
+      if (token.isEmpty || token == _joinedToken) {
+        return;
+      }
+      await _engine?.renewToken(token);
+      _joinedToken = token;
+    } catch (error) {
+      _lastError = 'Call session expired. Please reconnect.';
+      try {
+        _engineErrorController.add(_lastError!);
+      } catch (_) {}
     }
   }
 

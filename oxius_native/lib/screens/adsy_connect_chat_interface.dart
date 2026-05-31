@@ -1214,6 +1214,15 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     );
 
     if (existingIndex == -1) {
+      final pendingIndex = _findEquivalentPendingMessageIndex(message);
+      if (pendingIndex != -1) {
+        final merged = Map<String, dynamic>.from(_messages[pendingIndex]);
+        merged.addAll(message);
+        merged['pending'] = false;
+        _messages[pendingIndex] = merged;
+        return;
+      }
+
       _messages.add(message);
       return;
     }
@@ -1221,6 +1230,29 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     final merged = Map<String, dynamic>.from(_messages[existingIndex]);
     merged.addAll(message);
     _messages[existingIndex] = merged;
+  }
+
+  int _findEquivalentPendingMessageIndex(Map<String, dynamic> message) {
+    final id = message['id']?.toString() ?? '';
+    if (id.startsWith('temp_') || message['isMe'] != true) {
+      return -1;
+    }
+
+    final messageText = (message['message'] ?? '').toString().trim();
+    final messageType = (message['type'] ?? 'text').toString();
+    if (messageText.isEmpty) {
+      return -1;
+    }
+
+    return _messages.indexWhere((existing) {
+      final existingId = existing['id']?.toString() ?? '';
+      if (!existingId.startsWith('temp_') || existing['pending'] != true) {
+        return false;
+      }
+      return existing['isMe'] == true &&
+          (existing['type'] ?? 'text').toString() == messageType &&
+          (existing['message'] ?? '').toString().trim() == messageText;
+    });
   }
 
   void _applyReadReceipt(Set<String> messageIds, {DateTime? readAt}) {
@@ -1248,6 +1280,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   Future<void> _sendMessage() async {
     if (_isChatBlocked) return;
+    if (_isSendingMessage) return;
     if (_messageController.text.trim().isEmpty) return;
 
     final messageText = _messageController.text.trim();
@@ -2533,7 +2566,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
-  void _handleMenuAction(String action) {
+  Future<void> _handleMenuAction(String action) async {
     switch (action) {
       case 'search':
         _openSearch();
@@ -2542,14 +2575,18 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _openUserProfile();
         break;
       case 'block':
-        // TODO: Show block confirmation
+        await Future<void>.delayed(const Duration(milliseconds: 140));
+        if (!mounted) return;
         _showBlockConfirmation();
         break;
       case 'unblock':
+        await Future<void>.delayed(const Duration(milliseconds: 140));
+        if (!mounted) return;
         _showUnblockConfirmation();
         break;
       case 'report':
-        // TODO: Show report dialog
+        await Future<void>.delayed(const Duration(milliseconds: 140));
+        if (!mounted) return;
         _showReportDialog();
         break;
     }
@@ -2610,102 +2647,153 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   }
 
   void _showBlockConfirmation() {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF59E0B).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.block_rounded,
-                  color: Color(0xFFF59E0B), size: 20),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Block User',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to block ${widget.userName}? You won\'t be able to message each other.',
-          style: const TextStyle(fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child:
-                Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Block user
-              _blockUser();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('Block'),
-          ),
-        ],
+      builder: (dialogContext) => _buildUserActionDialog(
+        context: dialogContext,
+        icon: Icons.block_rounded,
+        accentColor: const Color(0xFFF59E0B),
+        title: 'Block ${widget.userName}',
+        message:
+            'This conversation will be muted and you will not be able to message each other until you unblock this user.',
+        primaryLabel: 'Block user',
+        primaryIcon: Icons.block_rounded,
+        onPrimary: _blockUser,
       ),
     );
   }
 
   void _showUnblockConfirmation() {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.lock_open_rounded,
-                  color: Color(0xFF10B981), size: 20),
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Unblock User',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      builder: (dialogContext) => _buildUserActionDialog(
+        context: dialogContext,
+        icon: Icons.lock_open_rounded,
+        accentColor: const Color(0xFF10B981),
+        title: 'Unblock ${widget.userName}',
+        message:
+            'Messaging will be enabled again and this chat can continue normally.',
+        primaryLabel: 'Unblock',
+        primaryIcon: Icons.lock_open_rounded,
+        onPrimary: _unblockUser,
+      ),
+    );
+  }
+
+  Widget _buildUserActionDialog({
+    required BuildContext context,
+    required IconData icon,
+    required Color accentColor,
+    required String title,
+    required String message,
+    required String primaryLabel,
+    required IconData primaryIcon,
+    required Future<void> Function() onPrimary,
+  }) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.14),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
             ),
           ],
         ),
-        content: Text(
-          'Unblock ${widget.userName} to continue messaging.',
-          style: const TextStyle(fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child:
-                Text('Cancel', style: TextStyle(color: Colors.grey.shade600)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _unblockUser();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(icon, color: accentColor, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            child: const Text('Unblock'),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 22),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF374151),
+                      side: const BorderSide(color: Color(0xFFE5E7EB)),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onPrimary();
+                    },
+                    icon: Icon(primaryIcon, size: 17),
+                    label: Text(primaryLabel),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

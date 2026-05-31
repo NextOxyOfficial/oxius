@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.conf import settings
 from django.db.models import Q, Max
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -111,6 +112,69 @@ def _get_call_session_for_user(*, user, channel_name, call_id=None):
     if call_id:
         queryset = queryset.filter(id=call_id)
     return queryset.order_by('-started_at').first()
+
+
+def _to_int(value, default=0):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return default
+
+
+def _build_agora_rtc_token(*, channel_name, uid, role='publisher'):
+    app_id = str(getattr(settings, 'AGORA_APP_ID', '') or '').strip()
+    app_certificate = str(
+        getattr(settings, 'AGORA_APP_CERTIFICATE', '') or ''
+    ).strip()
+    expire_seconds = max(
+        60,
+        _to_int(getattr(settings, 'AGORA_TOKEN_EXPIRE_SECONDS', 3600), 3600),
+    )
+
+    if not app_id:
+        raise ValueError('AGORA_APP_ID is not configured')
+
+    if not app_certificate:
+        return {
+            'app_id': app_id,
+            'token': '',
+            'token_required': False,
+            'expires_at': None,
+        }
+
+    try:
+        from agora_token_builder.RtcTokenBuilder import (
+            Role_Publisher,
+            Role_Subscriber,
+            RtcTokenBuilder,
+        )
+    except ImportError as exc:
+        raise RuntimeError(
+            'agora-token-builder package is required when '
+            'AGORA_APP_CERTIFICATE is configured'
+        ) from exc
+
+    role_value = (
+        Role_Publisher
+        if str(role).lower() == 'publisher'
+        else Role_Subscriber
+    )
+    expires_at = int(time.time()) + expire_seconds
+    token = RtcTokenBuilder.buildTokenWithUid(
+        app_id,
+        app_certificate,
+        str(channel_name),
+        int(uid),
+        role_value,
+        expires_at,
+    )
+
+    return {
+        'app_id': app_id,
+        'token': token,
+        'token_required': True,
+        'expires_at': expires_at,
+    }
 
 
 def _send_call_data_message(*, target_user, payload):
@@ -335,6 +399,65 @@ def firebase_custom_token(request):
         token = token_bytes.decode('utf-8') if hasattr(token_bytes, 'decode') else str(token_bytes)
         return Response({'token': token, 'uid': uid})
     except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def agora_rtc_token(request):
+    """Return a scoped Agora RTC token for an active call channel.
+
+    The mobile app may run against Agora projects with token security disabled
+    during development. In that case this endpoint returns an empty token with
+    token_required=false so existing no-token channels continue to work.
+    """
+    try:
+        channel_name = request.data.get('channel_name')
+        uid = _to_int(request.data.get('uid'))
+        call_id = request.data.get('call_id')
+        role = request.data.get('role') or 'publisher'
+
+        if not channel_name or not uid:
+            return Response(
+                {'error': 'channel_name and uid are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not _is_valid_channel_name(channel_name):
+            return Response(
+                {'error': 'Invalid channel_name'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        call_session = _get_call_session_for_user(
+            user=request.user,
+            channel_name=str(channel_name),
+            call_id=call_id,
+        )
+        if call_session is None:
+            return Response(
+                {'error': 'Call session not found'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if call_session.status in CallSession.TERMINAL_STATUSES:
+            return Response(
+                {'error': 'Call session has ended'},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        token_data = _build_agora_rtc_token(
+            channel_name=channel_name,
+            uid=uid,
+            role=role,
+        )
+        return Response({
+            'success': True,
+            'call_id': str(call_session.id),
+            'channel_name': str(call_session.channel_name),
+            'uid': uid,
+            **token_data,
+        })
+    except Exception as e:
+        logger.exception('Agora token generation failed')
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
