@@ -26,8 +26,13 @@ class LinkifyText extends StatefulWidget {
 }
 
 class _LinkifyTextState extends State<LinkifyText> {
+  // The path portion accepts any non-whitespace character (`[^\s<]`) instead
+  // of a fixed ASCII allowlist. Adsyclub slugs are frequently Bengali (e.g.
+  // `/details/ঘরের-সৌন্দর্য-নকশা`), and the old ASCII-only class truncated the
+  // URL at the first Bengali character — so a chat-shared post/product link
+  // linkified to just `https://adsyclub.com/details/` and navigated nowhere.
   static final RegExp _urlRegex = RegExp(
-    r"((?:https?:\/\/)?(?:www\.)?(?:localhost|(?:\d{1,3}\.){3}\d{1,3}|[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+)(?::\d{2,5})?(?:\/[\w\-._~%!$&'()*+,;=:@\/?#\[\]]*)?)",
+    r"((?:https?:\/\/)?(?:www\.)?(?:localhost|(?:\d{1,3}\.){3}\d{1,3}|[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+)(?::\d{2,5})?(?:\/[^\s<]*)?)",
     caseSensitive: false,
   );
 

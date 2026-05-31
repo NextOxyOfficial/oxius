@@ -62,6 +62,8 @@ class _CallScreenState extends State<CallScreen>
   Timer? _durationTimer;
   Timer? _ringingTimer;
   Timer? _outgoingRingbackTimer;
+  Timer? _connectWatchdog;
+  bool _rejoinAttempted = false;
   DateTime? _callStartedAt;
   Duration _callDuration = Duration.zero;
   String? _statusOverlay;
@@ -217,6 +219,9 @@ class _CallScreenState extends State<CallScreen>
         setState(() {
           _callAccepted = true;
         });
+        // Both sides have now committed — if media doesn't connect shortly,
+        // self-heal with a one-shot re-join.
+        _startConnectWatchdog();
         return;
       }
 
@@ -272,6 +277,7 @@ class _CallScreenState extends State<CallScreen>
       if (!mounted) return;
       _ringingTimer?.cancel();
       _ringingTimer = null;
+      _cancelConnectWatchdog();
       _stopOutgoingRingback();
       setState(() {
         _remoteUid = remoteUid;
@@ -623,6 +629,9 @@ class _CallScreenState extends State<CallScreen>
       await _stopIncomingAlert();
       _engine = await AgoraCallService.initEngine(callType: widget.callType);
       await _joinChannel();
+      // We've accepted and joined — start the self-heal watchdog in case the
+      // caller's media doesn't reach us within the grace window.
+      _startConnectWatchdog();
     } catch (e) {
       _ringingTimer?.cancel();
       _ringingTimer = null;
@@ -724,6 +733,7 @@ class _CallScreenState extends State<CallScreen>
     _durationTimer = null;
     _ringingTimer?.cancel();
     _ringingTimer = null;
+    _cancelConnectWatchdog();
     _stopOutgoingRingback();
     if (mounted) {
       _popCallScreen();
@@ -744,6 +754,7 @@ class _CallScreenState extends State<CallScreen>
     _durationTimer = null;
     _ringingTimer?.cancel();
     _ringingTimer = null;
+    _cancelConnectWatchdog();
 
     unawaited(_stopIncomingAlert());
     unawaited(FCMService.dismissVisibleCallUi(channelName: widget.channelName));
@@ -812,6 +823,37 @@ class _CallScreenState extends State<CallScreen>
       return;
     }
     _showAdsyConnectInbox();
+  }
+
+  /// Self-heal watchdog: once a call is accepted by both sides, the media
+  /// should connect within a couple of seconds. If no remote peer has appeared
+  /// after a short grace period, our own channel join may have silently stalled
+  /// (a transient token/network hiccup). Re-join ONCE before the longer
+  /// "Could not connect" timeout gives up — this rescues calls that would
+  /// otherwise sit on "Connecting…" forever.
+  void _startConnectWatchdog() {
+    if (_rejoinAttempted) return;
+    _connectWatchdog?.cancel();
+    _connectWatchdog = Timer(const Duration(seconds: 9), () async {
+      if (!mounted ||
+          _didEndCall ||
+          _remoteUid != null ||
+          _rejoinAttempted) {
+        return;
+      }
+      _rejoinAttempted = true;
+      final ok = await AgoraCallService.rejoinChannel(
+        channelName: widget.channelName,
+        uid: _localUid,
+        callType: widget.callType,
+      );
+      debugPrint('🔁 Connect watchdog re-join attempted: $ok');
+    });
+  }
+
+  void _cancelConnectWatchdog() {
+    _connectWatchdog?.cancel();
+    _connectWatchdog = null;
   }
 
   void _startCallTimer({DateTime? connectedAt, bool syncGlobalState = true}) {
@@ -962,6 +1004,7 @@ class _CallScreenState extends State<CallScreen>
     _engineErrorSub?.cancel();
     _durationTimer?.cancel();
     _ringingTimer?.cancel();
+    _cancelConnectWatchdog();
     _stopOutgoingRingback();
     AgoraCallService.setCallScreenVisible(false);
 

@@ -405,7 +405,7 @@ class AgoraCallService {
         await engine.leaveChannel();
       }
 
-      final agoraToken = await _fetchAgoraToken(
+      final agoraToken = await _fetchAgoraTokenWithRetry(
         channelName: channelName,
         uid: uid,
       );
@@ -443,6 +443,60 @@ class AgoraCallService {
       } else {
         _lastError = 'Could not join the call. Please try again.';
       }
+      return false;
+    }
+  }
+
+  /// Self-heal re-join used by the CallScreen watchdog: when the call has been
+  /// accepted but no remote peer shows up within a few seconds, our own channel
+  /// join may have silently stalled (transient token/network hiccup). Leave the
+  /// current channel (keeping the engine) and join again with a fresh token,
+  /// without tearing the whole call down. Returns true on success.
+  static Future<bool> rejoinChannel({
+    required String channelName,
+    required int uid,
+    required String callType,
+  }) async {
+    final engine = _engine;
+    if (engine == null) {
+      // No live engine — fall back to a full join.
+      return joinChannel(channelName: channelName, uid: uid, callType: callType);
+    }
+
+    try {
+      final wantsVideo = callType == 'video';
+      try {
+        await engine.leaveChannel();
+      } catch (_) {
+        // Ignore — we may not have been fully in the channel.
+      }
+      _joinedChannelName = null;
+
+      final agoraToken = await _fetchAgoraTokenWithRetry(
+        channelName: channelName,
+        uid: uid,
+      );
+
+      await engine.joinChannel(
+        token: agoraToken,
+        channelId: channelName,
+        uid: uid,
+        options: ChannelMediaOptions(
+          autoSubscribeVideo: wantsVideo,
+          autoSubscribeAudio: true,
+          publishCameraTrack: wantsVideo,
+          publishMicrophoneTrack: true,
+          clientRoleType: ClientRoleType.clientRoleBroadcaster,
+        ),
+      );
+
+      _joinedChannelName = channelName;
+      _joinedUid = uid;
+      _joinedToken = agoraToken;
+      _log('🔁 Re-joined channel: $channelName');
+      return true;
+    } catch (error) {
+      _log('❌ Re-join failed for $channelName: $error');
       return false;
     }
   }
@@ -602,6 +656,41 @@ class AgoraCallService {
       _lastNotificationError = error.toString();
       return false;
     }
+  }
+
+  /// Fetch the Agora token, retrying a few times on transient failures.
+  ///
+  /// When a call is accepted, the callee may request its token a moment before
+  /// the backend CallSession is fully visible (replication/commit race), or a
+  /// brief network blip can drop the first request. Either way the raw fetch
+  /// throws and the join used to fail outright — leaving the other party stuck
+  /// on "Connecting…". A short bounded retry makes the join reliable regardless
+  /// of which screen each party is on. A 409 (call already ended) is terminal
+  /// and is NOT retried.
+  static Future<String> _fetchAgoraTokenWithRetry({
+    required String channelName,
+    required int uid,
+    int attempts = 3,
+  }) async {
+    Object? lastError;
+    for (var attempt = 0; attempt < attempts; attempt++) {
+      try {
+        return await _fetchAgoraToken(channelName: channelName, uid: uid);
+      } catch (error) {
+        lastError = error;
+        final raw = error.toString().toLowerCase();
+        // Don't retry when the call has genuinely ended.
+        if (raw.contains(':409') || raw.contains('mismatch')) {
+          rethrow;
+        }
+        if (attempt < attempts - 1) {
+          await Future<void>.delayed(
+            Duration(milliseconds: 400 * (attempt + 1)),
+          );
+        }
+      }
+    }
+    throw lastError ?? StateError('agora_token_unavailable');
   }
 
   static Future<String> _fetchAgoraToken({

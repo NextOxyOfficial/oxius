@@ -106,12 +106,24 @@ def _build_call_display_name(request, user):
 
 
 def _get_call_session_for_user(*, user, channel_name, call_id=None):
-    queryset = CallSession.objects.filter(channel_name=channel_name).filter(
+    # Any session on this channel where the requester is a participant.
+    base_qs = CallSession.objects.filter(channel_name=channel_name).filter(
         Q(caller=user) | Q(callee=user)
     )
+
+    # Prefer an exact call_id match when one is supplied, but DO NOT let a
+    # stale/mismatched call_id block a legitimate participant: if the id match
+    # finds nothing, fall back to the latest session on this channel. The
+    # client occasionally sends an outdated call_id (e.g. the incoming-call
+    # push and the WebSocket event carry different ids, or a previous call's id
+    # lingers in state). Without this fallback the token request 404s and the
+    # join silently fails — the other side just sees "Connecting…" forever.
     if call_id:
-        queryset = queryset.filter(id=call_id)
-    return queryset.order_by('-started_at').first()
+        session = base_qs.filter(id=call_id).order_by('-started_at').first()
+        if session is not None:
+            return session
+
+    return base_qs.order_by('-started_at').first()
 
 
 def _to_int(value, default=0):

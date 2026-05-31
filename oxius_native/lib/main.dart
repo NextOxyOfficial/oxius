@@ -478,6 +478,22 @@ class MyApp extends StatelessWidget {
               Telemetry.event('nav.unknown_route', tags: {
                 'name': settings.name ?? '<null>',
               });
+
+              // A raw web/deep-link route can still reach here if Flutter's
+              // built-in deep linking pushed it (e.g.
+              // "/details/<slug>?fbclid=...&brid=...") and its first segment
+              // is not in the known deep-link prefix allowlist. The correct
+              // page is already being opened underneath by app_links, so
+              // showing a dead-end "Page not found" on top of it is pure
+              // noise. Redirect it through DeepLinkService instead — this
+              // makes the "Page not found" flash impossible for any adsyclub
+              // web link, regardless of the manifest deep-linking flag.
+              final redirect =
+                  _buildAdsyWebDeepLinkRoute(settings, force: true);
+              if (redirect != null) {
+                return redirect;
+              }
+
               return MaterialPageRoute(
                 settings: settings,
                 builder: (_) => Scaffold(
@@ -501,7 +517,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Route<dynamic>? _buildAdsyWebDeepLinkRoute(RouteSettings settings) {
+Route<dynamic>? _buildAdsyWebDeepLinkRoute(RouteSettings settings,
+    {bool force = false}) {
   final routeName = settings.name;
   if (routeName == null || routeName.isEmpty || routeName == '/') {
     return null;
@@ -577,7 +594,11 @@ Route<dynamic>? _buildAdsyWebDeepLinkRoute(RouteSettings settings) {
     'rideshare',
   };
 
-  if (!deepLinkPrefixes.contains(segments.first.toLowerCase())) {
+  // `force` is used by `onUnknownRoute` as a last-resort safety net: any
+  // unregistered web-style path (host empty or adsyclub) is redirected
+  // through DeepLinkService instead of dead-ending on "Page not found",
+  // even when its first segment is not in the known prefix allowlist.
+  if (!force && !deepLinkPrefixes.contains(segments.first.toLowerCase())) {
     return null;
   }
 
