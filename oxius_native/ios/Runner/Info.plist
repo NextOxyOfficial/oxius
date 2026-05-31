@@ -90,5 +90,10 @@
 			</array>
 		</dict>
 	</array>
+	<!-- Disable Flutter's built-in automatic deep linking. Links are handled
+	     exclusively by the app_links package (DeepLinkService), preventing a
+	     duplicate raw route push that renders a "Page not found" screen. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 </dict>
 </plist>

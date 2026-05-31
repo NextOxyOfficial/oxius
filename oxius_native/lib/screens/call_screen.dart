@@ -372,11 +372,24 @@ class _CallScreenState extends State<CallScreen>
       // Ignore ringtone failures and still try vibration.
     }
 
+    // Race-condition guard: _stopIncomingAlert() may have been called while we
+    // were awaiting playRingtone(). In that case stop() ran before the ringtone
+    // actually started, so the ringtone would loop forever. Stop it now.
+    if (!_incomingAlertActive) {
+      try {
+        await _ringtonePlayer.stop();
+      } catch (_) {}
+      return;
+    }
+
     try {
       if (await Vibration.hasVibrator()) {
+        if (!_incomingAlertActive) return; // stop requested during vibration check
         if (await Vibration.hasCustomVibrationsSupport()) {
+          if (!_incomingAlertActive) return;
           await Vibration.vibrate(pattern: const [0, 1200, 800], repeat: 0);
         } else {
+          if (!_incomingAlertActive) return;
           await Vibration.vibrate(duration: 1200);
         }
       }
@@ -386,10 +399,10 @@ class _CallScreenState extends State<CallScreen>
   }
 
   Future<void> _stopIncomingAlert() async {
-    if (!_incomingAlertActive) {
-      return;
-    }
-
+    // Always stop unconditionally — calling stop() when nothing is playing is
+    // safe and idempotent. Removing the early-return guard ensures the stop
+    // call always reaches native audio even when _incomingAlertActive is false
+    // (e.g. called before _startIncomingAlert completed its first await).
     _incomingAlertActive = false;
 
     try {
@@ -602,6 +615,12 @@ class _CallScreenState extends State<CallScreen>
 
     // 5. Now initialise the engine and join the channel.
     try {
+      // Make sure the ringtone/vibration audio stream is fully released BEFORE
+      // Agora claims the audio session. enableAudio() inside initEngine() grabs
+      // the Android audio focus; if the looping ringtone is still playing the
+      // two streams collide and the accepted call ends up with garbled or
+      // missing audio (perceived as "the call didn't connect properly").
+      await _stopIncomingAlert();
       _engine = await AgoraCallService.initEngine(callType: widget.callType);
       await _joinChannel();
     } catch (e) {

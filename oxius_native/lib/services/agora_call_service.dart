@@ -680,7 +680,12 @@ class AgoraCallService {
   }
 
   static int generateUid() {
-    return Random().nextInt(100000) + 1;
+    // Use the full positive 31-bit range so two independently-generated UIDs in
+    // the same channel practically never collide. A collision would make Agora
+    // kick the first joiner when the second joins with the same UID, which looks
+    // exactly like "the other party can't connect". 1..2147483646 is always a
+    // valid Agora UID (0 is reserved for "let the SDK assign one").
+    return Random().nextInt(2147483646) + 1;
   }
 
   /// iOS only: proactively request microphone and camera so the app appears

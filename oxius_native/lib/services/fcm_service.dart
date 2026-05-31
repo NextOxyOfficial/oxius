@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:vibration/vibration.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -327,6 +329,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           final plugin = FlutterLocalNotificationsPlugin();
           await plugin.cancel(_callNotificationIdForChannel(channelName));
         }
+        // Stop FlutterRingtonePlayer and vibration explicitly — endAllCalls()
+        // only stops the CallKit foreground service, NOT the Flutter-level
+        // audio stream started by call_screen.dart's _startIncomingAlert().
+        try {
+          FlutterRingtonePlayer().stop();
+        } catch (_) {}
+        try {
+          Vibration.cancel();
+        } catch (_) {}
         await FlutterCallkitIncoming.endAllCalls();
       } catch (_) {}
     }
@@ -1988,6 +1999,18 @@ class FCMService {
           _callNotificationIdForChannel(channelName),
         );
       }
+    } catch (_) {}
+
+    // Forcefully stop the Flutter-level ringtone player and vibration.
+    // CallKit.endCall() only silences the native CallKit UI; it does NOT
+    // stop FlutterRingtonePlayer which is a separate audio stream. We must
+    // stop it here so every code path that dismisses the call UI also kills
+    // the audio, even when CallScreen is not mounted or not yet created.
+    try {
+      FlutterRingtonePlayer().stop();
+    } catch (_) {}
+    try {
+      Vibration.cancel();
     } catch (_) {}
 
     try {
