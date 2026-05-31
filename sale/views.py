@@ -352,7 +352,7 @@ class SalePostViewSet(viewsets.ModelViewSet):
             if existing_report:
                 return Response(
                     {"detail": "You have already reported this listing."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_200_OK
                 )
             
             # Create the report

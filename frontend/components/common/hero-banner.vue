@@ -36,11 +36,13 @@
                 }"
               >
                 <!-- Banner Link Wrapper -->
-                <NuxtLink
-                  v-if="banner.link"
-                  :to="`/${banner.link}`"
-                  class="absolute inset-0 z-30 cursor-pointer"
-                ></NuxtLink>
+                <button
+                  v-if="getBannerTarget(banner)"
+                  type="button"
+                  class="absolute inset-0 z-10 cursor-pointer bg-transparent"
+                  :aria-label="`Open ${banner.title || 'banner'}`"
+                  @click.stop.prevent="openBanner(banner)"
+                ></button>
 
                 <!-- Banner Image -->
                 <img
@@ -48,13 +50,13 @@
                   :src="banner.image"
                   :alt="banner.title || `Slide ${index + 1}`"
                   class="w-full h-full object-cover"
-                  :class="{ 'cursor-pointer': banner.link }"
+                  :class="{ 'cursor-pointer': getBannerTarget(banner) }"
                 />
 
                 <!-- Banner Title Overlay (optional) -->
                 <div
                   v-if="banner.title"
-                  class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white z-5"
+                  class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent text-white z-20 pointer-events-none"
                 >
                   <h3 class="text-lg font-semibold">{{ banner.title }}</h3>
                 </div>
@@ -675,6 +677,63 @@ const handleButtonClick = (buttonId) => {
   }, 3000); // Fallback timeout
 };
 
+const getBannerTarget = (banner) => {
+  return String(
+    banner?.link ||
+      banner?.link_url ||
+      banner?.linkUrl ||
+      banner?.action_link ||
+      banner?.actionLink ||
+      banner?.target ||
+      banner?.url ||
+      banner?.href ||
+      ""
+  ).trim();
+};
+
+const getBannerLinkType = (banner) => {
+  const type = String(
+    banner?.link_type || banner?.linkType || banner?.open_type || "internal"
+  )
+    .trim()
+    .toLowerCase();
+  return type === "external" ? "external" : "internal";
+};
+
+const normalizeInternalBannerPath = (target) => {
+  const trimmed = String(target || "").trim();
+  if (!trimmed) return "";
+
+  try {
+    const url = new URL(trimmed, "https://adsyclub.com");
+    const isAdsyHost =
+      url.hostname === "adsyclub.com" || url.hostname === "www.adsyclub.com";
+    if (url.protocol.startsWith("http") && isAdsyHost) {
+      return `${url.pathname || "/"}${url.search}${url.hash}`;
+    }
+  } catch (_) {}
+
+  if (trimmed.startsWith("/")) return trimmed;
+  return `/${trimmed}`;
+};
+
+const openBanner = async (banner) => {
+  const target = getBannerTarget(banner);
+  if (!target) return;
+
+  if (getBannerLinkType(banner) === "external") {
+    const externalUrl = /^https?:\/\//i.test(target)
+      ? target
+      : `https://${target.replace(/^\/+/, "")}`;
+    window.open(externalUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  const path = normalizeInternalBannerPath(target);
+  if (!path) return;
+  await navigateTo(path);
+};
+
 // Watch for route changes to clear loading states
 const route = useRoute();
 watch(
@@ -773,8 +832,16 @@ const handleTouchMove = (e) => {
   }
 };
 
-const handleTouchEnd = () => {
+const handleTouchEnd = (e) => {
   if (!isHandlingTouch) return;
+
+  if (e?.changedTouches?.length) {
+    touchEndX = e.changedTouches[0].clientX;
+    touchEndY = e.changedTouches[0].clientY;
+  } else {
+    touchEndX = touchStartX;
+    touchEndY = touchStartY;
+  }
 
   const swipeDiffX = touchEndX - touchStartX;
   const swipeDiffY = touchEndY - touchStartY;

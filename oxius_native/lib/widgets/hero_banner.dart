@@ -743,6 +743,10 @@ class _HeroBannerState extends State<HeroBanner> {
 
   String? _bannerTarget(Map<String, dynamic> banner) {
     final raw = (banner['link'] ??
+            banner['link_url'] ??
+            banner['linkUrl'] ??
+            banner['action_link'] ??
+            banner['actionLink'] ??
             banner['target'] ??
             banner['url'] ??
             banner['href'] ??

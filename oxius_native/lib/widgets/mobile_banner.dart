@@ -172,6 +172,10 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
     if (_banners.isEmpty || _currentSlide >= _banners.length) return;
     final banner = _banners[_currentSlide];
     final target = (banner['link'] ??
+            banner['link_url'] ??
+            banner['linkUrl'] ??
+            banner['action_link'] ??
+            banner['actionLink'] ??
             banner['target'] ??
             banner['url'] ??
             banner['href'] ??

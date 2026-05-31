@@ -179,13 +179,14 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 class MessageReportSerializer(serializers.ModelSerializer):
     """Message report serializer"""
     reporter = UserBasicSerializer(read_only=True)
-    reported_user = UserBasicSerializer(read_only=True)
+    reported_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    reported_user_info = UserBasicSerializer(source='reported_user', read_only=True)
     
     class Meta:
         model = MessageReport
         fields = [
             'id', 'reporter', 'reported_user', 'message', 'reason',
-            'description', 'status', 'created_at'
+            'reported_user_info', 'description', 'status', 'created_at'
         ]
         read_only_fields = ['id', 'reporter', 'status', 'created_at']
     

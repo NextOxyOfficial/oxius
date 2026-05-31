@@ -27,6 +27,51 @@ class DeepLinkService {
   bool _initialized = false;
   Uri? _pendingUri;
   int _pendingRetryCount = 0;
+  static const Set<String> _adsyHosts = {
+    'adsyclub.com',
+    'www.adsyclub.com',
+  };
+
+  static const Map<String, String> _singleSegmentRouteAliases = {
+    '': '/',
+    'home': '/',
+    'eshop': '/eshop',
+    'e-shop': '/eshop',
+    'shop': '/eshop',
+    'business-network': '/business-network',
+    'business_network': '/business-network',
+    'network': '/business-network',
+    'bn': '/business-network',
+    'adsy-news': '/adsy-news',
+    'news': '/adsy-news',
+    'rideshare': '/rideshare',
+    'ride-share': '/rideshare',
+    'ride_share': '/rideshare',
+    'sale': '/sale',
+    'sale-marketplace': '/sale',
+    'marketplace': '/sale',
+    'buy-sell': '/sale',
+    'classified': '/classified',
+    'classified-services': '/classified',
+    'my-services': '/classified',
+    'services': '/classified',
+    'micro-gigs': '/micro-gigs',
+    'microgigs': '/micro-gigs',
+    'earn-money': '/micro-gigs',
+    'mobile-recharge': '/mobile-recharge',
+    'recharge': '/mobile-recharge',
+    'adsy-pay': '/deposit-withdraw',
+    'wallet': '/deposit-withdraw',
+    'deposit-withdraw': '/deposit-withdraw',
+    'mindforce': '/mindforce',
+    'elearning': '/elearning',
+    'e-learning': '/elearning',
+    'courses': '/elearning',
+    'food-zone': '/food-zone',
+    'membership': '/upgrade-to-pro',
+    'packages': '/upgrade-to-pro',
+    'upgrade-to-pro': '/upgrade-to-pro',
+  };
 
   Future<void> init() async {
     if (_initialized) return;
@@ -54,9 +99,10 @@ class DeepLinkService {
   }
 
   Future<void> openInternalLink(String link) async {
-    final trimmed = link.trim();
+    var trimmed = link.trim();
     if (trimmed.isEmpty) return;
 
+    trimmed = _withSchemeForAdsyHost(trimmed);
     final parsed = Uri.tryParse(trimmed);
     if (parsed != null && parsed.hasScheme) {
       await _handleUri(parsed);
@@ -68,10 +114,27 @@ class DeepLinkService {
     await _handleUri(internalUri);
   }
 
+  String _withSchemeForAdsyHost(String target) {
+    final lower = target.toLowerCase();
+    if (lower.startsWith('//adsyclub.com') ||
+        lower.startsWith('//www.adsyclub.com')) {
+      return 'https:$target';
+    }
+    for (final host in _adsyHosts) {
+      if (lower == host ||
+          lower.startsWith('$host/') ||
+          lower.startsWith('$host?') ||
+          lower.startsWith('$host#')) {
+        return 'https://$target';
+      }
+    }
+    return target;
+  }
+
   Future<void> _handleUri(Uri uri) async {
     final host = uri.host.toLowerCase();
-    final isWebLink = uri.scheme == 'https' &&
-        (host == 'adsyclub.com' || host == 'www.adsyclub.com');
+    final isWebLink = (uri.scheme == 'https' || uri.scheme == 'http') &&
+        _adsyHosts.contains(host);
     final isCustomScheme = uri.scheme == 'adsyclub';
 
     if (!isWebLink && !isCustomScheme) return;
@@ -82,10 +145,7 @@ class DeepLinkService {
       if ((uri.host == 'open' || uri.host == 'link') &&
           embeddedUrl != null &&
           embeddedUrl.isNotEmpty) {
-        final embeddedUri = Uri.tryParse(embeddedUrl);
-        if (embeddedUri != null) {
-          await _handleUri(embeddedUri);
-        }
+        await openInternalLink(embeddedUrl);
         return;
       }
 
@@ -100,7 +160,6 @@ class DeepLinkService {
     } else {
       segments = uri.pathSegments.where((s) => s.trim().isNotEmpty).toList();
     }
-    if (segments.isEmpty) return;
 
     final navigator = FCMService.navigatorKey.currentState;
     final context = FCMService.navigatorKey.currentContext;
@@ -111,7 +170,20 @@ class DeepLinkService {
       return;
     }
 
+    if (segments.isEmpty) {
+      navigator.pushNamed('/');
+      return;
+    }
+
     final first = segments[0].toLowerCase();
+
+    if (segments.length == 1) {
+      final route = _singleSegmentRouteAliases[first];
+      if (route != null) {
+        navigator.pushNamed(route);
+        return;
+      }
+    }
 
     if (first == 'home') {
       navigator.pushNamed('/');
@@ -311,7 +383,11 @@ class DeepLinkService {
       return;
     }
 
-    if (first == 'sale' && segments.length >= 2) {
+    if ((first == 'sale' ||
+            first == 'sale-marketplace' ||
+            first == 'marketplace' ||
+            first == 'buy-sell') &&
+        segments.length >= 2) {
       if (segments[1] == 'user-profile' && segments.length >= 3) {
         navigator.pushNamed(
           '/seller-profile',

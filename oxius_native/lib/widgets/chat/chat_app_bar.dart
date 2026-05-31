@@ -491,88 +491,158 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         builder: (ctx) => IconButton(
           icon: const Icon(Icons.more_vert_rounded,
               color: Colors.white, size: 24),
-          onPressed: () async {
-            final box = ctx.findRenderObject() as RenderBox?;
-            final overlay =
-                Overlay.of(ctx).context.findRenderObject() as RenderBox?;
-            if (box == null || overlay == null) return;
-            final position = RelativeRect.fromRect(
-              box.localToGlobal(Offset.zero, ancestor: overlay) & box.size,
-              Offset.zero & overlay.size,
-            );
-            final result = await showMenu<String>(
-              context: ctx,
-              position: position,
-              color: Colors.white,
-              elevation: 14,
-              shadowColor: Colors.black.withValues(alpha: 0.16),
-              surfaceTintColor: Colors.white,
-              clipBehavior: Clip.antiAlias,
-              constraints: const BoxConstraints(
-                minWidth: 196,
-                maxWidth: 224,
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18)),
-              items: [
-                _menuItem('search', Icons.search_rounded, 'Search messages',
-                    const Color(0xFF3B82F6)),
-                _menuItem('view_profile', Icons.person_rounded,
-                    'View ABN Profile', const Color(0xFF3B82F6)),
-                _menuItem(
-                  blockedByMe ? 'unblock' : 'block',
-                  blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
-                  blockedByMe ? 'Unblock' : 'Block',
-                  blockedByMe
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFF59E0B),
-                ),
-                _menuItem('report', Icons.flag_rounded, 'Report',
-                    const Color(0xFFEF4444)),
-              ],
-            );
-            if (result != null) onMenuAction(result);
-          },
+          onPressed: () => _showActionMenu(ctx),
         ),
       ),
     ];
   }
 
-  PopupMenuItem<String> _menuItem(
-    String value,
-    IconData icon,
-    String label,
-    Color iconColor,
-  ) {
-    return PopupMenuItem(
-      value: value,
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      child: Row(
+  void _showActionMenu(BuildContext context) {
+    final box = context.findRenderObject() as RenderBox?;
+    final overlayState = Overlay.maybeOf(context, rootOverlay: true);
+    final overlayBox = overlayState?.context.findRenderObject() as RenderBox?;
+
+    if (box == null || overlayState == null || overlayBox == null) return;
+
+    final topLeft = box.localToGlobal(Offset.zero, ancestor: overlayBox);
+    final overlaySize = overlayBox.size;
+    const menuWidth = 206.0;
+    const margin = 8.0;
+    final left = (topLeft.dx + box.size.width - menuWidth)
+        .clamp(margin, overlaySize.width - menuWidth - margin)
+        .toDouble();
+    final top = (topLeft.dy + box.size.height + 6)
+        .clamp(margin, overlaySize.height - 236)
+        .toDouble();
+
+    OverlayEntry? entry;
+    void close() {
+      entry?.remove();
+      entry = null;
+    }
+
+    entry = OverlayEntry(
+      builder: (_) => Stack(
         children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: close,
+              child: const SizedBox.expand(),
             ),
-            child: Icon(icon, size: 17, color: iconColor),
           ),
-          const SizedBox(width: 11),
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13.5,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF1F2937),
-              ),
+          Positioned(
+            top: top,
+            left: left,
+            width: menuWidth,
+            child: Material(
+              color: Colors.transparent,
+              child: _buildActionMenuSurface(close),
             ),
           ),
         ],
+      ),
+    );
+
+    overlayState.insert(entry!);
+  }
+
+  Widget _buildActionMenuSurface(VoidCallback close) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.16),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _menuItem(
+            close: close,
+            value: 'search',
+            icon: Icons.search_rounded,
+            label: 'Search messages',
+            iconColor: const Color(0xFF3B82F6),
+          ),
+          _menuItem(
+            close: close,
+            value: 'view_profile',
+            icon: Icons.person_rounded,
+            label: 'View ABN Profile',
+            iconColor: const Color(0xFF3B82F6),
+          ),
+          _menuItem(
+            close: close,
+            value: blockedByMe ? 'unblock' : 'block',
+            icon: blockedByMe ? Icons.lock_open_rounded : Icons.block_rounded,
+            label: blockedByMe ? 'Unblock' : 'Block',
+            iconColor:
+                blockedByMe ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+          ),
+          _menuItem(
+            close: close,
+            value: 'report',
+            icon: Icons.flag_rounded,
+            label: 'Report',
+            iconColor: const Color(0xFFEF4444),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _menuItem({
+    required VoidCallback close,
+    required String value,
+    required IconData icon,
+    required String label,
+    required Color iconColor,
+  }) {
+    return InkWell(
+      onTap: () {
+        close();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          onMenuAction(value);
+        });
+      },
+      child: SizedBox(
+        height: 48,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 17, color: iconColor),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

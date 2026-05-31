@@ -2566,7 +2566,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     }
   }
 
-  Future<void> _handleMenuAction(String action) async {
+  void _handleMenuAction(String action) {
     switch (action) {
       case 'search':
         _openSearch();
@@ -2575,17 +2575,14 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
         _openUserProfile();
         break;
       case 'block':
-        await Future<void>.delayed(const Duration(milliseconds: 140));
         if (!mounted) return;
         _showBlockConfirmation();
         break;
       case 'unblock':
-        await Future<void>.delayed(const Duration(milliseconds: 140));
         if (!mounted) return;
         _showUnblockConfirmation();
         break;
       case 'report':
-        await Future<void>.delayed(const Duration(milliseconds: 140));
         if (!mounted) return;
         _showReportDialog();
         break;
