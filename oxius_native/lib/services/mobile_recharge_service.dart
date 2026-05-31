@@ -16,9 +16,6 @@ class MobileRechargeService {
     int page = 1,
   }) async {
     try {
-      final token = AuthService.isAuthenticated
-          ? await AuthService.getValidToken()
-          : null;
       final queryParams = <String, String>{
         'page': page.toString(),
         if (operator != null && operator != 'all') 'operator': operator,
@@ -34,8 +31,8 @@ class MobileRechargeService {
       final response = await http.get(
         uri,
         headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       );
 
@@ -89,17 +86,13 @@ class MobileRechargeService {
   /// Get available operators
   static Future<List<Map<String, dynamic>>> getOperators() async {
     try {
-      final token = AuthService.isAuthenticated
-          ? await AuthService.getValidToken()
-          : null;
-
       print('📱 Fetching operators from: $baseUrl/mobile-recharge/operators/');
 
       final response = await http.get(
         Uri.parse('$baseUrl/mobile-recharge/operators/'),
         headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
       );
 

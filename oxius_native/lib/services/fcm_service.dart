@@ -95,6 +95,14 @@ const Set<String> _callNotificationTypes = <String>{
 
 const String _callNotificationChannelId = 'oxius_calls_custom_v1';
 
+int _callNotificationIdForChannel(String channelName) {
+  var hash = 0;
+  for (final codeUnit in channelName.codeUnits) {
+    hash = (hash * 31 + codeUnit) & 0x3fffffff;
+  }
+  return hash == 0 ? 917301 : hash;
+}
+
 const Set<String> _rideshareStatusTypes = <String>{
   'searching_driver',
   'accepted',
@@ -314,6 +322,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     };
     if (bgStatus != null && terminalStatuses.contains(bgStatus)) {
       try {
+        final channelName = message.data['channel_name']?.toString();
+        if (channelName != null && channelName.isNotEmpty) {
+          final plugin = FlutterLocalNotificationsPlugin();
+          await plugin.cancel(_callNotificationIdForChannel(channelName));
+        }
         await FlutterCallkitIncoming.endAllCalls();
       } catch (_) {}
     }
@@ -401,7 +414,7 @@ Future<void> _showBackgroundCallNotification(Map<String, dynamic> data) async {
     );
 
     await plugin.show(
-      channelName.hashCode,
+      _callNotificationIdForChannel(channelName),
       '$callerName is calling',
       callTypeLabel,
       NotificationDetails(android: details),
@@ -916,6 +929,11 @@ class FCMService {
     }
 
     final callKey = _buildCallId(callerId, channelName);
+    if (_activeCallIds.contains(callKey) &&
+        !AgoraCallService.isCallScreenVisible) {
+      _log('Existing $source incoming call can open CallScreen: $callKey');
+      return true;
+    }
     if (_activeCallIds.contains(callKey)) {
       _log('🚫 Ignoring duplicate $source call: $callKey');
       return false;
@@ -1615,6 +1633,9 @@ class FCMService {
     if (callkitUuid.isNotEmpty) {
       _acceptedCallkitUuids.add(callkitUuid);
     }
+    unawaited(_localNotifications.cancel(
+      _callNotificationIdForChannel(channelName),
+    ));
     // Mark the call active before route navigation so in-flight rideshare
     // notifications cannot steal focus during the accept/navigation window.
     AgoraCallService.setInCall(true);
@@ -1674,6 +1695,7 @@ class FCMService {
     if (callerId == null || channelName == null) return;
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+    unawaited(dismissVisibleCallUi(channelName: channelName));
 
     if (incomingKind == 'rideshare_request') {
       final rideId = extra['ride_id']?.toString() ?? '';
@@ -1733,6 +1755,7 @@ class FCMService {
       if (callerId != null && channelName != null) {
         releaseIncomingCallTracking(
             callerId: callerId, channelName: channelName);
+        unawaited(dismissVisibleCallUi(channelName: channelName));
 
         if (terminalAlreadyHandled) {
           _log('📞 CallKit end event already handled for uuid=$callkitUuid');
@@ -1778,6 +1801,7 @@ class FCMService {
     if (callerId == null || channelName == null) return;
 
     releaseIncomingCallTracking(callerId: callerId, channelName: channelName);
+    unawaited(dismissVisibleCallUi(channelName: channelName));
 
     if (incomingKind == 'rideshare_request') {
       if (callkitUuid.isNotEmpty) {
@@ -1954,6 +1978,45 @@ class FCMService {
     _terminalCallkitUuids.clear();
   }
 
+  /// Dismiss visible native call surfaces without touching call-state tracking.
+  /// Used when the app opens its own CallScreen so the native ringtone cannot
+  /// keep ringing behind the in-app accept/decline controls.
+  static Future<void> dismissVisibleCallUi({String? channelName}) async {
+    try {
+      if (channelName != null && channelName.isNotEmpty) {
+        await _localNotifications.cancel(
+          _callNotificationIdForChannel(channelName),
+        );
+      }
+    } catch (_) {}
+
+    try {
+      final calls = await FlutterCallkitIncoming.activeCalls();
+      if (calls is List && calls.isNotEmpty) {
+        var endedMatchingCall = false;
+        for (final call in calls) {
+          if (call is! Map) continue;
+          final map = Map<String, dynamic>.from(call);
+          final uuid = map['id']?.toString() ?? '';
+          final extra = _parseCallkitExtra(map['extra']);
+          final activeChannel = extra?['channel_name']?.toString();
+          if (uuid.isEmpty) continue;
+          if (channelName == null ||
+              channelName.isEmpty ||
+              activeChannel == channelName) {
+            endedMatchingCall = true;
+            await FlutterCallkitIncoming.endCall(uuid);
+          }
+        }
+        if (!endedMatchingCall && channelName == null) {
+          await FlutterCallkitIncoming.endAllCalls();
+        }
+      } else if (channelName == null || channelName.isEmpty) {
+        await FlutterCallkitIncoming.endAllCalls();
+      }
+    } catch (_) {}
+  }
+
   /// Navigate directly to CallScreen for accepted calls (bypasses showIncomingCall)
   static void _navigateToCallScreenDirectly(
       NavigatorState navigator, Map<String, dynamic> data) {
@@ -2028,6 +2091,8 @@ class FCMService {
     )) {
       return;
     }
+
+    unawaited(dismissVisibleCallUi(channelName: channelName));
 
     navigator.push(
       MaterialPageRoute(
@@ -2124,7 +2189,9 @@ class FCMService {
           'failed',
         };
         if (fgStatus != null && terminalStatuses.contains(fgStatus)) {
-          FlutterCallkitIncoming.endAllCalls();
+          unawaited(dismissVisibleCallUi(
+            channelName: payload['channel_name']?.toString(),
+          ));
         }
       }
 

@@ -214,6 +214,20 @@ class DeepLinkService {
 
       if (segments.length >= 2 &&
           (segments[1] == 'workspaces' || segments[1] == 'workspace-details')) {
+        final gigId = uri.queryParameters['id'] ??
+            uri.queryParameters['gig_id'] ??
+            uri.queryParameters['gigId'];
+        if (segments[1] == 'workspace-details' &&
+            gigId != null &&
+            gigId.isNotEmpty) {
+          navigator.push(
+            MaterialPageRoute(
+              builder: (_) => workspace.GigDetailScreen(gigId: gigId),
+            ),
+          );
+          return;
+        }
+
         navigator.push(
           MaterialPageRoute(
             builder: (_) => const workspace.WorkspaceScreen(),

@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../utils/network_error_handler.dart';
 import '../../services/notification_service.dart';
 import '../../services/adsyconnect_service.dart';
+import '../../services/fcm_service.dart';
 import '../../services/workspace_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
@@ -874,14 +875,15 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _handleNavTap(int index) {
     if (index == _currentNavIndex && index != 3) return; // Already on profile
+    final rootNavigator =
+        FCMService.navigatorKey.currentState ?? Navigator.of(context);
 
     switch (index) {
       case 0:
         // Recent - Navigate to business network feed
-        Navigator.pushNamedAndRemoveUntil(
-          context,
+        rootNavigator.pushNamedAndRemoveUntil(
           '/business-network',
-          (route) => route.settings.name == '/',
+          (route) => route.isFirst,
         );
         break;
       case 1:
@@ -918,7 +920,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         break;
       case 4:
         // AdsyClub / Home - Navigate to main home screen
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
         break;
     }
   }

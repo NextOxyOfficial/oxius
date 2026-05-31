@@ -578,6 +578,7 @@ class _CallScreenState extends State<CallScreen>
 
     // 2. Stop ringtone/vibration (fire-and-forget for instant UX).
     unawaited(_stopIncomingAlert());
+    unawaited(FCMService.dismissVisibleCallUi(channelName: widget.channelName));
 
     // 3. Update UI immediately — show "Connecting…" state.
     if (!mounted) return;
@@ -676,6 +677,7 @@ class _CallScreenState extends State<CallScreen>
 
     // 1. Stop ringtone/vibration immediately (fire-and-forget).
     unawaited(_stopIncomingAlert());
+    unawaited(FCMService.dismissVisibleCallUi(channelName: widget.channelName));
 
     // 2. Notify the caller in the background — don't block the UI.
     unawaited(AgoraCallService.sendCallStatus(
@@ -725,6 +727,7 @@ class _CallScreenState extends State<CallScreen>
     _ringingTimer = null;
 
     unawaited(_stopIncomingAlert());
+    unawaited(FCMService.dismissVisibleCallUi(channelName: widget.channelName));
 
     final localOutcome =
         outcomeOverride ?? ((_callStartedAt != null) ? 'ended' : 'cancelled');

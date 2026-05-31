@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+import '../../services/fcm_service.dart';
 import '../../screens/business_network/create_post_screen.dart';
 import '../../screens/business_network/profile_screen.dart';
 import '../../screens/business_network/notifications_screen.dart';
@@ -71,10 +72,11 @@ class DrawerMenu extends StatelessWidget {
           isActive: currentRoute == '/business-network',
           onTap: () {
             Navigator.pop(context);
-            Navigator.pushNamedAndRemoveUntil(
-              context,
+            final rootNavigator =
+                FCMService.navigatorKey.currentState ?? Navigator.of(context);
+            rootNavigator.pushNamedAndRemoveUntil(
               '/business-network',
-              (route) => route.settings.name == '/',
+              (route) => route.isFirst,
             );
           },
         ),
@@ -84,7 +86,8 @@ class DrawerMenu extends StatelessWidget {
             icon: Icons.person_rounded,
             label: 'Profile',
             color: const Color(0xFFA855F7),
-            isActive: currentRoute?.contains('/business-network/profile/') ?? false,
+            isActive:
+                currentRoute?.contains('/business-network/profile/') ?? false,
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -189,7 +192,8 @@ class DrawerMenu extends StatelessWidget {
                   color: isActive ? color : color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(7),
                 ),
-                child: Icon(icon, size: 15, color: isActive ? Colors.white : color),
+                child: Icon(icon,
+                    size: 15, color: isActive ? Colors.white : color),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -204,7 +208,8 @@ class DrawerMenu extends StatelessWidget {
               ),
               if (badge != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                   decoration: BoxDecoration(
                     color: Colors.pink.shade500,
                     borderRadius: BorderRadius.circular(4),

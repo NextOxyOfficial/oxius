@@ -22,6 +22,7 @@ import '../widgets/linkify_text.dart';
 import '../widgets/skeleton_loader.dart';
 import '../config/app_config.dart';
 import '../services/agora_call_service.dart';
+import '../services/fcm_service.dart';
 import '../widgets/chat/chat_app_bar.dart';
 import '../widgets/chat/chat_message_bubble.dart';
 import '../widgets/chat/chat_message_input.dart';
@@ -3120,11 +3121,25 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
   void _openUserProfile() {
     FocusManager.instance.primaryFocus?.unfocus();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ProfileScreen(userId: widget.userId),
+    final route = MaterialPageRoute(
+      settings: RouteSettings(
+        name: '/business-network/profile',
+        arguments: {'userId': widget.userId},
       ),
+      builder: (_) => ProfileScreen(userId: widget.userId),
     );
+
+    if (widget.onClose != null) {
+      widget.onClose!();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FCMService.navigatorKey.currentState?.push(route);
+      });
+      return;
+    }
+
+    (FCMService.navigatorKey.currentState ??
+            Navigator.of(context, rootNavigator: true))
+        .push(route);
   }
 
   Widget _buildEmptyState() {

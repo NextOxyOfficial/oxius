@@ -3,14 +3,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../services/auth_service.dart';
 import '../../services/business_network_service.dart';
 import '../../services/adsyconnect_service.dart';
+import '../../services/fcm_service.dart';
 import '../../screens/business_network/search_screen.dart';
 import 'dart:async';
 
-class BusinessNetworkHeader extends StatefulWidget implements PreferredSizeWidget {
+class BusinessNetworkHeader extends StatefulWidget
+    implements PreferredSizeWidget {
   final VoidCallback? onMenuTap;
   final VoidCallback? onSearchTap;
   final VoidCallback? onProfileTap;
-  
+
   const BusinessNetworkHeader({
     super.key,
     this.onMenuTap,
@@ -35,7 +37,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
     super.initState();
     _loadBusinessNetworkLogo();
     _loadNotificationCount();
-    
+
     // Poll for notification updates every 10 seconds
     _notificationTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (mounted && AuthService.isAuthenticated) {
@@ -62,16 +64,16 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
       }
       return;
     }
-    
+
     try {
       // Get unread message count from chat rooms (like home screen)
       final chatRooms = await AdsyConnectService.getChatRooms(page: 1);
-      
+
       int totalUnread = 0;
       for (var room in chatRooms) {
         totalUnread += (room['unread_count'] as int?) ?? 0;
       }
-      
+
       if (mounted) {
         setState(() {
           _totalNotificationCount = totalUnread;
@@ -95,173 +97,175 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
     final isMobile = screenWidth < 640;
 
     return AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        automaticallyImplyLeading: false,
-        toolbarHeight: kToolbarHeight,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+      backgroundColor: Colors.white,
+      elevation: 0.5,
+      automaticallyImplyLeading: false,
+      toolbarHeight: kToolbarHeight,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
+      ),
       title: Row(
-              children: [
-                // Sidebar Toggle (Mobile Only)
-                if (isMobile) ...[
-                  InkWell(
-                    onTap: widget.onMenuTap,
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.transparent,
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 18,
-                              height: 2,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade700,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              width: 14,
-                              height: 2,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade700,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Container(
-                              width: 18,
-                              height: 2,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade700,
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                
-                // Logo (Dynamic with Fallback)
-                InkWell(
-                  onTap: () {
-                    // Navigate to business network home
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      '/business-network',
-                      (route) => route.settings.name == '/',
-                    );
-                  },
-                  child: Row(
+        children: [
+          // Sidebar Toggle (Mobile Only)
+          if (isMobile) ...[
+            InkWell(
+              onTap: widget.onMenuTap,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.transparent,
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _businessNetworkLogoUrl != null && _businessNetworkLogoUrl!.isNotEmpty
-                          ? (_businessNetworkLogoUrl!.toLowerCase().contains('.svg')
-                              ? SvgPicture.network(
-                                  _businessNetworkLogoUrl!,
-                                  height: 32,
-                                  fit: BoxFit.contain,
-                                  placeholderBuilder: (context) {
-                                    return const Text(
-                                      'Business Network',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
-                                        letterSpacing: -0.3,
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Image.network(
-                                  _businessNetworkLogoUrl!,
-                                  height: 32,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Text(
-                                      'Business Network',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
-                                        letterSpacing: -0.3,
-                                      ),
-                                    );
-                                  },
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Text(
-                                      'Business Network',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black87,
-                                        letterSpacing: -0.3,
-                                      ),
-                                    );
-                                  },
-                                ))
-                          : const Text(
-                              'Business Network',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.black87,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                      const SizedBox(width: 16),
-                      if (!isMobile)
-                        const Text(
-                          'Business Network',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                            letterSpacing: -0.3,
-                          ),
+                      Container(
+                        width: 18,
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade700,
+                          borderRadius: BorderRadius.circular(1),
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 14,
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade700,
+                          borderRadius: BorderRadius.circular(1),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        width: 18,
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade700,
+                          borderRadius: BorderRadius.circular(1),
+                        ),
+                      ),
                     ],
                   ),
                 ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+
+          // Logo (Dynamic with Fallback)
+          InkWell(
+            onTap: () {
+              // Navigate to business network home
+              final rootNavigator =
+                  FCMService.navigatorKey.currentState ?? Navigator.of(context);
+              rootNavigator.pushNamedAndRemoveUntil(
+                '/business-network',
+                (route) => route.isFirst,
+              );
+            },
+            child: Row(
+              children: [
+                _businessNetworkLogoUrl != null &&
+                        _businessNetworkLogoUrl!.isNotEmpty
+                    ? (_businessNetworkLogoUrl!.toLowerCase().contains('.svg')
+                        ? SvgPicture.network(
+                            _businessNetworkLogoUrl!,
+                            height: 32,
+                            fit: BoxFit.contain,
+                            placeholderBuilder: (context) {
+                              return const Text(
+                                'Business Network',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                  letterSpacing: -0.3,
+                                ),
+                              );
+                            },
+                          )
+                        : Image.network(
+                            _businessNetworkLogoUrl!,
+                            height: 32,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Text(
+                                'Business Network',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                  letterSpacing: -0.3,
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Text(
+                                'Business Network',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87,
+                                  letterSpacing: -0.3,
+                                ),
+                              );
+                            },
+                          ))
+                    : const Text(
+                        'Business Network',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                const SizedBox(width: 16),
+                if (!isMobile)
+                  const Text(
+                    'Business Network',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                      letterSpacing: -0.3,
+                    ),
+                  ),
               ],
             ),
+          ),
+        ],
+      ),
       actions: [
-              // Search Button
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SearchScreen(),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.search, size: 22),
-                color: Colors.grey.shade700,
-                tooltip: 'Search',
+        // Search Button
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const SearchScreen(),
               ),
-        
+            );
+          },
+          icon: const Icon(Icons.search, size: 22),
+          color: Colors.grey.shade700,
+          tooltip: 'Search',
+        ),
+
         // AdsyClub Button (Desktop Only)
         if (!isMobile) ...[
           const SizedBox(width: 4),
@@ -276,7 +280,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             },
           ),
         ],
-        
+
         // AdsyNews Button (Desktop Only)
         if (!isMobile) ...[
           const SizedBox(width: 4),
@@ -291,7 +295,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
             },
           ),
         ],
-        
+
         // User Section
         if (user != null) ...[
           // Inbox Button with Notification Badge
@@ -347,7 +351,9 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                     ),
                     child: Center(
                       child: Text(
-                        _totalNotificationCount > 99 ? '99+' : _totalNotificationCount.toString(),
+                        _totalNotificationCount > 99
+                            ? '99+'
+                            : _totalNotificationCount.toString(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 9,
@@ -360,7 +366,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                 ),
             ],
           ),
-          
+
           // User Profile Button
           Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -425,7 +431,6 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
     );
   }
 
-
   Widget _buildNavButton({
     required String label,
     required IconData icon,
@@ -474,7 +479,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
   Widget _buildMobileUserAvatar(dynamic user) {
     final isPro = user.isPro ?? false;
     final isVerified = user.isVerified ?? false;
-    
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -522,7 +527,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
                   ),
           ),
         ),
-        
+
         // Pro Badge
         if (isPro)
           Positioned(
@@ -553,7 +558,7 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
               ),
             ),
           ),
-        
+
         // Verified Badge
         if (isVerified)
           Positioned(
@@ -576,6 +581,4 @@ class _BusinessNetworkHeaderState extends State<BusinessNetworkHeader> {
       ],
     );
   }
-
-
 }

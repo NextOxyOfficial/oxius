@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/business_network_models.dart';
 import '../../services/auth_service.dart';
+import '../../services/fcm_service.dart';
 import '../../utils/business_network_media_downloader.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import 'create_post_screen.dart';
@@ -93,11 +94,15 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
 
   void _handleNavTap(int index) {
     final isLoggedIn = AuthService.isAuthenticated;
+    final rootNavigator =
+        FCMService.navigatorKey.currentState ?? Navigator.of(context);
 
     switch (index) {
       case 0:
-        Navigator.pushNamedAndRemoveUntil(
-            context, '/business-network', (route) => false);
+        rootNavigator.pushNamedAndRemoveUntil(
+          '/business-network',
+          (route) => route.isFirst,
+        );
         break;
       case 1:
         if (isLoggedIn) {
@@ -132,7 +137,7 @@ class _PostMediaViewerScreenState extends State<PostMediaViewerScreen> {
         }
         break;
       case 4:
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
         break;
     }
   }

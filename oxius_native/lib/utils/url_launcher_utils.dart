@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
+import '../services/deep_link_service.dart';
 
 class UrlLauncherUtils {
   static Future<bool> launchExternalUrl(String? url) async {
@@ -9,12 +10,19 @@ class UrlLauncherUtils {
     if (uri == null) return false;
 
     try {
+      if (_isAdsyClubUri(uri)) {
+        await DeepLinkService.instance.openInternalLink(uri.toString());
+        return true;
+      }
+
       final ok = await canLaunchUrl(uri);
       if (!ok) return false;
 
       return await launchUrl(
         uri,
-        mode: kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication,
+        mode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
       );
     } catch (_) {
       return false;
@@ -31,7 +39,9 @@ class UrlLauncherUtils {
 
     if (url.startsWith('/')) {
       url = AppConfig.getAbsoluteUrl(url);
-    } else if (!url.contains('://') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
+    } else if (!url.contains('://') &&
+        !url.startsWith('mailto:') &&
+        !url.startsWith('tel:')) {
       final scheme = _shouldDefaultToHttp(url) ? 'http' : 'https';
       url = '$scheme://$url';
     }
@@ -52,7 +62,9 @@ class UrlLauncherUtils {
 
   static bool _shouldDefaultToHttp(String urlWithoutScheme) {
     final lower = urlWithoutScheme.toLowerCase();
-    if (lower.startsWith('localhost') || lower.startsWith('127.0.0.1') || lower.startsWith('0.0.0.0')) {
+    if (lower.startsWith('localhost') ||
+        lower.startsWith('127.0.0.1') ||
+        lower.startsWith('0.0.0.0')) {
       return true;
     }
     if (lower.startsWith('10.') || lower.startsWith('192.168.')) return true;
@@ -62,5 +74,11 @@ class UrlLauncherUtils {
       if (n != null && n >= 16 && n <= 31) return true;
     }
     return false;
+  }
+
+  static bool _isAdsyClubUri(Uri uri) {
+    final host = uri.host.toLowerCase();
+    return (uri.scheme == 'https' || uri.scheme == 'http') &&
+        (host == 'adsyclub.com' || host == 'www.adsyclub.com');
   }
 }

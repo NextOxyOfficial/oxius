@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../config/app_config.dart';
 import '../../models/business_network_models.dart';
 import '../../services/business_network_service.dart';
+import '../../services/fcm_service.dart';
 import 'profile_screen.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import 'notifications_screen.dart';
@@ -1129,7 +1130,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
             onPressed: () {
               Navigator.pop(context);
               AuthService.logout();
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+              final rootNavigator = FCMService.navigatorKey.currentState ??
+                  Navigator.of(context, rootNavigator: true);
+              rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
@@ -1258,6 +1261,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
   }
 
   void _handleNavTap(BuildContext context, int index) {
+    final rootNavigator = FCMService.navigatorKey.currentState ??
+        Navigator.of(context, rootNavigator: true);
+
     if (index == 2) {
       if (AuthService.isAuthenticated) {
         Navigator.push(
@@ -1268,10 +1274,9 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
     } else {
       switch (index) {
         case 0:
-          Navigator.pushNamedAndRemoveUntil(
-            context,
+          rootNavigator.pushNamedAndRemoveUntil(
             '/business-network',
-            (route) => route.settings.name == '/',
+            (route) => route.isFirst,
           );
           break;
         case 1:
@@ -1288,7 +1293,7 @@ class _ProfileOptionsScreenState extends State<ProfileOptionsScreen>
         case 3:
           break;
         case 4:
-          Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+          rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
           break;
       }
     }

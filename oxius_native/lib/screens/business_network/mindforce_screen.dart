@@ -3,6 +3,7 @@ import '../../models/mindforce_models.dart';
 import '../../services/mindforce_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/fcm_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
@@ -1106,14 +1107,18 @@ class _MindForceScreenState extends State<MindForceScreen> {
   }
 
   void _handleNavTap(int index) {
+    final rootNavigator =
+        FCMService.navigatorKey.currentState ?? Navigator.of(context);
+
     switch (index) {
       case 0:
         // Recent - Navigate to business network feed
-        Navigator.pushNamedAndRemoveUntil(
-          context,
+        rootNavigator
+            .pushNamedAndRemoveUntil(
           '/business-network',
-          (route) => route.settings.name == '/',
-        ).then((_) {
+          (route) => route.isFirst,
+        )
+            .then((_) {
           // Refresh notification count when returning
           _loadUnreadNotificationCount();
         });
@@ -1154,7 +1159,7 @@ class _MindForceScreenState extends State<MindForceScreen> {
         break;
       case 4:
         // AdsyClub/Home - Navigate to main home screen
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
         break;
     }
   }

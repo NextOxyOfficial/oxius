@@ -3,6 +3,7 @@ import '../../models/notification_models.dart';
 import '../../services/notification_service.dart';
 import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/fcm_service.dart';
 import '../../widgets/business_network/business_network_header.dart';
 import '../../widgets/business_network/business_network_drawer.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
@@ -232,7 +233,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
       default:
         // Default to business network home
-        Navigator.pushNamed(context, '/business-network');
+        final rootNavigator =
+            FCMService.navigatorKey.currentState ?? Navigator.of(context);
+        rootNavigator.pushNamed('/business-network');
     }
   }
 
@@ -372,13 +375,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void _handleNavTap(int index) {
+    final rootNavigator =
+        FCMService.navigatorKey.currentState ?? Navigator.of(context);
+
     switch (index) {
       case 0:
         // Recent - Navigate to business network feed
-        Navigator.pushNamedAndRemoveUntil(
-          context,
+        rootNavigator.pushNamedAndRemoveUntil(
           '/business-network',
-          (route) => route.settings.name == '/',
+          (route) => route.isFirst,
         );
         break;
       case 1:
@@ -408,7 +413,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       case 4:
         // AdsyClub/Home - Navigate to main home screen
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
         break;
     }
   }

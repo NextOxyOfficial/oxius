@@ -7,6 +7,7 @@ import '../../services/business_network_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/user_suggestions_service.dart';
 import '../../services/notification_service.dart';
+import '../../services/fcm_service.dart';
 import '../../widgets/business_network/post_card.dart';
 import '../../widgets/business_network/bottom_nav_bar.dart';
 import '../../widgets/business_network/business_network_header.dart';
@@ -659,7 +660,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
         break;
       case 4:
         // AdsyClub / Home - Navigate to main home screen
-        Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+        final rootNavigator =
+            FCMService.navigatorKey.currentState ?? Navigator.of(context);
+        rootNavigator.pushNamedAndRemoveUntil('/', (route) => false);
         break;
     }
   }

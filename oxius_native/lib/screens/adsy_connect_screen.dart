@@ -3,6 +3,7 @@ import 'dart:async';
 import 'adsy_connect_chat_interface.dart';
 import '../services/adsyconnect_realtime_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../services/fcm_service.dart';
 import '../widgets/chat_list_skeleton.dart';
 import '../config/app_config.dart';
 import '../utils/network_error_handler.dart';
@@ -30,6 +31,19 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
   String? _openingChatroomId;
   OverlayEntry? _activeChatOverlay;
   String? _activeOverlayChatroomId;
+
+  static const Set<String> _rootRoutesAllowedFromChatOverlay = {
+    '/',
+    '/business-network',
+    '/business-network/profile',
+    '/login',
+    '/inbox',
+    '/settings',
+    '/deposit-withdraw',
+    '/mobile-recharge',
+    '/micro-gigs',
+    '/mindforce',
+  };
 
   final TextEditingController _chatSearchController = TextEditingController();
   String _chatSearchQuery = '';
@@ -437,6 +451,33 @@ class _AdsyConnectScreenState extends State<AdsyConnectScreen> {
                       isOnline: _parseBool(chat['isOnline']),
                       onClose: _closeActiveChatOverlay,
                     ),
+                  );
+                }
+
+                if (_rootRoutesAllowedFromChatOverlay.contains(settings.name)) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    _removeActiveChatOverlay(refreshAfterClose: false);
+                    final rootNavigator = FCMService.navigatorKey.currentState;
+                    final routeName = settings.name ?? '/';
+                    if (rootNavigator == null) return;
+
+                    if (routeName == '/' || routeName == '/business-network') {
+                      rootNavigator.pushNamedAndRemoveUntil(
+                        routeName,
+                        (route) => route.isFirst,
+                        arguments: settings.arguments,
+                      );
+                    } else {
+                      rootNavigator.pushNamed(
+                        routeName,
+                        arguments: settings.arguments,
+                      );
+                    }
+                  });
+
+                  return MaterialPageRoute<void>(
+                    builder: (_) => const SizedBox.shrink(),
                   );
                 }
 
