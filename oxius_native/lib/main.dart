@@ -360,6 +360,11 @@ class MyApp extends StatelessWidget {
                 );
               }
 
+              final deepLinkRoute = _buildAdsyWebDeepLinkRoute(settings);
+              if (deepLinkRoute != null) {
+                return deepLinkRoute;
+              }
+
               if (settings.name == '/classified-category') {
                 final args = settings.arguments as Map<String, dynamic>?;
                 return MaterialPageRoute(
@@ -492,6 +497,137 @@ class MyApp extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+Route<dynamic>? _buildAdsyWebDeepLinkRoute(RouteSettings settings) {
+  final routeName = settings.name;
+  if (routeName == null || routeName.isEmpty || routeName == '/') {
+    return null;
+  }
+
+  const internalGeneratedRoutes = {
+    '/classified-category',
+    '/classified-post-details',
+    '/classified-post-form',
+    '/my-classified-posts',
+    '/sale',
+    '/sale/detail',
+    '/my-sale-posts',
+    '/create-sale-post',
+    '/eshop-manager',
+    '/seller-profile',
+    '/business-network/profile',
+    '/checkout',
+    '/call',
+  };
+  if (internalGeneratedRoutes.contains(routeName)) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(routeName);
+  final path = uri?.path.isNotEmpty == true
+      ? uri!.path
+      : routeName.split('?').first.split('#').first;
+  final segments = path
+      .split('/')
+      .map((segment) => segment.trim())
+      .where((segment) => segment.isNotEmpty)
+      .toList();
+
+  if (segments.isEmpty) return null;
+
+  final host = uri?.host.toLowerCase() ?? '';
+  if (host.isNotEmpty && host != 'adsyclub.com' && host != 'www.adsyclub.com') {
+    return null;
+  }
+
+  const deepLinkPrefixes = {
+    'details',
+    'classified-details',
+    'classified-categories',
+    'product-details',
+    'adsy-news',
+    'news',
+    'business-network',
+    'eshop',
+    'e-shop',
+    'sale',
+    'sale-marketplace',
+    'marketplace',
+    'buy-sell',
+    'seller',
+    'order',
+    'my-gigs',
+    'workspace',
+    'workspaces',
+    'business-network-workspace',
+    'workspace-orders',
+    'verify-payment',
+    'payment-callback.html',
+    'payment-cancel.html',
+    'pending-tasks',
+    'post-a-gig',
+    'micro-gigs',
+    'food-zone',
+    'mobile-recharge',
+    'upgrade-to-pro',
+    'shop-manager',
+    'rideshare',
+  };
+
+  if (!deepLinkPrefixes.contains(segments.first.toLowerCase())) {
+    return null;
+  }
+
+  return MaterialPageRoute(
+    settings: settings,
+    builder: (_) => _AdsyWebDeepLinkRedirectScreen(link: routeName),
+  );
+}
+
+class _AdsyWebDeepLinkRedirectScreen extends StatefulWidget {
+  final String link;
+
+  const _AdsyWebDeepLinkRedirectScreen({required this.link});
+
+  @override
+  State<_AdsyWebDeepLinkRedirectScreen> createState() =>
+      _AdsyWebDeepLinkRedirectScreenState();
+}
+
+class _AdsyWebDeepLinkRedirectScreenState
+    extends State<_AdsyWebDeepLinkRedirectScreen> {
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openDeepLink());
+  }
+
+  Future<void> _openDeepLink() async {
+    final selfRoute = ModalRoute.of(context);
+    await DeepLinkService.instance.openInternalLink(widget.link);
+
+    if (!mounted) return;
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    if (!mounted || selfRoute == null || !selfRoute.isActive) return;
+
+    final navigator = Navigator.of(context);
+    navigator.removeRoute(selfRoute);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFFF8FFFB),
+      body: Center(
+        child: AdsyLoadingIndicator(),
+      ),
     );
   }
 }

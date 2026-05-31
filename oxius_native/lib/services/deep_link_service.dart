@@ -258,6 +258,32 @@ class DeepLinkService {
       return;
     }
 
+    if (first == 'details') {
+      if (segments.length >= 3 && segments[1] == 'classified-categories') {
+        final categorySlug = segments[2];
+        navigator.pushNamed(
+          '/classified-category',
+          arguments: {
+            'categoryId': categorySlug,
+            'categorySlug': categorySlug,
+          },
+        );
+        return;
+      }
+
+      if (segments.length >= 2) {
+        final slug = segments[1];
+        navigator.pushNamed(
+          '/classified-post-details',
+          arguments: {
+            'postId': slug,
+            'postSlug': slug,
+          },
+        );
+        return;
+      }
+    }
+
     if ((first == 'classified-details' ||
             (first == 'classified-categories' &&
                 segments.length >= 3 &&

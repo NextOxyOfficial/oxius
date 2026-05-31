@@ -9,6 +9,7 @@ const deepLinkPrefixes = [
   '/verify-payment',
   '/payment-callback.html',
   '/payment-cancel.html',
+  '/details',
   '/adsy-news',
   '/business-network',
   '/classified-details',
