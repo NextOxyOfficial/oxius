@@ -3,7 +3,18 @@ import base64
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Case, Count, F, IntegerField, Q, Subquery, Value, When
+from django.db.models import (
+    BigIntegerField,
+    Case,
+    Count,
+    F,
+    IntegerField,
+    Q,
+    Subquery,
+    Value,
+    When,
+)
+from django.db.models.functions import Cast, Mod
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
@@ -299,12 +310,13 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         """
-        Community-hub feed ranking:
-        - Strong direct network: own posts, followed users, followers.
-        - Extended network: people followed by the users I follow.
-        - Community proof: posts liked/commented on by known people.
-        - Interest graph: tags from my posts and posts I liked/commented/saved.
-        - Context: location, profession, freshness, and organic engagement.
+        Society feed ranking:
+        - Fresh public posts stay broadly visible so everyone can discover updates.
+        - Direct society: people I follow and people following me.
+        - Extended society: people followed by people I follow.
+        - Interest graph: tags and posts my trusted network engages with.
+        - Own posts remain visible but are intentionally demoted from the top.
+        - Same freshness band gets a stable per-user shuffle to avoid a stale wall.
         """
         if not self.request.user.is_authenticated:
             # For unauthenticated users, show recent posts with minimal data
@@ -416,6 +428,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
         from django.utils import timezone
 
         now = timezone.now()
+        feed_shuffle_seed = (user.id.int + int(now.strftime("%j"))) % 997
         one_day_ago = now - timedelta(days=1)
         three_days_ago = now - timedelta(days=3)
         seven_days_ago = now - timedelta(days=7)
@@ -458,9 +471,21 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     like_count=Count("post_likes", distinct=True),
                     comment_count=Count("post_comments", distinct=True),
                     follower_count=Count("post_followers", distinct=True),
+                    freshness_bucket=Case(
+                        When(created_at__gte=one_day_ago, then=Value(4)),
+                        When(created_at__gte=three_days_ago, then=Value(3)),
+                        When(created_at__gte=seven_days_ago, then=Value(2)),
+                        When(created_at__gte=thirty_days_ago, then=Value(1)),
+                        default=Value(0),
+                        output_field=IntegerField(),
+                    ),
+                    shuffle_score=Mod(
+                        Cast("id", BigIntegerField()) + Value(feed_shuffle_seed),
+                        Value(997),
+                    ),
                 )
                 .select_related("author")
-                .order_by("-created_at")
+                .order_by("-freshness_bucket", "shuffle_score", "-created_at")
             )
 
         queryset = (
@@ -499,12 +524,12 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     distinct=True,
                 ),
                 relationship_score=Case(
-                    When(author=user, then=Value(55)),
-                    When(author_id__in=users_following, then=Value(52)),
-                    When(author_id__in=users_followers, then=Value(35)),
-                    When(author_id__in=co_engaged_author_ids, then=Value(28)),
+                    When(author_id__in=users_following, then=Value(46)),
+                    When(author_id__in=users_followers, then=Value(36)),
+                    When(author_id__in=co_engaged_author_ids, then=Value(30)),
                     When(author_id__in=second_degree_users, then=Value(24)),
-                    default=Value(0),
+                    When(author=user, then=Value(8)),
+                    default=Value(6),
                     output_field=IntegerField(),
                 ),
                 community_score=(
@@ -556,10 +581,18 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     output_field=IntegerField(),
                 ),
                 recency_score=Case(
-                    When(created_at__gte=one_day_ago, then=Value(18)),
-                    When(created_at__gte=three_days_ago, then=Value(12)),
-                    When(created_at__gte=seven_days_ago, then=Value(7)),
-                    When(created_at__gte=thirty_days_ago, then=Value(3)),
+                    When(created_at__gte=one_day_ago, then=Value(34)),
+                    When(created_at__gte=three_days_ago, then=Value(24)),
+                    When(created_at__gte=seven_days_ago, then=Value(14)),
+                    When(created_at__gte=thirty_days_ago, then=Value(5)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                freshness_bucket=Case(
+                    When(created_at__gte=one_day_ago, then=Value(4)),
+                    When(created_at__gte=three_days_ago, then=Value(3)),
+                    When(created_at__gte=seven_days_ago, then=Value(2)),
+                    When(created_at__gte=thirty_days_ago, then=Value(1)),
                     default=Value(0),
                     output_field=IntegerField(),
                 ),
@@ -569,6 +602,15 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     + Count("post_followers", distinct=True)
                 ),
                 interest_score=(F("common_tag_count") * 10),
+                own_post_penalty=Case(
+                    When(author=user, then=Value(-22)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                shuffle_score=Mod(
+                    Cast("id", BigIntegerField()) + Value(feed_shuffle_seed),
+                    Value(997),
+                ),
                 feed_score=(
                     F("relationship_score")
                     + F("community_score")
@@ -577,6 +619,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     + F("recency_score")
                     + F("interest_score")
                     + F("engagement_score")
+                    + F("own_post_penalty")
                 ),
             )
             .select_related("author")
@@ -586,7 +629,12 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 "post_likes__user",
                 "post_comments__author",
             )
-            .order_by("-feed_score", "-created_at")
+            .order_by(
+                "-freshness_bucket",
+                "-feed_score",
+                "shuffle_score",
+                "-created_at",
+            )
         )
 
         return queryset

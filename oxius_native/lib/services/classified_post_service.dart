@@ -5,6 +5,15 @@ import '../models/classified_post.dart';
 import '../models/geo_location.dart';
 import '../models/classified_post_form.dart';
 
+class ClassifiedPostServiceException implements Exception {
+  final String message;
+
+  const ClassifiedPostServiceException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 class ClassifiedPostService {
   final String baseUrl;
   final http.Client client;
@@ -36,6 +45,82 @@ class ClassifiedPostService {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
+  }
+
+  String _extractErrorMessage(http.Response response, String fallback) {
+    try {
+      final decoded = json.decode(response.body);
+      final parsed = _extractMessageFromDecoded(decoded);
+      if (parsed != null && parsed.trim().isNotEmpty) {
+        return parsed.trim();
+      }
+    } catch (_) {
+      final body = response.body.trim();
+      if (body.isNotEmpty && body.length < 240) return body;
+    }
+
+    return fallback;
+  }
+
+  String? _extractMessageFromDecoded(dynamic decoded) {
+    if (decoded is Map) {
+      for (final key in ['error', 'message', 'detail']) {
+        final value = decoded[key];
+        if (value is String && value.trim().isNotEmpty) return value;
+      }
+
+      final errors = decoded['errors'];
+      final parsedErrors = _flattenErrorNode(errors);
+      if (parsedErrors != null && parsedErrors.trim().isNotEmpty) {
+        return parsedErrors;
+      }
+
+      final nonFieldErrors = decoded['non_field_errors'];
+      final parsedNonFieldErrors = _flattenErrorNode(nonFieldErrors);
+      if (parsedNonFieldErrors != null &&
+          parsedNonFieldErrors.trim().isNotEmpty) {
+        return parsedNonFieldErrors;
+      }
+    }
+
+    if (decoded is List) {
+      return _flattenErrorNode(decoded);
+    }
+
+    if (decoded is String && decoded.trim().isNotEmpty) {
+      return decoded;
+    }
+
+    return null;
+  }
+
+  String? _flattenErrorNode(dynamic node) {
+    if (node == null) return null;
+    if (node is String) return node;
+    if (node is List) {
+      final parts = node
+          .map(_flattenErrorNode)
+          .whereType<String>()
+          .where((part) => part.trim().isNotEmpty)
+          .toList();
+      return parts.isEmpty ? null : parts.join('\n');
+    }
+    if (node is Map) {
+      final parts = <String>[];
+      node.forEach((key, value) {
+        final parsed = _flattenErrorNode(value);
+        if (parsed == null || parsed.trim().isEmpty) return;
+        parts.add('$key: $parsed');
+      });
+      return parts.isEmpty ? null : parts.join('\n');
+    }
+    return node.toString();
+  }
+
+  Never _throwForFailedResponse(http.Response response, String fallback) {
+    throw ClassifiedPostServiceException(
+      _extractErrorMessage(response, fallback),
+    );
   }
 
   /// Fetch a single classified post by ID or slug
@@ -76,10 +161,20 @@ class ClassifiedPostService {
         }),
       );
 
-      return response.statusCode == 200 || response.statusCode == 201;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+
+      _throwForFailedResponse(
+        response,
+        'Failed to report service. Please try again.',
+      );
     } catch (e) {
       print('Error reporting classified post: $e');
-      return false;
+      if (e is ClassifiedPostServiceException) rethrow;
+      throw ClassifiedPostServiceException(
+        'Failed to report service. Please try again.',
+      );
     }
   }
 
@@ -467,14 +562,20 @@ class ClassifiedPostService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return json.decode(response.body) as Map<String, dynamic>;
-      } else {
-        print('Create post failed: ${response.statusCode} - ${response.body}');
       }
-      return null;
+
+      print('Create post failed: ${response.statusCode} - ${response.body}');
+      _throwForFailedResponse(
+        response,
+        'Failed to create post. Please try again.',
+      );
     } catch (e, stackTrace) {
       print('Error creating post: $e');
       print('Stack trace: $stackTrace');
-      return null;
+      if (e is ClassifiedPostServiceException) rethrow;
+      throw ClassifiedPostServiceException(
+        'Failed to create post. Please try again.',
+      );
     }
   }
 
@@ -493,13 +594,19 @@ class ClassifiedPostService {
 
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
-      } else {
-        print('Update post failed: ${response.statusCode} - ${response.body}');
       }
-      return null;
+
+      print('Update post failed: ${response.statusCode} - ${response.body}');
+      _throwForFailedResponse(
+        response,
+        'Failed to update post. Please try again.',
+      );
     } catch (e) {
       print('Error updating post: $e');
-      return null;
+      if (e is ClassifiedPostServiceException) rethrow;
+      throw ClassifiedPostServiceException(
+        'Failed to update post. Please try again.',
+      );
     }
   }
 
@@ -552,14 +659,19 @@ class ClassifiedPostService {
 
       if (response.statusCode == 200) {
         return json.decode(response.body) as Map<String, dynamic>;
-      } else {
-        print(
-            'Update status failed: ${response.statusCode} - ${response.body}');
       }
-      return null;
+
+      print('Update status failed: ${response.statusCode} - ${response.body}');
+      _throwForFailedResponse(
+        response,
+        'Failed to update post status. Please try again.',
+      );
     } catch (e) {
       print('Error updating post status: $e');
-      return null;
+      if (e is ClassifiedPostServiceException) rethrow;
+      throw ClassifiedPostServiceException(
+        'Failed to update post status. Please try again.',
+      );
     }
   }
 

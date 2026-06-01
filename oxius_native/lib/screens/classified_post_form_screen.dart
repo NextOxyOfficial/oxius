@@ -369,10 +369,14 @@ class _ClassifiedPostFormScreenState extends State<ClassifiedPostFormScreen> {
         _showError('Failed to ${_isEditMode ? 'update' : 'create'} post');
       }
     } catch (e) {
-      _showError('Error: $e');
+      _showError(_friendlyErrorMessage(e));
     } finally {
       setState(() => _isSubmitting = false);
     }
+  }
+
+  String _friendlyErrorMessage(Object error) {
+    return error.toString().replaceFirst('Exception: ', '').trim();
   }
 
   void _showError(String message) {

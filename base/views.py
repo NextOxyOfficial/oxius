@@ -672,6 +672,21 @@ def update_micro_gig_post(request, pk):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def post_classified_service(request):
+    if not request.user.kyc and not request.user.is_superuser:
+        message = (
+            "Your KYC verification is pending. Please wait for approval before posting."
+            if request.user.kyc_pending
+            else "KYC verification is needed to post."
+        )
+        return Response(
+            {
+                "error": message,
+                "message": message,
+                "code": "kyc_verification_required",
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     data = request.data.copy()  # Make a mutable copy of the data
     data["user"] = request.user.id  # Associate the authenticated user
     category_id = data.get("category")

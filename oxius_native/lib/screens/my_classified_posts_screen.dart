@@ -145,8 +145,12 @@ class _MyClassifiedPostsScreenState extends State<MyClassifiedPostsScreen> {
         _showError('Failed to $action post');
       }
     } catch (e) {
-      _showError('Error: $e');
+      _showError(_friendlyErrorMessage(e));
     }
+  }
+
+  String _friendlyErrorMessage(Object error) {
+    return error.toString().replaceFirst('Exception: ', '').trim();
   }
 
   void _showError(String message) {
