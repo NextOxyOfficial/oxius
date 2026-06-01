@@ -546,7 +546,19 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                         output_field=IntegerField(),
                     ),
                     seen_penalty=Case(
-                        When(id__in=seen_post_ids, then=Value(-160)),
+                        When(
+                            Q(id__in=seen_post_ids)
+                            & Q(created_at__lt=thirty_days_ago),
+                            then=Value(-80),
+                        ),
+                        When(
+                            Q(id__in=seen_post_ids) & Q(created_at__lt=seven_days_ago),
+                            then=Value(-45),
+                        ),
+                        When(
+                            Q(id__in=seen_post_ids) & Q(created_at__lt=three_days_ago),
+                            then=Value(-18),
+                        ),
                         default=Value(0),
                         output_field=IntegerField(),
                     ),
@@ -577,14 +589,14 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     shuffle_boost=Mod(
                         Cast("id", BigIntegerField()) * Value(37)
                         + Value(feed_shuffle_seed),
-                        Value(89),
+                        Value(17),
                     ),
                 )
                 .select_related("author")
                 .order_by(
-                    "-seen_penalty",
-                    "-activity_score",
                     "-freshness_bucket",
+                    "-activity_score",
+                    "-seen_penalty",
                     "-shuffle_boost",
                     "shuffle_score",
                     "-created_at",
@@ -684,10 +696,10 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     output_field=IntegerField(),
                 ),
                 recency_score=Case(
-                    When(created_at__gte=one_day_ago, then=Value(34)),
-                    When(created_at__gte=three_days_ago, then=Value(24)),
-                    When(created_at__gte=seven_days_ago, then=Value(14)),
-                    When(created_at__gte=thirty_days_ago, then=Value(5)),
+                    When(created_at__gte=one_day_ago, then=Value(220)),
+                    When(created_at__gte=three_days_ago, then=Value(160)),
+                    When(created_at__gte=seven_days_ago, then=Value(90)),
+                    When(created_at__gte=thirty_days_ago, then=Value(24)),
                     default=Value(0),
                     output_field=IntegerField(),
                 ),
@@ -700,7 +712,18 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     output_field=IntegerField(),
                 ),
                 seen_penalty=Case(
-                    When(id__in=seen_post_ids, then=Value(-160)),
+                    When(
+                        Q(id__in=seen_post_ids) & Q(created_at__lt=thirty_days_ago),
+                        then=Value(-80),
+                    ),
+                    When(
+                        Q(id__in=seen_post_ids) & Q(created_at__lt=seven_days_ago),
+                        then=Value(-45),
+                    ),
+                    When(
+                        Q(id__in=seen_post_ids) & Q(created_at__lt=three_days_ago),
+                        then=Value(-18),
+                    ),
                     default=Value(0),
                     output_field=IntegerField(),
                 ),
@@ -742,7 +765,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 shuffle_boost=Mod(
                     Cast("id", BigIntegerField()) * Value(37)
                     + Value(feed_shuffle_seed),
-                    Value(89),
+                    Value(17),
                 ),
                 feed_score=(
                     F("relationship_score")
@@ -766,8 +789,8 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 "post_comments__author",
             )
             .order_by(
-                "-feed_score",
                 "-freshness_bucket",
+                "-feed_score",
                 "shuffle_score",
                 "-created_at",
             )
