@@ -1627,24 +1627,59 @@ def police_station(request):
     return Response(data=areas)
 
 
+def _send_smsinbd_message(phone, message):
+    url = "http://api.smsinbd.com/sms-api/sendsms"
+    payload = {
+        "api_token": settings.API_SMS,
+        "senderid": settings.SMS_SENDER_ID,
+        "contact_number": phone,
+        "message": message,
+    }
+
+    response = requests.get(url, params=payload, timeout=15)
+    response_text = response.text.strip()
+    response_data = None
+
+    try:
+        response_data = response.json()
+    except json.JSONDecodeError:
+        response_data = None
+
+    if not 200 <= response.status_code < 300:
+        return False, f"SMS service returned HTTP {response.status_code}"
+
+    if isinstance(response_data, dict):
+        provider_status = str(response_data.get("status", "")).lower()
+        if provider_status in {"success", "sent", "submitted"}:
+            return True, response_data.get("message", "SMS sent")
+
+        provider_message = response_data.get("message") or response_text
+        return False, provider_message or "SMS provider rejected the request"
+
+    success_words = ("success", "sent", "submitted", "accepted")
+    if any(word in response_text.lower() for word in success_words):
+        return True, response_text
+
+    return False, response_text or "SMS provider rejected the request"
+
+
 @permission_classes([IsAuthenticated])
 @api_view(["POST", "GET"])
 def smsSend(request):
     phone = request.GET.get("phone")
     message = "Welcome to AdsyClub.com! You can now connect people enjoy services around you and earn money by completing tasks. Thank you!"
-    url = "http://api.smsinbd.com/sms-api/sendsms"
-    payload = {
-        "api_token": settings.API_SMS,
-        "senderid": "8809617614969",
-        "contact_number": phone,
-        "message": message,
-    }
 
     try:
-        # Add timeout to prevent ECONNABORTED errors
-        response = requests.get(url, params=payload, timeout=10)
-        print(response.text)
-        return Response(response.text, status=status.HTTP_200_OK)
+        sent, provider_message = _send_smsinbd_message(phone, message)
+        if sent:
+            return Response(
+                {"message": "SMS sent successfully"},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"error": f"SMS delivery failed: {provider_message}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     except requests.exceptions.Timeout:
         print("SMS API request timed out")
         return Response(
@@ -1722,65 +1757,18 @@ def sendOTP(request):
     # Generate secure 6-digit OTP
     otp = str(random.randint(100000, 999999))
 
-    # Save OTP to user and clear any existing attempt counters
-    user.otp = otp
-    user.save()
-
-    # Clear any existing OTP attempt counters for this contact
-    from django.core.cache import cache
-
-    if method == "phone":
-        cache.delete(f"otp_attempts_{phone}")
-    elif method == "email":
-        cache.delete(f"otp_attempts_{email}")
-
     if method == "phone":
         message = f"Your AdsyClub password reset OTP is: {otp}. Valid for 10 minutes. Do not share this code."
-        url = "http://api.smsinbd.com/sms-api/sendsms"
-        payload = {
-            "api_token": settings.API_SMS,
-            "senderid": "8809617614969",
-            "contact_number": phone,
-            "message": message,
-        }
 
         try:
-            # Add timeout to prevent ECONNABORTED errors
-            response = requests.get(url, params=payload, timeout=15)
+            sent, provider_message = _send_smsinbd_message(phone, message)
+            if sent:
+                user.otp = otp
+                user.save()
 
-            # Check if response is valid JSON
-            try:
-                response_data = response.json()
-            except json.JSONDecodeError:
-                # If response is not JSON, try to parse the text response
-                response_text = response.text.strip()
-                if response.status_code == 200:
-                    # Some SMS APIs return simple text responses for success
-                    if (
-                        "success" in response_text.lower()
-                        or "sent" in response_text.lower()
-                    ):
-                        return Response(
-                            {
-                                "message": "OTP sent successfully to your phone number",
-                                "method": "phone",
-                                "masked_phone": phone[:-4] + "****",
-                            },
-                            status=status.HTTP_200_OK,
-                        )
-                    else:
-                        return Response(
-                            {"error": "Failed to send OTP. Please try again later."},
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-                else:
-                    return Response(
-                        {"error": "SMS service error. Please try again later."},
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    )
+                from django.core.cache import cache
 
-            # Handle JSON response
-            if response_data.get("status") == "success" or response.status_code == 200:
+                cache.delete(f"otp_attempts_{phone}")
                 return Response(
                     {
                         "message": "OTP sent successfully to your phone number",
@@ -1789,14 +1777,13 @@ def sendOTP(request):
                     },
                     status=status.HTTP_200_OK,
                 )
-            else:
-                error_message = response_data.get("message", "Failed to send OTP")
-                return Response(
-                    {
-                        "error": f"SMS delivery failed: {error_message}. Please try again or contact support."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+
+            return Response(
+                {
+                    "error": f"SMS delivery failed: {provider_message}. Please try again or contact support."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         except requests.exceptions.Timeout:
             return Response(

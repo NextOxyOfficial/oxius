@@ -414,7 +414,8 @@ SP_CANCEL = "https://adsyclub.com/deposit-withdraw/"
 SP_PREFIX = "ADSYCLUB_"
 
 # sms settings
-API_SMS = "SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd"
+API_SMS = os.getenv("API_SMS", "SplZ3f60tlt69pkZAEc8WHk3MbHkGeLYtJ1jElCd")
+SMS_SENDER_ID = os.getenv("SMS_SENDER_ID", "8809617626171")
 
 # Email Configuration (SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
