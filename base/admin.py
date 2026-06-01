@@ -745,7 +745,7 @@ class ClassifiedCategoryPostAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
-    list_filter = ("service_status", "negotiable", "active_service")
+    list_filter = ("category", "service_status", "negotiable", "active_service")
     search_fields = ("title",)
     list_per_page = 20
     ordering = ["-created_at"]  # Most recent first
