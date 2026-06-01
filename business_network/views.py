@@ -608,18 +608,14 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                         + Value(feed_shuffle_seed),
                         Value(17),
                     ),
-                    feed_score=(
-                        F("relationship_score")
-                        + F("recency_score")
-                        + F("activity_score")
-                        + F("shuffle_boost")
-                        + F("seen_penalty")
-                    ),
                 )
                 .select_related("author")
                 .order_by(
-                    "-feed_score",
+                    "-relationship_score",
                     "-freshness_bucket",
+                    "-activity_score",
+                    "-seen_penalty",
+                    "-shuffle_boost",
                     "shuffle_score",
                     "-created_at",
                 )
@@ -663,9 +659,9 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 relationship_score=Case(
                     When(author_id__in=users_following, then=Value(150)),
                     When(author_id__in=users_followers, then=Value(115)),
-                        When(author_id__in=second_degree_users, then=Value(95)),
-                        When(author_id__in=co_engaged_author_ids, then=Value(85)),
-                        When(author=user, then=Value(30)),
+                    When(author_id__in=second_degree_users, then=Value(95)),
+                    When(author_id__in=co_engaged_author_ids, then=Value(85)),
+                    When(author=user, then=Value(30)),
                     default=Value(-220),
                     output_field=IntegerField(),
                 ),
@@ -789,19 +785,6 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                     + Value(feed_shuffle_seed),
                     Value(17),
                 ),
-                feed_score=(
-                    F("relationship_score")
-                    + F("community_score")
-                    + F("location_score")
-                    + F("profession_score")
-                    + F("recency_score")
-                    + F("interest_score")
-                    + F("engagement_score")
-                    + F("activity_score")
-                    + F("shuffle_boost")
-                    + F("seen_penalty")
-                    + F("own_post_penalty")
-                ),
             )
             .select_related("author")
             .prefetch_related(
@@ -811,8 +794,12 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 "post_comments__author",
             )
             .order_by(
-                "-feed_score",
+                "-relationship_score",
                 "-freshness_bucket",
+                "-activity_score",
+                "-community_score",
+                "-seen_penalty",
+                "-shuffle_boost",
                 "shuffle_score",
                 "-created_at",
             )
