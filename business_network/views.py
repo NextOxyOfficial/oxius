@@ -543,7 +543,7 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                         When(author_id__in=second_degree_users, then=Value(95)),
                         When(author_id__in=co_engaged_author_ids, then=Value(85)),
                         When(author=user, then=Value(30)),
-                        default=Value(-80),
+                        default=Value(-220),
                         output_field=IntegerField(),
                     ),
                     recency_score=Case(
@@ -663,10 +663,10 @@ class BusinessNetworkPostListCreateView(generics.ListCreateAPIView):
                 relationship_score=Case(
                     When(author_id__in=users_following, then=Value(150)),
                     When(author_id__in=users_followers, then=Value(115)),
-                    When(author_id__in=second_degree_users, then=Value(95)),
-                    When(author_id__in=co_engaged_author_ids, then=Value(85)),
-                    When(author=user, then=Value(30)),
-                    default=Value(-80),
+                        When(author_id__in=second_degree_users, then=Value(95)),
+                        When(author_id__in=co_engaged_author_ids, then=Value(85)),
+                        When(author=user, then=Value(30)),
+                    default=Value(-220),
                     output_field=IntegerField(),
                 ),
                 community_score=(
