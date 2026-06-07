@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     "raise_up",  # Raise Up crowdfunding system
     "rideshare",  # Ride share MVP
     "app_versioning",  # Mobile app update prompts
+    "engagement",  # Engagement & assistant brain (event tracking + user state)
     "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
@@ -526,6 +527,10 @@ CELERY_BEAT_SCHEDULE = {
     "cleanup-stale-adsyconnect-calls": {
         "task": "adsyconnect.tasks.cleanup_stale_call_sessions",
         "schedule": timedelta(minutes=1),  # Clear stuck ringing/joining calls
+    },
+    "aggregate-user-engagement-states": {
+        "task": "engagement.tasks.aggregate_user_states",
+        "schedule": timedelta(minutes=30),  # Roll events into per-user state + lifecycle
     },
 }
 
