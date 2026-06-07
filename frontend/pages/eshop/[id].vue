@@ -16,9 +16,31 @@
     />
 
     <UContainer>
+      <div
+        v-if="storeUnavailableMessage"
+        class="flex items-center justify-center min-h-[360px] p-6"
+      >
+        <div
+          class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 max-w-lg w-full text-center"
+        >
+          <div
+            class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600"
+          >
+            <UIcon name="i-heroicons-lock-closed" class="h-7 w-7" />
+          </div>
+          <h1
+            class="text-xl font-semibold text-slate-900 dark:text-white mb-2"
+          >
+            স্টোরটি এখন দেখা যাচ্ছে না
+          </h1>
+          <p class="text-slate-600 dark:text-slate-300 leading-7">
+            {{ storeUnavailableMessage }}
+          </p>
+        </div>
+      </div>
       <!-- 1. Banner Section -->
       <div
-        v-if="!storeDetails"
+        v-else-if="!isLoading && !storeDetails"
         class="flex items-center justify-center min-h-[300px] p-6"
       >
         <div
@@ -706,11 +728,15 @@ const router = useRoute();
 const navigate = useRouter();
 const toast = useToast();
 const products = ref([]);
-const storeDetails = ref({});
+const storeDetails = ref(null);
 const { user, token } = useAuth();
-const isLoading = ref(false);
+const isLoading = ref(true);
 const isSeeMore = ref(false);
 const isDescriptionExpanded = ref(false);
+const storeUnavailableMessage = ref(null);
+const storeExpiredCode = "STORE_SUBSCRIPTION_EXPIRED";
+const defaultStoreExpiredMessage =
+  "এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন নবায়ন করলে স্টোরটি আবার দেখা যাবে।";
 
 // Sidebar state
 const isSidebarOpen = ref(false);
@@ -830,6 +856,7 @@ async function getMyProducts() {
   isLoading.value = true;
   try {
     const response = await get(`/store/${router.params.id}/products/`);
+    storeUnavailableMessage.value = null;
 
     // Handle different response structures
     if (response.data && Array.isArray(response.data)) {
@@ -853,6 +880,13 @@ async function getMyProducts() {
     }
   } catch (error) {
     console.error("Error fetching products:", error);
+    const expiredMessage = getStoreExpiredMessage(error);
+    if (expiredMessage) {
+      storeUnavailableMessage.value = expiredMessage;
+      storeDetails.value = null;
+      products.value = [];
+      return;
+    }
     toast.add({
       title: "Error loading products",
       description: "Could not load products. Please try again later.",
@@ -868,9 +902,17 @@ async function getStoreDetails() {
   isLoading.value = true;
   try {
     const { data } = await get(`/store/${router.params.id}/`);
+    storeUnavailableMessage.value = null;
     storeDetails.value = data;
   } catch (error) {
     console.error("Error fetching store details:", error);
+    const expiredMessage = getStoreExpiredMessage(error);
+    if (expiredMessage) {
+      storeUnavailableMessage.value = expiredMessage;
+      storeDetails.value = null;
+      products.value = [];
+      return;
+    }
     toast.add({
       title: "Error loading store",
       description: "Could not load store details. Please try again later.",
@@ -879,6 +921,14 @@ async function getStoreDetails() {
   } finally {
     isLoading.value = false;
   }
+}
+
+function getStoreExpiredMessage(error) {
+  const data = error?.response?.data;
+  if (data?.code !== storeExpiredCode) {
+    return null;
+  }
+  return data?.message_bn || data?.message || defaultStoreExpiredMessage;
 }
 
 // Get store reviews count for the specific store

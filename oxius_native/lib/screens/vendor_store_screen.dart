@@ -44,10 +44,12 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
   bool _isLoadingProducts = true;
   bool _isRefreshing = false;
   bool _hasMore = true;
+  bool _isStoreSubscriptionExpired = false;
 
   String? _selectedCategoryId;
   String _searchQuery = '';
   String? _error;
+  String? _storeSubscriptionExpiredMessage;
 
   int _currentPage = 1;
 
@@ -84,6 +86,8 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         _currentPage = 1;
         _hasMore = true;
         _error = null;
+        _isStoreSubscriptionExpired = false;
+        _storeSubscriptionExpiredMessage = null;
       });
     }
 
@@ -104,24 +108,48 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
       setState(() => _isLoadingStore = true);
     }
 
-    final store = await EshopService.fetchStoreDetails(widget.storeUsername);
+    try {
+      final store = await EshopService.fetchStoreDetails(widget.storeUsername);
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _storeData = store ??
+            {
+              'store_name': widget.storeName ?? widget.storeUsername,
+              'store_username': widget.storeUsername,
+              'image': widget.storeImage,
+            };
+        _isLoadingStore = false;
+      });
+    } on StoreSubscriptionExpiredException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _storeData = null;
+        _products = [];
+        _allProducts = [];
+        _categories = [];
+        _hasMore = false;
+        _isLoadingStore = false;
+        _isLoadingProducts = false;
+        _isStoreSubscriptionExpired = true;
+        _storeSubscriptionExpiredMessage = e.message;
+      });
     }
-
-    setState(() {
-      _storeData = store ??
-          {
-            'store_name': widget.storeName ?? widget.storeUsername,
-            'store_username': widget.storeUsername,
-            'image': widget.storeImage,
-          };
-      _isLoadingStore = false;
-    });
   }
 
   Future<void> _fetchProducts({required bool loadMore}) async {
+    if (_isStoreSubscriptionExpired) {
+      if (mounted) {
+        setState(() => _isLoadingProducts = false);
+      }
+      return;
+    }
+
     if (_isLoadingProducts && loadMore) {
       return;
     }
@@ -183,6 +211,21 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
         _extractCategories();
         _applyFilters();
         _isLoadingProducts = false;
+      });
+    } on StoreSubscriptionExpiredException catch (e) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoadingProducts = false;
+        _hasMore = false;
+        _allProducts = [];
+        _products = [];
+        _categories = [];
+        _error = null;
+        _isStoreSubscriptionExpired = true;
+        _storeSubscriptionExpiredMessage = e.message;
       });
     } catch (_) {
       if (!mounted) {
@@ -399,6 +442,18 @@ class _VendorStoreScreenState extends State<VendorStoreScreen> {
                 hasScrollBody: false,
                 child: Center(
                   child: AdsyLoadingIndicator(color: _indigo),
+                ),
+              )
+            else if (_isStoreSubscriptionExpired)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildStateCard(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'স্টোরটি এখন দেখা যাচ্ছে না',
+                  subtitle: _storeSubscriptionExpiredMessage ??
+                      EshopService.defaultStoreSubscriptionExpiredMessage,
+                  actionLabel: 'Refresh',
+                  onTap: () => _loadData(refresh: true),
                 ),
               )
             else ...[

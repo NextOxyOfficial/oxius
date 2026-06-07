@@ -41,6 +41,13 @@ from .view_modules.public_content_views import (
     getLogo,
     get_eshop_logo,
 )
+from subscription.utils import (
+    STORE_SUBSCRIPTION_EXPIRED_CODE,
+    STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN,
+    has_current_pro_access,
+    public_product_queryset,
+    sync_user_subscription_state,
+)
 
 # Create your views here.
 
@@ -2416,6 +2423,13 @@ class ProductListCreateView(generics.ListCreateAPIView):
     ordering_fields = ['created_at', 'updated_at', 'regular_price', 'views', 'order_count']
     ordering = ['-created_at']
 
+    def get_queryset(self):
+        if self.request.method in ["GET", "HEAD", "OPTIONS"]:
+            return public_product_queryset(
+                Product.objects.all().prefetch_related("category", "image")
+            ).order_by("-created_at")
+        return Product.objects.all().order_by("-created_at")
+
     def get_permissions(self):
         if self.request.method == "GET":
             return [AllowAny()]
@@ -2569,8 +2583,17 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductSerializer
     lookup_field = "slug"
 
+    def get_queryset(self):
+        if self.request.method in ["GET", "HEAD", "OPTIONS"]:
+            return public_product_queryset(Product.objects.all())
+        if self.request.user.is_staff or self.request.user.is_superuser:
+            return Product.objects.all()
+        if self.request.user.is_authenticated:
+            return Product.objects.filter(owner=self.request.user)
+        return Product.objects.all()
+
     def get_permissions(self):
-        if self.request.method == "PUT" and self.request.method == "PATCH":
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
             return [IsAuthenticated()]
 
         return [AllowAny()]
@@ -2734,7 +2757,7 @@ class ProductByIdView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         """Allow public reads but restrict mutations to the owner/admin scope."""
         if self.request.method in ["GET", "HEAD", "OPTIONS"]:
-            return Product.objects.all()
+            return public_product_queryset(Product.objects.all())
         return Product.objects.filter(owner=self.request.user)
 
     def update(self, request, *args, **kwargs):
@@ -2771,8 +2794,12 @@ class ProductByIdView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class FeaturedProductsListView(generics.ListAPIView):
-    queryset = Product.objects.filter(is_featured=True).order_by("-created_at")
     serializer_class = ProductSerializer
+
+    def get_queryset(self):
+        return public_product_queryset(
+            Product.objects.filter(is_featured=True)
+        ).order_by("-created_at")
 
 
 class UserProductPagination(PageNumberPagination):
@@ -2947,7 +2974,7 @@ class AllProductsListView(generics.ListAPIView):
             return self.get_random_products_from_categories(limit)
 
         # Default behavior - return products ordered by creation date
-        queryset = Product.objects.filter(is_active=True).prefetch_related(
+        queryset = public_product_queryset(Product.objects.all()).prefetch_related(
             "category", "image"
         )
 
@@ -3088,7 +3115,7 @@ class AllProductsListView(generics.ListAPIView):
 
         # Get all categories that have products
         categories_with_products = ProductCategory.objects.filter(
-            products__is_active=True
+            products__in=public_product_queryset(Product.objects.all())
         ).distinct()
 
         if not categories_with_products.exists():
@@ -3112,7 +3139,7 @@ class AllProductsListView(generics.ListAPIView):
 
             # Get random product IDs from this category
             category_product_ids = list(
-                Product.objects.filter(category=category, is_active=True)
+                public_product_queryset(Product.objects.filter(category=category))
                 .order_by("?")
                 .values_list("id", flat=True)[
                     : min(products_per_category, remaining_slots)
@@ -3126,7 +3153,7 @@ class AllProductsListView(generics.ListAPIView):
         # fill with any random products
         if remaining_slots > 0:
             additional_product_ids = list(
-                Product.objects.filter(is_active=True)
+                public_product_queryset(Product.objects.all())
                 .exclude(id__in=selected_product_ids)
                 .order_by("?")
                 .values_list("id", flat=True)[:remaining_slots]
@@ -3158,6 +3185,24 @@ class StoreDetailsView(generics.RetrieveUpdateAPIView):
     permission_classes = [AllowAny]
     lookup_field = "store_username"
 
+    def _subscription_expired_response(self):
+        return Response(
+            {
+                "code": STORE_SUBSCRIPTION_EXPIRED_CODE,
+                "message": STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN,
+                "message_bn": STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN,
+                "detail": STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN,
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    def _can_manage_store(self, request, store_owner):
+        user = request.user
+        return (
+            user.is_authenticated
+            and (user == store_owner or user.is_staff or user.is_superuser)
+        )
+
     def get_object(self):
         store_identity = self.kwargs.get(self.lookup_field)
         if not store_identity:
@@ -3171,6 +3216,20 @@ class StoreDetailsView(generics.RetrieveUpdateAPIView):
         if instance is None:
             raise Http404
         return instance
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        sync_user_subscription_state(instance, trigger='store-detail')
+        instance.refresh_from_db(fields=['is_pro', 'pro_validity'])
+
+        if (
+            not self._can_manage_store(request, instance)
+            and not has_current_pro_access(instance)
+        ):
+            return self._subscription_expired_response()
+
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
@@ -3276,6 +3335,33 @@ class StoreProductsListView(generics.ListAPIView):
     permission_classes = [AllowAny]
     pagination_class = ProductPagination
 
+    def _subscription_expired_response(self):
+        return Response(
+            {
+                "code": STORE_SUBSCRIPTION_EXPIRED_CODE,
+                "message": STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN,
+                "message_bn": STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN,
+                "detail": STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN,
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    def list(self, request, *args, **kwargs):
+        store_identity = self.kwargs.get("store_username")
+        store_owner = User.objects.filter(
+            Q(store_username=store_identity) | Q(username=store_identity)
+        ).first()
+        if not store_owner:
+            return Response({"detail": "Store not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        sync_user_subscription_state(store_owner, trigger='store-products')
+        store_owner.refresh_from_db(fields=['is_pro', 'pro_validity'])
+
+        if not has_current_pro_access(store_owner):
+            return self._subscription_expired_response()
+
+        return super().list(request, *args, **kwargs)
+
     def get_queryset(self):
         """Return products owned by the user with the specified store_username"""
         store_identity = self.kwargs.get("store_username")
@@ -3288,7 +3374,7 @@ class StoreProductsListView(generics.ListAPIView):
         if not store_owner:
             return Product.objects.none()
 
-        return Product.objects.filter(owner=store_owner, is_active=True).order_by(
+        return public_product_queryset(Product.objects.filter(owner=store_owner)).order_by(
             "-created_at"
         )
 
@@ -3471,7 +3557,9 @@ class OrderWithItemsCreate(generics.CreateAPIView):
 
                     # Get the product details
                     try:
-                        product = Product.objects.get(id=item_data["product"])
+                        product = public_product_queryset(Product.objects.all()).get(
+                            id=item_data["product"]
+                        )
                         product_owner = (
                             product.owner
                         )  # The seller who owns this product
@@ -3513,7 +3601,7 @@ class OrderWithItemsCreate(generics.CreateAPIView):
                         order.delete()
                         return Response(
                             {
-                                "detail": f"Product with id {item_data['product']} does not exist"
+                                "detail": f"Product with id {item_data['product']} does not exist or is unavailable"
                             },
                             status=status.HTTP_400_BAD_REQUEST,
                         )
@@ -3772,7 +3860,9 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
                         order=order, product_id=product_id
                     ).first()
 
-                    product = Product.objects.get(id=product_id)
+                    product = public_product_queryset(Product.objects.all()).get(
+                        id=product_id
+                    )
                     unit_price = Decimal(
                         str(
                             product.sale_price
@@ -3871,7 +3961,12 @@ class OrderWithItemsUpdate(generics.UpdateAPIView):
 
                 except Product.DoesNotExist:
                     return Response(
-                        {"error": f"Product with id {product_id} does not exist"},
+                        {
+                            "error": (
+                                f"Product with id {product_id} does not exist "
+                                "or is unavailable"
+                            )
+                        },
                         status=status.HTTP_404_NOT_FOUND,
                     )
 
@@ -4173,7 +4268,9 @@ def product_order_count(request, product_id):
     """
     Get the number of orders for a specific product
     """
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(
+        public_product_queryset(Product.objects.all()), id=product_id
+    )
 
     data = {
         "product_id": str(product.id),

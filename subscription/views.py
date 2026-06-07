@@ -273,16 +273,16 @@ class SubscriptionUpgradeView(APIView):
                     details=f"Cancelled due to upgrade to {new_plan.name} plan"
                 )
             
-            # Create new subscription
+            # Create and activate the new subscription through the model method so
+            # pro badge and product visibility stay in sync with the paid plan.
             new_subscription = Subscription.objects.create(
                 user=request.user,
                 plan=new_plan,
-                status='active',  # Change to active since payment was successful
-                start_date=timezone.now(),
-                end_date=timezone.now() + timezone.timedelta(days=new_plan.duration_days),
+                status='pending',
                 auto_renew=True,
                 payment_method=request.data.get('payment_method', 'account_balance') if new_plan.price > 0 else None
             )
+            new_subscription.activate()
             
             # Log activation
             SubscriptionLog.objects.create(

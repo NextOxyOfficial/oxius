@@ -2,9 +2,22 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'api_service.dart';
 
+class StoreSubscriptionExpiredException implements Exception {
+  final String message;
+
+  const StoreSubscriptionExpiredException(this.message);
+
+  @override
+  String toString() => message;
+}
+
 class EshopService {
   static String get baseUrl => ApiService.baseUrl;
   static String get _originBase => ApiService.baseUrl.replaceFirst('/api', '');
+  static const String storeSubscriptionExpiredCode =
+      'STORE_SUBSCRIPTION_EXPIRED';
+  static const String defaultStoreSubscriptionExpiredMessage =
+      'এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। সাবস্ক্রিপশন নবায়ন করলে স্টোরটি আবার দেখা যাবে।';
 
   static Future<Map<String, String>> _jsonHeaders() async {
     final headers = await ApiService.getHeaders();
@@ -56,6 +69,22 @@ class EshopService {
     }
 
     return normalized;
+  }
+
+  static bool _isStoreSubscriptionExpiredResponse(
+      int statusCode, dynamic decodedBody) {
+    return statusCode == 403 &&
+        decodedBody is Map &&
+        decodedBody['code'] == storeSubscriptionExpiredCode;
+  }
+
+  static String _storeSubscriptionExpiredMessage(dynamic decodedBody) {
+    if (decodedBody is Map) {
+      return decodedBody['message_bn']?.toString() ??
+          decodedBody['message']?.toString() ??
+          defaultStoreSubscriptionExpiredMessage;
+    }
+    return defaultStoreSubscriptionExpiredMessage;
   }
 
   static List<Map<String, dynamic>> _extractProductList(dynamic data) {
@@ -392,6 +421,12 @@ class EshopService {
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
+        final data = json.decode(response.body);
+        if (_isStoreSubscriptionExpiredResponse(response.statusCode, data)) {
+          throw StoreSubscriptionExpiredException(
+            _storeSubscriptionExpiredMessage(data),
+          );
+        }
         return null;
       }
 
@@ -400,6 +435,8 @@ class EshopService {
         return _normalizeStore(data);
       }
       return null;
+    } on StoreSubscriptionExpiredException {
+      rethrow;
     } catch (e) {
       print('EshopService: Error fetching store details: $e');
       return null;
@@ -427,6 +464,12 @@ class EshopService {
       ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
+        final data = json.decode(response.body);
+        if (_isStoreSubscriptionExpiredResponse(response.statusCode, data)) {
+          throw StoreSubscriptionExpiredException(
+            _storeSubscriptionExpiredMessage(data),
+          );
+        }
         throw Exception(
             'Failed to load store products: ${response.statusCode}');
       }
@@ -743,7 +786,8 @@ class EshopService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
         if (data is Map && data['saved'] == false) {
-          print('EshopService: Search history was not saved for anonymous user');
+          print(
+              'EshopService: Search history was not saved for anonymous user');
           return false;
         }
         print(

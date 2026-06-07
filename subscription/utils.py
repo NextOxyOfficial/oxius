@@ -1,6 +1,132 @@
 from django.utils import timezone
+from django.db.models import Q
 from base.models import User, Product
 from .models import Subscription, SubscriptionPlan, SubscriptionLog
+
+
+STORE_SUBSCRIPTION_EXPIRED_CODE = 'STORE_SUBSCRIPTION_EXPIRED'
+STORE_SUBSCRIPTION_EXPIRED_MESSAGE_BN = (
+    'এই স্টোরের সাবস্ক্রিপশনের মেয়াদ শেষ হয়েছে। '
+    'সাবস্ক্রিপশন নবায়ন করলে স্টোরটি আবার দেখা যাবে।'
+)
+
+
+def has_current_pro_access(user, now=None):
+    """Return True only while a user's pro access is currently valid."""
+    if not user or getattr(user, 'is_anonymous', False):
+        return False
+
+    now = now or timezone.now()
+    if not getattr(user, 'is_pro', False):
+        return False
+
+    pro_validity = getattr(user, 'pro_validity', None)
+    return pro_validity is None or pro_validity > now
+
+
+def public_store_queryset(queryset=None, now=None):
+    """Stores that are visible to visitors/customers."""
+    now = now or timezone.now()
+    if queryset is None:
+        queryset = User.objects.all()
+    return queryset.filter(is_pro=True).filter(
+        Q(pro_validity__isnull=True) | Q(pro_validity__gt=now)
+    )
+
+
+def public_product_queryset(queryset=None, now=None):
+    """Products that may appear in public eShop surfaces."""
+    now = now or timezone.now()
+    if queryset is None:
+        queryset = Product.objects.all()
+    return (
+        queryset.filter(is_active=True, owner__isnull=False, owner__is_pro=True)
+        .filter(Q(owner__pro_validity__isnull=True) | Q(owner__pro_validity__gt=now))
+    )
+
+
+def sync_user_subscription_state(user, now=None, trigger='request'):
+    """Expire stale subscriptions and align user pro/product state immediately."""
+    if not user or getattr(user, 'is_anonymous', False):
+        return {'is_pro_active': False, 'products_affected': 0}
+
+    now = now or timezone.now()
+    expired_count = 0
+    products_affected = 0
+
+    expired_subscriptions = Subscription.objects.select_related('plan').filter(
+        user=user,
+        status='active',
+        end_date__isnull=False,
+        end_date__lte=now,
+    )
+    for subscription in expired_subscriptions:
+        subscription.expire()
+        SubscriptionLog.objects.create(
+            subscription=subscription,
+            action='expired',
+            details=f'Subscription expired automatically by {trigger}',
+        )
+        expired_count += 1
+
+    active_paid_subscription = Subscription.objects.filter(
+        user=user,
+        status='active',
+        end_date__gt=now,
+        plan__price__gt=0,
+    ).order_by('-end_date').first()
+
+    if active_paid_subscription:
+        updates = []
+        if not user.is_pro:
+            user.is_pro = True
+            updates.append('is_pro')
+        if user.pro_validity != active_paid_subscription.end_date:
+            user.pro_validity = active_paid_subscription.end_date
+            updates.append('pro_validity')
+        if updates:
+            user.save(update_fields=updates)
+        result = manage_user_products_activation(
+            user,
+            activate=True,
+            reason=f'Active paid subscription sync via {trigger}',
+        )
+        products_affected += result.get('products_affected', 0)
+        return {
+            'is_pro_active': True,
+            'expired_subscriptions': expired_count,
+            'products_affected': products_affected,
+        }
+
+    if user.is_pro and user.pro_validity is None:
+        result = manage_user_products_activation(
+            user,
+            activate=True,
+            reason=f'Legacy pro access sync via {trigger}',
+        )
+        products_affected += result.get('products_affected', 0)
+        return {
+            'is_pro_active': True,
+            'expired_subscriptions': expired_count,
+            'products_affected': products_affected,
+        }
+
+    if user.is_pro or user.pro_validity is not None:
+        user.is_pro = False
+        user.pro_validity = None
+        user.save(update_fields=['is_pro', 'pro_validity'])
+
+    result = manage_user_products_activation(
+        user,
+        activate=False,
+        reason=f'No active paid subscription via {trigger}',
+    )
+    products_affected += result.get('products_affected', 0)
+    return {
+        'is_pro_active': False,
+        'expired_subscriptions': expired_count,
+        'products_affected': products_affected,
+    }
 
 
 def expire_due_subscriptions(now=None, trigger='system'):

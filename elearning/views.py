@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Batch, Division, Subject, VideoLesson
 from .serializers import BatchSerializer, DivisionSerializer, SubjectSerializer, VideoLessonSerializer
+from subscription.utils import public_product_queryset
 
 
 class BatchViewSet(viewsets.ReadOnlyModelViewSet):
@@ -26,7 +27,7 @@ class BatchViewSet(viewsets.ReadOnlyModelViewSet):
         from base.serializers import ProductSerializer
         
         batch = self.get_object()
-        products = batch.products.filter(is_active=True).select_related('owner').prefetch_related('image', 'category')
+        products = public_product_queryset(batch.products.all()).select_related('owner').prefetch_related('image', 'category')
         
         # Limit products for performance (can be made configurable)
         limit = request.query_params.get('limit', 10)
@@ -62,7 +63,7 @@ class DivisionViewSet(viewsets.ReadOnlyModelViewSet):
         from base.serializers import ProductSerializer
         
         division = self.get_object()
-        products = division.products.filter(is_active=True).select_related('owner').prefetch_related('image', 'category')
+        products = public_product_queryset(division.products.all()).select_related('owner').prefetch_related('image', 'category')
         
         # Limit products for performance (can be made configurable)
         limit = request.query_params.get('limit', 10)
