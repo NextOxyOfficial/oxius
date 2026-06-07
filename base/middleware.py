@@ -1,4 +1,64 @@
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponseNotAllowed, JsonResponse
+
+
+class AccountSuspendedMiddleware:
+    """Block every service API for a suspended user.
+
+    Suspended accounts can still hit the auth endpoints below (so the app can
+    log in, detect the suspension, show the lock screen and log out) — but any
+    other /api/ call returns 403 {code: account_suspended}. The app watches for
+    that code and locks itself.
+    """
+
+    # Paths a suspended user is still allowed to call.
+    WHITELIST = (
+        "/api/auth/login/",
+        "/api/auth/social/",
+        "/api/auth/register/",
+        "/api/auth/logout/",
+        "/api/auth/validate-token/",
+        "/api/token/refresh/",
+        "/api/auth/token/",
+    )
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        path = request.path or ""
+        if path.startswith("/api/") and not path.startswith(self.WHITELIST):
+            user_id = self._user_id_from_jwt(request)
+            if user_id is not None:
+                from .models import User
+
+                suspended = (
+                    User.objects.filter(pk=user_id, is_suspended=True)
+                    .only("id", "suspension_reason")
+                    .first()
+                )
+                if suspended is not None:
+                    return JsonResponse(
+                        {
+                            "code": "account_suspended",
+                            "detail": "Your account has been suspended.",
+                            "reason": suspended.suspension_reason or "",
+                        },
+                        status=403,
+                    )
+        return self.get_response(request)
+
+    @staticmethod
+    def _user_id_from_jwt(request):
+        auth = request.META.get("HTTP_AUTHORIZATION", "")
+        if not auth.startswith("Bearer "):
+            return None
+        try:
+            from rest_framework_simplejwt.tokens import AccessToken
+
+            token = AccessToken(auth.split(" ", 1)[1].strip())
+            return token.get("user_id")
+        except Exception:
+            return None
 
 
 class BlockConnectMethodMiddleware:

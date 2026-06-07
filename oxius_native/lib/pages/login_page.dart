@@ -8,6 +8,7 @@ import '../screens/privacy_policy_screen.dart';
 import '../screens/terms_and_conditions_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 import '../widgets/profile_completion_sheet.dart';
+import '../screens/suspended_account_screen.dart';
 import '../widgets/social_login_buttons.dart';
 
 class LoginPageRedesigned extends StatefulWidget {
@@ -64,6 +65,15 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       if (mounted && authResponse != null) {
         final userState = UserStateService();
         userState.updateUser(authResponse.user);
+
+        // Suspended accounts go straight to the lock screen — no app access.
+        if (authResponse.user.isSuspended) {
+          if (mounted) {
+            SuspendedAccountScreen.lock(context,
+                reason: authResponse.user.suspensionReason);
+          }
+          return;
+        }
 
         await FCMService.syncTokenWithBackend();
 
@@ -125,6 +135,14 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       if (mounted) {
         final userState = UserStateService();
         userState.updateUser(authResponse.user);
+
+        if (authResponse.user.isSuspended) {
+          if (mounted) {
+            SuspendedAccountScreen.lock(context,
+                reason: authResponse.user.suspensionReason);
+          }
+          return;
+        }
 
         await FCMService.syncTokenWithBackend();
         ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);

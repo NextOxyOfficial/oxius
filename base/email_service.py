@@ -462,6 +462,38 @@ def send_kyc_rejected_email(user, reason=""):
     return _send_email(subject, user.email, f"Hi {name}, KYC update.", html)
 
 
+def send_account_suspended_email(user, reason=""):
+    """Email sent when an account is suspended."""
+    name = user.name or user.first_name or user.username
+    subject = "Your AdsyClub account has been suspended"
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Your AdsyClub account has been <strong style="color:#DC2626;">suspended</strong>. While suspended you will not be able to use any of the app's services.</p>
+{"<p style='color:#374151;font-size:14px;line-height:1.6;margin:0 0 16px;'><strong>Reason:</strong> " + reason + "</p>" if reason else ""}
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">If you believe this is a mistake, please contact our support team.</p>
+"""
+
+    html = _base_template(subject, body, "If you believe this is an error, please contact our support team.")
+    return _send_email(subject, user.email, f"Hi {name}, your account has been suspended.", html)
+
+
+def send_account_unsuspended_email(user):
+    """Email sent when a suspended account is restored."""
+    name = user.name or user.first_name or user.username
+    subject = "Your AdsyClub account has been restored"
+
+    body = f"""
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi <strong>{name}</strong>,</p>
+<p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Good news — your AdsyClub account has been <strong style="color:{BRAND_COLOR};">restored</strong>. You can use the app again.</p>
+
+{_button("Open AdsyClub", SITE_URL)}
+"""
+
+    html = _base_template(subject, body)
+    return _send_email(subject, user.email, f"Hi {name}, your account has been restored.", html)
+
+
 def send_pro_subscription_email(user, months, amount):
     """Email when Pro subscription is activated"""
     name = user.name or user.first_name or user.username

@@ -177,6 +177,7 @@ SESSION_COOKIE_SAMESITE = "Lax"  # CSRF protection
 
 MIDDLEWARE = [
     "base.middleware.BlockConnectMethodMiddleware",  # Block HTTP CONNECT proxy requests
+    "base.middleware.AccountSuspendedMiddleware",  # 403 every service API for suspended users
     "django.middleware.security.SecurityMiddleware",
     "backend.https_redirect_middleware.CloudflareHttpsRedirectMiddleware",
     # Add whitenoise middleware right after security middleware

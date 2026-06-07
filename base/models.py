@@ -141,6 +141,12 @@ class User(AbstractUser):
     store_banner = models.ImageField(upload_to="images/", blank=True, null=True)
     product_limit = models.IntegerField(default=10)
     email_notifications = models.BooleanField(default=True)
+    # Account suspension. Unlike is_active (which blocks auth entirely), a
+    # suspended user can still authenticate so the app can show a "suspended"
+    # lock screen — but middleware blocks every service endpoint.
+    is_suspended = models.BooleanField(default=False)
+    suspension_reason = models.TextField(blank=True, default="")
+    suspended_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.email

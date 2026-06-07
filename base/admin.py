@@ -372,6 +372,75 @@ class CustomUserAdmin(UserAdmin):
         )
     joined_date.short_description = 'Joined'
 
+    actions = ("suspend_users", "unsuspend_users")
+
+    def save_model(self, request, obj, form, change):
+        """When is_suspended is toggled on the change form, stamp the time and
+        email the user."""
+        from django.utils import timezone
+
+        was_suspended = False
+        if change and obj.pk:
+            was_suspended = (
+                type(obj).objects.filter(pk=obj.pk, is_suspended=True).exists()
+            )
+
+        if obj.is_suspended and not obj.suspended_at:
+            obj.suspended_at = timezone.now()
+        if not obj.is_suspended:
+            obj.suspended_at = None
+
+        super().save_model(request, obj, form, change)
+
+        if obj.is_suspended and not was_suspended:
+            self._email_suspended(request, obj)
+        elif (not obj.is_suspended) and was_suspended:
+            self._email_unsuspended(request, obj)
+
+    @staticmethod
+    def _email_suspended(request, user):
+        try:
+            from .email_service import send_account_suspended_email
+
+            if user.email:
+                send_account_suspended_email(user, user.suspension_reason or "")
+        except Exception as e:
+            print(f"suspend email failed: {e}")
+
+    @staticmethod
+    def _email_unsuspended(request, user):
+        try:
+            from .email_service import send_account_unsuspended_email
+
+            if user.email:
+                send_account_unsuspended_email(user)
+        except Exception as e:
+            print(f"unsuspend email failed: {e}")
+
+    @admin.action(description="🚫 Suspend selected users (emails them)")
+    def suspend_users(self, request, queryset):
+        from django.utils import timezone
+
+        count = 0
+        for user in queryset.filter(is_suspended=False):
+            user.is_suspended = True
+            user.suspended_at = timezone.now()
+            user.save(update_fields=["is_suspended", "suspended_at"])
+            self._email_suspended(request, user)
+            count += 1
+        self.message_user(request, f"Suspended {count} user(s).")
+
+    @admin.action(description="✅ Unsuspend selected users (emails them)")
+    def unsuspend_users(self, request, queryset):
+        count = 0
+        for user in queryset.filter(is_suspended=True):
+            user.is_suspended = False
+            user.suspended_at = None
+            user.save(update_fields=["is_suspended", "suspended_at"])
+            self._email_unsuspended(request, user)
+            count += 1
+        self.message_user(request, f"Unsuspended {count} user(s).")
+
     def get_fieldsets(self, request, obj=None):
         if not obj:
             return self.add_fieldsets
@@ -394,6 +463,18 @@ class CustomUserAdmin(UserAdmin):
                         "gender",
                         "image",
                     )
+                },
+            ),
+            (
+                "🚫 Suspension",
+                {
+                    "fields": ("is_suspended", "suspension_reason"),
+                    "description": (
+                        "Suspending emails the user and locks them out of the "
+                        "app (they only see an 'Account suspended' screen with a "
+                        "logout button). Set a reason first if you want it shown "
+                        "to the user."
+                    ),
                 },
             ),
             (

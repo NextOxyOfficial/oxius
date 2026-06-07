@@ -6,6 +6,8 @@ import 'adsyconnect_realtime_service.dart';
 import 'online_status_service.dart';
 import 'rideshare_driver_presence_service.dart';
 import 'social_auth_service.dart';
+import 'fcm_service.dart';
+import '../screens/suspended_account_screen.dart';
 
 class User {
   final String id; // Changed from int to String to handle UUID
@@ -35,6 +37,8 @@ class User {
   final int? productLimit;
   final int profileCompletion;
   final List<Map<String, dynamic>> missingSteps;
+  final bool isSuspended;
+  final String suspensionReason;
 
   User({
     required this.id,
@@ -64,6 +68,8 @@ class User {
     this.productLimit,
     this.profileCompletion = 100,
     this.missingSteps = const [],
+    this.isSuspended = false,
+    this.suspensionReason = '',
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -127,6 +133,8 @@ class User {
               .map((e) => Map<String, dynamic>.from(e))
               .toList()
           : const [],
+      isSuspended: json['is_suspended'] == true,
+      suspensionReason: (json['suspension_reason'] ?? '').toString(),
     );
   }
 
@@ -157,6 +165,8 @@ class User {
       'store_username': storeUsername,
       'store_name': storeName,
       'product_limit': productLimit,
+      'is_suspended': isSuspended,
+      'suspension_reason': suspensionReason,
     };
   }
 
@@ -212,6 +222,16 @@ class AuthService {
   // Get token method for compatibility
   static Future<String?> getToken() async {
     return _accessToken;
+  }
+
+  /// Show the full-screen suspended lock if the account is suspended. Safe to
+  /// call from anywhere — uses the app's global navigator.
+  static void lockIfSuspended(User user) {
+    if (!user.isSuspended) return;
+    final ctx = FCMService.navigatorKey.currentContext;
+    if (ctx != null) {
+      SuspendedAccountScreen.lock(ctx, reason: user.suspensionReason);
+    }
   }
 
   // Initialize auth service and restore session if available
@@ -499,6 +519,11 @@ class AuthService {
         // Update user data if provided
         if (data['user'] != null) {
           _currentUser = User.fromJson(data['user']);
+          // If the account was suspended (possibly while logged in), lock the
+          // app immediately — they can only log out from here.
+          if (_currentUser?.isSuspended == true) {
+            lockIfSuspended(_currentUser!);
+          }
         }
 
         // Update tokens if provided
