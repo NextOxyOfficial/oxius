@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_config.dart';
+import 'fcm_service.dart';
 
 class AppUpdateInfo {
   final bool updateAvailable;
@@ -76,14 +77,32 @@ class AppUpdateService {
         return;
       }
 
-      if (!context.mounted) return;
+      // IMPORTANT: AppUpdateGate lives in MaterialApp.builder, which sits ABOVE
+      // the app's Navigator — so the context passed here has no Navigator
+      // ancestor and showDialog() would throw "No Navigator" (silently swallowed
+      // by the catch, so the prompt never appeared). Use the root navigator's
+      // own context instead.
+      final dialogContext = await _navigatorContext();
+      if (dialogContext == null) return;
+
       _dialogShowing = true;
-      await _showUpdateDialog(context, info);
+      await _showUpdateDialog(dialogContext, info);
     } catch (e) {
       debugPrint('[app_update] check failed: $e');
     } finally {
       _dialogShowing = false;
     }
+  }
+
+  /// The app's root navigator context (below the Navigator/Overlay), waiting
+  /// briefly for it to be ready on a cold start.
+  static Future<BuildContext?> _navigatorContext() async {
+    for (var i = 0; i < 25; i++) {
+      final ctx = FCMService.navigatorKey.currentContext;
+      if (ctx != null) return ctx;
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+    return null;
   }
 
   static Future<AppUpdateInfo?> _fetchUpdateInfo(String platform) async {
