@@ -1709,43 +1709,73 @@ class _InboxScreenState extends State<InboxScreen>
               child: Row(
                 children: [
                   if (canVisit) ...[
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _visitUpdate(update);
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF2563EB),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
+                    // Secondary action — a tonal blue "Visit" that reads as a
+                    // clear link-out without competing with the primary button.
+                    Expanded(
+                      child: SizedBox(
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _visitUpdate(update);
+                          },
+                          icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                          label: const Text('Visit'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF2563EB),
+                            backgroundColor: const Color(0xFFEFF6FF),
+                            side: const BorderSide(
+                              color: Color(0xFFBFDBFE),
+                              width: 1.4,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text('Visit'),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                   ],
+                  // Primary action — solid green with a soft glow so it stands
+                  // out as the main "dismiss / acknowledge" control.
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF059669),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 0,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF059669)
+                                .withValues(alpha: 0.28),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
-                      child: const Text(
-                        'Got it',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
+                      child: SizedBox(
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.check_circle_rounded,
+                              size: 19),
+                          label: const Text('Got it'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF059669),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
                     ),
