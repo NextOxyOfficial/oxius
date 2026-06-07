@@ -1631,6 +1631,54 @@ class EmailSettings(models.Model):
         verbose_name = 'Email Settings'
         verbose_name_plural = 'Email Settings'
         ordering = ['-updated_at']
-    
+
     def __str__(self):
         return f'Email Settings - {self.email_host}'
+
+
+class UserNotification(models.Model):
+    """A saved push notification, shown in the app's AdsyConnect "Updates" tab.
+
+    Created whenever a push notification is sent so users can find it later.
+    `deep_link` (e.g. "/business-network/posts/123" or "/eshop") drives the
+    in-app "Visit" button — only notifications that have a deep_link show the
+    button; plain announcements don't.
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="app_notifications",
+        null=True,
+        blank=True,
+        help_text="Recipient. Null = broadcast/announcement.",
+    )
+    title = models.CharField(max_length=255)
+    body = models.TextField(blank=True, default="")
+    image = models.URLField(max_length=500, blank=True, default="")
+    deep_link = models.CharField(
+        max_length=500,
+        blank=True,
+        default="",
+        help_text='In-app path to open, e.g. "/business-network/posts/123" or '
+        '"/eshop". Leave blank for no "Visit" button.',
+    )
+    notification_type = models.CharField(
+        max_length=50, blank=True, default="general"
+    )
+    data = models.JSONField(default=dict, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "user_notifications"
+        verbose_name = "User Notification"
+        verbose_name_plural = "User Notifications"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "is_read"]),
+            models.Index(fields=["-created_at"]),
+        ]
+
+    def __str__(self):
+        who = self.user.email if self.user else "broadcast"
+        return f"{who}: {self.title}"

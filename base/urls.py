@@ -10,6 +10,12 @@ from .cities_light_views import CityViewSet, CountryViewSet, RegionViewSet
 from .pay import *
 from .views import *
 from .upload_views import upload_file
+from .view_modules.notification_api_views import (
+    list_user_notifications,
+    mark_all_user_notifications_read,
+    mark_user_notification_read,
+    user_notifications_unread_count,
+)
 
 router = DefaultRouter()
 router.register(r"cities", CityViewSet)
@@ -336,4 +342,21 @@ urlpatterns = [
     path("search-history/save/", save_search_history, name="save_search_history"),
     path("search-history/clear/", clear_search_history, name="clear_search_history"),
     path("search-history/delete/", delete_search_history_item, name="delete_search_history_item"),
+    # Saved push notifications ("Updates" tab)
+    path("notifications/", list_user_notifications, name="user-notifications"),
+    path(
+        "notifications/unread-count/",
+        user_notifications_unread_count,
+        name="user-notifications-unread-count",
+    ),
+    path(
+        "notifications/mark-all-read/",
+        mark_all_user_notifications_read,
+        name="user-notifications-mark-all-read",
+    ),
+    path(
+        "notifications/<int:notification_id>/read/",
+        mark_user_notification_read,
+        name="user-notification-read",
+    ),
 ]

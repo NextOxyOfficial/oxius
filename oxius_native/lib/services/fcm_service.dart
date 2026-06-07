@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'deep_link_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -2608,6 +2609,16 @@ class FCMService {
         notificationType != null &&
         notificationType.isNotEmpty) {
       type = notificationType;
+    }
+
+    // Generic deep link from a saved push notification. Routed through the
+    // shared DeepLinkService so complex targets (e.g. /business-network/posts/123,
+    // /business-network/profile/<id>) resolve the same way as web/app links.
+    final deepLink = data['deep_link']?.toString();
+    if (deepLink != null && deepLink.trim().isNotEmpty) {
+      _log('   → Opening deep link: $deepLink');
+      DeepLinkService.instance.openInternalLink(deepLink.trim());
+      return;
     }
 
     final directRoute = data['route']?.toString() ?? data['screen']?.toString();

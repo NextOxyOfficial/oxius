@@ -210,6 +210,28 @@ class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
         return representation
 
 
+class UserNotificationSerializer(serializers.ModelSerializer):
+    # Convenience flag for the client: only show the "Visit" button when set.
+    has_visit = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserNotification
+        fields = [
+            "id",
+            "title",
+            "body",
+            "image",
+            "deep_link",
+            "has_visit",
+            "notification_type",
+            "is_read",
+            "created_at",
+        ]
+
+    def get_has_visit(self, obj):
+        return bool((obj.deep_link or "").strip())
+
+
 class NIDSerializer(serializers.ModelSerializer):
     class Meta:
         model = NID

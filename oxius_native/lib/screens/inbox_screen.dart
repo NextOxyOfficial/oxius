@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/adsyconnect_service.dart';
+import '../services/app_notification_service.dart';
+import '../services/deep_link_service.dart';
 import '../config/app_config.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -154,44 +156,69 @@ class _InboxScreenState extends State<InboxScreen>
 
     try {
       final headers = await ApiService.getHeaders();
+      final combined = <Map<String, dynamic>>[];
+
+      // 1) Existing admin notices (no "Visit" button).
       final response = await http.get(
         Uri.parse(ApiService.getApiUrl('admin-notice/?page=$_updatesPage')),
         headers: headers,
       );
-
-      print('=== Load Updates (AdminNotice) Page $_updatesPage ===');
-      print('Status: ${response.statusCode}');
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> notifications =
             data is List ? data : (data['results'] ?? []);
-        final int? count = data is Map ? data['count'] : null;
         final String? next = data is Map ? data['next'] : null;
+        _hasMoreUpdates = next != null;
+        combined.addAll(notifications.map<Map<String, dynamic>>((item) {
+          return {
+            'id': item['id'],
+            'title': item['title'] ?? 'System Notification',
+            'message': item['message'] ?? '',
+            'isRead': item['is_read'] ?? false,
+            'timestamp': DateTime.parse(
+                item['created_at'] ?? DateTime.now().toIso8601String()),
+            'type': item['notification_type'] ?? 'system',
+            'amount': item['amount'],
+            'referenceId': item['reference_id'],
+            'has_visit': false,
+            'deep_link': '',
+          };
+        }));
+      }
 
-        if (mounted) {
-          setState(() {
-            _updates = notifications.map((item) {
-              return {
-                'id': item['id'],
-                'title': item['title'] ?? 'System Notification',
-                'message': item['message'] ?? '',
-                'isRead': item['is_read'] ?? false,
-                'timestamp': DateTime.parse(
-                    item['created_at'] ?? DateTime.now().toIso8601String()),
-                'type': item['notification_type'] ?? 'system',
-                'amount': item['amount'],
-                'referenceId': item['reference_id'],
-              };
-            }).toList();
-            _hasMoreUpdates = next != null;
-            _isLoadingUpdates = false;
+      // 2) Saved push notifications — these carry a "Visit" button when they
+      //    have a deep link.
+      try {
+        final pushRes = await AppNotificationService.getNotifications(page: 1);
+        for (final AppNotification n
+            in (pushRes['items'] as List<AppNotification>)) {
+          combined.add({
+            'id': 'push_${n.id}',
+            'push_id': n.id,
+            'title': n.title,
+            'message': n.body,
+            'isRead': n.isRead,
+            'timestamp': n.createdAt ?? DateTime.now(),
+            'type': n.notificationType,
+            'amount': null,
+            'referenceId': null,
+            'has_visit': n.hasVisit,
+            'deep_link': n.deepLink,
           });
         }
-      } else {
-        if (mounted) {
-          setState(() => _isLoadingUpdates = false);
-        }
+      } catch (e) {
+        print('Error loading push notifications: $e');
+      }
+
+      // Newest first across both sources.
+      combined.sort((a, b) =>
+          (b['timestamp'] as DateTime).compareTo(a['timestamp'] as DateTime));
+
+      if (mounted) {
+        setState(() {
+          _updates = combined;
+          _isLoadingUpdates = false;
+        });
       }
     } catch (e) {
       print('Error loading updates: $e');
@@ -1173,6 +1200,18 @@ class _InboxScreenState extends State<InboxScreen>
     );
   }
 
+  void _visitUpdate(Map<String, dynamic> update) {
+    final link = (update['deep_link'] ?? '').toString().trim();
+    final pushId = update['push_id'];
+    if (pushId is int && update['isRead'] != true) {
+      AppNotificationService.markRead(pushId);
+      setState(() => update['isRead'] = true);
+    }
+    if (link.isNotEmpty) {
+      DeepLinkService.instance.openInternalLink(link);
+    }
+  }
+
   Widget _buildUpdateItem(Map<String, dynamic> update) {
     final bool isUnread = !update['isRead'];
 
@@ -1264,6 +1303,32 @@ class _InboxScreenState extends State<InboxScreen>
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  // "Visit" button — only on push notifications that carry a
+                  // deep link. Other updates (admin notices) don't show it.
+                  if (update['has_visit'] == true &&
+                      (update['deep_link'] ?? '').toString().trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        height: 30,
+                        child: FilledButton.icon(
+                          onPressed: () => _visitUpdate(update),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          icon: const Icon(Icons.open_in_new_rounded, size: 14),
+                          label: const Text('Visit',
+                              style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

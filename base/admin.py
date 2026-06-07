@@ -1705,3 +1705,57 @@ def custom_index(request, extra_context=None):
     return original_index(request, extra_context=extra_context)
 
 admin.site.index = custom_index
+
+
+@admin.register(UserNotification)
+class UserNotificationAdmin(admin.ModelAdmin):
+    """Compose + send a push notification. Creating a row here delivers the push
+    to the chosen user (or to everyone when 'user' is left blank) and stores it
+    so the user can find it in the app's Updates tab.
+
+    Set 'Deep link' to an in-app path (e.g. /business-network/posts/123 or
+    /eshop) to make it tappable with a 'Visit' button. Leave it blank for a
+    plain announcement.
+    """
+    list_display = (
+        "title",
+        "user",
+        "notification_type",
+        "deep_link",
+        "is_read",
+        "created_at",
+    )
+    list_filter = ("notification_type", "is_read", "created_at")
+    search_fields = ("title", "body", "user__email", "deep_link")
+    readonly_fields = ("created_at",)
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if change:
+            return  # only deliver on first creation
+        from .fcm_service import send_fcm_notification_multicast
+        from .push_notifications import _stringify
+
+        payload = dict(obj.data or {})
+        if obj.deep_link:
+            payload["deep_link"] = obj.deep_link
+        payload["notification_type"] = obj.notification_type
+        payload["notification_id"] = str(obj.id)
+
+        token_qs = FCMToken.objects.filter(is_active=True)
+        if obj.user:
+            token_qs = token_qs.filter(user=obj.user)
+        tokens = list(token_qs.values_list("token", flat=True))
+
+        if tokens:
+            try:
+                send_fcm_notification_multicast(
+                    tokens, obj.title, obj.body, _stringify(payload)
+                )
+                messages.success(
+                    request, f"Push sent to {len(tokens)} device(s)."
+                )
+            except Exception as e:
+                messages.error(request, f"Saved, but push failed: {e}")
+        else:
+            messages.warning(request, "Saved, but no active devices to push to.")
