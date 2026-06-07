@@ -108,6 +108,10 @@ dependencies:
   firebase_messaging: ^15.1.6
   flutter_local_notifications: ^19.5.0
 
+  # Social login (Google + Facebook via Firebase Auth)
+  google_sign_in: ^6.2.1
+  flutter_facebook_auth: ^7.1.1
+
   # Agora Video Call SDK
   agora_rtc_engine: ^6.3.0
   

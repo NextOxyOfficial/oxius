@@ -28,6 +28,7 @@ urlpatterns = [
     ),
     path("admin-notice/", getAdminNotice, name="admin_notice"),
     path("auth/register/", register, name="register_person"),
+    path("auth/social/", social_login, name="social_login"),
     path("user/<str:id>/", PersonRetrieveView.as_view(), name="person_detail"),
     path("top-contributors/", get_top_contributors, name="top_contributors"),
     path(

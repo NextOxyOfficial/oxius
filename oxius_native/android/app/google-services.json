@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:866607241594:android:d0be49d7002eaa42a79ec3",
+        "mobilesdk_app_id": "1:866607241594:android:7f934d27a708dbf0a79ec3",
         "android_client_info": {
-          "package_name": "com.oxius.app"
+          "package_name": "com.adsyclub.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "866607241594-db9qnsee72hn10dr42n854a62jqu0235.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyD8VY8UHWTyqJ0VQjRPJfipovo8PxjMUiM"
@@ -20,7 +25,71 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "866607241594-db9qnsee72hn10dr42n854a62jqu0235.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "866607241594-dqi9v5bqeipr6ihe75loafltfobca578.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.oxius.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:866607241594:android:d0be49d7002eaa42a79ec3",
+        "android_client_info": {
+          "package_name": "com.oxius.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "866607241594-93ifvl0vngbs12tm9dv013ogdl5finis.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oxius.app",
+            "certificate_hash": "33b460707c86f58801ef3e13b23707a63b39b921"
+          }
+        },
+        {
+          "client_id": "866607241594-csnat0mkknfkje1oa8i6pmg3aot3tpl4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oxius.app",
+            "certificate_hash": "bf9ade221a732f4de3a3a310a4c213f15574ef55"
+          }
+        },
+        {
+          "client_id": "866607241594-db9qnsee72hn10dr42n854a62jqu0235.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8VY8UHWTyqJ0VQjRPJfipovo8PxjMUiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "866607241594-db9qnsee72hn10dr42n854a62jqu0235.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "866607241594-dqi9v5bqeipr6ihe75loafltfobca578.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.oxius.app"
+              }
+            }
+          ]
         }
       }
     }

@@ -5,6 +5,7 @@ import 'api_service.dart';
 import 'adsyconnect_realtime_service.dart';
 import 'online_status_service.dart';
 import 'rideshare_driver_presence_service.dart';
+import 'social_auth_service.dart';
 
 class User {
   final String id; // Changed from int to String to handle UUID
@@ -32,6 +33,8 @@ class User {
   final String? storeUsername;
   final String? storeName;
   final int? productLimit;
+  final int profileCompletion;
+  final List<Map<String, dynamic>> missingSteps;
 
   User({
     required this.id,
@@ -59,6 +62,8 @@ class User {
     this.storeUsername,
     this.storeName,
     this.productLimit,
+    this.profileCompletion = 100,
+    this.missingSteps = const [],
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -113,6 +118,15 @@ class User {
       storeUsername: json['store_username'],
       storeName: json['store_name'],
       productLimit: json['product_limit'],
+      profileCompletion: json['profile_completion'] is num
+          ? (json['profile_completion'] as num).toInt()
+          : int.tryParse(json['profile_completion']?.toString() ?? '') ?? 100,
+      missingSteps: (json['missing_steps'] is List)
+          ? (json['missing_steps'] as List)
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList()
+          : const [],
     );
   }
 
@@ -248,6 +262,58 @@ class AuthService {
     }
   }
 
+  /// Social login / registration via Google or Facebook.
+  ///
+  /// [provider] must be `'google'` or `'facebook'`. Returns `null` if the user
+  /// cancels the provider picker. On success the backend find-or-creates the
+  /// user and we persist the session just like a normal login.
+  static Future<AuthResponse?> socialLogin(String provider) async {
+    final String? idToken;
+    if (provider == 'google') {
+      idToken = await SocialAuthService.signInWithGoogle();
+    } else if (provider == 'facebook') {
+      idToken = await SocialAuthService.signInWithFacebook();
+    } else {
+      throw Exception('Unsupported provider: $provider');
+    }
+
+    if (idToken == null) {
+      return null; // user cancelled
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiService.baseUrl}/auth/social/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'provider': provider,
+          'id_token': idToken,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final authResponse = AuthResponse.fromJson(data);
+        await _persistAuthData(authResponse);
+        // Clear the logout flag so session restoration works next launch.
+        return authResponse;
+      } else {
+        try {
+          final Map<String, dynamic> errorData = jsonDecode(response.body);
+          throw Exception(
+              errorData['error'] ?? errorData['detail'] ?? 'Social login failed');
+        } catch (_) {
+          throw Exception(
+              'Social login failed (${response.statusCode})');
+        }
+      }
+    } catch (e) {
+      // Roll back the firebase/provider session if backend exchange failed.
+      await SocialAuthService.signOut();
+      rethrow;
+    }
+  }
+
   // Logout function
   static Future<void> logout() async {
     print('🚀🚀🚀 NEW LOGOUT CODE IS RUNNING! 🚀🚀🚀');
@@ -287,6 +353,7 @@ class AuthService {
     await AdsyConnectRealtimeService.instance.disconnect();
     OnlineStatusService.stop();
     await RideshareDriverPresenceService.stop();
+    await SocialAuthService.signOut();
 
     _currentUser = null;
     _accessToken = null;

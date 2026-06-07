@@ -30,7 +30,55 @@ def _absolute_media_url(request, media_url):
     return media_url
 
 
-class UserSerializer(serializers.ModelSerializer):
+# Ordered list of profile-completion steps. Each entry: (key, label, predicate).
+# All steps are weighted equally. Powers the Flutter "complete your profile"
+# bottom sheet and the assistant ecosystem progress nudges.
+PROFILE_COMPLETION_STEPS = [
+    ("photo", "Add a profile photo", lambda u: bool(getattr(u, "image", None))),
+    ("name", "Add your full name", lambda u: bool((u.name or "").strip())),
+    ("phone", "Add your phone number", lambda u: bool((u.phone or "").strip())),
+    ("about", "Write a short bio", lambda u: bool((u.about or "").strip())),
+    ("address", "Add your address", lambda u: bool((u.address or "").strip())),
+    ("profession", "Add your profession", lambda u: bool((u.profession or "").strip())),
+    ("date_of_birth", "Add your date of birth", lambda u: u.date_of_birth is not None),
+    ("gender", "Add your gender", lambda u: bool((u.gender or "").strip())),
+]
+
+
+def compute_profile_completion(user):
+    """Return (percentage:int, missing_steps:list[{key,label}]) for a user."""
+    if user is None:
+        return 0, []
+    total = len(PROFILE_COMPLETION_STEPS)
+    missing = []
+    done = 0
+    for key, label, predicate in PROFILE_COMPLETION_STEPS:
+        try:
+            ok = bool(predicate(user))
+        except Exception:
+            ok = False
+        if ok:
+            done += 1
+        else:
+            missing.append({"key": key, "label": label})
+    percentage = round(done / total * 100) if total else 100
+    return percentage, missing
+
+
+class ProfileCompletionMixin(serializers.Serializer):
+    """Adds profile_completion (int %) and missing_steps to a user serializer."""
+
+    profile_completion = serializers.SerializerMethodField()
+    missing_steps = serializers.SerializerMethodField()
+
+    def get_profile_completion(self, obj):
+        return compute_profile_completion(obj)[0]
+
+    def get_missing_steps(self, obj):
+        return compute_profile_completion(obj)[1]
+
+
+class UserSerializer(ProfileCompletionMixin, serializers.ModelSerializer):
     post_count = serializers.SerializerMethodField()
     follower_count = serializers.SerializerMethodField()
     follow_count = serializers.SerializerMethodField()
@@ -188,7 +236,7 @@ class GetMicroGigPostTaskSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class UserSerializerGet(serializers.ModelSerializer):
+class UserSerializerGet(ProfileCompletionMixin, serializers.ModelSerializer):
     micro_gig_worker = GetMicroGigPostTaskSerializer(many=True, read_only=True)
 
     class Meta:

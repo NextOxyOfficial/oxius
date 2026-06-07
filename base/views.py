@@ -126,6 +126,133 @@ def register(request):
     )
 
 
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@csrf_exempt
+def social_login(request):
+    """Login or register a user via a Firebase ID token (Google / Facebook).
+
+    The Flutter client authenticates with firebase_auth (Google or Facebook),
+    obtains a Firebase ID token, and posts it here. We verify the token with the
+    Firebase Admin SDK, find-or-create the matching User, and return the same
+    {refresh, access, user} shape as the regular login endpoint so the client can
+    reuse its existing auth-handling code.
+    """
+    # Importing fcm_service guarantees the Firebase Admin SDK is initialized.
+    from . import fcm_service  # noqa: F401
+    from firebase_admin import auth as firebase_auth
+
+    id_token = (
+        request.data.get("id_token")
+        or request.data.get("idToken")
+        or request.data.get("token")
+    )
+    referral_code = request.data.get("refer") or request.data.get("referral_code")
+
+    if not id_token:
+        return Response(
+            {"error": "id_token is required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Verify the Firebase ID token (works for both Google and Facebook providers).
+    try:
+        decoded = firebase_auth.verify_id_token(id_token)
+    except Exception as e:
+        return Response(
+            {"error": f"Invalid or expired social token: {e}"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    email = (decoded.get("email") or "").strip().lower()
+    if not email:
+        return Response(
+            {"error": "This social account has no email. Please use another method."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    name = decoded.get("name") or ""
+    picture = decoded.get("picture") or ""
+
+    def _import_photo(target_user):
+        """Best-effort download of the provider photo into user.image (no save)."""
+        if not picture:
+            return False
+        try:
+            resp = requests.get(picture, timeout=8)
+            if resp.status_code == 200:
+                target_user.image.save(
+                    f"social_{uuid.uuid4().hex}.jpg",
+                    ContentFile(resp.content),
+                    save=False,
+                )
+                return True
+        except Exception as img_err:
+            print(f"Social photo import failed (non-blocking): {img_err}")
+        return False
+
+    user = User.objects.filter(email__iexact=email).first()
+    created = False
+
+    if user is None:
+        # Find-or-create: register a brand new social user.
+        ref_by = None
+        if referral_code:
+            ref_by = User.objects.filter(referral_code=referral_code).first()
+
+        user = User(email=email, name=name, is_active=True)
+        # Social accounts have no usable password until the user sets one.
+        user.set_unusable_password()
+        _import_photo(user)
+        user.save()
+        created = True
+
+        if ref_by:
+            user.refer = ref_by
+            user.save()
+            ref_by.refer_count += 1
+            ref_by.save()
+
+        # Welcome email + admin notification (non-blocking), mirroring register().
+        try:
+            from .email_service import (
+                send_welcome_email,
+                notify_admin_new_registration,
+            )
+            if user.email:
+                send_welcome_email(user)
+            notify_admin_new_registration(user)
+        except Exception as e:
+            print(f"Email notification error (non-blocking): {e}")
+    else:
+        if not user.is_active:
+            return Response(
+                {"error": "Your account is inactive. Please contact support."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        # Backfill name / photo for existing users who never set them.
+        changed = False
+        if name and not (user.name or "").strip():
+            user.name = name
+            changed = True
+        if picture and not user.image:
+            changed = _import_photo(user) or changed
+        if changed:
+            user.save()
+
+    refresh = RefreshToken.for_user(user)
+    user_data = UserSerializer(user, context={"request": request}).data
+
+    return Response(
+        {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": user_data,
+            "created": created,
+        },
+        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+    )
+
+
 @api_view(["GET"])
 def get_top_contributors(request):
     top_contributors = User.objects.filter(is_topcontributor=True)

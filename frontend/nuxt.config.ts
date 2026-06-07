@@ -178,8 +178,8 @@ export default defineNuxtConfig({
   $production: {
     runtimeConfig: {
       public: {
-        baseURL: "https://adsyclub.com",
-        domain: "https://adsyclub.com",
+        baseURL: process.env.NUXT_PUBLIC_BASE_URL || "https://www.adsyclub.com",
+        domain: process.env.NUXT_PUBLIC_DOMAIN || "https://www.adsyclub.com",
         deepLinkScheme: "adsyclub",
         homeDeepLinkPath: "home",
         androidAppPackage: "com.oxius.app",
@@ -211,7 +211,7 @@ export default defineNuxtConfig({
         name: "customProvider",
         provider: "~/providers/image-provider.ts",
         options: {
-          baseURL: "https://adsyclub.com",
+          baseURL: process.env.NUXT_PUBLIC_DOMAIN || "https://www.adsyclub.com",
         },
       },
     },

@@ -7,6 +7,8 @@ import '../utils/network_error_handler.dart';
 import '../screens/privacy_policy_screen.dart';
 import '../screens/terms_and_conditions_screen.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../widgets/profile_completion_sheet.dart';
+import '../widgets/social_login_buttons.dart';
 
 class LoginPageRedesigned extends StatefulWidget {
   const LoginPageRedesigned({super.key});
@@ -65,6 +67,9 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
 
         await FCMService.syncTokenWithBackend();
 
+        // Queue the "complete your profile" sheet if the profile is incomplete.
+        ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -99,6 +104,56 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _handleSocialLogin(String provider) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final authResponse = await AuthService.socialLogin(provider);
+
+      // Null means the user cancelled the provider picker — silently abort.
+      if (authResponse == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+
+      if (mounted) {
+        final userState = UserStateService();
+        userState.updateUser(authResponse.user);
+
+        await FCMService.syncTokenWithBackend();
+        ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login Successful!'),
+              backgroundColor: _primaryColor,
+              duration: Duration(seconds: 2),
+            ),
+          );
+
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) {
+            Navigator.of(context).pushReplacementNamed('/');
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = NetworkErrorHandler.isNetworkError(e)
+              ? NetworkErrorHandler.getErrorMessage(e)
+              : 'Could not sign in with $provider. Please try again.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -376,6 +431,44 @@ class _LoginPageRedesignedState extends State<LoginPageRedesigned> {
                           ],
                         ),
                 ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFEFF4FF), Color(0xFFF8FBFF)],
+                ),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFCFE0FF)),
+                boxShadow: [
+                  BoxShadow(
+                    color: _primaryColor.withValues(alpha: 0.10),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'OR CONTINUE WITH',
+                    style: AppFonts.roboto(
+                      fontSize: 10.5,
+                      color: _mutedTextColor,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SocialLoginButtons(
+                    enabled: !_isLoading,
+                    onProvider: _handleSocialLogin,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 18),

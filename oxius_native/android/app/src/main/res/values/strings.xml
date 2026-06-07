@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AdsyClub</string>
+
+    <!-- ============================================================
+         Facebook Login credentials.
+         Replace the placeholders below with the values from your
+         Facebook app (https://developers.facebook.com/apps):
+           - facebook_app_id        : your numeric App ID
+           - facebook_client_token  : Settings > Advanced > Client Token
+           - fb_login_protocol_scheme : "fb" + your App ID  (e.g. fb1234567890)
+         Until these are set, the Facebook button will fail at runtime.
+         ============================================================ -->
+    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
+    <string name="facebook_client_token">YOUR_FACEBOOK_CLIENT_TOKEN</string>
+    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
+</resources>

@@ -7,9 +7,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 
 import '../services/auth_service.dart';
+import '../services/fcm_service.dart';
 import '../services/geo_service.dart';
 import '../services/user_state_service.dart';
 import '../utils/network_error_handler.dart';
+import '../widgets/profile_completion_sheet.dart';
+import '../widgets/social_login_buttons.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -348,6 +351,7 @@ class _RegisterPageState extends State<RegisterPage> {
         if (mounted && loginResult != null) {
           final userState = UserStateService();
           userState.updateUser(loginResult.user);
+          ProfileCompletionSheet.markPendingIfNeeded(loginResult.user);
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -391,6 +395,48 @@ class _RegisterPageState extends State<RegisterPage> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _handleSocialRegister(String provider) async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final authResponse = await AuthService.socialLogin(provider);
+
+      // Null means the user cancelled the provider picker.
+      if (authResponse == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+
+      if (mounted) {
+        final userState = UserStateService();
+        userState.updateUser(authResponse.user);
+
+        await FCMService.syncTokenWithBackend();
+        ProfileCompletionSheet.markPendingIfNeeded(authResponse.user);
+
+        if (mounted) {
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) {
+            Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = NetworkErrorHandler.isNetworkError(e)
+              ? NetworkErrorHandler.getErrorMessage(e)
+              : 'Could not sign up with $provider. Please try again.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -481,9 +527,107 @@ class _RegisterPageState extends State<RegisterPage> {
         children: [
           _buildTopBar(),
           const SizedBox(height: 12),
+          _buildSocialQuickSignup(),
+          const SizedBox(height: 14),
           _buildRegistrationCard(isMobile),
           const SizedBox(height: 14),
           _buildFooter(),
+        ],
+      ),
+    );
+  }
+
+  /// Highlighted social sign-up section shown at the very top of the register
+  /// screen so users see the one-tap options the moment they land on the page.
+  Widget _buildSocialQuickSignup() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFEFF4FF), Color(0xFFF8FBFF)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFCFE0FF)),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryColor.withValues(alpha: 0.10),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFCFE0FF)),
+                ),
+                child: const Icon(Icons.bolt_rounded,
+                    color: _primaryColor, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sign up in seconds',
+                      style: AppFonts.roboto(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: _headingTextColor,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      'Use your Google or Facebook account',
+                      style: AppFonts.roboto(
+                        fontSize: 11.5,
+                        color: _bodyTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SocialLoginButtons(
+            enabled: !_isLoading,
+            onProvider: _handleSocialRegister,
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              const Expanded(
+                child: Divider(color: Color(0xFFD8E1EA), thickness: 1),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  'OR REGISTER WITH EMAIL',
+                  style: AppFonts.roboto(
+                    fontSize: 10.5,
+                    color: const Color(0xFF64748B),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+              const Expanded(
+                child: Divider(color: Color(0xFFD8E1EA), thickness: 1),
+              ),
+            ],
+          ),
         ],
       ),
     );

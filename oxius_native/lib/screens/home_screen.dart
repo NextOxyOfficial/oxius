@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/footer.dart';
+import '../widgets/profile_completion_sheet.dart';
 import '../widgets/mobile_drawer.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/sale_category.dart';
@@ -89,6 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted && !_disposed) {
         _scrollService.initialize(_scrollController);
         _handleInitialScrollIfNeeded();
+        // Show the "complete your profile" sheet once after login.
+        ProfileCompletionSheet.maybeShowPending(context);
       }
     });
     _fetchRecentPosts();
