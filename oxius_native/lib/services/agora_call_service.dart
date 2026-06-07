@@ -19,9 +19,12 @@ void _log(String message) {
 }
 
 class AgoraCallService {
+  // Agora RTC App ID. Must match the project whose certificate the backend
+  // signs tokens with (AGORA_APP_ID / AGORA_APP_CERTIFICATE in the server .env).
+  // Overridable at build time via --dart-define=AGORA_APP_ID=...
   static const String appId = String.fromEnvironment(
     'AGORA_APP_ID',
-    defaultValue: '9eba1a50633041d08dbe75b0fde2ed8a',
+    defaultValue: '4d37208672ee49108516015d647e73ef',
   );
   static const Duration _requestTimeout = Duration(seconds: 10);
   static const Duration _restorableCallAge = Duration(hours: 8);
