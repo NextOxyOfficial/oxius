@@ -41,6 +41,9 @@ def send_push_notification(
     if deep_link:
         base_data["deep_link"] = deep_link
     base_data["notification_type"] = notification_type
+    # Match the proven like/comment payloads so Android reliably routes the tap
+    # to the app's notification handler (which then follows deep_link).
+    base_data.setdefault("click_action", "FLUTTER_NOTIFICATION_CLICK")
 
     created = []
 

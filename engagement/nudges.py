@@ -45,7 +45,7 @@ def _has_balance(state):
 
 
 CATALOG = [
-    # 1) Money on the table — verify KYC to withdraw. Highest value/intent.
+    # 1) Money on the table — verify KYC to withdraw. Link → wallet (matches subject).
     Nudge(
         key="kyc_withdraw",
         priority=100,
@@ -53,12 +53,13 @@ CATALOG = [
         deep_link=f"{SITE}/deposit-withdraw",
         eligible=lambda s, u: bool(s.pending.get("kyc")) and _has_balance(s),
         build=lambda s, u: (
-            "Withdraw your earnings 💰",
-            f"You have ৳{int(float(s.pending['withdrawable_balance']))} ready. "
-            f"Verify your KYC to withdraw it, {_name(u)}.",
+            "৳{} তুলে নিন 💰".format(int(float(s.pending["withdrawable_balance"]))),
+            "{}, আপনার ৳{} ব্যালেন্স উত্তোলনের জন্য প্রস্তুত। KYC যাচাই করে এখনই তুলে নিন।".format(
+                _name(u), int(float(s.pending["withdrawable_balance"]))
+            ),
         ),
     ),
-    # 2) Subscription expiring — keep your store/Pro alive. Time-sensitive.
+    # 2) Subscription expiring — keep your store/Pro alive. Link → upgrade-to-pro.
     Nudge(
         key="subscription_expiring",
         priority=95,
@@ -66,11 +67,11 @@ CATALOG = [
         deep_link=f"{SITE}/upgrade-to-pro",
         eligible=lambda s, u: bool(s.pending.get("subscription_expiring")),
         build=lambda s, u: (
-            "Your Pro is about to expire ⏳",
-            "Renew now to keep your store visible and your Pro features active.",
+            "আপনার Pro-এর মেয়াদ শেষ হচ্ছে ⏳",
+            "এখনই নবায়ন করুন — আপনার স্টোর দৃশ্যমান ও Pro সুবিধা চালু রাখতে।",
         ),
     ),
-    # 3) Win-back dormant users (7–30 days idle).
+    # 3) Win-back dormant users (7–30 days idle). Link → feed.
     Nudge(
         key="winback_dormant",
         priority=70,
@@ -78,12 +79,12 @@ CATALOG = [
         deep_link=f"{SITE}/business-network",
         eligible=lambda s, u: s.lifecycle_stage == "dormant",
         build=lambda s, u: (
-            f"We miss you, {_name(u)} 👋",
-            "Your network has been busy while you were away — see what's new.",
+            "আপনাকে মিস করছি, {} 👋".format(_name(u)),
+            "আপনি না থাকার সময় আপনার নেটওয়ার্কে অনেক কিছু হয়েছে — দেখে নিন কী নতুন।",
         ),
         reliable=False,
     ),
-    # 4) At-risk re-engagement (3–7 days idle) — pull them back early.
+    # 4) At-risk re-engagement (3–7 days idle). Link → feed.
     Nudge(
         key="at_risk_network",
         priority=65,
@@ -91,12 +92,12 @@ CATALOG = [
         deep_link=f"{SITE}/business-network",
         eligible=lambda s, u: s.lifecycle_stage == "at_risk",
         build=lambda s, u: (
-            "New posts from your network 📨",
-            "People you follow have shared updates. Take a quick look.",
+            "আপনার নেটওয়ার্কে নতুন পোস্ট 📨",
+            "আপনি যাদের ফলো করেন তারা নতুন আপডেট শেয়ার করেছেন। এক নজরে দেখুন।",
         ),
         reliable=False,
     ),
-    # 5) Onboarding nudge — help brand-new users reach their first value.
+    # 5) Onboarding nudge — help brand-new users reach their first value. Link → feed.
     Nudge(
         key="onboarding_explore",
         priority=60,
@@ -104,8 +105,8 @@ CATALOG = [
         deep_link=f"{SITE}/business-network",
         eligible=lambda s, u: s.lifecycle_stage in ("new", "onboarding"),
         build=lambda s, u: (
-            f"Welcome to AdsyClub, {_name(u)} 🎉",
-            "Follow people, explore your feed, and discover ways to earn.",
+            "AdsyClub-এ স্বাগতম, {} 🎉".format(_name(u)),
+            "মানুষজনকে ফলো করুন, ফিড ঘুরে দেখুন, আর আয়ের নতুন উপায় খুঁজে নিন।",
         ),
     ),
 ]
