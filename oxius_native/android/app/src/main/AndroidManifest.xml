@@ -83,6 +83,24 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+
+            <!-- Disable Flutter's built-in automatic deep linking.
+                 Deep links are handled exclusively by the app_links package
+                 (DeepLinkService). Leaving Flutter's default deep linking
+                 enabled causes every App Link intent to ALSO be pushed onto
+                 the Navigator as a raw named route (e.g.
+                 "/details/<slug>?fbclid=..."), which renders the
+                 "Page not found" screen on top of the correct page.
+                 IMPORTANT: this flag MUST live inside <activity>. Flutter's
+                 Android embedding reads it from the Activity's metadata
+                 (FlutterActivity.shouldHandleDeeplinking); placed at the
+                 <application> level it is silently ignored, which is why
+                 Android still showed "Page not found" while iOS (Info.plist
+                 FlutterDeepLinkingEnabled, which is global) worked. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -144,16 +162,6 @@
                 <data android:scheme="adsyclub"/>
             </intent-filter>
         </activity>
-        <!-- Disable Flutter's built-in automatic deep linking.
-             Deep links are handled exclusively by the app_links package
-             (DeepLinkService). Leaving Flutter's default deep linking enabled
-             causes every App Link intent to ALSO be pushed onto the Navigator
-             as a raw named route (e.g. "/details/<slug>?fbclid=..."), which is
-             not registered and renders the "Page not found" screen on top of
-             the correct page. -->
-        <meta-data
-            android:name="flutter_deeplinking_enabled"
-            android:value="false" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
