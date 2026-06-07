@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/translation_service.dart';
 import '../services/eshop_service.dart';
@@ -658,11 +659,10 @@ class _EshopProductCardState extends State<_EshopProductCard> {
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(12)),
-                          child: Image.network(
+                          child: AppImage.network(
                             imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
+                            errorWidget: Container(
                               color: Colors.grey.shade100,
                               child: Icon(
                                 Icons.shopping_bag_outlined,

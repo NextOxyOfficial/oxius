@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/gigs_service.dart';
 import '../services/api_service.dart';
@@ -892,13 +893,13 @@ class _MicroGigsSectionState extends State<MicroGigsSection> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: Image.network(
+                  child: AppImage.network(
                     imageUrl,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.work_outline,
-                          size: 20, color: Colors.grey.shade400);
-                    },
+                    width: 44,
+                    height: 44,
+                    errorWidget: Icon(Icons.work_outline,
+                        size: 20, color: Colors.grey.shade400),
                   ),
                 ),
               ),

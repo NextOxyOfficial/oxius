@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -258,21 +259,19 @@ class _HotDealsSectionState extends State<HotDealsSection> {
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(12)),
-                        child: Image.network(
+                        child: AppImage.network(
                           imageUrl,
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade100,
-                              child: Icon(
-                                Icons.shopping_bag_outlined,
-                                size: 32,
-                                color: Colors.grey.shade400,
-                              ),
-                            );
-                          },
+                          errorWidget: Container(
+                            color: Colors.grey.shade100,
+                            child: Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 32,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
                         ),
                       )
                     else

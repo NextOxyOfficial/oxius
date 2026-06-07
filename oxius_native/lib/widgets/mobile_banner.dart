@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/deep_link_service.dart';
 import '../services/eshop_service.dart';
@@ -436,28 +437,17 @@ class _MobileBannerWidgetState extends State<MobileBannerWidget> {
       children: [
         // Banner Image
         if (imageUrl.isNotEmpty)
-          Image.network(
+          AppImage.network(
             imageUrl,
             fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                color: Colors.grey.shade200,
-                child: const Center(
-                  child: AdsyLoadingIndicator(strokeWidth: 2),
-                ),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                color: Colors.grey.shade300,
-                child: Icon(
-                  Icons.broken_image,
-                  size: 48,
-                  color: Colors.grey.shade500,
-                ),
-              );
-            },
+            errorWidget: Container(
+              color: Colors.grey.shade300,
+              child: Icon(
+                Icons.broken_image,
+                size: 48,
+                color: Colors.grey.shade500,
+              ),
+            ),
           )
         else
           Container(

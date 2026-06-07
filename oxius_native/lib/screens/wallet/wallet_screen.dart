@@ -717,12 +717,12 @@ class _WalletScreenState extends State<WalletScreen> {
         // Show loading skeleton at bottom
         if (index == transactions.length) {
           return Container(
-            margin: const EdgeInsets.only(bottom: 6),
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _slate200, width: 1),
+              color: const Color(0xFFFAFBFC),
+              border: Border(
+                bottom: BorderSide(color: _slate200, width: 0.8),
+              ),
             ),
             child: Row(
               children: [
@@ -771,19 +771,12 @@ class _WalletScreenState extends State<WalletScreen> {
         return InkWell(
           onTap: () => _showTransactionDetails(txn),
           child: Container(
-            margin: const EdgeInsets.only(bottom: 6),
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _slate200, width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
+              color: index.isEven ? Colors.white : const Color(0xFFFAFBFC),
+              border: Border(
+                bottom: BorderSide(color: _slate200, width: 0.8),
+              ),
             ),
             child: Row(
               children: [

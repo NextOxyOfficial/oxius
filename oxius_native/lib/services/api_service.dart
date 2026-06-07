@@ -9,6 +9,12 @@ class ApiService {
   static String get mediaBaseUrl => AppConfig.mediaBaseUrl;
   static const String _tokenKey = 'adsyclub_token';
 
+  /// Shared HTTP client so requests reuse the same keep-alive TCP/TLS
+  /// connection pool instead of opening (and TLS-handshaking) a fresh socket
+  /// on every call. The top-level `http.get` creates+closes a client per
+  /// request; routing hot paths through this client noticeably cuts latency.
+  static final http.Client client = http.Client();
+
   // Helper method to get full API URL
   static String getApiUrl(String path) {
     final cleanPath = path.startsWith('/') ? path.substring(1) : path;

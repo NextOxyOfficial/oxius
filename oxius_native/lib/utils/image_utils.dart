@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import 'package:shimmer/shimmer.dart';
 
 /// Global image utility to handle CORS and network issues
 /// Use this instead of Image.network throughout the app
@@ -23,7 +23,14 @@ class AppImage {
     return url;
   }
 
-  /// Load network image with CORS handling
+  /// Load network image with CORS handling, disk+memory caching and automatic
+  /// down-scaling.
+  ///
+  /// [cacheWidth] caps the decoded/disk-cached pixel width. When omitted it is
+  /// derived from the display [width] (~3x for retina, clamped) so avatars and
+  /// thumbnails are decoded small — far less RAM, no jank, faster scroll. Full
+  /// width (no [width]) caches up to 1080px. Pass [fullResolution]: true to opt
+  /// out (e.g. a zoomable full-screen viewer).
   static Widget network(
     String? url, {
     double? width,
@@ -35,6 +42,8 @@ class AppImage {
     Color? color,
     BlendMode? colorBlendMode,
     Alignment alignment = Alignment.center,
+    int? cacheWidth,
+    bool fullResolution = false,
   }) {
     if (url == null || url.isEmpty) {
       return _buildErrorWidget(width, height, errorWidget);
@@ -42,6 +51,12 @@ class AppImage {
 
     // Use CORS-safe URL for web
     final safeUrl = _getCorsProxyUrl(url);
+
+    final int? memWidth = _resolveCacheWidth(
+      explicit: cacheWidth,
+      displayWidth: width,
+      fullResolution: fullResolution,
+    );
 
     Widget imageWidget = CachedNetworkImage(
       imageUrl: safeUrl,
@@ -51,6 +66,10 @@ class AppImage {
       color: color,
       colorBlendMode: colorBlendMode,
       alignment: alignment,
+      // Decode at a capped size — the single biggest win for list scrolling.
+      memCacheWidth: memWidth,
+      maxWidthDiskCache: memWidth,
+      fadeInDuration: const Duration(milliseconds: 180),
       placeholder: (context, url) =>
           placeholder ?? _buildPlaceholder(width, height),
       errorWidget: (context, url, error) {
@@ -90,21 +109,42 @@ class AppImage {
         width: radius * 2,
         height: radius * 2,
         fit: BoxFit.cover,
+        // Avatars are tiny — decode them tiny too.
+        cacheWidth: (radius * 2 * 3).round().clamp(48, 256),
         placeholder: placeholder,
         errorWidget: errorWidget,
       ),
     );
   }
 
+  /// Resolve the effective decode/disk cache width.
+  static int? _resolveCacheWidth({
+    int? explicit,
+    double? displayWidth,
+    bool fullResolution = false,
+  }) {
+    if (fullResolution) return null;
+    if (explicit != null && explicit > 0) return explicit;
+    if (displayWidth != null && displayWidth.isFinite && displayWidth > 0) {
+      return (displayWidth * 3).round().clamp(64, 1080);
+    }
+    // Unknown display size (e.g. full-bleed) — cap at a sane mobile width.
+    return 1080;
+  }
+
   /// Load image as background
-  static DecorationImage? backgroundImage(String? url) {
+  static DecorationImage? backgroundImage(String? url, {int maxWidth = 1080}) {
     if (url == null || url.isEmpty) return null;
 
     // Use CORS-safe URL for web
     final safeUrl = _getCorsProxyUrl(url);
 
     return DecorationImage(
-      image: CachedNetworkImageProvider(safeUrl),
+      image: ResizeImage(
+        CachedNetworkImageProvider(safeUrl),
+        width: maxWidth,
+        policy: ResizeImagePolicy.fit,
+      ),
       fit: BoxFit.cover,
       onError: (error, stackTrace) {
         // Silently handle CORS errors
@@ -118,19 +158,15 @@ class AppImage {
   }
 
   static Widget _buildPlaceholder(double? width, double? height) {
-    return Container(
-      width: width,
-      height: height,
-      color: Colors.grey.shade200,
-      child: Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: AdsyLoadingIndicator(
-            strokeWidth: 2,
-            color: Colors.grey.shade400,
-          ),
-        ),
+    // Shimmer skeleton reads as "loading" far more smoothly than a spinner and
+    // avoids layout shift since it fills the reserved box.
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        width: width,
+        height: height,
+        color: Colors.grey.shade200,
       ),
     );
   }

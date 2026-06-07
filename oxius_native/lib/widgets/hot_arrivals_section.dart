@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
 import '../services/eshop_service.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -314,20 +315,18 @@ class _HotArrivalsSectionState extends State<HotArrivalsSection> {
                       ClipRRect(
                         borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(10)),
-                        child: Image.network(
+                        child: AppImage.network(
                           imageUrl,
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Icon(
-                                Icons.image_rounded,
-                                size: 32,
-                                color: const Color(0xFF9CA3AF),
-                              ),
-                            );
-                          },
+                          errorWidget: Center(
+                            child: Icon(
+                              Icons.image_rounded,
+                              size: 32,
+                              color: const Color(0xFF9CA3AF),
+                            ),
+                          ),
                         ),
                       )
                     else

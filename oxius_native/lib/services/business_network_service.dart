@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import '../models/business_network_models.dart';
 import 'api_service.dart';
+import 'api_cache.dart';
 import 'auth_service.dart';
 
 class BusinessNetworkService {
@@ -126,68 +127,75 @@ class BusinessNetworkService {
       final hasAuthHeader =
           headers.keys.any((k) => k.toLowerCase() == 'authorization');
 
-      var response = await http.get(
-        Uri.parse(url),
-        headers: hasAuthHeader ? headers : basicHeaders,
-      );
-
-      if (hasAuthHeader &&
-          (response.statusCode == 401 || response.statusCode == 403)) {
-        response = await http.get(
+      // Single fetch closure — routed through the shared keep-alive client.
+      Future<Map<String, dynamic>> fetchData() async {
+        var response = await ApiService.client.get(
           Uri.parse(url),
-          headers: basicHeaders,
+          headers: hasAuthHeader ? headers : basicHeaders,
         );
+        if (hasAuthHeader &&
+            (response.statusCode == 401 || response.statusCode == 403)) {
+          response = await ApiService.client.get(
+            Uri.parse(url),
+            headers: basicHeaders,
+          );
+        }
+        if (response.statusCode != 200) {
+          throw Exception('Feed request failed: ${response.statusCode}');
+        }
+        return json.decode(response.body) as Map<String, dynamic>;
       }
 
-      print('=== Business Network API Debug ===');
-      print('URL: $url');
-      print('Response status: ${response.statusCode}');
-      print('Response body length: ${response.body.length}');
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        print('Decoded data: $data');
-        final results = data['results'] as List;
-        print('Results count: ${results.length}');
-
-        final currentUserIdStr = AuthService.currentUser?.id;
-        final currentUserId = int.tryParse((currentUserIdStr ?? '').toString());
-
-        final posts = results.map((e) {
-          final raw = e is Map<String, dynamic>
-              ? e
-              : (e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{});
-
-          var post = BusinessNetworkPost.fromJson(raw);
-
-          final hasIsLikedField =
-              raw.containsKey('is_liked') || raw.containsKey('isLiked');
-          if (!hasIsLikedField && currentUserId != null) {
-            final inferredLiked =
-                post.postLikes.any((l) => l.user == currentUserId);
-            if (inferredLiked != post.isLiked) {
-              post = post.copyWith(isLiked: inferredLiked);
-            }
-          }
-
-          return post;
-        }).toList();
-        print('Parsed ${posts.length} posts successfully');
-
-        return {
-          'posts': posts,
-          'hasMore': data['next'] != null,
-          'count': data['count'] ?? 0,
-        };
+      // P3: cache the first page per-user so returning to the feed renders
+      // instantly from cache, then refreshes in the background (SWR). Any cache
+      // failure falls back to a direct fetch, so behaviour never regresses.
+      Map<String, dynamic> data;
+      if (page == 1 && olderThan == null) {
+        final uid = AuthService.currentUser?.id ?? 'anon';
+        try {
+          data = await ApiCache.getOrFetch<Map<String, dynamic>>(
+            'bn:feed:$uid:p1:s$pageSize',
+            fetchData,
+            freshTtl: const Duration(seconds: 45),
+            staleTtl: const Duration(hours: 6),
+          );
+        } catch (_) {
+          data = await fetchData();
+        }
       } else {
-        print('ERROR: ${response.statusCode} - ${response.body}');
-        return {
-          'posts': <BusinessNetworkPost>[],
-          'hasMore': false,
-          'count': 0,
-          'error': response.body
-        };
+        data = await fetchData();
       }
+
+      final results = data['results'] as List;
+
+      final currentUserIdStr = AuthService.currentUser?.id;
+      final currentUserId = int.tryParse((currentUserIdStr ?? '').toString());
+
+      final posts = results.map((e) {
+        final raw = e is Map<String, dynamic>
+            ? e
+            : (e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{});
+
+        var post = BusinessNetworkPost.fromJson(raw);
+
+        final hasIsLikedField =
+            raw.containsKey('is_liked') || raw.containsKey('isLiked');
+        if (!hasIsLikedField && currentUserId != null) {
+          final inferredLiked =
+              post.postLikes.any((l) => l.user == currentUserId);
+          if (inferredLiked != post.isLiked) {
+            post = post.copyWith(isLiked: inferredLiked);
+          }
+        }
+
+        return post;
+      }).toList();
+
+      return {
+        'posts': posts,
+        'hasMore': data['next'] != null,
+        'count': data['count'] ?? 0,
+      };
     } catch (e, stackTrace) {
       print('Error fetching posts: $e');
       print('Stack trace: $stackTrace');

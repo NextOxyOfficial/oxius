@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
@@ -662,49 +663,29 @@ class _HeroBannerState extends State<HeroBanner> {
                       : () => _openBannerTarget(target, linkType: linkType),
                   child: Container(
                     width: double.infinity,
-                    child: Image.network(
+                    child: AppImage.network(
                       imageUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          color: Colors.grey.shade300,
-                          child: Center(
-                            child: AdsyLoadingIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                              color: Colors.white,
-                            ),
+                      errorWidget: Container(
+                        color: Colors.grey.shade300,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.broken_image,
+                                  size: 48, color: Colors.grey.shade600),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Image failed to load',
+                                style: TextStyle(
+                                    color: Colors.grey.shade600, fontSize: 12),
+                              ),
+                            ],
                           ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        print('❌ Banner image error: $error');
-                        print('❌ URL: $imageUrl');
-                        return Container(
-                          color: Colors.grey.shade300,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.broken_image,
-                                    size: 48, color: Colors.grey.shade600),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Image failed to load',
-                                  style: TextStyle(
-                                      color: Colors.grey.shade600,
-                                      fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ),
                 );

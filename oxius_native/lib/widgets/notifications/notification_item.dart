@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import '../../models/notification_models.dart';
 import '../../utils/time_utils.dart';
 
@@ -49,12 +50,12 @@ class NotificationItem extends StatelessWidget {
                       ),
                       child: ClipOval(
                         child: notification.actor?.image != null
-                            ? Image.network(
+                            ? AppImage.network(
                                 notification.actor!.image!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return _buildAvatarFallback();
-                                },
+                                width: 44,
+                                height: 44,
+                                errorWidget: _buildAvatarFallback(),
                               )
                             : _buildAvatarFallback(),
                       ),

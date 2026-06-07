@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:oxius_native/utils/app_fonts.dart';
+import 'package:oxius_native/utils/image_utils.dart';
 import '../screens/product_details_screen.dart';
 import '../config/app_config.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
@@ -164,44 +165,17 @@ class _ProductCardState extends State<ProductCard> {
                           borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(12)),
                           child: imageUrl.isNotEmpty
-                              ? Image.network(
+                              ? AppImage.network(
                                   imageUrl,
                                   fit: BoxFit.cover,
-                                  headers: const {
-                                    'User-Agent':
-                                        'Mozilla/5.0 (compatible; Flutter/3.0)',
-                                  },
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      color: Colors.grey.shade100,
-                                      child: Center(
-                                        child: AdsyLoadingIndicator(
-                                          value: loadingProgress
-                                                      .expectedTotalBytes !=
-                                                  null
-                                              ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                              : null,
-                                          color: Colors.grey.shade400,
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: Colors.grey.shade100,
-                                      child: Icon(
-                                        Icons.shopping_bag_outlined,
-                                        size: 32,
-                                        color: Colors.purple.shade300,
-                                      ),
-                                    );
-                                  },
+                                  errorWidget: Container(
+                                    color: Colors.grey.shade100,
+                                    child: Icon(
+                                      Icons.shopping_bag_outlined,
+                                      size: 32,
+                                      color: Colors.purple.shade300,
+                                    ),
+                                  ),
                                 )
                               : Container(
                                   color: Colors.grey.shade100,

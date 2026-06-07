@@ -362,9 +362,10 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
     final currentScrollPosition = _scrollController.position.pixels;
     final scrollDelta = currentScrollPosition - _lastScrollPosition;
 
-    // Load more posts when near bottom
+    // Prefetch the next page well before the end (~1000px) so the user never
+    // hits an empty gap while scrolling.
     if (currentScrollPosition >=
-        _scrollController.position.maxScrollExtent - 200) {
+        _scrollController.position.maxScrollExtent - 1000) {
       if (!_isLoadingMore && _hasMore) {
         _loadMorePosts();
       }
@@ -522,6 +523,9 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                               : ListView.builder(
                                   controller: _scrollController,
                                   physics: _feedScrollPhysics,
+                                  // Build ~1.5 screens ahead so images decode
+                                  // before they scroll into view (smoother feed).
+                                  cacheExtent: 1200,
                                   padding: EdgeInsets.fromLTRB(
                                     1,
                                     headerHeight + 8,
@@ -530,7 +534,11 @@ class _BusinessNetworkScreenState extends State<BusinessNetworkScreen> {
                                   ),
                                   itemCount: _calculateTotalItems(visiblePosts),
                                   itemBuilder: (context, index) {
-                                    return _buildFeedItem(index, visiblePosts);
+                                    // RepaintBoundary isolates each card so one
+                                    // card repainting doesn't repaint the list.
+                                    return RepaintBoundary(
+                                      child: _buildFeedItem(index, visiblePosts),
+                                    );
                                   },
                                 ),
                 ),
