@@ -14,49 +14,42 @@ class SocialLoginButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: _GoogleButton(
-            onPressed: enabled ? () => onProvider('google') : null,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _GoogleButton(
+                onPressed: enabled ? () => onProvider('google') : null,
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Facebook sign-in is not live yet — rendered disabled.
+            const Expanded(child: _FacebookButton(onPressed: null)),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _FacebookButton(
-            // Facebook sign-in is not live yet — show a clear notice instead of
-            // attempting a login that would fail.
-            onPressed: enabled ? () => _showFacebookUnavailable(context) : null,
-          ),
+        const SizedBox(height: 6),
+        // Caption sits directly under the (disabled) Facebook button.
+        Row(
+          children: const [
+            Expanded(child: SizedBox()),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Temporarily unavailable',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF94A3B8),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
-  }
-
-  void _showFacebookUnavailable(BuildContext context) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Facebook login & registration is temporarily unavailable.',
-                  style: TextStyle(fontSize: 13.5),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF1F2937),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          duration: const Duration(seconds: 3),
-        ),
-      );
   }
 }
 
@@ -115,19 +108,26 @@ class _FacebookButton extends StatelessWidget {
 
   final VoidCallback? onPressed;
   static const _fbBlue = Color(0xFF1877F2);
+  static const _disabledBg = Color(0xFFE5E7EB);
+  static const _disabledFg = Color(0xFF9CA3AF);
 
   @override
   Widget build(BuildContext context) {
+    final bool disabled = onPressed == null;
+    final Color fg = disabled ? _disabledFg : Colors.white;
+    // No blue glow when disabled — it should read as clearly inactive.
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: _fbBlue.withValues(alpha: 0.32),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        boxShadow: disabled
+            ? const []
+            : [
+                BoxShadow(
+                  color: _fbBlue.withValues(alpha: 0.32),
+                  blurRadius: 14,
+                  offset: const Offset(0, 5),
+                ),
+              ],
       ),
       child: ElevatedButton(
         onPressed: onPressed,
@@ -135,23 +135,25 @@ class _FacebookButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14),
           backgroundColor: _fbBlue,
           foregroundColor: Colors.white,
+          disabledBackgroundColor: _disabledBg,
+          disabledForegroundColor: _disabledFg,
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.facebook, size: 22, color: Colors.white),
-            SizedBox(width: 10),
+            Icon(Icons.facebook, size: 22, color: fg),
+            const SizedBox(width: 10),
             Text(
               'Facebook',
               style: TextStyle(
                 fontSize: 14.5,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: fg,
               ),
             ),
           ],
