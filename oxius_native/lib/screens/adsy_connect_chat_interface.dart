@@ -1654,9 +1654,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
           border: Border.all(color: Colors.white.withOpacity(0.82)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.14),
-              blurRadius: 28,
-              offset: const Offset(0, 12),
+              color: Colors.black.withOpacity(0.09),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
@@ -1739,15 +1739,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       child: ListTile(
         minVerticalPadding: 12,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        tileColor:
-            destructive ? const Color(0xFFFEF2F2) : const Color(0xFFF8FAFC),
-        leading: Container(
+        tileColor: Colors.white.withOpacity(0.78),
+        leading: SizedBox(
           width: 42,
           height: 42,
-          decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(14),
-          ),
           child: Icon(icon, color: iconColor, size: 20),
         ),
         title: Text(
