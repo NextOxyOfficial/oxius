@@ -233,7 +233,14 @@ def run_nudge_engine(dry_run=False):
         return {"skipped": "disabled"}
 
     now = timezone.now()
-    local_hour = timezone.localtime(now).hour
+    # Send during the audience's daytime, not the server's (UTC). Default to
+    # Asia/Dhaka since the app's primary market is Bangladesh.
+    try:
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo(getattr(settings, "ENGAGEMENT_TIMEZONE", "Asia/Dhaka"))
+        local_hour = now.astimezone(tz).hour
+    except Exception:  # pragma: no cover
+        local_hour = timezone.localtime(now).hour
     start_h, end_h = getattr(settings, "ENGAGEMENT_NUDGE_HOURS", (9, 21))
     if not dry_run and not (start_h <= local_hour < end_h):
         return {"skipped": f"quiet_hours (local hour {local_hour})"}

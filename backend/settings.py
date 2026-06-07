@@ -542,7 +542,8 @@ CELERY_BEAT_SCHEDULE = {
 # Master switch + guard rails. Nudges only deliver during the daytime window,
 # at most one per user per day, with per-nudge cooldowns handled in code.
 ENGAGEMENT_NUDGES_ENABLED = True
-ENGAGEMENT_NUDGE_HOURS = (9, 21)          # local-time send window (24h clock)
+ENGAGEMENT_TIMEZONE = "Asia/Dhaka"        # audience timezone for the send window
+ENGAGEMENT_NUDGE_HOURS = (9, 21)          # 9am-9pm in ENGAGEMENT_TIMEZONE
 ENGAGEMENT_NUDGE_PER_RUN_CAP = 300        # max sends per engine run (anti-burst)
 # Hold lifecycle-heuristic nudges (win-back, at-risk) until ~a week of event
 # data has accumulated and the lifecycle stages are trustworthy. Flip to True
