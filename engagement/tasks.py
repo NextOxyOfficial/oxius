@@ -239,7 +239,13 @@ def run_nudge_engine(dry_run=False):
         return {"skipped": f"quiet_hours (local hour {local_hour})"}
 
     per_run_cap = getattr(settings, "ENGAGEMENT_NUDGE_PER_RUN_CAP", 500)
-    catalog = sorted(CATALOG, key=lambda n: n.priority, reverse=True)
+    # Lifecycle-based nudges (win-back, at-risk) only fire once the heuristic is
+    # backed by enough event history; until then we send only hard-data nudges.
+    lifecycle_enabled = getattr(settings, "ENGAGEMENT_LIFECYCLE_NUDGES_ENABLED", False)
+    catalog = [
+        n for n in sorted(CATALOG, key=lambda n: n.priority, reverse=True)
+        if n.reliable or lifecycle_enabled
+    ]
 
     # Preload recent nudge history for caps/cooldowns (one query).
     since = now - timedelta(days=14)

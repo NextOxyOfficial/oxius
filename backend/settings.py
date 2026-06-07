@@ -544,6 +544,10 @@ CELERY_BEAT_SCHEDULE = {
 ENGAGEMENT_NUDGES_ENABLED = True
 ENGAGEMENT_NUDGE_HOURS = (9, 21)          # local-time send window (24h clock)
 ENGAGEMENT_NUDGE_PER_RUN_CAP = 300        # max sends per engine run (anti-burst)
+# Hold lifecycle-heuristic nudges (win-back, at-risk) until ~a week of event
+# data has accumulated and the lifecycle stages are trustworthy. Flip to True
+# then. Hard-data nudges (KYC withdraw, subscription, onboarding) send regardless.
+ENGAGEMENT_LIFECYCLE_NUDGES_ENABLED = False
 
 # ShurjoPay Settings
 SP_USERNAME = "lyriczsoft"

@@ -30,6 +30,11 @@ class Nudge:
     deep_link: str
     eligible: Callable       # (state, user) -> bool
     build: Callable          # (state, user) -> (title, body)
+    # reliable=True: targeting is based on hard data (balance, kyc, subscription)
+    # and is safe to send from day one. reliable=False: targeting depends on the
+    # lifecycle heuristic, which only becomes trustworthy once a few days of
+    # event data have accumulated — gated behind ENGAGEMENT_LIFECYCLE_NUDGES_ENABLED.
+    reliable: bool = True
 
 
 def _has_balance(state):
@@ -76,6 +81,7 @@ CATALOG = [
             f"We miss you, {_name(u)} 👋",
             "Your network has been busy while you were away — see what's new.",
         ),
+        reliable=False,
     ),
     # 4) At-risk re-engagement (3–7 days idle) — pull them back early.
     Nudge(
@@ -88,6 +94,7 @@ CATALOG = [
             "New posts from your network 📨",
             "People you follow have shared updates. Take a quick look.",
         ),
+        reliable=False,
     ),
     # 5) Onboarding nudge — help brand-new users reach their first value.
     Nudge(
