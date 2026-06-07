@@ -104,3 +104,32 @@ class UserState(models.Model):
 
     def __str__(self):
         return f"{self.user_id} [{self.lifecycle_stage}]"
+
+
+class NudgeLog(models.Model):
+    """One row per nudge delivered to a user. Powers frequency caps, per-nudge
+    cooldowns, dedupe, and measurement (open/convert) for the Next-Best-Action
+    engine."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="engagement_nudges",
+    )
+    nudge_key = models.CharField(max_length=64)
+    channel = models.CharField(max_length=20, default="push")  # push | inapp | email
+    title = models.CharField(max_length=200, blank=True, default="")
+    deep_link = models.CharField(max_length=500, blank=True, default="")
+    sent_at = models.DateTimeField(auto_now_add=True)
+    opened_at = models.DateTimeField(null=True, blank=True)
+    converted_at = models.DateTimeField(null=True, blank=True)
+    meta = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["user", "-sent_at"], name="eng_nudge_user_recent_idx"),
+            models.Index(fields=["user", "nudge_key", "-sent_at"], name="eng_nudge_key_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.nudge_key} -> {self.user_id} @ {self.sent_at:%Y-%m-%d %H:%M}"

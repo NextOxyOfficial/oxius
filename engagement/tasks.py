@@ -11,10 +11,11 @@ from collections import Counter, defaultdict
 from datetime import timedelta
 
 from celery import shared_task
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from .models import UserEvent, UserState
+from .models import NudgeLog, UserEvent, UserState
 
 logger = logging.getLogger(__name__)
 
@@ -210,4 +211,119 @@ def aggregate_user_states():
 
     result = {"processed": processed, "timestamp": now.isoformat()}
     logger.info("aggregate_user_states: %s", result)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Phase C — Cortex (Next-Best-Action engine)
+# ---------------------------------------------------------------------------
+
+@shared_task
+def run_nudge_engine(dry_run=False):
+    """Pick the single best nudge for each eligible user and deliver it via push
+    + the Updates tab. Guard-railed: feature flag, daytime-only window, one nudge
+    per user per day, per-nudge cooldown, and a per-run cap to avoid bursts.
+
+    Pass dry_run=True to compute what *would* be sent without sending/logging —
+    used to validate targeting on real data before going live.
+    """
+    from .nudges import CATALOG
+
+    if not getattr(settings, "ENGAGEMENT_NUDGES_ENABLED", False) and not dry_run:
+        return {"skipped": "disabled"}
+
+    now = timezone.now()
+    local_hour = timezone.localtime(now).hour
+    start_h, end_h = getattr(settings, "ENGAGEMENT_NUDGE_HOURS", (9, 21))
+    if not dry_run and not (start_h <= local_hour < end_h):
+        return {"skipped": f"quiet_hours (local hour {local_hour})"}
+
+    per_run_cap = getattr(settings, "ENGAGEMENT_NUDGE_PER_RUN_CAP", 500)
+    catalog = sorted(CATALOG, key=lambda n: n.priority, reverse=True)
+
+    # Preload recent nudge history for caps/cooldowns (one query).
+    since = now - timedelta(days=14)
+    last_any = {}                         # user_id -> latest sent_at
+    last_by_key = defaultdict(dict)       # user_id -> {nudge_key: sent_at}
+    for uid, key, sent in NudgeLog.objects.filter(sent_at__gte=since).values_list(
+        "user_id", "nudge_key", "sent_at"
+    ):
+        if uid not in last_any or sent > last_any[uid]:
+            last_any[uid] = sent
+        prev = last_by_key[uid].get(key)
+        if prev is None or sent > prev:
+            last_by_key[uid][key] = sent
+
+    # Candidate states: only stages/conditions any nudge cares about.
+    states = (
+        UserState.objects.select_related("user")
+        .exclude(lifecycle_stage="churned")  # don't chase the long-gone here
+    )
+
+    sent = 0
+    plan = []  # for dry-run reporting
+    for state in states.iterator(chunk_size=500):
+        if sent >= per_run_cap:
+            break
+        user = state.user
+        if getattr(user, "is_suspended", False) or not getattr(user, "is_active", True):
+            continue
+        # One nudge per user per day.
+        la = last_any.get(user.id)
+        if la and la >= now - timedelta(days=1):
+            continue
+
+        chosen = None
+        for nudge in catalog:
+            try:
+                if not nudge.eligible(state, user):
+                    continue
+                prev = last_by_key.get(user.id, {}).get(nudge.key)
+                if prev and prev >= now - timedelta(days=nudge.cooldown_days):
+                    continue
+                chosen = nudge
+                break
+            except Exception:  # pragma: no cover
+                logger.exception("nudge eligibility failed: %s", nudge.key)
+
+        if not chosen:
+            continue
+
+        try:
+            title, body = chosen.build(state, user)
+        except Exception:  # pragma: no cover
+            logger.exception("nudge build failed: %s", chosen.key)
+            continue
+
+        if dry_run:
+            plan.append({"user": user.id, "nudge": chosen.key, "title": title})
+            sent += 1
+            continue
+
+        try:
+            from base.push_notifications import send_push_notification
+            send_push_notification(
+                title=title,
+                body=body,
+                deep_link=chosen.deep_link,
+                notification_type="assistant",
+                users=[user],
+            )
+            NudgeLog.objects.create(
+                user=user,
+                nudge_key=chosen.key,
+                channel="push",
+                title=title,
+                deep_link=chosen.deep_link,
+            )
+            sent += 1
+        except Exception:  # pragma: no cover - never let one send kill the run
+            logger.exception("nudge send failed: %s -> %s", chosen.key, user.id)
+
+    result = {"sent": sent, "dry_run": dry_run, "timestamp": now.isoformat()}
+    if dry_run:
+        result["plan"] = plan[:50]
+        # breakdown by nudge key
+        result["by_nudge"] = dict(Counter(p["nudge"] for p in plan))
+    logger.info("run_nudge_engine: sent=%s dry_run=%s", sent, dry_run)
     return result

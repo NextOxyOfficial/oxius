@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import UserEvent, UserState
+from .models import NudgeLog, UserEvent, UserState
 
 
 @admin.register(UserEvent)
@@ -27,3 +27,15 @@ class UserStateAdmin(admin.ModelAdmin):
     list_filter = ("lifecycle_stage", "value_tier")
     search_fields = ("user__email",)
     readonly_fields = ("updated_at",)
+
+
+@admin.register(NudgeLog)
+class NudgeLogAdmin(admin.ModelAdmin):
+    list_display = ("sent_at", "nudge_key", "channel", "user", "opened_at", "converted_at")
+    list_filter = ("nudge_key", "channel", "sent_at")
+    search_fields = ("user__email", "nudge_key")
+    date_hierarchy = "sent_at"
+    readonly_fields = ("sent_at",)
+
+    def has_add_permission(self, request):
+        return False

@@ -532,7 +532,18 @@ CELERY_BEAT_SCHEDULE = {
         "task": "engagement.tasks.aggregate_user_states",
         "schedule": timedelta(minutes=30),  # Roll events into per-user state + lifecycle
     },
+    "run-engagement-nudge-engine": {
+        "task": "engagement.tasks.run_nudge_engine",
+        "schedule": timedelta(hours=2),  # Pick + deliver the best nudge per user
+    },
 }
+
+# --- Engagement / assistant-brain nudge engine ---
+# Master switch + guard rails. Nudges only deliver during the daytime window,
+# at most one per user per day, with per-nudge cooldowns handled in code.
+ENGAGEMENT_NUDGES_ENABLED = True
+ENGAGEMENT_NUDGE_HOURS = (9, 21)          # local-time send window (24h clock)
+ENGAGEMENT_NUDGE_PER_RUN_CAP = 300        # max sends per engine run (anti-burst)
 
 # ShurjoPay Settings
 SP_USERNAME = "lyriczsoft"
