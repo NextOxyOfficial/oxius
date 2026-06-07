@@ -414,6 +414,28 @@ def firebase_custom_token(request):
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def agora_config(request):
+    """Expose the Agora project the backend is configured for, so the app can
+    source the App ID from server settings instead of hardcoding it.
+
+    Returns the App ID and whether tokens are required (i.e. whether the project
+    has an App Certificate). The App ID is not secret — it ships in every RTC
+    client regardless — so exposing it is safe.
+    """
+    app_id = str(getattr(settings, 'AGORA_APP_ID', '') or '').strip()
+    app_certificate = str(
+        getattr(settings, 'AGORA_APP_CERTIFICATE', '') or ''
+    ).strip()
+    return Response(
+        {
+            'app_id': app_id,
+            'token_required': bool(app_certificate),
+        }
+    )
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def agora_rtc_token(request):

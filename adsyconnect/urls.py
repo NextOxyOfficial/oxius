@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ChatRoomViewSet, MessageViewSet, MessageReportViewSet,
     BlockedUserViewSet, OnlineStatusViewSet, TypingStatusViewSet,
-    agora_rtc_token, firebase_custom_token, send_call_notification, send_call_status,
+    agora_rtc_token, agora_config, firebase_custom_token, send_call_notification, send_call_status,
     set_active_chat, clear_active_chat, heartbeat
 )
 
@@ -17,6 +17,7 @@ router.register(r'typing-status', TypingStatusViewSet, basename='typing-status')
 
 urlpatterns = [
     path('firebase-token/', firebase_custom_token, name='firebase_custom_token'),
+    path('agora-config/', agora_config, name='agora_config'),
     path('agora-token/', agora_rtc_token, name='agora_rtc_token'),
     path('send-call-notification/', send_call_notification, name='send_call_notification'),
     path('send-call-status/', send_call_status, name='send_call_status'),

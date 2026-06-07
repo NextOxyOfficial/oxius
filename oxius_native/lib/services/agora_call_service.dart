@@ -19,12 +19,13 @@ void _log(String message) {
 }
 
 class AgoraCallService {
-  // Agora RTC App ID. Must match the project whose certificate the backend
-  // signs tokens with (AGORA_APP_ID / AGORA_APP_CERTIFICATE in the server .env).
-  // Overridable at build time via --dart-define=AGORA_APP_ID=...
-  static const String appId = String.fromEnvironment(
+  // Agora RTC App ID — the backend (server settings AGORA_APP_ID) is the source
+  // of truth. It is adopted from the token endpoint response at call time, so
+  // there is no stale hardcoded App ID in the app. The build-time define is only
+  // an optional bootstrap fallback and is normally empty.
+  static String appId = const String.fromEnvironment(
     'AGORA_APP_ID',
-    defaultValue: '4d37208672ee49108516015d647e73ef',
+    defaultValue: '',
   );
   static const Duration _requestTimeout = Duration(seconds: 10);
   static const Duration _restorableCallAge = Duration(hours: 8);
@@ -265,10 +266,16 @@ class AgoraCallService {
 
     _lastError = null;
 
+    // The Agora App ID comes from the backend (server settings), not a frontend
+    // hardcode. Make sure we have it before creating the engine.
+    if (appId.trim().isEmpty) {
+      await _ensureAppIdFromBackend();
+    }
+
     if (_engine == null) {
       final engine = createAgoraRtcEngine();
       await engine.initialize(
-        const RtcEngineContext(
+        RtcEngineContext(
           appId: appId,
           channelProfile: ChannelProfileType.channelProfileCommunication,
         ),
@@ -388,9 +395,6 @@ class AgoraCallService {
   }) async {
     try {
       _lastError = null;
-      if (appId.trim().isEmpty) {
-        throw StateError('missing_agora_app_id');
-      }
       final channelNameOk = channelName.isNotEmpty &&
           channelName.length <= 64 &&
           RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(channelName);
@@ -399,6 +403,19 @@ class AgoraCallService {
       }
 
       final wantsVideo = callType == 'video';
+
+      // Fetch the token FIRST — this also adopts the backend's Agora App ID, so
+      // the engine below is initialized for the correct (server-configured)
+      // project instead of any hardcoded value.
+      final agoraToken = await _fetchAgoraTokenWithRetry(
+        channelName: channelName,
+        uid: uid,
+      );
+
+      if (appId.trim().isEmpty) {
+        throw StateError('missing_agora_app_id');
+      }
+
       final engine = await initEngine(callType: callType);
 
       _log(
@@ -407,11 +424,6 @@ class AgoraCallService {
       if (_joinedChannelName != null && _joinedChannelName != channelName) {
         await engine.leaveChannel();
       }
-
-      final agoraToken = await _fetchAgoraTokenWithRetry(
-        channelName: channelName,
-        uid: uid,
-      );
 
       await engine.joinChannel(
         token: agoraToken,
@@ -661,6 +673,32 @@ class AgoraCallService {
     }
   }
 
+  /// Load the Agora App ID from the backend (server settings) when it isn't
+  /// known yet. Keeps the project out of the frontend as a hardcode.
+  static Future<void> _ensureAppIdFromBackend() async {
+    if (appId.trim().isNotEmpty) return;
+    try {
+      final headers = await ApiService.getHeaders();
+      final response = await http
+          .get(
+            Uri.parse('${ApiService.baseUrl}/adsyconnect/agora-config/'),
+            headers: headers,
+          )
+          .timeout(_requestTimeout);
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is Map) {
+          final id = decoded['app_id']?.toString().trim();
+          if (id != null && id.isNotEmpty) {
+            appId = id;
+          }
+        }
+      }
+    } catch (e) {
+      _log('⚠️ agora-config fetch failed: $e');
+    }
+  }
+
   /// Fetch the Agora token, retrying a few times on transient failures.
   ///
   /// When a call is accepted, the callee may request its token a moment before
@@ -735,10 +773,10 @@ class AgoraCallService {
       final tokenRequired = decoded['token_required'] == true ||
           decoded['token_required']?.toString().toLowerCase() == 'true';
       final tokenAppId = decoded['app_id']?.toString().trim();
-      if (tokenAppId != null && tokenAppId.isNotEmpty && tokenAppId != appId) {
-        _lastError =
-            'Call configuration mismatch. Please update the app and try again.';
-        throw StateError('agora_app_id_mismatch');
+      if (tokenAppId != null && tokenAppId.isNotEmpty) {
+        // Backend (server settings) owns the Agora project — adopt its App ID so
+        // the engine and signed token always belong to the same project.
+        appId = tokenAppId;
       }
       final token = decoded['token']?.toString() ?? '';
       if (tokenRequired && token.isEmpty) {
