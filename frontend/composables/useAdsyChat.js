@@ -42,11 +42,37 @@ export const useAdsyChat = () => {
     }
   }
 
+  // Reply messages embed their context as
+  //   `<↩️> (uuid) Sender: quoted preview\n\nActual message`.
+  // The realtime websocket sends the raw content, so strip the header here the
+  // same way the backend get_preview() does — otherwise the chat list would
+  // briefly leak the raw "(uuid) Sender:" header until the next reload.
+  const cleanReplyPreview = (content) => {
+    if (!content) return content
+    const text = content.replace(/^\s+/, '')
+    const prefixes = ['↩️', 'â†©ï¸', '↩']
+    const matched = prefixes.find(p => text.startsWith(p))
+    if (!matched) return content
+    const sepIndex = text.indexOf('\n\n')
+    if (sepIndex !== -1) {
+      const body = text.slice(sepIndex + 2).trim()
+      if (body) return body
+    }
+    let rest = text.slice(matched.length).trim()
+    if (rest.startsWith('(')) {
+      const close = rest.indexOf(')')
+      if (close !== -1) rest = rest.slice(close + 1).trim()
+    }
+    const colon = rest.indexOf(':')
+    if (colon !== -1) rest = rest.slice(colon + 1).trim()
+    return rest || 'Reply'
+  }
+
   const updateChatRoomLastMessage = (message) => {
     const chatRoom = chatRooms.value.find(chat => chat.id === message.chatroom)
     if (chatRoom) {
       chatRoom.last_message_at = message.created_at
-      chatRoom.last_message_preview = message.content || 'Media message'
+      chatRoom.last_message_preview = cleanReplyPreview(message.content) || 'Media message'
       
       // Move to top of list
       const index = chatRooms.value.indexOf(chatRoom)

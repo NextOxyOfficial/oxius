@@ -143,13 +143,49 @@ class Message(models.Model):
         self.deleted_at = timezone.now()
         self.save(update_fields=['is_deleted', 'deleted_at'])
     
+    @staticmethod
+    def _clean_reply_text(content):
+        """Strip the reply header from a reply message before previewing.
+
+        Reply messages embed their context inside the body as
+        ``<↩️> (uuid) Sender: quoted preview\\n\\nActual message``. A naive
+        ``content[:50]`` preview would leak the raw ``(uuid) Sender:`` header
+        into the chat list (it never reaches the actual text). This returns
+        only the real reply body so the list shows what the user actually
+        typed. Non-reply content is returned untouched.
+        """
+        if not content:
+            return content
+        text = content.lstrip()
+        # '↩️' is the correct emoji; 'â†©ï¸' is the historical mojibake variant
+        # (UTF-8 bytes mis-decoded as Latin-1) that older/app messages stored.
+        reply_prefixes = ('↩️', 'â†©ï¸', '↩')
+        matched = next((p for p in reply_prefixes if text.startswith(p)), None)
+        if not matched:
+            return content
+        # Preferred path: the real message sits after the blank-line separator.
+        if '\n\n' in text:
+            body = text.split('\n\n', 1)[1].strip()
+            if body:
+                return body
+        # No separator survived — drop the "(uuid) Sender:" header instead.
+        rest = text[len(matched):].strip()
+        if rest.startswith('('):
+            close = rest.find(')')
+            if close != -1:
+                rest = rest[close + 1:].strip()
+        if ':' in rest:
+            rest = rest.split(':', 1)[1].strip()
+        return rest or 'Reply'
+
     def get_preview(self):
         """Get message preview for chat list"""
         if self.is_deleted:
             return "Message deleted"
-        
+
         if self.message_type == 'text':
-            return self.content[:50] + '...' if len(self.content) > 50 else self.content
+            text = self._clean_reply_text(self.content or '')
+            return text[:50] + '...' if len(text) > 50 else text
         elif self.message_type == 'image':
             return "📷 Photo"
         elif self.message_type == 'video':
