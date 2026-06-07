@@ -26,6 +26,7 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from celery.schedules import crontab
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -94,6 +95,13 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_celery_beat",  # For Celery Beat database scheduler
 ]
+
+
+def _env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
 
 CORS_ALLOWED_ORIGINS = [
     "https://adsyclub.com",
@@ -316,10 +324,112 @@ WHITENOISE_INDEX_FILE = True
 WHITENOISE_MANIFEST_STRICT = False
 
 # This enables compression and caching
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# Optional Cloudflare R2 media storage.
+# Enable only after the R2 bucket, API token, and public/custom media domain are
+# configured. Static files continue to use WhiteNoise; only user/admin uploads
+# move to R2.
+CLOUDFLARE_R2_MEDIA_ENABLED = _env_bool(
+    "CLOUDFLARE_R2_MEDIA_ENABLED",
+    _env_bool("USE_R2_MEDIA_STORAGE", False),
+)
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+if CLOUDFLARE_R2_MEDIA_ENABLED:
+    CLOUDFLARE_R2_ACCOUNT_ID = os.getenv("CLOUDFLARE_R2_ACCOUNT_ID", "").strip()
+    CLOUDFLARE_R2_ACCESS_KEY_ID = os.getenv(
+        "CLOUDFLARE_R2_ACCESS_KEY_ID", ""
+    ).strip()
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY = os.getenv(
+        "CLOUDFLARE_R2_SECRET_ACCESS_KEY", ""
+    ).strip()
+    CLOUDFLARE_R2_BUCKET_NAME = os.getenv("CLOUDFLARE_R2_BUCKET_NAME", "").strip()
+    CLOUDFLARE_R2_CUSTOM_DOMAIN = (
+        os.getenv("CLOUDFLARE_R2_CUSTOM_DOMAIN", "")
+        .replace("https://", "")
+        .replace("http://", "")
+        .strip()
+        .rstrip("/")
+    )
+    CLOUDFLARE_R2_PUBLIC_URL = (
+        os.getenv("CLOUDFLARE_R2_PUBLIC_URL", "").strip().rstrip("/")
+    )
+    if not CLOUDFLARE_R2_PUBLIC_URL and CLOUDFLARE_R2_CUSTOM_DOMAIN:
+        CLOUDFLARE_R2_PUBLIC_URL = f"https://{CLOUDFLARE_R2_CUSTOM_DOMAIN}"
+
+    _missing_r2_settings = [
+        name
+        for name, value in {
+            "CLOUDFLARE_R2_ACCOUNT_ID": CLOUDFLARE_R2_ACCOUNT_ID,
+            "CLOUDFLARE_R2_ACCESS_KEY_ID": CLOUDFLARE_R2_ACCESS_KEY_ID,
+            "CLOUDFLARE_R2_SECRET_ACCESS_KEY": CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+            "CLOUDFLARE_R2_BUCKET_NAME": CLOUDFLARE_R2_BUCKET_NAME,
+            "CLOUDFLARE_R2_PUBLIC_URL or CLOUDFLARE_R2_CUSTOM_DOMAIN": (
+                CLOUDFLARE_R2_PUBLIC_URL
+            ),
+        }.items()
+        if not value
+    ]
+    if _missing_r2_settings:
+        raise ImproperlyConfigured(
+            "Cloudflare R2 media storage is enabled but missing: "
+            + ", ".join(_missing_r2_settings)
+        )
+
+    if "storages" not in INSTALLED_APPS:
+        INSTALLED_APPS.append("storages")
+
+    AWS_ACCESS_KEY_ID = CLOUDFLARE_R2_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY = CLOUDFLARE_R2_SECRET_ACCESS_KEY
+    AWS_STORAGE_BUCKET_NAME = CLOUDFLARE_R2_BUCKET_NAME
+    AWS_S3_ENDPOINT_URL = os.getenv(
+        "CLOUDFLARE_R2_ENDPOINT_URL",
+        f"https://{CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
+    ).rstrip("/")
+    AWS_S3_REGION_NAME = os.getenv("CLOUDFLARE_R2_REGION", "auto")
+    AWS_S3_SIGNATURE_VERSION = "s3v4"
+    AWS_S3_ADDRESSING_STYLE = "path"
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = _env_bool("CLOUDFLARE_R2_QUERYSTRING_AUTH", False)
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": os.getenv(
+            "CLOUDFLARE_R2_CACHE_CONTROL",
+            "public, max-age=31536000, immutable",
+        )
+    }
+    AWS_S3_CUSTOM_DOMAIN = CLOUDFLARE_R2_CUSTOM_DOMAIN or None
+    AWS_S3_URL_PROTOCOL = "https:"
+
+    MEDIA_URL = f"{CLOUDFLARE_R2_PUBLIC_URL}/"
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": AWS_ACCESS_KEY_ID,
+            "secret_key": AWS_SECRET_ACCESS_KEY,
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "endpoint_url": AWS_S3_ENDPOINT_URL,
+            "region_name": AWS_S3_REGION_NAME,
+            "signature_version": AWS_S3_SIGNATURE_VERSION,
+            "addressing_style": AWS_S3_ADDRESSING_STYLE,
+            "default_acl": AWS_DEFAULT_ACL,
+            "querystring_auth": AWS_QUERYSTRING_AUTH,
+            "file_overwrite": AWS_S3_FILE_OVERWRITE,
+            "object_parameters": AWS_S3_OBJECT_PARAMETERS,
+            "custom_domain": AWS_S3_CUSTOM_DOMAIN,
+            "url_protocol": AWS_S3_URL_PROTOCOL,
+        },
+    }
 
 # Increase max upload size to 1024MB (default is around 2.5MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes

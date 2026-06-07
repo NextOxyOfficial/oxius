@@ -1,6 +1,5 @@
 import os
 import uuid
-from django.conf import settings
 from django.core.files.storage import default_storage
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -56,8 +55,9 @@ def upload_file(request):
         file_path = os.path.join(folder, filename)
         saved_path = default_storage.save(file_path, file)
         
-        # Generate full URL
-        file_url = request.build_absolute_uri(settings.MEDIA_URL + saved_path)
+        # Generate full URL from the active storage backend. This works for
+        # both local MEDIA_URL and Cloudflare R2/custom-domain media storage.
+        file_url = request.build_absolute_uri(default_storage.url(saved_path))
         
         return Response({
             'success': True,
