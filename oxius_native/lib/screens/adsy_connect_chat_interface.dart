@@ -1753,6 +1753,12 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
 
     showDialog(
       context: context,
+      // Must use the LOCAL navigator, not the root one. This chat screen is
+      // rendered inside the AdsyConnect chat OverlayEntry which sits ABOVE the
+      // root Navigator, so a root-navigator dialog would be pushed BEHIND the
+      // overlay and stay invisible until the user pops the overlay with Back.
+      // (Same fix as _showBlockConfirmation.)
+      useRootNavigator: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
@@ -1944,6 +1950,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
   void _deleteMessage(Map<String, dynamic> message) {
     showDialog(
       context: context,
+      // Local navigator — same overlay rationale as _showEditMessageDialog /
+      // _showBlockConfirmation. A root-navigator dialog would be hidden behind
+      // the chat OverlayEntry until the user pops the page with Back.
+      useRootNavigator: false,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Container(
