@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db import models
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -11,26 +12,41 @@ from ..serializers import (
     logoSerializer,
 )
 
+# These three endpoints serve global, rarely-changing content that is requested
+# on nearly every page/app load, so we cache the serialized payload in Redis.
+# Short TTL means an admin edit shows up within a few minutes without any manual
+# cache busting.
+_PUBLIC_CACHE_TTL = 300  # seconds
+
 
 @api_view(["GET"])
 def getLogo(request):
-    logo = get_object_or_404(Logo)
-    serializer = logoSerializer(logo)
-    return Response(serializer.data)
+    data = cache.get("public:logo")
+    if data is None:
+        logo = get_object_or_404(Logo)
+        data = logoSerializer(logo).data
+        cache.set("public:logo", data, _PUBLIC_CACHE_TTL)
+    return Response(data)
 
 
 @api_view(["GET"])
 def get_eshop_logo(request):
-    e_shop_logo = get_object_or_404(EshopLogo)
-    serializer = EshopLogoSerializer(e_shop_logo)
-    return Response(serializer.data)
+    data = cache.get("public:eshop_logo")
+    if data is None:
+        e_shop_logo = get_object_or_404(EshopLogo)
+        data = EshopLogoSerializer(e_shop_logo).data
+        cache.set("public:eshop_logo", data, _PUBLIC_CACHE_TTL)
+    return Response(data)
 
 
 @api_view(["GET"])
 def getAuthenticationBanner(request):
-    banner = get_object_or_404(AuthenticationBanner)
-    serializer = AuthenticationBannerSerializer(banner)
-    return Response(serializer.data)
+    data = cache.get("public:auth_banner")
+    if data is None:
+        banner = get_object_or_404(AuthenticationBanner)
+        data = AuthenticationBannerSerializer(banner).data
+        cache.set("public:auth_banner", data, _PUBLIC_CACHE_TTL)
+    return Response(data)
 
 
 @api_view(["GET"])

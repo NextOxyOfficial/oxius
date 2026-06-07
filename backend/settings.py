@@ -431,6 +431,19 @@ if CLOUDFLARE_R2_MEDIA_ENABLED:
         },
     }
 
+# Redis-backed cache for hot, global, low-volatility read endpoints (logo,
+# auth banner, etc.). Falls back to the local Redis used by Celery/Channels.
+# DB 0 = Celery, DB 1 = Channels, so cache uses DB 2 by default. KEY_PREFIX keeps
+# it isolated from the other Django apps sharing this Redis instance.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.getenv("DJANGO_CACHE_REDIS_URL", "redis://127.0.0.1:6379/2"),
+        "KEY_PREFIX": os.getenv("DJANGO_CACHE_KEY_PREFIX", "adsyclub"),
+        "TIMEOUT": 300,
+    }
+}
+
 # Increase max upload size to 1024MB (default is around 2.5MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1073741824  # 1024MB in bytes
