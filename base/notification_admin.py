@@ -25,134 +25,86 @@ class NotificationAdminPanel(admin.ModelAdmin):
         return custom_urls + urls
     
     def send_notification_view(self, request):
-        """View for sending notifications"""
+        """Single place to compose + send a push notification.
+
+        Routes through send_push_notification() so every send is ALSO saved as a
+        UserNotification (shown in the app's Updates tab) and can carry a
+        `deep_link` that the app opens on tap / via a "Visit" button.
+        """
         if request.method == 'POST':
-            notification_type = request.POST.get('notification_type')
-            title = request.POST.get('title')
-            body = request.POST.get('body')
+            title = (request.POST.get('title') or '').strip()
+            body = (request.POST.get('body') or '').strip()
+            deep_link = (request.POST.get('deep_link') or '').strip()
             data_type = request.POST.get('data_type', 'general')
-            
-            # Validate inputs
+            recipient_type = request.POST.get('recipient_type')
+
             if not title or not body:
                 messages.error(request, '❌ Title and message are required')
                 return HttpResponseRedirect('../')
-            
-            # Get recipients
-            recipient_type = request.POST.get('recipient_type')
-            
-            # Log the attempt
-            print(f'\n📤 Attempting to send notification:')
-            print(f'   Title: {title}')
-            print(f'   Body: {body}')
-            print(f'   Recipient Type: {recipient_type}')
-            print(f'   Data Type: {data_type}')
-            
+
+            from .push_notifications import send_push_notification
+
+            extra = {'click_action': 'FLUTTER_NOTIFICATION_CLICK'}
+            print(
+                f'\n📤 Sending notification "{title}" '
+                f'(recipient={recipient_type}, deep_link={deep_link or "-"})'
+            )
+
             try:
                 if recipient_type == 'all':
-                    # Send to all users
-                    tokens = FCMToken.objects.filter(is_active=True).values_list('token', flat=True)
-                    token_list = list(tokens)
-                    
-                    print(f'   Found {len(token_list)} active tokens')
-                    
-                    if token_list:
-                        print(f'   Sending to all users...')
-                        response = send_fcm_notification_multicast(
-                            fcm_tokens=token_list,
-                            title=title,
-                            body=body,
-                            data={'type': data_type, 'click_action': 'FLUTTER_NOTIFICATION_CLICK'}
-                        )
-                        if response:
-                            print(f'   ✅ Success: {response.success_count}, Failed: {response.failure_count}')
-                            messages.success(request, f'✅ Notification sent to {response.success_count} users')
-                            if response.failure_count > 0:
-                                messages.warning(request, f'⚠️ Failed to send to {response.failure_count} users')
-                        else:
-                            print(f'   ❌ Response was None - check Firebase Admin SDK initialization')
-                            # Check Firebase initialization status
-                            from .fcm_service import FIREBASE_INITIALIZED, FIREBASE_ERROR
-                            if not FIREBASE_INITIALIZED:
-                                error_msg = f'❌ Firebase Admin SDK not initialized'
-                                if FIREBASE_ERROR:
-                                    error_msg += f': {FIREBASE_ERROR}'
-                                messages.error(request, error_msg)
-                            else:
-                                messages.error(request, '❌ Failed to send notifications - check server logs')
-                    else:
-                        print(f'   ⚠️ No active tokens found')
-                        messages.warning(request, '⚠️ No active tokens found')
-                
+                    created = send_push_notification(
+                        title=title, body=body, deep_link=deep_link,
+                        notification_type=data_type, broadcast=True, data=extra,
+                    )
+                    messages.success(
+                        request,
+                        '✅ Broadcast sent to all devices and saved to Updates.',
+                    )
+
                 elif recipient_type == 'specific':
-                    # Send to specific user
                     user_email = request.POST.get('user_email')
-                    print(f'   Target user: {user_email}')
-                    
                     try:
                         user = User.objects.get(email=user_email)
-                        tokens = FCMToken.objects.filter(user=user, is_active=True).values_list('token', flat=True)
-                        token_list = list(tokens)
-                        
-                        print(f'   Found {len(token_list)} tokens for user {user.email}')
-                        
-                        success_count = 0
-                        for token in token_list:
-                            print(f'   Sending to token: {token[:50]}...')
-                            if send_fcm_notification(
-                                fcm_token=token,
-                                title=title,
-                                body=body,
-                                data={'type': data_type, 'click_action': 'FLUTTER_NOTIFICATION_CLICK'}
-                            ):
-                                success_count += 1
-                        
-                        print(f'   Success count: {success_count}/{len(token_list)}')
-                        
-                        if success_count > 0:
-                            messages.success(request, f'✅ Notification sent to {user.email} ({success_count} device(s))')
-                        else:
-                            messages.error(request, f'❌ Failed to send notification to {user.email} - check server logs')
                     except User.DoesNotExist:
-                        print(f'   ❌ User not found: {user_email}')
                         messages.error(request, f'❌ User not found: {user_email}')
-                
+                        return HttpResponseRedirect('../')
+                    send_push_notification(
+                        title=title, body=body, deep_link=deep_link,
+                        notification_type=data_type, users=[user], data=extra,
+                    )
+                    messages.success(
+                        request, f'✅ Sent to {user.email} and saved to Updates.'
+                    )
+
                 elif recipient_type == 'active':
-                    # Send to recently active users (logged in last 7 days)
-                    from django.utils import timezone
                     from datetime import timedelta
-                    
+
+                    from django.utils import timezone
+
                     seven_days_ago = timezone.now() - timedelta(days=7)
-                    active_users = User.objects.filter(last_login__gte=seven_days_ago)
-                    tokens = FCMToken.objects.filter(
-                        user__in=active_users,
-                        is_active=True
-                    ).values_list('token', flat=True)
-                    token_list = list(tokens)
-                    
-                    if token_list:
-                        response = send_fcm_notification_multicast(
-                            fcm_tokens=token_list,
-                            title=title,
-                            body=body,
-                            data={'type': data_type, 'click_action': 'FLUTTER_NOTIFICATION_CLICK'}
-                        )
-                        if response:
-                            messages.success(request, f'✅ Notification sent to {response.success_count} active users')
-                        else:
-                            messages.error(request, '❌ Failed to send notifications')
-                    else:
-                        messages.warning(request, '⚠️ No active users found')
-                
+                    active_users = list(
+                        User.objects.filter(last_login__gte=seven_days_ago)
+                    )
+                    created = send_push_notification(
+                        title=title, body=body, deep_link=deep_link,
+                        notification_type=data_type, users=active_users,
+                        data=extra,
+                    )
+                    messages.success(
+                        request,
+                        f'✅ Sent to {len(created)} active users and saved.',
+                    )
+                else:
+                    messages.error(request, '❌ Unknown recipient type')
+
                 return HttpResponseRedirect('../')
-                
+
             except Exception as e:
                 import traceback
-                error_details = traceback.format_exc()
-                print(f'\n❌ ERROR sending notification:')
-                print(error_details)
-                messages.error(request, f'❌ Error: {str(e)}')
+                traceback.print_exc()
+                messages.error(request, f'❌ Error: {e}')
                 return HttpResponseRedirect('../')
-        
+
         # GET request - show form
         context = {
             'title': 'Send Push Notification',
