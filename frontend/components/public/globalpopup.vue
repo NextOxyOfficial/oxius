@@ -1,246 +1,149 @@
 <template>
-  <div>
-    <!-- Global Popup -->
-    <Teleport to="body">
+  <Teleport to="body">
+    <div
+      v-if="showPopup && currentPopup"
+      class="fixed inset-0 z-[80] flex items-center justify-center p-2 bg-black/50 backdrop-blur-sm animate-fade-in"
+    >
       <div
-        v-if="showPopup && currentPopup"
-        class="fixed inset-0 z-[80] flex items-center justify-center p-2 bg-black/50 backdrop-blur-sm animate-fade-in"
-      >        
-      <div
-          class="relative sm:max-w-3xl h-[45vh] w-full overflow-hidden animate-scale-in"
-          @click.stop
+        class="relative max-w-[calc(100vw-24px)] max-h-[72vh] animate-scale-in"
+        @click.stop
+      >
+        <button
+          @click="closePopup"
+          class="absolute flex -top-3 -right-2 z-[90] p-2 rounded-full bg-white text-slate-900 shadow-lg hover:bg-slate-50 transition-colors"
+          :aria-label="`Close popup ${currentPopup.id}`"
         >
-          <!-- Close Button -->          
-           <button
-            @click="closePopup"
-            class="absolute flex top-4 right-4 z-[90] p-2 rounded-full bg-black/70 hover:bg-black/80 transition-colors"
-            :aria-label="`Close popup ${currentPopup.id}`"
-          >            
-          <UIcon
-              name="i-heroicons-x-mark"
-              class="w-5 h-5 text-white"
-            />
-          </button>
+          <UIcon name="i-heroicons-x-mark" class="w-5 h-5" />
+        </button>
 
-          <!-- Loading state -->
-          <div
-            v-if="!currentPopup.image"
-            class="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800"
-          >
-            <div class="text-gray-500 dark:text-gray-400">Loading...</div>
-          </div>
-
-          <!-- Content -->
-          <div v-else class="w-full h-full">
-            <!-- Image failed to load - show fallback -->
-            <div
-              v-if="imageLoadError"
-              class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white p-8"
-            >
-              <div class="text-center">
-                <div class="text-6xl mb-4">🎉</div>
-                <div class="text-2xl font-bold mb-2">Special Announcement!</div>
-                <div class="text-lg opacity-90">
-                  We have something exciting to share with you!
-                </div>
-              </div>
-            </div>
-
-            <!-- Try to load image -->
-            <NuxtLink
-              v-else
-              :to="currentPopup.link"
-              :target="currentPopup.open_external ? '_blank' : '_self'"
-              class="block w-full h-full hover:cursor-pointer"
-            >
-              <img
-                :src="currentPopup?.image"
-                :alt="`Popup ${currentPopup.id}`"
-                class="w-full h-full object-contain rounded-t-2xl"
-                @load="onPopupShown"
-              />
-            </NuxtLink>
-          </div>
-        </div>
+        <NuxtLink
+          :to="currentPopup.link || '/'"
+          :target="currentPopup.open_external ? '_blank' : '_self'"
+          class="block hover:cursor-pointer"
+        >
+          <img
+            :src="getImageUrl(currentPopup.image)"
+            :alt="`Popup ${currentPopup.id}`"
+            class="block max-w-[calc(100vw-24px)] max-h-[72vh] object-contain rounded-2xl"
+            @load="onPopupShown"
+            @error="closePopup"
+          />
+        </NuxtLink>
       </div>
-    </Teleport>
-  </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
-const { get, post } = useApi();
+const { get, post, baseURL } = useApi();
 const { isAuthenticated } = useAuth();
 
-// Reactive state
 const showPopup = ref(false);
 const currentPopup = ref(null);
 const isDesktop = ref(true);
 const hasTrackedView = ref(false);
-const imageLoadError = ref(false);
 
-// Detect device type
 onMounted(async () => {
-  isDesktop.value = window.innerWidth >= 640; // sm breakpoint
-
-  // Listen for window resize to update device type
-  window.addEventListener("resize", () => {
-    const newIsDesktop = window.innerWidth >= 640;
-    if (newIsDesktop !== isDesktop.value) {
-      isDesktop.value = newIsDesktop;
-    }
-  });
-
-  // Add keyboard event listener for ESC key
+  isDesktop.value = window.innerWidth >= 640;
+  window.addEventListener("resize", handleResize);
   window.addEventListener("keydown", handleKeydown);
 
-  // Wait for authentication state to be ready
   await waitForAuth();
-
-  // Load appropriate popup
   loadPopup();
 });
 
-// Wait for auth state to be ready
-async function waitForAuth() {
-  // Give some time for auth to initialize
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // Check if we have user data or can determine auth state
-  const maxWait = 3000; // Max 3 seconds
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < maxWait) {
-    try {
-      // Try to get user state - this will help determine if auth is ready
-      const authState = isAuthenticated.value;
-
-      // If we can determine auth state, we're ready
-      if (authState !== undefined) {
-        return;
-      }
-    } catch (error) {
-      // Auth not ready yet, continue waiting
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
-  }
-}
-
-// Cleanup event listeners
 onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
   window.removeEventListener("keydown", handleKeydown);
 });
 
-// Handle keyboard events
+function handleResize() {
+  const newIsDesktop = window.innerWidth >= 640;
+  if (newIsDesktop !== isDesktop.value) {
+    isDesktop.value = newIsDesktop;
+  }
+}
+
 function handleKeydown(event) {
   if (event.key === "Escape" && showPopup.value) {
     closePopup();
   }
 }
 
-// Load popup based on device type
+async function waitForAuth() {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  const maxWait = 3000;
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWait) {
+    try {
+      if (isAuthenticated.value !== undefined) return;
+    } catch (_) {}
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+}
+
 async function loadPopup() {
   try {
     const endpoint = isDesktop.value
       ? "/global-popup/desktop/"
       : "/global-popup/mobile/";
-
     const response = await get(endpoint);
+    const popups = Array.isArray(response?.data) ? response.data : [];
+    const popup = popups.find((item) => item?.id && item?.image);
 
-    if (
-      response &&
-      response.data &&
-      Array.isArray(response.data) &&
-      response.data.length > 0
-    ) {
-      // Get the first active popup that should be shown
-      const popup = response.data[0];
-
-      // Validate popup has required fields
-      if (popup.id && popup.image) {
-        currentPopup.value = popup;
-        imageLoadError.value = false; // Reset error state
-        showPopup.value = true;
-      } else {
-        showPopup.value = false;
-      }
-    } else {
-      showPopup.value = false;
+    if (!popup) {
+      closePopup();
+      return;
     }
-  } catch (error) {
-    console.error("Error fetching popup:", error);
-    showPopup.value = false;
+
+    currentPopup.value = popup;
+    hasTrackedView.value = false;
+    showPopup.value = true;
+  } catch (_) {
+    closePopup();
   }
 }
 
-// Track popup view when image loads (popup is actually shown)
 async function onPopupShown() {
   if (!currentPopup.value || hasTrackedView.value) return;
 
   try {
-    const payload = {
+    await post("/global-popup/track-view/", {
       popup_type: isDesktop.value ? "desktop" : "mobile",
       popup_id: currentPopup.value.id,
-    };
-
-    await post("/global-popup/track-view/", payload);
+    });
     hasTrackedView.value = true;
-  } catch (error) {
-    console.error("Error tracking popup view:", error);
-    // Don't prevent popup from showing if tracking fails
-  }
+  } catch (_) {}
 }
 
-// Handle image load error
-function onImageError() {
-  // Show fallback content instead of hiding popup
-  imageLoadError.value = true;
-
-  // Still track the view since popup is being shown
-  if (!hasTrackedView.value) {
-    onPopupShown();
-  }
-}
-
-// Process image URL for better compatibility
 function getImageUrl(imageUrl) {
   if (!imageUrl) return "";
-
-  // If it's already a full URL, return as is
   if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
     return imageUrl;
   }
-
-  // If it's a relative path, construct full URL
   if (imageUrl.startsWith("/media/")) {
-    const { baseURL } = useApi();
-    const fullUrl = baseURL.replace("/api", "") + imageUrl;
-    return fullUrl;
+    return baseURL.replace("/api", "") + imageUrl;
   }
-
   return imageUrl;
 }
 
-// Close popup
 function closePopup() {
   showPopup.value = false;
 }
 
-// Watch for device type changes and reload popup if needed
 watch(isDesktop, (newValue, oldValue) => {
-  if (newValue !== oldValue) {
-    hasTrackedView.value = false;
-    currentPopup.value = null;
-    loadPopup();
-  }
+  if (newValue === oldValue) return;
+  currentPopup.value = null;
+  hasTrackedView.value = false;
+  loadPopup();
 });
 
-// Watch for authentication changes and reload popup if needed
 watch(isAuthenticated, (newValue, oldValue) => {
-  if (newValue !== oldValue) {
-    hasTrackedView.value = false;
-    currentPopup.value = null;
-    loadPopup();
-  }
+  if (newValue === oldValue) return;
+  currentPopup.value = null;
+  hasTrackedView.value = false;
+  loadPopup();
 });
 </script>

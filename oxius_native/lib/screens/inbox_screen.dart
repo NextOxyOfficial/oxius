@@ -1212,6 +1212,11 @@ class _InboxScreenState extends State<InboxScreen>
     }
   }
 
+  bool _canVisitUpdate(Map<String, dynamic> update) {
+    return update['has_visit'] == true &&
+        (update['deep_link'] ?? '').toString().trim().isNotEmpty;
+  }
+
   Widget _buildUpdateItem(Map<String, dynamic> update) {
     final bool isUnread = !update['isRead'];
 
@@ -1303,32 +1308,6 @@ class _InboxScreenState extends State<InboxScreen>
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  // "Visit" button — only on push notifications that carry a
-                  // deep link. Other updates (admin notices) don't show it.
-                  if (update['has_visit'] == true &&
-                      (update['deep_link'] ?? '').toString().trim().isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: SizedBox(
-                        height: 30,
-                        child: FilledButton.icon(
-                          onPressed: () => _visitUpdate(update),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          icon: const Icon(Icons.open_in_new_rounded, size: 14),
-                          label: const Text('Visit',
-                              style: TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w700)),
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -1568,6 +1547,7 @@ class _InboxScreenState extends State<InboxScreen>
   void _showUpdateDetailsBottomSheet(Map<String, dynamic> update) {
     // Mark as read immediately
     _markUpdateAsRead(update);
+    final canVisit = _canVisitUpdate(update);
 
     showModalBottomSheet(
       context: context,
@@ -1726,27 +1706,51 @@ class _InboxScreenState extends State<InboxScreen>
                   top: BorderSide(color: Colors.grey.shade200),
                 ),
               ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF059669),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+              child: Row(
+                children: [
+                  if (canVisit) ...[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _visitUpdate(update);
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF2563EB),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      child: const Text('Visit'),
                     ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Got it',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF059669),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Got it',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ],

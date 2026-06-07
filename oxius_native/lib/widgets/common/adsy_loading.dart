@@ -176,13 +176,26 @@ class AdsyRefreshIndicator extends StatefulWidget {
   });
 
   @override
-  State<AdsyRefreshIndicator> createState() => _AdsyRefreshIndicatorState();
+  State<AdsyRefreshIndicator> createState() => AdsyRefreshIndicatorState();
 }
 
-class _AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
+class AdsyRefreshIndicatorState extends State<AdsyRefreshIndicator> {
   _AdsyRefreshState _state = _AdsyRefreshState.idle;
   bool _feedbackSent = false;
   double _dragExtent = 0;
+
+  Future<void> show() async {
+    if (_state == _AdsyRefreshState.refreshing) return;
+
+    setState(() {
+      _dragExtent = _triggerPullExtent(context) + _activationPullExtent();
+      _state = _AdsyRefreshState.armed;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 90));
+    if (!mounted) return;
+    await _handleRefresh();
+  }
 
   Future<void> _handleRefresh() async {
     if (_state == _AdsyRefreshState.refreshing) return;

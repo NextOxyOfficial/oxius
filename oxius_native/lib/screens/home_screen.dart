@@ -20,6 +20,7 @@ import '../services/auth_service.dart';
 import '../services/translation_service.dart';
 import '../services/classified_post_service.dart';
 import '../services/api_service.dart';
+import '../services/home_popup_service.dart';
 import '../services/offline_cache_service.dart';
 import '../utils/network_error_handler.dart';
 import '../models/classified_post.dart';
@@ -35,9 +36,12 @@ import '../services/adsyconnect_service.dart';
 import 'dart:async';
 import 'package:app_badge_plus/app_badge_plus.dart';
 import 'package:oxius_native/widgets/common/adsy_loading.dart';
+import '../widgets/home/home_popup_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool autoRefreshOnOpen;
+
+  const HomeScreen({super.key, this.autoRefreshOnOpen = false});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -48,6 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late ClassifiedPostService _postService;
   final ScrollDirectionService _scrollService = ScrollDirectionService();
   final TranslationService _translationService = TranslationService();
+  final GlobalKey<AdsyRefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<AdsyRefreshIndicatorState>();
   final GlobalKey _classifiedSectionKey = GlobalKey();
   final GlobalKey _microGigsSectionKey = GlobalKey();
   bool _handledInitialScroll = false;
@@ -56,8 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ClassifiedPost>? _recentPosts;
   bool _isLoadingPosts = false;
   int _unreadMessageCount = 0;
+  int _homeRefreshEpoch = 0;
 
   Timer? _messageCountTimer;
+  bool _isHomePopupOpen = false;
 
   // Header animation
   bool _isHeaderVisible = true;
@@ -92,6 +100,10 @@ class _HomeScreenState extends State<HomeScreen> {
         _handleInitialScrollIfNeeded();
         // Show the "complete your profile" sheet once after login.
         ProfileCompletionSheet.maybeShowPending(context);
+        if (widget.autoRefreshOnOpen) {
+          _refreshIndicatorKey.currentState?.show();
+        }
+        _maybeShowHomePopup();
       }
     });
     _fetchRecentPosts();
@@ -309,6 +321,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleRefresh() async {
     print('🔄 HomeScreen: Pull to refresh triggered');
 
+    if (mounted && !_disposed) {
+      setState(() {
+        _homeRefreshEpoch++;
+      });
+    }
+
     // Force refresh recent posts (bypass loading check)
     await _fetchRecentPosts(forceRefresh: true);
 
@@ -317,7 +335,54 @@ class _HomeScreenState extends State<HomeScreen> {
       await _fetchUnreadMessageCount();
     }
 
+    await _maybeShowHomePopup(force: true);
+
     print('✅ HomeScreen: Refresh completed');
+  }
+
+  Future<void> _refreshFromHomeNav() async {
+    if (_scrollController.hasClients && _scrollController.offset > 0) {
+      await _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+      );
+    }
+
+    await _refreshIndicatorKey.currentState?.show();
+    await _maybeShowHomePopup(force: true);
+  }
+
+  Future<void> _maybeShowHomePopup({bool force = false}) async {
+    if (_isHomePopupOpen) return;
+    if (kDebugMode) {
+      debugPrint('HomeScreen: checking home popup force=$force');
+    }
+    if (!force) {
+      await Future<void>.delayed(const Duration(milliseconds: 900));
+    }
+    if (!mounted || _disposed) return;
+
+    final popup = await HomePopupService.fetchActiveMobilePopup();
+    if (popup == null || !mounted || _disposed) {
+      if (kDebugMode) {
+        debugPrint('HomeScreen: no popup to show');
+      }
+      return;
+    }
+    _isHomePopupOpen = true;
+    if (kDebugMode) {
+      debugPrint('HomeScreen: showing popup ${popup.id}');
+    }
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        builder: (_) => HomePopupDialog(popup: popup),
+      );
+    } finally {
+      _isHomePopupOpen = false;
+    }
   }
 
   void _onScroll() {
@@ -429,6 +494,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Scrollable content area with pull-to-refresh
               AdsyRefreshIndicator(
+                key: _refreshIndicatorKey,
                 onRefresh: _handleRefresh,
                 color: const Color(0xFF3B82F6),
                 backgroundColor: Colors.white,
@@ -445,25 +511,34 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Add spacing for header
                       SizedBox(height: topPadding + 56 + 8),
                       // 1. Hero Banner - Main banner slider + service menu grid
-                      const HeroBanner(),
+                      HeroBanner(key: ValueKey('hero-$_homeRefreshEpoch')),
 
                       // 2. Gold Sponsors - existing business network sponsor slider
-                      const Padding(
+                      Padding(
+                        key: ValueKey('gold-sponsors-$_homeRefreshEpoch'),
                         padding: EdgeInsets.fromLTRB(4, 2, 4, 2),
                         child: GoldSponsorsSlider(margin: EdgeInsets.zero),
                       ),
 
                       // 3. Sale Category - eShop product categories
-                      const SaleCategory(
-                          margin: EdgeInsets.fromLTRB(4, 0, 4, 4)),
+                      SaleCategory(
+                        key: ValueKey('sale-category-$_homeRefreshEpoch'),
+                        margin: const EdgeInsets.fromLTRB(4, 0, 4, 4),
+                      ),
 
                       // 4. Food Zone Section - FoodPanda style food listings
-                      FoodZoneSection(baseUrl: ApiService.baseUrl),
+                      FoodZoneSection(
+                        key: ValueKey('food-zone-$_homeRefreshEpoch'),
+                        baseUrl: ApiService.baseUrl,
+                      ),
 
                       // 5. Classified Services - Service categories
                       Container(
                         key: _classifiedSectionKey,
-                        child: const ClassifiedServicesSection(),
+                        child: ClassifiedServicesSection(
+                          key: ValueKey(
+                              'classified-services-$_homeRefreshEpoch'),
+                        ),
                       ),
 
                       // 6. Recent Ads Scroll - Horizontal scrolling carousel of recent posts
@@ -521,12 +596,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
 
                       // 7. eShop Product Slider - Product carousel
-                      const EshopSection(),
+                      EshopSection(key: ValueKey('eshop-$_homeRefreshEpoch')),
 
                       // 8. Micro Gigs Section (with Account Balance & Mobile Recharge inside)
                       Container(
                         key: _microGigsSectionKey,
-                        child: const MicroGigsSection(),
+                        child: MicroGigsSection(
+                          key: ValueKey('micro-gigs-$_homeRefreshEpoch'),
+                        ),
                       ),
 
                       // Footer - always show the main footer content
@@ -597,6 +674,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: MobileStickyNav(
                     currentRoute: 'Home',
                     scrollController: _scrollController,
+                    onHomeRefresh: _refreshFromHomeNav,
                   ),
                 ),
               ),

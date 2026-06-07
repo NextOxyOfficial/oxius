@@ -555,9 +555,9 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.16),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -618,14 +618,10 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: [
-              Container(
+              SizedBox(
                 width: 32,
                 height: 32,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 17, color: iconColor),
+                child: Icon(icon, size: 19, color: iconColor),
               ),
               const SizedBox(width: 11),
               Expanded(

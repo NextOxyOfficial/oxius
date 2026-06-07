@@ -1099,6 +1099,10 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             msg['is_deleted'] == 1 ||
             msg['is_deleted'] == '1' ||
             msg['is_deleted'] == 'true'),
+        'isEdited': msg['is_edited'] == true ||
+            msg['is_edited'] == 1 ||
+            msg['is_edited'] == '1' ||
+            msg['is_edited'] == 'true',
       };
     }).toList();
 
@@ -1641,10 +1645,20 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      useSafeArea: true,
       builder: (sheetContext) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.94),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: Colors.white.withOpacity(0.82)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.14),
+              blurRadius: 28,
+              offset: const Offset(0, 12),
+            ),
+          ],
         ),
         child: SafeArea(
           child: Column(
@@ -1652,11 +1666,11 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
             children: [
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 40,
+                width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+                  color: const Color(0xFFE2E8F0),
+                  borderRadius: BorderRadius.circular(999),
                 ),
               ),
               if (canReply)
@@ -1704,7 +1718,7 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
                   destructive: true,
                   onTap: () => _deleteMessage(message),
                 ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
             ],
           ),
         ),
@@ -1720,29 +1734,36 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
     required VoidCallback onTap,
     bool destructive = false,
   }) {
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      child: ListTile(
+        minVerticalPadding: 12,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        tileColor:
+            destructive ? const Color(0xFFFEF2F2) : const Color(0xFFF8FAFC),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: iconColor, size: 20),
         ),
-        child: Icon(icon, color: iconColor, size: 20),
-      ),
-      title: Text(
-        label,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color:
-              destructive ? const Color(0xFFEF4444) : const Color(0xFF1F2937),
+        title: Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color:
+                destructive ? const Color(0xFFEF4444) : const Color(0xFF1F2937),
+          ),
         ),
+        onTap: () {
+          Navigator.pop(sheetContext);
+          onTap();
+        },
       ),
-      onTap: () {
-        Navigator.pop(sheetContext);
-        onTap();
-      },
     );
   }
 
@@ -3490,6 +3511,9 @@ class _AdsyConnectChatInterfaceState extends State<AdsyConnectChatInterface>
       voicePosition: _voicePosition,
       voiceDuration: _voiceDuration,
       onLongPress: _isMessageDeleted(message)
+          ? null
+          : () => _showMessageOptions(message),
+      onOptions: _isMessageDeleted(message)
           ? null
           : () => _showMessageOptions(message),
       onReply: (msg) => _setReplyingTo(msg),

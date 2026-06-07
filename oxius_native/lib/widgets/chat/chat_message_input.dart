@@ -393,17 +393,22 @@ class ChatMessageInput extends StatelessWidget {
 
         // --- Text row ---
         Container(
+          margin: const EdgeInsets.fromLTRB(8, 4, 8, 8),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              top: BorderSide(
-                color: const Color(0xFFE5E7EB).withOpacity(0.5),
-                width: 1,
+            color: Colors.white.withOpacity(0.88),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: Colors.white.withOpacity(0.84)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
-            ),
+            ],
           ),
           child: SafeArea(
+            top: false,
             child: Row(
               children: [
                 // Attachment button
@@ -412,7 +417,7 @@ class ChatMessageInput extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: const Color(0xFF3B82F6).withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.attach_file_rounded, size: 22),
@@ -426,8 +431,9 @@ class ChatMessageInput extends StatelessWidget {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(20),
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: TextField(
                       controller: messageController,
@@ -463,9 +469,9 @@ class ChatMessageInput extends StatelessWidget {
                     height: 44,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                        colors: [Color(0xFF18C29C), Color(0xFF2563EB)],
                       ),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.send_rounded, size: 22),
@@ -482,7 +488,7 @@ class ChatMessageInput extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: const Icon(
                         Icons.mic_rounded,

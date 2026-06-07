@@ -9,11 +9,13 @@ import '../screens/news_screen.dart';
 class MobileStickyNav extends StatefulWidget {
   final String? currentRoute;
   final ScrollController? scrollController;
+  final Future<void> Function()? onHomeRefresh;
 
   const MobileStickyNav({
     super.key,
     this.currentRoute,
     this.scrollController,
+    this.onHomeRefresh,
   });
 
   @override
@@ -333,10 +335,14 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
   }
 
   void _handleNavigation(BuildContext context, String destination) {
+    if (destination == 'Home' && widget.currentRoute == 'Home') {
+      widget.onHomeRefresh?.call();
+      return;
+    }
+
     // Prevent navigation to current page
     if ((destination == 'eShop Manager' &&
             widget.currentRoute == 'eShop Manager') ||
-        (destination == 'Home' && widget.currentRoute == 'Home') ||
         (destination == 'AdsyPay' && widget.currentRoute == 'Wallet') ||
         (destination == 'Wallet' && widget.currentRoute == 'Wallet') ||
         (destination == 'Mobile Recharge' &&
@@ -353,7 +359,9 @@ class _MobileStickyNavState extends State<MobileStickyNav> {
       // Navigate to public homepage (/) and clear all previous routes
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(autoRefreshOnOpen: true),
+        ),
         (route) => false,
       );
     } else if (destination == 'eShop Manager') {

@@ -45,7 +45,8 @@ class ChatReplyQuoteCard extends StatelessWidget {
     final sender = message['replyToSender']?.toString() ?? '';
     final replyToId = message['replyToId']?.toString() ?? '';
 
-    final accent = isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF3B82F6);
+    final accent =
+        isMe ? Colors.white.withOpacity(0.95) : const Color(0xFF3B82F6);
     final bg = isMe
         ? Colors.white.withOpacity(0.18)
         : const Color(0xFF3B82F6).withOpacity(0.08);
@@ -143,6 +144,7 @@ class ChatMessageBubble extends StatefulWidget {
   final void Function(String filePath) onViewImage;
   final void Function(String? filePath, String fileName) onDownloadDoc;
   final void Function(String messageId) onScrollToMessage;
+  final VoidCallback? onOptions;
 
   const ChatMessageBubble({
     super.key,
@@ -161,6 +163,7 @@ class ChatMessageBubble extends StatefulWidget {
     required this.onViewImage,
     required this.onDownloadDoc,
     required this.onScrollToMessage,
+    this.onOptions,
   });
 
   @override
@@ -179,8 +182,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final message = widget.message;
     final isMe = message['isMe'] as bool;
     final isDeleted = isMsgDeleted(message);
-    final messageId = message['id']?.toString() ?? '';
-    final swipeProgress = (_swipeOffset.abs() / _swipeThreshold).clamp(0.0, 1.0);
+    final swipeProgress =
+        (_swipeOffset.abs() / _swipeThreshold).clamp(0.0, 1.0);
 
     final quoteCard = _buildReplyQuoteCard(message, isMe);
 
@@ -199,11 +202,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           : (details) {
               setState(() {
                 if (isMe) {
-                  _swipeOffset =
-                      (_swipeOffset + details.delta.dx).clamp(-_swipeThreshold * 1.2, 0.0);
+                  _swipeOffset = (_swipeOffset + details.delta.dx)
+                      .clamp(-_swipeThreshold * 1.2, 0.0);
                 } else {
-                  _swipeOffset =
-                      (_swipeOffset + details.delta.dx).clamp(0.0, _swipeThreshold * 1.2);
+                  _swipeOffset = (_swipeOffset + details.delta.dx)
+                      .clamp(0.0, _swipeThreshold * 1.2);
                 }
               });
 
@@ -258,7 +261,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     child: Icon(
                       Icons.reply_rounded,
                       size: 20,
-                      color: swipeProgress >= 1.0 ? Colors.white : const Color(0xFF10B981),
+                      color: swipeProgress >= 1.0
+                          ? Colors.white
+                          : const Color(0xFF10B981),
                     ),
                   ),
                 ),
@@ -286,17 +291,27 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     const SizedBox(width: 34),
                   Flexible(
                     child: Column(
-                      crossAxisAlignment:
-                          isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                      crossAxisAlignment: isMe
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
                       children: [
-                        GestureDetector(
-                          onLongPress: isDeleted ? null : widget.onLongPress,
-                          child: _buildBubbleContainer(
-                            message: message,
-                            isMe: isMe,
-                            isDeleted: isDeleted,
-                            quoteCard: quoteCard,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Flexible(
+                              child: GestureDetector(
+                                onLongPress:
+                                    isDeleted ? null : widget.onLongPress,
+                                child: _buildBubbleContainer(
+                                  message: message,
+                                  isMe: isMe,
+                                  isDeleted: isDeleted,
+                                  quoteCard: quoteCard,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 2),
                         if (message['showTimestamp'] == true)
@@ -372,14 +387,22 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final isMedia = msgType == 'image' || msgType == 'video';
 
     return Container(
-      padding: isMedia ? EdgeInsets.zero : const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: isMedia
+          ? const EdgeInsets.all(3)
+          : const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        gradient: isMe && !isMedia
+        gradient: isMe
             ? const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF3B82F6),
+                  Color(0xFF6366F1),
+                  Color(0xFF8B5CF6),
+                ],
               )
             : null,
-        color: isMe || isMedia ? null : Colors.white,
+        color: isMe ? null : Colors.white.withOpacity(0.78),
         border: widget.isSearchHit
             ? Border.all(
                 color: widget.isCurrentSearchHit
@@ -387,22 +410,26 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     : const Color(0xFFFBBF24).withOpacity(0.65),
                 width: widget.isCurrentSearchHit ? 2 : 1,
               )
-            : null,
+            : Border.all(
+                color: isMe
+                    ? Colors.white.withOpacity(0.18)
+                    : Colors.white.withOpacity(0.86),
+              ),
         borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(12),
-          topRight: const Radius.circular(12),
-          bottomLeft: Radius.circular(isMe ? 12 : 2),
-          bottomRight: Radius.circular(isMe ? 2 : 12),
+          topLeft: const Radius.circular(22),
+          topRight: const Radius.circular(22),
+          bottomLeft: Radius.circular(isMe ? 22 : 8),
+          bottomRight: Radius.circular(isMe ? 8 : 22),
         ),
-        boxShadow: isMedia
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
+        boxShadow: [
+          BoxShadow(
+            color: isMe
+                ? const Color(0xFF6366F1).withOpacity(0.10)
+                : Colors.black.withOpacity(0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: isDeleted
           ? _buildDeletedContent(isMe)
@@ -436,6 +463,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   ) {
     final msgType = message['type']?.toString() ?? 'text';
     final text = (message['message'] ?? '').toString();
+    final isEdited = message['isEdited'] == true ||
+        message['is_edited'] == true ||
+        message['is_edited'] == 1 ||
+        message['is_edited'] == 'true';
 
     Widget wrapWithQuote(Widget child) {
       if (quoteCard == null) return child;
@@ -474,15 +505,28 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           LinkifyText(
             text,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 15.5,
               color: isMe ? Colors.white : const Color(0xFF1F2937),
-              height: 1.35,
+              height: 1.38,
             ),
             linkStyle: TextStyle(
               color: isMe ? Colors.white : const Color(0xFF2563EB),
               decoration: TextDecoration.none,
             ),
           ),
+          if (isEdited) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Edited',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+                color: isMe
+                    ? Colors.white.withOpacity(0.72)
+                    : const Color(0xFF64748B),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -586,7 +630,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     late final Color accent;
     if (isDuration) {
       accent = const Color(0xFF10B981);
-    } else if (lowerDetail.contains('busy') || lowerDetail.contains('rejected')) {
+    } else if (lowerDetail.contains('busy') ||
+        lowerDetail.contains('rejected')) {
       accent = const Color(0xFFF59E0B);
     } else if (lowerDetail.contains('cancel')) {
       accent = const Color(0xFF9CA3AF);
@@ -628,7 +673,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               if (detail.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: isMe
                         ? Colors.white.withOpacity(0.18)
@@ -680,16 +726,16 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 width: 180,
                 height: 120,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    _imagePlaceholder(Icons.broken_image_rounded, 'Failed to load'),
+                errorBuilder: (_, __, ___) => _imagePlaceholder(
+                    Icons.broken_image_rounded, 'Failed to load'),
               )
             : Image.file(
                 File(filePath),
                 width: 180,
                 height: 120,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    _imagePlaceholder(Icons.broken_image_rounded, 'Failed to load'),
+                errorBuilder: (_, __, ___) => _imagePlaceholder(
+                    Icons.broken_image_rounded, 'Failed to load'),
               ),
       ),
     );
