@@ -24,11 +24,39 @@ class SocialLoginButtons extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: _FacebookButton(
-            onPressed: enabled ? () => onProvider('facebook') : null,
+            // Facebook sign-in is not live yet — show a clear notice instead of
+            // attempting a login that would fail.
+            onPressed: enabled ? () => _showFacebookUnavailable(context) : null,
           ),
         ),
       ],
     );
+  }
+
+  void _showFacebookUnavailable(BuildContext context) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: Colors.white, size: 18),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Facebook login & registration is temporarily unavailable.',
+                  style: TextStyle(fontSize: 13.5),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1F2937),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 3),
+        ),
+      );
   }
 }
 

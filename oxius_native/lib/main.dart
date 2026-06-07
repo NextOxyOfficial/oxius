@@ -55,6 +55,7 @@ import 'services/agora_call_service.dart';
 import 'services/app_update_service.dart';
 import 'services/rideshare_driver_presence_service.dart';
 import 'services/user_state_service.dart';
+import 'services/auth_service.dart';
 import 'services/translation_service.dart';
 import 'services/online_status_service.dart';
 import 'services/telemetry.dart';
@@ -128,6 +129,10 @@ void main() async {
   // App lifecycle (foreground/background/inactive/detached) breadcrumbs.
   // Cheap — single observer, no per-frame work.
   WidgetsBinding.instance.addObserver(TelemetryLifecycleObserver());
+  // Re-check suspension whenever the app returns to the foreground — catches
+  // accounts suspended while the app was backgrounded (validateToken locks the
+  // app if the refreshed profile is suspended).
+  WidgetsBinding.instance.addObserver(_SuspensionLifecycleObserver());
   Telemetry.event('app.start');
 
   // Bootstrap everything else in the background, with timeouts.
@@ -215,6 +220,18 @@ Future<void> _bootstrap(UserStateService userState) async {
         'Agora clear', () => AgoraCallService.clearPersistedCallState());
     await _safeInit(
         'FCM auth state', () => FCMService.handleAuthenticationState(false));
+  }
+}
+
+/// Re-validates the session on every foreground resume so an account that was
+/// suspended while the app sat in the background gets locked out on return.
+class _SuspensionLifecycleObserver extends WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && AuthService.isAuthenticated) {
+      // validateToken() pulls a fresh profile and locks the app if suspended.
+      AuthService.validateToken();
+    }
   }
 }
 

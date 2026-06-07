@@ -356,6 +356,13 @@ class CustomUserAdmin(UserAdmin):
     balance_display.short_description = 'Balance'
     
     def account_status(self, obj):
+        # Suspension is independent of is_active (a suspended user keeps
+        # is_active=True so they can still hit login/validate-token to receive
+        # the lock screen), so it must be checked first.
+        if getattr(obj, 'is_suspended', False):
+            return format_html(
+                '<span style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">⛔ Suspended</span>'
+            )
         if obj.is_active:
             return format_html(
                 '<span style="background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;">● Active</span>'

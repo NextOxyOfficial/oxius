@@ -234,6 +234,34 @@ class AuthService {
     }
   }
 
+  /// Inspect any API response for the backend's suspension block
+  /// (`403 {"code": "account_suspended"}` from AccountSuspendedMiddleware) and,
+  /// if present, lock the app behind the suspended screen.
+  ///
+  /// This is the catch-all for users who get suspended *while already logged
+  /// in*: every authenticated service call returns this 403, so routing the
+  /// busiest ones (e.g. the home screen's 10s chat-rooms poll) through here
+  /// locks the app within seconds — no re-login or restart needed. Returns
+  /// true when the response was a suspension block so callers can stop.
+  static bool maybeHandleSuspendedResponse(int statusCode, String body) {
+    if (statusCode != 403) return false;
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map && decoded['code'] == 'account_suspended') {
+        final reason =
+            (decoded['reason'] ?? decoded['detail'] ?? '').toString();
+        final ctx = FCMService.navigatorKey.currentContext;
+        if (ctx != null) {
+          SuspendedAccountScreen.lock(ctx, reason: reason);
+        }
+        return true;
+      }
+    } catch (_) {
+      // A non-JSON 403 (plain "permission denied") is not a suspension.
+    }
+    return false;
+  }
+
   // Initialize auth service and restore session if available
   static Future<void> initialize() async {
     await _restoreAuthFromStorage();
@@ -713,6 +741,9 @@ class AuthService {
         // validate-token returns user data in 'user' field
         if (data['user'] != null) {
           _currentUser = User.fromJson(data['user']);
+
+          // Account may have been suspended while the session was alive.
+          lockIfSuspended(_currentUser!);
 
           // Update stored user data
           final prefs = await SharedPreferences.getInstance();

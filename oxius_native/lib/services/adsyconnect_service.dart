@@ -137,6 +137,13 @@ class AdsyConnectService {
         headers: headers,
       );
 
+      // The home screen polls this every 10s, so it's our fastest signal that
+      // the account was suspended while logged in — lock the app immediately.
+      if (AuthService.maybeHandleSuspendedResponse(
+          response.statusCode, response.body)) {
+        return [];
+      }
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 

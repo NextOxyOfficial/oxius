@@ -8,8 +8,14 @@ class SuspendedAccountScreen extends StatelessWidget {
 
   const SuspendedAccountScreen({super.key, this.reason = ''});
 
+  /// True while the lock screen is already on top, so repeated suspension
+  /// signals (e.g. the 10s poll firing again) don't stack duplicate screens.
+  static bool _isLocked = false;
+
   /// Replace the whole stack with this screen so there's no way back to the app.
   static void lock(BuildContext context, {String reason = ''}) {
+    if (_isLocked) return;
+    _isLocked = true;
     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(
         builder: (_) => SuspendedAccountScreen(reason: reason),
@@ -20,6 +26,7 @@ class SuspendedAccountScreen extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     await AuthService.logout();
+    _isLocked = false;
     if (!context.mounted) return;
     Navigator.of(context, rootNavigator: true)
         .pushNamedAndRemoveUntil('/login', (route) => false);
